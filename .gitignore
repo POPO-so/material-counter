@@ -1,0 +1,54 @@
+# ===== Vivado / Xilinx =====
+*.jou
+*.log
+*.str
+*.bit
+*.ltx
+*.dcp
+*.runs/
+*.cache/
+*.hw/
+*.sim/
+*.ip_user_files/
+.Xil/
+*.xpr
+*.pbx
+*.xsa
+*.hdf
+
+# 不提交 Vivado 工程目录与生成的 IP
+# ✅ 提交：rtl/ + xdc + scripts/build.tcl（任何人 clone 后跑一条 tcl 就能重建工程）
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# ===== 数据 =====
+# 原始视频：外置存储 / 网盘；仓库只放短代表性片段（<20MB，走 Git LFS）
+*.mp4
+*.avi
+*.mov
+# 大体积合成的数据可重生成，不入库（保留生成脚本与 config.json）
+data/synthetic/*/frames/
+data/recorded/
+
+# ===== 实验产物例外 =====
+# ★ 实验产物（CSV/JSON/图）必须入库，这是证据
+!data/results/**
+!data/synthetic/**/ground_truth.json
+!data/synthetic/**/config.json
+!data/labeled/**
+
+# ===== 编辑器 / 系统 =====
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+desktop.ini

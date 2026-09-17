@@ -1,0 +1,24 @@
+# 统一换行符，避免 Windows / Linux 混用时产生整文件 diff
+* text=auto eol=lf
+
+# 明确的文本类型
+*.md    text eol=lf
+*.py    text eol=lf
+*.tcl   text eol=lf
+*.v     text eol=lf
+*.sv    text eol=lf
+*.vhd   text eol=lf
+*.xdc   text eol=lf
+*.json  text eol=lf
+*.csv   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.sh    text eol=lf
+
+# 二进制
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.bit   binary
+*.dcp   binary
+*.pdf   binary
