@@ -45,7 +45,7 @@
 | 判决日期 | |
 | 冻结 Route | |
 | 依据 | |
-| ADR | `docs/adr/ADR-00xx-route-freeze.md` |
+| ADR | `docs/adr/adr-00xx-route-freeze.md` |
 | 三人确认 | ☐ A ☐ B ☐ C |
 
 ---

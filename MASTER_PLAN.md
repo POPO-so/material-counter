@@ -175,7 +175,7 @@
 
 **Hybrid 是第三种候选**，不是第三套实现：用列投影做分流判据，仅在判据触发时（投影区间重叠且宽度/面积异常）对局部做二维兜底。工作量约为 Route B 的 30%。
 
-**Route 冻结由 G1 决定。** 冻结结论写入 `docs/adr/ADR-00xx-route-freeze.md`，并同步到 `docs/07_routes.md`。
+**Route 冻结由 G1 决定。** 冻结结论写入 `docs/adr/adr-00xx-route-freeze.md`，并同步到 `docs/07_routes.md`。
 
 ### 1.7 你们还没想到的 8 个关键问题
 
@@ -561,7 +561,7 @@ A1 functional correctness
 | **任务** | ① 合成数据生成器（带真值，**含横向错位与投影重叠样本**）；② 手机录播 + 标注协议 + 标注工具；③ Python 全链路参考模型；④ **Route A / Route B / Hybrid 三路实现与六维对比**（★ 新增）；⑤ 评测脚本与指标报表；⑥ 摄像头选型定案并下单（**Day 4 硬节点**）；⑦ 机械 BOM 定案并下单（**Day 5 硬节点**）—— 电机必须选**直流减速电机 + 支持 PWM 的驱动器**；⑧ 三人各自跑通 PYNQ 官方 overlay |
 | **产物** | `python/refmodel/`、`data/synthetic/`、`data/recorded/`、评测报告 v1、**`docs/07_routes.md` + Route 决策表**、摄像头对比矩阵、机械 BOM |
 | **验收** | **R1**：合成数据上计数准确率 `[Target]` ≥99%、重复计数 = 0；录播数据上 `[Target]` ≥97%。**R2**：Route 决策表存在且结论可复述 |
-| **Gate G1（Day 10）** | **双职责门（★ v1.1 修改）**，两块 checklist 缺一不可：<br>**① 项目 go/no-go**（唯一判断点，见 Part 10 §10.6）<br>**② Algorithm Freeze Gate** —— 在 Route A / B / Hybrid 中**冻结一条**，产出 `docs/adr/ADR-00xx-route-freeze.md` |
+| **Gate G1（Day 10）** | **双职责门（★ v1.1 修改）**，两块 checklist 缺一不可：<br>**① 项目 go/no-go**（唯一判断点，见 Part 10 §10.6）<br>**② Algorithm Freeze Gate** —— 在 Route A / B / Hybrid 中**冻结一条**，产出 `docs/adr/adr-00xx-route-freeze.md` |
 
 > **★ 为什么是两个职责合并在同一天**：Route 对比与 H3 的核心验证共用同一套数据、同一个参考模型框架。拆成两个日期只会多产生一次返工点，并连锁推挤后面要保留的 G2 / G3 / Day 40 机制。
 > **但 G1 的"双职责"必须写显式，不允许任何人以为 Route 冻结是自动发生的。** 若 R1 过了而 R2 没做，**G1 不算通过**。
@@ -907,7 +907,7 @@ material-counter/
 │  ├─ 05_risks.md          风险清单（活文档，每周更新）
 │  ├─ 06_learning.md       学习任务看板
 │  ├─ 07_routes.md         ★ Route A/B/Hybrid 对比数据 + G1 冻结记录
-│  └─ adr/                 ADR-0001-camera-path.md / ADR-00xx-route-freeze.md 等
+│  └─ adr/                 adr-0001-camera-path.md / adr-00xx-route-freeze.md 等
 ├─ python/
 │  ├─ refmodel/            参考模型
 │  ├─ routes/              ★ Route A / B / Hybrid 三路实现
@@ -982,7 +982,7 @@ material-counter/
 feat(pl:colproj): 实现逐列前景投影累加
 fix(ps:tracker): 修复漏检帧导致的速度估计发散
 exp(seq-20261005-speed3): 速度档 3 下的关联门限对比
-docs(adr): 记录摄像头选型决策 ADR-0002
+docs(adr): 记录摄像头选型决策 adr-0002
 ```
 
 **为什么 scope 必须细到模块**：因为"追踪召回率下降"这类问题只能靠 commit 历史定位是哪次改了关联门限。**没有这个粒度，你会在 Day 38 花一整天做二分查找。**
@@ -998,7 +998,7 @@ docs(adr): 记录摄像头选型决策 ADR-0002
 
 八条硬规则：
 
-1. **ADR 先行**：任何架构性改动必须先写 ADR，**AI 不允许直接改架构**。ADR 由人写，AI 只能填细节。**★ 补充：Route 冻结本身就是一条 ADR（`ADR-00xx-route-freeze.md`），且是本项目最重要的一条。**
+1. **ADR 先行**：任何架构性改动必须先写 ADR，**AI 不允许直接改架构**。ADR 由人写，AI 只能填细节。**★ 补充：Route 冻结本身就是一条 ADR（`adr-00xx-route-freeze.md`），且是本项目最重要的一条。**
 2. **接口冻结**：`docs/02_interfaces.md` 是唯一真理。AI 生成的模块必须符合接口契约；**接口变更必须走 PR + 三人确认**。
 3. **Golden 向量强制**：AI 写的 RTL/HLS **必须通过与 Python 生成的 golden 向量比对**。没通过的代码不许合并。**这一条是初学者最有效的护城河。**
 4. **每个 AI 生成的 PR 必须附**：对应哪个 issue、验证方法是什么、**被否决的替代方案是什么**。
@@ -1053,7 +1053,7 @@ docs(adr): 记录摄像头选型决策 ADR-0002
 **Hybrid** 为第三候选：列投影分流 + 判据触发时局部二维兜底。
 
 > **在 G1 之前，本文件的任何位置都不得出现"最终采用 Route X"的表述。**
-> G1 的判决依据是 `docs/07_routes.md` 中的六维对比表，产物是 `docs/adr/ADR-00xx-route-freeze.md`。
+> G1 的判决依据是 `docs/07_routes.md` 中的六维对比表，产物是 `docs/adr/adr-00xx-route-freeze.md`。
 
 ### 2. A1 / A2 如何处理
 
@@ -1123,7 +1123,7 @@ A1 functional correctness > A1 robustness > FPGA quantitative evidence > A2-lite
 1. **G0（Day 2）**：三人分别复述接口契约，且能说清自己模块的输入输出
 2. **G1（Day 10）· 双职责**：
    - **R1**：`data/results/` 下出现第一条实验记录，含 `metrics.json` 中的 `count_accuracy ≥ 0.99` 与 `duplicate_count == 0`（均以 `[Measured]` 形式）
-   - **R2**：`docs/07_routes.md` 中存在 Route A / B / Hybrid 六维对比表，且 `docs/adr/ADR-00xx-route-freeze.md` 已产出
+   - **R2**：`docs/07_routes.md` 中存在 Route A / B / Hybrid 六维对比表，且 `docs/adr/adr-00xx-route-freeze.md` 已产出
 3. **G2（Day 20）**：`fpga/` 下出现可重建工程的 tcl 脚本 + `[Target]` WNS ≥ 0 的时序报告 + 逐级 golden 比对通过记录；**且后端实现与 G1 冻结的 Route 一致**
 4. **G3（Day 32）**：`data/results/` 下出现真实传送带的连续运行记录（≥5 分钟）+ 端到端延迟测量数据 + **PS-only baseline 对比数据** + **评委挑战模式的随机序列记录**
 5. **G4（Day 40）**：**若 A2 执行**，`data/results/` 下出现 A2 的 60 次定量送料实验记录（TARGET 10/20/30 各 20 次）；**若未执行，G4 通过条件仅为"功能冻结确认"**
