@@ -59,4 +59,4 @@
 
 ## 结论
 
-**待填。** 产出后同步至 `docs/adr/ADR-0001-video-source.md`。
+**待填。** 产出后同步至 `docs/adr/adr-0001-video-source.md`。
