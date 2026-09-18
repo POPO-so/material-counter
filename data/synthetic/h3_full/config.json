@@ -11,6 +11,7 @@
       "category": "backbone",
       "condition_id": "backbone_slow_small_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "backbone_slow_small_01",
       "noise_sigma": 0.0,
       "schema_version": 1,
@@ -171,6 +172,10 @@
       "category": "backbone",
       "condition_id": "backbone_slow_small_02",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        5,
+        18
+      ],
       "id": "backbone_slow_small_02",
       "noise_sigma": 0.8,
       "schema_version": 1,
@@ -337,6 +342,7 @@
       "category": "backbone",
       "condition_id": "backbone_slow_medium_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "backbone_slow_medium_01",
       "noise_sigma": 0.8,
       "schema_version": 1,
@@ -497,6 +503,10 @@
       "category": "backbone",
       "condition_id": "backbone_slow_medium_02",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        7,
+        20
+      ],
       "id": "backbone_slow_medium_02",
       "noise_sigma": 1.2,
       "schema_version": 1,
@@ -663,6 +673,7 @@
       "category": "backbone",
       "condition_id": "backbone_slow_large_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "backbone_slow_large_01",
       "noise_sigma": 0.0,
       "schema_version": 1,
@@ -823,6 +834,10 @@
       "category": "backbone",
       "condition_id": "backbone_slow_large_02",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        3,
+        16
+      ],
       "id": "backbone_slow_large_02",
       "noise_sigma": 1.2,
       "schema_version": 1,
@@ -989,6 +1004,7 @@
       "category": "backbone",
       "condition_id": "backbone_nominal_small_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "backbone_nominal_small_01",
       "noise_sigma": 0.8,
       "schema_version": 1,
@@ -1149,6 +1165,10 @@
       "category": "backbone",
       "condition_id": "backbone_nominal_small_02",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        6,
+        19
+      ],
       "id": "backbone_nominal_small_02",
       "noise_sigma": 1.6,
       "schema_version": 1,
@@ -1315,6 +1335,7 @@
       "category": "backbone",
       "condition_id": "backbone_nominal_medium_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "backbone_nominal_medium_01",
       "noise_sigma": 1.2,
       "schema_version": 1,
@@ -1475,6 +1496,10 @@
       "category": "backbone",
       "condition_id": "backbone_nominal_medium_02",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        4,
+        17
+      ],
       "id": "backbone_nominal_medium_02",
       "noise_sigma": 2.0,
       "schema_version": 1,
@@ -1641,6 +1666,7 @@
       "category": "backbone",
       "condition_id": "backbone_nominal_large_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "backbone_nominal_large_01",
       "noise_sigma": 0.8,
       "schema_version": 1,
@@ -1801,6 +1827,10 @@
       "category": "backbone",
       "condition_id": "backbone_nominal_large_02",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        8,
+        21
+      ],
       "id": "backbone_nominal_large_02",
       "noise_sigma": 1.6,
       "schema_version": 1,
@@ -1967,6 +1997,7 @@
       "category": "backbone",
       "condition_id": "backbone_fast_small_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "backbone_fast_small_01",
       "noise_sigma": 1.2,
       "schema_version": 1,
@@ -2127,6 +2158,10 @@
       "category": "backbone",
       "condition_id": "backbone_fast_medium_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        5,
+        18
+      ],
       "id": "backbone_fast_medium_01",
       "noise_sigma": 2.0,
       "schema_version": 1,
@@ -2293,6 +2328,10 @@
       "category": "backbone",
       "condition_id": "backbone_fast_large_01",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        9,
+        22
+      ],
       "id": "backbone_fast_large_01",
       "noise_sigma": 2.4,
       "schema_version": 1,
@@ -2459,6 +2498,7 @@
       "category": "special",
       "condition_id": "single_column_normal_spacing",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "single_column_normal_spacing",
       "noise_sigma": 0.0,
       "schema_version": 1,
@@ -2619,6 +2659,7 @@
       "category": "special",
       "condition_id": "small_spacing",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "small_spacing",
       "noise_sigma": 1.2,
       "schema_version": 1,
@@ -2779,6 +2820,7 @@
       "category": "special",
       "condition_id": "horizontal_offset",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "horizontal_offset",
       "noise_sigma": 0.8,
       "schema_version": 1,
@@ -2940,6 +2982,7 @@
       "category": "special",
       "condition_id": "projection_overlap_noncontact",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "projection_overlap_noncontact",
       "noise_sigma": 0.0,
       "schema_version": 1,
@@ -3101,6 +3144,7 @@
       "category": "special",
       "condition_id": "speed_variation",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [],
       "id": "speed_variation",
       "noise_sigma": 1.2,
       "schema_version": 1,
@@ -3274,6 +3318,9 @@
       "category": "special",
       "condition_id": "short_pause",
       "dataset_id": "h3_matrix",
+      "dropped_frame_ids": [
+        11
+      ],
       "id": "short_pause",
       "noise_sigma": 0.8,
       "schema_version": 1,

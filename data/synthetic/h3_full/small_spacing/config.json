@@ -3,6 +3,7 @@
   "category": "special",
   "condition_id": "small_spacing",
   "dataset_id": "h3_matrix",
+  "dropped_frame_ids": [],
   "id": "small_spacing",
   "noise_sigma": 1.2,
   "schema_version": 1,

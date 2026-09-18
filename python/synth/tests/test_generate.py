@@ -1,3 +1,4 @@
+import ast
 import json
 import subprocess
 import sys
@@ -35,6 +36,32 @@ def _load_dataset(output_dir: Path):
     with (output_dir / "config.json").open(encoding="utf-8") as handle:
         config = json.load(handle)
     return config
+
+
+def _load_sequence_files(output_dir: Path, condition_id: str):
+    condition_dir = output_dir / condition_id
+    with (condition_dir / "config.json").open(encoding="utf-8") as handle:
+        sequence_config = json.load(handle)
+    with (condition_dir / "ground_truth.json").open(encoding="utf-8") as handle:
+        ground_truth = json.load(handle)
+    return condition_dir, sequence_config, ground_truth
+
+
+def _actual_frame_ids(frames_dir: Path) -> set[int]:
+    return {
+        int(path.stem.split("_")[1])
+        for path in frames_dir.glob("frame_*.png")
+    }
+
+
+def _clip_bbox(bbox: dict, width: int, height: int) -> tuple[int, int, int, int]:
+    """Convert an inclusive GT bbox to a clipped, half-open pixel slice."""
+
+    x_min = max(0, min(width, int(bbox["x_min"])))
+    x_max = max(0, min(width, int(bbox["x_max"]) + 1))
+    y_min = max(0, min(height, int(bbox["y_min"])))
+    y_max = max(0, min(height, int(bbox["y_max"]) + 1))
+    return x_min, x_max, y_min, y_max
 
 
 def test_h3_matrix_has_required_scale_coverage_and_png_io(tmp_path):
@@ -112,6 +139,139 @@ def test_h3_matrix_has_required_scale_coverage_and_png_io(tmp_path):
         assert written_ids == set(range(24)) - dropped_ids
 
 
+def test_dropped_frame_metadata_cross_validates_config_png_and_ground_truth(tmp_path):
+    output_dir = tmp_path / "h3_drop_metadata"
+    _run_generator(output_dir)
+    dataset_config = _load_dataset(output_dir)
+
+    for condition in dataset_config["conditions"]:
+        condition_dir, sequence_config, ground_truth = _load_sequence_files(
+            output_dir, condition["id"]
+        )
+        expected_frame_ids = set(range(sequence_config["sequences"][0]["num_frames"]))
+        actual_png_frame_ids = _actual_frame_ids(condition_dir / "frames")
+        dropped_frame_ids = sequence_config["dropped_frame_ids"]
+
+        assert dropped_frame_ids == sorted(dropped_frame_ids)
+        assert set(dropped_frame_ids) == expected_frame_ids - actual_png_frame_ids
+        if not dropped_frame_ids:
+            assert dropped_frame_ids == []
+
+        frames_by_id = {frame["frame_id"]: frame for frame in ground_truth["frames"]}
+        for frame_id in expected_frame_ids:
+            objects = frames_by_id[frame_id]["objects"]
+            if frame_id in dropped_frame_ids:
+                assert objects
+                assert all(not object_truth["visible"] for object_truth in objects)
+            else:
+                assert any(object_truth["visible"] for object_truth in objects)
+
+
+def test_pillow_usage_is_limited_to_png_io(tmp_path):
+    del tmp_path
+    allowed_files = {
+        Path("generate.py"),
+        Path("tests/test_generate.py"),
+    }
+    forbidden_calls = {"filter", "resize", "convert", "point"}
+    allowed_image_calls = {"fromarray", "open", "save"}
+    pillow_import_files = set()
+
+    def root_name(expression):
+        if isinstance(expression, ast.Name):
+            return expression.id
+        if isinstance(expression, ast.Attribute):
+            return root_name(expression.value)
+        if isinstance(expression, ast.Call):
+            return root_name(expression.func)
+        return None
+
+    for source_path in SYNTH_ROOT.rglob("*.py"):
+        relative_path = source_path.relative_to(SYNTH_ROOT)
+        tree = ast.parse(source_path.read_text(encoding="utf-8"), str(source_path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported_modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                imported_modules = [node.module or ""]
+            else:
+                imported_modules = []
+            if any(module == "PIL" or module.startswith("PIL.") for module in imported_modules):
+                pillow_import_files.add(relative_path)
+
+            if isinstance(node, ast.Attribute):
+                if root_name(node) == "Image":
+                    assert node.attr in allowed_image_calls
+                assert node.attr not in {"ImageOps", "ImageFilter"}
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                assert node.func.attr not in forbidden_calls
+
+    assert pillow_import_files <= allowed_files
+    assert pillow_import_files == {Path("generate.py"), Path("tests/test_generate.py")}
+
+
+def test_requirements_declare_only_approved_dependencies(tmp_path):
+    del tmp_path
+    requirements = SYNTH_ROOT / "requirements.txt"
+    declared = [
+        line.strip()
+        for line in requirements.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    assert declared == ["numpy", "Pillow", "pytest"]
+
+
+def test_ground_truth_matches_rendered_gray8_pixels_independently(tmp_path):
+    output_dir = tmp_path / "h3_pixels"
+    _run_generator(output_dir)
+    condition_dir, sequence_config, ground_truth = _load_sequence_files(
+        output_dir, "backbone_nominal_medium_02"
+    )
+    sequence = sequence_config["sequences"][0]
+    assert sequence_config["noise_sigma"] > 0
+    assert sequence_config["brightness_offset"] != 0
+
+    # Exercise the clipping rule explicitly even though the formal matrix keeps
+    # this representative sequence inside the canvas.
+    assert _clip_bbox(
+        {"x_min": -3, "x_max": 5, "y_min": -2, "y_max": 7}, 320, 240
+    ) == (0, 6, 0, 8)
+
+    frame_id = next(
+        frame["frame_id"]
+        for frame in ground_truth["frames"]
+        if any(object_truth["visible"] for object_truth in frame["objects"])
+    )
+    frame_truth = next(frame for frame in ground_truth["frames"] if frame["frame_id"] == frame_id)
+    frame_path = condition_dir / "frames" / f"frame_{frame_id:04d}.png"
+    with Image.open(frame_path) as image:
+        assert image.mode == "L"
+        assert image.size == (320, 240)
+        pixels = np.asarray(image)
+    assert pixels.dtype == np.uint8
+
+    width, height = pixels.shape[1], pixels.shape[0]
+    expected_background = sequence["background_gray"] + sequence["brightness_offset"]
+    expected_foreground = sequence["foreground_gray"] + sequence["brightness_offset"]
+    noise_sigma = sequence["noise_sigma"]
+    occupied = np.zeros((height, width), dtype=bool)
+    for object_truth in frame_truth["objects"]:
+        if not object_truth["visible"]:
+            continue
+        x_min, x_max, y_min, y_max = _clip_bbox(object_truth, width, height)
+        assert x_max > x_min and y_max > y_min
+        region = pixels[y_min:y_max, x_min:x_max]
+        occupied[y_min:y_max, x_min:x_max] = True
+        robust_foreground_floor = expected_foreground - max(3.0, 3.0 * noise_sigma)
+        assert float(np.median(region)) >= robust_foreground_floor
+        assert np.mean(region >= expected_background + 20.0) >= 0.75
+
+    background_values = pixels[~occupied]
+    assert background_values.size > 0
+    robust_background_tolerance = max(3.0, 3.0 * noise_sigma)
+    assert abs(float(np.median(background_values)) - expected_background) <= robust_background_tolerance
+
+
 def test_same_spec_is_byte_for_byte_reproducible(tmp_path):
     first = tmp_path / "first"
     second = tmp_path / "second"
@@ -132,15 +292,18 @@ def test_projection_overlap_without_2d_contact_is_asserted_for_all_frames(tmp_pa
     with (condition_dir / "ground_truth.json").open(encoding="utf-8") as handle:
         ground_truth = json.load(handle)
 
-    saw_valid_projection_overlap = False
+    valid_frame_count = 0
     for frame in ground_truth["frames"]:
         visible = [item for item in frame["objects"] if item["visible"]]
+        x_overlap_pairs = []
         for left_index, left in enumerate(visible):
             for right in visible[left_index + 1 :]:
                 x_overlaps = left["x_min"] <= right["x_max"] and right["x_min"] <= left["x_max"]
                 y_overlaps = left["y_min"] <= right["y_max"] and right["y_min"] <= left["y_max"]
                 bbox_intersects = x_overlaps and y_overlaps
                 if x_overlaps:
-                    saw_valid_projection_overlap = True
+                    x_overlap_pairs.append((left, right))
                     assert not bbox_intersects
-    assert saw_valid_projection_overlap
+        assert x_overlap_pairs
+        valid_frame_count += 1
+    assert valid_frame_count == len(ground_truth["frames"])

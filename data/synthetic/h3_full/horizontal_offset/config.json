@@ -3,6 +3,7 @@
   "category": "special",
   "condition_id": "horizontal_offset",
   "dataset_id": "h3_matrix",
+  "dropped_frame_ids": [],
   "id": "horizontal_offset",
   "noise_sigma": 0.8,
   "schema_version": 1,

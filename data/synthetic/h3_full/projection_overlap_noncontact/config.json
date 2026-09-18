@@ -3,6 +3,7 @@
   "category": "special",
   "condition_id": "projection_overlap_noncontact",
   "dataset_id": "h3_matrix",
+  "dropped_frame_ids": [],
   "id": "projection_overlap_noncontact",
   "noise_sigma": 0.0,
   "schema_version": 1,

@@ -3,6 +3,10 @@
   "category": "backbone",
   "condition_id": "backbone_nominal_large_02",
   "dataset_id": "h3_matrix",
+  "dropped_frame_ids": [
+    8,
+    21
+  ],
   "id": "backbone_nominal_large_02",
   "noise_sigma": 1.6,
   "schema_version": 1,

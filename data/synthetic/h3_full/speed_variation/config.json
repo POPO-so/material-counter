@@ -3,6 +3,7 @@
   "category": "special",
   "condition_id": "speed_variation",
   "dataset_id": "h3_matrix",
+  "dropped_frame_ids": [],
   "id": "speed_variation",
   "noise_sigma": 1.2,
   "schema_version": 1,

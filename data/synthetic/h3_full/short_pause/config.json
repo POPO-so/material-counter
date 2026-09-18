@@ -3,6 +3,9 @@
   "category": "special",
   "condition_id": "short_pause",
   "dataset_id": "h3_matrix",
+  "dropped_frame_ids": [
+    11
+  ],
   "id": "short_pause",
   "noise_sigma": 0.8,
   "schema_version": 1,

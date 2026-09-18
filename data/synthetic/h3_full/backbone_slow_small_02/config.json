@@ -3,6 +3,10 @@
   "category": "backbone",
   "condition_id": "backbone_slow_small_02",
   "dataset_id": "h3_matrix",
+  "dropped_frame_ids": [
+    5,
+    18
+  ],
   "id": "backbone_slow_small_02",
   "noise_sigma": 0.8,
   "schema_version": 1,

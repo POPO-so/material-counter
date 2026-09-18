@@ -3,6 +3,7 @@
   "category": "special",
   "condition_id": "single_column_normal_spacing",
   "dataset_id": "h3_matrix",
+  "dropped_frame_ids": [],
   "id": "single_column_normal_spacing",
   "noise_sigma": 0.0,
   "schema_version": 1,

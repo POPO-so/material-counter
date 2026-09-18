@@ -1,4 +1,10 @@
-"""CLI for deterministic H3 synthetic sequences with frame-level ground truth."""
+"""CLI for deterministic H3 synthetic sequences with frame-level ground truth.
+
+Cross-validation contract: each sequence ``config.json`` is the fault
+injection specification, ``frames/*.png`` is the observed dataset, and
+``ground_truth.json`` is the reference truth, including ``visible=false``
+records for intentionally dropped frames.
+"""
 
 import argparse
 import json
@@ -126,6 +132,8 @@ def _write_sequence(
     sequence_seed: int,
     dataset_id: str,
 ) -> dict[str, Any]:
+    """Write one sequence while preserving the config/PNG/GT contract."""
+
     sequence_id = "sequence_000"
     sequence_dir = output_dir / scene.condition_id
     frames_dir = sequence_dir / "frames"
@@ -171,6 +179,7 @@ def _write_sequence(
         "spacing_px": effective["spacing_px"],
         "noise_sigma": effective["noise_sigma"],
         "brightness_offset": effective["brightness_offset"],
+        "dropped_frame_ids": dropped_frame_ids,
         "sequences": [sequence_config],
     }
     ground_truth = {
@@ -218,6 +227,7 @@ def generate_dataset(spec_path: Path, output_dir: Path) -> dict[str, Any]:
             "spacing_px": sequence_config["spacing_px"],
             "noise_sigma": sequence_config["noise_sigma"],
             "brightness_offset": sequence_config["brightness_offset"],
+            "dropped_frame_ids": sequence_config["dropped_frame_ids"],
             "sequences": [sequence_config],
         }
         condition_configs.append(condition_config)
