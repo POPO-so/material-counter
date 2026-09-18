@@ -1,0 +1,3478 @@
+{
+  "background_gray": 24,
+  "brightness_offset": 0.0,
+  "canvas": {
+    "height": 240,
+    "width": 320
+  },
+  "conditions": [
+    {
+      "brightness_offset": 0.0,
+      "category": "backbone",
+      "condition_id": "backbone_slow_small_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_slow_small_01",
+      "noise_sigma": 0.0,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "backbone",
+          "condition_id": "backbone_slow_small_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.0,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 16.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 24.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 32.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 40.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 48.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 56.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 72.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 80.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 88.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 104.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 112.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 128.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 136.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 144.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 152.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 160.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260918,
+          "sequence_id": "sequence_000",
+          "spacing_px": 8.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 0.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 8.0,
+      "speed_px_per_frame": 0.5
+    },
+    {
+      "brightness_offset": 2.0,
+      "category": "backbone",
+      "condition_id": "backbone_slow_small_02",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_slow_small_02",
+      "noise_sigma": 0.8,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 2.0,
+          "category": "backbone",
+          "condition_id": "backbone_slow_small_02",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            5,
+            18
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.8,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 16.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 24.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 32.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 40.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 48.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 56.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 72.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 80.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 88.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 104.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 112.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 128.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 136.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 144.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 152.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 160.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            5,
+            18
+          ],
+          "seed": 20260919,
+          "sequence_id": "sequence_000",
+          "spacing_px": 8.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 0.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 8.0,
+      "speed_px_per_frame": 0.5
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "backbone",
+      "condition_id": "backbone_slow_medium_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_slow_medium_01",
+      "noise_sigma": 0.8,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "backbone",
+          "condition_id": "backbone_slow_medium_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.8,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 19.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 30.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 41.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 52.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 63.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 74.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 85.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 107.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 118.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 129.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 140.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 151.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 173.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 184.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 195.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 206.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 217.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260920,
+          "sequence_id": "sequence_000",
+          "spacing_px": 11.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 0.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 11.0,
+      "speed_px_per_frame": 0.5
+    },
+    {
+      "brightness_offset": -2.0,
+      "category": "backbone",
+      "condition_id": "backbone_slow_medium_02",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_slow_medium_02",
+      "noise_sigma": 1.2,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": -2.0,
+          "category": "backbone",
+          "condition_id": "backbone_slow_medium_02",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            7,
+            20
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 1.2,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 19.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 30.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 41.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 52.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 63.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 74.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 85.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 107.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 118.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 129.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 140.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 151.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 173.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 184.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 195.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 206.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 217.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            7,
+            20
+          ],
+          "seed": 20260921,
+          "sequence_id": "sequence_000",
+          "spacing_px": 11.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 0.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 11.0,
+      "speed_px_per_frame": 0.5
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "backbone",
+      "condition_id": "backbone_slow_large_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_slow_large_01",
+      "noise_sigma": 0.0,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "backbone",
+          "condition_id": "backbone_slow_large_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.0,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260922,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 0.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 0.5
+    },
+    {
+      "brightness_offset": 1.0,
+      "category": "backbone",
+      "condition_id": "backbone_slow_large_02",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_slow_large_02",
+      "noise_sigma": 1.2,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 1.0,
+          "category": "backbone",
+          "condition_id": "backbone_slow_large_02",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            3,
+            16
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 1.2,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            3,
+            16
+          ],
+          "seed": 20260923,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 0.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 0.5
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "backbone",
+      "condition_id": "backbone_nominal_small_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_nominal_small_01",
+      "noise_sigma": 0.8,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "backbone",
+          "condition_id": "backbone_nominal_small_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.8,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 16.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 24.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 32.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 40.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 48.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 56.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 72.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 80.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 88.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 104.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 112.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 128.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 136.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 144.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 152.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 160.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260924,
+          "sequence_id": "sequence_000",
+          "spacing_px": 8.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 8.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": 2.0,
+      "category": "backbone",
+      "condition_id": "backbone_nominal_small_02",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_nominal_small_02",
+      "noise_sigma": 1.6,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 2.0,
+          "category": "backbone",
+          "condition_id": "backbone_nominal_small_02",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            6,
+            19
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 1.6,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 16.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 24.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 32.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 40.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 48.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 56.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 72.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 80.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 88.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 104.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 112.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 128.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 136.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 144.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 152.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 160.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            6,
+            19
+          ],
+          "seed": 20260925,
+          "sequence_id": "sequence_000",
+          "spacing_px": 8.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 8.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": -1.0,
+      "category": "backbone",
+      "condition_id": "backbone_nominal_medium_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_nominal_medium_01",
+      "noise_sigma": 1.2,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": -1.0,
+          "category": "backbone",
+          "condition_id": "backbone_nominal_medium_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 1.2,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 19.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 30.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 41.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 52.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 63.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 74.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 85.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 107.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 118.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 129.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 140.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 151.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 173.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 184.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 195.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 206.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 217.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260926,
+          "sequence_id": "sequence_000",
+          "spacing_px": 11.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 11.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": 1.0,
+      "category": "backbone",
+      "condition_id": "backbone_nominal_medium_02",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_nominal_medium_02",
+      "noise_sigma": 2.0,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 1.0,
+          "category": "backbone",
+          "condition_id": "backbone_nominal_medium_02",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            4,
+            17
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 2.0,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 19.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 30.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 41.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 52.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 63.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 74.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 85.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 107.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 118.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 129.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 140.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 151.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 173.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 184.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 195.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 206.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 217.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            4,
+            17
+          ],
+          "seed": 20260927,
+          "sequence_id": "sequence_000",
+          "spacing_px": 11.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 11.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "backbone",
+      "condition_id": "backbone_nominal_large_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_nominal_large_01",
+      "noise_sigma": 0.8,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "backbone",
+          "condition_id": "backbone_nominal_large_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.8,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260928,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": -2.0,
+      "category": "backbone",
+      "condition_id": "backbone_nominal_large_02",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_nominal_large_02",
+      "noise_sigma": 1.6,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": -2.0,
+          "category": "backbone",
+          "condition_id": "backbone_nominal_large_02",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            8,
+            21
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 1.6,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            8,
+            21
+          ],
+          "seed": 20260929,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "backbone",
+      "condition_id": "backbone_fast_small_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_fast_small_01",
+      "noise_sigma": 1.2,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "backbone",
+          "condition_id": "backbone_fast_small_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 1.2,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 16.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 24.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 32.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 40.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 48.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 56.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 72.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 80.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 88.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 104.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 112.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 128.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 136.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 144.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 152.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 160.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260930,
+          "sequence_id": "sequence_000",
+          "spacing_px": 8.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 8.0,
+      "speed_px_per_frame": 1.5
+    },
+    {
+      "brightness_offset": 1.0,
+      "category": "backbone",
+      "condition_id": "backbone_fast_medium_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_fast_medium_01",
+      "noise_sigma": 2.0,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 1.0,
+          "category": "backbone",
+          "condition_id": "backbone_fast_medium_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            5,
+            18
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 2.0,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 19.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 30.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 41.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 52.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 63.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 74.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 85.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 96.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 107.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 118.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 129.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 140.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 151.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 173.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 184.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 195.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 206.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 217.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            5,
+            18
+          ],
+          "seed": 20260931,
+          "sequence_id": "sequence_000",
+          "spacing_px": 11.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 11.0,
+      "speed_px_per_frame": 1.5
+    },
+    {
+      "brightness_offset": -1.0,
+      "category": "backbone",
+      "condition_id": "backbone_fast_large_01",
+      "dataset_id": "h3_matrix",
+      "id": "backbone_fast_large_01",
+      "noise_sigma": 2.4,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": -1.0,
+          "category": "backbone",
+          "condition_id": "backbone_fast_large_01",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            9,
+            22
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 2.4,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            9,
+            22
+          ],
+          "seed": 20260932,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.5,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 1.5
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "special",
+      "condition_id": "single_column_normal_spacing",
+      "dataset_id": "h3_matrix",
+      "id": "single_column_normal_spacing",
+      "noise_sigma": 0.0,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "special",
+          "condition_id": "single_column_normal_spacing",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.0,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260933,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "special",
+      "condition_id": "small_spacing",
+      "dataset_id": "h3_matrix",
+      "id": "small_spacing",
+      "noise_sigma": 1.2,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "special",
+          "condition_id": "small_spacing",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 1.2,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 14.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 20.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 26.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 32.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 38.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 44.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 56.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 62.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 68.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 74.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 80.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 86.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 98.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 104.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 110.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 116.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 122.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260934,
+          "sequence_id": "sequence_000",
+          "spacing_px": 6.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 6.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": 1.0,
+      "category": "special",
+      "condition_id": "horizontal_offset",
+      "dataset_id": "h3_matrix",
+      "id": "horizontal_offset",
+      "noise_sigma": 0.8,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 1.0,
+          "category": "special",
+          "condition_id": "horizontal_offset",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.8,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              84.0,
+              156.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 156.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 84.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 156.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260935,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "special",
+      "condition_id": "projection_overlap_noncontact",
+      "dataset_id": "h3_matrix",
+      "id": "projection_overlap_noncontact",
+      "noise_sigma": 0.0,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "special",
+          "condition_id": "projection_overlap_noncontact",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.0,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              60.0,
+              180.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 14.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 20.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 26.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 32.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 38.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 44.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 50.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 56.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 62.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 68.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 74.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 80.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 86.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 92.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 98.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 104.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 110.0,
+              "start_y": 180.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 116.0,
+              "start_y": 60.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 122.0,
+              "start_y": 180.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260936,
+          "sequence_id": "sequence_000",
+          "spacing_px": 6.0,
+          "speed_profile": [],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 6.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": -1.0,
+      "category": "special",
+      "condition_id": "speed_variation",
+      "dataset_id": "h3_matrix",
+      "id": "speed_variation",
+      "noise_sigma": 1.2,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": -1.0,
+          "category": "special",
+          "condition_id": "speed_variation",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 1.2,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [],
+          "seed": 20260937,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [
+            {
+              "speed_px_per_frame": 0.5,
+              "start_frame": 0
+            },
+            {
+              "speed_px_per_frame": 1.5,
+              "start_frame": 8
+            },
+            {
+              "speed_px_per_frame": 0.75,
+              "start_frame": 16
+            }
+          ],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 1.0
+    },
+    {
+      "brightness_offset": 0.0,
+      "category": "special",
+      "condition_id": "short_pause",
+      "dataset_id": "h3_matrix",
+      "id": "short_pause",
+      "noise_sigma": 0.8,
+      "schema_version": 1,
+      "sequences": [
+        {
+          "background_gray": 24,
+          "brightness_offset": 0.0,
+          "category": "special",
+          "condition_id": "short_pause",
+          "drop_frame_probability": 0.0,
+          "dropped_frame_ids": [
+            11
+          ],
+          "foreground_gray": 220,
+          "fps": 30,
+          "ground_truth_fields": [
+            "frame_id",
+            "object_id",
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max",
+            "centroid_x",
+            "centroid_y",
+            "speed_px_per_frame",
+            "visible"
+          ],
+          "height": 240,
+          "image_dtype": "uint8",
+          "image_format": "PNG",
+          "image_mode": "L",
+          "noise_sigma": 0.8,
+          "num_frames": 24,
+          "object_height": 14,
+          "object_pattern": {
+            "count": 20,
+            "start_x": 8.0,
+            "y_cycle": [
+              112.0
+            ]
+          },
+          "object_width": 8,
+          "objects": [
+            {
+              "object_id": 0,
+              "start_x": 8.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 1,
+              "start_x": 22.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 2,
+              "start_x": 36.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 3,
+              "start_x": 50.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 4,
+              "start_x": 64.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 5,
+              "start_x": 78.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 6,
+              "start_x": 92.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 7,
+              "start_x": 106.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 8,
+              "start_x": 120.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 9,
+              "start_x": 134.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 10,
+              "start_x": 148.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 11,
+              "start_x": 162.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 12,
+              "start_x": 176.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 13,
+              "start_x": 190.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 14,
+              "start_x": 204.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 15,
+              "start_x": 218.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 16,
+              "start_x": 232.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 17,
+              "start_x": 246.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 18,
+              "start_x": 260.0,
+              "start_y": 112.0
+            },
+            {
+              "object_id": 19,
+              "start_x": 274.0,
+              "start_y": 112.0
+            }
+          ],
+          "physical_object_count": 20,
+          "requested_drop_frame_ids": [
+            11
+          ],
+          "seed": 20260938,
+          "sequence_id": "sequence_000",
+          "spacing_px": 14.0,
+          "speed_profile": [
+            {
+              "speed_px_per_frame": 1.0,
+              "start_frame": 0
+            },
+            {
+              "speed_px_per_frame": 0.0,
+              "start_frame": 9
+            },
+            {
+              "speed_px_per_frame": 1.0,
+              "start_frame": 13
+            }
+          ],
+          "speed_px_per_frame": 1.0,
+          "width": 320
+        }
+      ],
+      "spacing_px": 14.0,
+      "speed_px_per_frame": 1.0
+    }
+  ],
+  "dataset_id": "h3_matrix",
+  "drop_frame_probability": 0.0,
+  "foreground_gray": 220,
+  "fps": 30,
+  "generator": "synth.generate",
+  "ground_truth_fields": [
+    "frame_id",
+    "object_id",
+    "x_min",
+    "x_max",
+    "y_min",
+    "y_max",
+    "centroid_x",
+    "centroid_y",
+    "speed_px_per_frame",
+    "visible"
+  ],
+  "image_dtype": "uint8",
+  "image_format": "PNG",
+  "image_mode": "L",
+  "noise_sigma": 0.0,
+  "num_frames": 24,
+  "object_height": 14,
+  "object_width": 8,
+  "schema_version": 1,
+  "seed": 20260918,
+  "spec_file": "h3_matrix.json",
+  "speed_px_per_frame": 1.0
+}

@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "dataset_id": "h3_matrix",
+  "seed": 20260918,
+  "canvas": {
+    "width": 320,
+    "height": 240
+  },
+  "fps": 30,
+  "num_frames": 24,
+  "speed_px_per_frame": 1.0,
+  "background_gray": 24,
+  "foreground_gray": 220,
+  "object_width": 8,
+  "object_height": 14,
+  "noise_sigma": 0.0,
+  "brightness_offset": 0.0,
+  "drop_frame_probability": 0.0,
+  "object_pattern": {
+    "count": 20,
+    "start_x": 8,
+    "start_y": 112,
+    "y_cycle": [112]
+  },
+  "conditions": [
+    {
+      "id": "backbone_slow_small_01",
+      "category": "backbone",
+      "speed_px_per_frame": 0.5,
+      "spacing_px": 8,
+      "noise_sigma": 0.0,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "backbone_slow_small_02",
+      "category": "backbone",
+      "speed_px_per_frame": 0.5,
+      "spacing_px": 8,
+      "noise_sigma": 0.8,
+      "brightness_offset": 2.0,
+      "drop_frame_ids": [5, 18]
+    },
+    {
+      "id": "backbone_slow_medium_01",
+      "category": "backbone",
+      "speed_px_per_frame": 0.5,
+      "spacing_px": 11,
+      "noise_sigma": 0.8,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "backbone_slow_medium_02",
+      "category": "backbone",
+      "speed_px_per_frame": 0.5,
+      "spacing_px": 11,
+      "noise_sigma": 1.2,
+      "brightness_offset": -2.0,
+      "drop_frame_ids": [7, 20]
+    },
+    {
+      "id": "backbone_slow_large_01",
+      "category": "backbone",
+      "speed_px_per_frame": 0.5,
+      "spacing_px": 14,
+      "noise_sigma": 0.0,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "backbone_slow_large_02",
+      "category": "backbone",
+      "speed_px_per_frame": 0.5,
+      "spacing_px": 14,
+      "noise_sigma": 1.2,
+      "brightness_offset": 1.0,
+      "drop_frame_ids": [3, 16]
+    },
+    {
+      "id": "backbone_nominal_small_01",
+      "category": "backbone",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 8,
+      "noise_sigma": 0.8,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "backbone_nominal_small_02",
+      "category": "backbone",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 8,
+      "noise_sigma": 1.6,
+      "brightness_offset": 2.0,
+      "drop_frame_ids": [6, 19]
+    },
+    {
+      "id": "backbone_nominal_medium_01",
+      "category": "backbone",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 11,
+      "noise_sigma": 1.2,
+      "brightness_offset": -1.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "backbone_nominal_medium_02",
+      "category": "backbone",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 11,
+      "noise_sigma": 2.0,
+      "brightness_offset": 1.0,
+      "drop_frame_ids": [4, 17]
+    },
+    {
+      "id": "backbone_nominal_large_01",
+      "category": "backbone",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 14,
+      "noise_sigma": 0.8,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "backbone_nominal_large_02",
+      "category": "backbone",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 14,
+      "noise_sigma": 1.6,
+      "brightness_offset": -2.0,
+      "drop_frame_ids": [8, 21]
+    },
+    {
+      "id": "backbone_fast_small_01",
+      "category": "backbone",
+      "speed_px_per_frame": 1.5,
+      "spacing_px": 8,
+      "noise_sigma": 1.2,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "backbone_fast_medium_01",
+      "category": "backbone",
+      "speed_px_per_frame": 1.5,
+      "spacing_px": 11,
+      "noise_sigma": 2.0,
+      "brightness_offset": 1.0,
+      "drop_frame_ids": [5, 18]
+    },
+    {
+      "id": "backbone_fast_large_01",
+      "category": "backbone",
+      "speed_px_per_frame": 1.5,
+      "spacing_px": 14,
+      "noise_sigma": 2.4,
+      "brightness_offset": -1.0,
+      "drop_frame_ids": [9, 22]
+    },
+    {
+      "id": "single_column_normal_spacing",
+      "category": "special",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 14,
+      "noise_sigma": 0.0,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "small_spacing",
+      "category": "special",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 6,
+      "noise_sigma": 1.2,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "horizontal_offset",
+      "category": "special",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 14,
+      "y_cycle": [84, 156],
+      "noise_sigma": 0.8,
+      "brightness_offset": 1.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "projection_overlap_noncontact",
+      "category": "special",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 6,
+      "y_cycle": [60, 180],
+      "noise_sigma": 0.0,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "speed_variation",
+      "category": "special",
+      "spacing_px": 14,
+      "speed_profile": [
+        {"start_frame": 0, "speed_px_per_frame": 0.5},
+        {"start_frame": 8, "speed_px_per_frame": 1.5},
+        {"start_frame": 16, "speed_px_per_frame": 0.75}
+      ],
+      "noise_sigma": 1.2,
+      "brightness_offset": -1.0,
+      "drop_frame_ids": []
+    },
+    {
+      "id": "short_pause",
+      "category": "special",
+      "speed_px_per_frame": 1.0,
+      "spacing_px": 14,
+      "speed_profile": [
+        {"start_frame": 0, "speed_px_per_frame": 1.0},
+        {"start_frame": 9, "speed_px_per_frame": 0.0},
+        {"start_frame": 13, "speed_px_per_frame": 1.0}
+      ],
+      "noise_sigma": 0.8,
+      "brightness_offset": 0.0,
+      "drop_frame_ids": [11]
+    }
+  ]
+}

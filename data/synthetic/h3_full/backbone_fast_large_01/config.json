@@ -1,0 +1,166 @@
+{
+  "brightness_offset": -1.0,
+  "category": "backbone",
+  "condition_id": "backbone_fast_large_01",
+  "dataset_id": "h3_matrix",
+  "id": "backbone_fast_large_01",
+  "noise_sigma": 2.4,
+  "schema_version": 1,
+  "sequences": [
+    {
+      "background_gray": 24,
+      "brightness_offset": -1.0,
+      "category": "backbone",
+      "condition_id": "backbone_fast_large_01",
+      "drop_frame_probability": 0.0,
+      "dropped_frame_ids": [
+        9,
+        22
+      ],
+      "foreground_gray": 220,
+      "fps": 30,
+      "ground_truth_fields": [
+        "frame_id",
+        "object_id",
+        "x_min",
+        "x_max",
+        "y_min",
+        "y_max",
+        "centroid_x",
+        "centroid_y",
+        "speed_px_per_frame",
+        "visible"
+      ],
+      "height": 240,
+      "image_dtype": "uint8",
+      "image_format": "PNG",
+      "image_mode": "L",
+      "noise_sigma": 2.4,
+      "num_frames": 24,
+      "object_height": 14,
+      "object_pattern": {
+        "count": 20,
+        "start_x": 8.0,
+        "y_cycle": [
+          112.0
+        ]
+      },
+      "object_width": 8,
+      "objects": [
+        {
+          "object_id": 0,
+          "start_x": 8.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 1,
+          "start_x": 22.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 2,
+          "start_x": 36.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 3,
+          "start_x": 50.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 4,
+          "start_x": 64.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 5,
+          "start_x": 78.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 6,
+          "start_x": 92.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 7,
+          "start_x": 106.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 8,
+          "start_x": 120.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 9,
+          "start_x": 134.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 10,
+          "start_x": 148.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 11,
+          "start_x": 162.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 12,
+          "start_x": 176.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 13,
+          "start_x": 190.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 14,
+          "start_x": 204.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 15,
+          "start_x": 218.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 16,
+          "start_x": 232.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 17,
+          "start_x": 246.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 18,
+          "start_x": 260.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 19,
+          "start_x": 274.0,
+          "start_y": 112.0
+        }
+      ],
+      "physical_object_count": 20,
+      "requested_drop_frame_ids": [
+        9,
+        22
+      ],
+      "seed": 20260932,
+      "sequence_id": "sequence_000",
+      "spacing_px": 14.0,
+      "speed_profile": [],
+      "speed_px_per_frame": 1.5,
+      "width": 320
+    }
+  ],
+  "spacing_px": 14.0,
+  "speed_px_per_frame": 1.5
+}

@@ -1,0 +1,160 @@
+{
+  "brightness_offset": 0.0,
+  "category": "special",
+  "condition_id": "small_spacing",
+  "dataset_id": "h3_matrix",
+  "id": "small_spacing",
+  "noise_sigma": 1.2,
+  "schema_version": 1,
+  "sequences": [
+    {
+      "background_gray": 24,
+      "brightness_offset": 0.0,
+      "category": "special",
+      "condition_id": "small_spacing",
+      "drop_frame_probability": 0.0,
+      "dropped_frame_ids": [],
+      "foreground_gray": 220,
+      "fps": 30,
+      "ground_truth_fields": [
+        "frame_id",
+        "object_id",
+        "x_min",
+        "x_max",
+        "y_min",
+        "y_max",
+        "centroid_x",
+        "centroid_y",
+        "speed_px_per_frame",
+        "visible"
+      ],
+      "height": 240,
+      "image_dtype": "uint8",
+      "image_format": "PNG",
+      "image_mode": "L",
+      "noise_sigma": 1.2,
+      "num_frames": 24,
+      "object_height": 14,
+      "object_pattern": {
+        "count": 20,
+        "start_x": 8.0,
+        "y_cycle": [
+          112.0
+        ]
+      },
+      "object_width": 8,
+      "objects": [
+        {
+          "object_id": 0,
+          "start_x": 8.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 1,
+          "start_x": 14.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 2,
+          "start_x": 20.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 3,
+          "start_x": 26.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 4,
+          "start_x": 32.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 5,
+          "start_x": 38.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 6,
+          "start_x": 44.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 7,
+          "start_x": 50.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 8,
+          "start_x": 56.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 9,
+          "start_x": 62.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 10,
+          "start_x": 68.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 11,
+          "start_x": 74.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 12,
+          "start_x": 80.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 13,
+          "start_x": 86.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 14,
+          "start_x": 92.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 15,
+          "start_x": 98.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 16,
+          "start_x": 104.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 17,
+          "start_x": 110.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 18,
+          "start_x": 116.0,
+          "start_y": 112.0
+        },
+        {
+          "object_id": 19,
+          "start_x": 122.0,
+          "start_y": 112.0
+        }
+      ],
+      "physical_object_count": 20,
+      "requested_drop_frame_ids": [],
+      "seed": 20260934,
+      "sequence_id": "sequence_000",
+      "spacing_px": 6.0,
+      "speed_profile": [],
+      "speed_px_per_frame": 1.0,
+      "width": 320
+    }
+  ],
+  "spacing_px": 6.0,
+  "speed_px_per_frame": 1.0
+}

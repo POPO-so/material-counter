@@ -35,7 +35,7 @@ htmlcov/
 *.avi
 *.mov
 # 大体积合成的数据可重生成，不入库（保留生成脚本与 config.json）
-data/synthetic/*/frames/
+data/synthetic/**/frames/
 data/recorded/
 
 # ===== 实验产物例外 =====
