@@ -2,10 +2,10 @@
 
 | 项 | 内容 |
 |---|---|
-| **状态** | `OPEN` —— 待 Codex 执行 |
+| **状态** | `FINAL ACCEPTED` —— 已独立验收通过（见文末 Acceptance Record） |
 | **发起** | Claude（Planning / Review Agent） |
 | **执行** | Codex（Implementation Agent） |
-| **前置** | WO-0001 `FUNCTIONALLY ACCEPTED`（commit `d9a281e`，独立验收通过） |
+| **前置** | WO-0001 `FUNCTIONALLY ACCEPTED`（实现 commit `d9a281e`，独立验收通过）<br>⚠ 注：WO-0001 工单文件本体在 Day 0 仓库回退中丢失，从未进入任何 commit。WO-0001 的决策与验收标准见 commit `d9a281e` 与本文档的引用。 |
 | **性质** | **Metadata + regression-test hardening only.** 不重新开放 WO-0001，不扩大 scope。 |
 
 ---
@@ -168,3 +168,41 @@ git status --short
 由 **Claude 独立复跑验收**，**不直接采信汇报**。
 
 通过后：**WO-0001 + WO-0001a = FINAL ACCEPTED**，synthetic generator 进入**冻结状态**。除非后续实验发现真实 blocker，否则不再继续优化。
+
+---
+
+## Acceptance Record
+
+| 项 | 值 |
+|---|---|
+| **独立验收** | **PASS** —— 由 Claude 重新从文件系统推导，未采信 Codex 汇报 |
+| **最终 implementation commit** | `a44ded8`（documentation closeout commit 见其后） |
+| **synthetic generator 状态** | **FROZEN** |
+| tests | **7 passed** |
+| sequences | 21 |
+| physical objects | 420 |
+| resolution | 320×240 |
+| frames（PNG） | 487 |
+| dropped-frame sequences | 9（另 12 条 `dropped_frame_ids == []`） |
+| R2 | **24/24 有效帧**通过（每帧含 x 投影重叠对，且所有相关 pair 均二维不相交） |
+| protected docs diff | **0** |
+| generated PNG tracked | **0** |
+
+### 验收方法与反 self-verification 说明
+
+- `dropped_frame_ids` 的交叉验证中，实际帧号由**重新扫描 `frames/*.png` 文件名**推导，未读取 generator 内部状态
+- ground-truth ↔ 像素一致性由**独立判据**验证（越界 bbox 裁剪 + 中位数鲁棒统计 + `brightness_offset` 取模），未调用任何 generator 渲染代码
+- 测试文件 import 清单确认不含 generator 内部模块
+
+### 复现命令
+
+```bash
+cd C:/fpga/material-counter/python
+.venv/Scripts/python.exe -m pytest synth/tests/ -v
+cd .. && git diff --stat -- MASTER_PLAN.md docs/00_scope.md docs/02_interfaces.md docs/07_routes.md
+git ls-files | grep -c "\.png$"
+```
+
+### 遗留事实
+
+`docs/work-orders/wo-0001-h3-generator-fix.md` **在本仓库中不存在** —— 它从未进入任何 commit，随 Day 0 回退被删除。本记录是 WO-0001 验收结果的唯一留存位置。相关佐证另见 `docs/ai_collaboration_log.md` 案例 A/B/C。
