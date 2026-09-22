@@ -1,7 +1,7 @@
 # 02 · 接口契约（唯一真理）
 
 > **★ 本文件是唯一真理。任何接口变更必须走 PR + 三人确认 + 一次 ADR。**
-> 来源：MASTER_PLAN.md v1.1 §2.4。冻结于 Day 0，**三人签字后生效**。
+> 来源：MASTER_PLAN.md v1.1 §2.4 及当前 Controlled Errata。冻结于 Day 0，**三人签字后生效**。
 
 ## 状态
 
@@ -78,6 +78,26 @@
 | `LINE_X` | 计数线所在列（供 overlay 绘制；**判定在 PS 做**） |
 | `ROI_*` | 处理窗口 |
 | `STATUS` | 帧计数、溢出标志、当前状态 |
+
+---
+
+## 接口 D · 编码器带速（Planned，尚未实现）
+
+编码器用于获取**单条可调速主输送带的实际运行速度**，作为 PS 侧运动状态和后续送料控制的正式速度输入。当前仓库尚未包含编码器硬件、PL 计数器、驱动或标定实现，因此以下是接口预留，不是已完成接口。
+
+目标数据路径：
+
+```text
+encoder pulse/count input → PL/PS capture and counter → calibration → encoder_speed → PS tracking/counting/control
+```
+
+| 逻辑字段/信号 | 当前状态 | 说明 |
+|---|---|---|
+| `encoder_speed` | **Planned** | 标定后的实际带速；单位、缩放和位宽待编码器型号与采样周期确定 |
+| `encoder_valid` | **Planned** | 当前速度样本是否有效；失效行为待硬件接口确定 |
+| `encoder_timestamp` | **Planned** | 速度样本对应的时间基准；不得与现有 `frame_id` 或 `timestamp` 混用 |
+
+这些字段暂不加入接口 B 的特征记录固定布局，以免在实现证据不足时改动已冻结的 PL→PS 记录契约。视觉位移速度可以作为诊断或预测量，但不能冒充已实现的编码器实际带速。
 
 ---
 

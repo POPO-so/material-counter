@@ -1,5 +1,7 @@
 # WO-0002 · PYNQ-Z2 Video Input Feasibility & Pin Budget Verification
 
+> **Historical work order notice**：本文记录的是 WO-0002 当时的执行范围和证据状态，原始任务边界保持不变。当前作品正式名称与机械/测速基线由后续 Controlled Errata 和当前 ADR 规定；本文中“不得修改项目名称 / MASTER_PLAN”的限制仅适用于当时工单，不应覆盖后续正式变更。本文的 HDMI/DVP 可行性结论仍保持原样。
+
 | 项 | 内容 |
 |---|---|
 | **状态** | `OPEN` —— 待 Codex 执行 |
