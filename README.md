@@ -1,5 +1,7 @@
 # material-counter
 
+Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
+
 **《高速小型物料智能视觉计数系统》**——面向全国大学生嵌入式芯片与系统设计竞赛 2026 FPGA 创新设计赛道（AMD 自主选题初级组）。
 
 平台：PYNQ-Z2（Zynq-7000 / XC7Z020）。开发环境：Vivado / Vitis / Vitis HLS 2026.1、Windows、VS Code。
@@ -104,8 +106,8 @@ data/        数据集与实验证据（synthetic / recorded / labeled / results
 
 ## 角色
 
-- **Claude** —— Planning / Review Agent：读 MASTER_PLAN、拆任务、查架构一致性、给 Codex 定义任务与验收标准、review 结果、报 blocker
-- **Codex** —— Implementation Agent：创建/修改仓库文件、写代码与测试、执行命令、运行验证、报告实际结果
+- **Codex Manager**：确定任务范围与架构边界、处理歧义和风险，审查实际修改与验证结果，负责最终验收。
+- **Codex Worker**：在明确的任务和文件边界内完成定向检索、实现或验证；发现范围或设计问题时升级给 Manager，并简要报告修改、测试和遗留问题。
 
 ## 运行现有合成数据测试
 
