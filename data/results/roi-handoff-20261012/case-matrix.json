@@ -1,0 +1,271 @@
+{
+  "valid_simulation_runs": 24,
+  "configured_cases": [
+    {
+      "name": "small-full",
+      "profile": "coordinate",
+      "frame": [
+        6,
+        4
+      ],
+      "roi": [
+        0,
+        0,
+        6,
+        4
+      ],
+      "runs": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "small-center",
+      "profile": "coordinate",
+      "frame": [
+        6,
+        4
+      ],
+      "roi": [
+        2,
+        1,
+        5,
+        3
+      ],
+      "runs": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "small-bottom-right-pixel",
+      "profile": "coordinate",
+      "frame": [
+        6,
+        4
+      ],
+      "roi": [
+        5,
+        3,
+        6,
+        4
+      ],
+      "runs": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "small-empty-width",
+      "profile": "coordinate",
+      "frame": [
+        6,
+        4
+      ],
+      "roi": [
+        3,
+        1,
+        3,
+        3
+      ],
+      "runs": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "small-empty-height",
+      "profile": "coordinate",
+      "frame": [
+        6,
+        4
+      ],
+      "roi": [
+        2,
+        2,
+        4,
+        2
+      ],
+      "runs": [
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "one-by-one-full",
+      "profile": "coordinate",
+      "frame": [
+        1,
+        1
+      ],
+      "roi": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "runs": [
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "power-two-full",
+      "profile": "coordinate",
+      "frame": [
+        2,
+        2
+      ],
+      "roi": [
+        0,
+        0,
+        2,
+        2
+      ],
+      "runs": [
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "h3-full",
+      "profile": "h3",
+      "frame": [
+        320,
+        240
+      ],
+      "roi": [
+        0,
+        0,
+        320,
+        240
+      ],
+      "runs": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "h3-center",
+      "profile": "h3",
+      "frame": [
+        320,
+        240
+      ],
+      "roi": [
+        80,
+        60,
+        240,
+        180
+      ],
+      "runs": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "h3-left-border-column",
+      "profile": "h3",
+      "frame": [
+        320,
+        240
+      ],
+      "roi": [
+        0,
+        0,
+        1,
+        240
+      ],
+      "runs": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    }
+  ],
+  "invalid_parameter_cases": [
+    "zero-frame-width",
+    "zero-frame-height",
+    "negative-x0",
+    "negative-y0",
+    "reverse-x",
+    "reverse-y",
+    "x1-past-frame",
+    "y1-past-frame"
+  ]
+}

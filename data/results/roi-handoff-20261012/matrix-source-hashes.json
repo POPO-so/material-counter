@@ -1,0 +1,9 @@
+{
+  "fpga\\rtl\\axis_roi_crop.v": "1711f05b7be03f9dd5458f4a9d713ad79c75867af0bf9136caf762ce2bad9fa0",
+  "fpga\\rtl\\axis_rgb2gray.v": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+  "fpga\\rtl\\axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+  "fpga\\sim\\tb_axis_roi_crop.sv": "24a4dbd80ce49421861de4ecf1b002f88ff9e333966864da5dc646332482e43f",
+  "python\\refmodel\\roi_crop_vectors.py": "3f586cc61453c4a5f3b5f95dfb164ceee54930aed9a261368d38207e0567efda",
+  "python\\refmodel\\check_roi_crop_output.py": "c602753930a5e72d108852a643379b1eeb01d9c7d4a1dfd530e69d9c156c74b9",
+  "fpga\\scripts\\run_roi_crop_mcp.py": "d8453913065c425beb5f7efe4b298d4921000ee0ce94ae9fb9a772d58e97a323"
+}

@@ -1,0 +1,974 @@
+[
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 80,
+      "y0": 60,
+      "x1": 240,
+      "y1": 180,
+      "width": 160,
+      "height": 120
+    },
+    "chain": 0,
+    "mode": 0,
+    "threshold": null,
+    "beats": 76800,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-center\\chain0-mode0\\output_roi.hex",
+    "output_sha256": "75ce8a32c4152b4e09c54e14c62f7b12819eb2e434452c12896140eefbbd7588"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 80,
+      "y0": 60,
+      "x1": 240,
+      "y1": 180,
+      "width": 160,
+      "height": 120
+    },
+    "chain": 0,
+    "mode": 1,
+    "threshold": null,
+    "beats": 76800,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-center\\chain0-mode1\\output_roi.hex",
+    "output_sha256": "75ce8a32c4152b4e09c54e14c62f7b12819eb2e434452c12896140eefbbd7588"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 80,
+      "y0": 60,
+      "x1": 240,
+      "y1": 180,
+      "width": 160,
+      "height": 120
+    },
+    "chain": 1,
+    "mode": 0,
+    "threshold": 128,
+    "beats": 76800,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-center\\chain1-mode0\\output_roi.hex",
+    "output_sha256": "cb52f78d3eeb426d3c63a07950dc1a60a3eb7a11a170b4727bb3b33e599b247b"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 80,
+      "y0": 60,
+      "x1": 240,
+      "y1": 180,
+      "width": 160,
+      "height": 120
+    },
+    "chain": 1,
+    "mode": 1,
+    "threshold": 128,
+    "beats": 76800,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-center\\chain1-mode1\\output_roi.hex",
+    "output_sha256": "cb52f78d3eeb426d3c63a07950dc1a60a3eb7a11a170b4727bb3b33e599b247b"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 320,
+      "y1": 240,
+      "width": 320,
+      "height": 240
+    },
+    "chain": 0,
+    "mode": 0,
+    "threshold": null,
+    "beats": 307200,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-full\\chain0-mode0\\output_roi.hex",
+    "output_sha256": "3599acebede1dea4794a5aa53bbc47e5b58cc76617cbadb707b8a9c20b48d996"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 320,
+      "y1": 240,
+      "width": 320,
+      "height": 240
+    },
+    "chain": 0,
+    "mode": 1,
+    "threshold": null,
+    "beats": 307200,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-full\\chain0-mode1\\output_roi.hex",
+    "output_sha256": "3599acebede1dea4794a5aa53bbc47e5b58cc76617cbadb707b8a9c20b48d996"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 320,
+      "y1": 240,
+      "width": 320,
+      "height": 240
+    },
+    "chain": 1,
+    "mode": 0,
+    "threshold": 128,
+    "beats": 307200,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-full\\chain1-mode0\\output_roi.hex",
+    "output_sha256": "2fa99e7eb73bca42f1415ba4f9c97d905edae0645c3a868a0f7aea4a2f530255"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 320,
+      "y1": 240,
+      "width": 320,
+      "height": 240
+    },
+    "chain": 1,
+    "mode": 1,
+    "threshold": 128,
+    "beats": 307200,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-full\\chain1-mode1\\output_roi.hex",
+    "output_sha256": "2fa99e7eb73bca42f1415ba4f9c97d905edae0645c3a868a0f7aea4a2f530255"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 1,
+      "y1": 240,
+      "width": 1,
+      "height": 240
+    },
+    "chain": 0,
+    "mode": 0,
+    "threshold": null,
+    "beats": 960,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-left-border-column\\chain0-mode0\\output_roi.hex",
+    "output_sha256": "364743ba6c510adf31c4277f2dded13b731fdc92017b0df1f86f9557b5a2a6a6"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 1,
+      "y1": 240,
+      "width": 1,
+      "height": 240
+    },
+    "chain": 0,
+    "mode": 1,
+    "threshold": null,
+    "beats": 960,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-left-border-column\\chain0-mode1\\output_roi.hex",
+    "output_sha256": "364743ba6c510adf31c4277f2dded13b731fdc92017b0df1f86f9557b5a2a6a6"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 1,
+      "y1": 240,
+      "width": 1,
+      "height": 240
+    },
+    "chain": 1,
+    "mode": 0,
+    "threshold": 128,
+    "beats": 960,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-left-border-column\\chain1-mode0\\output_roi.hex",
+    "output_sha256": "3cea7954a65ef2454baba0fce7d966c3daeeb6db952793748e69f26283b3ed36"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "h3",
+    "frame_dimensions": [
+      320,
+      240
+    ],
+    "frame_count": 4,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 1,
+      "y1": 240,
+      "width": 1,
+      "height": 240
+    },
+    "chain": 1,
+    "mode": 1,
+    "threshold": 128,
+    "beats": 960,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 307200,
+    "source_checks": {
+      "h3_frames": [
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+          "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+          "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd",
+          "pixels": 76800,
+          "source_match": true
+        },
+        {
+          "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+          "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39",
+          "pixels": 76800,
+          "source_match": true
+        }
+      ],
+      "coordinate_frames": 0,
+      "random_color_frame": true
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\h3-left-border-column\\chain1-mode1\\output_roi.hex",
+    "output_sha256": "3cea7954a65ef2454baba0fce7d966c3daeeb6db952793748e69f26283b3ed36"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      1,
+      1
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 1,
+      "y1": 1,
+      "width": 1,
+      "height": 1
+    },
+    "chain": 0,
+    "mode": 0,
+    "threshold": null,
+    "beats": 3,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 3,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\one-by-one-full\\chain0-mode0\\output_roi.hex",
+    "output_sha256": "63a5cf1c9419dbadef7c576253ef4fc27587d5a4be395e7d9a12914dd6d0d95f"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      2,
+      2
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 2,
+      "y1": 2,
+      "width": 2,
+      "height": 2
+    },
+    "chain": 0,
+    "mode": 0,
+    "threshold": null,
+    "beats": 12,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 12,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\power-two-full\\chain0-mode0\\output_roi.hex",
+    "output_sha256": "89b7082ce93aee24d25544f1b7a9ec168e5addff9b4ea67a48807d914bb6f8d9"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 5,
+      "y0": 3,
+      "x1": 6,
+      "y1": 4,
+      "width": 1,
+      "height": 1
+    },
+    "chain": 0,
+    "mode": 0,
+    "threshold": null,
+    "beats": 3,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-bottom-right-pixel\\chain0-mode0\\output_roi.hex",
+    "output_sha256": "5c3474d75132ac9e03859b347a0d0f5c07acbe72eb05cce245aad4daf6f7b06b"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 5,
+      "y0": 3,
+      "x1": 6,
+      "y1": 4,
+      "width": 1,
+      "height": 1
+    },
+    "chain": 1,
+    "mode": 1,
+    "threshold": 128,
+    "beats": 3,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-bottom-right-pixel\\chain1-mode1\\output_roi.hex",
+    "output_sha256": "93359f32331c3dada6bd07cfece65354487db4b1b45a994c12e4e6dd1992f4ed"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 2,
+      "y0": 1,
+      "x1": 5,
+      "y1": 3,
+      "width": 3,
+      "height": 2
+    },
+    "chain": 0,
+    "mode": 1,
+    "threshold": null,
+    "beats": 18,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-center\\chain0-mode1\\output_roi.hex",
+    "output_sha256": "f7bdaec133d5d953e74fcdc066c128ba0cd1c0e0bee4d4fb4e6c7f51155098be"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 2,
+      "y0": 1,
+      "x1": 5,
+      "y1": 3,
+      "width": 3,
+      "height": 2
+    },
+    "chain": 1,
+    "mode": 0,
+    "threshold": 128,
+    "beats": 18,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-center\\chain1-mode0\\output_roi.hex",
+    "output_sha256": "2b04c49fdbe4351cfc2c6fec21d10e927301f89cd42e6a588d414990eacdf7f0"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 2,
+      "y0": 1,
+      "x1": 5,
+      "y1": 3,
+      "width": 3,
+      "height": 2
+    },
+    "chain": 1,
+    "mode": 1,
+    "threshold": 128,
+    "beats": 18,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-center\\chain1-mode1\\output_roi.hex",
+    "output_sha256": "2b04c49fdbe4351cfc2c6fec21d10e927301f89cd42e6a588d414990eacdf7f0"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 2,
+      "y0": 2,
+      "x1": 4,
+      "y1": 2,
+      "width": 2,
+      "height": 0
+    },
+    "chain": 0,
+    "mode": 1,
+    "threshold": null,
+    "beats": 0,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-empty-height\\chain0-mode1\\output_roi.hex",
+    "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 3,
+      "y0": 1,
+      "x1": 3,
+      "y1": 3,
+      "width": 0,
+      "height": 2
+    },
+    "chain": 0,
+    "mode": 0,
+    "threshold": null,
+    "beats": 0,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-empty-width\\chain0-mode0\\output_roi.hex",
+    "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 3,
+      "y0": 1,
+      "x1": 3,
+      "y1": 3,
+      "width": 0,
+      "height": 2
+    },
+    "chain": 1,
+    "mode": 1,
+    "threshold": 128,
+    "beats": 0,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-empty-width\\chain1-mode1\\output_roi.hex",
+    "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 6,
+      "y1": 4,
+      "width": 6,
+      "height": 4
+    },
+    "chain": 0,
+    "mode": 0,
+    "threshold": null,
+    "beats": 72,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-full\\chain0-mode0\\output_roi.hex",
+    "output_sha256": "7cc9468033948c698cac4f516ac038832d827ab6a5cd6646259576e313df3ce1"
+  },
+  {
+    "status": "PASS",
+    "source_profile": "coordinate",
+    "frame_dimensions": [
+      6,
+      4
+    ],
+    "frame_count": 3,
+    "roi": {
+      "x0": 0,
+      "y0": 0,
+      "x1": 6,
+      "y1": 4,
+      "width": 6,
+      "height": 4
+    },
+    "chain": 1,
+    "mode": 1,
+    "threshold": 128,
+    "beats": 72,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "input_beats": 72,
+    "source_checks": {
+      "h3_frames": [],
+      "coordinate_frames": 3,
+      "random_color_frame": false
+    },
+    "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184057\\runs\\small-full\\chain1-mode1\\output_roi.hex",
+    "output_sha256": "64e4504aced2b008d9af1b75ce52f3d5bdb60d5cc0f09d29e46195fa539f6e81"
+  }
+]

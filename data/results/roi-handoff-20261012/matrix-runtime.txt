@@ -1,0 +1,119 @@
+CASE h3-center CHAIN0 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=80,60,240,180 frame=320x240 chain=0 mode=0 in=307200 out=76800 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=76320 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 3843705 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-center CHAIN0 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=80,60,240,180 frame=320x240 chain=0 mode=1 in=307200 out=76800 stalls=38086 blocked=31938 bubbles=176183 longest_pause=50 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 5924915 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-center CHAIN1 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=80,60,240,180 frame=320x240 chain=1 mode=0 in=307200 out=76800 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=76320 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 3843785 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-center CHAIN1 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=80,60,240,180 frame=320x240 chain=1 mode=1 in=307200 out=76800 stalls=37246 blocked=22699 bubbles=176514 longest_pause=49 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 5835915 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-full CHAIN0 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=0,0,320,240 frame=320x240 chain=0 mode=0 in=307200 out=307200 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=306240 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 3072515 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-full CHAIN0 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=0,0,320,240 frame=320x240 chain=0 mode=1 in=307200 out=307200 stalls=152953 blocked=128039 bubbles=174430 longest_pause=49 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 6097205 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-full CHAIN1 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=0,0,320,240 frame=320x240 chain=1 mode=0 in=307200 out=307200 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=306240 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 3072615 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-full CHAIN1 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=0,0,320,240 frame=320x240 chain=1 mode=1 in=307200 out=307200 stalls=148120 blocked=90617 bubbles=175969 longest_pause=49 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 5738475 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-left-border-column CHAIN0 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=0,0,1,240 frame=320x240 chain=0 mode=0 in=307200 out=960 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 3072505 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-left-border-column CHAIN0 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=0,0,1,240 frame=320x240 chain=0 mode=1 in=307200 out=960 stalls=921 blocked=766 bubbles=177097 longest_pause=49 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 4851135 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-left-border-column CHAIN1 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=0,0,1,240 frame=320x240 chain=1 mode=0 in=307200 out=960 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 3072585 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE h3-left-border-column CHAIN1 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=0,0,1,240 frame=320x240 chain=1 mode=1 in=307200 out=960 stalls=846 blocked=517 bubbles=176916 longest_pause=49 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 4846915 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE one-by-one-full CHAIN0 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=0,0,1,1 frame=1x1 chain=0 mode=0 in=3 out=3 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 545 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE power-two-full CHAIN0 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=0,0,2,2 frame=2x2 chain=0 mode=0 in=12 out=12 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=6 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 635 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-bottom-right-pixel CHAIN0 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=5,3,6,4 frame=6x4 chain=0 mode=0 in=72 out=3 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 2155 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-bottom-right-pixel CHAIN1 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=5,3,6,4 frame=6x4 chain=1 mode=1 in=72 out=3 stalls=54 blocked=48 bubbles=59 longest_pause=49 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 3375 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-center CHAIN0 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=2,1,5,3 frame=6x4 chain=0 mode=1 in=72 out=18 stalls=53 blocked=53 bubbles=32 longest_pause=49 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 2395 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-center CHAIN1 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=2,1,5,3 frame=6x4 chain=1 mode=0 in=72 out=18 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=12 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 1625 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-center CHAIN1 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=2,1,5,3 frame=6x4 chain=1 mode=1 in=72 out=18 stalls=51 blocked=49 bubbles=37 longest_pause=49 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 2485 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-empty-height CHAIN0 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=2,2,4,2 frame=6x4 chain=0 mode=1 in=72 out=0 stalls=0 blocked=0 bubbles=34 longest_pause=0 throughput_pairs=0 reset_midframe=1 reset_flush=0 pre_sof_ignored=1 resync_pending=0
+$finish called at time : 1715 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-empty-width CHAIN0 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=3,1,3,3 frame=6x4 chain=0 mode=0 in=72 out=0 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=0 reset_midframe=1 reset_flush=0 pre_sof_ignored=1 resync_pending=0
+$finish called at time : 1375 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-empty-width CHAIN1 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=3,1,3,3 frame=6x4 chain=1 mode=1 in=72 out=0 stalls=0 blocked=0 bubbles=36 longest_pause=0 throughput_pairs=0 reset_midframe=1 reset_flush=0 pre_sof_ignored=1 resync_pending=0
+$finish called at time : 1735 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-full CHAIN0 MODE0
+Time resolution is 1 ps
+TEST_PASS roi=0,0,6,4 frame=6x4 chain=0 mode=0 in=72 out=72 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=60 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 1235 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542
+
+CASE small-full CHAIN1 MODE1
+Time resolution is 1 ps
+TEST_PASS roi=0,0,6,4 frame=6x4 chain=1 mode=1 in=72 out=72 stalls=94 blocked=77 bubbles=46 longest_pause=50 throughput_pairs=0 reset_midframe=1 reset_flush=1 pre_sof_ignored=1 resync_pending=1
+$finish called at time : 2585 ns : File "C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/sim/tb_axis_roi_crop.sv" Line 542

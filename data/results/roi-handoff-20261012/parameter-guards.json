@@ -1,0 +1,42 @@
+[
+  {
+    "case": "parameter-negative-x0-logs",
+    "runtime": "Time resolution is 1 ps\nFatal: ROI parameter contract invalid: frame=6x4 window=[-1,2)x[0,2)\nTime: 0 ps  Iteration: 0  Process: /axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_X0=-1,ROI_X1=2,ROI_Y1=2)/Initial37_0  Scope: axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_X0=-1,ROI_X1=2,ROI_Y1=2)  File: C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/rtl/axis_roi_crop.v Line: 37\n$finish called at time : 0 fs\n",
+    "original_sha256": "ce4ed7cb719245ec6488a84e5ac76452c3d928b36022801bf744044c15bfbbec"
+  },
+  {
+    "case": "parameter-negative-y0-logs",
+    "runtime": "Time resolution is 1 ps\nFatal: ROI parameter contract invalid: frame=6x4 window=[0,2)x[-1,2)\nTime: 0 ps  Iteration: 0  Process: /axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_Y0=-1,ROI_X1=2,ROI_Y1=2)/Initial37_0  Scope: axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_Y0=-1,ROI_X1=2,ROI_Y1=2)  File: C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/rtl/axis_roi_crop.v Line: 37\n$finish called at time : 0 fs\n",
+    "original_sha256": "43dd7b23571dae2556332af80f699a19774eceeb6357ac057492a698d156554c"
+  },
+  {
+    "case": "parameter-reverse-x-logs",
+    "runtime": "Time resolution is 1 ps\nFatal: ROI parameter contract invalid: frame=6x4 window=[3,2)x[0,2)\nTime: 0 ps  Iteration: 0  Process: /axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_X0=3,ROI_X1=2,ROI_Y1=2)/Initial37_0  Scope: axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_X0=3,ROI_X1=2,ROI_Y1=2)  File: C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/rtl/axis_roi_crop.v Line: 37\n$finish called at time : 0 fs\n",
+    "original_sha256": "37e06e1ebcda9d6084ce7d3a184c6b8bdfa24ee856ed0442bacede23e965e603"
+  },
+  {
+    "case": "parameter-reverse-y-logs",
+    "runtime": "Time resolution is 1 ps\nFatal: ROI parameter contract invalid: frame=6x4 window=[0,2)x[3,2)\nTime: 0 ps  Iteration: 0  Process: /axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_Y0=3,ROI_X1=2,ROI_Y1=2)/Initial37_0  Scope: axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_Y0=3,ROI_X1=2,ROI_Y1=2)  File: C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/rtl/axis_roi_crop.v Line: 37\n$finish called at time : 0 fs\n",
+    "original_sha256": "dd94c804320876004475537c3ce9c58837156573ab6127075b401ab92fc795b2"
+  },
+  {
+    "case": "parameter-x1-past-frame-logs",
+    "runtime": "Time resolution is 1 ps\nFatal: ROI parameter contract invalid: frame=6x4 window=[0,7)x[0,2)\nTime: 0 ps  Iteration: 0  Process: /axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_X1=7,ROI_Y1=2)/Initial37_0  Scope: axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_X1=7,ROI_Y1=2)  File: C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/rtl/axis_roi_crop.v Line: 37\n$finish called at time : 0 fs\n",
+    "original_sha256": "d875f04214f98247da15242d4daa258bb5fe73ee1d4d14e57e5942b8a4de73f5"
+  },
+  {
+    "case": "parameter-y1-past-frame-logs",
+    "runtime": "Time resolution is 1 ps\nFatal: ROI parameter contract invalid: frame=6x4 window=[0,2)x[0,5)\nTime: 0 ps  Iteration: 0  Process: /axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_X1=2,ROI_Y1=5)/Initial37_0  Scope: axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=4,ROI_X1=2,ROI_Y1=5)  File: C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/rtl/axis_roi_crop.v Line: 37\n$finish called at time : 0 fs\n",
+    "original_sha256": "4507e2ca35fd9ce74a56454615adee629ed96bef7167aa9816287ab8056fe8e6"
+  },
+  {
+    "case": "parameter-zero-frame-height-logs",
+    "runtime": "Time resolution is 1 ps\nFatal: ROI parameter contract invalid: frame=6x0 window=[0,6)x[0,0)\nTime: 0 ps  Iteration: 0  Process: /axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=0,ROI_X1=6,ROI_Y1=0)/Initial37_0  Scope: axis_roi_crop(FRAME_WIDTH=6,FRAME_HEIGHT=0,ROI_X1=6,ROI_Y1=0)  File: C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/rtl/axis_roi_crop.v Line: 37\n$finish called at time : 0 fs\n",
+    "original_sha256": "bf4555c82bccb6979eaa009bbb474f978c050660b275787d498174276333a41c"
+  },
+  {
+    "case": "parameter-zero-frame-width-logs",
+    "runtime": "Time resolution is 1 ps\nFatal: ROI parameter contract invalid: frame=0x4 window=[0,0)x[0,4)\nTime: 0 ps  Iteration: 0  Process: /axis_roi_crop(FRAME_WIDTH=0,FRAME_HEIGHT=4,ROI_X1=0,ROI_Y1=4)/Initial37_0  Scope: axis_roi_crop(FRAME_WIDTH=0,FRAME_HEIGHT=4,ROI_X1=0,ROI_Y1=4)  File: C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/fpga/rtl/axis_roi_crop.v Line: 37\n$finish called at time : 0 fs\n",
+    "original_sha256": "dc8d08a3e6d9aaa74dab20097d056cfa022957f6e68c680bf20d0face829f08c"
+  }
+]

@@ -1,0 +1,585 @@
+[
+  {
+    "phase": "roi-crop-20261012-184057",
+    "original_sha256": "4fe895f93d01652b843063d82fca8b50daecbda75e753df8d3c87babeecb168b",
+    "counts": {
+      "vivado_start": 1,
+      "vivado_todos": 5,
+      "vivado_execute": 100,
+      "vivado_stop": 1
+    },
+    "commands": [
+      {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-full_C0_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 15,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-full_C1_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 18,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-center_C0_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 21,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-center_C1_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 24,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-center_C1_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 27,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-bottom-right-pixel_C0_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 30,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-bottom-right-pixel_C1_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 33,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-empty-width_C0_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 36,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-empty-width_C1_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 39,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-empty-height_C0_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 42,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_one-by-one-full_C0_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 45,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_power-two-full_C0_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 48,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-full_C0_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 51,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-full_C0_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 54,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-full_C1_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 57,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-full_C1_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 60,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-center_C0_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 63,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-center_C0_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 66,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-center_C1_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 69,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-center_C1_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 72,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-left-border-column_C0_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 75,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-left-border-column_C0_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 78,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-left-border-column_C1_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 81,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_h3-left-border-column_C1_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 84,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_PARAM_zero-frame-width}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 87,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_PARAM_zero-frame-height}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 90,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_PARAM_negative-x0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 93,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_PARAM_negative-y0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 96,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_PARAM_reverse-x}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 99,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_PARAM_reverse-y}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 102,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_PARAM_x1-past-frame}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 105,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184058-027c0265",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_PARAM_y1-past-frame}",
+            "verbosity": "full"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "phase": "roi-crop-20261012-184645",
+    "original_sha256": "49422748df56f65f14fa33d34213d029b64c373c54d642dd07c3d0b69c2a58e9",
+    "counts": {
+      "vivado_start": 1,
+      "vivado_todos": 5,
+      "vivado_execute": 5,
+      "vivado_stop": 1
+    },
+    "commands": [
+      {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184645-33f67a08",
+            "command": "synth_design -top axis_roi_crop -part xc7z020clg400-1 -lint -file {C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/data/results/roi-crop-20261012-184645/lint.rpt}",
+            "verbosity": "full"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "phase": "roi-crop-20261012-184736",
+    "original_sha256": "c38529b6c37f0241124c416b6cdb39b8a31a5672557dd7e59f6da065e60bdbf3",
+    "counts": {
+      "vivado_start": 1,
+      "vivado_todos": 5,
+      "vivado_execute": 7,
+      "vivado_log_messages": 1,
+      "vivado_stop": 1
+    },
+    "commands": [
+      {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184737-3ef8ba70",
+            "command": "synth_design -top axis_roi_crop -part xc7z020clg400-1 -mode out_of_context -generic {FRAME_WIDTH=320 FRAME_HEIGHT=240 ROI_X0=80 ROI_Y0=60 ROI_X1=240 ROI_Y1=180}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184737-3ef8ba70",
+            "command": "report_utilization -file {C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/data/results/roi-crop-20261012-184736/utilization.rpt}; report_timing_summary -file {C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/data/results/roi-crop-20261012-184736/timing-summary.rpt}",
+            "verbosity": "full"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "phase": "roi-crop-20261012-184847",
+    "original_sha256": "0f6abb7aae7ac3315322c2965aead0cda5a5836fd4d1554bc6064dfb8b98c50a",
+    "counts": {
+      "vivado_start": 1,
+      "vivado_todos": 9,
+      "vivado_execute": 18,
+      "vivado_log_messages": 1,
+      "vivado_stop": 1
+    },
+    "commands": [
+      {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184848-b34c10fb",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-center_C0_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 15,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184848-b34c10fb",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-center_C1_M0}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 18,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184848-b34c10fb",
+            "command": "launch_simulation -simset sim_1 -mode behavioral; puts {ROI_CROP_small-center_C1_M1}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 23,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184848-b34c10fb",
+            "command": "synth_design -top axis_roi_crop -part xc7z020clg400-1 -lint -file {C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/data/results/roi-crop-20261012-184847/lint.rpt}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 27,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184848-b34c10fb",
+            "command": "synth_design -top axis_roi_crop -part xc7z020clg400-1 -mode out_of_context -generic {FRAME_WIDTH=320 FRAME_HEIGHT=240 ROI_X0=80 ROI_Y0=60 ROI_X1=240 ROI_Y1=180}",
+            "verbosity": "full"
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "id": 29,
+        "method": "tools/call",
+        "params": {
+          "name": "vivado_execute",
+          "arguments": {
+            "session_id": "vivado-20261012-184848-b34c10fb",
+            "command": "report_utilization -file {C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/data/results/roi-crop-20261012-184847/utilization.rpt}; report_timing_summary -file {C:/Users/POP/.codex/worktrees/wo-0008-roi/material-counter/data/results/roi-crop-20261012-184847/timing-summary.rpt}",
+            "verbosity": "full"
+          }
+        }
+      }
+    ]
+  }
+]
