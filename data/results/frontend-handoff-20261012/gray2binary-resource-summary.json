@@ -1,0 +1,12 @@
+{
+  "top": "axis_gray2binary",
+  "threshold_parameter": 128,
+  "part": "xc7z020clg400-1",
+  "resources": {
+    "lut": 5,
+    "ff": 4,
+    "dsp": 0,
+    "bram_tiles": 0
+  },
+  "timing_constraint": "10ns clock only; no I/O delays"
+}

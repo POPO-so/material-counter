@@ -1,0 +1,362 @@
+[
+  {
+    "threshold": 0,
+    "chain": 0,
+    "mode": 0,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "fec03db6841640e8124235f8cd71e0724afa6832b925754e4d66d21632b37737",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain0-mode0-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain0-mode0-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain0-mode0-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 0,
+    "chain": 0,
+    "mode": 1,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "fec03db6841640e8124235f8cd71e0724afa6832b925754e4d66d21632b37737",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain0-mode1-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain0-mode1-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain0-mode1-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 0,
+    "chain": 1,
+    "mode": 0,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "fec03db6841640e8124235f8cd71e0724afa6832b925754e4d66d21632b37737",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain1-mode0-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain1-mode0-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain1-mode0-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 0,
+    "chain": 1,
+    "mode": 1,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "fec03db6841640e8124235f8cd71e0724afa6832b925754e4d66d21632b37737",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain1-mode1-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain1-mode1-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th0-chain1-mode1-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 128,
+    "chain": 0,
+    "mode": 0,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "dee2dd891494ec2334caeea166722af0ec973fc593de5cc9612fc3b18346c95f",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain0-mode0-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain0-mode0-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain0-mode0-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 128,
+    "chain": 0,
+    "mode": 1,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "dee2dd891494ec2334caeea166722af0ec973fc593de5cc9612fc3b18346c95f",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain0-mode1-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain0-mode1-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain0-mode1-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 128,
+    "chain": 1,
+    "mode": 0,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "dee2dd891494ec2334caeea166722af0ec973fc593de5cc9612fc3b18346c95f",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain1-mode0-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain1-mode0-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain1-mode0-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 128,
+    "chain": 1,
+    "mode": 1,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "dee2dd891494ec2334caeea166722af0ec973fc593de5cc9612fc3b18346c95f",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain1-mode1-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain1-mode1-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th128-chain1-mode1-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 255,
+    "chain": 0,
+    "mode": 0,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "d50010307015549f83241fa7aaeec1e2ff541369cfad5874a8f317042e2a9903",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain0-mode0-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain0-mode0-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain0-mode0-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 255,
+    "chain": 0,
+    "mode": 1,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "d50010307015549f83241fa7aaeec1e2ff541369cfad5874a8f317042e2a9903",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain0-mode1-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain0-mode1-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain0-mode1-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 255,
+    "chain": 1,
+    "mode": 0,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "d50010307015549f83241fa7aaeec1e2ff541369cfad5874a8f317042e2a9903",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain1-mode0-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain1-mode0-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain1-mode0-frame2.png"
+      }
+    ]
+  },
+  {
+    "threshold": 255,
+    "chain": 1,
+    "mode": 1,
+    "beats": 231168,
+    "data_mismatches": 0,
+    "sideband_mismatches": 0,
+    "h3_frames_reference_match": 3,
+    "output_sha256": "d50010307015549f83241fa7aaeec1e2ff541369cfad5874a8f317042e2a9903",
+    "frames": [
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain1-mode1-frame0.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain1-mode1-frame1.png"
+      },
+      {
+        "source": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "pixels": 76800,
+        "reference_match": true,
+        "output": "binary-th255-chain1-mode1-frame2.png"
+      }
+    ]
+  }
+]

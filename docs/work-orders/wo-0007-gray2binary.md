@@ -1,0 +1,198 @@
+# WO-0007 · Gray8 fixed-threshold Binary8
+
+## Implementation plan and contract
+
+Goal: independently verified, integrable AXI4-Stream Gray8 -> Binary8 stage.
+Architecture: one elastic output register, matching WO-0006 handshake and reset.
+Tech stack: Verilog, SystemVerilog/XSim, Python/Pillow, Vivado 2026.1 Ross MCP.
+
+Scope is this stage and its verification only. No governed interface, Route,
+global/project configuration, existing H3 rule, or unrelated RTL change.
+The fixed compile-time parameter does not implement the planned THRESH CSR.
+Existing checkout `feat/pl-stream-skeleton` contains untracked user work; retain it.
+Do not commit, stage or push automatically.
+
+1. Inspect AGENTS, PROJECT_INDEX, README, interface A and WO-0006 sources/evidence.
+   Snapshot preexisting files; rerun RGB baseline and canonical lint parser.
+2. Worker adds TB, Python vectors/checker and reproducible Ross runner in new files.
+   Manager verifies failing missing-module test, then adds independent RTL.
+3. Run threshold 0/128/255, direct and chained input, continuous/random-stalled
+   streams, H3 replay, reset flush, exact pixel and sideband comparisons.
+   Reject parameters -1/256; check equality boundary explicitly.
+4. Run standalone lint and OOC synthesis; inspect raw logs and resources.
+5. Review evidence and file hashes; report verified results and remaining limits.
+
+## New deliverables
+
+- `fpga/rtl/axis_gray2binary.v`
+- `fpga/sim/tb_axis_gray2binary.sv`
+- `python/refmodel/gray2binary_vectors.py`
+- `python/refmodel/check_gray2binary_output.py`
+- `fpga/scripts/run_gray2binary_mcp.py`
+- This Work Order; raw evidence under new `data/results/gray2binary-*` directories.
+
+## RTL interface
+
+`aclk`, synchronous active-low `aresetn`; `s_tdata[7:0]`, `s_tuser[0:0]`,
+`s_tlast`, `s_tvalid`, `s_tready`; corresponding `m_*` signals with 8-bit data.
+`TUSER[0]` is SOF, `TLAST` is EOL; markers are copied with the accepted pixel.
+Transfers count only on VALID && READY while reset is deasserted.
+
+Parameter integer `THRESHOLD=128`, legal range 0..255. Unsigned comparison:
+Gray >= THRESHOLD -> FF, otherwise 00. Threshold0 makes every pixel FF;
+threshold255 makes only Gray255 FF. Invalid parameters must terminate simulation.
+Empty register accepts input; full register accepts a replacement when its output
+is consumed: `s_tready = !m_tvalid || m_tready`. Data/sidebands/valid hold during
+output stalls. Unstalled latency is one clock, steady throughput one pixel/clock.
+Reset clears valid and drops a buffered beat. Payload while invalid is unspecified;
+upstream/downstream must ignore handshakes during reset, as in WO-0006.
+
+## Baseline evidence
+
+`data/results/gray2binary-baseline-20261012/` contains preexisting SHA256 snapshot,
+Git status, current native MCP Vivado/XSim log and canonical lint CSV.
+Current WO-0006 source hashes match its recorded source hashes. Replayed 230912
+beats with backpressure: TEST_PASS, output byte-for-byte equal to prior mode1.
+Source metadata README/PROJECT_INDEX still describes an older no-RTL state;
+actual files and fresh tests govern this work. Protected documents remain intact.
+
+Historical lint rerun: 2 WARNING, 0 ERROR/CRITICAL, no waivers.
+
+| Rule | Count | Fraction | Source | Assessment |
+|---|---:|---:|---|---|
+| ASSIGN-1 | 1 | 50% | axis_rgb2gray.v:27 | Width-based 18-bit estimate; bounded unsigned sum fits16 |
+| ASSIGN-6 | 1 | 50% | axis_rgb2gray.v:22 | Low8 bits intentionally unused for floor(sum/256) |
+
+`red_term<=19635`, `green_term<=38250`, `blue_term<=7395`, first partial
+sum<=57885, total<=65280. These are arithmetic bounds, corroborated by WO-0006
+tests; no overflow is possible for 8-bit inputs. Official ASSIGN-1/6 resolution
+guides were read; retained documented acceptance is preferable to unrelated edits.
+
+## Manager native MCP checks
+
+Session `vivado-20261012-133614-0817210c`, TCL mode, Vivado2026.1,
+part xc7z020clg400-1. Native calls: vivado_start, vivado_todos,
+vivado_execute for project setup/current baseline simulation/lint/new-module lint
+and synthesis; vivado_doc_search returned UG900 XSim/xelab command references.
+The temporary project, native Vivado command logs and generated simulation
+scripts are retained under `data/results/gray2binary-baseline-20261012/`.
+
+RED evidence: `red-missing-module/elaborate.log` explicitly contains
+VRFC10-2063, missing axis_gray2binary. This expected development-only failure
+preceded adding the RTL. An earlier close_design query found no open design,
+and a repeated launch was skipped by MCP duplicate protection; these are
+setup diagnostics, not the successful RED or functional acceptance evidence.
+Final setup was queried to confirm the intended TB before the RED launch.
+
+New module lint: 0 messages, no waivers. Full review, raw report and canonical
+CSV are in `vivado_agentic_ai_reports/rtl-lint/`. The official parser mistakenly
+parsed waiver prose after an empty Expanded table. Its raw output is retained;
+canonical empty CSV was generated by the unchanged official parser from its
+supported JSON format with rows=[], based on Vivado's explicit zero count.
+
+[Measured: gray2binary-baseline-20261012] standalone OOC synthesis, THRESHOLD128:
+5 LUT, 4 FF, 0 DSP, 0 BRAM, 0 latches. Repeated output bits optimize to one
+data FF, plus SOF/EOL/VALID FFs. 7 Synth8-7129 warnings refer to unused
+s_tdata[6:0]: unsigned Gray>=128 depends only on s_tdata[7]. This parameter
+optimization is expected, not an undriven input or functional omission.
+No synthesis ERROR or CRITICAL WARNING. These warnings are separate from lint.
+
+Clock-only 10ns timing report is retained. Six live input ports and twelve
+output ports lack delay constraints; HD.CLK_SRC is unset. No timing convergence,
+implementation, camera input, bitstream or board performance is claimed.
+
+## Acceptance record
+
+Manager verified final run `data/results/gray2binary-verify-20261012-worker-rerun2/`
+on2026-10-12. All-phase runner finished successfully and stopped its own session.
+Manager independently re-read all positive-test compile/elaboration/runtime logs,
+checked terminal labels and coverage counters, reran the Python checker against
+the actual dumps, and checked source hashes plus preexisting-file preservation.
+
+[Measured: gray2binary-verify-20261012-worker-rerun2]
+
+- 12/12 positive XSim runs: THRESHOLD0/128/255 × standalone/chained ×
+  continuous/random backpressure. Each231168 input/output beats, total2774016
+  compared pixels, 0 data mismatches, 0 SOF/EOL mismatches, exact counts/order.
+- Corpus: all256 Gray8 levels plus existing512 color vectors and three unchanged
+  H3 frames. All36 reconstructed frame comparisons match the direct PNG oracle.
+- Continuous mode: 0 stalls/blocked cycles/source bubbles; 231166 sustained
+  throughput pairs standalone, 231165 chained. These are simulator counters.
+- Random mode standalone:182711 stalls,175159 blocked cycles,56408 source bubbles;
+  chained:181412 output stalls,167351 blocked input cycles,55341 source bubbles,
+  174766 Gray-stage stalls. Longest output stall58 clocks in both configurations.
+- Every positive test verifies one reset flush and recovery. Chained tests prime
+  both registers before reset and assert both clear on the first reset edge.
+- THRESHOLD-1 and256 each trigger the RTL range assertion at time0, separately
+  recorded as expected failures. Boundaries0/127/128/129/255, equality and
+  threshold-1 are explicitly asserted in addition to full pixel comparisons.
+- Standalone lint0; official canonical CSV empty, raw parser anomaly retained.
+  OOC synthesis confirms5 LUT,4 FF,0 DSP,0 BRAM,0 latches. Seven expected unused
+  lower input-bit synthesis warnings, 0 synthesis ERROR/CRITICAL WARNING.
+- Existing H3 pytest7 passed in the current turn. All757 preexisting tracked and
+  selected untracked source/config/document files match their starting SHA256.
+  New files pass whitespace checks; git diff --check passes. No staging/commit/push.
+
+Ross automation uses the existing installed official server through real MCP
+stdio JSON-RPC and a fresh isolated state directory; this is not a Vivado batch
+replacement. Final transcript contains67 tool calls: vivado_start1,
+vivado_execute55, vivado_todos9, vivado_log_messages1, vivado_stop1.
+Raw arguments/responses: `mcp-transcript.jsonl`; tool schemas: `mcp-tools.json`;
+summary: `mcp-verification-summary.json`. Native Manager MCP baseline checks and
+AMD doc searches are additional calls, not included in this67.
+
+Key final evidence: `manager-verification.json`, `manager-python-check.log`,
+`pixel-comparison.json`, `source-hashes.json`, `resource-summary.json`,
+`lint-tool-result.json`, `lint-parsed.csv`, `lint-normalization.json`,
+`utilization.rpt`, `timing-summary.rpt`, per-case `sim-th*/` and `sim-invalid*/` logs.
+Development and abandoned diagnostic runs are not acceptance evidence.
+
+Reproduce from repository root using a new automatically named evidence directory:
+
+```powershell
+.\.venv\Scripts\python.exe fpga\scripts\run_gray2binary_mcp.py --phase all --rgb-vectors data\results\rgb2gray-vectors-20261012
+```
+
+Omitting --rgb-vectors regenerates the established RGB corpus with the unchanged
+WO-0006 generator before deriving binary vectors. The runner's --out must name a
+new directory. No configuration edit is required. --phase verify/lint/synth permit
+focused checks; --phase red is a development-only deliberate omitted-source test.
+
+Simulation and synthesis are completed. Full I/O timing constraints, implementation,
+bitstream, FPGA board operation and actual-material threshold calibration remain
+unverified. This package implements no CSR, tracking/counting, camera or Route freeze.
+
+Next suggested package: ROI. First specify crop versus mask, half-open bounds,
+output dimensions and whether SOF/EOL must be regenerated; then implement only
+that agreed scope with border/empty-window/reset/backpressure/chain tests.
+
+## Verification-development diagnostics
+
+The initial automated run `gray2binary-verify-20261012-worker` failed in xelab
+setup: manually supplied generic_top flags in more_options lost their equals
+signs in Vivado's option normalization, producing a spurious work.0 design unit.
+AMD documentation search and a native query confirmed fileset GENERIC support.
+The runner now uses `set_property generic {THRESHOLD=<n> CHAIN=<n>} [get_filesets sim_1]`
+and clears xsim.elaborate.xelab.more_options. Generated xelab command lines
+preserve the proper name=value form; runtime PASS labels check the actual values.
+
+The first rerun `gray2binary-verify-20261012-worker-rerun` passed standalone
+continuous/random and chained continuous tests but failed the chained random
+TB throughput monitor at1845ns. That monitor's single-stage premise could see
+previous external input/output handshakes while the intermediate Gray register
+was empty, permitting a legitimate next-cycle output bubble. Manager reviewed
+the two-stage timing and qualified previous sustained throughput by the
+intermediate Gray handshake for CHAIN. No DUT change was made for either issue.
+The final acceptance must use a complete subsequent run, not these partial runs.
+
+Simulator diagnostics, separate from RTL lint:
+
+- VRFC10-3532: global parameter overrides also reach Vivado's generated glbl
+  module, which has no THRESHOLD/CHAIN parameters. They are ignored for glbl;
+  runtime labels establish their application to the parameterized TB/DUT.
+- Wavedata42-489: the three vector memories exceed the default wave-window
+  display limit. Memory reads and scoreboard comparisons still operate on all
+  pixels; this warning concerns display, not missing test data.
+
+No severity downgrade, assertion-ignore flag or waiver is used. Expected
+invalid-parameter Fatal logs are kept separately from positive-test verdicts.

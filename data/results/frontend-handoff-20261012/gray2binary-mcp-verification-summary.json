@@ -1,0 +1,23 @@
+{
+  "mcp_tool_calls": {
+    "vivado_start": 1,
+    "vivado_todos": 9,
+    "vivado_execute": 55,
+    "vivado_log_messages": 1,
+    "vivado_stop": 1
+  },
+  "mcp_total_tool_calls": 67,
+  "lint_count": 0,
+  "resource_summary": {
+    "top": "axis_gray2binary",
+    "threshold_parameter": 128,
+    "part": "xc7z020clg400-1",
+    "resources": {
+      "lut": 5,
+      "ff": 4,
+      "dsp": 0,
+      "bram_tiles": 0
+    },
+    "timing_constraint": "10ns clock only; no I/O delays"
+  }
+}

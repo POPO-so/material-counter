@@ -1,0 +1,8 @@
+{
+  "fpga\\rtl\\axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+  "fpga\\rtl\\axis_rgb2gray.v": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+  "fpga\\sim\\tb_axis_gray2binary.sv": "d521298de340a79cb0a7e4a5cbefb6a6a1900ba36547a2c7360003baa017406a",
+  "python\\refmodel\\gray2binary_vectors.py": "c104e69dfba7cfb316693a69c12b36c713d3b48a37edab22954463ee7410837a",
+  "python\\refmodel\\check_gray2binary_output.py": "26578ec4690a86129a406161f15678f9ca2564d709dd0b2e0d541bcd0ed20b93",
+  "fpga\\scripts\\run_gray2binary_mcp.py": "0cff0322ebe697910507b6058cb7c4ea07b07c2d502bc7544e788d904be2a409"
+}

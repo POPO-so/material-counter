@@ -1,0 +1,37 @@
+{
+  "isolated_source_tree": "origin/main 4398f64 plus candidate.patch",
+  "same_host": true,
+  "python_environment": "existing local .venv, no new packages installed",
+  "tools": "existing Vivado2026.1 and official Ross MCP",
+  "h3_regeneration": "21 sequences; three required PNG SHA256 match original",
+  "binary_valid_runs": 12,
+  "binary_pixel_comparisons": 2774016,
+  "data_mismatches": 0,
+  "sideband_mismatches": 0,
+  "invalid_threshold_rejections": [
+    -1,
+    256
+  ],
+  "binary_lint_messages": 0,
+  "binary_resources": {
+    "lut": 5,
+    "ff": 4,
+    "dsp": 0,
+    "bram_tiles": 0
+  },
+  "existing_h3_pytest": "7 passed in23.14s",
+  "rgb_independent_replay": {
+    "runs": 2,
+    "pixels_per_run": 230912,
+    "mismatches": 0,
+    "lint_messages": 2,
+    "lut": 90,
+    "ff": 11
+  },
+  "board_test": false,
+  "timing_closure": false,
+  "raw_replay_evidence_local_only": {
+    "binary": "output/github-handoff-20261012/clone-preview/data/results/handoff-replay-20261012",
+    "rgb": "output/github-handoff-20261012/clone-preview/data/results/rgb2gray-verify-20261012-141821"
+  }
+}

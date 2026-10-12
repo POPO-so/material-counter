@@ -1,0 +1,3 @@
+Time resolution is 1 ps
+TEST_PASS threshold=0 chain=1 mode=0 in=231168 out=231168 stalls=0 blocked=0 bubbles=0 longest_pause=0 throughput_pairs=231165 gray_stalls=0 reset_flush=1
+$finish called at time : 2311815 ns : File "C:/fpga/material-counter/fpga/sim/tb_axis_gray2binary.sv" Line 254

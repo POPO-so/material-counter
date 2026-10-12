@@ -1,0 +1,56 @@
+{
+  "beats": 231168,
+  "direct_gray_beats": 256,
+  "directed_color_beats": 512,
+  "h3_frames": [
+    {
+      "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+      "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809"
+    },
+    {
+      "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+      "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd"
+    },
+    {
+      "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+      "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39"
+    }
+  ],
+  "gray_input": {
+    "path": "vectors_gray.hex",
+    "sha256": "280a28669a21896b8cb050930ab88e12b1159d799927e6004c17d7d29f363ec4"
+  },
+  "rgb_input": {
+    "path": "vectors_rgb2binary.hex",
+    "sha256": "90659b27313fa3df3f10fbe0852f034bea6f80612312a3150f9daf6459096059"
+  },
+  "thresholds": [
+    0,
+    128,
+    255
+  ],
+  "output_rule": "0xff if Gray >= THRESHOLD else 0x00",
+  "sideband_bits": "expected_binary[9]=SOF, expected_binary[8]=EOL",
+  "source_rgb_manifest_sha256": "9182d68cbcb49c5006655146701e067d6fa9c503bbdaa17cb6870e72a41a973e",
+  "source_rgb_manifest": {
+    "beats": 230912,
+    "directed_color_beats": 512,
+    "h3_frames": [
+      {
+        "path": "data\\synthetic\\h3_full\\backbone_slow_small_01\\frames\\frame_0000.png",
+        "sha256": "f34a251906cd1a7e8e0b231501cae8376bd584841b5bddf4354c0645b97b5809"
+      },
+      {
+        "path": "data\\synthetic\\h3_full\\backbone_nominal_medium_02\\frames\\frame_0000.png",
+        "sha256": "bc5224cfed7e9e853aebc1bfcb4841a324d6f4ff6ed09c338068590f7f804dbd"
+      },
+      {
+        "path": "data\\synthetic\\h3_full\\projection_overlap_noncontact\\frames\\frame_0000.png",
+        "sha256": "50a3155c5d2c0b5c22c08b27c781132405224145b50cea37577c5a0869a63d39"
+      }
+    ],
+    "formula": "(77*R+150*G+29*B)//256",
+    "channels": "R[23:16], G[15:8], B[7:0]",
+    "seed": 20261012
+  }
+}
