@@ -1,0 +1,3 @@
+Time resolution is 1 ps
+TEST_PASS in=230912 out=230912 stalls=87813 blocked=86187 bubbles=22765 reset_flush=1
+$finish called at time : 3398745 ns : File "C:/fpga/material-counter/fpga/sim/tb_axis_rgb2gray.sv" Line 173

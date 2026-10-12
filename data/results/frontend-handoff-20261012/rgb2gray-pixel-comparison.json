@@ -1,0 +1,16 @@
+[
+  {
+    "mode": 0,
+    "beats": 230912,
+    "mismatches": 0,
+    "h3_frames_equal": 3,
+    "output_sha256": "85a5ed725a05c63953d4f010f31981d401294702162ad8b0e395e51efc91fb99"
+  },
+  {
+    "mode": 1,
+    "beats": 230912,
+    "mismatches": 0,
+    "h3_frames_equal": 3,
+    "output_sha256": "85a5ed725a05c63953d4f010f31981d401294702162ad8b0e395e51efc91fb99"
+  }
+]

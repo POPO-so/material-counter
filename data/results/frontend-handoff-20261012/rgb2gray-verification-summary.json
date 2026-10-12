@@ -1,0 +1,11 @@
+{
+  "expid": "rgb2gray-verify-20261012-131451",
+  "mcp_tool_calls": {
+    "vivado_start": 1,
+    "vivado_execute": 17,
+    "vivado_log_messages": 1,
+    "vivado_stop": 1
+  },
+  "mcp_total_tool_calls": 20,
+  "responses": 22
+}
