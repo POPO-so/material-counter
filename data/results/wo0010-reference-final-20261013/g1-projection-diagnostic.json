@@ -1,0 +1,129 @@
+{
+  "scope": "G1 diagnostic only, not full Route-A implementation or freeze",
+  "sequence": "projection_overlap_noncontact",
+  "frames": [
+    {
+      "frame": 0,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 1,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 2,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 3,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 4,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 5,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 6,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 7,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 8,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 9,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 10,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 11,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 12,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 13,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 14,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 15,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 16,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 17,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 18,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 19,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 20,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 21,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 22,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    },
+    {
+      "frame": 23,
+      "regions_2d": 20,
+      "nonzero_projection_segments": 1
+    }
+  ],
+  "line160_qualified_truth": 0,
+  "line128_qualified_truth": 4,
+  "note": "Zero events at center line cannot validate route separation; x-projection segment coalescing needs eventful line and geometry metrics."
+}
