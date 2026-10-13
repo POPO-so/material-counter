@@ -18,7 +18,6 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "fpga" / "scripts"))
 from run_rgb2gray_mcp import Ross  # Reuse the existing, tested MCP stdio client.
 
-THRESHOLDS = (0, 128, 255)
 READY_MODES = (0, 1)
 CHAINS = (0, 1)
 
@@ -106,6 +105,17 @@ def main() -> None:
     if args.phase in ("verify", "all"):
         vectors = prepare_vectors(root, args.vectors, args.rgb_vectors)
         manifest = json.loads((vectors / "manifest.json").read_text(encoding="utf-8"))
+        # Replaying a saved corpus must retain its declared matrix. Freshly
+        # generated vectors include the additional multi-bit comparator cases.
+        thresholds = tuple(manifest["thresholds"])
+        if not thresholds or len(set(thresholds)) != len(thresholds) or any(
+                type(value) is not int or not 0 <= value <= 255 for value in thresholds):
+            raise ValueError("manifest thresholds must be unique integers in [0,255]")
+        for threshold in thresholds:
+            expected_path = vectors / f"threshold-{threshold}" / "expected_binary.hex"
+            if not expected_path.is_file():
+                raise FileNotFoundError(f"threshold golden missing: {expected_path}")
+        print(f"THRESHOLD_MATRIX={thresholds}", flush=True)
     else:
         manifest = None
 
@@ -297,7 +307,7 @@ def main() -> None:
             update_task("verify", "active")
             run_skeleton_baseline()
             add_binary_testbench()
-            for threshold in THRESHOLDS:
+            for threshold in thresholds:
                 expected_path = vectors / f"threshold-{threshold}" / "expected_binary.hex"
                 for chain in CHAINS:
                     for mode in READY_MODES:
@@ -312,7 +322,8 @@ def main() -> None:
                 str(REPO / "python" / "refmodel" / "check_gray2binary_output.py"),
                 "--vectors", str(vectors), "--run", str(root),
             ])
-            update_task("verify", "done", "12 XSim matrix runs and independent Python pixel/sideband checks completed")
+            matrix_runs = len(thresholds) * len(CHAINS) * len(READY_MODES)
+            update_task("verify", "done", f"{matrix_runs} XSim matrix runs and independent Python pixel/sideband checks completed")
 
         if args.phase in ("lint", "synth", "all"):
             isolate_binary_synthesis_design()

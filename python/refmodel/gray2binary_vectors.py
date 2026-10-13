@@ -4,7 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
-THRESHOLDS = (0, 128, 255)
+# Include multi-bit comparator cases; 0/128/255 alone simplify heavily in RTL.
+THRESHOLDS = (0, 73, 128, 200, 255)
 DIRECT_GRAY = tuple(range(256))
 
 
@@ -22,10 +23,12 @@ def binary(gray_value: int, threshold: int) -> int:
 
 
 def validate_threshold_contract() -> None:
-    """Pin the comparator meaning at 0/127/128/129/255 for edge parameters."""
+    """Pin the comparator meaning below, at and above selected thresholds."""
     expected = {
         0: {0: 0xFF, 127: 0xFF, 128: 0xFF, 129: 0xFF, 255: 0xFF},
+        73: {0: 0x00, 72: 0x00, 73: 0xFF, 74: 0xFF, 255: 0xFF},
         128: {0: 0x00, 127: 0x00, 128: 0xFF, 129: 0xFF, 255: 0xFF},
+        200: {0: 0x00, 199: 0x00, 200: 0xFF, 201: 0xFF, 255: 0xFF},
         255: {0: 0x00, 127: 0x00, 128: 0x00, 129: 0x00, 255: 0xFF},
     }
     for threshold, cases in expected.items():
