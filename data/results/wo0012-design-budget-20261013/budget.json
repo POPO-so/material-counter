@@ -1,0 +1,109 @@
+{
+  "classification": "DERIVED_STORAGE_AND_HYPOTHETICAL_SCHEDULING_NOT_SYNTHESIS_OR_MEASURED_TIMING",
+  "geometry": [
+    320,
+    240
+  ],
+  "operating_targets": 20,
+  "active_cap": 32,
+  "record_cap": 32,
+  "row_storage_slots": 64,
+  "proposed_row_run_limit": 40,
+  "observed_h3_highwater": [
+    20,
+    20,
+    20
+  ],
+  "ring20_observed_run_highwater": 40,
+  "capacity_derivation": "active/output nextpow2(20)=32; 20 single-hole synthetic shapes yield 2 runs each so run_limit40 and nextpow2(40)=64 storage; real work envelope not validated",
+  "internal_widths": {
+    "area": 17,
+    "sum_x": 25,
+    "sum_y": 25
+  },
+  "conservative_max_sums": {
+    "sum_x": 24499200,
+    "sum_y": 18355200
+  },
+  "memory_bits": {
+    "two_run_banks": 4096,
+    "active_table": 4096,
+    "two_record_buffers": 8192,
+    "two_metadata_records": 256
+  },
+  "logical_memory_bits": 16640,
+  "logical_memory_bytes": 2080,
+  "bram36_mapping_hypothesis_range": [
+    5,
+    7
+  ],
+  "logic_usage_estimate": null,
+  "FF_usage_estimate": null,
+  "shared_multiplier_DSP_hypothesis": [
+    0,
+    1
+  ],
+  "full_label_frame_16bit_only_bits": 1228800,
+  "full_label_frame_16bit_bytes": 153600,
+  "full_label_frame_bit_minimum_bram36": 34,
+  "full_label_frame_18bit_TDP_mapping_bram36": 38,
+  "schedule_assumptions": {
+    "pixel_collect_cycles_per_pixel": 1,
+    "pair_read_compare_cycles_options": [
+      2,
+      4
+    ],
+    "new_root_scan_cycles_per_slot": 1,
+    "worst_new_roots_per_row": 32,
+    "stats_cycles_per_run": 6,
+    "close_scan_cycles_per_slot_per_row": 1,
+    "division_and_round_cycles_per_axis": 27,
+    "serialization_words_per_record_or_metadata": 4,
+    "downstream_stalls": 0,
+    "overlap_between_morph_and_feature": false,
+    "clock_MHz_assumed": 100
+  },
+  "schedule_examples": [
+    {
+      "row_run_limit": 40,
+      "assumed_cycles_per_pair": 2,
+      "row_cycles": 4816,
+      "feature_frame_cycles": 1157732,
+      "with_morphology_serial_cycles": 1311572,
+      "conditional_ms_at_100MHz": 13.11572
+    },
+    {
+      "row_run_limit": 40,
+      "assumed_cycles_per_pair": 4,
+      "row_cycles": 8016,
+      "feature_frame_cycles": 1925732,
+      "with_morphology_serial_cycles": 2079572,
+      "conditional_ms_at_100MHz": 20.79572
+    },
+    {
+      "row_run_limit": 64,
+      "assumed_cycles_per_pair": 2,
+      "row_cycles": 9952,
+      "feature_frame_cycles": 2390372,
+      "with_morphology_serial_cycles": 2544212,
+      "conditional_ms_at_100MHz": 25.44212
+    },
+    {
+      "row_run_limit": 64,
+      "assumed_cycles_per_pair": 4,
+      "row_cycles": 18144,
+      "feature_frame_cycles": 4356452,
+      "with_morphology_serial_cycles": 4510292,
+      "conditional_ms_at_100MHz": 45.10292
+    }
+  ],
+  "fifo_condition": "For a non-pausable source, required FIFO >= sup_t(A(t)-S(t)); average fps alone is insufficient, no finite depth selected without source burst/blanking and observed service profile",
+  "feature_packet_max_bytes": 528,
+  "binary_debug_packet_bytes": 76816,
+  "wire_rate_bytes_per_s_at_30fps": {
+    "20_features": 10080,
+    "32_features": 15840,
+    "binary_frame_with_metadata": 2304480
+  },
+  "note": "5-7 BRAM36-equivalent assumes wide-bank mapping and small FIFO; independent BRAM ports, control, DMA/PS/Morph resources and implementation timing must be measured after approval."
+}
