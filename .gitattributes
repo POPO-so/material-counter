@@ -26,3 +26,7 @@
 /data/results/** -text whitespace=cr-at-eol
 /data/results/**/*.rpt -diff
 /data/results/**/*.log -diff
+/docs/verification/wo-0011-failure-evidence.json -text
+/docs/verification/wo-0011-missed-events.csv -text
+/docs/verification/wo-0011-failure-evidence.json whitespace=cr-at-eol
+/docs/verification/wo-0011-missed-events.csv whitespace=cr-at-eol
