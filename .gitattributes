@@ -30,3 +30,5 @@
 /docs/verification/wo-0011-missed-events.csv -text
 /docs/verification/wo-0011-failure-evidence.json whitespace=cr-at-eol
 /docs/verification/wo-0011-missed-events.csv whitespace=cr-at-eol
+/data/results/wo0013-resetfix-20261014/export/wo0013_dma_recreate.tcl -diff
+/data/results/wo0013-resetfix-20261014/reports/implemented_constraints.xdc -diff
