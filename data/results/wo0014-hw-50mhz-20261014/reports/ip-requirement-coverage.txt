@@ -1,0 +1,17 @@
+COVERAGE:FULL
+Applied (exact):
+  - "MM2S enabled" (param: CONFIG.c_include_mm2s): applied
+  - "S2MM disabled" (param: CONFIG.c_include_s2mm): applied
+  - "Simple mode SG disabled" (param: CONFIG.c_include_sg): applied
+  - "Micro DMA disabled" (param: CONFIG.c_micro_dma): applied
+  - "18 bit length" (param: CONFIG.c_sg_length_width): applied
+  - "32 bit stream" (param: CONFIG.c_m_axis_mm2s_tdata_width): applied
+  - "64 bit MM2S memory port" (param: CONFIG.c_m_axi_mm2s_data_width): applied
+  - "32 bit address" (param: CONFIG.c_addr_width): applied
+  - "DRE disabled" (param: CONFIG.c_include_mm2s_dre): applied
+  - "GP0 control" (param: CONFIG.PCW_USE_M_AXI_GP0): applied
+  - "HP0 DDR" (param: CONFIG.PCW_USE_S_AXI_HP0): applied
+  - "64 bit HP0" (param: CONFIG.PCW_S_AXI_HP0_DATA_WIDTH): applied
+  - "Independent requested PL clock" (param: CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ): applied
+  - "Explicit AXI4 to AXI3 conversion" (param: CONFIG.MI_PROTOCOL): applied
+  - "Aux reset active high tied low" (param: CONFIG.C_AUX_RESET_HIGH): applied

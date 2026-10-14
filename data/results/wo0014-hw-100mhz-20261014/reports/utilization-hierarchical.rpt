@@ -1,0 +1,65 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Wed Oct 14 18:07:41 2026
+| Host         : BWIN running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file C:/fpga/material-counter/data/results/wo0014-hw-100mhz-20261014/reports/utilization-hierarchical.rpt
+| Design       : wo0014_image_wrapper
+| Device       : xc7z020clg400-1
+| Speed File   : -1
+| Design State : Routed
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++-------------------------------------------------------------------+-----------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+|                              Instance                             |                                       Module                                      | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs | RAMB36 | RAMB18 | DSP Blocks |
++-------------------------------------------------------------------+-----------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+| wo0014_image_wrapper                                              |                                                                             (top) |       1941 |       1901 |       2 |   38 | 2095 |      1 |      1 |          0 |
+|   wo0014_image_i                                                  |                                                                      wo0014_image |       1941 |       1901 |       2 |   38 | 2095 |      1 |      1 |          0 |
+|     image_pipeline                                                |                                                     wo0014_image_image_pipeline_0 |        956 |        956 |       0 |    0 |  772 |      0 |      0 |          0 |
+|       inst                                                        |                          wo0014_image_image_pipeline_0_axis_dma_image_pipeline_bd |        956 |        956 |       0 |    0 |  772 |      0 |      0 |          0 |
+|         (inst)                                                    |                          wo0014_image_image_pipeline_0_axis_dma_image_pipeline_bd |        120 |        120 |       0 |    0 |  395 |      0 |      0 |          0 |
+|         image_pipeline                                            |                             wo0014_image_image_pipeline_0_axis_dma_image_pipeline |        838 |        838 |       0 |    0 |  377 |      0 |      0 |          0 |
+|           packet_adapter                                          |                                wo0014_image_image_pipeline_0_axis_dma_rgb_adapter |        599 |        599 |       0 |    0 |  262 |      0 |      0 |          0 |
+|           output_checker                                          |                          wo0014_image_image_pipeline_0_axis_binary_output_checker |        190 |        190 |       0 |    0 |  107 |      0 |      0 |          0 |
+|     axi_dma_0                                                     |                                                          wo0014_image_axi_dma_0_0 |        520 |        483 |       0 |   37 |  746 |      1 |      1 |          0 |
+|       U0                                                          |                                                  wo0014_image_axi_dma_0_0_axi_dma |        520 |        483 |       0 |   37 |  746 |      1 |      1 |          0 |
+|         INCLUDE_MM2S_SOF_EOF_GENERATOR.I_MM2S_DMA_MNGR            |                                        wo0014_image_axi_dma_0_0_axi_dma_mm2s_mngr |         12 |         12 |       0 |    0 |   68 |      0 |      0 |          0 |
+|           GEN_MM2S_DMA_CONTROL.GEN_SIMPLE_DMA_MODE.I_MM2S_SMPL_SM |                                         wo0014_image_axi_dma_0_0_axi_dma_smple_sm |          5 |          5 |       0 |    0 |   57 |      0 |      0 |          0 |
+|         I_AXI_DMA_REG_MODULE                                      |                                       wo0014_image_axi_dma_0_0_axi_dma_reg_module |         79 |         79 |       0 |    0 |  163 |      0 |      0 |          0 |
+|           GEN_AXI_LITE_IF.AXI_LITE_IF_I                           |                                          wo0014_image_axi_dma_0_0_axi_dma_lite_if |         59 |         59 |       0 |    0 |   81 |      0 |      0 |          0 |
+|           GEN_MM2S_REGISTERS.I_MM2S_DMA_REGISTER                  |                                         wo0014_image_axi_dma_0_0_axi_dma_register |         20 |         20 |       0 |    0 |   82 |      0 |      0 |          0 |
+|         I_PRMRY_DATAMOVER                                         |                                            wo0014_image_axi_dma_0_0_axi_datamover |        422 |        385 |       0 |   37 |  491 |      1 |      1 |          0 |
+|           GEN_MM2S_FULL.I_MM2S_FULL_WRAPPER                       |                             wo0014_image_axi_dma_0_0_axi_datamover_mm2s_full_wrap |        422 |        385 |       0 |   37 |  491 |      1 |      1 |          0 |
+|             ENABLE_AXIS_SKID.I_MM2S_SKID_BUF                      |                                   wo0014_image_axi_dma_0_0_axi_datamover_skid_buf |         12 |         12 |       0 |    0 |   81 |      0 |      0 |          0 |
+|             GEN_INCLUDE_MM2S_SF.I_RD_SF                           |                                      wo0014_image_axi_dma_0_0_axi_datamover_rd_sf |        117 |        116 |       0 |    1 |   60 |      1 |      1 |          0 |
+|               I_DATA_FIFO                                         |                               wo0014_image_axi_dma_0_0_axi_datamover_sfifo_autord |        101 |        101 |       0 |    0 |   47 |      1 |      1 |          0 |
+|                 BLK_MEM.I_SYNC_FIFOGEN_FIFO                       |                                            wo0014_image_axi_dma_0_0_xpm_fifo_sync |         56 |         56 |       0 |    0 |   47 |      1 |      1 |          0 |
+|                   xpm_fifo_base_inst                              |                                            wo0014_image_axi_dma_0_0_xpm_fifo_base |         56 |         56 |       0 |    0 |   47 |      1 |      1 |          0 |
+|             I_CMD_STATUS                                          |                                 wo0014_image_axi_dma_0_0_axi_datamover_cmd_status |         10 |         10 |       0 |    0 |   63 |      0 |      0 |          0 |
+|               I_CMD_FIFO                                          |                                       wo0014_image_axi_dma_0_0_axi_datamover_fifo |          3 |          3 |       0 |    0 |   57 |      0 |      0 |          0 |
+|             I_MSTR_PCC                                            |                                        wo0014_image_axi_dma_0_0_axi_datamover_pcc |        180 |        180 |       0 |    0 |  174 |      0 |      0 |          0 |
+|     control_fabric                                                |                                                     wo0014_image_control_fabric_0 |        405 |        405 |       0 |    0 |  451 |      0 |      0 |          0 |
+|       inst                                                        |                                             wo0014_image_control_fabric_0_bd_d3e0 |        405 |        405 |       0 |    0 |  451 |      0 |      0 |          0 |
+|         sc_ul                                                     |                                     wo0014_image_control_fabric_0_bd_d3e0_sc_ul_0 |        405 |        405 |       0 |    0 |  451 |      0 |      0 |          0 |
+|           inst                                                    |                             wo0014_image_control_fabric_0_sc_ultralite_v1_0_1_top |        405 |        405 |       0 |    0 |  451 |      0 |      0 |          0 |
+|             gen_axi_full_nxm.sasd_inst                            |                       wo0014_image_control_fabric_0_sc_ultralite_v1_0_1_sasd_lite |        405 |        405 |       0 |    0 |  449 |      0 |      0 |          0 |
+|               (gen_axi_full_nxm.sasd_inst)                        |                       wo0014_image_control_fabric_0_sc_ultralite_v1_0_1_sasd_lite |        144 |        144 |       0 |    0 |  270 |      0 |      0 |          0 |
+|               gen_read.arctrl_mux                                 |         wo0014_image_control_fabric_0_sc_ultralite_v1_0_1_mux_hot__parameterized5 |         85 |         85 |       0 |    0 |    8 |      0 |      0 |          0 |
+|               gen_read.rdata_mux                                  |        wo0014_image_control_fabric_0_sc_ultralite_v1_0_1_mux_hot__parameterized10 |         58 |         58 |       0 |    0 |   32 |      0 |      0 |          0 |
+|     hp0_protocol                                                  |                                                       wo0014_image_hp0_protocol_0 |         44 |         42 |       2 |    0 |   89 |      0 |      0 |          0 |
+|       inst                                                        | wo0014_image_hp0_protocol_0_axi_protocol_converter_v2_1_38_axi_protocol_converter |         44 |         42 |       2 |    0 |   89 |      0 |      0 |          0 |
+|         gen_axi4_axi3.axi3_conv_inst                              |              wo0014_image_hp0_protocol_0_axi_protocol_converter_v2_1_38_axi3_conv |         44 |         42 |       2 |    0 |   89 |      0 |      0 |          0 |
+|           (USE_READ.USE_SPLIT_R.read_addr_inst)                   |            wo0014_image_hp0_protocol_0_axi_protocol_converter_v2_1_38_a_axi3_conv |          6 |          6 |       0 |    0 |   51 |      0 |      0 |          0 |
++-------------------------------------------------------------------+-----------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+* Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
+
+

@@ -8,6 +8,14 @@ Codex configuration or complete installed Skill collection is included.
 
 ## MIT License
 
+The 2026-10-15 hardware delivery additionally preserves the minimal build-time
+helpers in `.agents/skills/vivado-ip-configurator/lib/` and
+`.agents/skills/vivado-revision-control/helper-procedures/helper_scripts.tcl`.
+These AMD helpers declare the same MIT license. Their exact source bytes and
+SHA-256 values appear in `batch-05-wo0014-hardware.json`. Only runtime helpers
+needed by the existing Tcl scripts are included; installed Skill instructions,
+learned caches, user settings and complete Skill packages are excluded.
+
 Copyright (C) 2026 Advanced Micro Devices, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

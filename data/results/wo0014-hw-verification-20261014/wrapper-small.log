@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 14 18:00:26 2026
+# Process ID         : 22928
+# Current directory  : C:/fpga/material-counter/data/results/wo0014-hw-verification-20261014/sim
+# Command line       : xsim.exe -log C:/fpga/material-counter/data/results/wo0014-hw-verification-20261014/wrapper-small.log -mode tcl -source {xsim.dir/wo14_wrapper_small/xsim_script.tcl}
+# Log file           : C:/fpga/material-counter/data/results/wo0014-hw-verification-20261014/wrapper-small.log
+# Journal file       : C:/fpga/material-counter/data/results/wo0014-hw-verification-20261014/sim\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 22886 MB
+#-----------------------------------------------------------
+source xsim.dir/wo14_wrapper_small/xsim_script.tcl
+# xsim {wo14_wrapper_small} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RESULT PASS: geometry=5x3 frames=2 output_pixels=30 input_beats=42 input_bytes=162 input_checksum=0x00003642 stalls=14
+$finish called at time : 3680 ns : File "C:/fpga/material-counter/fpga/sim/wo0014/tb_axis_dma_image_pipeline_bd.sv" Line 682
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Oct 14 18:00:32 2026...

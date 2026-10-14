@@ -1,0 +1,9 @@
+{
+  "length_attempts": 3,
+  "freebuffer_returns": 3,
+  "golden_matches": 3,
+  "health_no_hardware_owners": true,
+  "health_no_new_kernel_warnings": true,
+  "same_boot": true,
+  "100mhz_dispatches": 0
+}

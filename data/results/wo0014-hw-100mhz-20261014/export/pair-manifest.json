@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "build_id": "wo0014-hw-100mhz-20261014",
+  "clock_mhz": 100,
+  "part": "xc7z020clg400-1",
+  "bit_path": "C:\\fpga\\material-counter\\data\\results\\wo0014-hw-100mhz-20261014\\export\\wo0014_image.bit",
+  "hwh_path": "C:\\fpga\\material-counter\\data\\results\\wo0014-hw-100mhz-20261014\\export\\wo0014_image.hwh",
+  "bit_sha256": "585c83ec455d237516c30cda2709e42882edecb83acc6f401e724f6418f368bd",
+  "hwh_sha256": "6bd4fec32c99186c2445b45b796f6bbfbe98e29df8fff21524e014dcb172bfba",
+  "dma_base": "0x40400000",
+  "checker_base": "0x43c20000",
+  "dma_length_width": 18,
+  "dma_mode": "simple",
+  "dma_mm2s": true,
+  "dma_s2mm": false,
+  "dma_include_sg": false,
+  "dma_micro_mode": false,
+  "dma_stream_width_bits": 32,
+  "dma_addr_width_bits": 32,
+  "dma_mm2s_memory_width_bits": 64,
+  "dma_mm2s_dre": false,
+  "hp0_range_start": "0x00000000",
+  "hp0_range_end_exclusive": "0x20000000",
+  "optimized_commit": "6264b324385eb8d90033d14eec3f471c1317273f",
+  "rtl_sha256": {
+    "axis_binary_output_checker.v": "8a6f46c6add51a29c801499ddbf63c52d65f5a1e91dab4b60316aecbddf54a75",
+    "axis_dma_image_pipeline.v": "b94fa662b8cc08de6863d98c9e9a75294e3ffb90798c77711e3d3d0860e0e9ad",
+    "axis_dma_image_pipeline_bd.v": "2dec7d70afbf899000ee2bdf60c32cd54e08f0bd0e7d6f08490010672602a46d",
+    "axis_dma_rgb_adapter.v": "c3b8b682dd34540973595a810f6e90ffd21e87ea47dc39090830b4f128debfd3",
+    "axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+    "axis_rgb2gray.v": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb"
+  },
+  "board_tested": false,
+  "implemented_timing": {
+    "wns": 1.167,
+    "tns": 0.0,
+    "whs": 0.066,
+    "ths": 0.0,
+    "wpws": 3.75
+  },
+  "resources": {
+    "lut": 1941,
+    "ff": 2095,
+    "bram": 1.5,
+    "dsp": 0
+  }
+}

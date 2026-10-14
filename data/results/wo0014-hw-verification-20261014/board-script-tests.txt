@@ -1,0 +1,16 @@
+test_dry_run_never_imports_pynq (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_dry_run_never_imports_pynq) ... ok
+test_execute_flag_without_human_approval_cannot_load_overlay (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_execute_flag_without_human_approval_cannot_load_overlay) ... ok
+test_fresh_reset_halt_transitions_to_idle_before_single_transfer (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_fresh_reset_halt_transitions_to_idle_before_single_transfer) ... ok
+test_hwh_length_width_and_address_map_must_match_manifest (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_hwh_length_width_and_address_map_must_match_manifest) ... ok
+test_length_is_blocked_until_runstop_reaches_idle (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_length_is_blocked_until_runstop_reaches_idle) ... ok
+test_one_successful_send_requires_complete_output_statistics (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_one_successful_send_requires_complete_output_statistics) ... ok
+test_packet_and_pair_manifest_validate_from_independent_files (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_packet_and_pair_manifest_validate_from_independent_files) ... ok
+test_packet_header_checksum_and_trailer_mutations_are_rejected (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_packet_header_checksum_and_trailer_mutations_are_rejected) ... ok
+test_timeout_does_not_retry_or_reset_and_quarantines_active_buffer (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_timeout_does_not_retry_or_reset_and_quarantines_active_buffer) ... ok
+test_unknown_active_prestate_never_enables_or_sends_dma (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_unknown_active_prestate_never_enables_or_sends_dma) ... ok
+test_unsafe_buffer_address_never_writes_dma_length (scripts.wo0014_hw.test_pynq_image_once.PynqImageOnceTests.test_unsafe_buffer_address_never_writes_dma_length) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 1.275s
+
+OK
