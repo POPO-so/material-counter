@@ -1,0 +1,11 @@
+{
+  "MASTER_PLAN.md": "8a4d37f90e1817317b808b11cc2d71acc7d772251461fbc6ac34253ae31a94bd",
+  "README.md": "308dee4b2109a150e9a71ee14cde9e26b4826c0811b2a9fcbcae9ebf2d94f501",
+  "docs/00_scope.md": "1dae77c87f2596734008730e079f5de0f328c282e2bd6eee4b88b825818e4f8d",
+  "docs/02_interfaces.md": "c274422922113520b8d54a4ba05297ad624abdb9893574acac609dc1acc32332",
+  "docs/07_routes.md": "37771a4bed3caa0e7e04ae6005ae7d098f9457154d9e88b599fe75c3fba99ce0",
+  "fpga\\rtl\\axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+  "fpga\\rtl\\axis_morphology3x3.v": "41bd8ac2bd659357807c172ddc0e14b0b6a85d14afc8d5323836c60e8b277cb1",
+  "fpga\\rtl\\axis_rgb2gray.v": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+  "fpga\\rtl\\axis_stream_skeleton.v": "4ded2eec76fde16856df3ff3ac092b824108f26412290b2c9ca10a2f553df048"
+}

@@ -1,0 +1,131 @@
+{
+  "wo0013_commit": "47103338d2f59177af0c6570242aff953baf07b7",
+  "wo0014_offline_functional": "PASS",
+  "hardware_actions_this_task": 0,
+  "xsim": {
+    "h3-final": "RESULT PASS: packets_done=487 packet_errors=0 scored_pixels=37401600 all_output_records=37401600 stalled_cycles=14857622 checker_pixels=76800 checker_sofs=1 checker_eols=240 checker_checksum=0x0008b740 drain_cycles=1",
+    "directed-reviewed": "RESULT PASS: packets_done=1 packet_errors=0 scored_pixels=15 all_output_records=15 stalled_cycles=13 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1",
+    "keep3": "RESULT PASS: packets_done=1 packet_errors=0 scored_pixels=2 all_output_records=2 stalled_cycles=1 checker_pixels=2 checker_sofs=1 checker_eols=1 checker_checksum=0x000000ff drain_cycles=1",
+    "keep7": "RESULT PASS: packets_done=1 packet_errors=0 scored_pixels=1 all_output_records=1 stalled_cycles=0 checker_pixels=1 checker_sofs=1 checker_eols=1 checker_checksum=0x00000000 drain_cycles=1",
+    "th0": "RESULT PASS: packets_done=1 packet_errors=0 scored_pixels=15 all_output_records=15 stalled_cycles=9 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x00000ef1 drain_cycles=1",
+    "th73": "RESULT PASS: packets_done=1 packet_errors=0 scored_pixels=15 all_output_records=15 stalled_cycles=9 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x00000bf4 drain_cycles=1",
+    "th200": "RESULT PASS: packets_done=1 packet_errors=0 scored_pixels=15 all_output_records=15 stalled_cycles=9 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000003fc drain_cycles=1",
+    "th255": "RESULT PASS: packets_done=1 packet_errors=0 scored_pixels=15 all_output_records=15 stalled_cycles=9 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000000ff drain_cycles=1",
+    "bad_header": "RESULT PASS: packets_done=1 packet_errors=1 scored_pixels=15 all_output_records=15 stalled_cycles=3 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1",
+    "bad_length": "RESULT PASS: packets_done=1 packet_errors=1 scored_pixels=15 all_output_records=15 stalled_cycles=3 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1",
+    "bad_tkeep": "RESULT PASS: packets_done=1 packet_errors=1 scored_pixels=15 all_output_records=15 stalled_cycles=3 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1",
+    "early_tlast": "RESULT PASS: packets_done=1 packet_errors=1 scored_pixels=15 all_output_records=15 stalled_cycles=7 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1",
+    "missing_tlast": "RESULT PASS: packets_done=1 packet_errors=1 scored_pixels=15 all_output_records=30 stalled_cycles=17 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1",
+    "bad_checksum": "RESULT PASS: packets_done=1 packet_errors=1 scored_pixels=15 all_output_records=30 stalled_cycles=15 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1",
+    "extra_payload": "RESULT PASS: packets_done=1 packet_errors=1 scored_pixels=15 all_output_records=30 stalled_cycles=17 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1"
+  },
+  "h3": {
+    "status": "PASS",
+    "frames": 487,
+    "pixels": 37401600,
+    "word_mismatches": 0,
+    "actual_sha256": "3e2f35b2dbbb21b55408dcc62da11aa29217e304a9f976f7feac207aa384cced",
+    "expected_sha256": "3e2f35b2dbbb21b55408dcc62da11aa29217e304a9f976f7feac207aa384cced"
+  },
+  "directed": {
+    "status": "PASS",
+    "threshold_cases": 5,
+    "partial_keep_cases": 2,
+    "negative_recovery_cases": 7,
+    "failures": []
+  },
+  "python_regressions": {
+    "passed": 134,
+    "failed": 0
+  },
+  "legacy_rtl": [
+    {
+      "log": "legacy-rgb.log",
+      "pass": true,
+      "marker": "TEST_PASS in=230912 out=230912 stalls=87813 blocked=86187 bubbles=22765 reset_flush=1"
+    },
+    {
+      "log": "legacy-binary-fixed.log",
+      "pass": true,
+      "marker": "TEST_PASS threshold=128 chain=1 mode=1 in=231168 out=231168 stalls=181412 blocked=167351 bubbles=55341 longest_pause=58 throughput_pairs=129192 gray_stalls=174766 reset_flush=1"
+    },
+    {
+      "log": "legacy-morph-h3.log",
+      "pass": true,
+      "marker": "TEST_PASS scene=unnamed mode=2 chain=1 ready=1 beats=230400 seed=6862 in=230400 out=230400 frames=3 stalls_out=232466 blocked_in=460456 gray_stalls=460764 binary_stalls=461083 bubbles=111896 longest_stall=60 last_stall=12 frame_overlap=1 reset=1"
+    },
+    {
+      "log": "legacy-monitor.log",
+      "pass": true,
+      "marker": "WO0013_AXIS_RX_PASS bytes=76816 beats=19204 first=ffff00ff last=12340000 tlast_count=1 checksum=70b5017b fg=32336"
+    },
+    {
+      "output": "legacy-rgb-output.hex",
+      "compared_pixels": 230912,
+      "dump_format": "Gray8 data-only",
+      "mismatches": 0
+    },
+    {
+      "output": "legacy-binary-output.hex",
+      "compared_pixels": 231168,
+      "dump_format": "10-bit data+SOF/EOL",
+      "mismatches": 0
+    },
+    {
+      "output": "legacy-morph-output.hex",
+      "compared_pixels": 230400,
+      "dump_format": "10-bit data+SOF/EOL",
+      "mismatches": 0
+    }
+  ],
+  "lint": {
+    "errors": 0,
+    "existing_rgb_warnings": 2,
+    "new_module_messages": 0
+  },
+  "synthesis": {
+    "success": true,
+    "LUT": 700,
+    "FF": 377,
+    "BRAM": 0,
+    "DSP": 0
+  },
+  "ooc_timing": {
+    "target_period_ns": 10,
+    "WNS_ns": -1.668,
+    "TNS_ns": -29.856,
+    "failing_endpoints": 29,
+    "status": "NOT_CLOSED",
+    "limitations": [
+      "No IO delays",
+      "HD.CLK_SRC unspecified",
+      "No placement or routing"
+    ]
+  },
+  "delivery": {
+    "protected_and_production_unchanged": true,
+    "wo0013_commit": "47103338d2f59177af0c6570242aff953baf07b7",
+    "wo0014_source_files": 17,
+    "staged_files": 0,
+    "diff_check": "PASS",
+    "new_text_whitespace": "PASS",
+    "committed_bit_hwh_raw_sha256": {
+      "wo0013_phase_a.bit": "47e6cd65c552244236f2564c11cba3e81a9a0c6aced0c9974c04de78256da3f7",
+      "wo0013_phase_a.hwh": "a31d71f8e7004de710fa4da07078b80e2a0a8b40ff52ac523d322f21362df1fb"
+    }
+  },
+  "wo0014_committed": false,
+  "push": false,
+  "remaining_risks": [
+    "10ns OOC timing not closed; checksum path needs optimization before hardware design",
+    "230432-byte RGB packet exceeds existing 17-bit DMA BTT",
+    "Invalid frame may emit prefix; no frame rollback",
+    "Output checker alone cannot prove final-frame underflow",
+    "H3 L images copied into RGB; real camera color not validated"
+  ],
+  "next_approval": [
+    "Review uncommitted WO0014 work",
+    "Separate approval of future DMA capacity/packet segmentation and hardware experiment",
+    "Formal Route/ADR changes only via project decision process"
+  ]
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "log": "legacy-rgb.log",
+    "pass": true,
+    "marker": "TEST_PASS in=230912 out=230912 stalls=87813 blocked=86187 bubbles=22765 reset_flush=1"
+  },
+  {
+    "log": "legacy-binary-fixed.log",
+    "pass": true,
+    "marker": "TEST_PASS threshold=128 chain=1 mode=1 in=231168 out=231168 stalls=181412 blocked=167351 bubbles=55341 longest_pause=58 throughput_pairs=129192 gray_stalls=174766 reset_flush=1"
+  },
+  {
+    "log": "legacy-morph-h3.log",
+    "pass": true,
+    "marker": "TEST_PASS scene=unnamed mode=2 chain=1 ready=1 beats=230400 seed=6862 in=230400 out=230400 frames=3 stalls_out=232466 blocked_in=460456 gray_stalls=460764 binary_stalls=461083 bubbles=111896 longest_stall=60 last_stall=12 frame_overlap=1 reset=1"
+  },
+  {
+    "log": "legacy-monitor.log",
+    "pass": true,
+    "marker": "WO0013_AXIS_RX_PASS bytes=76816 beats=19204 first=ffff00ff last=12340000 tlast_count=1 checksum=70b5017b fg=32336"
+  },
+  {
+    "output": "legacy-rgb-output.hex",
+    "compared_pixels": 230912,
+    "dump_format": "Gray8 data-only",
+    "mismatches": 0
+  },
+  {
+    "output": "legacy-binary-output.hex",
+    "compared_pixels": 231168,
+    "dump_format": "10-bit data+SOF/EOL",
+    "mismatches": 0
+  },
+  {
+    "output": "legacy-morph-output.hex",
+    "compared_pixels": 230400,
+    "dump_format": "10-bit data+SOF/EOL",
+    "mismatches": 0
+  }
+]

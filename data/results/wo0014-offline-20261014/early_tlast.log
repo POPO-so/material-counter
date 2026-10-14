@@ -1,0 +1,34 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 14 15:58:17 2026
+# Process ID         : 21188
+# Current directory  : C:/fpga/material-counter/data/results/wo0014-offline-20261014/new-sim
+# Command line       : xsim.exe -log C:/fpga/material-counter/data/results/wo0014-offline-20261014/early_tlast.log -mode tcl -source {xsim.dir/wo14_small_reviewed/xsim_script.tcl}
+# Log file           : C:/fpga/material-counter/data/results/wo0014-offline-20261014/early_tlast.log
+# Journal file       : C:/fpga/material-counter/data/results/wo0014-offline-20261014/new-sim\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 19695 MB
+#-----------------------------------------------------------
+source xsim.dir/wo14_small_reviewed/xsim_script.tcl
+# xsim {wo14_small_reviewed} -testplusarg INPUT=C:/fpga/material-counter/data/results/wo0014-offline-20261014/vectors/negative/early_tlast.bin -testplusarg EXPECTED=C:/fpga/material-counter/data/results/wo0014-offline-20261014/vectors/directed_expected_th128.bin -testplusarg ACTUAL=C:/fpga/material-counter/data/results/wo0014-offline-20261014/early_tlast-actual.bin -testplusarg NEGATIVE=1 -testplusarg EXPECTED_ERROR=4 -testplusarg BAD_RECORDS=5 -testplusarg DRAIN_RECORDS=0 -testplusarg RECOVERY_RECORDS=20 -testplusarg BASE_FRAME_ID=40980 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+CONFIG geometry=5x3 threshold=128 negative=1 frames=1 ready_mode=1 gap_mode=1 seed=1360094
+PACKET_ERROR count=1 code=4 time=225000
+INPUT_SENT beats=25
+RESULT PASS: packets_done=1 packet_errors=1 scored_pixels=15 all_output_records=15 stalled_cycles=7 checker_pixels=15 checker_sofs=1 checker_eols=3 checker_checksum=0x000007f8 drain_cycles=1
+$finish called at time : 1010 ns : File "C:/fpga/material-counter/fpga/sim/wo0014/tb_axis_dma_image_pipeline.sv" Line 549
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Oct 14 15:58:19 2026...
