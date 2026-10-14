@@ -37,3 +37,19 @@
 /data/results/wo0013-resetfix-20261014/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /data/results/wo0013-level2-once-20261014-113914/remote-common.py whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /data/results/wo0013-pagemap-policy-20261014-120205/*.txt -diff
+
+# Preserve reviewed WO-0014 executor and raw receipt/evidence SHA-256 bytes.
+/scripts/wo0014_hw/diagnostic50/** -text
+/scripts/wo0014_hw/pynq_image_once.py -text
+/scripts/wo0014_hw/test_pynq_image_once.py -text
+/data/results/wo0014-pg021-ready-20261015/** -text
+/data/results/wo0014-diagnostic50-hardening-20261014/run-20261015-031611-696569/** -text
+/data/results/wo0014-pg021-ready-20261015/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/data/results/wo0014-diagnostic50-hardening-20261014/run-20261015-031611-696569/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/scripts/wo0014_hw/diagnostic50/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/data/results/wo0014-pg021-ready-20261015/**/*.log -diff
+/data/results/wo0014-pg021-ready-20261015/*.bin -diff
+/data/results/wo0014-pg021-ready-20261015/*.txt -diff
+/data/results/wo0014-diagnostic50-hardening-20261014/run-20261015-031611-696569/*.rpt -diff
+/data/results/wo0014-diagnostic50-hardening-20261014/run-20261015-031611-696569/*.log -diff
+/data/results/wo0014-pg021-ready-20261015/core.diff -diff

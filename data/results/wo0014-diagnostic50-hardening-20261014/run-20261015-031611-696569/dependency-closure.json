@@ -1,0 +1,80 @@
+{
+  "baseline_pynq_image_once.py": [
+    "__future__",
+    "argparse",
+    "dataclasses",
+    "hashlib",
+    "json",
+    "numpy",
+    "pathlib",
+    "pynq",
+    "struct",
+    "sys",
+    "time",
+    "typing",
+    "xml"
+  ],
+  "core.py": [
+    "baseline_pynq_image_once",
+    "hashlib",
+    "json",
+    "math",
+    "os",
+    "pathlib",
+    "time"
+  ],
+  "child.py": [
+    "argparse",
+    "core",
+    "fcntl",
+    "json",
+    "numpy",
+    "os",
+    "pathlib",
+    "pynq",
+    "signal",
+    "sys",
+    "threading",
+    "time"
+  ],
+  "supervisor.py": [
+    "argparse",
+    "core",
+    "deadline",
+    "json",
+    "os",
+    "pathlib",
+    "queue",
+    "shlex",
+    "subprocess",
+    "sys",
+    "threading",
+    "time"
+  ],
+  "deadline.py": [
+    "__future__",
+    "collections",
+    "dataclasses",
+    "json",
+    "math",
+    "queue",
+    "sys",
+    "threading",
+    "time",
+    "traceback",
+    "typing"
+  ],
+  "session.py": [
+    "argparse",
+    "core",
+    "deadline",
+    "json",
+    "os",
+    "pathlib",
+    "subprocess",
+    "supervisor",
+    "sys",
+    "time"
+  ],
+  "authentication.py": []
+}

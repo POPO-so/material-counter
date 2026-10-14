@@ -1,0 +1,1 @@
+{"argv": ["/usr/local/share/pynq-venv/bin/python", "-u", "/home/xilinx/wo0014_diagnostic50_recovery_20261015/child.py", "--execute", "--approve-once", "--mode", "dma-once", "--authorize-stage", "dma-once", "--executor-manifest-sha", "3e878328b2e1203579a318d6624e61bd9123d6aeca582e0c07e5b7850969e4df"]}

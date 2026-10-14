@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "clock_mhz": 50,
+  "files": {
+    "baseline_pynq_image_once.py": "b1d2a56fd3d87c5e3331ae2b45a14e867fbccebe00df8a5d44f2ce93940375e2",
+    "core.py": "d3c5879805a8c7ed13192815a31ff4d86a6d151f7a27394ba1ddf7cca428baeb",
+    "child.py": "daffcfb9b9199526edb5473e1f2869a7f532875d89a98e48fa58e51c3dd3faa2",
+    "supervisor.py": "115379587dcbc282862717d33b92f4a4e210ed1bd109871b974d0dc9a03b8f0a",
+    "deadline.py": "e34c78ff819791c660f38486f0392d8377b88f03c072aba1a820275fac4a6f8d",
+    "session.py": "bf098afadc5c5c556d3f84c6236f102660ac2186786bf92bc18c604a64ea22dc",
+    "authentication.py": "b63e1c41220ca078a0536f1665ea65af0439033aefe2157417a7d669035874a8"
+  }
+}

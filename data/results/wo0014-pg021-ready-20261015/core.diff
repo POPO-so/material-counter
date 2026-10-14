@@ -1,0 +1,30 @@
+--- core-before.py
++++ core.py
+@@ -335,11 +335,15 @@
+         base._check_checker_ready(self.checker_values())
+ 
+     def idle(self):
++        """Require a live, error-free channel before LENGTH; Idle may be clear on frame one."""
+         sr = self.read(self.dma, 4, 'before_length.dmasr')
+-        if base._check_dma_quiescent_status(sr, 'before LENGTH') != base.DMA_SR_IDLE:
+-            raise base.PreflightError('DMA is not IDLE before LENGTH')
++        if sr & base.DMA_SR_ERROR_MASK:
++            raise base.PreflightError(f'DMA has error status before LENGTH: 0x{sr:08x}')
++        if (sr & base.DMA_SR_HALTED) != 0:
++            raise base.PreflightError(f'DMA is HALTED before LENGTH: 0x{sr:08x}')
+         cr = self.read(self.dma, 0, 'before_length.dmacr')
+-        if cr & 4 or not cr & 1:
++        if ((cr & base.DMA_CR_RESET) != 0
++                or (cr & base.DMA_CR_RUNSTOP) == 0):
+             raise base.PreflightError('DMA is not running cleanly before LENGTH')
+ 
+     def stage_SEND(self, _):
+@@ -381,7 +385,7 @@
+             sr = self.read(self.dma, 4, 'runstop.dmasr')
+             if sr & base.DMA_SR_ERROR_MASK:
+                 raise base.PreflightError('DMA start error')
+-            if sr & 3 == 2:
++            if (sr & base.DMA_SR_HALTED) == 0:
+                 break
+             if time.monotonic() >= start:
+                 raise TimeoutError('Python RUNSTOP polling deadline')

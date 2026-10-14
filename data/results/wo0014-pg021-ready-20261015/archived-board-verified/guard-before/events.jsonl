@@ -1,0 +1,241 @@
+{"event": "STAGE_BEGIN", "monotonic_s": 3435.379573798, "state": "ENV"}
+{"event": "ENVIRONMENT", "monotonic_s": 3436.028162123, "report": {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "effective_shutdown_ips": {}, "exclusive": true, "fpga_flags": "0", "fpga_state": "operating", "linux_ram": [[0, 536870912]], "loaded_bit_path": "/home/xilinx/wo0014_diagnostic50_coldstate_20261015/wo0014_image.bit", "loaded_bit_sha1": "f3fc2fb40a895ea1e88e350a53782de63146b0c2", "loaded_bit_sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d", "loaded_ip_dict": {}, "pl_state_status": "GLOBAL_STATE_PRESENT", "process_audit": {"denied": [], "findings": []}, "pynq": "3.1.1"}, "state": "ENV"}
+{"completed_stage": "ENV", "event": "STAGE_DONE", "monotonic_s": 3436.033318671, "state": "ENV"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3436.062620185, "state": "LOAD"}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3436.654702356, "operation": "Overlay", "state": "LOAD"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3438.546218052, "operation": "Overlay", "state": "LOAD", "value": null}
+{"bases": {"axi_dma_0": "0x40400000", "image_pipeline": "0x43c20000"}, "event": "OVERLAY_RETURNED", "monotonic_s": 3438.554047166, "state": "LOAD"}
+{"completed_stage": "LOAD", "event": "STAGE_DONE", "monotonic_s": 3438.560440224, "state": "LOAD"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3438.662615596, "state": "HEALTH"}
+{"event": "HEALTH_ACCEPTED", "monotonic_s": 3438.667246876, "report": {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "fpga_state": "operating", "kernel_line_count": 248, "linux": true, "new_kernel_lines": ["[ 3436.691741] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(5954), ret: 0", "[ 3436.691880] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(5954)", "[ 3436.692668] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(5954), ret: 0", "[ 3436.695986] [drm] bitstream aa2463d0-7bd2-96a9-c7ef-31babbabe51b locked, ref=1", "[ 3436.696082] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(5954) add context Domain(65535) CU(0xffff) shared(true)", "[ 3436.697091] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(5954) del context Domain(65535) CU(0xffff)", "[ 3436.697150] [drm] bitstream aa2463d0-7bd2-96a9-c7ef-31babbabe51b unlocked, ref=0", "[ 3438.454971] fpga_manager fpga0: writing wo0014_image.bin to Xilinx Zynq FPGA Manager", "[ 3438.538735] [drm] Loading xclbin c76ab35c-c6bd-fdb6-fe3c-7ea968505c6c to slot 0", "[ 3438.538771] [drm] skip kind 29(AIE_RESOURCES) return code: -22", "[ 3438.538807] [drm] skip kind 8(IP_LAYOUT) return code: -22", "[ 3438.538824] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22", "[ 3438.538839] [drm] skip kind 25(AIE_METADATA) return code: -22", "[ 3438.538853] [drm] skip kind 7(CONNECTIVITY) return code: -22", "[ 3438.538867] [drm] found kind 6(MEM_TOPOLOGY)", "[ 3438.538997] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA", "[ 3438.539058] [drm] zocl_xclbin_read_axlf c76ab35c-c6bd-fdb6-fe3c-7ea968505c6c ret: 0", "[ 3438.564030] [drm] bitstream c76ab35c-c6bd-fdb6-fe3c-7ea968505c6c locked, ref=1", "[ 3438.564136] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(5954) add context Domain(65535) CU(0xffff) shared(true)", "[ 3438.564247] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(5954) del context Domain(65535) CU(0xffff)"], "new_kernel_warnings": [], "ping": true, "ping_scope": "board-loopback", "ssh": true, "ssh_scope": "authenticated-sshd-ancestry"}, "state": "HEALTH"}
+{"completed_stage": "HEALTH", "event": "STAGE_DONE", "monotonic_s": 3439.127270242, "state": "PASS"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3508.037686145, "state": "ENV"}
+{"event": "ENVIRONMENT", "monotonic_s": 3508.632387695, "report": {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "effective_shutdown_ips": {}, "exclusive": true, "fpga_flags": "0", "fpga_state": "operating", "linux_ram": [[0, 536870912]], "loaded_bit_path": "/home/xilinx/wo0014_diagnostic50_coldstate_20261015/wo0014_image.bit", "loaded_bit_sha1": "f3fc2fb40a895ea1e88e350a53782de63146b0c2", "loaded_bit_sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d", "loaded_ip_dict": {}, "pl_state_status": "GLOBAL_STATE_PRESENT", "process_audit": {"denied": [], "findings": []}, "pynq": "3.1.1"}, "state": "ENV"}
+{"completed_stage": "ENV", "event": "STAGE_DONE", "monotonic_s": 3508.639139406, "state": "ENV"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3508.72916511, "state": "HEALTH"}
+{"event": "HEALTH_ACCEPTED", "monotonic_s": 3508.73389356, "report": {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "fpga_state": "operating", "kernel_line_count": 248, "linux": true, "new_kernel_lines": [], "new_kernel_warnings": [], "ping": true, "ping_scope": "board-loopback", "ssh": true, "ssh_scope": "authenticated-sshd-ancestry"}, "state": "HEALTH"}
+{"completed_stage": "HEALTH", "event": "STAGE_DONE", "monotonic_s": 3508.739081812, "state": "HEALTH"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3508.779958877, "state": "MIN_READ"}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3509.23494471, "operation": "MMIO.checker", "state": "MIN_READ"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3509.351568143, "operation": "MMIO.checker", "state": "MIN_READ", "value": null}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3509.357035134, "operation": "checker.magic", "state": "MIN_READ"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3509.362305079, "operation": "checker.magic", "state": "MIN_READ", "value": 1464807732}
+{"completed_stage": "MIN_READ", "event": "STAGE_DONE", "monotonic_s": 3509.382557423, "state": "PASS"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3580.98084496, "state": "ENV"}
+{"event": "ENVIRONMENT", "monotonic_s": 3581.597872165, "report": {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "effective_shutdown_ips": {}, "exclusive": true, "fpga_flags": "0", "fpga_state": "operating", "linux_ram": [[0, 536870912]], "loaded_bit_path": "/home/xilinx/wo0014_diagnostic50_coldstate_20261015/wo0014_image.bit", "loaded_bit_sha1": "f3fc2fb40a895ea1e88e350a53782de63146b0c2", "loaded_bit_sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d", "loaded_ip_dict": {}, "pl_state_status": "GLOBAL_STATE_PRESENT", "process_audit": {"denied": [], "findings": []}, "pynq": "3.1.1"}, "state": "ENV"}
+{"completed_stage": "ENV", "event": "STAGE_DONE", "monotonic_s": 3581.602658343, "state": "ENV"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3581.692307193, "state": "HEALTH"}
+{"event": "HEALTH_ACCEPTED", "monotonic_s": 3581.696967045, "report": {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "fpga_state": "operating", "kernel_line_count": 243, "linux": true, "new_kernel_lines": [], "new_kernel_warnings": [], "ping": true, "ping_scope": "board-loopback", "ssh": true, "ssh_scope": "authenticated-sshd-ancestry"}, "state": "HEALTH"}
+{"completed_stage": "HEALTH", "event": "STAGE_DONE", "monotonic_s": 3581.702160897, "state": "HEALTH"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3581.731728171, "state": "MIN_READ"}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.173360496, "operation": "MMIO.checker", "state": "MIN_READ"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.289754515, "operation": "MMIO.checker", "state": "MIN_READ", "value": null}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.295481062, "operation": "checker.magic", "state": "MIN_READ"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.300767155, "operation": "checker.magic", "state": "MIN_READ", "value": 1464807732}
+{"completed_stage": "MIN_READ", "event": "STAGE_DONE", "monotonic_s": 3582.306915149, "state": "MIN_READ"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3582.369619062, "state": "INIT"}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.374447678, "operation": "MMIO.dma", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.380104982, "operation": "MMIO.dma", "state": "INIT", "value": null}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.386055075, "operation": "initial.dmasr", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.392267124, "operation": "initial.dmasr", "state": "INIT", "value": 1}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.402463911, "operation": "initial.dmacr", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.407710404, "operation": "initial.dmacr", "state": "INIT", "value": 65538}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.413976533, "operation": "initial.length", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.419328336, "operation": "initial.length", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.424696047, "operation": "checker.drain_enable", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.430991536, "operation": "checker.drain_enable", "state": "INIT", "value": 1}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.43625625, "operation": "checker.magic", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.443217425, "operation": "checker.magic", "state": "INIT", "value": 1464807732}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.450773136, "operation": "checker.status", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.456933031, "operation": "checker.status", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.463526828, "operation": "checker.error_code", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.468814391, "operation": "checker.error_code", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.474325278, "operation": "checker.frame_id", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.479694607, "operation": "checker.frame_id", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.485176231, "operation": "checker.packet_done_count", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.490685887, "operation": "checker.packet_done_count", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.496085161, "operation": "checker.packet_error_count", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.501412631, "operation": "checker.packet_error_count", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.506875204, "operation": "checker.input_bytes", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.51228241, "operation": "checker.input_bytes", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.51772297, "operation": "checker.beats", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.523114656, "operation": "checker.beats", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.52856137, "operation": "checker.tlast_count", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.535500477, "operation": "checker.tlast_count", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.542239733, "operation": "checker.first_word", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.549925622, "operation": "checker.first_word", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.555296256, "operation": "checker.last_word", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.561349068, "operation": "checker.last_word", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.566541, "operation": "checker.input_byte_checksum", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.574872034, "operation": "checker.input_byte_checksum", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.582297154, "operation": "checker.observed_pixels", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.590161548, "operation": "checker.observed_pixels", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.59747993, "operation": "checker.sofs", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.605639167, "operation": "checker.sofs", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.61358777, "operation": "checker.eols", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.627493948, "operation": "checker.eols", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.638749708, "operation": "checker.binary_checksum", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.64577785, "operation": "checker.binary_checksum", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.652881166, "operation": "checker.accepted_output_total", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.66049308, "operation": "checker.accepted_output_total", "state": "INIT", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3582.669220083, "operation": "checker.stalled_cycles", "state": "INIT"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3582.674610483, "operation": "checker.stalled_cycles", "state": "INIT", "value": 0}
+{"completed_stage": "INIT", "event": "STAGE_DONE", "monotonic_s": 3582.679846397, "state": "INIT"}
+{"event": "STAGE_BEGIN", "monotonic_s": 3582.778316742, "state": "SEND"}
+{"event": "PRE_SEND_ENVIRONMENT", "monotonic_s": 3583.24072039, "report": {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "effective_shutdown_ips": {}, "exclusive": true, "fpga_flags": "0", "fpga_state": "operating", "linux_ram": [[0, 536870912]], "loaded_bit_path": "/home/xilinx/wo0014_diagnostic50_coldstate_20261015/wo0014_image.bit", "loaded_bit_sha1": "f3fc2fb40a895ea1e88e350a53782de63146b0c2", "loaded_bit_sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d", "loaded_ip_dict": {}, "pl_state_status": "GLOBAL_STATE_PRESENT", "process_audit": {"denied": [], "findings": []}, "pynq": "3.1.1"}, "state": "SEND"}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.24553455, "operation": "send_initial.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.250756599, "operation": "send_initial.dmasr", "state": "SEND", "value": 1}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.256948815, "operation": "send_initial.dmacr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.262120193, "operation": "send_initial.dmacr", "state": "SEND", "value": 65538}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.267409658, "operation": "checker.drain_enable", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.273639012, "operation": "checker.drain_enable", "state": "SEND", "value": 1}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.278853492, "operation": "checker.magic", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.285424329, "operation": "checker.magic", "state": "SEND", "value": 1464807732}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.292077996, "operation": "checker.status", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.297622402, "operation": "checker.status", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.303155824, "operation": "checker.error_code", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.309637565, "operation": "checker.error_code", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.316207602, "operation": "checker.frame_id", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.322688882, "operation": "checker.frame_id", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.331249282, "operation": "checker.packet_done_count", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.338094199, "operation": "checker.packet_done_count", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.344187436, "operation": "checker.packet_error_count", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.350757658, "operation": "checker.packet_error_count", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.356521356, "operation": "checker.input_bytes", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.36247895, "operation": "checker.input_bytes", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.368395252, "operation": "checker.beats", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.376685584, "operation": "checker.beats", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.388233061, "operation": "checker.tlast_count", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.393960119, "operation": "checker.tlast_count", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.399272962, "operation": "checker.first_word", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.404973652, "operation": "checker.first_word", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.410447159, "operation": "checker.last_word", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.41595183, "operation": "checker.last_word", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.421225811, "operation": "checker.input_byte_checksum", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.426724181, "operation": "checker.input_byte_checksum", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.432082464, "operation": "checker.observed_pixels", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.437605116, "operation": "checker.observed_pixels", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.442918562, "operation": "checker.sofs", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.448389621, "operation": "checker.sofs", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.453742341, "operation": "checker.eols", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.459240384, "operation": "checker.eols", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.464494341, "operation": "checker.binary_checksum", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.470223147, "operation": "checker.binary_checksum", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.475620562, "operation": "checker.accepted_output_total", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.48312111, "operation": "checker.accepted_output_total", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.488646482, "operation": "checker.stalled_cycles", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.494141959, "operation": "checker.stalled_cycles", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.499622581, "operation": "allocate", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.581978599, "operation": "allocate", "state": "SEND", "value": null}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.598800777, "operation": "sync_to_device", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.60598711, "operation": "sync_to_device", "state": "SEND", "value": "sync_to_device"}
+{"address": 361234432, "bytes": 230432, "event": "BUFFER_READY", "monotonic_s": 3583.611137313, "state": "SEND", "sync": "sync_to_device"}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.617300642, "operation": "write.RUNSTOP", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.62225194, "operation": "write.RUNSTOP", "state": "SEND", "value": null}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.630096833, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.63744719, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.65022762, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.657031017, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.676169245, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.682123922, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.693689374, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.700364765, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.715592383, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.722361946, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.732983897, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.73957282, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.751709491, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.758311953, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.770400094, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.776607011, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.78843866, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.804938408, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.817924352, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.824140432, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.835646869, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.841952999, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.854052334, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.861689171, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.874199429, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.880775712, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.892231854, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.898334598, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.908887454, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.914213355, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.925648722, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.931414149, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.942926826, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.948403792, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.958768543, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.964211478, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.975531054, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.981423614, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3583.993016038, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3583.998659909, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.012835534, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.018411374, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.029121411, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.035866481, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.047209423, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.056457995, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.067123054, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.073213909, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.083601669, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.089776844, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.102399355, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.108566217, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.121011915, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.137751257, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.159646161, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.165959244, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.17663594, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.182792235, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.196577293, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.20590805, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.218682493, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.224464093, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.235131743, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.240716223, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.251110136, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.25655277, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.267011349, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.272731989, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.283329626, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.28937605, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.30010869, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.305659964, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.317597859, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.323183902, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.334778327, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.340679921, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.352304456, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.357914265, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.369881035, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.375590192, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.387503939, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.394250524, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.408559982, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.414756259, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.426504801, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.43261821, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.450687496, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.45696533, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.468639016, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.47488469, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.48815789, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.496618881, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.509928702, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.516701613, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.527101871, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.531869348, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.542590333, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.548742757, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.559355324, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.565834862, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.577554628, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.58240725, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.594636437, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.603214837, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"event": "ACCESS_BEGIN", "monotonic_s": 3584.625820493, "operation": "runstop.dmasr", "state": "SEND"}
+{"event": "ACCESS_RETURN", "monotonic_s": 3584.631642597, "operation": "runstop.dmasr", "state": "SEND", "value": 0}
+{"buffer_retained": true, "error": "TimeoutError: Python RUNSTOP polling deadline", "event": "TERMINAL_FAIL", "monotonic_s": 3584.648579194, "ok": false, "raw": {"checker.accepted_output_total": 0, "checker.beats": 0, "checker.binary_checksum": 0, "checker.drain_enable": 1, "checker.eols": 0, "checker.error_code": 0, "checker.first_word": 0, "checker.frame_id": 0, "checker.input_byte_checksum": 0, "checker.input_bytes": 0, "checker.last_word": 0, "checker.magic": 1464807732, "checker.observed_pixels": 0, "checker.packet_done_count": 0, "checker.packet_error_count": 0, "checker.sofs": 0, "checker.stalled_cycles": 0, "checker.status": 0, "checker.tlast_count": 0, "initial.dmacr": 65538, "initial.dmasr": 1, "initial.length": 0, "runstop.dmasr": 0, "send_initial.dmacr": 65538, "send_initial.dmasr": 1}, "send_attempts": 0, "stage": "SEND", "state": "FAIL"}

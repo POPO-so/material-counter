@@ -1,0 +1,15 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- C:\fpga\material-counter\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\fpga\material-counter
+collecting ... collected 7 items
+
+python/refmodel/experiments/wo0014/test_image_vectors.py::PacketVectorTests::test_37_bit_record_lane_order PASSED [ 14%]
+python/refmodel/experiments/wo0014/test_image_vectors.py::PacketVectorTests::test_all_h3_sources_are_gray8_320_by_240 PASSED [ 28%]
+python/refmodel/experiments/wo0014/test_image_vectors.py::PacketVectorTests::test_directed_partial_last_word_uses_contiguous_one_byte_keep PASSED [ 42%]
+python/refmodel/experiments/wo0014/test_image_vectors.py::PacketVectorTests::test_header_payload_keep_trailer_and_tlast PASSED [ 57%]
+python/refmodel/experiments/wo0014/test_image_vectors.py::PacketVectorTests::test_negative_packet_vectors_have_declared_recovery_and_single_tlast_bits PASSED [ 71%]
+python/refmodel/experiments/wo0014/test_image_vectors.py::PacketVectorTests::test_rgb_formula_and_threshold_equality PASSED [ 85%]
+python/refmodel/experiments/wo0014/test_image_vectors.py::PacketVectorTests::test_valid_partial_keep_fixtures_cover_masks_3_and_7 PASSED [100%]
+
+============================== 7 passed in 3.80s ==============================

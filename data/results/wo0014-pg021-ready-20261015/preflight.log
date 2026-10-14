@@ -1,0 +1,109 @@
+{
+  "status": "OFFLINE_STAGE_READY",
+  "hardware_attempted": false,
+  "overlay_loads": 0,
+  "dma_sends": 0,
+  "test_suites": [
+    {
+      "name": "diagnostic",
+      "command": [
+        "C:\\fpga\\material-counter\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-v",
+        "--basetemp",
+        "C:\\fpga\\material-counter\\data\\results\\wo0014-diagnostic50-hardening-20261014\\run-20261015-025303-069202\\fixtures-diagnostic",
+        "scripts/wo0014_hw/diagnostic50"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "legacy-image-once",
+      "command": [
+        "C:\\fpga\\material-counter\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-v",
+        "--basetemp",
+        "C:\\fpga\\material-counter\\data\\results\\wo0014-diagnostic50-hardening-20261014\\run-20261015-025303-069202\\fixtures-legacy-image-once",
+        "scripts/wo0014_hw/test_pynq_image_once.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "wo0014-vectors",
+      "command": [
+        "C:\\fpga\\material-counter\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-v",
+        "--basetemp",
+        "C:\\fpga\\material-counter\\data\\results\\wo0014-diagnostic50-hardening-20261014\\run-20261015-025303-069202\\fixtures-wo0014-vectors",
+        "python/refmodel/experiments/wo0014/test_image_vectors.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "wo0013-ddr",
+      "command": [
+        "C:\\fpga\\material-counter\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-v",
+        "--basetemp",
+        "C:\\fpga\\material-counter\\data\\results\\wo0014-diagnostic50-hardening-20261014\\run-20261015-025303-069202\\fixtures-wo0013-ddr",
+        "data/results/wo0013-pagemap-policy-20261014-120205/test_ddr_validate.py"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "precheck": "PASS",
+  "clock_mhz": 50,
+  "bit_sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d",
+  "hwh_sha256": "9e2e09f0cb79ca678d24c3c3d826fbb393832bec6a45a43e2c49f4276dcc4b57",
+  "packet_sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+  "packet_bytes": 230432,
+  "input_checksum": 6620674,
+  "binary_checksum": 571200,
+  "executor_manifest_sha256": "7fa96c83ffc6ec4572d2b70eff120b7acc2904c11121be39e12faba7455934c2",
+  "protected_unchanged": true,
+  "original_script_unchanged": true,
+  "warning_audit": {
+    "drc.rpt": {
+      "PDCN-1569": {
+        "severity": "Warning",
+        "count": 1
+      },
+      "REQP-1839": {
+        "severity": "Warning",
+        "count": 8
+      },
+      "REQP-1840": {
+        "severity": "Warning",
+        "count": 4
+      },
+      "RTSTAT-10": {
+        "severity": "Warning",
+        "count": 1
+      },
+      "REQP-165": {
+        "severity": "Advisory",
+        "count": 1
+      },
+      "REQP-181": {
+        "severity": "Advisory",
+        "count": 1
+      }
+    },
+    "methodology.rpt": {
+      "LUTAR-1": {
+        "severity": "Warning",
+        "count": 1
+      }
+    }
+  },
+  "board_environment_verified": false,
+  "board_authorization_required": true,
+  "full_execution_ready": false,
+  "readiness_scope": "Independent stages only; native authentication and manual external health remain live prerequisites"
+}

@@ -1,0 +1,52 @@
+{
+  "ok": false,
+  "status": "FAIL",
+  "reason": "CHILD_FAIL",
+  "child_pid": 6311,
+  "child_killed": false,
+  "axi_bus_recovered": false,
+  "commands": [
+    "ENV",
+    "HEALTH",
+    "MIN_READ",
+    "INIT",
+    "SEND"
+  ],
+  "stage": "SEND",
+  "child_result": {
+    "buffer_retained": true,
+    "error": "TimeoutError: Python RUNSTOP polling deadline",
+    "kind": "result",
+    "ok": false,
+    "raw": {
+      "checker.accepted_output_total": 0,
+      "checker.beats": 0,
+      "checker.binary_checksum": 0,
+      "checker.drain_enable": 1,
+      "checker.eols": 0,
+      "checker.error_code": 0,
+      "checker.first_word": 0,
+      "checker.frame_id": 0,
+      "checker.input_byte_checksum": 0,
+      "checker.input_bytes": 0,
+      "checker.last_word": 0,
+      "checker.magic": 1464807732,
+      "checker.observed_pixels": 0,
+      "checker.packet_done_count": 0,
+      "checker.packet_error_count": 0,
+      "checker.sofs": 0,
+      "checker.stalled_cycles": 0,
+      "checker.status": 0,
+      "checker.tlast_count": 0,
+      "initial.dmacr": 65538,
+      "initial.dmasr": 1,
+      "initial.length": 0,
+      "runstop.dmasr": 0,
+      "send_initial.dmacr": 65538,
+      "send_initial.dmasr": 1
+    },
+    "send_attempts": 0,
+    "stage": "SEND",
+    "state": "FAIL"
+  }
+}
