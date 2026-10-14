@@ -53,3 +53,12 @@
 /data/results/wo0014-diagnostic50-hardening-20261014/run-20261015-031611-696569/*.rpt -diff
 /data/results/wo0014-diagnostic50-hardening-20261014/run-20261015-031611-696569/*.log -diff
 /data/results/wo0014-pg021-ready-20261015/core.diff -diff
+
+# Preserve the bounded WO-0014 closeout source pins and board evidence.
+/scripts/wo0014_hw/closeout/** -text
+/scripts/wo0014_hw/closeout/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/data/results/wo0014-closeout-20261015/** -text
+/data/results/wo0014-closeout-20261015/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/data/results/wo0014-closeout-20261015/**/*.log -diff
+/data/results/wo0014-closeout-20261015/*.log -diff
+/data/results/wo0014-closeout-20261015/*.bin -diff

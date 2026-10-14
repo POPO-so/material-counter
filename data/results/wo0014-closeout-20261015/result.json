@@ -1,0 +1,9 @@
+{
+  "status": "FAIL_STOPPED",
+  "actions": [
+    "preflight",
+    "deploy"
+  ],
+  "baseline_commit": "5a153c4c91bc985882853c39c24b52c3130bd7a2",
+  "error": "RuntimeError: multi50 nonzero exit; no retry"
+}

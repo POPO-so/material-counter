@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "hardware_accesses": 0,
+  "multi50_dma_checker": "PASS",
+  "outer_cma": "FAIL_CLOSED",
+  "100mhz": "NOT_ATTEMPTED"
+}

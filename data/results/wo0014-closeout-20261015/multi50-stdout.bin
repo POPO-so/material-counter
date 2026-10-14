@@ -1,0 +1,7 @@
+ACTION_BEGIN
+OS_SNAPSHOT {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "fpga_state": "operating", "fpga_flags": "0", "kernel_continuity": true, "new_kernel_warnings": []}
+OS_SNAPSHOT {"boot_id": "52955bb3-db18-4505-b209-78cbf3969d89", "fpga_state": "operating", "fpga_flags": "0", "kernel_continuity": true, "new_kernel_warnings": []}
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "authorized-recovery-action", line 209, in <module>
+RuntimeError: CMA accounting changed after successful DMA/free

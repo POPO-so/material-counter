@@ -1,0 +1,68 @@
+OpenSSH_for_Windows_9.5p2, LibreSSL 3.8.2
+debug1: Connecting to 192.168.2.99 [192.168.2.99] port 22.
+debug1: fd 4 clearing O_NONBLOCK
+debug1: Connection established.
+debug1: identity file C:\\Users\\POP/.ssh/id_rsa type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_rsa-cert type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_ecdsa type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_ecdsa-cert type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_ecdsa_sk type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_ecdsa_sk-cert type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_ed25519 type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_ed25519-cert type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_ed25519_sk type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_ed25519_sk-cert type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_xmss type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_xmss-cert type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_dsa type -1
+debug1: identity file C:\\Users\\POP/.ssh/id_dsa-cert type -1
+debug1: Local version string SSH-2.0-OpenSSH_for_Windows_9.5
+debug1: Remote protocol version 2.0, remote software version OpenSSH_8.9p1 Ubuntu-3
+debug1: compat_banner: match: OpenSSH_8.9p1 Ubuntu-3 pat OpenSSH* compat 0x04000000
+debug1: Authenticating to 192.168.2.99:22 as 'xilinx'
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: algorithm: curve25519-sha256
+debug1: kex: host key algorithm: ssh-ed25519
+debug1: kex: server->client cipher: chacha20-poly1305@openssh.com MAC: <implicit> compression: none
+debug1: kex: client->server cipher: chacha20-poly1305@openssh.com MAC: <implicit> compression: none
+debug1: expecting SSH2_MSG_KEX_ECDH_REPLY
+debug1: SSH2_MSG_KEX_ECDH_REPLY received
+debug1: Server host key: ssh-ed25519 SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o
+debug1: Host '192.168.2.99' is known and matches the ED25519 host key.
+debug1: Found key in C:\\Users\\POP\\.ssh\\known_hosts:5
+debug1: rekey out after 134217728 blocks
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: rekey in after 134217728 blocks
+debug1: get_agent_identities: ssh_get_authentication_socket: No such file or directory
+debug1: Will attempt key: C:\\Users\\POP/.ssh/id_rsa 
+debug1: Will attempt key: C:\\Users\\POP/.ssh/id_ecdsa 
+debug1: Will attempt key: C:\\Users\\POP/.ssh/id_ecdsa_sk 
+debug1: Will attempt key: C:\\Users\\POP/.ssh/id_ed25519 
+debug1: Will attempt key: C:\\Users\\POP/.ssh/id_ed25519_sk 
+debug1: Will attempt key: C:\\Users\\POP/.ssh/id_xmss 
+debug1: Will attempt key: C:\\Users\\POP/.ssh/id_dsa 
+debug1: SSH2_MSG_EXT_INFO received
+debug1: kex_input_ext_info: server-sig-algs=<ssh-ed25519,sk-ssh-ed25519@openssh.com,ssh-rsa,rsa-sha2-256,rsa-sha2-512,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ecdsa-sha2-nistp256@openssh.com,webauthn-sk-ecdsa-sha2-nistp256@openssh.com>
+debug1: kex_ext_info_check_ver: publickey-hostbound@openssh.com=<0>
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey,password
+debug1: Next authentication method: password
+Authenticated to 192.168.2.99 ([192.168.2.99]:22) using "password".
+debug1: channel 0: new session [client-session] (inactive timeout: 0)
+debug1: Requesting no-more-sessions@openssh.com
+debug1: Entering interactive session.
+debug1: pledge: network
+debug1: ENABLE_VIRTUAL_TERMINAL_INPUT is supported. Reading the VTSequence from console
+debug1: ENABLE_VIRTUAL_TERMINAL_PROCESSING is supported. Console supports the ansi parsing
+debug1: client_input_global_request: rtype hostkeys-00@openssh.com want_reply 0
+debug1: Sending command: sudo -p '[collect-failure sudo] Password: ' /usr/local/share/pynq-venv/bin/python -I -S -B -c 'import base64,zlib;print('"'"'ACTION_BEGIN'"'"',flush=True);exec(compile(zlib.decompress(base64.b64decode('"'"'eJztvVl34kqyMPpev4Lu84Dd2KV5cn9+AISY55mqWl4aUkigCQ0g2Lf++42UAINdtXefc/p+D3e1u1chpTIjImOOzJS2gQLHP7rIi1//KPqO8ab7nmmviy+FP4ooRXoS++GbYYdIh4sjNBcJy3cRkdqO7aXEwSdJioUO6trzo9jWOfIN+vp7FB7faJLmKZLiik+FYohcP0ZvaG8byNPRX4O8QAGAhqu++XjQLUCUBgAAGW+m7aAoo1f3Q/Q1OGbX2jHOWmmK53noHlkqzfEYmcHonChIIsmpoi4gg2IoiRYpTmUo02QNkVd5g+IoU1BpgZFYTaUMwxR0XWVpUVORVvwJ4HTLdoyPuCiGJMl7XKpp6qYmaRIlSRzNI0PjWIFBlEmLvKQKJsfQosAZoqRKImJFU+VExFE6YxiMqap0hitKAhTu7cgPPyFkafZ+chTFMYIE8zN0TadFwEILlGAwjCbRJquyiKZImLJmUKQkCpQmCaxBGrqkkowmmqSaITSQaoAoPvESuMIId+gQw+qCaJoiJQkSpfM8aTIiK/ImyUi0ITKCoIkAltFJgVaBk6oIIhQ4U9VZlTdFI58fiiLb9z5iExnyfm6aCTSrpmroHP4fxwOPRFbnaYY3KdAMnlR1mhJ5QeQ1U6I1nRJ1ngRELFJp2tAzZGoSW6Dstq7Gv8BJUTx7j5MHYe
+debug1: pledge: fork
+debug1: client_input_channel_req: channel 0 rtype exit-status reply 0
+debug1: client_input_channel_req: channel 0 rtype eow@openssh.com reply 0
+debug1: channel 0: free: client-session, nchannels 1
+Transferred: sent 21200, received 157788 bytes, in 8.5 seconds
+Bytes per second: sent 2501.2, received 18615.9
+debug1: Exit status 0

@@ -1,0 +1,166 @@
+{
+  "status": "FAIL_STOPPED",
+  "git_baseline": "5a153c4c91bc985882853c39c24b52c3130bd7a2",
+  "protected_unchanged": true,
+  "source_tests": "13 PASS + 2 subtests PASS",
+  "packaged_offline_entries": 4,
+  "modes": {
+    "multi50": {
+      "status": "DMA_CHECKER_PASS_POST_CMA_REFUSED",
+      "receipt": "data\\results\\wo0014-closeout-20261015\\board-evidence\\multi50\\closeout-20261015\\mode-multi50-pass.json",
+      "frames": [
+        {
+          "checker": {
+            "accepted_output_total": 153600,
+            "beats": 115216,
+            "binary_checksum": 571200,
+            "drain_enable": 1,
+            "eols": 240,
+            "error_code": 0,
+            "first_word": 1464807732,
+            "frame_id": 1,
+            "input_byte_checksum": 13239487,
+            "input_bytes": 460864,
+            "last_word": 3235823636,
+            "magic": 1464807732,
+            "observed_pixels": 76800,
+            "packet_done_count": 2,
+            "packet_error_count": 0,
+            "sofs": 1,
+            "stalled_cycles": 0,
+            "status": 9,
+            "tlast_count": 2
+          },
+          "clock_mhz": 50,
+          "dmasr": 4098,
+          "foreground_pixels": 2240,
+          "frame_id": 1,
+          "frame_start_to_checker_verified_s": 1.0837441589992522,
+          "length_write_to_checker_verified_s": 1.0012990880004509,
+          "length_write_to_dma_idle_s": 0.022197870999661973,
+          "packet_sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e"
+        },
+        {
+          "checker": {
+            "accepted_output_total": 230400,
+            "beats": 172824,
+            "binary_checksum": 571200,
+            "drain_enable": 1,
+            "eols": 240,
+            "error_code": 0,
+            "first_word": 1464807732,
+            "frame_id": 2,
+            "input_byte_checksum": 19858824,
+            "input_bytes": 691296,
+            "last_word": 3235823636,
+            "magic": 1464807732,
+            "observed_pixels": 76800,
+            "packet_done_count": 3,
+            "packet_error_count": 0,
+            "sofs": 1,
+            "stalled_cycles": 0,
+            "status": 9,
+            "tlast_count": 3
+          },
+          "clock_mhz": 50,
+          "dmasr": 4098,
+          "foreground_pixels": 2240,
+          "frame_id": 2,
+          "frame_start_to_checker_verified_s": 0.8607770139988133,
+          "length_write_to_checker_verified_s": 0.7755777960010164,
+          "length_write_to_dma_idle_s": 0.03255003100093745,
+          "packet_sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1"
+        },
+        {
+          "checker": {
+            "accepted_output_total": 307200,
+            "beats": 230432,
+            "binary_checksum": 571200,
+            "drain_enable": 1,
+            "eols": 240,
+            "error_code": 0,
+            "first_word": 1464807732,
+            "frame_id": 3,
+            "input_byte_checksum": 26480842,
+            "input_bytes": 921728,
+            "last_word": 3235823636,
+            "magic": 1464807732,
+            "observed_pixels": 76800,
+            "packet_done_count": 4,
+            "packet_error_count": 0,
+            "sofs": 1,
+            "stalled_cycles": 0,
+            "status": 9,
+            "tlast_count": 4
+          },
+          "clock_mhz": 50,
+          "dmasr": 4098,
+          "foreground_pixels": 2240,
+          "frame_id": 3,
+          "frame_start_to_checker_verified_s": 0.9185890329990798,
+          "length_write_to_checker_verified_s": 0.7895976480012905,
+          "length_write_to_dma_idle_s": 0.025532049001412815,
+          "packet_sha256": "64345eb45065abb24cc4e816f4a22abd8c3cf24f3472aa508b7935209e516efc"
+        }
+      ],
+      "cma_before": null,
+      "cma_after": null,
+      "mean_dma_idle_ms": 26.759983667337412,
+      "mean_checker_verified_ms": 855.4915106675859,
+      "mean_frame_prepare_verify_ms": 954.3700686657152,
+      "supervisor": {
+        "ok": true,
+        "status": "PASS",
+        "commands": [
+          "ENV",
+          "HEALTH",
+          "MIN_READ",
+          "INIT",
+          "SEND",
+          "VERIFY",
+          "RELEASE",
+          "HEALTH",
+          "SEND",
+          "VERIFY",
+          "RELEASE",
+          "HEALTH",
+          "SEND",
+          "VERIFY",
+          "RELEASE",
+          "POST"
+        ],
+        "child_killed": false,
+        "axi_bus_recovered": false,
+        "send_attempts": 3,
+        "child_pid": 13787,
+        "exit_code": 0
+      },
+      "current_cma_at_collection": {
+        "CmaTotal_kib": 131072,
+        "CmaFree_kib": 31304
+      },
+      "os_gate_at_collection": {
+        "boot_id": "52955bb3-db18-4505-b209-78cbf3969d89",
+        "fpga_state": "operating",
+        "fpga_flags": "0",
+        "kernel_continuity": true,
+        "new_kernel_warnings": []
+      },
+      "cma_limit": "Original numeric pre/post CMA values were not persisted before wrapper refusal; current sample cannot reconstruct the delta or establish a leak."
+    },
+    "overlay100": {
+      "status": "NOT_VERIFIED"
+    },
+    "single100": {
+      "status": "NOT_VERIFIED"
+    },
+    "multi100": {
+      "status": "NOT_VERIFIED"
+    }
+  },
+  "performance_scope": "software observed, includes polling/logging/supervision overhead",
+  "wo0014_board_closeout_verified": false,
+  "p2_admission": "WAITING_50MHZ_POST_CMA_GATE_RESOLUTION",
+  "p3_status": "PLANNED_REQUIRES_NEW_EXPERIMENTAL_BD_AND_EOF_BRIDGE",
+  "failure": "RuntimeError: multi50 nonzero exit; no retry"
+}

@@ -1,0 +1,17 @@
+{
+  "status": "READY",
+  "manifest_sha256": "79b7f4dbc317d6eb0aca0130b3474b430499e40a6e0e753a3a28b3a3e7fbbff7",
+  "package_config_sha256": "e237588a42e476bac2ed8b6e4af9aa37a63acf105a84a47daab192c95d9813c1",
+  "zip_sha256": "217f47fb12ebc97b397248ed05633eeb79eb05c93dffed347946c1ed71e489ab",
+  "closeout_tests": "13 passed, 2 subtests passed",
+  "packaged_offline_entries": 4,
+  "manager_source_sha256": {
+    "check_package.py": "21f0dc2c9d3d7b7b7f4c26c530ae13d3a114efdd8dfcbe256df465ac4f2da22f",
+    "controller.py": "08ff3b69d620f22374fed47c36ac938a84d5404056955f825bce25537e94a2fb",
+    "prepare_baseline.py": "7a66defe93067ee3b1566938e54c6198a1fb99dc4fea760192b22e66920ba4ff",
+    "prepare_deploy.py": "d04a17c5d84bf963785c3229bca474a73c29472b57a56dd1b5c9bc47a22f1f58",
+    "prepare_packets.py": "0870c90f71feb3b8f133c39eb9620f9f64558928e2d706df276442a0f3db4cc9",
+    "remote_driver.py": "5cde5b4196e6cdc8f27470bbeb663b36939dea43175cc5d54a75d134a7b195d7"
+  },
+  "hardware_attempted": false
+}
