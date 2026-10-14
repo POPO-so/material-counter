@@ -23,8 +23,11 @@ module axis_dma_rgb_adapter #(
     wire output_space=!m_tvalid || m_tready;
     wire emit_pixel=(state==PAY) && buffered_bytes>=4'd3 && output_space;
     wire [3:0] after_emit=buffered_bytes-(emit_pixel ? 4'd3 : 4'd0);
-    wire [31:0] bytes_left=PAYLOAD_BYTES-received_bytes;
-    wire [3:0] incoming_bytes=(bytes_left>=32'd4) ? 4'd4 : bytes_left[3:0];
+    // Accepted payload words advance by four bytes until the constant tail.
+    // Avoid a wide subtract feeding the checksum lane selects.
+    localparam [3:0] TAIL_BYTES=(PAYLOAD_BYTES % 4 == 0) ? 4 : PAYLOAD_BYTES % 4;
+    localparam [31:0] FULL_BYTES=PAYLOAD_BYTES-TAIL_BYTES;
+    wire [3:0] incoming_bytes=(received_bytes<FULL_BYTES) ? 4'd4 : TAIL_BYTES;
     wire [3:0] expected_keep=(incoming_bytes==4) ? 4'hf :
                                (incoming_bytes==3) ? 4'h7 :
                                (incoming_bytes==2) ? 4'h3 : 4'h1;
@@ -34,14 +37,15 @@ module axis_dma_rgb_adapter #(
     wire payload_take=take && state==PAY && s_tkeep==expected_keep && !s_tlast;
     reg [63:0] next_reservoir;
     reg [3:0] next_buffered;
-    reg [31:0] incoming_sum;
+    wire [7:0] lane1=(incoming_bytes>=2) ? s_tdata[15:8] : 8'd0;
+    wire [7:0] lane2=(incoming_bytes>=3) ? s_tdata[23:16] : 8'd0;
+    wire [7:0] lane3=(incoming_bytes>=4) ? s_tdata[31:24] : 8'd0;
+    wire [8:0] sum01={1'b0,s_tdata[7:0]}+{1'b0,lane1};
+    wire [8:0] sum23={1'b0,lane2}+{1'b0,lane3};
+    wire [9:0] incoming_sum={1'b0,sum01}+{1'b0,sum23};
     always @* begin
         next_reservoir=emit_pixel ? (reservoir>>24) : reservoir;
         next_buffered=after_emit;
-        incoming_sum={24'b0,s_tdata[7:0]};
-        if (incoming_bytes>=2) incoming_sum=incoming_sum+{24'b0,s_tdata[15:8]};
-        if (incoming_bytes>=3) incoming_sum=incoming_sum+{24'b0,s_tdata[23:16]};
-        if (incoming_bytes>=4) incoming_sum=incoming_sum+{24'b0,s_tdata[31:24]};
         if (payload_take) begin
             // Ignore padding lanes in the final partial payload word.
             case (incoming_bytes)
@@ -76,7 +80,7 @@ module axis_dma_rgb_adapter #(
                 reservoir<=next_reservoir; buffered_bytes<=next_buffered;
                 if (payload_take) begin
                     received_bytes<=received_bytes+{28'b0,incoming_bytes};
-                    payload_sum<=payload_sum+incoming_sum;
+                    payload_sum<=payload_sum+{22'b0,incoming_sum};
                 end
                 if (emit_pixel) begin
                     m_tdata<={reservoir[7:0],reservoir[15:8],reservoir[23:16]};

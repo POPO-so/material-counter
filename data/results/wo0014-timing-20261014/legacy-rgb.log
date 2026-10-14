@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 14 16:10:02 2026
+# Process ID         : 31368
+# Current directory  : C:/fpga/material-counter/data/results/wo0014-timing-20261014/legacy
+# Command line       : xsim.exe -log C:/fpga/material-counter/data/results/wo0014-timing-20261014/legacy-rgb.log -mode tcl -source {xsim.dir/legacy_rgb_repro/xsim_script.tcl}
+# Log file           : C:/fpga/material-counter/data/results/wo0014-timing-20261014/legacy-rgb.log
+# Journal file       : C:/fpga/material-counter/data/results/wo0014-timing-20261014/legacy\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 17004 MB
+#-----------------------------------------------------------
+source xsim.dir/legacy_rgb_repro/xsim_script.tcl
+# xsim {legacy_rgb_repro} -testplusarg READY_MODE=1 -testplusarg RGB=C:/fpga/material-counter/data/results/rgb2gray-vectors-20261012/vectors_rgb.hex -testplusarg EXPECTED=C:/fpga/material-counter/data/results/rgb2gray-vectors-20261012/expected_gray.hex -testplusarg OUTPUT=C:/fpga/material-counter/data/results/wo0014-timing-20261014/legacy-rgb-output.hex -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+TEST_PASS in=230912 out=230912 stalls=87813 blocked=86187 bubbles=22765 reset_flush=1
+$finish called at time : 3398745 ns : File "C:/fpga/material-counter/fpga/sim/tb_axis_rgb2gray.sv" Line 173
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Oct 14 16:10:05 2026...
