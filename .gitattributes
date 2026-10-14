@@ -22,3 +22,7 @@
 *.bit   binary
 *.dcp   binary
 *.pdf   binary
+# Preserve immutable experiment evidence bytes across Windows/Linux checkouts.
+/data/results/** -text whitespace=cr-at-eol
+/data/results/**/*.rpt -diff
+/data/results/**/*.log -diff
