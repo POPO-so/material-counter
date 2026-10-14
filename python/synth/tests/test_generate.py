@@ -5,11 +5,15 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 from PIL import Image
 
 
 SYNTH_ROOT = Path(__file__).resolve().parents[1]
 SPEC_PATH = SYNTH_ROOT / "specs" / "h3_matrix.json"
+sys.path.insert(0, str(SYNTH_ROOT.parent))
+from synth.generate import generate_dataset
+
 REQUIRED_GT_FIELDS = {
     "frame_id",
     "object_id",
@@ -30,6 +34,16 @@ def _run_generator(output_dir: Path, spec_path: Path = SPEC_PATH) -> None:
         cwd=SYNTH_ROOT.parent,
         check=True,
     )
+
+
+def _write_shortened_spec(path: Path) -> tuple[str, str]:
+    with SPEC_PATH.open(encoding="utf-8") as handle:
+        spec = json.load(handle)
+    previous_condition_ids = [condition["id"] for condition in spec["conditions"][:2]]
+    spec["num_frames"] = 2
+    spec["conditions"] = spec["conditions"][:1]
+    path.write_text(json.dumps(spec), encoding="utf-8")
+    return previous_condition_ids[0], previous_condition_ids[1]
 
 
 def _load_dataset(output_dir: Path):
@@ -165,6 +179,58 @@ def test_dropped_frame_metadata_cross_validates_config_png_and_ground_truth(tmp_
                 assert all(not object_truth["visible"] for object_truth in objects)
             else:
                 assert any(object_truth["visible"] for object_truth in objects)
+
+
+def test_nonempty_output_is_rejected_without_changing_old_dataset_files(tmp_path):
+    output_dir = tmp_path / "existing_dataset"
+    kept_condition_id, removed_condition_id = _write_shortened_spec(
+        tmp_path / "shortened_spec.json"
+    )
+
+    old_files = {
+        Path("config.json"): b'{"previous_dataset": true}\n',
+        Path("sentinel.txt"): b"preserve this experimental record\n",
+        Path(kept_condition_id) / "config.json": b'{"num_frames": 24}\n',
+        Path(kept_condition_id) / "ground_truth.json": b'{"old_ground_truth": true}\n',
+        Path(kept_condition_id) / "frames" / "frame_0000.png": None,
+        Path(kept_condition_id) / "frames" / "frame_0023.png": None,
+        Path(removed_condition_id) / "frames" / "frame_0007.png": None,
+    }
+    for relative_path, contents in old_files.items():
+        path = output_dir / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if contents is None:
+            Image.fromarray(np.full((1, 1), 91, dtype=np.uint8), mode="L").save(path)
+        else:
+            path.write_bytes(contents)
+    before = {
+        path.relative_to(output_dir): path.read_bytes()
+        for path in output_dir.rglob("*")
+        if path.is_file()
+    }
+
+    with pytest.raises(FileExistsError, match="not empty"):
+        generate_dataset(tmp_path / "shortened_spec.json", output_dir)
+
+    after = {
+        path.relative_to(output_dir): path.read_bytes()
+        for path in output_dir.rglob("*")
+        if path.is_file()
+    }
+    assert after == before
+
+
+def test_generator_allows_an_existing_empty_output_directory(tmp_path):
+    output_dir = tmp_path / "empty_dataset"
+    output_dir.mkdir()
+    spec_path = tmp_path / "shortened_spec.json"
+    kept_condition_id, _ = _write_shortened_spec(spec_path)
+
+    generate_dataset(spec_path, output_dir)
+
+    assert (output_dir / "config.json").is_file()
+    assert (output_dir / kept_condition_id / "config.json").is_file()
+    assert (output_dir / kept_condition_id / "ground_truth.json").is_file()
 
 
 def test_pillow_usage_is_limited_to_png_io(tmp_path):

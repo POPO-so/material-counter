@@ -1,0 +1,28 @@
+{
+  "worktree": "C:\\Users\\POP\\.codex\\worktrees\\submission-audit-20261015\\material-counter",
+  "base_commit": "0e276cf4a5883c16e3298d6cd27b7dcd309a3c33",
+  "red": {
+    "command": "python -m pytest python/synth/tests/test_generate.py::test_nonempty_output_is_rejected_without_changing_old_dataset_files python/synth/tests/test_generate.py::test_generator_allows_an_existing_empty_output_directory -q",
+    "result": "EXPECTED_RED",
+    "summary": "1 failed, 1 passed; non-empty target did not raise FileExistsError and the focused test failed at that expectation."
+  },
+  "green": {
+    "command": "python -m pytest python/synth/tests/test_generate.py::test_nonempty_output_is_rejected_without_changing_old_dataset_files python/synth/tests/test_generate.py::test_generator_allows_an_existing_empty_output_directory -q",
+    "result": "PASS",
+    "summary": "2 passed; non-empty target rejected with existing files byte-identical, existing empty target accepted."
+  },
+  "synth_regression": {
+    "command": "python -m pytest python/synth/tests -v",
+    "result": "PASS",
+    "summary": "9 passed in 24.34s."
+  },
+  "fresh_output_byte_equality": {
+    "baseline": "git show 0e276cf4a5883c16e3298d6cd27b7dcd309a3c33:python/synth/generate.py",
+    "result": "PASS",
+    "file_count": 530,
+    "original_manifest_sha256": "4ddeeb85a1dd12925ca957368fcb334f4055bd3873fab4b4f13f77755e5c6f78",
+    "candidate_manifest_sha256": "4ddeeb85a1dd12925ca957368fcb334f4055bd3873fab4b4f13f77755e5c6f78",
+    "identical_paths_and_bytes": true
+  },
+  "python_executable": "C:/fpga/material-counter/.venv/Scripts/python.exe"
+}

@@ -200,6 +200,11 @@ def _write_sequence(
 
 
 def generate_dataset(spec_path: Path, output_dir: Path) -> dict[str, Any]:
+    if output_dir.exists() and (
+        not output_dir.is_dir() or next(output_dir.iterdir(), None) is not None
+    ):
+        raise FileExistsError(f"output directory is not empty: {output_dir}")
+
     with spec_path.open(encoding="utf-8") as handle:
         spec = json.load(handle)
     conditions = spec.get("conditions")
