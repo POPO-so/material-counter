@@ -38,8 +38,8 @@
     },
     {
       "path": "docs/verification/submission-status-20261015.md",
-      "sha256": "4c624daa7e7798a6e1d4fb571cba1d62aac0e86d3d710899a959cec765303635",
-      "bytes": 15077
+      "sha256": "23842076f087d64be653edced26c2a8c72cb698adb1e36f9e16152141fe3d21e",
+      "bytes": 15366
     },
     {
       "path": "scripts/delivery/prepare_replay.py",
@@ -63,8 +63,8 @@
     },
     {
       "path": "data/results/submission-audit-20261015/delivery-revisions.json",
-      "sha256": "bf2e37672e46839d1f44e86a4e055c77e000645dd2006a5963a33646f6748015",
-      "bytes": 55206
+      "sha256": "7c1fb50ff954c61e8ff0f96f95f114ec369b95bb2b8be93f35f8b113352ed298",
+      "bytes": 55485
     },
     {
       "path": "data/results/submission-audit-20261015/generator-checks.json",

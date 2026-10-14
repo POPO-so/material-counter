@@ -19,6 +19,7 @@ GitHub 默认分支 `main` 为 `4398f64`，只有 synthetic 实现，没有这�
 | 03 WO-0013 | [#5](https://github.com/POPO-so/material-counter/pull/5) / #4 | `batch-03-wo0013.json` | resetfix 单次 MM2S→Monitor；无 S2MM |
 | 04 WO-0014 离线与 OOC 优化 | [#6](https://github.com/POPO-so/material-counter/pull/6) / #5 | `batch-04-wo0014-offline.json` | 原始脚本保留历史根路径；新跨目录入口见 `scripts/delivery/REPLAY.md` |
 | 05 WO-0014 硬件依赖与精选证据 | [#7](https://github.com/POPO-so/material-counter/pull/7) / #6 | `batch-05-wo0014-hardware.json` | 纳管此前遗漏的 wrapper、构建/导出脚本、两对 BIT/HWH、所需 fixture 与最小 AMD helper；不带 project/cache/DCP/个人配置/现场调度档案 |
+| 06 本轮审计、复现入口与生成器安全修复 | [#8](https://github.com/POPO-so/material-counter/pull/8) / #7 | `support-files.json`；主修复提交 `a3fa67c` | 16 个明确文件；修复非空输出污染，不改变 H3 数据规则；跨目录准备不等于新 RTL PASS |
 
 五份 inventory 共 319 条文件记录，逐条记录原文件 SHA-256、大小、原提交或未跟踪快照来源。原提交 `da44709` 至 `7a868c0` 不被重写；精选交付产生新提交，旧 SHA 是来源标识，不是假定 clean clone 能取到的祖先。新工具不依赖旧 ca6 提交存在。
 

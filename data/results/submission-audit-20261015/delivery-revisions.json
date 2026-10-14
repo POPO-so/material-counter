@@ -785,5 +785,12 @@
   },
   "xsim_or_build_rerun": false,
   "board_actions": 0,
-  "merged": false
+  "merged": false,
+  "final_audit_pr": {
+    "url": "https://github.com/POPO-so/material-counter/pull/8",
+    "base": "codex/delivery-wo0014-hardware-20261015",
+    "head": "codex/submission-audit-20261015",
+    "implementation_commit": "a3fa67c",
+    "status": "OPEN_DRAFT_NOT_MERGED"
+  }
 }
