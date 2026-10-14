@@ -1,0 +1,51 @@
+{
+  "stage": "POST_HEALTH_PASS",
+  "monotonic_s": 2234.022690826,
+  "boot_id": "a2fed90e-2394-472f-afcd-1422680fed9d",
+  "fpga_state": "operating",
+  "commands": [
+    {
+      "args": [
+        "uname",
+        "-a"
+      ],
+      "exit_code": 0,
+      "stdout": "Linux pynq 6.6.10-xilinx-v2024.1-g3c0eca68c652 #1 SMP PREEMPT Sat Apr 27 05:22:24 UTC 2024 armv7l armv7l armv7l GNU/Linux\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "id"
+      ],
+      "exit_code": 0,
+      "stdout": "uid=0(root) gid=0(root) groups=0(root)\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "uptime"
+      ],
+      "exit_code": 0,
+      "stdout": " 23:13:58 up 37 min,  1 user,  load average: 0.28, 0.15, 0.13\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "free",
+        "-m"
+      ],
+      "exit_code": 0,
+      "stdout": "               total        used        free      shared  buff/cache   available\nMem:             491         147         117           1         226         331\nSwap:            511           0         511\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "dmesg",
+        "--level=err,warn"
+      ],
+      "exit_code": 0,
+      "stdout": "[   40.392607] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2\n[   40.399204] clk: Not disabling unused clocks\n[   41.823030] systemd[1]: Failed to find module 'autofs4'\n[   55.042584] systemd-journald[81]: File /var/log/journal/c82cf5bcd3a14b95935d65bfb529d72d/system.journal corrupted or uncleanly shut down, renaming and replacing.\n[   59.073156] zocl: loading out-of-tree module taints kernel.\n[   59.092584] zocl-drm axi:zyxclmm_drm: error -ENXIO: IRQ index 0 not found\n[   64.217292] FAT-fs (mmcblk0p1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.\n[   83.340090] systemd[557]: memfd_create() called without MFD_EXEC or MFD_NOEXEC_SEAL set\n",
+      "stderr": ""
+    }
+  ]
+}

@@ -22,3 +22,18 @@
 *.bit   binary
 *.dcp   binary
 *.pdf   binary
+
+# Preserve byte hashes of the reviewed WO-0013 artifact/evidence package.
+/data/results/wo0013-resetfix-20261014/** -text
+/data/results/wo0013-pagemap-policy-20261014-120205/** -text
+/data/results/wo0013-level2-once-20261014-113914/remote-common.py -text
+# Vendor-generated reports/recreation script are immutable raw evidence.
+/data/results/wo0013-resetfix-20261014/reports/*.rpt -diff
+/data/results/wo0013-resetfix-20261014/reports/implemented_constraints.xdc -diff
+/data/results/wo0013-resetfix-20261014/export/wo0013_dma_recreate.tcl -diff
+
+/data/results/wo0013-resetfix-20261014/export/wo0013_phase_a.hwh -diff
+/data/results/wo0013-pagemap-policy-20261014-120205/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/data/results/wo0013-resetfix-20261014/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/data/results/wo0013-level2-once-20261014-113914/remote-common.py whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/data/results/wo0013-pagemap-policy-20261014-120205/*.txt -diff

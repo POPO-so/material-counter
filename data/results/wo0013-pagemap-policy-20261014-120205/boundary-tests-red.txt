@@ -1,0 +1,34 @@
+test_bad_pfn_never_overridden_by_allocator (test_ddr_validate.DDRValidation.test_bad_pfn_never_overridden_by_allocator) ... ok
+test_illegal_ranges_and_allocation_evidence (test_ddr_validate.DDRValidation.test_illegal_ranges_and_allocation_evidence) ... ok
+test_last_valid_aligned_transfer (test_ddr_validate.DDRValidation.test_last_valid_aligned_transfer) ... ok
+test_nonzero_window_base (test_ddr_validate.DDRValidation.test_nonzero_window_base) ... ok
+test_pfn_absent_with_supported_allocator (test_ddr_validate.DDRValidation.test_pfn_absent_with_supported_allocator) ... FAIL
+test_pfn_absent_without_allocator_proof_rejected (test_ddr_validate.DDRValidation.test_pfn_absent_without_allocator_proof_rejected) ... ok
+test_valid_cma_above_metadata_size (test_ddr_validate.DDRValidation.test_valid_cma_above_metadata_size) ... ok
+
+======================================================================
+FAIL: test_pfn_absent_with_supported_allocator (test_ddr_validate.DDRValidation.test_pfn_absent_with_supported_allocator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\fpga\material-counter\data\results\wo0013-pagemap-policy-20261014-120205\test_ddr_validate.py", line 14, in accepts
+    try:validate_buffer(*args,**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\fpga\material-counter\data\results\wo0013-pagemap-policy-20261014-120205\ddr_validate.py", line 19, in validate_buffer
+    if physical_pages is None or list(physical_pages)!=expected:raise ValueError('Missing, discontinuous or mismatched physical pages')
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Missing, discontinuous or mismatched physical pages
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\fpga\material-counter\data\results\wo0013-pagemap-policy-20261014-120205\test_ddr_validate.py", line 6, in test_pfn_absent_with_supported_allocator
+    self.accepts(0x15860000,76816,**evidence)
+  File "C:\fpga\material-counter\data\results\wo0013-pagemap-policy-20261014-120205\test_ddr_validate.py", line 15, in accepts
+    except ValueError as error:self.fail('Valid proven buffer rejected: '+str(error))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Valid proven buffer rejected: Missing, discontinuous or mismatched physical pages
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.001s
+
+FAILED (failures=1)

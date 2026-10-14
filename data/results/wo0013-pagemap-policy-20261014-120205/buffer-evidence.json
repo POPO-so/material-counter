@@ -1,0 +1,212 @@
+{
+  "result": {
+    "start": 361103360,
+    "end_exclusive": 361180176,
+    "length": 76816,
+    "physical_pages_checked": 0,
+    "continuity_basis": "supported_pynq_allocator_verified_runtime"
+  },
+  "physical_address": 361103360,
+  "device_address": 361103360,
+  "virtual_address": 3069575168,
+  "buffer_nbytes": 76816,
+  "allocation_evidence": {
+    "bo_address": 361103360,
+    "bo_size": 76816,
+    "physical_pages": null,
+    "virtual_offset": 0,
+    "contiguous": true,
+    "ram_ranges": [
+      [
+        0,
+        536870912
+      ]
+    ],
+    "dt_ranges": [
+      [
+        0,
+        536870912
+      ]
+    ],
+    "axi_ranges": [
+      [
+        0,
+        536870912
+      ]
+    ],
+    "address_bits": 32,
+    "alignment": 8,
+    "supported_allocator": true
+  },
+  "pagemap": {
+    "rows": [
+      {
+        "page": 0,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 1,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 2,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 3,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 4,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 5,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 6,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 7,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 8,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 9,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 10,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 11,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 12,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 13,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 14,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 15,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 16,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 17,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      },
+      {
+        "page": 18,
+        "raw": 0,
+        "present": false,
+        "swapped": false,
+        "pfn": 0
+      }
+    ],
+    "available": true,
+    "anonymous_control": {
+      "rows": [
+        {
+          "page": 0,
+          "raw": 11601272640106475726,
+          "present": true,
+          "swapped": false,
+          "pfn": 78030
+        }
+      ],
+      "available": true
+    },
+    "cap_sys_admin": true,
+    "complete_pfn_evidence": false
+  },
+  "allocator_proof": {
+    "source_hashes": {
+      "buffer.py": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463",
+      "pl_server/xrt_device.py": "fb4bdbe4cac759c66feeb0248e13c83592ddfad32b36bc83764484411812556a"
+    },
+    "buffer_type": "<class 'pynq.buffer.PynqBuffer'>",
+    "bo_type": "<class 'pyxrt.bo'>",
+    "device_type": "<class 'pynq.pl_server.embedded_device.EmbeddedDevice'>",
+    "drm_driver": "/sys/bus/platform/drivers/zocl-drm",
+    "api": "pynq.allocate(shape=(76816,), dtype=uint8), no custom target or imported memory",
+    "physical_address_source": "PynqBuffer.physical_address -> device_address -> EmbeddedDevice.get_device_address(bo) -> pyxrt.bo.address()",
+    "iommu_groups": []
+  },
+  "cma_total_kb": 131072,
+  "cma_backend_dmesg": [
+    "[  165.322626] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA",
+    "[  797.657369] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA"
+  ],
+  "pynq_backend": "PynqBuffer via XRT pyxrt.bo normal, ZOCL CMA; pagemap auxiliary, contradictions fatal"
+}
