@@ -1,0 +1,62 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+-----------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Wed Oct 14 02:47:10 2026
+| Host         : BWIN running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file C:/fpga/material-counter/data/results/wo0013-resetfix-20261014/reports/utilization.rpt
+| Design       : wo0013_dma_wrapper
+| Device       : xc7z020clg400-1
+| Speed File   : -1
+| Design State : Routed
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++-------------------------------------------------------------------+---------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+|                              Instance                             |                                      Module                                     | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs | RAMB36 | RAMB18 | DSP Blocks |
++-------------------------------------------------------------------+---------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+| wo0013_dma_wrapper                                                |                                                                           (top) |       1226 |       1186 |       2 |   38 | 1553 |      1 |      1 |          0 |
+|   wo0013_dma_i                                                    |                                                                      wo0013_dma |       1226 |       1186 |       2 |   38 | 1553 |      1 |      1 |          0 |
+|     rx_monitor                                                    |                                                         wo0013_dma_rx_monitor_0 |        254 |        254 |       0 |    0 |  244 |      0 |      0 |          0 |
+|       inst                                                        |                                  wo0013_dma_rx_monitor_0_axis_dma_rx_monitor_bd |        254 |        254 |       0 |    0 |  244 |      0 |      0 |          0 |
+|         monitor                                                   |                                     wo0013_dma_rx_monitor_0_axis_dma_rx_monitor |        254 |        254 |       0 |    0 |  244 |      0 |      0 |          0 |
+|     axi_dma_0                                                     |                                                          wo0013_dma_axi_dma_0_0 |        519 |        482 |       0 |   37 |  742 |      1 |      1 |          0 |
+|       U0                                                          |                                                  wo0013_dma_axi_dma_0_0_axi_dma |        519 |        482 |       0 |   37 |  742 |      1 |      1 |          0 |
+|         INCLUDE_MM2S_SOF_EOF_GENERATOR.I_MM2S_DMA_MNGR            |                                        wo0013_dma_axi_dma_0_0_axi_dma_mm2s_mngr |         12 |         12 |       0 |    0 |   67 |      0 |      0 |          0 |
+|           GEN_MM2S_DMA_CONTROL.GEN_SIMPLE_DMA_MODE.I_MM2S_SMPL_SM |                                         wo0013_dma_axi_dma_0_0_axi_dma_smple_sm |          5 |          5 |       0 |    0 |   56 |      0 |      0 |          0 |
+|         I_AXI_DMA_REG_MODULE                                      |                                       wo0013_dma_axi_dma_0_0_axi_dma_reg_module |         79 |         79 |       0 |    0 |  162 |      0 |      0 |          0 |
+|           GEN_AXI_LITE_IF.AXI_LITE_IF_I                           |                                          wo0013_dma_axi_dma_0_0_axi_dma_lite_if |         58 |         58 |       0 |    0 |   81 |      0 |      0 |          0 |
+|           GEN_MM2S_REGISTERS.I_MM2S_DMA_REGISTER                  |                                         wo0013_dma_axi_dma_0_0_axi_dma_register |         21 |         21 |       0 |    0 |   81 |      0 |      0 |          0 |
+|         I_PRMRY_DATAMOVER                                         |                                            wo0013_dma_axi_dma_0_0_axi_datamover |        421 |        384 |       0 |   37 |  489 |      1 |      1 |          0 |
+|           GEN_MM2S_FULL.I_MM2S_FULL_WRAPPER                       |                             wo0013_dma_axi_dma_0_0_axi_datamover_mm2s_full_wrap |        421 |        384 |       0 |   37 |  489 |      1 |      1 |          0 |
+|             ENABLE_AXIS_SKID.I_MM2S_SKID_BUF                      |                                   wo0013_dma_axi_dma_0_0_axi_datamover_skid_buf |         12 |         12 |       0 |    0 |   81 |      0 |      0 |          0 |
+|             GEN_INCLUDE_MM2S_SF.I_RD_SF                           |                                      wo0013_dma_axi_dma_0_0_axi_datamover_rd_sf |        118 |        117 |       0 |    1 |   60 |      1 |      1 |          0 |
+|               I_DATA_FIFO                                         |                               wo0013_dma_axi_dma_0_0_axi_datamover_sfifo_autord |        102 |        102 |       0 |    0 |   47 |      1 |      1 |          0 |
+|                 BLK_MEM.I_SYNC_FIFOGEN_FIFO                       |                                            wo0013_dma_axi_dma_0_0_xpm_fifo_sync |         57 |         57 |       0 |    0 |   47 |      1 |      1 |          0 |
+|                   xpm_fifo_base_inst                              |                                            wo0013_dma_axi_dma_0_0_xpm_fifo_base |         57 |         57 |       0 |    0 |   47 |      1 |      1 |          0 |
+|             I_CMD_STATUS                                          |                                 wo0013_dma_axi_dma_0_0_axi_datamover_cmd_status |         10 |         10 |       0 |    0 |   62 |      0 |      0 |          0 |
+|               I_CMD_FIFO                                          |                                       wo0013_dma_axi_dma_0_0_axi_datamover_fifo |          3 |          3 |       0 |    0 |   56 |      0 |      0 |          0 |
+|             I_MSTR_PCC                                            |                                        wo0013_dma_axi_dma_0_0_axi_datamover_pcc |        178 |        178 |       0 |    0 |  173 |      0 |      0 |          0 |
+|     control_fabric                                                |                                                     wo0013_dma_control_fabric_0 |        394 |        394 |       0 |    0 |  441 |      0 |      0 |          0 |
+|       inst                                                        |                                             wo0013_dma_control_fabric_0_bd_3085 |        394 |        394 |       0 |    0 |  441 |      0 |      0 |          0 |
+|         sc_ul                                                     |                                     wo0013_dma_control_fabric_0_bd_3085_sc_ul_0 |        394 |        394 |       0 |    0 |  441 |      0 |      0 |          0 |
+|           inst                                                    |                             wo0013_dma_control_fabric_0_sc_ultralite_v1_0_1_top |        394 |        394 |       0 |    0 |  441 |      0 |      0 |          0 |
+|             gen_axi_full_nxm.sasd_inst                            |                       wo0013_dma_control_fabric_0_sc_ultralite_v1_0_1_sasd_lite |        394 |        394 |       0 |    0 |  439 |      0 |      0 |          0 |
+|               (gen_axi_full_nxm.sasd_inst)                        |                       wo0013_dma_control_fabric_0_sc_ultralite_v1_0_1_sasd_lite |        150 |        150 |       0 |    0 |  270 |      0 |      0 |          0 |
+|               gen_read.arctrl_mux                                 |         wo0013_dma_control_fabric_0_sc_ultralite_v1_0_1_mux_hot__parameterized5 |         86 |         86 |       0 |    0 |    8 |      0 |      0 |          0 |
+|               gen_write.awctrl_mux                                |       wo0013_dma_control_fabric_0_sc_ultralite_v1_0_1_mux_hot__parameterized5_2 |         52 |         52 |       0 |    0 |    8 |      0 |      0 |          0 |
+|     hp0_protocol                                                  |                                                       wo0013_dma_hp0_protocol_0 |         43 |         41 |       2 |    0 |   89 |      0 |      0 |          0 |
+|       inst                                                        | wo0013_dma_hp0_protocol_0_axi_protocol_converter_v2_1_38_axi_protocol_converter |         43 |         41 |       2 |    0 |   89 |      0 |      0 |          0 |
+|         gen_axi4_axi3.axi3_conv_inst                              |              wo0013_dma_hp0_protocol_0_axi_protocol_converter_v2_1_38_axi3_conv |         43 |         41 |       2 |    0 |   89 |      0 |      0 |          0 |
+|           (USE_READ.USE_SPLIT_R.read_addr_inst)                   |            wo0013_dma_hp0_protocol_0_axi_protocol_converter_v2_1_38_a_axi3_conv |          6 |          6 |       0 |    0 |   51 |      0 |      0 |          0 |
++-------------------------------------------------------------------+---------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+* Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
+
+

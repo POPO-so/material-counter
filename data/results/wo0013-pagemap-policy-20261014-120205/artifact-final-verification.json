@@ -1,0 +1,11 @@
+{
+  "manifest_matches": true,
+  "hashes": {
+    "data\\results\\wo0013-resetfix-20261014\\export\\wo0013_phase_a.bit": "47e6cd65c552244236f2564c11cba3e81a9a0c6aced0c9974c04de78256da3f7",
+    "data\\results\\wo0013-resetfix-20261014\\export\\wo0013_phase_a.hwh": "a31d71f8e7004de710fa4da07078b80e2a0a8b40ff52ac523d322f21362df1fb",
+    "data\\results\\wo0013-resetfix-20261014\\export\\dma_replay_verify.py": "080699311efcf2443dac046aaa5949047d3046d26b314f18ad8b04a60d5c5395",
+    "data\\results\\wo0013-resetfix-20261014\\export\\PYNQ_README.md": "ffc49b3e9cdb0023149c84a28689f0d3a94dc9f16aaa08865b6d5f84a3a14f7a",
+    "data\\results\\wo0013-resetfix-20261014\\export\\load_reviewed_overlay_only.py": "8970a3a344f0a9db03f56a8cbb3160d4d999c1f3f2fbb0892c99ed524e49c6bb",
+    "data\\results\\wo0013-resetfix-20261014\\export\\SAFETY_READ_FIRST.md": "afa8765732ad067cafdb181d07f959266ac635b0e39f6f317614579283c10065"
+  }
+}

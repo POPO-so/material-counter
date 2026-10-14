@@ -1,0 +1,1 @@
+PASS: exactly one send; all DMA/Monitor fields match; TX range and post-health evidence consistent.
