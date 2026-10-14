@@ -1,0 +1,2 @@
+ASSIGN-1,Arithmetic overflow,+,16,axis_rgb2gray,axis_rgb2gray.v,27
+ASSIGN-6,Bit(s) not used,gray_sum,0,axis_rgb2gray,axis_rgb2gray.v,22

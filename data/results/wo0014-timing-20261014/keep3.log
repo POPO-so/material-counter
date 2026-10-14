@@ -1,0 +1,33 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 14 16:08:48 2026
+# Process ID         : 28988
+# Current directory  : C:/fpga/material-counter/data/results/wo0014-timing-20261014/new-sim
+# Command line       : xsim.exe -log C:/fpga/material-counter/data/results/wo0014-timing-20261014/keep3.log -mode tcl -source {xsim.dir/wo14_keep3/xsim_script.tcl}
+# Log file           : C:/fpga/material-counter/data/results/wo0014-timing-20261014/keep3.log
+# Journal file       : C:/fpga/material-counter/data/results/wo0014-timing-20261014/new-sim\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 16859 MB
+#-----------------------------------------------------------
+source xsim.dir/wo14_keep3/xsim_script.tcl
+# xsim {wo14_keep3} -testplusarg INPUT=C:/fpga/material-counter/data/results/wo0014-offline-20261014/vectors/partial_keep3_packets.bin -testplusarg EXPECTED=C:/fpga/material-counter/data/results/wo0014-offline-20261014/vectors/partial_keep3_expected_th128.bin -testplusarg ACTUAL=C:/fpga/material-counter/data/results/wo0014-timing-20261014/keep3-actual.bin -testplusarg BASE_FRAME_ID=40980 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+CONFIG geometry=2x1 threshold=128 negative=0 frames=1 ready_mode=1 gap_mode=1 seed=1360094
+INPUT_SENT beats=10
+RESULT PASS: packets_done=1 packet_errors=0 scored_pixels=2 all_output_records=2 stalled_cycles=1 checker_pixels=2 checker_sofs=1 checker_eols=1 checker_checksum=0x000000ff drain_cycles=1
+$finish called at time : 450 ns : File "C:/fpga/material-counter/data/results/wo0014-timing-20261014/generated/tb_cycle_equivalence.sv" Line 549
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Oct 14 16:08:50 2026...

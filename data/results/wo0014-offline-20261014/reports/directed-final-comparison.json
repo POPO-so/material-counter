@@ -1,0 +1,394 @@
+{
+  "status": "PASS",
+  "directed_geometry": {
+    "width": 5,
+    "height": 3,
+    "pixels_per_frame": 15
+  },
+  "thresholds_tested": [
+    0,
+    73,
+    128,
+    200,
+    255
+  ],
+  "partial_keep_masks_tested": {
+    "keep3": 3,
+    "keep7": 7
+  },
+  "negative_cases_tested": [
+    "bad_checksum",
+    "bad_header",
+    "bad_length",
+    "bad_tkeep",
+    "early_tlast",
+    "extra_payload",
+    "missing_tlast"
+  ],
+  "failures": [],
+  "comparisons": {
+    "thresholds": {
+      "0": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "94c6eb57d0d37f4c3b51b4754a6be8fd631c1df836b4eaeb5bde44ce1e88229f",
+        "expected_sha256": "94c6eb57d0d37f4c3b51b4754a6be8fd631c1df836b4eaeb5bde44ce1e88229f",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 3825,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "th0-actual.bin",
+        "expected_file": "directed_expected_th0.bin"
+      },
+      "73": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "8437ebc8641f447c659bae260e3c32702c74443a816940144ffee4a58ba6d893",
+        "expected_sha256": "8437ebc8641f447c659bae260e3c32702c74443a816940144ffee4a58ba6d893",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 3060,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "th73-actual.bin",
+        "expected_file": "directed_expected_th73.bin"
+      },
+      "128": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "expected_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 2040,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "directed-reviewed-actual.bin",
+        "expected_file": "directed_expected_th128.bin"
+      },
+      "200": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "2b4697da61069b5abcfb936fc97c1f752bbf244f45da7e794dd248dd7cb6b8dc",
+        "expected_sha256": "2b4697da61069b5abcfb936fc97c1f752bbf244f45da7e794dd248dd7cb6b8dc",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 1020,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "th200-actual.bin",
+        "expected_file": "directed_expected_th200.bin"
+      },
+      "255": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "f9096fc235a1354a5058ed7b33d896ed8214a06f0d53bf1f37cfad008da5650b",
+        "expected_sha256": "f9096fc235a1354a5058ed7b33d896ed8214a06f0d53bf1f37cfad008da5650b",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 255,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "th255-actual.bin",
+        "expected_file": "directed_expected_th255.bin"
+      }
+    },
+    "partial_keep": {
+      "keep3": {
+        "status": "PASS",
+        "width": 2,
+        "height": 1,
+        "frames": 1,
+        "pixels": 2,
+        "word_mismatches": 0,
+        "actual_sha256": "810258035e95332b24b019718f8bbc81423a76c36b18b3546a18cf91f3953deb",
+        "expected_sha256": "810258035e95332b24b019718f8bbc81423a76c36b18b3546a18cf91f3953deb",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 2,
+            "sofs": 1,
+            "eols": 1,
+            "binary_checksum": 255,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "keep3-actual.bin",
+        "expected_file": "partial_keep3_expected_th128.bin"
+      },
+      "keep7": {
+        "status": "PASS",
+        "width": 1,
+        "height": 1,
+        "frames": 1,
+        "pixels": 1,
+        "word_mismatches": 0,
+        "actual_sha256": "583c7dfb7b3055d99465544032a571e10a134b1b6f769422bbb71fd7fa167a5d",
+        "expected_sha256": "583c7dfb7b3055d99465544032a571e10a134b1b6f769422bbb71fd7fa167a5d",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 1,
+            "sofs": 1,
+            "eols": 1,
+            "binary_checksum": 0,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "keep7-actual.bin",
+        "expected_file": "partial_keep7_expected_th128.bin"
+      }
+    },
+    "negative_recovery": {
+      "bad_header": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "expected_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 2040,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "bad_header-actual.bin",
+        "expected_file": "directed_expected_th128.bin",
+        "raw_output_pixels": 15,
+        "recovery_tail_pixels": 15,
+        "raw_output_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "bad_packet_error_code": 1,
+        "bad_records": 20,
+        "drain_records": 0,
+        "recovery_records": 20
+      },
+      "bad_length": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "expected_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 2040,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "bad_length-actual.bin",
+        "expected_file": "directed_expected_th128.bin",
+        "raw_output_pixels": 15,
+        "recovery_tail_pixels": 15,
+        "raw_output_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "bad_packet_error_code": 2,
+        "bad_records": 20,
+        "drain_records": 0,
+        "recovery_records": 20
+      },
+      "bad_tkeep": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "expected_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 2040,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "bad_tkeep-actual.bin",
+        "expected_file": "directed_expected_th128.bin",
+        "raw_output_pixels": 15,
+        "recovery_tail_pixels": 15,
+        "raw_output_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "bad_packet_error_code": 3,
+        "bad_records": 20,
+        "drain_records": 0,
+        "recovery_records": 20
+      },
+      "early_tlast": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "expected_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 2040,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "early_tlast-actual.bin",
+        "expected_file": "directed_expected_th128.bin",
+        "raw_output_pixels": 15,
+        "recovery_tail_pixels": 15,
+        "raw_output_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "bad_packet_error_code": 4,
+        "bad_records": 5,
+        "drain_records": 0,
+        "recovery_records": 20
+      },
+      "missing_tlast": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "expected_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 2040,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "missing_tlast-actual.bin",
+        "expected_file": "directed_expected_th128.bin",
+        "raw_output_pixels": 30,
+        "recovery_tail_pixels": 15,
+        "raw_output_sha256": "03cb991a3f0443c6bdaf21b20340d1030201cf5d8e5a3ea2f68c716cc773b8e3",
+        "bad_packet_error_code": 4,
+        "bad_records": 20,
+        "drain_records": 20,
+        "recovery_records": 20
+      },
+      "bad_checksum": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "expected_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 2040,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "bad_checksum-actual.bin",
+        "expected_file": "directed_expected_th128.bin",
+        "raw_output_pixels": 30,
+        "recovery_tail_pixels": 15,
+        "raw_output_sha256": "03cb991a3f0443c6bdaf21b20340d1030201cf5d8e5a3ea2f68c716cc773b8e3",
+        "bad_packet_error_code": 5,
+        "bad_records": 20,
+        "drain_records": 0,
+        "recovery_records": 20
+      },
+      "extra_payload": {
+        "status": "PASS",
+        "width": 5,
+        "height": 3,
+        "frames": 1,
+        "pixels": 15,
+        "word_mismatches": 0,
+        "actual_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "expected_sha256": "e13dd36c96e14a8a65f715a74d8e8ed039b279e63bec71229cbe2daf3f364e8a",
+        "frames_report": [
+          {
+            "frame": 0,
+            "pixels": 15,
+            "sofs": 1,
+            "eols": 3,
+            "binary_checksum": 2040,
+            "word_mismatches": 0
+          }
+        ],
+        "actual_file": "extra_payload-actual.bin",
+        "expected_file": "directed_expected_th128.bin",
+        "raw_output_pixels": 30,
+        "recovery_tail_pixels": 15,
+        "raw_output_sha256": "03cb991a3f0443c6bdaf21b20340d1030201cf5d8e5a3ea2f68c716cc773b8e3",
+        "bad_packet_error_code": 5,
+        "bad_records": 21,
+        "drain_records": 0,
+        "recovery_records": 20
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+docs/verification/wo-0014-offline-integration-20261014.md
+docs/work-orders/wo-0014-offline-image-integration.md
+fpga/experimental/wo0014/axis_binary_output_checker.v
+fpga/experimental/wo0014/axis_dma_image_pipeline.v
+fpga/experimental/wo0014/axis_dma_rgb_adapter.v
+fpga/experimental/wo0014/README.md
+fpga/sim/wo0014/tb_axis_dma_image_pipeline.sv
+python/refmodel/experiments/wo0014/compare_output.py
+python/refmodel/experiments/wo0014/compare_run_set.py
+python/refmodel/experiments/wo0014/image_vectors.py
+python/refmodel/experiments/wo0014/test_image_vectors.py
+scripts/wo0014/audit_delivery.py
+scripts/wo0014/run_directed.tcl
+scripts/wo0014/run_full.tcl
+scripts/wo0014/run_legacy.tcl
+scripts/wo0014/run_negative.tcl
+scripts/wo0014/run_synthesis.tcl

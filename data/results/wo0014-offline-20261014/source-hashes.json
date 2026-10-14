@@ -1,0 +1,19 @@
+{
+  "docs/verification/wo-0014-offline-integration-20261014.md": "6d3fa2c845253819d7046a0cfc2cada5b937a37ecdc0fb02689ec877b4d58f8d",
+  "docs/work-orders/wo-0014-offline-image-integration.md": "226b55be5dc9e213fe67318a8c247c4c4584097a9fe240ad3e04bc39886ffedf",
+  "fpga/experimental/wo0014/axis_binary_output_checker.v": "8a6f46c6add51a29c801499ddbf63c52d65f5a1e91dab4b60316aecbddf54a75",
+  "fpga/experimental/wo0014/axis_dma_image_pipeline.v": "b94fa662b8cc08de6863d98c9e9a75294e3ffb90798c77711e3d3d0860e0e9ad",
+  "fpga/experimental/wo0014/axis_dma_rgb_adapter.v": "d77970dc996d104801cff7ec355a2efafd6d9e01c3533b8ddfe3bd6b18ec2917",
+  "fpga/experimental/wo0014/README.md": "dfa0d6cfd910812e66dd769e84db2e8407fb748946c640056cb2c688c9ed3234",
+  "fpga/sim/wo0014/tb_axis_dma_image_pipeline.sv": "fa7ffdf8b21e0f21b40ae1f0cb603d2de4451b40ffdf073aab525ecaaf8e1fc1",
+  "python/refmodel/experiments/wo0014/compare_output.py": "fcd5b2bd92993d016c93c09a98b9945c71e1f1283569014d7c4f4c4db523b91b",
+  "python/refmodel/experiments/wo0014/compare_run_set.py": "ab00ba8de91c0e7828e1a15b487449bee9b680bff67e12042bc017f2f30a7498",
+  "python/refmodel/experiments/wo0014/image_vectors.py": "f43a485bd1e6e7ed13f85d444fadffdbfc159077905decd3489f64cf46c5ffd4",
+  "python/refmodel/experiments/wo0014/test_image_vectors.py": "6ceb8f7602eca1c7372a121a2118f8cd56e587abb60fc552029c73f34a534c2c",
+  "scripts/wo0014/audit_delivery.py": "5298d631c9a599d4fc4ec4fd0ddac370afede0a8c4d3096b0b56760d8ca1d0f6",
+  "scripts/wo0014/run_directed.tcl": "e9d2256fecec31a6fbd1acb52a106f26f1c33bf9e277c3786294b6ac0ffc908c",
+  "scripts/wo0014/run_full.tcl": "fc5c0e0785ac3e46589314c34bbbb1a97cfde005868e82c75901fab086a875bf",
+  "scripts/wo0014/run_legacy.tcl": "908794a21f07b322fd18be780915303923e32faf2f6ed92a376f824ac8874525",
+  "scripts/wo0014/run_negative.tcl": "91734b268ce275a0b24a52867eed0d3564dd20bbc466603eb979381b06b2c56b",
+  "scripts/wo0014/run_synthesis.tcl": "ab03053cb2b0ddc8809b9f66571006f4308abe95cd48c1a4b5ca636814d4e05b"
+}

@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 14 12:34:24 2026
+# Process ID         : 14312
+# Current directory  : C:/fpga/material-counter/data/results/wo0014-offline-20261014/legacy
+# Command line       : xsim.exe -log C:/fpga/material-counter/data/results/wo0014-offline-20261014/legacy-morph-h3.log -mode tcl -source {xsim.dir/legacy_morph_h3/xsim_script.tcl}
+# Log file           : C:/fpga/material-counter/data/results/wo0014-offline-20261014/legacy-morph-h3.log
+# Journal file       : C:/fpga/material-counter/data/results/wo0014-offline-20261014/legacy\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 13937 MB
+#-----------------------------------------------------------
+source xsim.dir/legacy_morph_h3/xsim_script.tcl
+# xsim {legacy_morph_h3} -testplusarg READY_MODE=1 -testplusarg N=230400 -testplusarg RGB=C:/fpga/material-counter/data/results/morphology-vectors-20261013-final/h3_threshold128/input_rgb.hex -testplusarg BINARY=C:/fpga/material-counter/data/results/morphology-vectors-20261013-final/h3_threshold128/input_binary.hex -testplusarg EXPECTED=C:/fpga/material-counter/data/results/morphology-vectors-20261013-final/h3_threshold128/expected-mode2.hex -testplusarg OUTPUT=C:/fpga/material-counter/data/results/wo0014-offline-20261014/legacy-morph-output.hex -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+TEST_PASS scene=unnamed mode=2 chain=1 ready=1 beats=230400 seed=6862 in=230400 out=230400 frames=3 stalls_out=232466 blocked_in=460456 gray_stalls=460764 binary_stalls=461083 bubbles=111896 longest_stall=60 last_stall=12 frame_overlap=1 reset=1
+$finish called at time : 8047625 ns : File "C:/fpga/material-counter/fpga/sim/tb_axis_morphology3x3.sv" Line 385
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Oct 14 12:34:27 2026...

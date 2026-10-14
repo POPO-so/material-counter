@@ -32,3 +32,4 @@
 /docs/verification/wo-0011-missed-events.csv whitespace=cr-at-eol
 /data/results/wo0013-resetfix-20261014/export/wo0013_dma_recreate.tcl -diff
 /data/results/wo0013-resetfix-20261014/reports/implemented_constraints.xdc -diff
+/scripts/wo0014/** -text whitespace=cr-at-eol
