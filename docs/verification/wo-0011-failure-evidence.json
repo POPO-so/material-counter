@@ -1,0 +1,3015 @@
+{
+  "schema_version": 1,
+  "work_order": "WO-0011",
+  "purpose": "Evidence for all 12 WO-0010 baseline H3 qualified-event FNs; raw image analysis is independent of GT identities.",
+  "reproduction": {
+    "baseline_command": ".\\.venv\\Scripts\\python.exe python/refmodel/ps_reference/evaluate_h3.py --data data/synthetic/h3_full --out data/results/wo0010-reproduce-new --line-x 160 --hysteresis 2",
+    "original_trace_directory": "data/results/wo0010-reference-final-20261013/trace/image",
+    "selection_rule": "For each GT object derive strict qualification at line160/h2 and its first-visible allowed frame. Build the TP set from original trace events having a non-null ground_truth_object_id, that object in qualified_events, and event.frame_id equal to allowed_observation_frames[object_id], respecting first-event duplicate handling. Select qualified IDs absent from that strict TP set. The baseline has zero spurious and duplicate events, so this also equals the non-null event-ID set difference used in the initial extraction. This post-run audit never feeds segmentation or tracking.",
+    "reference_function": "python/refmodel/ps_reference/evaluate_h3.py::derive_ground_truth_events / score_count_events; line_x=160, hysteresis=2, direction=+1",
+    "binary_reconstruction": "Original Gray8 H3 PNG threshold >=128; OpenCV 8-connected components; source PNGs are independently hash-recorded."
+  },
+  "baseline_result": {
+    "event_tp": 19,
+    "event_fn": 12,
+    "duplicates": 0,
+    "spurious_events": 0,
+    "precision": 1.0,
+    "recall": 0.6129032258064516
+  },
+  "ablation_cross_check": {
+    "comparison_csv": "data/results/wo0011-ablation-final-20261013/comparison.csv",
+    "comparison_csv_sha256": "26e2363016768e2ce1a2c8c83c70f77993e2b149a215371a7eb0c8647b1e5033",
+    "bypass": {
+      "event_tp": "19",
+      "event_fn": "12",
+      "duplicate_fp": "0",
+      "spurious_fp": "0",
+      "qualified_precision": "1.0",
+      "qualified_recall": "0.6129032258064516"
+    },
+    "width_guard_off": {
+      "event_tp": "19",
+      "event_fn": "12",
+      "duplicate_fp": "0",
+      "spurious_fp": "0",
+      "qualified_precision": "1.0",
+      "qualified_recall": "0.6129032258064516",
+      "merge_observations": "0"
+    },
+    "interpretation": "Disabling the merge-width guard still reports 19 TP/12 FN; all per-event full-sequence merged-component centroid maxima are below the count exit boundary."
+  },
+  "source_hashes": {
+    "backbone_fast_small_01": {
+      "config_json": {
+        "path": "data/synthetic/h3_full/backbone_fast_small_01/config.json",
+        "sha256": "468a61a9998c9aa07c725fe0d9518d587b38de3203c12a92594a1c8bb9dbd3f5"
+      },
+      "ground_truth_json": {
+        "path": "data/synthetic/h3_full/backbone_fast_small_01/ground_truth.json",
+        "sha256": "499f4ec7b7f990cae6adde4aa10b6adf259bc5b065da6b7ffc9f42efc2af1415"
+      },
+      "baseline_trace_json": {
+        "path": "data/results/wo0010-reference-final-20261013/trace/image/backbone_fast_small_01.json",
+        "sha256": "2d508d9e51240b539168f646b7b5c6b604c414891ba4eaea708b817eaefb6910"
+      }
+    },
+    "backbone_nominal_small_01": {
+      "config_json": {
+        "path": "data/synthetic/h3_full/backbone_nominal_small_01/config.json",
+        "sha256": "69be8f7dbe886ce9984724caa5f5d975eacd20e75e9802ec1e4a7f945b3a5945"
+      },
+      "ground_truth_json": {
+        "path": "data/synthetic/h3_full/backbone_nominal_small_01/ground_truth.json",
+        "sha256": "70be8ba160e342815041a738ab6caf2eb5a3f53c1b3f9792ec9868896d3bdfdb"
+      },
+      "baseline_trace_json": {
+        "path": "data/results/wo0010-reference-final-20261013/trace/image/backbone_nominal_small_01.json",
+        "sha256": "3ee55a74498394fd68627f8c665b7708ab94f25a3e6f2fe05265e11fc88a09fe"
+      }
+    },
+    "backbone_nominal_small_02": {
+      "config_json": {
+        "path": "data/synthetic/h3_full/backbone_nominal_small_02/config.json",
+        "sha256": "6e4c2533fca587e1eddc145aabd7cce78eb924862afc9c9d2878b0a49387a403"
+      },
+      "ground_truth_json": {
+        "path": "data/synthetic/h3_full/backbone_nominal_small_02/ground_truth.json",
+        "sha256": "2eb3c1fa82c8bf1e450ea64bf1845fb8a5a5a9c9cd87bdf17f91e967382646a5"
+      },
+      "baseline_trace_json": {
+        "path": "data/results/wo0010-reference-final-20261013/trace/image/backbone_nominal_small_02.json",
+        "sha256": "94820e6939dfbeb49f7702c4c082d1c06286acd29ac9f038569156e7fa3e65ba"
+      }
+    },
+    "backbone_slow_small_01": {
+      "config_json": {
+        "path": "data/synthetic/h3_full/backbone_slow_small_01/config.json",
+        "sha256": "d5e69c1a4cc4206c564c3e1960e10c9eb368e172cbd61eb7bce1aa0cb796de30"
+      },
+      "ground_truth_json": {
+        "path": "data/synthetic/h3_full/backbone_slow_small_01/ground_truth.json",
+        "sha256": "72b2fdb630cb85f9148438b0e73d2453f5661c4139827bf0335b6db7aa9ea068"
+      },
+      "baseline_trace_json": {
+        "path": "data/results/wo0010-reference-final-20261013/trace/image/backbone_slow_small_01.json",
+        "sha256": "abeec0ac4daa1f565b4a74bcdfdcdc175fe7763b125db2341a0cc0e74137054f"
+      }
+    },
+    "backbone_slow_small_02": {
+      "config_json": {
+        "path": "data/synthetic/h3_full/backbone_slow_small_02/config.json",
+        "sha256": "3d1709b47eaa0cb57db3425fcb7408b5fe52f57283ed6d7bac3e5a3b6e8818f3"
+      },
+      "ground_truth_json": {
+        "path": "data/synthetic/h3_full/backbone_slow_small_02/ground_truth.json",
+        "sha256": "10ff4b07b20bfbdab2ff00ade007b73ac520589a29fa0b282ec5354ccf242490"
+      },
+      "baseline_trace_json": {
+        "path": "data/results/wo0010-reference-final-20261013/trace/image/backbone_slow_small_02.json",
+        "sha256": "c196f04594936a1a87b73a4cbd0564e51ba61ba6e3487d228f4477a5d9414cc9"
+      }
+    }
+  },
+  "sequence_scans": [
+    {
+      "condition_id": "backbone_fast_small_01",
+      "target_object_id": 15,
+      "observable_frames_scanned": 24,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 48,
+      "bbox_gap_histogram_px": {
+        "0": 48
+      },
+      "shared_8_connected_component_samples": 48,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 24,
+      "odd_frame_pairs": 24,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 121.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        220
+      ],
+      "contact_edge_gray_values_b": [
+        220
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "a6efcc4df336621a7077827a3480d760bd59be8feae35c3861eec159b757320a"
+    },
+    {
+      "condition_id": "backbone_fast_small_01",
+      "target_object_id": 16,
+      "observable_frames_scanned": 24,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 48,
+      "bbox_gap_histogram_px": {
+        "0": 48
+      },
+      "shared_8_connected_component_samples": 48,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 24,
+      "odd_frame_pairs": 24,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 121.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        220
+      ],
+      "contact_edge_gray_values_b": [
+        220
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "a6efcc4df336621a7077827a3480d760bd59be8feae35c3861eec159b757320a"
+    },
+    {
+      "condition_id": "backbone_fast_small_01",
+      "target_object_id": 17,
+      "observable_frames_scanned": 24,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 48,
+      "bbox_gap_histogram_px": {
+        "0": 48
+      },
+      "shared_8_connected_component_samples": 48,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 24,
+      "odd_frame_pairs": 24,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 121.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        220
+      ],
+      "contact_edge_gray_values_b": [
+        220
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "a6efcc4df336621a7077827a3480d760bd59be8feae35c3861eec159b757320a"
+    },
+    {
+      "condition_id": "backbone_fast_small_01",
+      "target_object_id": 18,
+      "observable_frames_scanned": 24,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 48,
+      "bbox_gap_histogram_px": {
+        "0": 48
+      },
+      "shared_8_connected_component_samples": 48,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 24,
+      "odd_frame_pairs": 24,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 121.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        220
+      ],
+      "contact_edge_gray_values_b": [
+        220
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "a6efcc4df336621a7077827a3480d760bd59be8feae35c3861eec159b757320a"
+    },
+    {
+      "condition_id": "backbone_nominal_small_01",
+      "target_object_id": 16,
+      "observable_frames_scanned": 24,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 48,
+      "bbox_gap_histogram_px": {
+        "0": 48
+      },
+      "shared_8_connected_component_samples": 48,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 24,
+      "odd_frame_pairs": 24,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 110.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        220
+      ],
+      "contact_edge_gray_values_b": [
+        220
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "dcee4b045b47b2460ab74cb6b8d178fc2f343a7c06a38b76a7e9ebd3b04543d8"
+    },
+    {
+      "condition_id": "backbone_nominal_small_01",
+      "target_object_id": 17,
+      "observable_frames_scanned": 24,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 48,
+      "bbox_gap_histogram_px": {
+        "0": 48
+      },
+      "shared_8_connected_component_samples": 48,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 24,
+      "odd_frame_pairs": 24,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 110.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        220
+      ],
+      "contact_edge_gray_values_b": [
+        220
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "dcee4b045b47b2460ab74cb6b8d178fc2f343a7c06a38b76a7e9ebd3b04543d8"
+    },
+    {
+      "condition_id": "backbone_nominal_small_01",
+      "target_object_id": 18,
+      "observable_frames_scanned": 24,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 48,
+      "bbox_gap_histogram_px": {
+        "0": 48
+      },
+      "shared_8_connected_component_samples": 48,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 24,
+      "odd_frame_pairs": 24,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 110.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        220
+      ],
+      "contact_edge_gray_values_b": [
+        220
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "dcee4b045b47b2460ab74cb6b8d178fc2f343a7c06a38b76a7e9ebd3b04543d8"
+    },
+    {
+      "condition_id": "backbone_nominal_small_02",
+      "target_object_id": 16,
+      "observable_frames_scanned": 22,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 44,
+      "bbox_gap_histogram_px": {
+        "0": 44
+      },
+      "shared_8_connected_component_samples": 44,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 22,
+      "odd_frame_pairs": 22,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 110.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        222
+      ],
+      "contact_edge_gray_values_b": [
+        222
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "eca9863d7a8e75c6502a71ddd1ea267a1e354ea1c643a33fa18b8f35834f1e23"
+    },
+    {
+      "condition_id": "backbone_nominal_small_02",
+      "target_object_id": 17,
+      "observable_frames_scanned": 22,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 44,
+      "bbox_gap_histogram_px": {
+        "0": 44
+      },
+      "shared_8_connected_component_samples": 44,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 22,
+      "odd_frame_pairs": 22,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 110.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        222
+      ],
+      "contact_edge_gray_values_b": [
+        222
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "eca9863d7a8e75c6502a71ddd1ea267a1e354ea1c643a33fa18b8f35834f1e23"
+    },
+    {
+      "condition_id": "backbone_nominal_small_02",
+      "target_object_id": 18,
+      "observable_frames_scanned": 22,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 44,
+      "bbox_gap_histogram_px": {
+        "0": 44
+      },
+      "shared_8_connected_component_samples": 44,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 22,
+      "odd_frame_pairs": 22,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 110.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        222
+      ],
+      "contact_edge_gray_values_b": [
+        222
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "eca9863d7a8e75c6502a71ddd1ea267a1e354ea1c643a33fa18b8f35834f1e23"
+    },
+    {
+      "condition_id": "backbone_slow_small_01",
+      "target_object_id": 18,
+      "observable_frames_scanned": 24,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 48,
+      "bbox_gap_histogram_px": {
+        "0": 48
+      },
+      "shared_8_connected_component_samples": 48,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 24,
+      "odd_frame_pairs": 24,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 99.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        220
+      ],
+      "contact_edge_gray_values_b": [
+        220
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "d8580cff0a12d753b4073863bbc1150b7bc91a9009b7f95e406aebfc498e33b2"
+    },
+    {
+      "condition_id": "backbone_slow_small_02",
+      "target_object_id": 18,
+      "observable_frames_scanned": 22,
+      "scanned_frame_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "adjacent_pair_sample_count": 44,
+      "bbox_gap_histogram_px": {
+        "0": 44
+      },
+      "shared_8_connected_component_samples": 44,
+      "same_component_all_scanned_frames": true,
+      "even_frame_pairs": 22,
+      "odd_frame_pairs": 22,
+      "component_centroid_x_min": 87.5,
+      "component_centroid_x_max": 99.5,
+      "component_width_px_min_max": [
+        160,
+        160
+      ],
+      "contact_edge_gray_values_a": [
+        222
+      ],
+      "contact_edge_gray_values_b": [
+        222
+      ],
+      "contact_edge_max_abs_delta": 0,
+      "scanned_png_manifest_sha256": "7199202814bb89ff81781165002abadf25642d9342e587b31b035be38cbdeb1f"
+    }
+  ],
+  "missed_events": [
+    {
+      "condition_id": "backbone_fast_small_01",
+      "object_id": 15,
+      "speed_px_per_frame": 1.5,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 20,
+        "qualified_frame": 21,
+        "first_visible_frame": 21,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          160,
+          112,
+          167,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          40,
+          112,
+          199,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          220
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            40,
+            199,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 14,
+          "bbox_xyxy_inclusive": [
+            152,
+            112,
+            159,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 16,
+          "bbox_xyxy_inclusive": [
+            168,
+            112,
+            175,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_fast_small_01",
+        "target_object_id": 15,
+        "observable_frames_scanned": 24,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 48,
+        "bbox_gap_histogram_px": {
+          "0": 48
+        },
+        "shared_8_connected_component_samples": 48,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 24,
+        "odd_frame_pairs": 24,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 121.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          220
+        ],
+        "contact_edge_gray_values_b": [
+          220
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "a6efcc4df336621a7077827a3480d760bd59be8feae35c3861eec159b757320a",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 20,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_fast_small_01/frames/frame_0020.png",
+          "image_exists": true,
+          "sha256": "be19ec5206b6c0a10d6a027e4a259db18b879052894301074beb58180ae613e1"
+        },
+        {
+          "frame_id": 21,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_fast_small_01/frames/frame_0021.png",
+          "image_exists": true,
+          "sha256": "b3f0bd554f59b875121da875314ee04f57e06457b904c94148bfc8d267d62337"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_fast_small_01",
+      "object_id": 16,
+      "speed_px_per_frame": 1.5,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 14,
+        "qualified_frame": 16,
+        "first_visible_frame": 16,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          160,
+          112,
+          167,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          32,
+          112,
+          191,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          220
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            32,
+            191,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 15,
+          "bbox_xyxy_inclusive": [
+            152,
+            112,
+            159,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 17,
+          "bbox_xyxy_inclusive": [
+            168,
+            112,
+            175,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_fast_small_01",
+        "target_object_id": 16,
+        "observable_frames_scanned": 24,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 48,
+        "bbox_gap_histogram_px": {
+          "0": 48
+        },
+        "shared_8_connected_component_samples": 48,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 24,
+        "odd_frame_pairs": 24,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 121.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          220
+        ],
+        "contact_edge_gray_values_b": [
+          220
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "a6efcc4df336621a7077827a3480d760bd59be8feae35c3861eec159b757320a",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 14,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_fast_small_01/frames/frame_0014.png",
+          "image_exists": true,
+          "sha256": "e47c3f420573b3c29594164bcc2c0150fa92ad0ef270c235fc5b635c20218ccc"
+        },
+        {
+          "frame_id": 16,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_fast_small_01/frames/frame_0016.png",
+          "image_exists": true,
+          "sha256": "e294629cf24a5b28276320c25d0097bd513364ae307de9bc0691578f4405ba6b"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_fast_small_01",
+      "object_id": 17,
+      "speed_px_per_frame": 1.5,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 9,
+        "qualified_frame": 10,
+        "first_visible_frame": 10,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          23,
+          112,
+          182,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          220
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            23,
+            182,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 16,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 18,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_fast_small_01",
+        "target_object_id": 17,
+        "observable_frames_scanned": 24,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 48,
+        "bbox_gap_histogram_px": {
+          "0": 48
+        },
+        "shared_8_connected_component_samples": 48,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 24,
+        "odd_frame_pairs": 24,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 121.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          220
+        ],
+        "contact_edge_gray_values_b": [
+          220
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "a6efcc4df336621a7077827a3480d760bd59be8feae35c3861eec159b757320a",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 9,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_fast_small_01/frames/frame_0009.png",
+          "image_exists": true,
+          "sha256": "aad1000085d66ccaef24c3415f9e1ffc7039aa4d7fd6e9d3fb24c9b510299364"
+        },
+        {
+          "frame_id": 10,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_fast_small_01/frames/frame_0010.png",
+          "image_exists": true,
+          "sha256": "0367d3a3163cf555e7d7b676852c9b2f441fd01301ef0689707c304cacaac32d"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_fast_small_01",
+      "object_id": 18,
+      "speed_px_per_frame": 1.5,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 4,
+        "qualified_frame": 5,
+        "first_visible_frame": 5,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          160,
+          112,
+          167,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          16,
+          112,
+          175,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          220
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            16,
+            175,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 17,
+          "bbox_xyxy_inclusive": [
+            152,
+            112,
+            159,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 19,
+          "bbox_xyxy_inclusive": [
+            168,
+            112,
+            175,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_fast_small_01",
+        "target_object_id": 18,
+        "observable_frames_scanned": 24,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 48,
+        "bbox_gap_histogram_px": {
+          "0": 48
+        },
+        "shared_8_connected_component_samples": 48,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 24,
+        "odd_frame_pairs": 24,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 121.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          220
+        ],
+        "contact_edge_gray_values_b": [
+          220
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "a6efcc4df336621a7077827a3480d760bd59be8feae35c3861eec159b757320a",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 4,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_fast_small_01/frames/frame_0004.png",
+          "image_exists": true,
+          "sha256": "b9a601dc42ea378f73423139c478296813cdb8eb65a027d52cc2eac3abc955de"
+        },
+        {
+          "frame_id": 5,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_fast_small_01/frames/frame_0005.png",
+          "image_exists": true,
+          "sha256": "a4961b50cc28656c84b481c3446e7bdce18f8c696aac815e8944978b00abfa66"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_nominal_small_01",
+      "object_id": 16,
+      "speed_px_per_frame": 1.0,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 21,
+        "qualified_frame": 23,
+        "first_visible_frame": 23,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          31,
+          112,
+          190,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          220
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            31,
+            190,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 15,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 17,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_nominal_small_01",
+        "target_object_id": 16,
+        "observable_frames_scanned": 24,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 48,
+        "bbox_gap_histogram_px": {
+          "0": 48
+        },
+        "shared_8_connected_component_samples": 48,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 24,
+        "odd_frame_pairs": 24,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 110.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          220
+        ],
+        "contact_edge_gray_values_b": [
+          220
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "dcee4b045b47b2460ab74cb6b8d178fc2f343a7c06a38b76a7e9ebd3b04543d8",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 21,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_01/frames/frame_0021.png",
+          "image_exists": true,
+          "sha256": "0d86b79efd29e2aa001201e67bc36d7bfae3a36792a4274a3c918daf43528d43"
+        },
+        {
+          "frame_id": 23,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_01/frames/frame_0023.png",
+          "image_exists": true,
+          "sha256": "7f97f73ef462b80677dac7e12599b87453af9f222e0da5fc034c95426a85b607"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_nominal_small_01",
+      "object_id": 17,
+      "speed_px_per_frame": 1.0,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 13,
+        "qualified_frame": 15,
+        "first_visible_frame": 15,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          23,
+          112,
+          182,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          220
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            23,
+            182,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 16,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 18,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_nominal_small_01",
+        "target_object_id": 17,
+        "observable_frames_scanned": 24,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 48,
+        "bbox_gap_histogram_px": {
+          "0": 48
+        },
+        "shared_8_connected_component_samples": 48,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 24,
+        "odd_frame_pairs": 24,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 110.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          220
+        ],
+        "contact_edge_gray_values_b": [
+          220
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "dcee4b045b47b2460ab74cb6b8d178fc2f343a7c06a38b76a7e9ebd3b04543d8",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 13,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_01/frames/frame_0013.png",
+          "image_exists": true,
+          "sha256": "d25b7594953dbf045279fbb1595c6906f132336d762ea2f12454d599fa07966c"
+        },
+        {
+          "frame_id": 15,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_01/frames/frame_0015.png",
+          "image_exists": true,
+          "sha256": "b958a7803d331d70731250425608cd9c584cd31d8cfa0705cf4abcf4f1e32e25"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_nominal_small_01",
+      "object_id": 18,
+      "speed_px_per_frame": 1.0,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 5,
+        "qualified_frame": 7,
+        "first_visible_frame": 7,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          15,
+          112,
+          174,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          220
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            15,
+            174,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 17,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 19,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_nominal_small_01",
+        "target_object_id": 18,
+        "observable_frames_scanned": 24,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 48,
+        "bbox_gap_histogram_px": {
+          "0": 48
+        },
+        "shared_8_connected_component_samples": 48,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 24,
+        "odd_frame_pairs": 24,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 110.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          220
+        ],
+        "contact_edge_gray_values_b": [
+          220
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "dcee4b045b47b2460ab74cb6b8d178fc2f343a7c06a38b76a7e9ebd3b04543d8",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 5,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_01/frames/frame_0005.png",
+          "image_exists": true,
+          "sha256": "ee16a4948dfcd580dd6f365bd4e657d2f5183cce14bd05c3cebbb9707dfc947d"
+        },
+        {
+          "frame_id": 7,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_01/frames/frame_0007.png",
+          "image_exists": true,
+          "sha256": "acf4ef4da6ffee88f064a443e46b3bffbcf8e598cfb16c1930afffa4a63813b1"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_nominal_small_02",
+      "object_id": 16,
+      "speed_px_per_frame": 1.0,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 21,
+        "qualified_frame": 23,
+        "first_visible_frame": 23,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": [
+          19
+        ]
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          31,
+          112,
+          190,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          222
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            31,
+            190,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 15,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 17,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_nominal_small_02",
+        "target_object_id": 16,
+        "observable_frames_scanned": 22,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 44,
+        "bbox_gap_histogram_px": {
+          "0": 44
+        },
+        "shared_8_connected_component_samples": 44,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 22,
+        "odd_frame_pairs": 22,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 110.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          222
+        ],
+        "contact_edge_gray_values_b": [
+          222
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "eca9863d7a8e75c6502a71ddd1ea267a1e354ea1c643a33fa18b8f35834f1e23",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 22
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 22
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 19,
+          "role": "configured_drop_near_event",
+          "observation_present": false,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_02/frames/frame_0019.png",
+          "image_exists": false,
+          "sha256": null
+        },
+        {
+          "frame_id": 21,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_02/frames/frame_0021.png",
+          "image_exists": true,
+          "sha256": "b5f87c267432b20a4c72b10fb5d33fcfb63ac91f382a8bf2dc7135a34c0e7fce"
+        },
+        {
+          "frame_id": 23,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_02/frames/frame_0023.png",
+          "image_exists": true,
+          "sha256": "fc2d7a4dec7c2688b30313fd86893bacc837d1b5201a76187cf1b02e37844351"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_nominal_small_02",
+      "object_id": 17,
+      "speed_px_per_frame": 1.0,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 13,
+        "qualified_frame": 15,
+        "first_visible_frame": 15,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          23,
+          112,
+          182,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          222
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            23,
+            182,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 16,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 18,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_nominal_small_02",
+        "target_object_id": 17,
+        "observable_frames_scanned": 22,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 44,
+        "bbox_gap_histogram_px": {
+          "0": 44
+        },
+        "shared_8_connected_component_samples": 44,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 22,
+        "odd_frame_pairs": 22,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 110.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          222
+        ],
+        "contact_edge_gray_values_b": [
+          222
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "eca9863d7a8e75c6502a71ddd1ea267a1e354ea1c643a33fa18b8f35834f1e23",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 22
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 22
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 13,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_02/frames/frame_0013.png",
+          "image_exists": true,
+          "sha256": "d45d0d856375715a144171a626cba707bb67e565eced01f3bac017a63e253c3b"
+        },
+        {
+          "frame_id": 15,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_02/frames/frame_0015.png",
+          "image_exists": true,
+          "sha256": "c2864aec5364069ddd14542d321247851ba2a2a8472b8bbde8f2016fcf265df9"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_nominal_small_02",
+      "object_id": 18,
+      "speed_px_per_frame": 1.0,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 5,
+        "qualified_frame": 7,
+        "first_visible_frame": 7,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": [
+          6
+        ]
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          15,
+          112,
+          174,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          222
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            15,
+            174,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 17,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 19,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_nominal_small_02",
+        "target_object_id": 18,
+        "observable_frames_scanned": 22,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 44,
+        "bbox_gap_histogram_px": {
+          "0": 44
+        },
+        "shared_8_connected_component_samples": 44,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 22,
+        "odd_frame_pairs": 22,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 110.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          222
+        ],
+        "contact_edge_gray_values_b": [
+          222
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "eca9863d7a8e75c6502a71ddd1ea267a1e354ea1c643a33fa18b8f35834f1e23",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 22
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 22
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 5,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_02/frames/frame_0005.png",
+          "image_exists": true,
+          "sha256": "79dbc2a4c1b37d79aad61c82e09994cbc24d208af8b23ce6255b899d38e9dd6b"
+        },
+        {
+          "frame_id": 6,
+          "role": "configured_drop_near_event",
+          "observation_present": false,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_02/frames/frame_0006.png",
+          "image_exists": false,
+          "sha256": null
+        },
+        {
+          "frame_id": 7,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_nominal_small_02/frames/frame_0007.png",
+          "image_exists": true,
+          "sha256": "804bd94775966148f613715be5468a08564a83470c0491a13d075ca415819d37"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_slow_small_01",
+      "object_id": 18,
+      "speed_px_per_frame": 0.5,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 10,
+        "qualified_frame": 14,
+        "first_visible_frame": 14,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          15,
+          112,
+          174,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          220
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            15,
+            174,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 17,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 19,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_slow_small_01",
+        "target_object_id": 18,
+        "observable_frames_scanned": 24,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 48,
+        "bbox_gap_histogram_px": {
+          "0": 48
+        },
+        "shared_8_connected_component_samples": 48,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 24,
+        "odd_frame_pairs": 24,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 99.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          220
+        ],
+        "contact_edge_gray_values_b": [
+          220
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "d8580cff0a12d753b4073863bbc1150b7bc91a9009b7f95e406aebfc498e33b2",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 24
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 10,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_slow_small_01/frames/frame_0010.png",
+          "image_exists": true,
+          "sha256": "c012018f0ff174b2ebf56a139e3ff02c2880dcb50c27407c124cee5eea696637"
+        },
+        {
+          "frame_id": 14,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_slow_small_01/frames/frame_0014.png",
+          "image_exists": true,
+          "sha256": "372607b15a94fcba0555b5c56b23d1cf631dd8f5f870930a6857eb1836702352"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    },
+    {
+      "condition_id": "backbone_slow_small_02",
+      "object_id": 18,
+      "speed_px_per_frame": 0.5,
+      "configured_spacing_px": 8,
+      "event_frames": {
+        "center_frame": 10,
+        "qualified_frame": 14,
+        "first_visible_frame": 14,
+        "line_x_px": 160,
+        "hysteresis_px": 2,
+        "dropped_frames_near_event": []
+      },
+      "GT_posthoc_label_only": {
+        "bbox_xyxy_inclusive": [
+          159,
+          112,
+          166,
+          125
+        ],
+        "size_px": [
+          8,
+          14
+        ]
+      },
+      "posthoc_track_association": {
+        "GT_matched_assignments": 0,
+        "GT_matched_events": 0,
+        "note": "GT identity was used only to score/label trace after inference."
+      },
+      "first_visible_binary8_component": {
+        "bbox_xyxy_inclusive": [
+          15,
+          112,
+          174,
+          125
+        ],
+        "area_px": 2240,
+        "width_px": 160,
+        "height_px": 14,
+        "flags": 5,
+        "flag_bits": {
+          "merge_suspect": true,
+          "touches_frame_edge": false,
+          "two_dimensional": true
+        },
+        "target_bbox_foreground_pixels": 112,
+        "target_gray_values": [
+          222
+        ],
+        "connected_same_row_object_count": 20,
+        "connected_same_row_object_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "WO0010_trace_region": {
+          "x_min_x_max_row_min_row_max": [
+            15,
+            174,
+            112,
+            125
+          ],
+          "area_px": 2240,
+          "flags": 5
+        }
+      },
+      "immediate_neighbors_at_first_visible": [
+        {
+          "object_id": 17,
+          "bbox_xyxy_inclusive": [
+            151,
+            112,
+            158,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        },
+        {
+          "object_id": 19,
+          "bbox_xyxy_inclusive": [
+            167,
+            112,
+            174,
+            125
+          ],
+          "bbox_gap_px": 0,
+          "shares_component": true
+        }
+      ],
+      "full_sequence_contact_scan": {
+        "condition_id": "backbone_slow_small_02",
+        "target_object_id": 18,
+        "observable_frames_scanned": 22,
+        "scanned_frame_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "adjacent_pair_sample_count": 44,
+        "bbox_gap_histogram_px": {
+          "0": 44
+        },
+        "shared_8_connected_component_samples": 44,
+        "same_component_all_scanned_frames": true,
+        "even_frame_pairs": 22,
+        "odd_frame_pairs": 22,
+        "component_centroid_x_min": 87.5,
+        "component_centroid_x_max": 99.5,
+        "component_width_px_min_max": [
+          160,
+          160
+        ],
+        "contact_edge_gray_values_a": [
+          222
+        ],
+        "contact_edge_gray_values_b": [
+          222
+        ],
+        "contact_edge_max_abs_delta": 0,
+        "scanned_png_manifest_sha256": "7199202814bb89ff81781165002abadf25642d9342e587b31b035be38cbdeb1f",
+        "even_frame_bbox_gap_histogram_px": {
+          "0": 22
+        },
+        "odd_frame_bbox_gap_histogram_px": {
+          "0": 22
+        },
+        "parity_conclusion": "Both even and odd observed frames have only zero-pixel bbox gaps and shared 8-connected labels; no rounding-induced separation alternation was observed."
+      },
+      "evidence_frames": [
+        {
+          "frame_id": 10,
+          "role": "center_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_slow_small_02/frames/frame_0010.png",
+          "image_exists": true,
+          "sha256": "3865424160d43dafdf1cb2dfaf391cbfc7475ba8002e4e125dddefeadb90894c"
+        },
+        {
+          "frame_id": 14,
+          "role": "qualified_crossing",
+          "observation_present": true,
+          "image_path": "data/synthetic/h3_full/backbone_slow_small_02/frames/frame_0014.png",
+          "image_exists": true,
+          "sha256": "c6e7a96deed88c1b1f7696ea1f3bc69b626fd273929570fe00cec2c8be2a19b7"
+        }
+      ],
+      "supported_cause": "At every actually observable frame scanned, target and available immediate same-row neighbors have raster bbox gap 0 and share one 8-connected Binary8 component. Their touching edge columns have equal original gray values (220 or 222), with zero edge delta. This H3 row-band is width 160/area 2240 and merge-suspect; disabling the guard still leaves its measured centroid left of the count exit threshold. The nearby drops in two cases are cofactors only; visible frames around them remain merged."
+    }
+  ],
+  "aggregate_finding": "All 12 misses occur in five small-target conditions. Original PNGs show an 8x14 target touching same-row neighbors at 0 raster gap, yielding one 8-connected component; the pattern is present on both even and odd observable frames. Contact columns have equal gray values 220/220 or 222/222, so no grayscale boundary marks the seam. There is no gap alternation from pixel rounding in these source files. The component is rejected as merge-suspect; without that guard, the entire row-band centroid remains before the count exit threshold. Two nearby missing frames are secondary, not the primary separation cause."
+}
