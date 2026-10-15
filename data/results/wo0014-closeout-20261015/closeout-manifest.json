@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "boot_id": "52955bb3-db18-4505-b209-78cbf3969d89",
+  "parent_50_bit_sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d",
+  "parent_50_executor_manifest_sha256": "7fa96c83ffc6ec4572d2b70eff120b7acc2904c11121be39e12faba7455934c2",
+  "source_sha256": {
+    "closeout_worker.py": "b1250fea80f033ae04ecacf0e9ce31c070ba2aee5e7dd99069225876f4a5e202",
+    "closeout_child.py": "4a25d031f34fca420b0130ff822ee1cf0a6b24c1f919e027a5e0a606b346f630",
+    "closeout_session.py": "b835233e35ffd22e55522e4a3f0fd725f7239653b7216d0c717435a8850c3d05",
+    "diagnostic50/baseline_pynq_image_once.py": "b1d2a56fd3d87c5e3331ae2b45a14e867fbccebe00df8a5d44f2ce93940375e2",
+    "diagnostic50/core.py": "7927f58356565bd916b44aa50c856c12edc04b60c86b8ce094e46ea28aeac562",
+    "diagnostic50/child.py": "daffcfb9b9199526edb5473e1f2869a7f532875d89a98e48fa58e51c3dd3faa2",
+    "diagnostic50/session.py": "bf098afadc5c5c556d3f84c6236f102660ac2186786bf92bc18c604a64ea22dc",
+    "diagnostic50/supervisor.py": "115379587dcbc282862717d33b92f4a4e210ed1bd109871b974d0dc9a03b8f0a",
+    "diagnostic50/deadline.py": "e34c78ff819791c660f38486f0392d8377b88f03c072aba1a820275fac4a6f8d",
+    "diagnostic50/authentication.py": "b63e1c41220ca078a0536f1665ea65af0439033aefe2157417a7d669035874a8",
+    "diagnostic50/executor-manifest.json": "7fa96c83ffc6ec4572d2b70eff120b7acc2904c11121be39e12faba7455934c2"
+  },
+  "profiles": {
+    "50": {
+      "clock_mhz": 50,
+      "build_id": "wo0014-hw-50mhz-20261014",
+      "bit": {
+        "path": "artifacts50/wo0014_image.bit",
+        "sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d"
+      },
+      "hwh": {
+        "path": "artifacts50/wo0014_image.hwh",
+        "sha256": "9e2e09f0cb79ca678d24c3c3d826fbb393832bec6a45a43e2c49f4276dcc4b57"
+      },
+      "pair_manifest": {
+        "path": "artifacts50/pair-manifest.json",
+        "sha256": "8542f0b3b59aeb065689238da769a338f642aa969d942e76f132ee4f29711be6"
+      }
+    },
+    "100": {
+      "clock_mhz": 100,
+      "build_id": "wo0014-hw-100mhz-20261014",
+      "bit": {
+        "path": "artifacts100/wo0014_image.bit",
+        "sha256": "585c83ec455d237516c30cda2709e42882edecb83acc6f401e724f6418f368bd"
+      },
+      "hwh": {
+        "path": "artifacts100/wo0014_image.hwh",
+        "sha256": "6bd4fec32c99186c2445b45b796f6bbfbe98e29df8fff21524e014dcb172bfba"
+      },
+      "pair_manifest": {
+        "path": "artifacts100/pair-manifest.json",
+        "sha256": "fdabd5995b39f02e15223f1ae03e9d62bd5d3d489df7ca69f06a480e8e4af657"
+      }
+    }
+  },
+  "baseline_frame": {
+    "frame_id": 0,
+    "packet": {
+      "path": "packets/frame-0.bin",
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae"
+    },
+    "foreground_pixels": 2240
+  },
+  "modes": {
+    "overlay100": {
+      "packets": []
+    },
+    "single100": {
+      "packets": [
+        {
+          "frame_id": 0,
+          "packet": {
+            "path": "packets/frame-0.bin",
+            "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae"
+          },
+          "foreground_pixels": 2240
+        }
+      ]
+    },
+    "multi50": {
+      "packets": [
+        {
+          "frame_id": 1,
+          "packet": {
+            "path": "packets/frame-1.bin",
+            "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e"
+          },
+          "foreground_pixels": 2240
+        },
+        {
+          "frame_id": 2,
+          "packet": {
+            "path": "packets/frame-2.bin",
+            "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1"
+          },
+          "foreground_pixels": 2240
+        },
+        {
+          "frame_id": 3,
+          "packet": {
+            "path": "packets/frame-3.bin",
+            "sha256": "64345eb45065abb24cc4e816f4a22abd8c3cf24f3472aa508b7935209e516efc"
+          },
+          "foreground_pixels": 2240
+        }
+      ]
+    },
+    "multi100": {
+      "packets": [
+        {
+          "frame_id": 1,
+          "packet": {
+            "path": "packets/frame-1.bin",
+            "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e"
+          },
+          "foreground_pixels": 2240
+        },
+        {
+          "frame_id": 2,
+          "packet": {
+            "path": "packets/frame-2.bin",
+            "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1"
+          },
+          "foreground_pixels": 2240
+        },
+        {
+          "frame_id": 3,
+          "packet": {
+            "path": "packets/frame-3.bin",
+            "sha256": "64345eb45065abb24cc4e816f4a22abd8c3cf24f3472aa508b7935209e516efc"
+          },
+          "foreground_pixels": 2240
+        }
+      ]
+    }
+  }
+}

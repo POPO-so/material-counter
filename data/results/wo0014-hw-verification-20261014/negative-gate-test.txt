@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "C:\fpga\material-counter\scripts\wo0014_hw\finalize_build.py", line 37, in <module>
+    require(min(float(wns), float(whs), float(wpws)) >= 0, "Negative implemented timing slack")
+  File "C:\fpga\material-counter\scripts\wo0014_hw\finalize_build.py", line 17, in require
+    raise RuntimeError(message)
+RuntimeError: Negative implemented timing slack

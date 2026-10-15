@@ -1,0 +1,67 @@
+{
+  "optimization_commit": "6264b324385eb8d90033d14eec3f471c1317273f",
+  "functional_baseline_commit": "ca6a68c7e454d87aeda414c65579271ffa948362",
+  "protected_sha256": {
+    "MASTER_PLAN.md": "8a4d37f90e1817317b808b11cc2d71acc7d772251461fbc6ac34253ae31a94bd",
+    "README.md": "308dee4b2109a150e9a71ee14cde9e26b4826c0811b2a9fcbcae9ebf2d94f501",
+    "docs/00_scope.md": "1dae77c87f2596734008730e079f5de0f328c282e2bd6eee4b88b825818e4f8d",
+    "docs/02_interfaces.md": "c274422922113520b8d54a4ba05297ad624abdb9893574acac609dc1acc32332",
+    "docs/07_routes.md": "37771a4bed3caa0e7e04ae6005ae7d098f9457154d9e88b599fe75c3fba99ce0",
+    "fpga\\rtl\\axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+    "fpga\\rtl\\axis_morphology3x3.v": "41bd8ac2bd659357807c172ddc0e14b0b6a85d14afc8d5323836c60e8b277cb1",
+    "fpga\\rtl\\axis_rgb2gray.v": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+    "fpga\\rtl\\axis_stream_skeleton.v": "4ded2eec76fde16856df3ff3ac092b824108f26412290b2c9ca10a2f553df048"
+  },
+  "wo0013_artifact_sha256": {
+    "wo0013_phase_a.bit": "47e6cd65c552244236f2564c11cba3e81a9a0c6aced0c9974c04de78256da3f7",
+    "wo0013_phase_a.hwh": "a31d71f8e7004de710fa4da07078b80e2a0a8b40ff52ac523d322f21362df1fb"
+  },
+  "builds": {
+    "50": {
+      "clock_mhz": 50,
+      "pair_identity": "PASS",
+      "hwh_contract": "PASS",
+      "wns": 9.526,
+      "tns": 0.0,
+      "whs": 0.068,
+      "ths": 0.0,
+      "resources": {
+        "lut": 1941,
+        "ff": 2095,
+        "bram": 1.5,
+        "dsp": 0
+      },
+      "bit": "C:\\fpga\\material-counter\\data\\results\\wo0014-hw-50mhz-20261014\\export\\wo0014_image.bit",
+      "hwh": "C:\\fpga\\material-counter\\data\\results\\wo0014-hw-50mhz-20261014\\export\\wo0014_image.hwh",
+      "manifest": "C:\\fpga\\material-counter\\data\\results\\wo0014-hw-50mhz-20261014\\export\\pair-manifest.json",
+      "hardware_actions": 0
+    },
+    "100": {
+      "clock_mhz": 100,
+      "pair_identity": "PASS",
+      "hwh_contract": "PASS",
+      "wns": 1.167,
+      "tns": 0.0,
+      "whs": 0.066,
+      "ths": 0.0,
+      "resources": {
+        "lut": 1941,
+        "ff": 2095,
+        "bram": 1.5,
+        "dsp": 0
+      },
+      "bit": "C:\\fpga\\material-counter\\data\\results\\wo0014-hw-100mhz-20261014\\export\\wo0014_image.bit",
+      "hwh": "C:\\fpga\\material-counter\\data\\results\\wo0014-hw-100mhz-20261014\\export\\wo0014_image.hwh",
+      "manifest": "C:\\fpga\\material-counter\\data\\results\\wo0014-hw-100mhz-20261014\\export\\pair-manifest.json",
+      "hardware_actions": 0
+    }
+  },
+  "wrapper_xsim": "PASS small/recovery/AXI-Lite and full 320x240 golden",
+  "board_script_mock_tests": 11,
+  "negative_gate_under_python_O": "PASS",
+  "hardware_actions": 0,
+  "push_or_merge": false,
+  "integration_committed": false,
+  "ready_for_approval": "One 50MHz legal-packet diagnostic board test; residual DRC/reset risks retained",
+  "diff_check": "PASS"
+}

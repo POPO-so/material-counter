@@ -1,0 +1,714 @@
+{
+  "batch": "05-wo0014-hardware",
+  "source_head": "7a868c070024bdc29cdeb057fbec9ccaf94ef160",
+  "files": [
+    {
+      "path": ".agents/skills/vivado-ip-configurator/lib/clock_search.tcl",
+      "sha256": "b02e3e31d494f0a1b321da52d123622dbef36e48da41f2d18e5e5336e1494d76",
+      "bytes": 27632,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": ".agents/skills/vivado-ip-configurator/lib/ipcfg.tcl",
+      "sha256": "b6849bd1787c401aca398d0e0c82004eb969bc54eb8ca8de827e1b30d85bf40b",
+      "bytes": 177585,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": ".agents/skills/vivado-ip-configurator/lib/ipcfg_cache.py",
+      "sha256": "c92f65c761c333d4badced135008c9caa0c5cef184ea7fe0054b632c17e88789",
+      "bytes": 3646,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": ".agents/skills/vivado-ip-configurator/lib/preset_drift.tcl",
+      "sha256": "2b5a43fd67032f60dd075a6d33528946ddcc9e1ba6cca5fb27b40ff202735808",
+      "bytes": 6116,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": ".agents/skills/vivado-ip-configurator/lib/rule_options.tcl",
+      "sha256": "e90c9453f11eab10fd05800b4d6ebbdb01b862d9d86d7786961cb47fa184e77e",
+      "bytes": 4108,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": ".agents/skills/vivado-ip-configurator/lib/vivado_python.cmd",
+      "sha256": "d7cce963c703d82bbfcb4069b611c7e81d504295dd6aab538ce3a3c2db714b81",
+      "bytes": 2637,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": ".agents/skills/vivado-ip-configurator/lib/vivado_python.sh",
+      "sha256": "d7fec42704646e9e707f85cc63ddc2d60090be503068a5091b6ada2286f9d155",
+      "bytes": 3524,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": ".agents/skills/vivado-revision-control/helper-procedures/helper_scripts.tcl",
+      "sha256": "5fbbdad6c64fb396932eb258e5493a738d16731cd634d49c52630ac06d612efd",
+      "bytes": 211411,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/board-event-verification.json",
+      "sha256": "d6bb3a0b5d82c19af82d58bd93543c250bd7826e6c9c7770a740f04b53be3c20",
+      "bytes": 211,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/board-evidence/multi50/closeout-20261015/events.jsonl",
+      "sha256": "526013a690c746e5c6e58978911c021c04fe97ed3a58281b25e3fc9900c65199",
+      "bytes": 74445,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/board-evidence/multi50/closeout-20261015/frame-multi50-1-pass.json",
+      "sha256": "6983266402f5abf45d331178c1ee87026b0422e43d79f24cddedb9fb136ec52d",
+      "bytes": 1413,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/board-evidence/multi50/closeout-20261015/frame-multi50-2-pass.json",
+      "sha256": "a7fed745546c0d1bd5255342aaed3d9e9d5dad3087f31991d008be2e1b5b690b",
+      "bytes": 1412,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/board-evidence/multi50/closeout-20261015/frame-multi50-3-pass.json",
+      "sha256": "70fb9001e4e854d66db99f47aa57f699e06789599c06a7c969805b8cb6b13791",
+      "bytes": 1413,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/board-evidence/multi50/closeout-20261015/mode-multi50-pass.json",
+      "sha256": "e4d062d8aec47e16a765f325b1123f4ba16b4777f1b847fefe49fff276e4a07d",
+      "bytes": 2502,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/board-evidence/multi50/evidence-multi50/status.json",
+      "sha256": "46521d8004be8bc8a97a289af565f999962281c589c7df5cdd9f7650591e1dbf",
+      "bytes": 389,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/board-performance.csv",
+      "sha256": "419048d1c824f9232ba62a640d43778291539095f601d39350addbd53696c733",
+      "bytes": 382,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/closeout-manifest.json",
+      "sha256": "79b7f4dbc317d6eb0aca0130b3474b430499e40a6e0e753a3a28b3a3e7fbbff7",
+      "bytes": 4886,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/final-summary.json",
+      "sha256": "70d0026c7b6314b2ddcb227ddd48cc106d9c5dca73be8a6de558f49c7113e3a4",
+      "bytes": 5680,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-closeout-20261015/report.md",
+      "sha256": "9666db246a81950d568692ede70da5457fb936f92149427f1b5adb636c536a5e",
+      "bytes": 6825,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-coldstate-fix-20261015/board-logs/dmesg-after.txt",
+      "sha256": "5dd978a119db358522708c0aa2e90ee90a631ead6dbd7c4bc035e6882822908b",
+      "bytes": 18416,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-coldstate-fix-20261015/board-logs/dmesg-before.txt",
+      "sha256": "c5bab665293bb7711593997e3864ff8dc233177552b2af0b6bc4923823c4671b",
+      "bytes": 18486,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/export/pair-manifest.json",
+      "sha256": "fdabd5995b39f02e15223f1ae03e9d62bd5d3d489df7ca69f06a480e8e4af657",
+      "bytes": 1857,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/export/project_settings.tcl",
+      "sha256": "242e3e85e7d9c6996ad023e84dfd4d98ce5fdbd593cff388601955e677ef0aeb",
+      "bytes": 3370,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/export/rgb_packet.bin",
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "bytes": 230432,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/export/wo0014_image.bit",
+      "sha256": "585c83ec455d237516c30cda2709e42882edecb83acc6f401e724f6418f368bd",
+      "bytes": 4045775,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/export/wo0014_image.hwh",
+      "sha256": "6bd4fec32c99186c2445b45b796f6bbfbe98e29df8fff21524e014dcb172bfba",
+      "bytes": 255627,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/export/wo0014_image_recreate.tcl",
+      "sha256": "86f99b39e8e222521dbfb21d769efc70efe3ac894960309e810f8264fe94c3a6",
+      "bytes": 17193,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/build-summary.json",
+      "sha256": "b2e680abec224b4b9720219063569f26320be60410848b33658aabbe4763a716",
+      "bytes": 591,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/clocks.rpt",
+      "sha256": "216713a5a0d46b65119c8452e271c096b469953779620b62b0f6a0ed6529c185",
+      "bytes": 1632,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/drc.rpt",
+      "sha256": "12922e7de6b215a082373fa4441aad86272e5fa21376dbef2f181f84ac9380f9",
+      "bytes": 23907,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/implemented-constraints.xdc",
+      "sha256": "049e7fa1845afb58b4a24dda04c710a7ba9d72ccf1fa690bafd67228dfe211ba",
+      "bytes": 2724,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/ip-requirement-coverage.txt",
+      "sha256": "4d76f3e6e5cf340a488b2fb832b6dd1f337070dba79d7f2b8e6385b25c12db06",
+      "bytes": 1063,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/methodology.json",
+      "sha256": "302b6b69202a432eebafd6afa985f67ca1a06ad969d2132f98c77f8cfb3e8f29",
+      "bytes": 5038,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/methodology.rpt",
+      "sha256": "0825f2b8705b7da2cd341b7194c36b9230720814a76bcda0a3e7cf253f9f5396",
+      "bytes": 5576,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/pynq-dry-run.json",
+      "sha256": "f3c65c9057de3830e41664364f21fc68e05cb86985366030041a040144874528",
+      "bytes": 2346,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/timing-implemented.rpt",
+      "sha256": "baeef2d496c2ff6d1bac677b08fd24034b40fdef638d4d700fe904fe57eb5133",
+      "bytes": 335807,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/timing-synth.rpt",
+      "sha256": "69564db4d7ea16d23e208760e553143f4cba6b9a9b2e1da664288fad5e6efa8a",
+      "bytes": 35959,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/utilization-hierarchical.rpt",
+      "sha256": "23f9cde81ac3d271a37843fcff63b455d27ce22e62e40af01f12fedeab414129",
+      "bytes": 10814,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/utilization-implemented.rpt",
+      "sha256": "252d2fd8ce747bd24ab53894b2f5c041a32962c6f92fc4d908fd4d153bdf8700",
+      "bytes": 11617,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-100mhz-20261014/reports/utilization-synth.rpt",
+      "sha256": "b8f654240e7e9f8dc66e1496b81f4f79910c89e5a4780eb79cc273371d05b6f0",
+      "bytes": 9425,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/export/pair-manifest.json",
+      "sha256": "8542f0b3b59aeb065689238da769a338f642aa969d942e76f132ee4f29711be6",
+      "bytes": 1853,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/export/project_settings.tcl",
+      "sha256": "4d1738a2919cd1b607af642cc5a2e7c987446f62698df9bb327d9b4efa609bae",
+      "bytes": 3369,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/export/rgb_packet.bin",
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "bytes": 230432,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/export/wo0014_image.bit",
+      "sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d",
+      "bytes": 4045775,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/export/wo0014_image.hwh",
+      "sha256": "9e2e09f0cb79ca678d24c3c3d826fbb393832bec6a45a43e2c49f4276dcc4b57",
+      "bytes": 255601,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/export/wo0014_image_recreate.tcl",
+      "sha256": "7fd7e7470a08f67c53ca5a97d390402acf7556c9f02bf2e882ec9b0e73cb1043",
+      "bytes": 17190,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/build-summary.json",
+      "sha256": "0c34ee5a43128c046c67bdff13b12a1562ab3191aa7e3666083ff90e44f3dd96",
+      "bytes": 587,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/clocks.rpt",
+      "sha256": "cf9a8c5c35a0ea8796c4cb9d05aee119b0ed9f77c63b4dd21abea1c390d233dc",
+      "bytes": 1633,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/drc.rpt",
+      "sha256": "063c0f930ae07b6bc719deaa0de5c1fc004a25deada9ff7727474608c1fa7de3",
+      "bytes": 23906,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/implemented-constraints.xdc",
+      "sha256": "53ced24112160430c5ad2496bbe4b5c7d6918f7e9b14c3e408ad0c6405c9b456",
+      "bytes": 2723,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/ip-requirement-coverage.txt",
+      "sha256": "4d76f3e6e5cf340a488b2fb832b6dd1f337070dba79d7f2b8e6385b25c12db06",
+      "bytes": 1063,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/methodology.json",
+      "sha256": "302b6b69202a432eebafd6afa985f67ca1a06ad969d2132f98c77f8cfb3e8f29",
+      "bytes": 5038,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/methodology.rpt",
+      "sha256": "3254ff3ad8745f62bb1eababc1cdce6bf8f31a5d9c5c2b7156e3ebb27e807d73",
+      "bytes": 5575,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/pynq-dry-run.json",
+      "sha256": "3c8702478b791079c66f59ea0f91b5b948a5144175fc476b4efd4fd47db12b43",
+      "bytes": 2340,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/timing-implemented.rpt",
+      "sha256": "874442d5f3a5c4565a517dc09128b60eb8ec5d9fc6c277a65c0ffcc1ec40ee2e",
+      "bytes": 321404,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/timing-synth.rpt",
+      "sha256": "197d994d74a07f0f7f07ea6fafd747f7b8d5ba4bafd82ba4fa5a4f3db5f92b96",
+      "bytes": 35969,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/utilization-hierarchical.rpt",
+      "sha256": "6423cc40341fa3329134979e9d19e4dca3f5513232fc0cbd41780c019ab63eb3",
+      "bytes": 10811,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/utilization-implemented.rpt",
+      "sha256": "f5fc220b2b8163a140abdd70c48314b8100f3b6978cc69e2c81a61e995fb2bed",
+      "bytes": 11614,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-50mhz-20261014/reports/utilization-synth.rpt",
+      "sha256": "30984e7009a8fce0177ec9073c23d5eba10b6aa6482bfb6eba85c712f392ce0e",
+      "bytes": 9424,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-verification-20261014/board-script-tests.txt",
+      "sha256": "f0493f7fa0f8c1e9784aeb256511a7616922a0f97f905436b40ada07d957afa6",
+      "bytes": 2104,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-verification-20261014/delivery-summary.json",
+      "sha256": "297ed3ae97f91c97b0b1b40fbd403a57c7d30c53f713cb97f059b75d6aa8437f",
+      "bytes": 3037,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-verification-20261014/first-frame-beats.bin",
+      "sha256": "70a15fc11cba2fd0b8e8649077bfa2d76fa2ac3d00123c6d76f00eb7fc0a6cf3",
+      "bytes": 288040,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-verification-20261014/first-frame-golden.bin",
+      "sha256": "e4eaf9e7eb67a20c92d3806b9af03890591e2278ccb696f1bd6140a61bee9661",
+      "bytes": 153600,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-verification-20261014/negative-gate-test.txt",
+      "sha256": "8cb00dbb7af8d786bdce628abf87c5e3a2e4d279bf53611417c2f7efa921faf8",
+      "bytes": 400,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-verification-20261014/packet-manifest.json",
+      "sha256": "a0752beef1d9a9c3e728720ce04e91fe46dbdc730e2a62b2f57814b5e7f72b59",
+      "bytes": 607,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-verification-20261014/wrapper-full.log",
+      "sha256": "ef5213ee637841e6b7c75f40e919384b8dddaaabf45bf87ed7b58aabcf2fa295",
+      "bytes": 1966,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-hw-verification-20261014/wrapper-small.log",
+      "sha256": "feaae0ebd9ab7c60c21e0be1a935b9556742fcde7191bdbfdcccadd783a6ad0f",
+      "bytes": 1690,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/wo0014-pg021-ready-20261015/milestone-summary.json",
+      "sha256": "1662dfe0d072d4b873553c59a9f3ea1c4bd07d6e5a7856f95ef3bad47df00ded",
+      "bytes": 8825,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-pg021-ready-20261015/receipts/mmio-receipt.json",
+      "sha256": "94fb4fd3200f7f82245b0e3a5d7ca49668ae2afc6c502e547f98b87871af65a9",
+      "bytes": 173,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-pg021-ready-20261015/receipts/overlay-receipt.json",
+      "sha256": "f9fa75d8892686a345b95c9cf7bbee7e92a05398a5a1ceffa04008fc47190f21",
+      "bytes": 171,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-pg021-ready-20261015/receipts/supervision-dma-once-pass.json",
+      "sha256": "781ac93bc51fc7977b05aae3dc7e5896a3aaeaf80f3ce9c31c55fbb5582485d1",
+      "bytes": 108,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-pg021-ready-20261015/receipts/supervision-mmio-read-only-pass.json",
+      "sha256": "cd6ee313392f140845daea3a0607604f8ef3505bd627bd448fe62df57c238d3d",
+      "bytes": 114,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-pg021-ready-20261015/receipts/supervision-overlay-only-pass.json",
+      "sha256": "539781d48c6b465684e8610127744f441ae958d7f29374f04f4f7e0623d45d61",
+      "bytes": 112,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-pg021-ready-20261015/report.md",
+      "sha256": "08c6ddb569b879592cc6ea5e022458cd6ebd6d9dd15a5e1004e4bfde8b5e01da",
+      "bytes": 5533,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-pg021-ready-20261015/reviewed-local.json",
+      "sha256": "46f6776c96ef9049c73dfacdb24eaa6771b8e1f686807d77f0033b18a990d706",
+      "bytes": 5627,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0014-hw-integration-20261014.md",
+      "sha256": "dbbd8070cd5e4724fe2ed9c8dabec927feb379d14475926579c515a868bfc562",
+      "bytes": 12407,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "fpga/experimental/wo0014/axis_dma_image_pipeline_bd.v",
+      "sha256": "2dec7d70afbf899000ee2bdf60c32cd54e08f0bd0e7d6f08490010672602a46d",
+      "bytes": 11894,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "fpga/sim/wo0014/tb_axis_dma_image_pipeline_bd.sv",
+      "sha256": "984f000921b9adfff61a8bdb93ad64dbbb216ac1a72bafd198567ddceebddc71",
+      "bytes": 28306,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/audit_delivery.py",
+      "sha256": "2185ded8ac394d7210858732b9c72fc02b46bfb16e037ac0397161904eabe021",
+      "bytes": 5117,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/build_image.tcl",
+      "sha256": "a722c5d472de6b3d5514b65494cbbb52f18b4fe9c90beda4ea30da251fb2e056",
+      "bytes": 890,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/capture_repro.tcl",
+      "sha256": "1cea3edb973df6e19a5b12707429c70b70d9ef2a1c4994ea786871f643e66f78",
+      "bytes": 2255,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/closeout/closeout_child.py",
+      "sha256": "4a25d031f34fca420b0130ff822ee1cf0a6b24c1f919e027a5e0a606b346f630",
+      "bytes": 7352,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/closeout/closeout_session.py",
+      "sha256": "b835233e35ffd22e55522e4a3f0fd725f7239653b7216d0c717435a8850c3d05",
+      "bytes": 7694,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/closeout/closeout_worker.py",
+      "sha256": "b1250fea80f033ae04ecacf0e9ce31c070ba2aee5e7dd99069225876f4a5e202",
+      "bytes": 40304,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/closeout/test_closeout.py",
+      "sha256": "dac0f1770559d8e6c0006fe6acfa815cd1d3bc06acf898b57471827f47d88c37",
+      "bytes": 20762,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/create_image_bd.tcl",
+      "sha256": "5429650f88b938f9e76564af3a0af1aa57ab70bd68c500d04e327d65cdc84f48",
+      "bytes": 7772,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/HARDENING_PLAN.md",
+      "sha256": "124c9eea3401ad33e4916a5e5be28015c5d4d757e6fda3bbc51000fd74d57fa4",
+      "bytes": 1539,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/HARDENING_REPORT.md",
+      "sha256": "a750be275f46f937e4625396877cbcefd2a35a6031027d75f8740876277cfd5d",
+      "bytes": 7126,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/PLAN.md",
+      "sha256": "b1aa749c05d2d9aef6325b1076fc8671efe1bd39d98ed7c7c74c9baf8e496a3d",
+      "bytes": 2284,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/README.md",
+      "sha256": "571e5156366871e00ec0cbe4caa9e5f9035b155795e0969726e8c45022a7418a",
+      "bytes": 7955,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/authentication.py",
+      "sha256": "b63e1c41220ca078a0536f1665ea65af0439033aefe2157417a7d669035874a8",
+      "bytes": 1164,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/baseline_pynq_image_once.py",
+      "sha256": "b1d2a56fd3d87c5e3331ae2b45a14e867fbccebe00df8a5d44f2ce93940375e2",
+      "bytes": 42387,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/child.py",
+      "sha256": "daffcfb9b9199526edb5473e1f2869a7f532875d89a98e48fa58e51c3dd3faa2",
+      "bytes": 13000,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/core.py",
+      "sha256": "7927f58356565bd916b44aa50c856c12edc04b60c86b8ce094e46ea28aeac562",
+      "bytes": 21940,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/deadline.py",
+      "sha256": "e34c78ff819791c660f38486f0392d8377b88f03c072aba1a820275fac4a6f8d",
+      "bytes": 15137,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/executor-manifest.json",
+      "sha256": "7fa96c83ffc6ec4572d2b70eff120b7acc2904c11121be39e12faba7455934c2",
+      "bytes": 692,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/mock_child.py",
+      "sha256": "3760e59cfd1ac99b6c0e7d23205aaf9e8cf9f1a0d7b35e5cd74e058854ad5a75",
+      "bytes": 2236,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/preflight.py",
+      "sha256": "2dfeb656ce18a3f63dbf5422f6290e00d54c606a934c4c2d562eb90900567729",
+      "bytes": 7589,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/session.py",
+      "sha256": "bf098afadc5c5c556d3f84c6236f102660ac2186786bf92bc18c604a64ea22dc",
+      "bytes": 8306,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/supervisor.py",
+      "sha256": "115379587dcbc282862717d33b92f4a4e210ed1bd109871b974d0dc9a03b8f0a",
+      "bytes": 14246,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_authentication.py",
+      "sha256": "c8271b3ebc0ff82670ab51e0c7c6e5418b24becbcf6e98edcf327f8b790a6e43",
+      "bytes": 1667,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_cold_global_state.py",
+      "sha256": "ab5461ba1fbf04fecc51481f100c1f24f868317ce9ad595d4169fd3c4bbccd03",
+      "bytes": 7764,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_deadline.py",
+      "sha256": "596a359be5c0f0cf4cb32241b09fb128032e0e5ef0d888c26f47ca20755cf945",
+      "bytes": 6454,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_deployment.py",
+      "sha256": "ff79fdf5d56125ac0184c58dafc007651ba5665bdc64b8e00714552c63d50407",
+      "bytes": 4843,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_diagnostic.py",
+      "sha256": "02bb4b8c44e3be68472b26082a3bcaf719c8928e0b5ff800521c16eb7411664f",
+      "bytes": 10258,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_dispatch_bounds.py",
+      "sha256": "2f0279795b569c37125f66a6adda8e0a1da9d6bee68800039c245e7d806e168b",
+      "bytes": 3748,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_kernel_tail.py",
+      "sha256": "e691b32fd6fbbb72d81bf94994834d112a1b33693e8b6613f1027aa923a47ba0",
+      "bytes": 3061,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_pg021_ready.py",
+      "sha256": "b7d41644d61ca1152500ff5b9467cb14adad5b0ccbd3b7c2e24821853b326976",
+      "bytes": 3356,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_session.py",
+      "sha256": "b37b6cf827563ed2a09dac4e19e7d1b91dcf7e24e3fb22e6ac43b5cf177e618a",
+      "bytes": 1886,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_stages.py",
+      "sha256": "31d9b0bd20a2955ec92afbbc20656141b4f78e2471d95c7fe42d611eef9d8b2a",
+      "bytes": 10633,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/diagnostic50/test_supervisor.py",
+      "sha256": "649e9b82d23a9a12d5459c89152136117688ee2878dbb2513ade26591c63b332",
+      "bytes": 3448,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/export_image.tcl",
+      "sha256": "cb4ae0e9e22e130962383d1c8e959efb277b0028944bc318591d2ac7360a888e",
+      "bytes": 2824,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/finalize_build.py",
+      "sha256": "10ddfbdf1b563fad2a5215ce583f5d29cc0b99bf2b2ded352a996d9e1dd0e58d",
+      "bytes": 5596,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/prepare_packet.py",
+      "sha256": "eff4ed10d684bbf2aef99ee035e9b160c90b8e286eb3f619885c677a9a25df9c",
+      "bytes": 2264,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/pynq_image_once.py",
+      "sha256": "b1d2a56fd3d87c5e3331ae2b45a14e867fbccebe00df8a5d44f2ce93940375e2",
+      "bytes": 42387,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_hw/run_batch.tcl",
+      "sha256": "d5e6806580f3037042af6e1ce3fca44ec78ac522b352479ff51b0ac522615861",
+      "bytes": 962,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/run_wrapper_sim.tcl",
+      "sha256": "8ed9f2da5d4e1cc076029fd39f2614700580f27b09e0876671da54c76240bc6f",
+      "bytes": 1705,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "scripts/wo0014_hw/test_pynq_image_once.py",
+      "sha256": "52578a9e7523f3e09745780fd20e8f9acf373a0fa4b54c9d64345fd8155540a6",
+      "bytes": 16675,
+      "origin": "local commit 7a868c0"
+    }
+  ]
+}

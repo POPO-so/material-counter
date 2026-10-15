@@ -33,4 +33,14 @@
 /data/results/wo0013-resetfix-20261014/export/wo0013_dma_recreate.tcl -diff
 /data/results/wo0013-resetfix-20261014/reports/implemented_constraints.xdc -diff
 /scripts/wo0014/** -text whitespace=cr-at-eol
+/scripts/wo0014_hw/** -text whitespace=cr-at-eol
+/.agents/skills/vivado-ip-configurator/lib/** -text whitespace=cr-at-eol
+/.agents/skills/vivado-revision-control/helper-procedures/helper_scripts.tcl -text whitespace=cr-at-eol
+/data/results/wo0014-hw-50mhz-20261014/export/wo0014_image_recreate.tcl -diff
+/data/results/wo0014-hw-100mhz-20261014/export/wo0014_image_recreate.tcl -diff
+/data/results/wo0014-hw-50mhz-20261014/reports/implemented-constraints.xdc -diff
+/data/results/wo0014-hw-100mhz-20261014/reports/implemented-constraints.xdc -diff
+# The next helper is an immutable third-party source snapshot.
+/.agents/skills/vivado-revision-control/helper-procedures/helper_scripts.tcl whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+
 /fpga/experimental/wo0013/axis_dma_rx_monitor_bd.v -text whitespace=cr-at-eol

@@ -1,0 +1,338 @@
+{
+  "status": "MILESTONE_PASS",
+  "software_tests": "PASS",
+  "test_count": 172,
+  "subtests": 19,
+  "protected_unchanged": true,
+  "commit_push_performed": false,
+  "stage_a": {
+    "status": "PASS",
+    "overlay_elapsed_s": 1.7528675109997494,
+    "receipt": "C:\\fpga\\material-counter\\data\\results\\wo0014-pg021-ready-20261015\\receipts\\overlay-receipt.json",
+    "supervision_receipt": "C:\\fpga\\material-counter\\data\\results\\wo0014-pg021-ready-20261015\\receipts\\supervision-overlay-only-pass.json"
+  },
+  "stage_b": {
+    "status": "PASS",
+    "send_attempts": 1,
+    "packet_bytes": 230432,
+    "dma_checker_elapsed_s": 0.3327078579995941,
+    "dma_completion_observed_s": 0.018533371999183146,
+    "dma_register_trace": {
+      "initial.dmacr": 65538,
+      "initial.dmasr": 1,
+      "initial.length": 0,
+      "runstop.dmasr": 0,
+      "before_length.dmasr": 0,
+      "before_length.dmacr": 65539
+    },
+    "checker_initial": {
+      "drain_enable": 1,
+      "magic": 1464807732,
+      "status": 0,
+      "error_code": 0,
+      "frame_id": 0,
+      "packet_done_count": 0,
+      "packet_error_count": 0,
+      "input_bytes": 0,
+      "beats": 0,
+      "tlast_count": 0,
+      "first_word": 0,
+      "last_word": 0,
+      "input_byte_checksum": 0,
+      "observed_pixels": 0,
+      "sofs": 0,
+      "eols": 0,
+      "binary_checksum": 0,
+      "accepted_output_total": 0,
+      "stalled_cycles": 0
+    },
+    "checker_final": {
+      "accepted_output_total": 76800,
+      "beats": 57608,
+      "binary_checksum": 571200,
+      "drain_enable": 1,
+      "eols": 240,
+      "error_code": 0,
+      "first_word": 1464807732,
+      "frame_id": 0,
+      "input_byte_checksum": 6620674,
+      "input_bytes": 230432,
+      "last_word": 3235823636,
+      "magic": 1464807732,
+      "observed_pixels": 76800,
+      "packet_done_count": 1,
+      "packet_error_count": 0,
+      "sofs": 1,
+      "stalled_cycles": 0,
+      "status": 9,
+      "tlast_count": 1
+    },
+    "dma_final": {
+      "dmacr": 65539,
+      "dmasr": 4098,
+      "length": 230432,
+      "sa": 361234432
+    },
+    "golden": {
+      "drain_enable": 1,
+      "magic": 1464807732,
+      "status": 9,
+      "error_code": 0,
+      "frame_id": 0,
+      "packet_done_count": 1,
+      "packet_error_count": 0,
+      "input_bytes": 230432,
+      "beats": 57608,
+      "tlast_count": 1,
+      "first_word": 1464807732,
+      "last_word": 3235823636,
+      "input_byte_checksum": 6620674,
+      "observed_pixels": 76800,
+      "sofs": 1,
+      "eols": 240,
+      "binary_checksum": 571200,
+      "accepted_output_total": 76800
+    },
+    "buffer_released": true,
+    "aggregate_only": true
+  },
+  "guard_recovery": "PASS",
+  "cleanup": {
+    "pid": 6311,
+    "process_after": {
+      "pid": 6311,
+      "state": "Z",
+      "starttime": "357032",
+      "argv": [
+        ""
+      ],
+      "fds": [],
+      "maps": "",
+      "stat": "6311 (python) Z 6288 6283 6282 34819 6283 4228364 17646 0 0 0 1366 199 0 0 20 0 1 0 357032 0 0 4294967295 0 0 0 0 0 0 0 16781312 16387 1 0 0 17 1 0 0 0 0 0 0 0 0 0 0 0 0 9\n",
+      "status": "Name:\tpython\nState:\tZ (zombie)\nTgid:\t6311\nNgid:\t0\nPid:\t6311\nPPid:\t6288\nTracerPid:\t0\nUid:\t0\t0\t0\t0\nGid:\t0\t0\t0\t0\nFDSize:\t0\nGroups:\t0 \nNStgid:\t6311\nNSpid:\t6311\nNSpgid:\t6283\nNSsid:\t6282\nKthread:\t0\nThreads:\t1\nSigQ:\t0/2901\nSigPnd:\t0000000000000000\nShdPnd:\t0000000000000100\nSigBlk:\t0000000000000000\nSigIgn:\t0000000001001000\nSigCgt:\t0000000100004003\nCapInh:\t0000000000000000\nCapPrm:\t000001ffffffffff\nCapEff:\t000001ffffffffff\nCapBnd:\t000001ffffffffff\nCapAmb:\t0000000000000000\nNoNewPrivs:\t0\nSeccomp:\t0\nSeccomp_filters:\t0\nSpeculation_Store_Bypass:\tunknown\nSpeculationIndirectBranch:\tunsupported\nCpus_allowed:\t3\nCpus_allowed_list:\t0-1\nMems_allowed:\t1\nMems_allowed_list:\t0\nvoluntary_ctxt_switches:\t4122\nnonvoluntary_ctxt_switches:\t210\n"
+    },
+    "cma_before": {
+      "CmaTotal_kib": 131072,
+      "CmaFree_kib": 8664
+    },
+    "cma_after": {
+      "CmaTotal_kib": 131072,
+      "CmaFree_kib": 25980
+    },
+    "cma_free_increase_kib": 17316,
+    "old_packet_allocation_rounded_kib": 228,
+    "signal_method": "pidfd stop then kill",
+    "cma_release_samples": [
+      {
+        "monotonic_s": 6950.359579281,
+        "CmaTotal_kib": 131072,
+        "CmaFree_kib": 25980
+      }
+    ],
+    "sa_writes": 0,
+    "length_writes": 0,
+    "post_no_owners": true
+  },
+  "post_health": {
+    "boot_id": "52955bb3-db18-4505-b209-78cbf3969d89",
+    "fpga_state": "operating",
+    "fpga_flags": "0",
+    "post_pass": true,
+    "new_kernel_warnings": [],
+    "process_audit": {
+      "selected": [
+        {
+          "pid": 193,
+          "comm": "networkd-dispat",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 523,
+          "comm": "unattended-upgr",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 628,
+          "comm": "jupyter-noteboo",
+          "categories": [
+            "python",
+            "jupyter",
+            "notebook"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 726,
+          "comm": "python3",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 2266,
+          "comm": "sudo",
+          "categories": [
+            "python",
+            "dma"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 2289,
+          "comm": "sudo",
+          "categories": [
+            "python",
+            "dma"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 2290,
+          "comm": "python",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 2293,
+          "comm": "python",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 2300,
+          "comm": "python",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 2334,
+          "comm": "python",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 2356,
+          "comm": "python",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 6276,
+          "comm": "sudo",
+          "categories": [
+            "python",
+            "dma"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 6282,
+          "comm": "sudo",
+          "categories": [
+            "python",
+            "dma"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 6283,
+          "comm": "python",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 6288,
+          "comm": "python",
+          "categories": [
+            "python",
+            "dma"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 6311,
+          "comm": "python",
+          "categories": [
+            "python"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 11502,
+          "comm": "sudo",
+          "categories": [
+            "python",
+            "dma"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        },
+        {
+          "pid": 11525,
+          "comm": "sudo",
+          "categories": [
+            "python",
+            "dma"
+          ],
+          "fds": [],
+          "maps": [],
+          "reasons": []
+        }
+      ],
+      "conflicts": [],
+      "denied": []
+    }
+  }
+}

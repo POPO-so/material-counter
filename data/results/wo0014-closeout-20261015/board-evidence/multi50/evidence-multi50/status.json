@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "status": "PASS",
+  "commands": [
+    "ENV",
+    "HEALTH",
+    "MIN_READ",
+    "INIT",
+    "SEND",
+    "VERIFY",
+    "RELEASE",
+    "HEALTH",
+    "SEND",
+    "VERIFY",
+    "RELEASE",
+    "HEALTH",
+    "SEND",
+    "VERIFY",
+    "RELEASE",
+    "POST"
+  ],
+  "child_killed": false,
+  "axi_bus_recovered": false,
+  "send_attempts": 3,
+  "child_pid": 13787,
+  "exit_code": 0
+}
