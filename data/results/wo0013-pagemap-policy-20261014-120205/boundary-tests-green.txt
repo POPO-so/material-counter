@@ -1,0 +1,15 @@
+test_absent_drm_pte_auxiliary (test_ddr_validate.DDRValidation.test_absent_drm_pte_auxiliary) ... ok
+test_bad_pfn_never_overridden_by_allocator (test_ddr_validate.DDRValidation.test_bad_pfn_never_overridden_by_allocator) ... ok
+test_illegal_ranges_and_allocation_evidence (test_ddr_validate.DDRValidation.test_illegal_ranges_and_allocation_evidence) ... ok
+test_last_valid_aligned_transfer (test_ddr_validate.DDRValidation.test_last_valid_aligned_transfer) ... ok
+test_nonzero_window_base (test_ddr_validate.DDRValidation.test_nonzero_window_base) ... ok
+test_pfn_absent_with_supported_allocator (test_ddr_validate.DDRValidation.test_pfn_absent_with_supported_allocator) ... ok
+test_pfn_absent_without_allocator_proof_rejected (test_ddr_validate.DDRValidation.test_pfn_absent_without_allocator_proof_rejected) ... ok
+test_present_zero_with_masked_pfns_auxiliary (test_ddr_validate.DDRValidation.test_present_zero_with_masked_pfns_auxiliary) ... ok
+test_present_zero_with_visible_pfns_rejected (test_ddr_validate.DDRValidation.test_present_zero_with_visible_pfns_rejected) ... ok
+test_valid_cma_above_metadata_size (test_ddr_validate.DDRValidation.test_valid_cma_above_metadata_size) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.000s
+
+OK

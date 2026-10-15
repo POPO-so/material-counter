@@ -1,0 +1,43 @@
+{
+  "board_tested": false,
+  "batch_exit_code": 0,
+  "reset_repair": "C_AUX_RESET_HIGH=1; aux_reset_in tied low",
+  "artifacts": {
+    "wo0013_phase_a.bit": {
+      "bytes": 4045773,
+      "sha256": "47e6cd65c552244236f2564c11cba3e81a9a0c6aced0c9974c04de78256da3f7"
+    },
+    "wo0013_phase_a.hwh": {
+      "bytes": 255111,
+      "sha256": "a31d71f8e7004de710fa4da07078b80e2a0a8b40ff52ac523d322f21362df1fb"
+    },
+    "dma_replay_verify.py": {
+      "bytes": 17310,
+      "sha256": "080699311efcf2443dac046aaa5949047d3046d26b314f18ad8b04a60d5c5395"
+    },
+    "PYNQ_README.md": {
+      "bytes": 5152,
+      "sha256": "ffc49b3e9cdb0023149c84a28689f0d3a94dc9f16aaa08865b6d5f84a3a14f7a"
+    },
+    "load_reviewed_overlay_only.py": {
+      "bytes": 2382,
+      "sha256": "8970a3a344f0a9db03f56a8cbb3160d4d999c1f3f2fbb0892c99ed524e49c6bb"
+    },
+    "SAFETY_READ_FIRST.md": {
+      "bytes": 1142,
+      "sha256": "afa8765732ad067cafdb181d07f959266ac635b0e39f6f317614579283c10065"
+    }
+  },
+  "export_source_pairs": {
+    "wo0013_phase_a.bit": "C:\\fpga\\material-counter\\data\\results\\wo0013-resetfix-20261014\\project\\wo0013_phase_a.runs\\impl_1\\wo0013_dma_wrapper.bit",
+    "wo0013_phase_a.hwh": "C:\\fpga\\material-counter\\data\\results\\wo0013-resetfix-20261014\\project\\wo0013_phase_a.gen\\sources_1\\bd\\wo0013_dma\\hw_handoff\\wo0013_dma.hwh",
+    "dma_replay_verify.py": "C:\\fpga\\material-counter\\python\\boardtests\\wo0013\\dma_replay_verify.py",
+    "PYNQ_README.md": "C:\\fpga\\material-counter\\python\\boardtests\\wo0013\\README.md",
+    "load_reviewed_overlay_only.py": "C:\\fpga\\material-counter\\data\\results\\wo0013-safe-diagnostic-20261014\\load_reviewed_overlay_only.py"
+  },
+  "sources": {
+    "scripts\\wo0013\\create_dma_replay_bd.tcl": "19378c47716ddb5444f724fa03c03cc741b1b22825b6c3451c51e59680604f33",
+    "fpga\\experimental\\wo0013\\axis_dma_rx_monitor.v": "9d10718e9ab3cc32126c96e5a6a674f6eac89a4a3aa7611012df5df90c22e1ba",
+    "fpga\\experimental\\wo0013\\axis_dma_rx_monitor_bd.v": "c91debb4340ddb41d65eef47ee1d4a5c4564e81f97039460a21bcb90ae06162c"
+  }
+}

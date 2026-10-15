@@ -1,0 +1,54 @@
+{
+  "initial_dma": {
+    "stage": "DMA_INITIAL_RAW",
+    "monotonic_s": 2176.893133668,
+    "registers": {
+      "dmacr": 65538,
+      "dmasr": 1,
+      "source_address": 0,
+      "length": 0
+    }
+  },
+  "monitor_armed": {
+    "stage": "MONITOR_ARMED_RAW",
+    "monotonic_s": 2176.90320144,
+    "registers": {
+      "status": 1,
+      "byte_count": 0,
+      "beat_count": 0,
+      "first_word": 0,
+      "last_word": 0,
+      "tlast_count": 0,
+      "checksum": 0,
+      "error_code": 0
+    }
+  },
+  "expected_length": {
+    "stage": "EXPECTED_LENGTH_RAW",
+    "monotonic_s": 2176.898569034,
+    "value": 76816
+  },
+  "final": {
+    "stage": "FINAL_RAW",
+    "monotonic_s": 2177.380261698,
+    "dma": {
+      "dmacr": 65539,
+      "dmasr": 4098,
+      "source_address": 361103360,
+      "length": 76816
+    },
+    "monitor": {
+      "status": 2,
+      "expected_bytes": 76816,
+      "byte_count": 76816,
+      "beat_count": 19204,
+      "first_word": 4294902015,
+      "last_word": 305397760,
+      "tlast_count": 1,
+      "checksum": 1890910587,
+      "error_code": 0
+    },
+    "expected_bytes_source": "this_run_single_pretransfer_read_0x43c10024",
+    "elapsed_s": 0.00926742199999353
+  }
+}

@@ -1,0 +1,1 @@
+PASS: one DMA LENGTH write, no DMA reset/Overlay load/run_replay. Buffer fill and TX sync precede runtime validation and DMA RS.
