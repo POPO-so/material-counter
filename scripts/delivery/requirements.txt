@@ -1,0 +1,5 @@
+# Observed offline test environment: CPython 3.12.10, Windows AMD64.
+numpy==2.5.3
+Pillow==12.3.0
+pytest==9.1.1
+opencv-python-headless==5.0.0.93

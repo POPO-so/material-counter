@@ -1,0 +1,136 @@
+{
+  "checkout_head": "bd64cb01ff99abbc6784f89e97691dc157fbc495",
+  "checks": [
+    {
+      "frames": 487,
+      "golden_bytes": 74803200,
+      "name": "prepare_full_vector_package",
+      "negative_cases": 7,
+      "packet_bytes": 140275480,
+      "source_files_bound": 16,
+      "status": "PASS"
+    },
+    {
+      "files": 16,
+      "manifest_sha256": "eafabddc5e833b875953aa798b0ecd9fcb9bded674447f97a4d1bf1d3c3ef50c",
+      "name": "source_sha256_matches_current_checkout",
+      "status": "PASS"
+    },
+    {
+      "frames_compared": 487,
+      "key_root": "relative to generated_root",
+      "matches": 487,
+      "name": "reconstructed_png_reference_sha256",
+      "status": "PASS"
+    },
+    {
+      "expected_exit_code": 2,
+      "name": "nonempty_output_rejected",
+      "result": "existing nonempty --out refused; package left unchanged",
+      "status": "PASS"
+    },
+    {
+      "checks": [
+        "no old absolute checkout/result paths",
+        "source children are replay-local",
+        "MATERIAL_COUNTER_ROOT binding",
+        "487-frame and RESULT PASS/Fatal guards retained"
+      ],
+      "files": [
+        "run_full.tcl",
+        "run_directed.tcl",
+        "run_negative.tcl"
+      ],
+      "name": "relocated_tcl_static_checks",
+      "status": "PASS"
+    },
+    {
+      "actual_sha256": "3e2f35b2dbbb21b55408dcc62da11aa29217e304a9f976f7feac207aa384cced",
+      "expected_sha256": "3e2f35b2dbbb21b55408dcc62da11aa29217e304a9f976f7feac207aa384cced",
+      "fixture": "actual is an exact copy of generated h3_expected_th128.bin",
+      "frames": 487,
+      "kind": "h3",
+      "meaning": "verifies documented comparator invocation, packaged source-root injection, input hashes and golden/model consistency; not RTL simulation evidence",
+      "name": "compare_output_golden_as_actual_self_check",
+      "status": "PASS",
+      "word_mismatches": 0
+    }
+  ],
+  "evidence_boundary": "compare_output PASS used a golden copy as actual and must not be reported as an RTL or hardware PASS",
+  "not_run": [
+    "Vivado/XSim",
+    "full RTL simulation",
+    "bitstream timing",
+    "PYNQ/overlay/MMIO/DMA",
+    "real camera/input/material counting"
+  ],
+  "recorded_at_utc": "2026-10-14T20:02:10.398718+00:00",
+  "schema": 1,
+  "scope": "WO-0014 replay preparation checks only; all generated package files remain under the system Temp directory",
+  "source_file_sha256": [
+    {
+      "path": "fpga/rtl/axis_rgb2gray.v",
+      "sha256": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb"
+    },
+    {
+      "path": "fpga/rtl/axis_gray2binary.v",
+      "sha256": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83"
+    },
+    {
+      "path": "fpga/experimental/wo0014/axis_dma_rgb_adapter.v",
+      "sha256": "c3b8b682dd34540973595a810f6e90ffd21e87ea47dc39090830b4f128debfd3"
+    },
+    {
+      "path": "fpga/experimental/wo0014/axis_binary_output_checker.v",
+      "sha256": "8a6f46c6add51a29c801499ddbf63c52d65f5a1e91dab4b60316aecbddf54a75"
+    },
+    {
+      "path": "fpga/experimental/wo0014/axis_dma_image_pipeline.v",
+      "sha256": "b94fa662b8cc08de6863d98c9e9a75294e3ffb90798c77711e3d3d0860e0e9ad"
+    },
+    {
+      "path": "fpga/sim/wo0014/tb_axis_dma_image_pipeline.sv",
+      "sha256": "fa7ffdf8b21e0f21b40ae1f0cb603d2de4451b40ffdf073aab525ecaaf8e1fc1"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0014/image_vectors.py",
+      "sha256": "f43a485bd1e6e7ed13f85d444fadffdbfc159077905decd3489f64cf46c5ffd4"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0014/compare_output.py",
+      "sha256": "fcd5b2bd92993d016c93c09a98b9945c71e1f1283569014d7c4f4c4db523b91b"
+    },
+    {
+      "path": "python/synth/generate.py",
+      "sha256": "faebc536e91f755b7ad882918081c49142d5045f0370abb108bdb77fde9e61c2"
+    },
+    {
+      "path": "python/synth/scene.py",
+      "sha256": "0a73b1060982cd29b5b2101d0fecbd31250a6a13752c2a96786581ee5d1ae2db"
+    },
+    {
+      "path": "python/synth/specs/h3_matrix.json",
+      "sha256": "f12043b5afa0a5cfefc7a8b8c4f6a7ef5dc03a9cf24399ce3460c2f76c5d6d41"
+    },
+    {
+      "path": "scripts/wo0014/run_full.tcl",
+      "sha256": "fc5c0e0785ac3e46589314c34bbbb1a97cfde005868e82c75901fab086a875bf"
+    },
+    {
+      "path": "scripts/wo0014/run_directed.tcl",
+      "sha256": "e9d2256fecec31a6fbd1acb52a106f26f1c33bf9e277c3786294b6ac0ffc908c"
+    },
+    {
+      "path": "scripts/wo0014/run_negative.tcl",
+      "sha256": "91734b268ce275a0b24a52867eed0d3564dd20bbc466603eb979381b06b2c56b"
+    },
+    {
+      "path": "scripts/delivery/prepare_replay.py",
+      "sha256": "ebb27d0558c0c6fced4dbe14b5258ef7abe2a392ffd3e9ec73436cdc98def5b5"
+    },
+    {
+      "path": "scripts/delivery/REPLAY.md",
+      "sha256": "42217d06fe15699e41b9a71e3167e0119350c90527837f22e7e688184da2864c"
+    }
+  ]
+}

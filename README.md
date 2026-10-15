@@ -14,7 +14,7 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 
 系统采用全局快门摄像头和固定光源降低高速运动造成的拖影，通过振动盘/供料器配合单条可调速主输送带实现连续供料，并通过供料节拍与输送速度形成不同物料密度工况。实时画面及计数结果计划通过显示屏输出，可同步显示累计数量、输送速度、处理帧率和当前运行状态。
 
-上面是目标系统口径，不代表所有模块已经实现。当前仓库已包含确定性 synthetic dataset、ground truth 和回归测试；PL 图像前端、PS 跟踪计数、编码器采集、真实摄像头接入和显示输出仍按计划逐项实现与验证。
+上面是目标系统口径，不代表所有模块已经实现。当前交付分支已有 synthetic dataset、PL 前端模块、PS 离线跟踪计数参考、WO-0013 DMA 通信和 WO-0014 实验图像链路；真实摄像头、PL→PS 回传、板上跟踪计数与显示仍未形成闭环。各分支与证据等级见[提交进度核验](docs/verification/submission-status-20261015.md)。
 
 ## 系统主链路
 
@@ -56,11 +56,12 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 
 | 状态 | 内容 |
 |---|---|
-| **Implemented** | `python/synth` 确定性合成数据生成器、配置、ground truth 和回归测试；代码与数据不因作品改名而重构。 |
-| **Planned** | PL 图像前端、轻量区域/连通域特征提取、PS 跟踪计数、编码器实际带速输入、全局快门摄像头接入、显示输出、Vivado/Vitis/PYNQ 集成。 |
+| **Implemented / Offline verified** | synthetic 生成器；stream/RGB→Gray/Gray→Binary/morphology 模块；PS 区域/跟踪/越线参考；WO-0014 实验 RGB 包流水线。ROI 在独立 PR #2，未接入本板测链。 |
+| **Board communication / timing evidence** | WO-0013 单次 MM2S→Monitor；WO-0014 50 MHz 单帧及三帧聚合统计，后者因 CMA 健康门停止。50/100 MHz 完整实现时序通过；100 MHz 板测未验证。均不等于实际物料计数。 |
+| **Planned / Proposed** | 正式 PL 特征提取、PL→PS 回传与板上跟踪计数闭环、编码器实际带速、真实摄像头和显示。WO-0012 特征/序列化仍为候选草案。 |
 | **Exploratory** | 结合计数、在途量和实际带速进行送料停止时机预测与控制；失败不影响 Core/MVP。 |
 
-现阶段状态仍为 **Pre-POC / Architecture Not Frozen**。Route A、Route B、Hybrid 以及真实视频输入路线必须以实验、工具链和硬件证据冻结，不能提前声称已实现。
+当前已完成若干隔离 POC，**Architecture / Route Not Frozen**。Route A、Route B、Hybrid 以及真实视频输入路线仍需正式决策。main、既有 PR 和本地成果的差异，以及本轮草稿交付链，见[进度表与复现说明](docs/verification/submission-status-20261015.md)。
 
 ## 术语纪律
 

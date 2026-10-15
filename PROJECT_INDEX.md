@@ -21,9 +21,9 @@ Agent navigation map for `material-counter`. Use linked documents as the source 
 
 ## Current code boundary
 
-- **Implemented:** synthetic dataset generator and regression tests in `python/synth/` (`generate.py`, `scene.py`, `specs/`, `tests/`).
-- **Planned:** PL image pipeline and PS tracking/counting, plus encoder, camera, display and board integration, as summarized in README and the relevant Work Orders.
-- **Not implemented in this checkout:** `fpga/rtl/` and `fpga/constraints/` contain only `.gitkeep`; there is no RTL simulation entry point or PS tracking implementation. Work Order target paths describe deliverables, not existing code.
+- **Implemented with bounded evidence:** `python/synth/`, frontend/morphology RTL in `fpga/rtl/`, testbenches in `fpga/sim/`, PS offline reference in `python/refmodel/ps_reference/`, and isolated WO-0013/0014 DMA experiments. These are distinct from a complete board counting system.
+- **Planned / Proposed:** production PL feature extraction, PL-to-PS return path, board-side tracking/counting/display integration, encoder and real camera acceptance. ROI remains separately delivered in PR #2.
+- **Current progress and source versions:** [2026-10-15 delivery audit](docs/verification/submission-status-20261015.md) distinguishes main, PRs, original local commits, source SHA-256, simulation, synthesis, implemented timing and board evidence. Offline integrity entry: `python scripts/delivery/verify_delivery.py`; relocatable replay: `scripts/delivery/REPLAY.md`.
 - **Candidate:** Route A, Route B, Hybrid and real video-input choices are not frozen; consult `docs/07_routes.md` and ADR-0001 for their exact status.
 - **Current working baseline:** ADR-0002 records project identity and mechanical-speed baseline; it says team review is still required for effect, and hardware implementation remains Planned. **Accepted/frozen:** WO-0001a records `FINAL ACCEPTED` and the synthetic generator's frozen status. Check each record before applying its status elsewhere.
 
@@ -32,8 +32,8 @@ Agent navigation map for `material-counter`. Use linked documents as the source 
 | Task | Read first |
 |---|---|
 | Modify PL RTL | README current status → `docs/02_interfaces.md` → `docs/work-orders/wo-0003-pl-stream-skeleton.md` (or assigned WO) → actual `fpga/rtl/`; check route status in `docs/07_routes.md` if algorithm-specific. |
-| RTL simulation | Relevant WO and `docs/02_interfaces.md` → inspect actual RTL and simulation files. No RTL/simulation implementation currently exists; establish scope with Manager before creating beyond assigned deliverables. |
-| Modify PS tracking | README current status → `docs/00_scope.md` → `docs/02_interfaces.md` → `docs/work-orders/wo-0004-tracking-baseline.md` → actual PS code (currently absent). |
+| RTL simulation | Relevant WO and `docs/02_interfaces.md` → actual RTL/TB → matching verification/source-hash record. Existing frontend and experimental simulations are present; use fresh output directories for replay. |
+| Modify PS tracking | README → scope/interfaces → `docs/work-orders/wo-0010-ps-reference.md` → `python/refmodel/ps_reference/`. It is an offline reference, not a board DMA receiver. |
 | Video source / camera / pin I/O | `docs/work-orders/wo-0002-video-input-feasibility.md` or WO-0005 → `docs/adr/adr-0001-video-source.md` → `hw/pin_budget.md` → relevant interface sections. |
 | Synthetic data / its tests | `docs/work-orders/wo-0001a-h3-generator-hardening.md` → `python/synth/` implementation and tests. |
 | Understand architecture or scope | README current status → `docs/00_scope.md` → relevant sections of `MASTER_PLAN.md` Part 2 / Part 3. Read more only if the task needs it. |
