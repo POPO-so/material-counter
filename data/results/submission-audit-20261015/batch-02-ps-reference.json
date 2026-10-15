@@ -1,0 +1,252 @@
+{
+  "batch": "02-ps-reference",
+  "source_head": "7a868c070024bdc29cdeb057fbec9ccaf94ef160",
+  "files": [
+    {
+      "path": "data/results/wo0010-reference-final-20261013/conditions.csv",
+      "sha256": "85ae53eb9af5fb264d5433207298b3f288c019667694d855062e4d886b0b234d",
+      "bytes": 6190,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0010-reference-final-20261013/g1-projection-diagnostic.json",
+      "sha256": "39e42ede3b4a2232f8b57864fa126771c93f81c5b1ba838a8947aa7eeeca4604",
+      "bytes": 2753,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0010-reference-final-20261013/manager-verification.json",
+      "sha256": "c9b5f4e3da24efe8321ab1a64551c4583ebffecab983461e26fc91952de86b76",
+      "bytes": 3467,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0010-reference-final-20261013/summary.json",
+      "sha256": "4778fdd69da75a26929245f357e0922bd21b5e254170f9c253fa274451858ccb",
+      "bytes": 109537,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0011-ablation-final-20261013/comparison.csv",
+      "sha256": "26e2363016768e2ce1a2c8c83c70f77993e2b149a215371a7eb0c8647b1e5033",
+      "bytes": 1743,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0011-ablation-final-20261013/manager-verification.json",
+      "sha256": "bb88411f76e0ff3a86e7014c216be181474beafe2579865a86c93b6c15d1aa5f",
+      "bytes": 4302,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0011-ablation-final-20261013/summary.json",
+      "sha256": "d3762644eb8c9fecbf276dfa15fff6057db3fad6ccc21cb1a7ea6d4a402e07ed",
+      "bytes": 345603,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0011-supplements-20261013/cases.csv",
+      "sha256": "1e39e20d838aa28056256539510a073ce8675e7f0009a73620232b66fd37a002",
+      "bytes": 4914,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0012-bounded-final-20261013/summary.json",
+      "sha256": "1c9591e8ba9d468101d2d2535a0d4b4e1722a1b99237b2a194457a3ac2eda6bc",
+      "bytes": 73331,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0012-design-budget-20261013/budget.json",
+      "sha256": "fa936991e9e3f75dca3ad7243919995f61a8b07342f374d67d1f352d16cc36d2",
+      "bytes": 3439,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0012-integration-acceptance-20261013/summary.json",
+      "sha256": "2e72f0ab31f526c13a90e030f14a5080a0cb6f2e1a19c63e4dd6b2069742388c",
+      "bytes": 105394,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0012-working-envelope-20261013/summary.json",
+      "sha256": "f0a504da966d4b9271274dc2af0123c8b2b5880c5f5bddaf5c9de6db5af9d22c",
+      "bytes": 68451,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/adr/adr-0003-bounded-feature-proposal.md",
+      "sha256": "2f4d5826c9ce830b3d8c72c30ff80674c0b2e89f9cb204fba5c7d8ba39fa76be",
+      "bytes": 4599,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0010-ps-reference.md",
+      "sha256": "57a986edf54d3216122c79c1cc31fc9636b795dcf49c102fd4053fdc96bc0391",
+      "bytes": 10735,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0011-failure-evidence.json",
+      "sha256": "c7c9a53fe5f2fb29834db46d55a82855a914c8254008800afa60fd1646782061",
+      "bytes": 85502,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0011-missed-events.csv",
+      "sha256": "4fed6992fb907f2c1276a5dbbcb8d4b9f483e318f8afe4457436e10d1b55d90a",
+      "bytes": 7230,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0011-segmentation-audit.md",
+      "sha256": "64e2f3a12301f3a12f1e4cab796e0770bde3ef9da43c55d8b489f789c2d2db5b",
+      "bytes": 13556,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0012-gate-audit.md",
+      "sha256": "bbb985036ed6797c77acfc4052229c8b25cfeb0bf79c5ce504713899b8163693",
+      "bytes": 8378,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/wo-0010-binary-frame-transport-proposal.md",
+      "sha256": "11ac4d38fdde7b9190a24f84b86e04c47c6d6cd93c106dc4d824513fc265d29a",
+      "bytes": 6662,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/wo-0011-g1-feature-requirements.md",
+      "sha256": "7883c3bff315cc3bd094e74aef30327b19629bf74176647e1159591ac6432e48",
+      "bytes": 5399,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/wo-0012-feature-transport-draft.md",
+      "sha256": "312294866c3eeead6b55d6b62e4afa99b36d6f00381038268c9a3760bf8f9fd2",
+      "bytes": 8552,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/wo-0012-g1-decision-package.md",
+      "sha256": "bf8761975714e6f769394b1ac67a9aebf845966a2a76c80190b403a7772c25fb",
+      "bytes": 14757,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/work-orders/wo-0010-ps-reference.md",
+      "sha256": "9801a438df6fcf85b744337f91d30608ba67e9762c7fbc7ccbca4882352f5e56",
+      "bytes": 4425,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/work-orders/wo-0011-segmentation-audit.md",
+      "sha256": "2195ddc5c363a98f03ff7fe3a14776267d45891c87f86a7eb5854c1f5e539655",
+      "bytes": 2681,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/work-orders/wo-0012-architecture-preparation.md",
+      "sha256": "6d7acbefa58a797ba799f631c42bc41004bd72c300f8a27f62c239b22b23b2cf",
+      "bytes": 2669,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/work-orders/wo-0013-bounded-feature-hardware.md",
+      "sha256": "eeb88ee8bfe39b330bc091bce84db5280b5fb22c9f04254501cef77786a201d1",
+      "bytes": 5404,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0011_ablation.py",
+      "sha256": "29158d755c2f567f8021a6899c15be5fb50d38655acc74afe3e9d50b57ba2aaa",
+      "bytes": 13827,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0011_supplements.py",
+      "sha256": "9110219f6827b19ba030c0ab7b9ad05e3f686ede7a3af09fdf398cce05a5a4a0",
+      "bytes": 15578,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0012_bounded_runs.py",
+      "sha256": "cd09b1c0d594dee3d41ae693d871e26cb610137807d0f1c9efe641759020230c",
+      "bytes": 27687,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0012_protocol.py",
+      "sha256": "de3e7b74de07441c5b5a7abe7968e5adaf101282a7ba5c25d9d19af28202af7d",
+      "bytes": 14125,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/ps_reference/evaluate_h3.py",
+      "sha256": "b5234da5bb4f291b0eb6713cfd5534eebd4d26bb4cd5071a1d3132e4f5734e1e",
+      "bytes": 35284,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/ps_reference/regions.py",
+      "sha256": "a7030583ef6856b7c39921b41b16e6b5b52f719d9db02de5ac3e00e7740939b5",
+      "bytes": 5030,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/ps_reference/tracking.py",
+      "sha256": "d6afb9e6eefe0ba2e639281284d4bc0f0f0b6ff7a5a89759b22795c78208bf16",
+      "bytes": 7097,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/tests/test_ps_evaluation.py",
+      "sha256": "ccb31bf909c11ba15f4a5134e785df4f57b0c03c007a312534f6e9cf25ee44a0",
+      "bytes": 9539,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/tests/test_ps_pipeline.py",
+      "sha256": "a61a37ca2eae0ebfd6ae5f6397597c8de5e28cd544d91ad6e186550019eb04f4",
+      "bytes": 2171,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/tests/test_ps_regions.py",
+      "sha256": "8310121d3ce00259b76860069620e4dbbdb2f156e38e601b6bf6b42d66e33fab",
+      "bytes": 5418,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/tests/test_ps_tracking.py",
+      "sha256": "822986bfa63a88eb1611c0554c4468b5d0a6519faf13e9fe68c297e36206fd95",
+      "bytes": 6241,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/tests/test_wo0011_ablation.py",
+      "sha256": "d666e3d481fad5d44620c5e05d71a6cd2dcbf8af94c2d4022cde6e22852775cc",
+      "bytes": 2536,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/tests/test_wo0011_supplements.py",
+      "sha256": "aef802f371326db03de83bb79b383c2044a379981eea16e60b66c2cd8eb6ac05",
+      "bytes": 5450,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/tests/test_wo0012_bounded_runs.py",
+      "sha256": "5d1b367b81fe79488dfe6ede902754e0a1e62ea742d1b2cb1fe54c49ca3ebe38",
+      "bytes": 7509,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/tests/test_wo0012_protocol.py",
+      "sha256": "16fe0dfa4fd070f37d04ade7d7acb9fa98ee29ac2ef46f0812f7197b2fca8525",
+      "bytes": 5431,
+      "origin": "local commit 7a868c0"
+    }
+  ]
+}

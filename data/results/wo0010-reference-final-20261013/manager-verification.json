@@ -1,0 +1,117 @@
+{
+  "status": "AUDIT_PASS_WITH_DOCUMENTED_ALGORITHM_FAILURES",
+  "pytest": "68 passed in 22.46s",
+  "source_hashes": {
+    "python\\refmodel\\ps_reference\\evaluate_h3.py": "b5234da5bb4f291b0eb6713cfd5534eebd4d26bb4cd5071a1d3132e4f5734e1e",
+    "python\\refmodel\\ps_reference\\regions.py": "a7030583ef6856b7c39921b41b16e6b5b52f719d9db02de5ac3e00e7740939b5",
+    "python\\refmodel\\ps_reference\\tracking.py": "d6afb9e6eefe0ba2e639281284d4bc0f0f0b6ff7a5a89759b22795c78208bf16"
+  },
+  "source_preservation_count": 634,
+  "deterministic_trace_sha256": "8e0c20f1755549abb61e824ab8265d255c280110018089ba076b325f5e521dc1",
+  "accuracy_image": {
+    "center_truth_count": 35,
+    "duplicate_detections": 0,
+    "duplicate_fp": 0,
+    "event_fn": 12,
+    "event_tp": 19,
+    "feature_fn": 2800,
+    "feature_fp": 140,
+    "feature_tp": 6940,
+    "frame_count": 504,
+    "id_switches": 0,
+    "merge_observations": 140,
+    "missing_frames": 17,
+    "pc_elapsed_mean_us": 1444.6311507936507,
+    "pc_elapsed_total_ms": 728.0941,
+    "pending_event_count": 4,
+    "png_frames": 487,
+    "predicted_event_count": 19,
+    "qualified_precision": 1.0,
+    "qualified_recall": 0.6129032258064516,
+    "qualified_truth_count": 31,
+    "raw_count_diff_center": -16,
+    "raw_count_diff_qualified": -12,
+    "spurious_fp": 0,
+    "tracker_internal_count": 19
+  },
+  "accuracy_geometry": {
+    "center_truth_count": 35,
+    "duplicate_detections": 0,
+    "duplicate_fp": 0,
+    "event_fn": 0,
+    "event_tp": 31,
+    "feature_fn": 0,
+    "feature_fp": 0,
+    "feature_tp": 9740,
+    "frame_count": 504,
+    "id_switches": 0,
+    "merge_observations": 0,
+    "missing_frames": 17,
+    "pc_elapsed_mean_us": 462.9664682539683,
+    "pc_elapsed_total_ms": 233.3351,
+    "pending_event_count": 4,
+    "png_frames": 487,
+    "predicted_event_count": 31,
+    "qualified_precision": 1.0,
+    "qualified_recall": 1.0,
+    "qualified_truth_count": 31,
+    "raw_count_diff_center": -4,
+    "raw_count_diff_qualified": 0,
+    "spurious_fp": 0,
+    "tracker_internal_count": 31
+  },
+  "failed_conditions": [
+    {
+      "condition_id": "backbone_fast_small_01",
+      "qualified_truth_count": "4",
+      "predicted_event_count": "0",
+      "event_fn": "4"
+    },
+    {
+      "condition_id": "backbone_nominal_small_01",
+      "qualified_truth_count": "3",
+      "predicted_event_count": "0",
+      "event_fn": "3"
+    },
+    {
+      "condition_id": "backbone_nominal_small_02",
+      "qualified_truth_count": "3",
+      "predicted_event_count": "0",
+      "event_fn": "3"
+    },
+    {
+      "condition_id": "backbone_slow_small_01",
+      "qualified_truth_count": "1",
+      "predicted_event_count": "0",
+      "event_fn": "1"
+    },
+    {
+      "condition_id": "backbone_slow_small_02",
+      "qualified_truth_count": "1",
+      "predicted_event_count": "0",
+      "event_fn": "1"
+    }
+  ],
+  "rtl_regression": {
+    "wo0010-rtl-small-20261013": {
+      "cases": 48,
+      "pixels": 1032
+    },
+    "wo0010-rtl-images-20261013": {
+      "cases": 36,
+      "pixels": 2805312
+    },
+    "binary": {
+      "cases": 20,
+      "pixels": 4623360
+    },
+    "rgb": {
+      "cases": 2,
+      "pixels": 461824
+    }
+  },
+  "scope": "PC-only algorithm, no PS board timing or DMA integration",
+  "head_unchanged": true,
+  "staging_empty": true,
+  "final_new_files_whitespace_checked": 10
+}
