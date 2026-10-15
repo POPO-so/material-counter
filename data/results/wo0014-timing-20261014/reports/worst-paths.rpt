@@ -1,0 +1,770 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Wed Oct 14 16:03:35 2026
+| Host         : BWIN running 64-bit major release  (build 9200)
+| Command      : report_timing -max_paths 10 -file C:/fpga/material-counter/data/results/wo0014-timing-20261014/reports/worst-paths.rpt
+| Design       : axis_dma_image_pipeline
+| Device       : 7z020-clg400
+| Speed File   : -1  PRODUCTION 1.12 2019-11-22
+| Design State : Synthesized
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Timing Report
+
+Slack (MET) :             2.354ns  (required time - arrival time)
+  Source:                 packet_adapter/m_tdata_reg[17]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            rgb_to_gray/m_tdata_reg[7]/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        7.671ns  (logic 3.983ns (51.923%)  route 3.688ns (48.077%))
+  Logic Levels:           10  (CARRY4=7 LUT2=1 LUT3=1 LUT4=1)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/m_tdata_reg[17]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/m_tdata_reg[17]/Q
+                         net (fo=6, unplaced)         0.698     2.189    rgb_to_gray/rgb_data[17]
+                         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.808     2.997 r  rgb_to_gray/red_term_carry/CO[3]
+                         net (fo=1, unplaced)         0.009     3.006    rgb_to_gray/red_term_carry_n_0
+                         CARRY4 (Prop_carry4_CI_O[3])
+                                                      0.331     3.337 r  rgb_to_gray/red_term_carry__0/O[3]
+                         net (fo=2, unplaced)         0.629     3.966    packet_adapter/O[2]
+                         LUT3 (Prop_lut3_I1_O)        0.307     4.273 r  packet_adapter/red_term__25_carry__0_i_1/O
+                         net (fo=2, unplaced)         0.460     4.733    packet_adapter/DI[2]
+                         LUT4 (Prop_lut4_I3_O)        0.124     4.857 r  packet_adapter/red_term__25_carry__0_i_4/O
+                         net (fo=1, unplaced)         0.000     4.857    rgb_to_gray/gray_sum_carry__0_i_2_0[3]
+                         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.376     5.233 r  rgb_to_gray/red_term__25_carry__0/CO[3]
+                         net (fo=1, unplaced)         0.000     5.233    rgb_to_gray/red_term__25_carry__0_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     5.350 r  rgb_to_gray/red_term__25_carry__1/CO[3]
+                         net (fo=1, unplaced)         0.000     5.350    packet_adapter/CO[0]
+                         CARRY4 (Prop_carry4_CI_CO[0])
+                                                      0.281     5.631 r  packet_adapter/gray_sum_carry__2_i_1/CO[0]
+                         net (fo=1, unplaced)         0.974     6.605    rgb_to_gray/S[1]
+                         CARRY4 (Prop_carry4_S[2]_CO[3])
+                                                      0.747     7.352 r  rgb_to_gray/gray_sum_carry__2/CO[3]
+                         net (fo=1, unplaced)         0.918     8.270    rgb_to_gray/gray_sum_carry__2_n_0
+                         LUT2 (Prop_lut2_I1_O)        0.124     8.394 r  rgb_to_gray/gray_sum__41_carry_i_1__2/O
+                         net (fo=1, unplaced)         0.000     8.394    rgb_to_gray/gray_sum__41_carry_i_1__2_n_0
+                         CARRY4 (Prop_carry4_S[2]_O[2])
+                                                      0.250     8.644 r  rgb_to_gray/gray_sum__41_carry__2/O[2]
+                         net (fo=1, unplaced)         0.000     8.644    rgb_to_gray/gray_sum[15]
+                         FDRE                                         r  rgb_to_gray/m_tdata_reg[7]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    rgb_to_gray/aclk
+                         FDRE                                         r  rgb_to_gray/m_tdata_reg[7]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.109    10.998    rgb_to_gray/m_tdata_reg[7]
+  -------------------------------------------------------------------
+                         required time                         10.998    <hidden>
+                         arrival time                          -8.644    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  2.354    <hidden>
+
+Slack (MET) :             3.762ns  (required time - arrival time)
+  Source:                 packet_adapter/received_bytes_reg[23]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            packet_adapter/payload_sum_reg[29]/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        6.263ns  (logic 2.744ns (43.813%)  route 3.519ns (56.187%))
+  Logic Levels:           12  (CARRY4=8 LUT2=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/received_bytes_reg[23]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/received_bytes_reg[23]/Q
+                         net (fo=2, unplaced)         0.976     2.467    packet_adapter/received_bytes_reg_n_0_[23]
+                         LUT6 (Prop_lut6_I0_O)        0.295     2.762 r  packet_adapter/s_tready_INST_0_i_9/O
+                         net (fo=1, unplaced)         0.902     3.664    packet_adapter/s_tready_INST_0_i_9_n_0
+                         LUT5 (Prop_lut5_I2_O)        0.124     3.788 r  packet_adapter/s_tready_INST_0_i_3/O
+                         net (fo=4, unplaced)         0.443     4.231    packet_adapter/s_tready_INST_0_i_3_n_0
+                         LUT6 (Prop_lut6_I3_O)        0.124     4.355 r  packet_adapter/buffered_bytes[3]_i_3/O
+                         net (fo=107, unplaced)       0.550     4.905    packet_adapter/buffered_bytes[3]_i_3_n_0
+                         LUT2 (Prop_lut2_I1_O)        0.124     5.029 r  packet_adapter/payload_sum[3]_i_4/O
+                         net (fo=1, unplaced)         0.639     5.668    packet_adapter/payload_sum[3]_i_4_n_0
+                         CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.520     6.188 r  packet_adapter/payload_sum_reg[3]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.009     6.197    packet_adapter/payload_sum_reg[3]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.314 r  packet_adapter/payload_sum_reg[7]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.314    packet_adapter/payload_sum_reg[7]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.431 r  packet_adapter/payload_sum_reg[11]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.431    packet_adapter/payload_sum_reg[11]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.548 r  packet_adapter/payload_sum_reg[15]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.548    packet_adapter/payload_sum_reg[15]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.665 r  packet_adapter/payload_sum_reg[19]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.665    packet_adapter/payload_sum_reg[19]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.782 r  packet_adapter/payload_sum_reg[23]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.782    packet_adapter/payload_sum_reg[23]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.899 r  packet_adapter/payload_sum_reg[27]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.899    packet_adapter/payload_sum_reg[27]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.337     7.236 r  packet_adapter/payload_sum_reg[31]_i_2/O[1]
+                         net (fo=1, unplaced)         0.000     7.236    packet_adapter/payload_sum_reg[31]_i_2_n_6
+                         FDRE                                         r  packet_adapter/payload_sum_reg[29]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/payload_sum_reg[29]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.109    10.998    packet_adapter/payload_sum_reg[29]
+  -------------------------------------------------------------------
+                         required time                         10.998    <hidden>
+                         arrival time                          -7.236    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.762    <hidden>
+
+Slack (MET) :             3.768ns  (required time - arrival time)
+  Source:                 packet_adapter/received_bytes_reg[23]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            packet_adapter/payload_sum_reg[31]/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        6.257ns  (logic 2.738ns (43.759%)  route 3.519ns (56.241%))
+  Logic Levels:           12  (CARRY4=8 LUT2=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/received_bytes_reg[23]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/received_bytes_reg[23]/Q
+                         net (fo=2, unplaced)         0.976     2.467    packet_adapter/received_bytes_reg_n_0_[23]
+                         LUT6 (Prop_lut6_I0_O)        0.295     2.762 r  packet_adapter/s_tready_INST_0_i_9/O
+                         net (fo=1, unplaced)         0.902     3.664    packet_adapter/s_tready_INST_0_i_9_n_0
+                         LUT5 (Prop_lut5_I2_O)        0.124     3.788 r  packet_adapter/s_tready_INST_0_i_3/O
+                         net (fo=4, unplaced)         0.443     4.231    packet_adapter/s_tready_INST_0_i_3_n_0
+                         LUT6 (Prop_lut6_I3_O)        0.124     4.355 r  packet_adapter/buffered_bytes[3]_i_3/O
+                         net (fo=107, unplaced)       0.550     4.905    packet_adapter/buffered_bytes[3]_i_3_n_0
+                         LUT2 (Prop_lut2_I1_O)        0.124     5.029 r  packet_adapter/payload_sum[3]_i_4/O
+                         net (fo=1, unplaced)         0.639     5.668    packet_adapter/payload_sum[3]_i_4_n_0
+                         CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.520     6.188 r  packet_adapter/payload_sum_reg[3]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.009     6.197    packet_adapter/payload_sum_reg[3]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.314 r  packet_adapter/payload_sum_reg[7]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.314    packet_adapter/payload_sum_reg[7]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.431 r  packet_adapter/payload_sum_reg[11]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.431    packet_adapter/payload_sum_reg[11]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.548 r  packet_adapter/payload_sum_reg[15]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.548    packet_adapter/payload_sum_reg[15]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.665 r  packet_adapter/payload_sum_reg[19]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.665    packet_adapter/payload_sum_reg[19]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.782 r  packet_adapter/payload_sum_reg[23]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.782    packet_adapter/payload_sum_reg[23]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.899 r  packet_adapter/payload_sum_reg[27]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.899    packet_adapter/payload_sum_reg[27]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_O[3])
+                                                      0.331     7.230 r  packet_adapter/payload_sum_reg[31]_i_2/O[3]
+                         net (fo=1, unplaced)         0.000     7.230    packet_adapter/payload_sum_reg[31]_i_2_n_4
+                         FDRE                                         r  packet_adapter/payload_sum_reg[31]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/payload_sum_reg[31]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.109    10.998    packet_adapter/payload_sum_reg[31]
+  -------------------------------------------------------------------
+                         required time                         10.998    <hidden>
+                         arrival time                          -7.230    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.768    <hidden>
+
+Slack (MET) :             3.790ns  (required time - arrival time)
+  Source:                 output_checker/observed_pixels_reg[4]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            output_checker/checker_error_reg/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        6.203ns  (logic 2.672ns (43.076%)  route 3.531ns (56.924%))
+  Logic Levels:           10  (CARRY4=6 LUT4=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    output_checker/aclk
+                         FDRE                                         r  output_checker/observed_pixels_reg[4]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  output_checker/observed_pixels_reg[4]/Q
+                         net (fo=1, unplaced)         0.983     2.474    output_checker/observed_pixels[4]
+                         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.671     3.145 r  output_checker/next_pixel_count0_carry/CO[3]
+                         net (fo=1, unplaced)         0.009     3.154    output_checker/next_pixel_count0_carry_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     3.271 r  output_checker/next_pixel_count0_carry__0/CO[3]
+                         net (fo=1, unplaced)         0.000     3.271    output_checker/next_pixel_count0_carry__0_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     3.388 r  output_checker/next_pixel_count0_carry__1/CO[3]
+                         net (fo=1, unplaced)         0.000     3.388    output_checker/next_pixel_count0_carry__1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     3.505 r  output_checker/next_pixel_count0_carry__2/CO[3]
+                         net (fo=1, unplaced)         0.000     3.505    output_checker/next_pixel_count0_carry__2_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     3.622 r  output_checker/next_pixel_count0_carry__3/CO[3]
+                         net (fo=1, unplaced)         0.000     3.622    output_checker/next_pixel_count0_carry__3_n_0
+                         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.337     3.959 r  output_checker/next_pixel_count0_carry__4/O[1]
+                         net (fo=2, unplaced)         0.728     4.687    output_checker/next_pixel_count0[22]
+                         LUT4 (Prop_lut4_I0_O)        0.306     4.993 r  output_checker/checker_error_i_14/O
+                         net (fo=1, unplaced)         0.902     5.895    output_checker/checker_error_i_14_n_0
+                         LUT5 (Prop_lut5_I4_O)        0.124     6.019 r  output_checker/checker_error_i_7/O
+                         net (fo=2, unplaced)         0.460     6.479    output_checker/checker_error_i_7_n_0
+                         LUT6 (Prop_lut6_I2_O)        0.124     6.603 r  output_checker/checker_error_i_3/O
+                         net (fo=1, unplaced)         0.449     7.052    output_checker/checker_error3_out
+                         LUT6 (Prop_lut6_I4_O)        0.124     7.176 r  output_checker/checker_error_i_1/O
+                         net (fo=1, unplaced)         0.000     7.176    output_checker/checker_error_i_1_n_0
+                         FDRE                                         r  output_checker/checker_error_reg/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    output_checker/aclk
+                         FDRE                                         r  output_checker/checker_error_reg/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.077    10.966    output_checker/checker_error_reg
+  -------------------------------------------------------------------
+                         required time                         10.966    <hidden>
+                         arrival time                          -7.176    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.790    <hidden>
+
+Slack (MET) :             3.843ns  (required time - arrival time)
+  Source:                 packet_adapter/received_bytes_reg[23]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            packet_adapter/payload_sum_reg[30]/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        6.182ns  (logic 2.663ns (43.077%)  route 3.519ns (56.923%))
+  Logic Levels:           12  (CARRY4=8 LUT2=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/received_bytes_reg[23]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/received_bytes_reg[23]/Q
+                         net (fo=2, unplaced)         0.976     2.467    packet_adapter/received_bytes_reg_n_0_[23]
+                         LUT6 (Prop_lut6_I0_O)        0.295     2.762 r  packet_adapter/s_tready_INST_0_i_9/O
+                         net (fo=1, unplaced)         0.902     3.664    packet_adapter/s_tready_INST_0_i_9_n_0
+                         LUT5 (Prop_lut5_I2_O)        0.124     3.788 r  packet_adapter/s_tready_INST_0_i_3/O
+                         net (fo=4, unplaced)         0.443     4.231    packet_adapter/s_tready_INST_0_i_3_n_0
+                         LUT6 (Prop_lut6_I3_O)        0.124     4.355 r  packet_adapter/buffered_bytes[3]_i_3/O
+                         net (fo=107, unplaced)       0.550     4.905    packet_adapter/buffered_bytes[3]_i_3_n_0
+                         LUT2 (Prop_lut2_I1_O)        0.124     5.029 r  packet_adapter/payload_sum[3]_i_4/O
+                         net (fo=1, unplaced)         0.639     5.668    packet_adapter/payload_sum[3]_i_4_n_0
+                         CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.520     6.188 r  packet_adapter/payload_sum_reg[3]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.009     6.197    packet_adapter/payload_sum_reg[3]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.314 r  packet_adapter/payload_sum_reg[7]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.314    packet_adapter/payload_sum_reg[7]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.431 r  packet_adapter/payload_sum_reg[11]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.431    packet_adapter/payload_sum_reg[11]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.548 r  packet_adapter/payload_sum_reg[15]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.548    packet_adapter/payload_sum_reg[15]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.665 r  packet_adapter/payload_sum_reg[19]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.665    packet_adapter/payload_sum_reg[19]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.782 r  packet_adapter/payload_sum_reg[23]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.782    packet_adapter/payload_sum_reg[23]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.899 r  packet_adapter/payload_sum_reg[27]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.899    packet_adapter/payload_sum_reg[27]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_O[2])
+                                                      0.256     7.155 r  packet_adapter/payload_sum_reg[31]_i_2/O[2]
+                         net (fo=1, unplaced)         0.000     7.155    packet_adapter/payload_sum_reg[31]_i_2_n_5
+                         FDRE                                         r  packet_adapter/payload_sum_reg[30]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/payload_sum_reg[30]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.109    10.998    packet_adapter/payload_sum_reg[30]
+  -------------------------------------------------------------------
+                         required time                         10.998    <hidden>
+                         arrival time                          -7.155    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.843    <hidden>
+
+Slack (MET) :             3.867ns  (required time - arrival time)
+  Source:                 packet_adapter/received_bytes_reg[23]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            packet_adapter/payload_sum_reg[28]/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        6.158ns  (logic 2.639ns (42.855%)  route 3.519ns (57.145%))
+  Logic Levels:           12  (CARRY4=8 LUT2=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/received_bytes_reg[23]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/received_bytes_reg[23]/Q
+                         net (fo=2, unplaced)         0.976     2.467    packet_adapter/received_bytes_reg_n_0_[23]
+                         LUT6 (Prop_lut6_I0_O)        0.295     2.762 r  packet_adapter/s_tready_INST_0_i_9/O
+                         net (fo=1, unplaced)         0.902     3.664    packet_adapter/s_tready_INST_0_i_9_n_0
+                         LUT5 (Prop_lut5_I2_O)        0.124     3.788 r  packet_adapter/s_tready_INST_0_i_3/O
+                         net (fo=4, unplaced)         0.443     4.231    packet_adapter/s_tready_INST_0_i_3_n_0
+                         LUT6 (Prop_lut6_I3_O)        0.124     4.355 r  packet_adapter/buffered_bytes[3]_i_3/O
+                         net (fo=107, unplaced)       0.550     4.905    packet_adapter/buffered_bytes[3]_i_3_n_0
+                         LUT2 (Prop_lut2_I1_O)        0.124     5.029 r  packet_adapter/payload_sum[3]_i_4/O
+                         net (fo=1, unplaced)         0.639     5.668    packet_adapter/payload_sum[3]_i_4_n_0
+                         CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.520     6.188 r  packet_adapter/payload_sum_reg[3]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.009     6.197    packet_adapter/payload_sum_reg[3]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.314 r  packet_adapter/payload_sum_reg[7]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.314    packet_adapter/payload_sum_reg[7]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.431 r  packet_adapter/payload_sum_reg[11]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.431    packet_adapter/payload_sum_reg[11]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.548 r  packet_adapter/payload_sum_reg[15]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.548    packet_adapter/payload_sum_reg[15]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.665 r  packet_adapter/payload_sum_reg[19]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.665    packet_adapter/payload_sum_reg[19]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.782 r  packet_adapter/payload_sum_reg[23]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.782    packet_adapter/payload_sum_reg[23]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.899 r  packet_adapter/payload_sum_reg[27]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.899    packet_adapter/payload_sum_reg[27]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232     7.131 r  packet_adapter/payload_sum_reg[31]_i_2/O[0]
+                         net (fo=1, unplaced)         0.000     7.131    packet_adapter/payload_sum_reg[31]_i_2_n_7
+                         FDRE                                         r  packet_adapter/payload_sum_reg[28]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/payload_sum_reg[28]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.109    10.998    packet_adapter/payload_sum_reg[28]
+  -------------------------------------------------------------------
+                         required time                         10.998    <hidden>
+                         arrival time                          -7.131    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.867    <hidden>
+
+Slack (MET) :             3.879ns  (required time - arrival time)
+  Source:                 packet_adapter/received_bytes_reg[23]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            packet_adapter/payload_sum_reg[25]/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        6.146ns  (logic 2.627ns (42.743%)  route 3.519ns (57.257%))
+  Logic Levels:           11  (CARRY4=7 LUT2=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/received_bytes_reg[23]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/received_bytes_reg[23]/Q
+                         net (fo=2, unplaced)         0.976     2.467    packet_adapter/received_bytes_reg_n_0_[23]
+                         LUT6 (Prop_lut6_I0_O)        0.295     2.762 r  packet_adapter/s_tready_INST_0_i_9/O
+                         net (fo=1, unplaced)         0.902     3.664    packet_adapter/s_tready_INST_0_i_9_n_0
+                         LUT5 (Prop_lut5_I2_O)        0.124     3.788 r  packet_adapter/s_tready_INST_0_i_3/O
+                         net (fo=4, unplaced)         0.443     4.231    packet_adapter/s_tready_INST_0_i_3_n_0
+                         LUT6 (Prop_lut6_I3_O)        0.124     4.355 r  packet_adapter/buffered_bytes[3]_i_3/O
+                         net (fo=107, unplaced)       0.550     4.905    packet_adapter/buffered_bytes[3]_i_3_n_0
+                         LUT2 (Prop_lut2_I1_O)        0.124     5.029 r  packet_adapter/payload_sum[3]_i_4/O
+                         net (fo=1, unplaced)         0.639     5.668    packet_adapter/payload_sum[3]_i_4_n_0
+                         CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.520     6.188 r  packet_adapter/payload_sum_reg[3]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.009     6.197    packet_adapter/payload_sum_reg[3]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.314 r  packet_adapter/payload_sum_reg[7]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.314    packet_adapter/payload_sum_reg[7]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.431 r  packet_adapter/payload_sum_reg[11]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.431    packet_adapter/payload_sum_reg[11]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.548 r  packet_adapter/payload_sum_reg[15]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.548    packet_adapter/payload_sum_reg[15]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.665 r  packet_adapter/payload_sum_reg[19]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.665    packet_adapter/payload_sum_reg[19]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.782 r  packet_adapter/payload_sum_reg[23]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.782    packet_adapter/payload_sum_reg[23]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.337     7.119 r  packet_adapter/payload_sum_reg[27]_i_1/O[1]
+                         net (fo=1, unplaced)         0.000     7.119    packet_adapter/payload_sum_reg[27]_i_1_n_6
+                         FDRE                                         r  packet_adapter/payload_sum_reg[25]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/payload_sum_reg[25]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.109    10.998    packet_adapter/payload_sum_reg[25]
+  -------------------------------------------------------------------
+                         required time                         10.998    <hidden>
+                         arrival time                          -7.119    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.879    <hidden>
+
+Slack (MET) :             3.885ns  (required time - arrival time)
+  Source:                 packet_adapter/received_bytes_reg[23]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            packet_adapter/payload_sum_reg[27]/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        6.140ns  (logic 2.621ns (42.687%)  route 3.519ns (57.313%))
+  Logic Levels:           11  (CARRY4=7 LUT2=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/received_bytes_reg[23]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/received_bytes_reg[23]/Q
+                         net (fo=2, unplaced)         0.976     2.467    packet_adapter/received_bytes_reg_n_0_[23]
+                         LUT6 (Prop_lut6_I0_O)        0.295     2.762 r  packet_adapter/s_tready_INST_0_i_9/O
+                         net (fo=1, unplaced)         0.902     3.664    packet_adapter/s_tready_INST_0_i_9_n_0
+                         LUT5 (Prop_lut5_I2_O)        0.124     3.788 r  packet_adapter/s_tready_INST_0_i_3/O
+                         net (fo=4, unplaced)         0.443     4.231    packet_adapter/s_tready_INST_0_i_3_n_0
+                         LUT6 (Prop_lut6_I3_O)        0.124     4.355 r  packet_adapter/buffered_bytes[3]_i_3/O
+                         net (fo=107, unplaced)       0.550     4.905    packet_adapter/buffered_bytes[3]_i_3_n_0
+                         LUT2 (Prop_lut2_I1_O)        0.124     5.029 r  packet_adapter/payload_sum[3]_i_4/O
+                         net (fo=1, unplaced)         0.639     5.668    packet_adapter/payload_sum[3]_i_4_n_0
+                         CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.520     6.188 r  packet_adapter/payload_sum_reg[3]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.009     6.197    packet_adapter/payload_sum_reg[3]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.314 r  packet_adapter/payload_sum_reg[7]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.314    packet_adapter/payload_sum_reg[7]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.431 r  packet_adapter/payload_sum_reg[11]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.431    packet_adapter/payload_sum_reg[11]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.548 r  packet_adapter/payload_sum_reg[15]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.548    packet_adapter/payload_sum_reg[15]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.665 r  packet_adapter/payload_sum_reg[19]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.665    packet_adapter/payload_sum_reg[19]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.782 r  packet_adapter/payload_sum_reg[23]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.782    packet_adapter/payload_sum_reg[23]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_O[3])
+                                                      0.331     7.113 r  packet_adapter/payload_sum_reg[27]_i_1/O[3]
+                         net (fo=1, unplaced)         0.000     7.113    packet_adapter/payload_sum_reg[27]_i_1_n_4
+                         FDRE                                         r  packet_adapter/payload_sum_reg[27]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/payload_sum_reg[27]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.109    10.998    packet_adapter/payload_sum_reg[27]
+  -------------------------------------------------------------------
+                         required time                         10.998    <hidden>
+                         arrival time                          -7.113    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.885    <hidden>
+
+Slack (MET) :             3.960ns  (required time - arrival time)
+  Source:                 packet_adapter/received_bytes_reg[23]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            packet_adapter/payload_sum_reg[26]/D
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        6.065ns  (logic 2.546ns (41.979%)  route 3.519ns (58.021%))
+  Logic Levels:           11  (CARRY4=7 LUT2=1 LUT5=1 LUT6=2)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/received_bytes_reg[23]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/received_bytes_reg[23]/Q
+                         net (fo=2, unplaced)         0.976     2.467    packet_adapter/received_bytes_reg_n_0_[23]
+                         LUT6 (Prop_lut6_I0_O)        0.295     2.762 r  packet_adapter/s_tready_INST_0_i_9/O
+                         net (fo=1, unplaced)         0.902     3.664    packet_adapter/s_tready_INST_0_i_9_n_0
+                         LUT5 (Prop_lut5_I2_O)        0.124     3.788 r  packet_adapter/s_tready_INST_0_i_3/O
+                         net (fo=4, unplaced)         0.443     4.231    packet_adapter/s_tready_INST_0_i_3_n_0
+                         LUT6 (Prop_lut6_I3_O)        0.124     4.355 r  packet_adapter/buffered_bytes[3]_i_3/O
+                         net (fo=107, unplaced)       0.550     4.905    packet_adapter/buffered_bytes[3]_i_3_n_0
+                         LUT2 (Prop_lut2_I1_O)        0.124     5.029 r  packet_adapter/payload_sum[3]_i_4/O
+                         net (fo=1, unplaced)         0.639     5.668    packet_adapter/payload_sum[3]_i_4_n_0
+                         CARRY4 (Prop_carry4_DI[1]_CO[3])
+                                                      0.520     6.188 r  packet_adapter/payload_sum_reg[3]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.009     6.197    packet_adapter/payload_sum_reg[3]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.314 r  packet_adapter/payload_sum_reg[7]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.314    packet_adapter/payload_sum_reg[7]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.431 r  packet_adapter/payload_sum_reg[11]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.431    packet_adapter/payload_sum_reg[11]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.548 r  packet_adapter/payload_sum_reg[15]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.548    packet_adapter/payload_sum_reg[15]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.665 r  packet_adapter/payload_sum_reg[19]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.665    packet_adapter/payload_sum_reg[19]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     6.782 r  packet_adapter/payload_sum_reg[23]_i_1/CO[3]
+                         net (fo=1, unplaced)         0.000     6.782    packet_adapter/payload_sum_reg[23]_i_1_n_0
+                         CARRY4 (Prop_carry4_CI_O[2])
+                                                      0.256     7.038 r  packet_adapter/payload_sum_reg[27]_i_1/O[2]
+                         net (fo=1, unplaced)         0.000     7.038    packet_adapter/payload_sum_reg[27]_i_1_n_5
+                         FDRE                                         r  packet_adapter/payload_sum_reg[26]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/payload_sum_reg[26]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_D)        0.109    10.998    packet_adapter/payload_sum_reg[26]
+  -------------------------------------------------------------------
+                         required time                         10.998    <hidden>
+                         arrival time                          -7.038    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.960    <hidden>
+
+Slack (MET) :             3.971ns  (required time - arrival time)
+  Source:                 packet_adapter/frame_id_reg[5]/C
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            packet_adapter/buffered_bytes_reg[0]/CE
+                            (rising edge-triggered cell FDRE clocked by wo14_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             wo14_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (wo14_clk rise@10.000ns - wo14_clk rise@0.000ns)
+  Data Path Delay:        5.776ns  (logic 2.397ns (41.499%)  route 3.379ns (58.501%))
+  Logic Levels:           8  (CARRY4=3 LUT6=5)
+  Clock Path Skew:        -0.049ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.924ns = ( 10.924 - 10.000 )
+    Source Clock Delay      (SCD):    0.973ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock wo14_clk rise edge)
+                                                      0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  aclk
+                         net (fo=376, unset)          0.973     0.973    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/frame_id_reg[5]/C
+  -------------------------------------------------------------------    -------------------
+                         FDRE (Prop_fdre_C_Q)         0.518     1.491 r  packet_adapter/frame_id_reg[5]/Q
+                         net (fo=1, unplaced)         0.965     2.456    packet_adapter/frame_id[5]
+                         LUT6 (Prop_lut6_I0_O)        0.295     2.751 r  packet_adapter/packet_done_i_45/O
+                         net (fo=1, unplaced)         0.000     2.751    packet_adapter/packet_done_i_45_n_0
+                         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533     3.284 r  packet_adapter/packet_done_reg_i_33/CO[3]
+                         net (fo=1, unplaced)         0.009     3.293    packet_adapter/packet_done_reg_i_33_n_0
+                         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     3.410 r  packet_adapter/packet_done_reg_i_19/CO[3]
+                         net (fo=1, unplaced)         0.000     3.410    packet_adapter/packet_done_reg_i_19_n_0
+                         CARRY4 (Prop_carry4_CI_CO[2])
+                                                      0.252     3.662 r  packet_adapter/packet_done_reg_i_11/CO[2]
+                         net (fo=1, unplaced)         0.452     4.114    packet_adapter/state5
+                         LUT6 (Prop_lut6_I0_O)        0.310     4.424 f  packet_adapter/packet_done_i_5/O
+                         net (fo=2, unplaced)         0.460     4.884    packet_adapter/packet_done_i_5_n_0
+                         LUT6 (Prop_lut6_I5_O)        0.124     5.008 f  packet_adapter/packet_error_i_6/O
+                         net (fo=6, unplaced)         0.481     5.489    packet_adapter/packet_error_i_6_n_0
+                         LUT6 (Prop_lut6_I5_O)        0.124     5.613 r  packet_adapter/buffered_bytes[3]_i_4/O
+                         net (fo=1, unplaced)         0.449     6.062    packet_adapter/buffered_bytes[3]_i_4_n_0
+                         LUT6 (Prop_lut6_I5_O)        0.124     6.186 r  packet_adapter/buffered_bytes[3]_i_1/O
+                         net (fo=68, unplaced)        0.563     6.749    packet_adapter/buffered_bytes[3]_i_1_n_0
+                         FDRE                                         r  packet_adapter/buffered_bytes_reg[0]/CE
+  -------------------------------------------------------------------    -------------------
+
+                         (clock wo14_clk rise edge)
+                                                     10.000    10.000 r  <hidden>
+                                                      0.000    10.000 r  aclk
+                         net (fo=376, unset)          0.924    10.924    packet_adapter/aclk
+                         FDRE                                         r  packet_adapter/buffered_bytes_reg[0]/C
+                         clock pessimism              0.000    10.924    <hidden>
+                         clock uncertainty           -0.035    10.889    <hidden>
+                         FDRE (Setup_fdre_C_CE)      -0.169    10.720    packet_adapter/buffered_bytes_reg[0]
+  -------------------------------------------------------------------
+                         required time                         10.720    <hidden>
+                         arrival time                          -6.749    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  3.971    <hidden>

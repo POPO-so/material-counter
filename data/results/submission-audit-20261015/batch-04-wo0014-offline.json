@@ -1,0 +1,510 @@
+{
+  "batch": "04-wo0014-offline",
+  "source_head": "7a868c070024bdc29cdeb057fbec9ccaf94ef160",
+  "files": [
+    {
+      "path": "data/results/wo0014-offline-20261014/bad_checksum.log",
+      "sha256": "7d8aa70fbc0191965195a45a702154d0791c6f00f825f752625c40eeffdae1d0",
+      "bytes": 2406,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/bad_header.log",
+      "sha256": "e1ad5c583a918e397a63c888de1a6a1aa6123246cba593d7f61ab0f63ed0623e",
+      "bytes": 2395,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/bad_length.log",
+      "sha256": "df6bcfd7375d99f96a85f1bd992bf72d77e5b83e339cc00f4fd3a1b0df0ba4b5",
+      "bytes": 2397,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/bad_tkeep.log",
+      "sha256": "dbd8bf8fd016297ab2e091f58278c065ee009e130e7d27c7ccc3fa2d88d264ef",
+      "bytes": 2392,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/changed-files.txt",
+      "sha256": "ec754621c04c427ba04caf0c93d29b23136347b331605468ecb5987462865e4a",
+      "bytes": 767,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/delivery-audit.json",
+      "sha256": "d315bf13caa8d7f7a96f11ec0b52e567f3aa5ade19ae6edfb27f1c16c0079d75",
+      "bytes": 457,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/directed-reviewed.log",
+      "sha256": "a7e8d0802ef9844325bcc6afa8b49ad03ee4a42073270123684eeca55aafabe3",
+      "bytes": 2322,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/early_tlast.log",
+      "sha256": "3eb142e9d7571854e6e1e82db2047da5bde5dc5c5f4dc1eee5befaf2d775c1cd",
+      "bytes": 2400,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/extra_payload.log",
+      "sha256": "fbbab96b9fb062263ddcce6870595c804d6e5f5bee93295f175373c75262e24f",
+      "bytes": 2410,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/h3-final.log",
+      "sha256": "5e8165231776b2b808c7095b719cf83656c0ede8880470e4526afe90f261d095",
+      "bytes": 2489,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/keep3.log",
+      "sha256": "a467f5c6cc10636bf87e5237d1abfc231f411d50791a5acc1b01be7d769cc7f3",
+      "bytes": 2173,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/keep7.log",
+      "sha256": "cfe0b415c546fb91c023f818bd348e9a16ffff3ceff1489f6d078ffc46fe3b84",
+      "bytes": 2172,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/legacy-binary-fixed.log",
+      "sha256": "f7883428d1fd5fbf35b905ceee079b827f1a216a2e7b419a84f288bc2d581e3d",
+      "bytes": 2221,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/legacy-monitor.log",
+      "sha256": "5f3340be6de2512cd038ca10e318e9133595a7e0291a81901108417bddbc434c",
+      "bytes": 1644,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/legacy-morph-h3.log",
+      "sha256": "20c3186a432b38f7d78139542ce1f1a8bd098295c2f70b6e9f19918defc956b2",
+      "bytes": 2301,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/legacy-rgb.log",
+      "sha256": "22f483336ab30c1cacb63799954e6cd5e037c4c3a798df9847f2ed9ad329656c",
+      "bytes": 2035,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/legacy-verification.json",
+      "sha256": "c12e28eba64183e300c9beb8aabe9ac5aefe9c77447541c46fe8509766da790a",
+      "bytes": 1394,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/missing_tlast.log",
+      "sha256": "16bd187eef18eb5306b21191501966009fcbc0364e5db0460aa6cc4ae1841988",
+      "bytes": 2411,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/protected-after.json",
+      "sha256": "fa4d944ab7f81752669030280b67a1b000fa5e4f95e60e5cc5c19c9754431717",
+      "bytes": 874,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/protected-before.json",
+      "sha256": "fa4d944ab7f81752669030280b67a1b000fa5e4f95e60e5cc5c19c9754431717",
+      "bytes": 874,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/pytest-final.txt",
+      "sha256": "aecb0d07e4f665272aab0f47dbcbc584c9c1266833094afa47030253810842af",
+      "bytes": 184,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/reports/directed-final-comparison.json",
+      "sha256": "b4773b35d1e87f5359bf479f83633eaa04eafc9258ff979b9c52fcadb4f59df9",
+      "bytes": 12563,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/reports/h3-final-pixel-comparison.json",
+      "sha256": "3f331dafe47fa98a73f2f4228604bc35d68886dad08b58b01834960798a1c89b",
+      "bytes": 78140,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/reports/linter-final.csv",
+      "sha256": "7b7078a2105e5bf73e05adb0264deb1f708476b1f844bf75b6c318ef16be9d9b",
+      "bytes": 138,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/reports/timing-ooc-final.rpt",
+      "sha256": "90f63d852fa228f9af45ebf123cea7c0ea1f4ef24291c01be63c5871b613a6b5",
+      "bytes": 22217,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/reports/utilization-final.rpt",
+      "sha256": "e8a6f61f939a55a72cee35a3be34e74afa908f45c60d7e22209f554411a2717d",
+      "bytes": 8213,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/source-hashes.json",
+      "sha256": "cf7bc6244466dc4d6bf5e78f51b23a1a689c3d1528058e150bae3e669a461d1d",
+      "bytes": 2011,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/summary.json",
+      "sha256": "317c253103d1b19be00bf95e5a2d1785788c7cf7b1b9449e83b1f4f91cff5d1e",
+      "bytes": 7003,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/th0.log",
+      "sha256": "8c0ff2f4600d9b85e9ca1901aa87808441d349d257020df162c6e8e1f4f3a565",
+      "bytes": 2201,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/th200.log",
+      "sha256": "b45c07140f363615f0c4938bb53f3ad2a95ed7b502668214912c971894be587b",
+      "bytes": 2217,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/th255.log",
+      "sha256": "47c99bac17cf7e382bfee1d99878eacb06db7e7ff57973e9e9d282b1ef851f34",
+      "bytes": 2217,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-offline-20261014/th73.log",
+      "sha256": "fb24aca41f4dc5e0a49502f99e3abba1cd789399af036688ba89d8f3c93c49d1",
+      "bytes": 2209,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/agent.log",
+      "sha256": "2782a484b7ccb10faf917458dce0924df328e30baddf3e3944001be9457b173c",
+      "bytes": 1187,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/bad_checksum.log",
+      "sha256": "70a5c88f2b5807bc25e6707c49d70d2e19e23807bebea66d1b7127da6868b592",
+      "bytes": 2424,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/bad_header.log",
+      "sha256": "29a530ee98ae4a5c18aa6be1ae674bd29cc7e65071a19855cff392bf1b5fa9e8",
+      "bytes": 2415,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/bad_length.log",
+      "sha256": "6f98ae7818f3004445106cacd8ba50418bfff650fc31bab1795852cc6d761cb6",
+      "bytes": 2416,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/bad_tkeep.log",
+      "sha256": "121967dd678ea2e4ea17159130036cda627cd704d4364a7bd70d145c650c1846",
+      "bytes": 2411,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/delivery-summary.json",
+      "sha256": "86364788ce534509252c00c9baf3459ed3dc8dce5c862614a6a1428d0f2dc7af",
+      "bytes": 6220,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/directed-reviewed.log",
+      "sha256": "4b2e0a844f0b48fcb7c9093feea94628a8a79d415d82e1fc103b39a4257b8e7e",
+      "bytes": 2340,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/early_tlast.log",
+      "sha256": "d5cafb3667b17c0c18efb3af777c6164f96e6a8fc04e9f5ed841a1f84c0e6262",
+      "bytes": 2419,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/evidence-sha256.json",
+      "sha256": "0532ff3b6da6efaa363ecbe5f15c41920a5a851d019c408e9b64f5db6198c7ad",
+      "bytes": 5233,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/extra_payload.log",
+      "sha256": "68e28b00e9469c20f8d5f64b1cf693677daa3971cc38a3a3e2d2346b813e5827",
+      "bytes": 2429,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/h3-final.log",
+      "sha256": "b6648749a134e3d6d28245c8cb4e18ce9adbec55b7170b7fde83e390d14d0c6a",
+      "bytes": 2507,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/input-hashes.json",
+      "sha256": "085b243354e5bcd64c9f7fc4291b89116c5d078d8364a2408815777d80cbd7f6",
+      "bytes": 328,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/keep3.log",
+      "sha256": "16bbd5f7249dc81e295de4453b3720ac207a5bbc1d3380000d782c9b90d5ebae",
+      "bytes": 2193,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/keep7.log",
+      "sha256": "df7fb3c73eedfb766cb9700396ce94ab84eb76ba30ac767b94a20736270f3511",
+      "bytes": 2192,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/legacy-binary-fixed.log",
+      "sha256": "eed1c19a61620297abd3c2acecacac4ef4744acdb05fab87a98e3faac40abe81",
+      "bytes": 2234,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/legacy-monitor.log",
+      "sha256": "d47561ae43fcb653bfadb8880804528bdc8ab3d55afa97462c43b3a76f62f36f",
+      "bytes": 1658,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/legacy-morph-h3.log",
+      "sha256": "e26e484531617f75a3ae246f9cd564ffa9e2b38e4a84f2f2caa9f5da3702b461",
+      "bytes": 2305,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/legacy-rgb.log",
+      "sha256": "457d18bd365718a370eebb9781d96e34e4001a265db8a4e12515d0171501214b",
+      "bytes": 1928,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/missing_tlast.log",
+      "sha256": "6b496b513b300d12f1f7588158088bd06363c9ad616369be80600b7f94f57f84",
+      "bytes": 2429,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/pytest.txt",
+      "sha256": "315f1f121ecead4b9dc1037cac710ab112b2eff88aa24f63e2aafdb766a82640",
+      "bytes": 184,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/reports/directed-comparison.json",
+      "sha256": "b4773b35d1e87f5359bf479f83633eaa04eafc9258ff979b9c52fcadb4f59df9",
+      "bytes": 12563,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/reports/h3-comparison.json",
+      "sha256": "3f331dafe47fa98a73f2f4228604bc35d68886dad08b58b01834960798a1c89b",
+      "bytes": 78140,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/reports/methodology.json",
+      "sha256": "5d82a91f885950122144fec9ab5effafb44805d76b16c427faf21f4ea75b878a",
+      "bytes": 33415,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/reports/timing-ooc.rpt",
+      "sha256": "3a78d59af228daa92219e174830a394640f7965423db5c81cff4b7e2e594f83e",
+      "bytes": 19039,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/reports/utilization.rpt",
+      "sha256": "ce6a44c836a4cf6b1d8c1949f1072a056ff4845cfa40369b48927d0646b6285e",
+      "bytes": 8206,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/reports/worst-paths.rpt",
+      "sha256": "d4fb9397638a6106b012e44c70c53027435d4c06a1f222df6e0088bd42ab58e1",
+      "bytes": 63889,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/th0.log",
+      "sha256": "4377f49b883a7421682632b36f43892f8ac852c0e15ca55ea8aca057c66922bd",
+      "bytes": 2220,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/th200.log",
+      "sha256": "fee55e9889badb5f8436eb1fe0d54c6604ee1438503bfeddfb7de4eb214d4f11",
+      "bytes": 2236,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/th255.log",
+      "sha256": "f669651bfa0f1b28ae5b1241d8b45330f251a40c0143f27423cf6121e5701b07",
+      "bytes": 2236,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "data/results/wo0014-timing-20261014/th73.log",
+      "sha256": "99ee5bf9d11b5d7b981778435006de2f8e7fc13e8d82618356570bb6ee999b4f",
+      "bytes": 2228,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0014-dma-length-assessment-20261014.md",
+      "sha256": "2c0d436e86c41ebe51a40ee3a228003100cce3a0225e1559a9301ad51a44262f",
+      "bytes": 11998,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0014-offline-integration-20261014.md",
+      "sha256": "6d3fa2c845253819d7046a0cfc2cada5b937a37ecdc0fb02689ec877b4d58f8d",
+      "bytes": 6954,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/verification/wo-0014-timing-acceptance-20261014.md",
+      "sha256": "cd20a0417630f2819ae657f173cb669441af9a82ea6570d008778d5e9ff6c028",
+      "bytes": 7796,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/work-orders/wo-0014-offline-image-integration.md",
+      "sha256": "226b55be5dc9e213fe67318a8c247c4c4584097a9fe240ad3e04bc39886ffedf",
+      "bytes": 1581,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/experimental/wo0014/README.md",
+      "sha256": "dfa0d6cfd910812e66dd769e84db2e8407fb748946c640056cb2c688c9ed3234",
+      "bytes": 2764,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/experimental/wo0014/axis_binary_output_checker.v",
+      "sha256": "8a6f46c6add51a29c801499ddbf63c52d65f5a1e91dab4b60316aecbddf54a75",
+      "bytes": 3612,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/experimental/wo0014/axis_dma_image_pipeline.v",
+      "sha256": "b94fa662b8cc08de6863d98c9e9a75294e3ffb90798c77711e3d3d0860e0e9ad",
+      "bytes": 3291,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/experimental/wo0014/axis_dma_rgb_adapter.v",
+      "sha256": "c3b8b682dd34540973595a810f6e90ffd21e87ea47dc39090830b4f128debfd3",
+      "bytes": 7089,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/sim/wo0014/tb_axis_dma_image_pipeline.sv",
+      "sha256": "fa7ffdf8b21e0f21b40ae1f0cb603d2de4451b40ffdf073aab525ecaaf8e1fc1",
+      "bytes": 22697,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0014/compare_output.py",
+      "sha256": "fcd5b2bd92993d016c93c09a98b9945c71e1f1283569014d7c4f4c4db523b91b",
+      "bytes": 8100,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0014/compare_run_set.py",
+      "sha256": "ab00ba8de91c0e7828e1a15b487449bee9b680bff67e12042bc017f2f30a7498",
+      "bytes": 5426,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0014/image_vectors.py",
+      "sha256": "f43a485bd1e6e7ed13f85d444fadffdbfc159077905decd3489f64cf46c5ffd4",
+      "bytes": 14529,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/experiments/wo0014/test_image_vectors.py",
+      "sha256": "6ceb8f7602eca1c7372a121a2118f8cd56e587abb60fc552029c73f34a534c2c",
+      "bytes": 5449,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014/audit_delivery.py",
+      "sha256": "5298d631c9a599d4fc4ec4fd0ddac370afede0a8c4d3096b0b56760d8ca1d0f6",
+      "bytes": 3211,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014/run_directed.tcl",
+      "sha256": "e9d2256fecec31a6fbd1acb52a106f26f1c33bf9e277c3786294b6ac0ffc908c",
+      "bytes": 5682,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014/run_full.tcl",
+      "sha256": "fc5c0e0785ac3e46589314c34bbbb1a97cfde005868e82c75901fab086a875bf",
+      "bytes": 2138,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014/run_legacy.tcl",
+      "sha256": "908794a21f07b322fd18be780915303923e32faf2f6ed92a376f824ac8874525",
+      "bytes": 2836,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014/run_negative.tcl",
+      "sha256": "91734b268ce275a0b24a52867eed0d3564dd20bbc466603eb979381b06b2c56b",
+      "bytes": 5964,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014/run_synthesis.tcl",
+      "sha256": "ab03053cb2b0ddc8809b9f66571006f4308abe95cd48c1a4b5ca636814d4e05b",
+      "bytes": 806,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_timing/prepare.py",
+      "sha256": "32038b29ad20e2e3293a80cc94845061b210dbe6c79e07d657935ffbc0690253",
+      "bytes": 3970,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_timing/run_ooc.tcl",
+      "sha256": "6ccd0b17a72eb2861c2dd335b4c303683b199a6d072af7f4ae2053cf800fb123",
+      "bytes": 1239,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "scripts/wo0014_timing/verify_delivery.py",
+      "sha256": "ac1ddbe482ad9400f50dee344119285639e89fee63ca249f3bdc8528ce23860c",
+      "bytes": 6615,
+      "origin": "local commit 7a868c0"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 14 16:04:22 2026
+# Process ID         : 7204
+# Current directory  : C:/fpga/material-counter/data/results/wo0014-timing-20261014/new-sim
+# Command line       : xsim.exe -log C:/fpga/material-counter/data/results/wo0014-timing-20261014/h3-final.log -mode tcl -source {xsim.dir/wo14_h3_final/xsim_script.tcl}
+# Log file           : C:/fpga/material-counter/data/results/wo0014-timing-20261014/h3-final.log
+# Journal file       : C:/fpga/material-counter/data/results/wo0014-timing-20261014/new-sim\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 18001 MB
+#-----------------------------------------------------------
+source xsim.dir/wo14_h3_final/xsim_script.tcl
+# xsim {wo14_h3_final} -testplusarg INPUT=C:/fpga/material-counter/data/results/wo0014-offline-20261014/vectors/h3_packets.bin -testplusarg EXPECTED=C:/fpga/material-counter/data/results/wo0014-offline-20261014/vectors/h3_expected_th128.bin -testplusarg ACTUAL=C:/fpga/material-counter/data/results/wo0014-timing-20261014/h3-final-actual.bin -testplusarg FRAME_COUNT=487 -testplusarg BASE_FRAME_ID=0 -testplusarg READY_MODE=1 -testplusarg GAP_MODE=1 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+CONFIG geometry=320x240 threshold=128 negative=0 frames=487 ready_mode=1 gap_mode=1 seed=1360094
+INPUT_SENT beats=28055096
+RESULT PASS: packets_done=487 packet_errors=0 scored_pixels=37401600 all_output_records=37401600 stalled_cycles=14857622 checker_pixels=76800 checker_sofs=1 checker_eols=240 checker_checksum=0x0008b740 drain_cycles=1
+$finish called at time : 984636690 ns : File "C:/fpga/material-counter/data/results/wo0014-timing-20261014/generated/tb_cycle_equivalence.sv" Line 549
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:04:00 . Memory (MB): peak = 228.652 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 21176 KB (Peak: 21176 KB), Simulation CPU Usage: 236390 ms
+INFO: [Common 17-206] Exiting xsim at Wed Oct 14 16:08:28 2026...

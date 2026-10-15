@@ -1,0 +1,8 @@
+WO-0014 timing assessment, confidence: high.
+Clock: wo14_clk, 10 ns, aclk. Original clock declaration: scripts/wo0014/run_synthesis.tcl; candidate: scripts/wo0014_timing/run_ooc.tcl. No clock period relaxation or timing exceptions.
+Baseline path: received_bytes[2] -> payload_sum[31], 22 logic levels, WNS -1.668 ns.
+Candidate path: adapter m_tdata[17] -> rgb2gray m_tdata[7], 10 levels, WNS +2.354 ns.
+TIMING-18: 219 missing input/output delay records; 40 input ports and 147 output ports have no delay. Internal unconstrained endpoints: 0.
+This is an isolated synthesized OOC design, with no selected external interface timing contract or assigned top-level clock buffer. Constraint/interface confidence: high for the stated OOC scope; full-system timing remains unverified.
+Resolution: preserve baseline OOC constraints. Do not invent IO budgets, waive TIMING-18, set false paths, or claim implemented/board timing closure. Defer system constraints to the independent BD implementation.
+Functional equivalence: static checksum upper bound 1020; 15 XSim scenarios compare adapter interface signals each cycle against committed baseline. This is simulation evidence, not formal proof.
