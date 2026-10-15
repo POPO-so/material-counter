@@ -1,0 +1,19 @@
+{
+  "top": "axis_roi_crop",
+  "parameters": {
+    "FRAME_WIDTH": 320,
+    "FRAME_HEIGHT": 240,
+    "ROI_X0": 80,
+    "ROI_Y0": 60,
+    "ROI_X1": 240,
+    "ROI_Y1": 180
+  },
+  "part": "xc7z020clg400-1",
+  "resources": {
+    "lut": 34,
+    "ff": 29,
+    "dsp": 0,
+    "bram_tiles": 0
+  },
+  "timing_constraint": "10ns clock only; no I/O delays"
+}
