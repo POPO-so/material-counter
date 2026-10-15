@@ -1,0 +1,4 @@
+Time resolution is 1 ps
+Fatal: THRESHOLD must be in [0,255], got -1
+Time: 0 ps  Iteration: 0  Process: /tb_axis_gray2binary(THRESHOLD=-1)/g_gray_binary_only.gray2binary/Initial22_1  Scope: tb_axis_gray2binary(THRESHOLD=-1).g_gray_binary_only.gray2binary  File: C:/fpga/material-counter/fpga/rtl/axis_gray2binary.v Line: 22
+$finish called at time : 0 fs

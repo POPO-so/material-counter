@@ -1,0 +1,187 @@
+[
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/source-hashes.json",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-source-hashes.json",
+    "sha256": "e1f9746a317280ab7fd8650bc96dfeca614fbad546e717936c9c7f7393f0b858"
+  },
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/pixel-comparison.json",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-pixel-comparison.json",
+    "sha256": "1d254eeaf082da5c9d88ed24fd38d70f2cfa3e1b81ae9299ac4613e8c0d9cf83"
+  },
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/lint-parsed.csv",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-lint-parsed.csv",
+    "sha256": "7b7078a2105e5bf73e05adb0264deb1f708476b1f844bf75b6c318ef16be9d9b"
+  },
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/lint.rpt",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-lint.rpt",
+    "sha256": "b97e9b11f79fac542b4bea5bfda6069ddff48cea61c1e874d43ff5d7d6393bc5"
+  },
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/utilization.rpt",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-utilization.rpt",
+    "sha256": "a671bdf6ddcb0b0ca88f440d080f44b57e469ac93022a313115f1106c9233e7f"
+  },
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/timing-summary.rpt",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-timing-summary.rpt",
+    "sha256": "73ec208273987b71c1e68efde1fe70574fcfa5908783fa2d10313421b3cc10ab"
+  },
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/verification-summary.json",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-verification-summary.json",
+    "sha256": "0b92a6b1a8e00df0278efe0435d171b2f7d6b6759cc7f78f0022873d722c2cf1"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/source-hashes.json",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-source-hashes.json",
+    "sha256": "793ed3841d2970534b58fb211bb939ba6060212622742f3db156b89d9f4d5434"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/pixel-comparison.json",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-pixel-comparison.json",
+    "sha256": "178275203474dbee5d847ad114ca71e42cc67d94e605eecb117ea717e0273211"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/manager-verification.json",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-manager-verification.json",
+    "sha256": "7f973e9221343f7a1ba560bb5a60d0e5a1f74a7c426f8b97da8babbf8d5f7206"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/mcp-verification-summary.json",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-mcp-verification-summary.json",
+    "sha256": "d581add6767b2a545020c147290dc24b3378cf6da22f341d6d4c624348257727"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/resource-summary.json",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-resource-summary.json",
+    "sha256": "c208f95fc297f45b0b761bf5d013c36de0ddc7d00bc11bc6af3d789baaec9f8c"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/lint.rpt",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-lint.rpt",
+    "sha256": "98b9d60841a84f4f7c8544716b61c452e8c49b1a1d1488a26f72f83acc27c989"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/lint-parsed.csv",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-lint-parsed.csv",
+    "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/lint-parser-raw.csv",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-lint-parser-raw.csv",
+    "sha256": "b594f872b8832034c45fecf3437f53e60d0617b66215946206ea5b01450e61cb"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/lint-normalization.json",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-lint-normalization.json",
+    "sha256": "3b7bf20d253a337bf1219f16769d3dfc836c7eca96c0c0bdf88262d2593769cc"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/lint-tool-result.json",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-lint-tool-result.json",
+    "sha256": "51b58425561ccb96cda90ba5b53ae247528b568e661f17e64fc329c841b82576"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/utilization.rpt",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-utilization.rpt",
+    "sha256": "8cc98f3d4ef8cd1eedad110a6ee4c15669ca4539e3064a0432c934a1b8aa9d9d"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/timing-summary.rpt",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-timing-summary.rpt",
+    "sha256": "647e91701bb6f768ff7a04e0a34c4cc7cb10a64bdaf3eb6803f30ce2683979e1"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/vectors/manifest.json",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-vector-manifest.json",
+    "sha256": "00526bc545617f914796ff0e4cea6f067e50a18a9ccb154837895ce04e99cf9c"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-skeleton/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/skeleton-runtime.txt",
+    "sha256": "e7d28468796095a8007e05bc2e5904edeb6f2a6c83d090d9d779632c63b51bbf"
+  },
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/sim-mode-0/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-mode0-runtime.txt",
+    "sha256": "19dae5fe1ef6cf3374619d17b2bef4b8426fb1c0eec5d4f3aa5a2e4a89552b8b"
+  },
+  {
+    "original": "data/results/rgb2gray-verify-20261012-131451/sim-mode-1/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/rgb2gray-mode1-runtime.txt",
+    "sha256": "768923eb3f0743febc20a8eabafaa52b0e81cefa08cee03d29630abf7df2e53b"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th0-chain0-mode0/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th0-chain0-mode0-runtime.txt",
+    "sha256": "7846fd86c4b02a2d5fe9184179fe095ff0963bffb4990c25d4d2dd2861308e8e"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th0-chain0-mode1/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th0-chain0-mode1-runtime.txt",
+    "sha256": "95229e309e3209e38bd673ef9d97f9d1520f6feab8efce98323e566c1516c31f"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th0-chain1-mode0/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th0-chain1-mode0-runtime.txt",
+    "sha256": "8055b1a57bdac7502b57be98d38c3c4bfd6d84183464f2868cb63c7c6450e4f3"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th0-chain1-mode1/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th0-chain1-mode1-runtime.txt",
+    "sha256": "826339e3202a4c46b4ce6eb8965613d00ccbb18ff4fc4b2045a7d36050beadf8"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th128-chain0-mode0/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th128-chain0-mode0-runtime.txt",
+    "sha256": "a2c7e2b1b0d70719d49475c0dffc4cd690cb17398c70024d71c9e1c668bc1a7b"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th128-chain0-mode1/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th128-chain0-mode1-runtime.txt",
+    "sha256": "e550941c357eeba55313204a3fcb35542e4423956c618b67fce2afad4695c349"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th128-chain1-mode0/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th128-chain1-mode0-runtime.txt",
+    "sha256": "ecf6c544a37a571708b0c74aa7a2e0ba7c6c93a9521e099fce29f6c7e778d6b0"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th128-chain1-mode1/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th128-chain1-mode1-runtime.txt",
+    "sha256": "ff7df602e802aa4844e451d930fb123d336f241e86ccdfcc95edc642aa98c602"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th255-chain0-mode0/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th255-chain0-mode0-runtime.txt",
+    "sha256": "1d3be71b4cc6df930ba08aab3de0eaa4000a85f32cf0aecf036dd6e7248f2c9c"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th255-chain0-mode1/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th255-chain0-mode1-runtime.txt",
+    "sha256": "bac2dfef512ef9ed49edccce4e779ab47d7b63d30b2f5289736f64bcb084ad76"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th255-chain1-mode0/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th255-chain1-mode0-runtime.txt",
+    "sha256": "7ea131d8b532760be655131280cd5e5e3f68d85e3106ed3bf09e3b141408872d"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-th255-chain1-mode1/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-th255-chain1-mode1-runtime.txt",
+    "sha256": "fa393af37b90596c0434ebe5b5115d3464c34efeb3680690cb61f1ee98c6734a"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-invalid-threshold--1/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-invalid-1-runtime.txt",
+    "sha256": "d9402eb5bcfc15bcb8c86d6c81d3a0c9508daa0f2cf22fd181f54ebb338accfc"
+  },
+  {
+    "original": "data/results/gray2binary-verify-20261012-worker-rerun2/sim-invalid-threshold-256/simulate.log",
+    "copy": "data/results/frontend-handoff-20261012/gray2binary-invalid256-runtime.txt",
+    "sha256": "53b4eedb53e341367b6f29f4f57aad5ea92ab14b73c970c8eea4ada782e07006"
+  }
+]
