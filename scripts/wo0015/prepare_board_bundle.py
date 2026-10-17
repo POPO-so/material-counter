@@ -83,6 +83,9 @@ def prepare(destination: Path) -> dict:
     manifest_path = destination / "run-manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     plan = preflight.validate_manifest(manifest_path, sha(manifest_path))
+    # The board controller uses the explicit deployment name while offline
+    # validators retain the run-manifest name; bind both identical copies.
+    shutil.copyfile(manifest_path, destination / "wo0015-manifest.json")
     (destination / "SHA256SUMS.json").write_text(json.dumps(
         {p.name: sha(p) for p in sorted(destination.iterdir()) if p.is_file()}, indent=2) + "\n", encoding="utf-8")
     archive_path = destination.with_suffix(".zip")
