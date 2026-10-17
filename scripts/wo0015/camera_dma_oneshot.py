@@ -27,7 +27,7 @@ except ImportError:  # pragma: no cover - direct script execution on PYNQ
     from camera_adapter import gray320x240_to_rgb_packet
 
 
-STEP3_MANIFEST_SHA256 = "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935"
+STEP3_MANIFEST_SHA256 = "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b"
 CAMERA_STAGE = "camera-dma-single"
 CAMERA_GUARD = board_once.DEFAULT_GUARD_DIR / "camera-dma-single-consumed.json"
 CAMERA_PASS_RECEIPT = board_once.DEFAULT_GUARD_DIR / "camera-dma-single-pass.json"
