@@ -365,7 +365,12 @@ def test_overlay_only_loads_once_and_writes_same_boot_manifest_hash_receipt(tmp_
     assert api.overlay_load_count == 1
     assert [snapshot["stage"] for snapshot in result["afi1_snapshots"]] == [
         "before_overlay_load", "after_overlay_load"]
-    assert len(api.physical_read_trace) == 8
+    # MockBoardAPI holds the FPGA output-reset bits asserted, so each snapshot
+    # reads only the two SLCR words and safely skips both AFI1 addresses.
+    assert api.physical_read_trace == [
+        runner.SLCR_FPGA0_CLK_CTRL, runner.SLCR_FPGA_RST_CTRL,
+        runner.SLCR_FPGA0_CLK_CTRL, runner.SLCR_FPGA_RST_CTRL,
+    ]
     assert api.write_trace == []
     assert receipt["boot_id"] == plan.boot_id
     assert receipt["manifest_sha256"] == plan.manifest_sha256

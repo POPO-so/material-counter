@@ -38,11 +38,12 @@ AFI1_RDCHAN_CTRL = 0xF8009000
 AFI1_WRCHAN_CTRL = 0xF8009014
 SLCR_FPGA0_CLK_CTRL = 0xF8000170
 SLCR_FPGA_RST_CTRL = 0xF8000240
+FPGA_FCLK_RESET_MASK = 0x0000000F
 SNAPSHOT_REGISTERS = {
-    "AFI1_RDCHAN_CTRL": AFI1_RDCHAN_CTRL,
-    "AFI1_WRCHAN_CTRL": AFI1_WRCHAN_CTRL,
     "SLCR_FPGA0_CLK_CTRL": SLCR_FPGA0_CLK_CTRL,
     "SLCR_FPGA_RST_CTRL": SLCR_FPGA_RST_CTRL,
+    "AFI1_RDCHAN_CTRL": AFI1_RDCHAN_CTRL,
+    "AFI1_WRCHAN_CTRL": AFI1_WRCHAN_CTRL,
 }
 
 DMA_RUN = 1 << 0
@@ -165,11 +166,37 @@ def read_phys32_readonly(address: int, *, mem_path: str = "/dev/mem",
 
 
 def read_afi1_snapshot(api: Any, stage: str) -> dict[str, Any]:
-    """Read AFI1 width controls and FPGA clock/reset control state, without writes."""
+    """Read SLCR state first; access AFI1 only after all FCLK reset bits release."""
     if not stage or not isinstance(stage, str):
         raise ValueError("snapshot stage must be a nonempty string")
     registers: dict[str, dict[str, Any]] = {}
-    for name, address in SNAPSHOT_REGISTERS.items():
+    # AFI1 can be inaccessible while the FPGA-side clock/reset path is held.
+    # Always establish the SLCR reset state before touching either AFI1 word.
+    for name, address in (("SLCR_FPGA0_CLK_CTRL", SLCR_FPGA0_CLK_CTRL),
+                          ("SLCR_FPGA_RST_CTRL", SLCR_FPGA_RST_CTRL)):
+        value = api.read_phys32(address)
+        if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 0xFFFFFFFF:
+            raise ValueError(f"{name} read did not return an unsigned 32-bit integer")
+        registers[name] = {
+            "address": f"0x{address:08x}", "value": value,
+            "raw_hex": f"0x{value:08x}",
+        }
+
+    reset_value = registers["SLCR_FPGA_RST_CTRL"]["value"]
+    if reset_value & FPGA_FCLK_RESET_MASK:
+        return {
+            "stage": stage,
+            "access": "read-only",
+            "afi1_status": "SKIPPED_RESET_ASSERTED",
+            "afi1_skip_reason": (
+                "SLCR FPGA_RST_CTRL FCLK output reset bits [3:0] are not all released; "
+                f"raw value is 0x{reset_value:08x}"
+            ),
+            "registers": registers,
+        }
+
+    for name, address in (("AFI1_RDCHAN_CTRL", AFI1_RDCHAN_CTRL),
+                          ("AFI1_WRCHAN_CTRL", AFI1_WRCHAN_CTRL)):
         value = api.read_phys32(address)
         if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 0xFFFFFFFF:
             raise ValueError(f"{name} read did not return an unsigned 32-bit integer")
@@ -181,7 +208,8 @@ def read_afi1_snapshot(api: Any, stage: str) -> dict[str, Any]:
             register["width_bit0"] = value & 1
             register["width_bits"] = 32 if value & 1 else 64
         registers[name] = register
-    return {"stage": stage, "access": "read-only", "registers": registers}
+    return {"stage": stage, "access": "read-only", "afi1_status": "READ",
+            "afi1_skip_reason": None, "registers": registers}
 
 
 def _artifact_fingerprints(plan: preflight.ValidatedRun) -> dict[str, Any]:

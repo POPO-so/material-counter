@@ -33,12 +33,12 @@ def test_parity_reports_even_odd_word_bytes_and_golden_match_bytes():
     assert parity['odd']['zero_word_bytes'] == 4
     assert parity['odd']['golden_match_bytes'] == 4
 
-def test_afi1_snapshot_decodes_both_width_bits_and_records_slcr_values():
+def test_afi1_snapshot_reads_slcr_first_and_skips_afi1_while_fclk_reset_asserted():
     values = {
-        0xF8009000: 0x00000001,
-        0xF8009014: 0x00000000,
         0xF8000170: 0x0001A00A,
         0xF8000240: 0x0000000F,
+        0xF8009000: 0x00000001,
+        0xF8009014: 0x00000000,
     }
     class ReadOnlyMock:
         def __init__(self): self.addresses = []
@@ -47,13 +47,37 @@ def test_afi1_snapshot_decodes_both_width_bits_and_records_slcr_values():
             return values[address]
     api = ReadOnlyMock()
     snapshot = run.read_afi1_snapshot(api, 'before_overlay_load')
-    assert api.addresses == list(values)
+    assert api.addresses == [0xF8000170, 0xF8000240]
     assert snapshot['stage'] == 'before_overlay_load'
+    assert snapshot['registers']['SLCR_FPGA0_CLK_CTRL']['value'] == 0x0001A00A
+    assert snapshot['registers']['SLCR_FPGA_RST_CTRL']['value'] == 0x0000000F
+    assert snapshot['registers']['SLCR_FPGA_RST_CTRL']['raw_hex'] == '0x0000000f'
+    assert snapshot['afi1_status'] == 'SKIPPED_RESET_ASSERTED'
+    assert snapshot['afi1_skip_reason']
+    assert 'AFI1_RDCHAN_CTRL' not in snapshot['registers']
+    assert 'AFI1_WRCHAN_CTRL' not in snapshot['registers']
+
+
+def test_afi1_snapshot_reads_channels_only_after_fclk_reset_released():
+    values = {
+        0xF8000170: 0x0001A00A,
+        0xF8000240: 0x00000000,
+        0xF8009000: 0x00000001,
+        0xF8009014: 0x00000000,
+    }
+    class ReadOnlyMock:
+        def __init__(self): self.addresses = []
+        def read_phys32(self, address):
+            self.addresses.append(address)
+            return values[address]
+    api = ReadOnlyMock()
+    snapshot = run.read_afi1_snapshot(api, 'after_overlay_load')
+    assert api.addresses == list(values)
+    assert snapshot['afi1_status'] == 'READ'
+    assert snapshot['afi1_skip_reason'] is None
     assert snapshot['registers']['AFI1_RDCHAN_CTRL']['value'] == 1
     assert snapshot['registers']['AFI1_RDCHAN_CTRL']['width_bits'] == 32
     assert snapshot['registers']['AFI1_WRCHAN_CTRL']['width_bits'] == 64
-    assert snapshot['registers']['SLCR_FPGA0_CLK_CTRL']['value'] == 0x0001A00A
-    assert snapshot['registers']['SLCR_FPGA_RST_CTRL']['value'] == 0x0000000F
 
 def test_physical_register_reader_uses_read_only_mapping_and_closes_fd():
     calls = []
