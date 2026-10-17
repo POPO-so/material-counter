@@ -105,6 +105,40 @@ def test_cached_roi_outputs_match_legacy_results_on_synthetic_and_board_mask_sam
         assert actual.total_count == expected.total_count
 
 
+def test_roi_passes_cached_uint8_view_to_fast_connected_components(monkeypatch):
+    mask = _mask(120, center_x=100, size=7)
+    observed = {}
+    fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
+    fast_algorithm = getattr(cv2, "CCL_GRANA", None)
+
+    if callable(fast_ccl) and fast_algorithm is not None:
+        def capture(image, connectivity, ltype, ccltype):
+            observed.update(image=image, connectivity=connectivity,
+                            ltype=ltype, ccltype=ccltype)
+            return fast_ccl(image, connectivity, ltype, ccltype)
+
+        monkeypatch.setattr(cv2, "connectedComponentsWithStatsWithAlgorithm", capture)
+    else:
+        default_ccl = cv2.connectedComponentsWithStats
+
+        def capture(image, *args, **kwargs):
+            observed.update(image=image, args=args, kwargs=kwargs)
+            return default_ccl(image, *args, **kwargs)
+
+        monkeypatch.setattr(cv2, "connectedComponentsWithStats", capture)
+
+    counter = MaskCounter(line_y=120, roi_half_height=48, min_area=12)
+    counter._extract_roi_detections(mask)
+
+    assert observed["image"].dtype == np.uint8
+    assert observed["image"].shape == (97, 320)
+    assert np.shares_memory(observed["image"], mask)
+    if fast_algorithm is not None and callable(fast_ccl):
+        assert observed["connectivity"] == 8
+        assert observed["ltype"] == cv2.CV_32S
+        assert observed["ccltype"] == fast_algorithm
+
+
 def test_top_to_bottom_track_counts_once_after_confirmation_and_hysteresis():
     counter = MaskCounter(line_y=120, hysteresis=2, confirm_hits=2, max_step=12)
 

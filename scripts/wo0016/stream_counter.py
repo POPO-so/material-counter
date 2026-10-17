@@ -151,18 +151,29 @@ class MaskCounter:
     ) -> tuple[list[Detection], int, int, tuple[int, ...], tuple[int, ...]]:
         top = max(0, self.line_y - self.roi_half_height)
         bottom = min(self.height, self.line_y + self.roi_half_height + 1)
-        foreground = mask[top:bottom, :] == 0xFF
-        row_projection = tuple(int(value) for value in np.count_nonzero(foreground, axis=1))
-        column_projection = tuple(int(value) for value in np.count_nonzero(foreground, axis=0))
-        roi = np.ascontiguousarray(foreground, dtype=np.uint8)
-        count, _, stats, centroids = cv2.connectedComponentsWithStats(
-            roi, connectivity=8, ltype=cv2.CV_32S
-        )
+        roi = mask[top:bottom, :]
+        if not roi.flags.c_contiguous:
+            roi = np.ascontiguousarray(roi)
+        row_projection = tuple(int(value) for value in np.count_nonzero(roi, axis=1))
+        column_projection = tuple(int(value) for value in np.count_nonzero(roi, axis=0))
+        fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
+        fast_algorithm = getattr(cv2, "CCL_GRANA", None)
+        if callable(fast_ccl) and fast_algorithm is not None:
+            count, _, stats, centroids = fast_ccl(
+                roi, 8, cv2.CV_32S, fast_algorithm
+            )
+        else:
+            count, _, stats, centroids = cv2.connectedComponentsWithStats(
+                roi, connectivity=8, ltype=cv2.CV_32S
+            )
+        qualified_labels = np.flatnonzero(
+            stats[1:count, cv2.CC_STAT_AREA] >= self.min_area
+        ) + 1
         detections = []
-        for label in range(1, count):
-            x, y, box_width, box_height, area = (int(v) for v in stats[label])
-            if area < self.min_area:
-                continue
+        for label in qualified_labels:
+            x, y, box_width, box_height, area = (
+                int(value) for value in stats[label]
+            )
             detections.append(Detection(
                 x_min=x,
                 x_max=x + box_width - 1,

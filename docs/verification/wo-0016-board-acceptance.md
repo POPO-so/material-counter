@@ -169,3 +169,37 @@ Attempt 3 活动 Guard 在复核 DMA Idle 后原样移动至 `/var/lib/wo0016/at
 | 运行前 / 分配后 / 释放后 CmaFree | 59136 / 43060 / 43540 KiB |
 
 Attempt 5 比 Attempt 4 的 4.213 FPS 提升约 2.71 倍；capture 从 167.085 ms 降到 38.231 ms，postprocess 从 193.861 ms 降到 68.735 ms，但都仍高于设定子阶段目标，整机吞吐也未达到 15 FPS。子阶段显示 ROI 计数为主要剩余开销；JPEG 每次编码均值 49.696 ms，虽然每四帧才编码一次。运行后 Boot ID 未变，CmaFree 为 74076 KiB，摄像头无占用、8080 已关闭、DMA 仍 Idle 且无错、缓冲区已释放。Attempt 4 Guard 原样归档至 `/var/lib/wo0016/attempt-4/stream-counter-consumed.json`，SHA-256 保持 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`；Attempt 5 的一次性 Guard 已消费并保留在活动路径，未执行第二次实测。此次没有人工真值或传送带物料工况，不能据此宣称计数准确率。
+
+## Attempt 6 缓存读取与预览解耦（2026-10-18）
+
+优化提交为 `60b2610eee84264c8d8a030c8654dd7eaa32ecde`。每个 S2MM 缓冲区完成传输后先执行 `sync_from_device`，再单次复制到预分配的 Cached `uint8` 掩码；Packer 检查、ROI 计数和预览快照均读取该缓存。MJPEG 发布回调只复制最新快照；JPEG 编码移至低优先级后台线程，且只在存在流客户端时执行。
+
+Attempt 5 活动 Guard 在归档前 SHA-256 为 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`，原样移至 `/var/lib/wo0016/attempt-5/stream-counter-consumed.json`，归档后 SHA 未变；目录/文件权限为 `0700/0600`。本次运行前 Boot ID、CMA 水位、摄像头空闲状态、手动曝光 `1/50`、8080 端口和两个 `DMASR=0x00001002` 均通过只读核验。Manifest SHA-256 为 `2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b`。部署脚本 SHA-256：`run_stream_counter.py` `c0c8b1137cd6826c805bd54677a134cb9bdec2dcf976abd4fa64132c1f8bf6d6`、`stream_counter.py` `c88368d65b0abbdac3a508a386367b4dd2162c8361218eef5c87e515f658c74c`、`mjpeg_preview.py` `f9555feec0a301704accc6550a2de5e49d75c91fce1e8141205b078c34a31c30`，均与提交文件匹配。
+
+板端原始结果位于 `/home/xilinx/wo0016/stage-a-30frames-attempt6-result.json`，本地副本为 [`stage-a-30frames-attempt6-result.json`](../../data/results/wo0016-stage-a-attempt6-20261018/stage-a-30frames-attempt6-result.json)，SHA-256 为 `bebfeca5f2c586a61f3aaacc1c5cf0949656a854641a4c5ec12eabb61c6f83b7`。运行使用已加载 Overlay（`download=False`），未重载 Bitstream，也未自动重试。
+
+| 指标 | Attempt 6 实测 |
+|---|---:|
+| 状态、帧数 | `BOARD_STREAM_COMPLETE`，30 / 30 |
+| 总耗时 / 端到端吞吐 | 2.609 s / 11.498 FPS |
+| `avg_capture_ms`（30 样本） | 38.888 ms |
+| `avg_encode_ms`（30 样本） | 11.922 ms |
+| `avg_dma_ms`（30 样本） | 8.328 ms |
+| `avg_rx_sync_ms` / `avg_rx_copy_ms`（各 30 样本） | 0.366 / 0.521 ms |
+| `avg_packer_check_ms`（30 样本） | 0.252 ms |
+| `avg_roi_count_ms`（30 样本） | 25.909 ms |
+| `avg_mjpeg_encode_ms`（30 次快照移交） | 0.307 ms |
+| `avg_mjpeg_background_encode_ms` | 无样本；无客户端请求，0 帧编码 |
+| `avg_postprocess_ms`（30 样本） | 31.945 ms |
+| 观测计数 / 人工真值 / 准确率 | 0 / 未提供 / 不可计算 |
+| Packer 验证帧数、缓冲区释放 | 30 / 30，是 |
+| 最终 MM2S / S2MM DMASR | `0x00001002` / `0x00001002` |
+| 运行前 / 分配后 / 释放后 CmaFree | 56132 / 40444 / 41424 KiB |
+
+Attempt 6 的 30 帧链路通过，但吞吐仍低于 15 FPS 目标；ROI 计数 25.909 ms 也未达到 2 ms 目标。RX 同步与复制分别低于 1 ms；预览移交降至 0.307 ms，且本轮没有同步 JPEG 编码。由于没有客户端，实际后台 JPEG 编码耗时未测得。计数耗时仍是主要待优化项。运行后 Boot ID 未变，CmaFree 为 67184 KiB，`/dev/video0` 无占用、8080 已关闭、DMA 保持 Idle / 无错。Attempt 6 的一次性 Guard 留在活动路径且已消费，SHA-256 为 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`；由于 Guard 内容只编码 Boot、Manifest、Bitstream、HWH、stage 和帧数，本次与 Attempt 5 归档 Guard 内容相同。未提供人工真值或传送带物料工况，不据此宣称计数准确率。
+
+### Attempt 6 后的离线 ROI 快速路径
+
+板端单次运行后，`_extract_roi_detections` 又做了离线优化：直接把 Cached `uint8` ROI 视图交给 CCL，不再为二值化创建布尔整帧副本；若 OpenCV 提供接口，则使用 `CCL_GRANA`，并先用 NumPy 向量化筛掉面积不足的标签，避免 Python 遍历无效连通域。新增用例检查 ROI 与输入缓存共享内存，现有合成样本和 WO-0015 实拍样本仍与旧面积、质心和投影结果一致。
+
+这项后续改动没有部署到板端，也没有消耗第二次 Stage A 尝试。当前 Attempt 6 结果仍只对应提交 `60b2610eee84264c8d8a030c8654dd7eaa32ecde`；后续 ROI 快速路径只完成离线回归，需在另行授权的板端运行中测量实际 `roi_count_ms` 和吞吐。
