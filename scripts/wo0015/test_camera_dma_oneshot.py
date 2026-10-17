@@ -15,6 +15,7 @@ import board_once
 import board_preflight as preflight
 from camera_dma_oneshot import (
     CameraHistoryAdapter,
+    _write_camera_result,
     capture_v4l2_once,
     load_gray_file,
     prepare_camera_bundle,
@@ -307,3 +308,49 @@ def test_history_adapter_rebases_counters_and_mock_dma_checks_next_frame(tmp_pat
     assert result["frames"][0]["frame_id"] == 4
     assert result["frames"][0]["byte_mismatches"] == 0
     assert result["status"] == "DMA_ONCE_PASS"
+
+
+def test_camera_result_writer_encodes_nested_bytes_losslessly(tmp_path):
+    template_path, _ = _make_manifest(tmp_path / "template")
+    source = np.zeros((preflight.HEIGHT, preflight.WIDTH), dtype=np.uint8)
+    source[12:88, 24:112] = 255
+    source_path = tmp_path / "camera.npy"
+    np.save(source_path, source)
+    prepared = prepare_camera_bundle(
+        template_manifest_path=template_path,
+        input_path=source_path,
+        output_root=tmp_path / "camera-runs",
+    )
+    camera_plan = preflight.validate_manifest(
+        prepared["manifest_path"], prepared["manifest_sha256"]
+    )
+    step3_plan = preflight.validate_manifest(template_path)
+    sidecar = json.loads(Path(prepared["camera_run_path"]).read_text(encoding="utf-8"))
+    golden_path = Path(prepared["golden_path"])
+    run_result = {
+        "status": "DMA_ONCE_PASS",
+        "frames": [{
+            "raw_capture": {
+                "rx_path": str(golden_path),
+                "rx_sha256": preflight.sha256_file(golden_path),
+            },
+            "byte_mismatches": 0,
+        }],
+        "unexpected_binary_metadata": {"sample": b"\x00\xfe"},
+    }
+    output_path = tmp_path / "camera-dma-result.json"
+
+    _write_camera_result(
+        camera_plan, sidecar, run_result, output_path,
+        type("MockAPI", (), {"board_accessed": False})(), step3_plan,
+        {}, [], {}, {},
+    )
+
+    saved = json.loads(output_path.read_text(encoding="utf-8"))
+    assert saved["unexpected_binary_metadata"]["sample"] == {
+        "type": "bytes",
+        "encoding": "hex",
+        "byte_length": 2,
+        "data": "00fe",
+    }
+    assert saved["byte_mismatches"] == 0

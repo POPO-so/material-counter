@@ -38,6 +38,19 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _camera_result_json_default(value: Any) -> Any:
+    """Encode binary metadata losslessly if a board API exposes it in evidence."""
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        raw = bytes(value)
+        return {
+            "type": "bytes",
+            "encoding": "hex",
+            "byte_length": len(raw),
+            "data": raw.hex(),
+        }
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+
+
 def _write_exclusive(path: str | Path, data: bytes, *, mode: int = 0o600) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -639,8 +652,10 @@ def _write_camera_result(plan: preflight.ValidatedRun, sidecar: Mapping[str, Any
         "board_accessed": bool(getattr(api, "board_accessed", False)),
         "camera_dma_script_sha256": preflight.sha256_file(Path(__file__).resolve()),
     })
-    _write_json_exclusive(output_path, json.dumps(result, ensure_ascii=False, sort_keys=True,
-                                                   indent=2).encode("utf-8") + b"\n")
+    _write_exclusive(output_path, json.dumps(
+        result, ensure_ascii=False, sort_keys=True, indent=2,
+        default=_camera_result_json_default,
+    ).encode("utf-8") + b"\n")
     return result
 
 
