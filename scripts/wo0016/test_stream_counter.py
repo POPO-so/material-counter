@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass
 from pathlib import Path
 import sys
+import threading
 
 import cv2
 import numpy as np
@@ -512,6 +513,67 @@ def test_async_dma_pipeline_alternates_slots_and_overlaps_processing():
     assert results[-1].total_count == 1
     assert processed_while_next_dma_active == [True]
     assert all(slot.state is BufferState.FREE for slot in stream.slots)
+
+
+def test_consumer_failure_unblocks_slot_wait_and_closes_frame_source():
+    counter_entered = threading.Event()
+    release_counter = threading.Event()
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    dma = MockDma([_mask(108), _mask(116), _mask(124)])
+    dma.release_frame1.set()
+
+    class FailingCounter(MaskCounter):
+        def update(self, frame_id, mask):
+            if frame_id == 0:
+                counter_entered.set()
+                if not release_counter.wait(timeout=1.0):
+                    raise TimeoutError("test did not release the counter")
+                raise RuntimeError("injected counter failure")
+            return super().update(frame_id, mask)
+
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=FailingCounter(line_y=120),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        transfer_timeout_s=1.0,
+    )
+
+    async def exercise():
+        third_frame_requested = asyncio.Event()
+        free_slot_wait_started = asyncio.Event()
+        source_closed = asyncio.Event()
+        original_get = stream._free_slots.get
+
+        async def observe_free_slot_wait():
+            if stream._free_slots.empty():
+                free_slot_wait_started.set()
+            return await original_get()
+
+        stream._free_slots.get = observe_free_slot_wait
+
+        async def frames():
+            try:
+                for frame_id in range(3):
+                    if frame_id == 2:
+                        third_frame_requested.set()
+                    yield np.zeros((240, 320), dtype=np.uint8)
+            finally:
+                source_closed.set()
+
+        run_task = asyncio.create_task(stream.run(frames()))
+        assert await asyncio.to_thread(counter_entered.wait, 1.0)
+        await asyncio.wait_for(third_frame_requested.wait(), timeout=1.0)
+        await asyncio.wait_for(free_slot_wait_started.wait(), timeout=1.0)
+        release_counter.set()
+        with pytest.raises(RuntimeError, match="injected counter failure"):
+            await asyncio.wait_for(run_task, timeout=1.0)
+        assert source_closed.is_set()
+
+    asyncio.run(exercise())
 
 
 def test_periodic_preview_does_not_skip_counter_updates():

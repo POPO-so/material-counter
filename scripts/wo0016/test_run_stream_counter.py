@@ -204,6 +204,72 @@ def test_camera_read_timeout_returns_without_waiting_for_a_stuck_v4l2_thread():
     assert released.wait(0.2)
 
 
+def test_camera_timeout_is_bounded_when_release_cannot_unblock_native_read():
+    unblock_read = threading.Event()
+    read_started = threading.Event()
+    release_calls = []
+
+    class StuckCapture:
+        def __init__(self):
+            self.properties = {}
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            self.properties[prop] = value
+            return True
+
+        def get(self, prop):
+            if prop == FakeCv2.CAP_PROP_FOURCC:
+                return FakeCv2.VideoWriter_fourcc(*"MJPG")
+            return self.properties[prop]
+
+        def read(self):
+            read_started.set()
+            unblock_read.wait()
+            return False, None
+
+        def release(self):
+            release_calls.append(True)
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        CAP_PROP_BUFFERSIZE = 6
+
+        @staticmethod
+        def VideoCapture(device, backend):
+            return StuckCapture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+    async def consume_one():
+        async for _ in camera_gray_frames("/dev/video-test", max_frames=1,
+                                          cv2_module=FakeCv2, read_timeout_s=0.02):
+            pytest.fail("the blocked camera must not produce a frame")
+
+    started = time.perf_counter()
+    with pytest.raises(RuntimeError, match="warm-up read timed out") as exc_info:
+        asyncio.run(consume_one())
+    elapsed = time.perf_counter() - started
+
+    assert read_started.is_set()
+    assert release_calls == [True]
+    assert elapsed < 0.2
+    assert any("worker did not stop" in note for note in getattr(exc_info.value, "__notes__", []))
+    unblock_read.set()
+    for thread in threading.enumerate():
+        if thread.name == "wo0016-camera-prefetch":
+            thread.join(timeout=0.2)
+            assert not thread.is_alive()
+
+
 def test_camera_mode_fails_closed_when_v4l2_negotiates_another_format():
     released = threading.Event()
 

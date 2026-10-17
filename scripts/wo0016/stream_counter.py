@@ -424,7 +424,7 @@ class DoubleBufferStream:
                 gray = np.asarray(gray)
                 if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
                     raise ValueError(f"source frames must be uint8 Gray8 {(HEIGHT, WIDTH)} arrays")
-                slot = await self._free_slots.get()
+                slot = await self._get_free_slot_or_consumer_failure(consumer)
                 if slot.state is not BufferState.FREE:
                     raise RuntimeError("buffer pool returned a slot that is not free")
                 slot.state = BufferState.CPU_OWNED
@@ -510,6 +510,22 @@ class DoubleBufferStream:
             close_frames = getattr(frame_iterator, "aclose", None)
             if callable(close_frames):
                 await close_frames()
+
+    async def _get_free_slot_or_consumer_failure(
+        self, consumer: asyncio.Task
+    ) -> DmaBufferSlot:
+        slot_waiter = asyncio.create_task(self._free_slots.get())
+        done, _ = await asyncio.wait(
+            (slot_waiter, consumer), return_when=asyncio.FIRST_COMPLETED
+        )
+        if consumer in done:
+            if slot_waiter.done():
+                self._free_slots.put_nowait(slot_waiter.result())
+            else:
+                slot_waiter.cancel()
+                await asyncio.gather(slot_waiter, return_exceptions=True)
+            consumer.result()
+        return slot_waiter.result()
 
     async def _consume_ready_slots(self) -> None:
         while True:

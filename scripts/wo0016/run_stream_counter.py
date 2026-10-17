@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from concurrent.futures import Future, ThreadPoolExecutor
 import hashlib
 import json
 import math
 import os
+import queue
 import sys
 import threading
 import time
@@ -228,10 +228,30 @@ async def camera_gray_frames(device: str, *, max_frames: int,
         raise ValueError("read_timeout_s must be finite and positive")
     capture = cv2_module.VideoCapture(device, cv2_module.CAP_V4L2)
     failed = False
+    primary_error: BaseException | None = None
     released = False
-    executor: ThreadPoolExecutor | None = None
-    pending: Future | None = None
+    release_attempted = False
+    loop: asyncio.AbstractEventLoop | None = None
+    tasks: queue.Queue | None = None
+    worker: threading.Thread | None = None
     pending_waiter: asyncio.Future | None = None
+    stop_worker = object()
+
+    async def release_camera() -> BaseException | None:
+        nonlocal released, release_attempted
+        if release_attempted:
+            return None
+        release_attempted = True
+        try:
+            await _daemon_call_with_timeout(
+                capture.release, timeout_s=float(read_timeout_s),
+                thread_name="wo0016-camera-release",
+            )
+        except BaseException as exc:
+            return exc
+        released = True
+        return None
+
     try:
         if not capture.isOpened():
             raise RuntimeError(f"cannot open V4L2 camera device {device}")
@@ -289,11 +309,45 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 )
             return gray, (time.perf_counter() - capture_started) * 1000.0
 
-        executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="wo0016-camera")
+        loop = asyncio.get_running_loop()
+        tasks = queue.Queue(maxsize=1)
+
+        def settle_waiter(waiter: asyncio.Future, value: Any = None,
+                          error: BaseException | None = None) -> None:
+            if waiter.done():
+                return
+            if error is None:
+                waiter.set_result(value)
+            else:
+                waiter.set_exception(error)
+
+        def worker_main() -> None:
+            while True:
+                task = tasks.get()
+                if task is stop_worker:
+                    return
+                warmup, waiter = task
+                try:
+                    value = read_gray_frame(warmup=warmup)
+                except BaseException as exc:
+                    try:
+                        loop.call_soon_threadsafe(settle_waiter, waiter, None, exc)
+                    except RuntimeError:
+                        return
+                else:
+                    try:
+                        loop.call_soon_threadsafe(settle_waiter, waiter, value, None)
+                    except RuntimeError:
+                        return
+
+        worker = threading.Thread(
+            target=worker_main, name="wo0016-camera-prefetch", daemon=True
+        )
+        worker.start()
 
         async def get_frame(*, warmup: bool) -> tuple[np.ndarray, float]:
-            nonlocal pending, pending_waiter
-            if pending is None:
+            nonlocal pending_waiter
+            if pending_waiter is None:
                 raise RuntimeError("camera prefetch slot is empty")
             done, _ = await asyncio.wait(
                 (pending_waiter,), timeout=float(read_timeout_s)
@@ -302,16 +356,15 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 prefix = "V4L2 warm-up read" if warmup else "V4L2 camera read"
                 raise RuntimeError(f"{prefix} timed out; no retry was attempted")
             frame_result = await pending_waiter
-            pending = None
             pending_waiter = None
             return frame_result
 
         def prefetch(*, warmup: bool) -> None:
-            nonlocal pending, pending_waiter
-            if executor is None or pending is not None:
+            nonlocal pending_waiter
+            if tasks is None or loop is None or pending_waiter is not None:
                 raise RuntimeError("camera prefetch slot is not available")
-            pending = executor.submit(read_gray_frame, warmup=warmup)
-            pending_waiter = asyncio.wrap_future(pending)
+            pending_waiter = loop.create_future()
+            tasks.put_nowait((warmup, pending_waiter))
 
         warmup_frames = 2
         for _ in range(warmup_frames):
@@ -333,7 +386,7 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             steady_start_time[:] = [time.perf_counter()]
 
         for frame_index in range(max_frames):
-            if pending is None:
+            if pending_waiter is None:
                 prefetch(warmup=False)
             gray, capture_ms = await get_frame(warmup=False)
             if capture_timings_ms is not None:
@@ -343,36 +396,62 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             yield gray
     except GeneratorExit:
         raise
-    except BaseException:
+    except BaseException as exc:
         failed = True
+        primary_error = exc
         raise
     finally:
-        if executor is not None:
-            if pending is not None:
-                if not pending.done():
-                    if failed:
-                        # On an exceptional close, release is the only way to unblock a
-                        # driver read; after it returns the single worker is joined below.
-                        capture.release()
-                        released = True
-                    else:
-                        done, _ = await asyncio.wait(
-                            (pending_waiter,), timeout=float(read_timeout_s)
-                        )
-                        if not done:
-                            capture.release()
-                            released = True
+        cleanup_errors = []
+        if pending_waiter is not None and not pending_waiter.done():
+            if failed:
+                release_error = await release_camera()
+                if release_error is not None:
+                    cleanup_errors.append(f"camera release failed: {release_error}")
+            else:
+                done, _ = await asyncio.wait(
+                    (pending_waiter,), timeout=float(read_timeout_s)
+                )
+                if not done:
+                    release_error = await release_camera()
+                    if release_error is not None:
+                        cleanup_errors.append(f"camera release failed: {release_error}")
+        if worker is not None and tasks is not None:
+            try:
+                tasks.put_nowait(stop_worker)
+            except queue.Full:
                 try:
-                    await pending_waiter
-                except BaseException:
-                    if not failed:
-                        raise
-            executor.shutdown(wait=True, cancel_futures=True)
-        if not released:
-            await _daemon_call_with_timeout(
-                capture.release, timeout_s=float(read_timeout_s),
-                thread_name="wo0016-camera-release",
-            )
+                    await asyncio.to_thread(
+                        tasks.put, stop_worker, True, float(read_timeout_s)
+                    )
+                except queue.Full:
+                    cleanup_errors.append("camera prefetch task slot stayed full at close")
+            await asyncio.to_thread(worker.join, float(read_timeout_s))
+            if worker.is_alive() and not release_attempted:
+                release_error = await release_camera()
+                if release_error is not None:
+                    cleanup_errors.append(f"camera release failed: {release_error}")
+                await asyncio.to_thread(worker.join, float(read_timeout_s))
+            if worker.is_alive():
+                cleanup_errors.append("camera prefetch worker did not stop after bounded release")
+
+        if pending_waiter is not None and pending_waiter.done():
+            try:
+                pending_waiter.result()
+            except BaseException as exc:
+                if exc is not primary_error:
+                    cleanup_errors.append(f"prefetched camera read failed during close: {exc}")
+
+        if not release_attempted:
+            release_error = await release_camera()
+            if release_error is not None:
+                cleanup_errors.append(f"camera release failed: {release_error}")
+
+        if cleanup_errors:
+            message = "; ".join(cleanup_errors)
+            if primary_error is not None and hasattr(primary_error, "add_note"):
+                primary_error.add_note(message)
+            else:
+                raise RuntimeError(message)
 
 
 def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
