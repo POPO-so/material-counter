@@ -77,7 +77,7 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
 
         def read(self):
             self.read_calls += 1
-            return True, np.full((800, 1280), 73, dtype=np.uint8)
+            return True, np.full((800, 1280, 3), 73, dtype=np.uint8)
 
         def release(self):
             self.released = True
@@ -87,33 +87,40 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
         CAP_PROP_FOURCC = 6
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
+        COLOR_BGR2GRAY = 6
         fourcc_calls = []
 
         @classmethod
         def VideoWriter_fourcc(cls, *chars):
             cls.fourcc_calls.append(chars)
-            return 0x56595559  # OpenCV FOURCC for YUYV
+            return 0x47504A4D  # OpenCV FOURCC for MJPG
 
         def __init__(self):
             self.capture = FakeCapture()
             self.calls = []
+            self.cvt_color_calls = []
 
         def VideoCapture(self, device, backend):
             self.calls.append((device, backend))
             return self.capture
 
+        def cvtColor(self, frame, code):
+            self.cvt_color_calls.append((frame.shape, code))
+            return frame[:, :, 0]
+
     cv2 = FakeCV2()
     captured = capture_v4l2_once("/dev/video0", cv2_module=cv2)
 
     assert cv2.calls == [("/dev/video0", cv2.CAP_V4L2)]
-    assert cv2.fourcc_calls == [("Y", "U", "Y", "V")]
+    assert cv2.fourcc_calls == [("M", "J", "P", "G")]
     assert cv2.capture.set_calls == [
-        (cv2.CAP_PROP_FOURCC, 0x56595559),
+        (cv2.CAP_PROP_FOURCC, 0x47504A4D),
         (cv2.CAP_PROP_FRAME_WIDTH, 640),
         (cv2.CAP_PROP_FRAME_HEIGHT, 400),
     ]
     assert cv2.capture.read_calls == 1
     assert cv2.capture.released
+    assert cv2.cvt_color_calls == [((800, 1280, 3), cv2.COLOR_BGR2GRAY)]
     assert captured.shape == (800, 1280)
     assert np.all(captured == 73)
 
@@ -144,7 +151,7 @@ def test_v4l2_capture_stops_if_supported_format_is_rejected():
 
         @staticmethod
         def VideoWriter_fourcc(*chars):
-            return 0x56595559
+            return 0x47504A4D
 
         def __init__(self):
             self.capture = FakeCapture()
@@ -153,7 +160,7 @@ def test_v4l2_capture_stops_if_supported_format_is_rejected():
             return self.capture
 
     cv2 = FakeCV2()
-    with pytest.raises(RuntimeError, match="YUYV 640x400"):
+    with pytest.raises(RuntimeError, match="MJPG 640x400"):
         capture_v4l2_once("/dev/video0", cv2_module=cv2)
 
     assert cv2.capture.read_calls == 0

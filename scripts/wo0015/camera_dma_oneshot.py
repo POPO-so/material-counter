@@ -179,7 +179,7 @@ def load_gray_file(path: str | Path) -> np.ndarray:
 
 
 def capture_v4l2_once(device: str = "/dev/video0", *, cv2_module: Any = None) -> np.ndarray:
-    """Request the board-supported YUYV mode and read exactly one frame."""
+    """Request the camera's MJPG 640x400 mode and read one grayscale frame."""
     if cv2_module is None:
         try:
             import cv2 as cv2_module
@@ -189,14 +189,14 @@ def capture_v4l2_once(device: str = "/dev/video0", *, cv2_module: Any = None) ->
     try:
         if not capture.isOpened():
             raise RuntimeError(f"cannot open V4L2 camera device {device}")
-        fourcc = cv2_module.VideoWriter_fourcc(*"YUYV")
+        fourcc = cv2_module.VideoWriter_fourcc(*"MJPG")
         requested_mode = (
             (cv2_module.CAP_PROP_FOURCC, fourcc),
             (cv2_module.CAP_PROP_FRAME_WIDTH, 640),
             (cv2_module.CAP_PROP_FRAME_HEIGHT, 400),
         )
         if any(not capture.set(prop, value) for prop, value in requested_mode):
-            raise RuntimeError("V4L2 rejected the supported YUYV 640x400 capture mode")
+            raise RuntimeError("V4L2 rejected the supported MJPG 640x400 capture mode")
         ok, frame = capture.read()
         if not ok or frame is None or not np.asarray(frame).size:
             raise RuntimeError("V4L2 returned no frame on its single capture attempt")

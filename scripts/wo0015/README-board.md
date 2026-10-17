@@ -130,13 +130,14 @@ Live stages put these files beside their evidence JSON in a `<stage>-diagnostics
 
 ### OV9281 camera bridge command sequence
 
-Deploy the reviewed `camera_dma_oneshot.py` and `camera_adapter.py` beside the already verified `board_once.py`, `board_preflight.py`, and `wo0015-manifest.json` under `/home/xilinx/wo0015`. The V4L2 capture leaves camera controls unchanged and expects `ov9281-init.service` to have established the 5.0 ms exposure.
+Deploy the reviewed `camera_dma_oneshot.py` and `camera_adapter.py` beside the already verified `board_once.py`, `board_preflight.py`, and `wo0015-manifest.json` under `/home/xilinx/wo0015`. The V4L2 capture explicitly requests the camera-supported MJPG 640×400 mode, converts OpenCV's decoded frame to grayscale, leaves camera controls unchanged, and expects `ov9281-init.service` to have established the 5.0 ms exposure.
 
 First, capture and prepare one image without running DMA:
 
 ```bash
 WO=/home/xilinx/wo0015
-sudo python3 "$WO/camera_dma_oneshot.py" --mode prepare \
+PY=/usr/local/share/pynq-venv/bin/python3
+sudo -n env XILINX_XRT=/usr "$PY" "$WO/camera_dma_oneshot.py" --mode prepare \
   --capture-device /dev/video0 \
   --template-manifest "$WO/wo0015-manifest.json" \
   --template-manifest-sha256 e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935 \
@@ -150,7 +151,8 @@ CAMERA_RUN='<camera_run_dir printed by prepare>'
 CAMERA_MANIFEST="$CAMERA_RUN/wo0015-camera-manifest.json"
 CAMERA_MANIFEST_SHA256='<manifest_sha256 printed by prepare>'
 WO=/home/xilinx/wo0015
-sudo python3 "$WO/camera_dma_oneshot.py" --mode camera-dma-single \
+PY=/usr/local/share/pynq-venv/bin/python3
+sudo -n env XILINX_XRT=/usr "$PY" "$WO/camera_dma_oneshot.py" --mode camera-dma-single \
   --manifest "$CAMERA_MANIFEST" --manifest-sha256 "$CAMERA_MANIFEST_SHA256" \
   --step3-manifest "$WO/wo0015-manifest.json" \
   --step3-manifest-sha256 e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935 \
