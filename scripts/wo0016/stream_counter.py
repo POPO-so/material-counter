@@ -417,10 +417,37 @@ class DoubleBufferStream:
         self._has_run = True
         consumer = asyncio.create_task(self._consume_ready_slots())
         frame_iterator = frames.__aiter__()
+        primary_error: BaseException | None = None
+        pending_source_task: asyncio.Task | None = None
+        frame_id = 0
         try:
-            async for frame_id, gray in _enumerate_frames(frame_iterator):
+            while True:
                 if consumer.done():
                     consumer.result()
+                pending_source_task = asyncio.create_task(frame_iterator.__anext__())
+                done, _ = await asyncio.wait(
+                    (pending_source_task, consumer), return_when=asyncio.FIRST_COMPLETED
+                )
+                if consumer in done:
+                    source_error = await self._cancel_frame_read(pending_source_task)
+                    pending_source_task = None
+                    try:
+                        consumer.result()
+                    except BaseException as consumer_error:
+                        if source_error is not None:
+                            _attach_cleanup_error(consumer_error, source_error)
+                        raise
+                    if source_error is not None:
+                        raise source_error
+                    raise RuntimeError("DMA consumer stopped before the frame source")
+                try:
+                    gray = pending_source_task.result()
+                except StopAsyncIteration:
+                    pending_source_task = None
+                    break
+                if consumer.done():
+                    consumer.result()
+                pending_source_task = None
                 gray = np.asarray(gray)
                 if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
                     raise ValueError(f"source frames must be uint8 Gray8 {(HEIGHT, WIDTH)} arrays")
@@ -493,11 +520,18 @@ class DoubleBufferStream:
                     consumer.result()
                 slot.state = BufferState.CPU_READY
                 await self._ready_slots.put(slot)
+                frame_id += 1
 
             await self._ready_slots.put(None)
             await consumer
             return tuple(self._results)
-        except BaseException:
+        except BaseException as exc:
+            primary_error = exc
+            if pending_source_task is not None:
+                source_cleanup_error = await self._cancel_frame_read(pending_source_task)
+                pending_source_task = None
+                if source_cleanup_error is not None and source_cleanup_error is not exc:
+                    _attach_cleanup_error(exc, source_cleanup_error)
             self._hold_nonfree_slots()
             if not consumer.done():
                 consumer.cancel()
@@ -509,7 +543,27 @@ class DoubleBufferStream:
         finally:
             close_frames = getattr(frame_iterator, "aclose", None)
             if callable(close_frames):
-                await close_frames()
+                try:
+                    await close_frames()
+                except BaseException as close_error:
+                    if primary_error is None:
+                        raise
+                    _attach_cleanup_error(primary_error, close_error)
+
+    async def _cancel_frame_read(self, task: asyncio.Task) -> BaseException | None:
+        if not task.done():
+            task.cancel()
+            done, _ = await asyncio.wait((task,), timeout=self.transfer_timeout_s)
+            if not done:
+                task.add_done_callback(_consume_task_exception)
+                return TimeoutError("frame source did not stop after cancellation")
+        try:
+            task.result()
+        except (asyncio.CancelledError, StopAsyncIteration):
+            return None
+        except BaseException as exc:
+            return exc
+        return None
 
     async def _get_free_slot_or_consumer_failure(
         self, consumer: asyncio.Task
@@ -574,11 +628,23 @@ class DoubleBufferStream:
         self.held_slots = tuple(held)
 
 
-async def _enumerate_frames(frames: AsyncIterable[np.ndarray]):
-    frame_id = 0
-    async for frame in frames:
-        yield frame_id, frame
-        frame_id += 1
+def _attach_cleanup_error(primary_error: BaseException, cleanup_error: BaseException) -> None:
+    message = f"frame source cleanup failed: {cleanup_error}"
+    if hasattr(primary_error, "add_note"):
+        primary_error.add_note(message)
+        return
+    errors = getattr(primary_error, "cleanup_errors", ())
+    try:
+        primary_error.cleanup_errors = tuple(errors) + (cleanup_error,)
+    except Exception:
+        pass
+
+
+def _consume_task_exception(task: asyncio.Task) -> None:
+    try:
+        task.exception()
+    except (asyncio.CancelledError, Exception):
+        pass
 
 
 def _integer(value: Any, name: str, *, minimum: int) -> int:

@@ -484,7 +484,22 @@ def test_async_dma_pipeline_alternates_slots_and_overlaps_processing():
     tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
     masks = [_mask(108), _mask(116), _mask(124)]
     dma = MockDma(masks)
+    frame1_started = threading.Event()
     processed_while_next_dma_active = []
+    original_tx_transfer = dma.sendchannel.transfer
+
+    def signal_next_dma_start(buffer, *, nbytes):
+        if int(np.asarray(buffer)[0]) == 1:
+            frame1_started.set()
+        return original_tx_transfer(buffer, nbytes=nbytes)
+
+    dma.sendchannel.transfer = signal_next_dma_start
+
+    class OverlapCounter(MaskCounter):
+        def update(self, frame_id, mask):
+            if frame_id == 0 and not frame1_started.wait(timeout=1.0):
+                raise TimeoutError("next DMA did not start during frame-zero postprocess")
+            return super().update(frame_id, mask)
 
     def on_frame(result, mask):
         if result.frame_id == 0:
@@ -496,7 +511,7 @@ def test_async_dma_pipeline_alternates_slots_and_overlaps_processing():
         send_channel=dma.sendchannel,
         tx_buffers=tx_buffers,
         rx_buffers=rx_buffers,
-        counter=MaskCounter(line_y=120, confirm_hits=2, max_step=12),
+        counter=OverlapCounter(line_y=120, confirm_hits=2, max_step=12),
         packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
         on_frame=on_frame,
         transfer_timeout_s=1.0,
@@ -572,6 +587,51 @@ def test_consumer_failure_unblocks_slot_wait_and_closes_frame_source():
         with pytest.raises(RuntimeError, match="injected counter failure"):
             await asyncio.wait_for(run_task, timeout=1.0)
         assert source_closed.is_set()
+
+    asyncio.run(exercise())
+
+
+def test_consumer_failure_cancels_pending_frame_read_without_masking_error():
+    source_wait_started = asyncio.Event()
+    source_closed = asyncio.Event()
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    dma = MockDma([_mask(108)])
+    dma.release_frame1.set()
+
+    class FailingCounter(MaskCounter):
+        def update(self, frame_id, mask):
+            raise RuntimeError("injected counting failure")
+
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=FailingCounter(line_y=120),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        transfer_timeout_s=0.5,
+    )
+
+    async def frames():
+        try:
+            yield np.zeros((240, 320), dtype=np.uint8)
+            source_wait_started.set()
+            await asyncio.Event().wait()
+        finally:
+            source_closed.set()
+            raise RuntimeError("injected source cleanup failure")
+
+    async def exercise():
+        run_task = asyncio.create_task(stream.run(frames()))
+        await asyncio.wait_for(source_wait_started.wait(), timeout=1.0)
+        with pytest.raises(RuntimeError, match="injected counting failure") as failure:
+            await asyncio.wait_for(run_task, timeout=1.0)
+        assert source_closed.is_set()
+        notes = getattr(failure.value, "__notes__", ())
+        cleanup_errors = getattr(failure.value, "cleanup_errors", ())
+        assert notes or cleanup_errors
+        assert any("source cleanup failure" in str(error) for error in (notes or cleanup_errors))
 
     asyncio.run(exercise())
 
