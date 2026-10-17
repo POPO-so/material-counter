@@ -7,7 +7,9 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "wo0015"))
 
+from camera_adapter import gray320x240_to_rgb_packet
 from stream_counter import (
     BufferState,
     DoubleBufferStream,
@@ -128,6 +130,42 @@ def test_ping_pong_allocates_two_aligned_tx_rx_pairs_once():
                for buffer in tx_buffers + rx_buffers)
 
 
+def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+
+    class ImmediateChannel:
+        def __init__(self):
+            self.buffer = None
+            self.nbytes = None
+
+        def transfer(self, buffer, *, nbytes):
+            self.buffer = buffer
+            self.nbytes = nbytes
+
+        async def wait_async(self):
+            return None
+
+    recv = ImmediateChannel()
+    send = ImmediateChannel()
+    stream = DoubleBufferStream(
+        recv_channel=recv,
+        send_channel=send,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=MaskCounter(),
+        packet_encoder=gray320x240_to_rgb_packet,
+    )
+
+    results = asyncio.run(stream.run(_frames(1)))
+
+    assert results[0].frame_id == 0
+    assert send.nbytes == TX_BYTES
+    assert np.asarray(send.buffer).tobytes() == gray320x240_to_rgb_packet(
+        np.zeros((240, 320), dtype=np.uint8), frame_id=0
+    )
+
+
 class MockRxChannel:
     def __init__(self, owner):
         self.owner = owner
@@ -213,7 +251,7 @@ def test_async_dma_pipeline_alternates_slots_and_overlaps_processing():
         tx_buffers=tx_buffers,
         rx_buffers=rx_buffers,
         counter=MaskCounter(line_y=120, confirm_hits=2, max_step=12),
-        packet_encoder=lambda gray, frame_id: bytes([frame_id]) * TX_BYTES,
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
         on_frame=on_frame,
         transfer_timeout_s=1.0,
     )
@@ -301,7 +339,7 @@ def test_dma_start_failure_holds_owned_slot_and_does_not_retry():
         tx_buffers=tx_buffers,
         rx_buffers=rx_buffers,
         counter=MaskCounter(line_y=120, max_step=12),
-        packet_encoder=lambda gray, frame_id: bytes([frame_id]) * TX_BYTES,
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
         transfer_timeout_s=1.0,
     )
 
@@ -338,7 +376,7 @@ def test_frame_callbacks_arm_before_dma_and_validate_completed_output():
         tx_buffers=tx_buffers,
         rx_buffers=rx_buffers,
         counter=MaskCounter(line_y=120, max_step=12),
-        packet_encoder=lambda gray, frame_id: bytes([frame_id]) * TX_BYTES,
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
         before_transfer=arm,
         after_transfer=validate,
         on_frame=processed,

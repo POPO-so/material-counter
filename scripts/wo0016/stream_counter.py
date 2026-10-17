@@ -7,7 +7,7 @@ import math
 import threading
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, AsyncIterable, Callable
+from typing import Any, AsyncIterable, Callable, Protocol
 
 import cv2
 import numpy as np
@@ -17,6 +17,10 @@ HEIGHT = 240
 PIXELS = WIDTH * HEIGHT
 RX_BYTES = PIXELS
 TX_BYTES = 16 + PIXELS * 3 + 16
+
+
+class PacketEncoder(Protocol):
+    def __call__(self, gray: np.ndarray, *, frame_id: int) -> bytes: ...
 
 
 class BufferState(str, Enum):
@@ -346,7 +350,7 @@ class DoubleBufferStream:
     def __init__(self, *, recv_channel: Any, send_channel: Any,
                  tx_buffers: tuple[Any, Any], rx_buffers: tuple[Any, Any],
                  counter: MaskCounter,
-                 packet_encoder: Callable[[np.ndarray, int], bytes],
+                 packet_encoder: PacketEncoder,
                  before_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
                  after_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
                  on_frame: Callable[[FrameResult, np.ndarray], Any] | None = None,
@@ -391,7 +395,7 @@ class DoubleBufferStream:
                     raise RuntimeError("buffer pool returned a slot that is not free")
                 slot.state = BufferState.CPU_OWNED
                 slot.frame_id = frame_id
-                packet = self.packet_encoder(gray, frame_id)
+                packet = self.packet_encoder(gray, frame_id=frame_id)
                 if not isinstance(packet, (bytes, bytearray, memoryview)) or len(packet) != TX_BYTES:
                     raise ValueError(f"packet encoder must return exactly {TX_BYTES} bytes")
                 slot.tx_buffer[:] = np.frombuffer(packet, dtype=np.uint8)

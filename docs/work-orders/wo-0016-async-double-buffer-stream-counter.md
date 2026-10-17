@@ -2,7 +2,7 @@
 
 | 项目 | 内容 |
 |---|---|
-| 状态 | Offline/Mock 实现与验证完成；板端验收 `NOT RUN` |
+| 状态 | Offline/Mock 实现与回归完成；Stage A 单次尝试失败（0/30 帧），物料计数板端验收未通过 |
 | 基线 | `feat/pl-stream-skeleton`，WO-0015 50 MHz、320×240 Binary8 S2MM 合同 |
 | 工作分支 | `codex/wo0016-counting-20261017` |
 | 范围 | Python PS 侧双缓冲调度、过线计数、MJPEG 预览和离线 Mock |
@@ -26,7 +26,7 @@ PYNQ Simple DMA 通道提供非阻塞 `transfer()`，并通过 `wait()` 或支�
 
 板端模式默认关闭。启动要求显式 `--execute --authorize-stage wo0016-stream --approve-once`、经审阅的 WO-0015 50 MHz manifest 与 SHA-256、同 boot 的 Stage 1 Overlay PASS 回执、有限 `--max-frames`、全新绝对证据路径，以及板端重新执行的 boot/Overlay/CMA/地址/进程/寄存器检查和一次性 guard。通过 `Overlay(..., download=False)` 复用已加载 BIT；在创建 DMA 驱动前读取并要求 AFI1 精确值 RD=`0x00000001`、WR=`0x00000F01`，并把 CMA 水位保持在至少 32,768 KiB。运行不自动下载 Overlay、不重试 DMA。DMA 可能仍访问 CMA 时保留缓冲区并进入 fail-hold。
 
-板端部署包将所需 WO-0015 Python 辅助模块放在 `/home/xilinx/wo0016/wo0015/`，运行器优先从该独立副本加载，不覆盖既有 `/home/xilinx/wo0015/`。`board_once.py` 和 `board_preflight.py` 必须逐字节匹配所选 manifest `executor_sha256`；禁止为接受新 boot ID 而直接修改或运行时覆盖其门禁。本次 WO-0015 manifest 绑定的 `board_preflight.py` SHA-256 为 `f6556d…`，当前分支为 `df0fb5…`，需要恢复匹配源文件或重新建立经审阅的 Stage 1 manifest/回执后，才能运行 WO-0016。
+板端部署包将所需 WO-0015 Python 辅助模块放在 `/home/xilinx/wo0016/wo0015/`，运行器优先从该独立副本加载，不覆盖既有 `/home/xilinx/wo0015/`。`board_once.py` 和 `board_preflight.py` 必须逐字节匹配所选 manifest `executor_sha256`；禁止为接受新 boot ID 而直接修改或运行时覆盖其门禁。当前 manifest 的 `board_preflight.py` SHA-256 `f6556d…` 已从板端隔离验收目录恢复并同步；相机 DMA 依赖也已对齐为 `5b9684…`。Stage A 单次运行随后在首帧编码处失败，错误和 Guard 状态记录于[板端验收记录](../verification/wo-0016-board-acceptance.md)。本地修复回归通过，但已消耗 Guard 不得清除或复用。
 
 V4L2 采集明确请求并回读核验 MJPG 640×400；不改变相机曝光控制。板端启动命令以 `sudo -n env XILINX_XRT=/usr` 运行 PYNQ venv，运行证据记录 `XILINX_XRT` 值。
 
