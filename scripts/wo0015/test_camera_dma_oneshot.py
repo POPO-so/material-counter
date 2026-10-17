@@ -66,8 +66,13 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
         def __init__(self):
             self.read_calls = 0
             self.released = False
+            self.set_calls = []
 
         def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            self.set_calls.append((prop, value))
             return True
 
         def read(self):
@@ -79,6 +84,15 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
 
     class FakeCV2:
         CAP_V4L2 = 200
+        CAP_PROP_FOURCC = 6
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        fourcc_calls = []
+
+        @classmethod
+        def VideoWriter_fourcc(cls, *chars):
+            cls.fourcc_calls.append(chars)
+            return 0x56595559  # OpenCV FOURCC for YUYV
 
         def __init__(self):
             self.capture = FakeCapture()
@@ -92,10 +106,58 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
     captured = capture_v4l2_once("/dev/video0", cv2_module=cv2)
 
     assert cv2.calls == [("/dev/video0", cv2.CAP_V4L2)]
+    assert cv2.fourcc_calls == [("Y", "U", "Y", "V")]
+    assert cv2.capture.set_calls == [
+        (cv2.CAP_PROP_FOURCC, 0x56595559),
+        (cv2.CAP_PROP_FRAME_WIDTH, 640),
+        (cv2.CAP_PROP_FRAME_HEIGHT, 400),
+    ]
     assert cv2.capture.read_calls == 1
     assert cv2.capture.released
     assert captured.shape == (800, 1280)
     assert np.all(captured == 73)
+
+
+def test_v4l2_capture_stops_if_supported_format_is_rejected():
+    class FakeCapture:
+        read_calls = 0
+        released = False
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            return False
+
+        def read(self):
+            self.read_calls += 1
+            return False, None
+
+        def release(self):
+            self.released = True
+
+    class FakeCV2:
+        CAP_V4L2 = 200
+        CAP_PROP_FOURCC = 6
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return 0x56595559
+
+        def __init__(self):
+            self.capture = FakeCapture()
+
+        def VideoCapture(self, device, backend):
+            return self.capture
+
+    cv2 = FakeCV2()
+    with pytest.raises(RuntimeError, match="YUYV 640x400"):
+        capture_v4l2_once("/dev/video0", cv2_module=cv2)
+
+    assert cv2.capture.read_calls == 0
+    assert cv2.capture.released
 
 
 def test_prepare_bundle_emits_valid_manifest_packet_golden_and_viewable_pgm(tmp_path):
