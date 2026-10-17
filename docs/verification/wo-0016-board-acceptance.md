@@ -243,21 +243,30 @@ Attempt 7 的 `roi_count_ms=27.070` 是 `asyncio.to_thread(MaskCounter.update)` 
 
 CLI 现在接受 `--expected-count`（保留 `--ground-truth-count` 兼容名）和 `--material-label`，输出 `accuracy = 1 - abs(total_count - expected_count) / max(expected_count, 1)`。传入 `--measure-preview-client` 时，独立回环线程会连接本机 `/stream.mjpg` 并报告实际收到的帧数与 `preview_client_fps`；`avg_mjpeg_encode_ms` 汇总后台预览绘制/编码时长，快照移交单独报告为 `avg_mjpeg_handoff_ms`。回环速率是本机 HTTP MJPEG 交付速率，不是浏览器渲染帧率。
 
-离线回归 `pytest scripts/wo0016 scripts/wo0015` 为 `244 passed, 1 skipped`。此更新未启动相机、PYNQ、Overlay 或 DMA。板端预部署状态：待归档 Guard、同步并哈希核验脚本后填写只读检查结果。
+离线回归 `pytest scripts/wo0016 scripts/wo0015` 为 `244 passed, 1 skipped`。功能实现提交 `ee362b8b8325df6fb4aa67f0e2a4bcc4b4cf99e3`（`codex/wo0016-counting-20261017`）。
 
-Stage B 单次命令模板（仅待投料就绪并获得操作员执行口令后使用；`<EXPECTED_COUNT>` 由操作员填写，本次不运行）：
+板端只做预部署和只读检查，没有启动采集、PYNQ、Overlay 或 DMA。Attempt 7 活动 Guard 原样移动至 `/var/lib/wo0016/attempt-7/stream-counter-consumed.json`，归档 SHA-256 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671` 与归档前相同，原活动路径已不存在；目录/文件权限为 `0700/0600`。`/home/xilinx/wo0016/` 已部署并逐文件核对：`run_stream_counter.py` SHA-256 `fc58d73f14433c9a0917e82283ee43b918ea6bd9f81baadabb0410e980913956`，`stream_counter.py` `67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625`，`mjpeg_preview.py` `86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6`。
+
+预部署后只读快照：Boot ID 与固定值相同；CmaFree 为 67,440 KiB（门槛 32,768 KiB）；`/dev/video0` 没有进程持有；V4L2 回读 `auto_exposure=1`（Manual Mode）及 `exposure_time_absolute=50`；8080 没有监听；MM2S/S2MM DMASR 均为 `0x00001002`。这些状态只代表预部署时的只读观测，下一次经授权运行前仍需重新检查。
+
+Stage B 单次命令模板（仅待投料就绪并获得操作员执行口令后使用；操作员届时填写 `EXPECTED_COUNT`，当前留空并有格式门禁，本次不运行）：
 
 ```bash
 PY=/usr/local/share/pynq-venv/bin/python3
 WO16=/home/xilinx/wo0016
 WO15_FINAL=/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd
+EXPECTED_COUNT=
+
+case "$EXPECTED_COUNT" in
+  ''|*[!0-9]*) echo "Set EXPECTED_COUNT to the operator's ground-truth integer first"; exit 1 ;;
+esac
 
 test "$(cat /proc/sys/kernel/random/boot_id)" = "f8b24aee-ed7e-430a-b3f3-d26056746bfd" || exit 1
 sudo -n env XILINX_XRT=/usr "$PY" "$WO16/run_stream_counter.py" \
   --mode board --execute --authorize-stage wo0016-stream --approve-once \
   --manifest "$WO15_FINAL/wo0015-manifest.json" \
   --manifest-sha256 2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b \
-  --max-frames 150 --expected-count <EXPECTED_COUNT> \
+  --max-frames 150 --expected-count "$EXPECTED_COUNT" \
   --material-label M6_nut_and_washer --measure-preview-client \
   --output-json "$WO16/stage-b-m6-150frames-result.json"
 ```
