@@ -2,7 +2,7 @@
   "accuracy_percent": 100.0,
   "board_accessed": false,
   "count_error": 0,
-  "elapsed_seconds": 0.5182428000116488,
+  "elapsed_seconds": 0.5057651999959489,
   "frame_geometry": [
     240,
     320
@@ -18,7 +18,7 @@
   "pynq_imported": false,
   "schema": 1,
   "status": "MOCK_PASS",
-  "throughput_fps": 15.4367798256342,
+  "throughput_fps": 15.817616554211476,
   "total_count": 2,
   "work_order": "WO-0016"
 }

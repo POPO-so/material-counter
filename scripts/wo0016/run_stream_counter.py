@@ -21,8 +21,16 @@ from typing import Any, AsyncIterator, Mapping
 import cv2
 import numpy as np
 
+def resolve_wo15_dependency_dir(script_dir: Path) -> Path:
+    """Prefer the isolated dependency bundle deployed alongside this runner."""
+    bundled = script_dir / "wo0015"
+    if (bundled / "board_once.py").is_file():
+        return bundled
+    return script_dir.parent / "wo0015"
+
+
 SCRIPT_DIR = Path(__file__).resolve().parent
-WO15_DIR = SCRIPT_DIR.parent / "wo0015"
+WO15_DIR = resolve_wo15_dependency_dir(SCRIPT_DIR)
 for _path in (SCRIPT_DIR, WO15_DIR):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))

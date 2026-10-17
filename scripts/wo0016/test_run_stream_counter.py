@@ -14,10 +14,30 @@ from run_stream_counter import (  # noqa: E402
     claim_once_guard,
     _dma_buffers_safe_to_release,
     camera_gray_frames,
+    resolve_wo15_dependency_dir,
     run_mock_simulation,
     verify_afi1_readback,
 )
 from stream_counter import MaskCounter  # noqa: E402
+
+
+def test_wo15_dependency_path_prefers_isolated_bundle(tmp_path):
+    script_dir = tmp_path / "wo0016"
+    bundled = script_dir / "wo0015"
+    bundled.mkdir(parents=True)
+    (bundled / "board_once.py").write_text("# bundled", encoding="utf-8")
+    (tmp_path / "wo0015").mkdir()
+
+    assert resolve_wo15_dependency_dir(script_dir) == bundled
+
+
+def test_wo15_dependency_path_falls_back_to_repository_sibling(tmp_path):
+    script_dir = tmp_path / "scripts" / "wo0016"
+    sibling = tmp_path / "scripts" / "wo0015"
+    script_dir.mkdir(parents=True)
+    sibling.mkdir()
+
+    assert resolve_wo15_dependency_dir(script_dir) == sibling
 
 
 def test_offline_simulation_counts_two_crossings_and_marks_no_board_access():
