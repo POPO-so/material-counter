@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-**Stage A Attempt 2 进入 BOARD_STREAM_FAIL_HOLD，完成帧数为 0；板端计数验收未通过。** 原始 JSON 只记录异常摘要，没有 Python traceback。之后按授权只读读取了 AXI DMA 状态：MM2S/S2MM 均为 Idle、无错误。按授权向 Python fail-hold 进程发送一次 SIGTERM，但它仍在运行；源码安装了忽略 SIGTERM/SIGINT 的处理函数。进程仍持有 CMA 缓冲区，活动 Guard 仍在原路径。尚未执行 SIGKILL、缓存回收、Guard 归档、DMA/Overlay 复位或重试。
+**Stage A Attempt 3 完成 30/30 帧，但性能与物料准确率尚未验收。** Attempt 2 已在 DMA 静止读数通过后终止并归档 Guard；Attempt 3 的 DMA/Checker/Packer 帧级验证全部完成，最终 DMA 空闲、缓冲区已释放。实测总耗时 74.62 s，端到端吞吐 0.402 FPS；没有提供人工真值，不能计算准确率。M6 螺母、垫片及传送带工况仍未验收。
 
 ## Attempt 1 依赖对齐与 Guard 隔离
 
@@ -63,15 +63,39 @@ Attempt 2 原始 JSON 保存在 /home/xilinx/wo0016/stage-a-30frames-attempt2-re
 
 本地复现测试使用 PYNQ 通道形状：`transfer()` 返回 `None`、存在 `wait_async()`、且中断对象为 `None`。板端安装的 PYNQ `dma.py` 中 `wait_async()` 会执行 `await self._interrupt.wait()`；此路径与 Attempt 2 的异常吻合。修复后的 `transfer_async()` 优先在线程中调用 `channel.wait()`，不依赖传输返回值或未配置的中断句柄。离线回归结果：`210 passed, 1 skipped`。
 
+## Attempt 2 恢复与 Attempt 3 结果（2026-10-18）
+
+SIGKILL 前再次只读确认 Boot ID 匹配、PID 23673 命令行仍对应 Attempt 2、MM2S/S2MM `DMASR` 均为 `0x00001002`。随后按授权对 PID 23673 执行 `sudo -n kill -9`；一秒后进程及其 sudo 父进程均已退出。执行一次 `sync && echo 3 > /proc/sys/vm/drop_caches` 后，CmaFree 为 112444 KiB。
+
+Attempt 2 活动 Guard 已原样移至 `/var/lib/wo0016/attempt-2/stream-counter-consumed.json`，SHA-256 仍为 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`，目录权限 0700、文件权限 0600。Attempt 3 使用修复后 `stream_counter.py`（SHA-256 `8c281fd0ab73ff42e16068a7b0457d7ab7ba72b90586ad031e152961fe7c6b40`）及 `run_stream_counter.py`（SHA-256 `4f50c6e9384d5fc196af7a07b4728781c06d70b38faf9b98d02ac46ae6263ef6`）。运行前 Boot、Manifest、WO-0015 辅助模块哈希、CMA、摄像头占用、手动曝光 `1/50` 均通过；8080 端口空闲。运行器复用已加载 Overlay 并复核 AFI1，不重新下载 Bitstream。
+
+Attempt 3 原始 JSON 保存在 `/home/xilinx/wo0016/stage-a-30frames-attempt3-result.json`，SHA-256 为 `6e3407ad056e5890cf46530f62293bc96eb879f8ef6f5002a43f50d6decbe2e1`。关键结果如下：
+
+| 指标 | 实测 |
+|---|---:|
+| 运行状态 | `BOARD_STREAM_COMPLETE` |
+| 处理帧数 / 目标 | 30 / 30 |
+| Packer 输出帧验证 | 30 / 30 |
+| 相机模式 | MJPG 640×400，缩放为 Gray8 320×240 |
+| 观测总计数 | 3 |
+| 人工真值 / 准确率 | 未提供 / 不可计算 |
+| 总耗时 | 74.621 s |
+| 端到端吞吐 | 0.402 FPS |
+| 最终 MM2S / S2MM DMASR | `0x00001002` / `0x00001002` |
+| 缓冲区释放 | 是 |
+| 运行前 / 分配后 / 释放后 CmaFree | 95280 / 58688 / 54628 KiB |
+
+运行后只读检查确认 Boot ID 不变、CmaFree 为 73932 KiB、没有残留流计数进程或 `/dev/video0` 占用，8080 监听已关闭，两个 DMA 通道仍 Idle 且无错。Attempt 2 Guard 保留在归档目录；Attempt 3 一次性 Guard 留在活动路径，未清除。此次只证明 30 帧链路完成，不代表达到实时帧率目标，也不证明传送带上 M6 螺母或垫片的计数准确率。
+
 ## 尚未完成的物料验收
 
 | 记录项 | 结果 |
 |---|---|
-| 完成处理帧数 / 30 帧目标 | 0 / 30 |
-| DMA / Checker / Packer 已验证完成帧数 | 0；运行时等待失败后仍进入 fail-hold；后续只读快照显示两个 DMA 通道 Idle 且无错 |
-| 总计数、人工真值、误差、准确率 | NOT RUN |
+| 完成处理帧数 / 30 帧目标 | 30 / 30 |
+| DMA / Checker / Packer 已验证完成帧数 | 30；运行后两个 DMA 通道 Idle 且无错 |
+| 总计数、人工真值、误差、准确率 | 观测计数 3；无人工真值，误差与准确率不可计算 |
 | M6 螺母、垫片及混合物料样本 | NOT RUN |
-| 输入 FPS、端到端处理 FPS、浏览器预览 FPS | NOT RUN |
+| 输入 FPS、端到端处理 FPS、浏览器预览 FPS | 输入/预览 FPS 未单独测量；端到端 0.402 FPS |
 | 传送带速度、照明、视野及物料过线工况 | NOT RUN |
 
-当前不得清除任何 Guard、重启/终止 fail-hold 进程、复位或重启 DMA/Overlay、释放缓冲区或再次运行。必须由架构师审阅 Attempt 2 原始 JSON 和板卡恢复状态，再另行确定安全恢复方案及新授权。当前记录不构成 Stage A 通过，也不能用于推断计数准确率或实板 FPS。
+Attempt 2 Guard 与已消费的 Attempt 3 Guard 均保留，板端无残留流计数进程，DMA 已静止且本次缓冲区已释放。本记录证明 30 帧传输链路完成，但 0.402 FPS 未证明实时运行能力；没有物料真值，不能推断 M6 螺母或垫片计数准确率。后续硬件运行须使用新的有界验收目标、独立结果路径和新的单次授权。
