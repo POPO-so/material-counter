@@ -370,6 +370,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
     rx_buffers: tuple[Any, ...] = ()
     stream: DoubleBufferStream | None = None
     preview: MjpegPreviewServer | None = None
+    preview_publisher: PeriodicMjpegPublisher | None = None
     dma = None
     released_buffer_ids: set[int] = set()
     evidence: dict[str, Any] = {
@@ -474,7 +475,6 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             api.write32(preflight.CHECKER_BASE, board_once.PACKER_ARM, 1)
 
         def verify_frame(frame_id: int, slot: Any) -> None:
-            api.sync_from_device(slot.rx_buffer)
             if int(dma.recvchannel.transferred) != RX_BYTES:
                 raise RuntimeError(f"frame {frame_id} S2MM transferred length is not {RX_BYTES}")
             status = api.read32(preflight.CHECKER_BASE, board_once.PACKER_STATUS)
@@ -489,15 +489,16 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         hub = MjpegFrameHub()
         preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
-            "capture", "encode", "dma", "packer_check", "roi_count",
-            "mjpeg_encode", "postprocess")}
+            "capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
+            "mjpeg_encode", "mjpeg_background_encode", "postprocess")}
         preview_publisher = PeriodicMjpegPublisher(
             hub=hub, line_y=args.line_y,
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
         )
-        # The publisher records only actual JPEG encodes; the counter callback still
-        # runs after every completed S2MM frame.
-        stage_timings_ms["mjpeg_encode"] = preview_publisher.encode_timings_ms
+        stage_timings_ms["mjpeg_encode"] = preview_publisher.handoff_timings_ms
+        stage_timings_ms["mjpeg_background_encode"] = (
+            preview_publisher.background_encode_timings_ms
+        )
 
         counter = MaskCounter(line_y=args.line_y, min_area=args.min_area,
                               direction=args.direction, hysteresis=args.hysteresis,
@@ -511,6 +512,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             packet_encoder=gray320x240_to_rgb_packet,
             packet_encoder_into=gray320x240_to_rgb_packet_into,
             before_transfer=arm_frame,
+            before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
             on_frame=preview_publisher,
             stage_timings_ms=stage_timings_ms,
@@ -527,6 +529,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         if not steady_start_time:
             raise RuntimeError("camera did not establish a steady-stream timing boundary")
         elapsed = max(time.perf_counter() - steady_start_time[0], 1e-9)
+        preview_publisher.close()
         total_count = results[-1].total_count if results else 0
         accuracy = _count_accuracy(total_count, args.ground_truth_count)
         s2mm_status = api.read32(preflight.DMA_BASE, 0x34)
@@ -551,6 +554,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             "preview_frame_interval": preview_publisher.interval,
             "preview_jpeg_quality": preview_publisher.quality,
             "preview_jpeg_frames_encoded": preview_publisher.encoded_frames,
+            "preview_encode_errors": tuple(preview_publisher.encode_errors),
             "preview_url": f"http://{args.host}:{preview.port}/",
             "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
             "packer_output_frames_verified": len(results),
@@ -577,6 +581,8 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
                             if hold else None),
             "error": f"{type(exc).__name__}: {exc}",
         })
+        if preview_publisher is not None:
+            preview_publisher.close()
         if preview is not None:
             preview.close()
         if hold:
@@ -594,6 +600,8 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             _write_json_exclusive(Path(args.evidence_json), evidence)
         raise
     finally:
+        if preview_publisher is not None:
+            preview_publisher.close()
         if preview is not None:
             preview.close()
 
@@ -670,8 +678,8 @@ def _count_accuracy(predicted: int, ground_truth: int | None) -> float | None:
 def summarize_stage_timings_ms(timings: Mapping[str, list[float]]) -> dict[str, Any]:
     """Return per-frame average stage durations and sample counts in milliseconds."""
     result: dict[str, Any] = {}
-    for stage in ("capture", "encode", "dma", "packer_check", "roi_count",
-                  "mjpeg_encode", "postprocess"):
+    for stage in ("capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
+                  "mjpeg_encode", "mjpeg_background_encode", "postprocess"):
         samples = timings.get(stage, [])
         result[f"avg_{stage}_ms"] = (
             round(sum(samples) / len(samples), 3) if samples else None

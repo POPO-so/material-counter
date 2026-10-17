@@ -1,10 +1,12 @@
 """Thread-safe latest-frame hub and tiny standard-library MJPEG web preview."""
 from __future__ import annotations
 
+import os
 import threading
 import time
+from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any
+from typing import Any, Iterator
 
 import cv2
 import numpy as np
@@ -28,6 +30,7 @@ class MjpegFrameHub:
         self._condition = threading.Condition()
         self._sequence = 0
         self._jpeg: bytes | None = None
+        self._stream_clients = 0
         self._closed = False
 
     @property
@@ -39,6 +42,35 @@ class MjpegFrameHub:
     def sequence(self) -> int:
         with self._condition:
             return self._sequence
+
+    @property
+    def stream_clients(self) -> int:
+        with self._condition:
+            return self._stream_clients
+
+    @contextmanager
+    def streaming_client(self) -> Iterator[None]:
+        with self._condition:
+            if self._closed:
+                raise RuntimeError("frame hub is closed")
+            self._stream_clients += 1
+            self._condition.notify_all()
+        try:
+            yield
+        finally:
+            with self._condition:
+                self._stream_clients -= 1
+                self._condition.notify_all()
+
+    def wait_for_client(self, *, timeout_s: float = 0.1) -> bool:
+        if timeout_s < 0:
+            raise ValueError("timeout must be nonnegative")
+        with self._condition:
+            self._condition.wait_for(
+                lambda: self._stream_clients > 0 or self._closed,
+                timeout=timeout_s,
+            )
+            return self._stream_clients > 0
 
     def publish(self, jpeg: bytes | bytearray | memoryview) -> int:
         if not isinstance(jpeg, (bytes, bytearray, memoryview)) or not jpeg:
@@ -108,7 +140,7 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
 
 
 class PeriodicMjpegPublisher:
-    """Encode a preview every N frames while the caller processes every frame."""
+    """Copy preview snapshots quickly and encode them off the counting path."""
 
     def __init__(self, *, hub: MjpegFrameHub, line_y: int,
                  interval: int = PREVIEW_FRAME_INTERVAL,
@@ -122,18 +154,105 @@ class PeriodicMjpegPublisher:
         self.interval = interval
         self.quality = quality
         self.encoded_frames = 0
-        self.encode_timings_ms: list[float] = []
+        self.handoff_timings_ms: list[float] = []
+        self.background_encode_timings_ms: list[float] = []
+        self.encode_errors: list[str] = []
+        self._condition = threading.Condition()
+        self._latest_mask = np.empty((240, 320), dtype=np.uint8)
+        self._encode_mask = np.empty((240, 320), dtype=np.uint8)
+        self._latest_metadata: tuple[int, int, int] | None = None
+        self._snapshot_sequence = 0
+        self._encoded_sequence = 0
+        self._closing = False
+        self._closed = False
+        self._worker = threading.Thread(
+            target=self._encode_pending,
+            name="wo0016-mjpeg-encoder",
+            daemon=True,
+        )
+        self._worker.start()
 
     def __call__(self, result: Any, mask: np.ndarray) -> None:
-        frame_id = result.frame_id
-        if frame_id % self.interval:
-            return
         started = time.perf_counter()
-        jpeg = render_preview_jpeg(mask, total_count=result.total_count,
-                                   line_y=self.line_y, quality=self.quality)
-        self.hub.publish(jpeg)
-        self.encode_timings_ms.append((time.perf_counter() - started) * 1000.0)
-        self.encoded_frames += 1
+        try:
+            frame_id = int(result.frame_id)
+            if frame_id % self.interval:
+                return
+            image = np.asarray(mask)
+            if image.dtype != np.uint8 or image.shape != (240, 320):
+                raise ValueError("preview snapshot must be a uint8 array with shape (240, 320)")
+            with self._condition:
+                if self._closing or self._closed:
+                    return
+                np.copyto(self._latest_mask, image, casting="no")
+                self._latest_metadata = (frame_id, int(result.total_count), self.line_y)
+                self._snapshot_sequence += 1
+                self._condition.notify_all()
+        finally:
+            self.handoff_timings_ms.append((time.perf_counter() - started) * 1000.0)
+
+    def _encode_pending(self) -> None:
+        if hasattr(os, "setpriority") and hasattr(threading, "get_native_id"):
+            try:
+                os.setpriority(os.PRIO_PROCESS, threading.get_native_id(), 10)
+            except OSError:
+                pass
+        while True:
+            with self._condition:
+                if self._snapshot_sequence <= self._encoded_sequence:
+                    if self._closing:
+                        return
+                    self._condition.wait(timeout=0.1)
+                    continue
+
+            if not self.hub.wait_for_client(timeout_s=0.1):
+                with self._condition:
+                    if self._closing:
+                        return
+                continue
+
+            with self._condition:
+                if self._snapshot_sequence <= self._encoded_sequence:
+                    continue
+                if self._latest_metadata is None:
+                    self._encoded_sequence = self._snapshot_sequence
+                    continue
+                sequence = self._snapshot_sequence
+                frame_id, total_count, line_y = self._latest_metadata
+                np.copyto(self._encode_mask, self._latest_mask, casting="no")
+                self._encoded_sequence = sequence
+
+            started = time.perf_counter()
+            try:
+                jpeg = render_preview_jpeg(
+                    self._encode_mask,
+                    total_count=total_count,
+                    line_y=line_y,
+                    quality=self.quality,
+                )
+                self.hub.publish(jpeg)
+                self.encoded_frames += 1
+            except RuntimeError as exc:
+                if not self.hub.closed:
+                    self.encode_errors.append(f"{type(exc).__name__}: {exc}")
+                    continue
+                return
+            except Exception as exc:
+                self.encode_errors.append(f"{type(exc).__name__}: {exc}")
+            finally:
+                self.background_encode_timings_ms.append(
+                    (time.perf_counter() - started) * 1000.0
+                )
+
+    def close(self) -> None:
+        with self._condition:
+            if self._closed:
+                return
+            self._closing = True
+            self._condition.notify_all()
+        self._worker.join()
+        with self._condition:
+            self._closed = True
 
 
 class MjpegPreviewServer:
@@ -188,18 +307,19 @@ class MjpegPreviewServer:
                 self.end_headers()
                 sequence = 0
                 try:
-                    while not hub.closed:
-                        item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0)
-                        if item is None:
-                            continue
-                        sequence, jpeg = item
-                        header = (b"--frame\r\nContent-Type: image/jpeg\r\n"
-                                  + f"Content-Length: {len(jpeg)}\r\nX-Frame-Sequence: {sequence}\r\n\r\n".encode("ascii"))
-                        self.wfile.write(header)
-                        self.wfile.write(jpeg)
-                        self.wfile.write(b"\r\n")
-                        self.wfile.flush()
-                except (BrokenPipeError, ConnectionResetError, OSError):
+                    with hub.streaming_client():
+                        while not hub.closed:
+                            item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0)
+                            if item is None:
+                                continue
+                            sequence, jpeg = item
+                            header = (b"--frame\r\nContent-Type: image/jpeg\r\n"
+                                      + f"Content-Length: {len(jpeg)}\r\nX-Frame-Sequence: {sequence}\r\n\r\n".encode("ascii"))
+                            self.wfile.write(header)
+                            self.wfile.write(jpeg)
+                            self.wfile.write(b"\r\n")
+                            self.wfile.flush()
+                except (BrokenPipeError, ConnectionResetError, OSError, RuntimeError):
                     return
 
         self._server = ThreadingHTTPServer((self.host, self.requested_port), Handler)

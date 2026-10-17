@@ -1,4 +1,5 @@
 import sys
+import threading
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -37,13 +38,14 @@ def test_preview_jpeg_is_valid_and_invalid_binary_masks_are_rejected():
         render_preview_jpeg(np.ones((240, 320), dtype=np.uint8), total_count=0, line_y=120)
 
 
-def test_periodic_publisher_encodes_every_fourth_frame_at_quality_70(monkeypatch):
+def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkeypatch):
     import mjpeg_preview
 
     encoded = []
+    caller_thread = threading.get_ident()
 
     def fake_render(mask, *, total_count, line_y, quality):
-        encoded.append((total_count, line_y, quality))
+        encoded.append((total_count, line_y, quality, threading.get_ident()))
         return b"jpeg"
 
     monkeypatch.setattr(mjpeg_preview, "render_preview_jpeg", fake_render)
@@ -51,17 +53,74 @@ def test_periodic_publisher_encodes_every_fourth_frame_at_quality_70(monkeypatch
     publisher = PeriodicMjpegPublisher(hub=hub, line_y=120)
     mask = np.zeros((240, 320), dtype=np.uint8)
 
-    for frame_id in range(9):
-        publisher(type("Frame", (), {"frame_id": frame_id,
-                                      "total_count": frame_id // 3})(), mask)
+    try:
+        for frame_id in range(4):
+            publisher(type("Frame", (), {"frame_id": frame_id,
+                                          "total_count": frame_id // 3})(), mask)
 
-    assert publisher.interval == 4
-    assert publisher.quality == 70
-    assert publisher.encoded_frames == 3
-    assert encoded == [(0, 120, 70), (1, 120, 70), (2, 120, 70)]
-    assert hub.sequence == 3
-    assert len(publisher.encode_timings_ms) == 3
-    hub.close()
+        assert encoded == []
+        assert hub.sequence == 0
+
+        with hub.streaming_client():
+            first = hub.wait_for_next(after_sequence=0, timeout_s=2.0)
+            assert first == (1, b"jpeg")
+            for frame_id in range(4, 8):
+                publisher(type("Frame", (), {"frame_id": frame_id,
+                                              "total_count": frame_id // 3})(), mask)
+            second = hub.wait_for_next(after_sequence=1, timeout_s=2.0)
+            assert second == (2, b"jpeg")
+
+        assert publisher.interval == 4
+        assert publisher.quality == 70
+        assert publisher.encoded_frames == 2
+        assert [row[:3] for row in encoded] == [(0, 120, 70), (1, 120, 70)]
+        assert all(thread_id != caller_thread for *_, thread_id in encoded)
+        assert hub.sequence == 2
+        assert len(publisher.handoff_timings_ms) == 8
+        assert len(publisher.background_encode_timings_ms) == 2
+    finally:
+        close = getattr(publisher, "close", None)
+        if callable(close):
+            close()
+        hub.close()
+
+
+def test_preview_callback_returns_while_background_jpeg_encode_is_blocked(monkeypatch):
+    import mjpeg_preview
+
+    encode_started = threading.Event()
+    release_encode = threading.Event()
+    callback_returned = threading.Event()
+
+    def slow_render(mask, *, total_count, line_y, quality):
+        encode_started.set()
+        assert release_encode.wait(2.0)
+        return b"slow-jpeg"
+
+    monkeypatch.setattr(mjpeg_preview, "render_preview_jpeg", slow_render)
+    hub = MjpegFrameHub()
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    result = type("Frame", (), {"frame_id": 0, "total_count": 1})()
+
+    try:
+        with hub.streaming_client():
+            producer = threading.Thread(
+                target=lambda: (publisher(result, mask), callback_returned.set())
+            )
+            producer.start()
+            assert encode_started.wait(1.0)
+            assert callback_returned.wait(1.0)
+            release_encode.set()
+            producer.join(timeout=1.0)
+            assert not producer.is_alive()
+            assert hub.wait_for_next(after_sequence=0, timeout_s=2.0) == (1, b"slow-jpeg")
+    finally:
+        release_encode.set()
+        close = getattr(publisher, "close", None)
+        if callable(close):
+            close()
+        hub.close()
 
 
 def test_frame_hub_returns_latest_frame_without_a_backlog():

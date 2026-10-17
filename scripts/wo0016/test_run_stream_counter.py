@@ -412,8 +412,12 @@ def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
         "avg_capture_ms": 2.0, "capture_timing_samples": 2,
         "avg_encode_ms": 2.0, "encode_timing_samples": 1,
         "avg_dma_ms": 5.0, "dma_timing_samples": 2,
+        "avg_rx_sync_ms": None, "rx_sync_timing_samples": 0,
+        "avg_rx_copy_ms": None, "rx_copy_timing_samples": 0,
         "avg_packer_check_ms": 1.0, "packer_check_timing_samples": 2,
         "avg_roi_count_ms": 2.0, "roi_count_timing_samples": 1,
         "avg_mjpeg_encode_ms": 40.0, "mjpeg_encode_timing_samples": 1,
+        "avg_mjpeg_background_encode_ms": None,
+        "mjpeg_background_encode_timing_samples": 0,
         "avg_postprocess_ms": None, "postprocess_timing_samples": 0,
     }

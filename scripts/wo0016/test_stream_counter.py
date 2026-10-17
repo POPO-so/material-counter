@@ -1,10 +1,11 @@
 import asyncio
 from dataclasses import dataclass
-
-import numpy as np
-import pytest
 from pathlib import Path
 import sys
+
+import cv2
+import numpy as np
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "wo0015"))
@@ -45,6 +46,63 @@ def test_area_filter_and_roi_keep_only_qualified_line_band_components():
     assert result.detections[0].centroid_x == pytest.approx(172.0)
     assert result.detections[0].centroid_y == pytest.approx(112.0)
     assert result.total_count == 0
+
+
+def _legacy_roi_signature(mask, counter):
+    top = max(0, counter.line_y - counter.roi_half_height)
+    bottom = min(counter.height, counter.line_y + counter.roi_half_height + 1)
+    foreground = mask[top:bottom, :] == 0xFF
+    row_projection = tuple(int(value) for value in np.count_nonzero(foreground, axis=1))
+    column_projection = tuple(int(value) for value in np.count_nonzero(foreground, axis=0))
+    roi = np.ascontiguousarray(foreground, dtype=np.uint8)
+    count, _, stats, centroids = cv2.connectedComponentsWithStats(
+        roi, connectivity=8, ltype=cv2.CV_32S
+    )
+    detections = []
+    for label in range(1, count):
+        x, y, box_width, box_height, area = (int(value) for value in stats[label])
+        if area >= counter.min_area:
+            detections.append((
+                x, x + box_width - 1, y + top, y + top + box_height - 1, area,
+                float(centroids[label, 0]), float(centroids[label, 1] + top),
+            ))
+    detections.sort(key=lambda item: (item[5], item[6], item[2], item[0]))
+    return tuple(detections), row_projection, column_projection
+
+
+def test_cached_roi_outputs_match_legacy_results_on_synthetic_and_board_mask_samples():
+    synthetic = np.zeros((240, 320), dtype=np.uint8)
+    synthetic[75:81, 21:29] = 0xFF
+    synthetic[112:119, 90:97] = 0xFF
+    synthetic[120:125, 210:216] = 0xFF
+    synthetic[232:240, 300:320] = 0xFF
+    real_sample_path = (Path(__file__).resolve().parents[2]
+                        / "data/results/wo0015-final-20261017/pl-binary8-output.png")
+    real_sample = cv2.imread(str(real_sample_path), cv2.IMREAD_GRAYSCALE)
+    assert real_sample is not None
+    assert real_sample.shape == (240, 320)
+    assert set(np.unique(real_sample)) <= {0, 0xFF}
+
+    for sample in (synthetic, real_sample):
+        counter = MaskCounter(line_y=120, roi_half_height=48, min_area=12)
+        expected = _legacy_roi_signature(sample, counter)
+        actual = counter._extract_roi_detections(np.array(sample, copy=True))
+        actual_signature = (
+            tuple((d.x_min, d.x_max, d.y_min, d.y_max, d.area,
+                   d.centroid_x, d.centroid_y) for d in actual[0]),
+            actual[3],
+            actual[4],
+        )
+        assert actual_signature == expected
+
+    reference_counter = MaskCounter(line_y=120, confirm_hits=2, max_step=12)
+    cached_counter = MaskCounter(line_y=120, confirm_hits=2, max_step=12)
+    crossing_sequence = [_mask(y) for y in (108, 116, 124, 132)]
+    for frame_id, sample in enumerate(crossing_sequence):
+        expected = reference_counter.update(frame_id, sample)
+        actual = cached_counter.update(frame_id, np.array(sample, copy=True))
+        assert actual == expected
+        assert actual.total_count == expected.total_count
 
 
 def test_top_to_bottom_track_counts_once_after_confirmation_and_hysteresis():
@@ -108,6 +166,16 @@ class MockCmaBuffer:
         self.data[key] = value
 
 
+class ReadCountingCmaBuffer(MockCmaBuffer):
+    def __init__(self, size, physical_address):
+        super().__init__(size, physical_address)
+        self.array_reads = 0
+
+    def __array__(self, dtype=None, copy=None):
+        self.array_reads += 1
+        return super().__array__(dtype=dtype, copy=copy)
+
+
 class MockAllocator:
     def __init__(self):
         self.allocations = []
@@ -130,6 +198,70 @@ def test_ping_pong_allocates_two_aligned_tx_rx_pairs_once():
     assert [buffer.nbytes for buffer in rx_buffers] == [RX_BYTES, RX_BYTES]
     assert all(buffer.physical_address % 4 == 0
                for buffer in tx_buffers + rx_buffers)
+
+
+def test_s2mm_mask_is_copied_before_pack_check_and_roi_uses_cached_storage():
+    allocator = MockAllocator()
+
+    def allocate(*, shape, dtype):
+        size = int(np.prod(shape))
+        address = 0x10000000 + len(allocator.allocations) * 0x100000
+        buffer = ReadCountingCmaBuffer(size, address)
+        allocator.allocations.append((shape, np.dtype(dtype), buffer))
+        return buffer
+
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocate)
+    source_mask = _mask(116)
+    dma = MockDma([source_mask])
+    processed_masks = []
+    callback_order = []
+
+    class InputCheckingCounter(MaskCounter):
+        def __init__(self):
+            super().__init__()
+            self.input_masks = []
+
+        def update(self, frame_id, mask):
+            self.input_masks.append(mask)
+            return super().update(frame_id, mask)
+
+    counter = InputCheckingCounter()
+
+    def sync_completed_frame(frame_id, slot):
+        callback_order.append("sync")
+
+    def validate_completed_frame(frame_id, slot):
+        callback_order.append("packer-check")
+        assert isinstance(slot.cached_mask, np.ndarray)
+        assert slot.cached_mask.dtype == np.uint8
+        assert slot.cached_mask.shape == (240, 320)
+        assert slot.cached_mask.flags.c_contiguous
+        assert slot.cached_mask.flags.writeable
+        assert np.array_equal(slot.cached_mask, source_mask)
+        assert not np.shares_memory(slot.cached_mask, slot.rx_buffer.data)
+        assert slot.rx_buffer.array_reads == 1
+
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=counter,
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        before_rx_copy=sync_completed_frame,
+        after_transfer=validate_completed_frame,
+        on_frame=lambda result, mask: processed_masks.append(mask),
+        transfer_timeout_s=1.0,
+    )
+    rx_buffers[0].array_reads = 0
+
+    asyncio.run(stream.run(_frames(1)))
+
+    assert len(counter.input_masks) == 1
+    assert callback_order == ["sync", "packer-check"]
+    assert counter.input_masks[0] is stream.slots[0].cached_mask
+    assert processed_masks[0] is stream.slots[0].cached_mask
+    assert rx_buffers[0].array_reads == 1
 
 
 def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
@@ -303,8 +435,9 @@ def test_periodic_preview_does_not_skip_counter_updates():
     assert len(results) == len(ys)
     assert counter.last_frame_id == len(ys) - 1
     assert results[-1].total_count == 1
-    assert publisher.encoded_frames == 2
-    assert hub.sequence == 2
+    assert publisher.encoded_frames == 0
+    assert hub.sequence == 0
+    publisher.close()
     hub.close()
 
 

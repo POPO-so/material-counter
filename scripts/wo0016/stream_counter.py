@@ -41,6 +41,7 @@ class DmaBufferSlot:
     index: int
     tx_buffer: Any
     rx_buffer: Any
+    cached_mask: np.ndarray | None = None
     state: BufferState = BufferState.FREE
     frame_id: int | None = None
 
@@ -359,6 +360,7 @@ class DoubleBufferStream:
                  packet_encoder: PacketEncoder,
                  packet_encoder_into: PacketEncoderInto | None = None,
                  before_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
+                 before_rx_copy: Callable[[int, DmaBufferSlot], Any] | None = None,
                  after_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
                  on_frame: Callable[[FrameResult, np.ndarray], Any] | None = None,
                  stage_timings_ms: dict[str, list[float]] | None = None,
@@ -375,12 +377,17 @@ class DoubleBufferStream:
         self.packet_encoder = packet_encoder
         self.packet_encoder_into = packet_encoder_into
         self.before_transfer = before_transfer
+        self.before_rx_copy = before_rx_copy
         self.after_transfer = after_transfer
         self.on_frame = on_frame
         self.stage_timings_ms = stage_timings_ms
         self._postprocess_ms: dict[int, float] = {}
         self.transfer_timeout_s = _positive_float(transfer_timeout_s, "transfer_timeout_s")
-        self.slots = [DmaBufferSlot(i, tx_buffers[i], rx_buffers[i]) for i in range(2)]
+        self.slots = [
+            DmaBufferSlot(i, tx_buffers[i], rx_buffers[i],
+                          cached_mask=np.empty((HEIGHT, WIDTH), dtype=np.uint8))
+            for i in range(2)
+        ]
         self._free_slots: asyncio.Queue[DmaBufferSlot] = asyncio.Queue(maxsize=2)
         for slot in self.slots:
             self._free_slots.put_nowait(slot)
@@ -443,6 +450,18 @@ class DoubleBufferStream:
                     raise
                 finally:
                     self._pending_waits = [task for task in self._pending_waits if not task.done()]
+                if self.before_rx_copy is not None:
+                    sync_started = time.perf_counter()
+                    prepared = self.before_rx_copy(frame_id, slot)
+                    if inspect.isawaitable(prepared):
+                        await prepared
+                    self._record_timing("rx_sync", time.perf_counter() - sync_started)
+                if slot.cached_mask is None:
+                    raise RuntimeError("DMA slot has no cached CPU mask")
+                copy_started = time.perf_counter()
+                rx_view = np.asarray(slot.rx_buffer)
+                np.copyto(slot.cached_mask.reshape(-1), rx_view, casting="no")
+                self._record_timing("rx_copy", time.perf_counter() - copy_started)
                 postprocess_ms = 0.0
                 if self.after_transfer is not None:
                     postprocess_started = time.perf_counter()
@@ -480,7 +499,9 @@ class DoubleBufferStream:
             slot.state = BufferState.CPU_OWNED
             if slot.frame_id is None:
                 raise RuntimeError("ready slot has no frame_id")
-            mask = np.asarray(slot.rx_buffer).reshape((HEIGHT, WIDTH))
+            mask = slot.cached_mask
+            if mask is None:
+                raise RuntimeError("completed DMA slot has no cached CPU mask")
             frame_id = slot.frame_id
             postprocess_started = time.perf_counter()
             roi_started = time.perf_counter()
