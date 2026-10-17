@@ -99,3 +99,17 @@ Attempt 3 原始 JSON 保存在 `/home/xilinx/wo0016/stage-a-30frames-attempt3-r
 | 传送带速度、照明、视野及物料过线工况 | NOT RUN |
 
 Attempt 2 Guard 与已消费的 Attempt 3 Guard 均保留，板端无残留流计数进程，DMA 已静止且本次缓冲区已释放。本记录证明 30 帧传输链路完成，但 0.402 FPS 未证明实时运行能力；没有物料真值，不能推断 M6 螺母或垫片计数准确率。后续硬件运行须使用新的有界验收目标、独立结果路径和新的单次授权。
+
+## Attempt 4 前的离线性能审计与优化
+
+Attempt 3 的 JSON 只保存总耗时 `74.621 s` 和 `0.402 FPS`，没有 capture、encode、DMA、postprocess 的分阶段耗时；因此无法从该报告把 2.487 s/帧归因到某一具体环节。
+
+源码审计确认，相机由一次 `VideoCapture` 在帧循环外打开并协商 MJPG 640×400，循环退出后释放；Overlay 与 MMIO 同样在单次流启动阶段初始化。每次相机 `read()` 会通过 daemon worker 执行，但没有每帧重新打开相机的行为。旧 Packet 编码器先向量化扩展 Gray8，再调用 `make_packet()` 按 4 字节构造约 57,600 个 Python Beat 对象，随后再次逐 Beat 序列化；这是已定位到的主要软件热路径。Checker/Packer 完成状态使用有限次寄存器回读，ROI 投影采用 NumPy，预览使用 OpenCV JPEG 编码，没有 Python 逐字节 Golden 比对。
+
+优化版保留原来的 230,432 字节 Packet 布局和字段，通过 WO-0016 自有的 `packet_encoder.gray320x240_to_rgb_packet_into()` 使用 `struct.pack_into` 写入包头/包尾、NumPy 广播填入 RGB 三通道及计算 checksum，并直接写入预分配 CMA TX 缓冲区，避免每帧创建 Beat 列表、序列化列表和临时完整 Packet。WO-0015 的 `camera_adapter.py` 原样保留，以免改变已验证 Manifest 依赖哈希。离线测试直接以该原版编码器作为参照，对多个随机 Gray8 帧和 frame_id 检查完整 Packet 字节相等。
+
+主机微基准（Python 3.12.10、NumPy 2.5.2，320×240，5 次）：旧路径平均 `35.908 ms`，优化后的预分配缓冲区原地写入平均 `0.377 ms`，约 `95.33×`；所有迭代的 230,432 字节输出逐字节相同。此结果是 Windows 主机编码微基准，不代表 Cortex-A9 或整机吞吐。
+
+优化版还为有限板端运行加入每帧打点：`avg_capture_ms`（read、Gray8 转换与缩放）、`avg_encode_ms`（Packet 原地写入 CMA TX）、`avg_dma_ms`（缓存同步/Checker arm、双通道传输及 wait）、`avg_postprocess_ms`（Packer 回读校验、ROI 计数和预览 JPEG 更新）。各字段同时记录样本数；不同阶段可与相邻帧并行，均值不应简单求和作为端到端帧周期。Attempt 4 仍需板端实测验证是否达到 15 FPS。
+
+Attempt 4 之前的离线回归：`pytest scripts/wo0016 scripts/wo0015`，`225 passed, 1 skipped`。板端结果尚未运行。

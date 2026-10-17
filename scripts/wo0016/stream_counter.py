@@ -5,6 +5,7 @@ import asyncio
 import inspect
 import math
 import threading
+import time
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, AsyncIterable, Callable, Protocol
@@ -21,6 +22,10 @@ TX_BYTES = 16 + PIXELS * 3 + 16
 
 class PacketEncoder(Protocol):
     def __call__(self, gray: np.ndarray, *, frame_id: int) -> bytes: ...
+
+
+class PacketEncoderInto(Protocol):
+    def __call__(self, gray: np.ndarray, output: Any, *, frame_id: int) -> None: ...
 
 
 class BufferState(str, Enum):
@@ -352,9 +357,11 @@ class DoubleBufferStream:
                  tx_buffers: tuple[Any, Any], rx_buffers: tuple[Any, Any],
                  counter: MaskCounter,
                  packet_encoder: PacketEncoder,
+                 packet_encoder_into: PacketEncoderInto | None = None,
                  before_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
                  after_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
                  on_frame: Callable[[FrameResult, np.ndarray], Any] | None = None,
+                 stage_timings_ms: dict[str, list[float]] | None = None,
                  transfer_timeout_s: float = 5.0):
         if len(tx_buffers) != 2 or len(rx_buffers) != 2:
             raise ValueError("exactly two TX and two RX buffers are required")
@@ -366,9 +373,12 @@ class DoubleBufferStream:
         self.send_channel = send_channel
         self.counter = counter
         self.packet_encoder = packet_encoder
+        self.packet_encoder_into = packet_encoder_into
         self.before_transfer = before_transfer
         self.after_transfer = after_transfer
         self.on_frame = on_frame
+        self.stage_timings_ms = stage_timings_ms
+        self._postprocess_ms: dict[int, float] = {}
         self.transfer_timeout_s = _positive_float(transfer_timeout_s, "transfer_timeout_s")
         self.slots = [DmaBufferSlot(i, tx_buffers[i], rx_buffers[i]) for i in range(2)]
         self._free_slots: asyncio.Queue[DmaBufferSlot] = asyncio.Queue(maxsize=2)
@@ -396,10 +406,16 @@ class DoubleBufferStream:
                     raise RuntimeError("buffer pool returned a slot that is not free")
                 slot.state = BufferState.CPU_OWNED
                 slot.frame_id = frame_id
-                packet = self.packet_encoder(gray, frame_id=frame_id)
-                if not isinstance(packet, (bytes, bytearray, memoryview)) or len(packet) != TX_BYTES:
-                    raise ValueError(f"packet encoder must return exactly {TX_BYTES} bytes")
-                slot.tx_buffer[:] = np.frombuffer(packet, dtype=np.uint8)
+                encode_started = time.perf_counter()
+                if self.packet_encoder_into is not None:
+                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=frame_id)
+                else:
+                    packet = self.packet_encoder(gray, frame_id=frame_id)
+                    if not isinstance(packet, (bytes, bytearray, memoryview)) or len(packet) != TX_BYTES:
+                        raise ValueError(f"packet encoder must return exactly {TX_BYTES} bytes")
+                    slot.tx_buffer[:] = np.frombuffer(packet, dtype=np.uint8)
+                self._record_timing("encode", time.perf_counter() - encode_started)
+                dma_started = time.perf_counter()
                 if self.before_transfer is not None:
                     prepared = self.before_transfer(frame_id, slot)
                     if inspect.isawaitable(prepared):
@@ -421,15 +437,20 @@ class DoubleBufferStream:
                         timeout=self.transfer_timeout_s,
                     )
                     self.dma_may_be_active = False
+                    self._record_timing("dma", time.perf_counter() - dma_started)
                 except BaseException:
                     self._hold_nonfree_slots()
                     raise
                 finally:
                     self._pending_waits = [task for task in self._pending_waits if not task.done()]
+                postprocess_ms = 0.0
                 if self.after_transfer is not None:
+                    postprocess_started = time.perf_counter()
                     validated = self.after_transfer(frame_id, slot)
                     if inspect.isawaitable(validated):
                         await validated
+                    postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
+                self._postprocess_ms[frame_id] = postprocess_ms
 
                 slot.state = BufferState.CPU_READY
                 await self._ready_slots.put(slot)
@@ -458,6 +479,8 @@ class DoubleBufferStream:
             if slot.frame_id is None:
                 raise RuntimeError("ready slot has no frame_id")
             mask = np.asarray(slot.rx_buffer).reshape((HEIGHT, WIDTH))
+            frame_id = slot.frame_id
+            postprocess_started = time.perf_counter()
             result = await asyncio.to_thread(self.counter.update, slot.frame_id, mask)
             if self.on_frame is not None:
                 if inspect.iscoroutinefunction(self.on_frame):
@@ -466,10 +489,17 @@ class DoubleBufferStream:
                     callback_result = await asyncio.to_thread(self.on_frame, result, mask)
                     if inspect.isawaitable(callback_result):
                         await callback_result
+            postprocess_ms = self._postprocess_ms.pop(frame_id, 0.0)
+            postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
+            self._record_timing("postprocess", postprocess_ms / 1000.0)
             self._results.append(result)
             slot.state = BufferState.FREE
             slot.frame_id = None
             self._free_slots.put_nowait(slot)
+
+    def _record_timing(self, stage: str, elapsed_seconds: float) -> None:
+        if self.stage_timings_ms is not None:
+            self.stage_timings_ms.setdefault(stage, []).append(elapsed_seconds * 1000.0)
 
     def _hold_nonfree_slots(self) -> None:
         held = []

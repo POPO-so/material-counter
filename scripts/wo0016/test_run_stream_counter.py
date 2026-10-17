@@ -16,6 +16,7 @@ from run_stream_counter import (  # noqa: E402
     camera_gray_frames,
     resolve_wo15_dependency_dir,
     run_mock_simulation,
+    summarize_stage_timings_ms,
     verify_afi1_readback,
 )
 from stream_counter import MaskCounter  # noqa: E402
@@ -245,3 +246,76 @@ def test_camera_mode_fails_closed_when_v4l2_negotiates_another_format():
     with pytest.raises(RuntimeError, match="negotiated 'YUYV' 640x400"):
         asyncio.run(consume_one())
     assert released.wait(0.2)
+
+
+def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
+    opened = []
+    released = []
+
+    class Capture:
+        def __init__(self):
+            self.properties = {}
+            self.reads = 0
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            self.properties[prop] = value
+            return True
+
+        def get(self, prop):
+            if prop == FakeCv2.CAP_PROP_FOURCC:
+                return FakeCv2.VideoWriter_fourcc(*"MJPG")
+            return self.properties[prop]
+
+        def read(self):
+            self.reads += 1
+            return True, np.full((400, 640), self.reads, dtype=np.uint8)
+
+        def release(self):
+            released.append(True)
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+
+        @staticmethod
+        def VideoCapture(device, backend):
+            opened.append((device, backend))
+            return Capture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+    capture_timings_ms = []
+
+    async def consume():
+        return [frame async for frame in camera_gray_frames(
+            "/dev/video-test", max_frames=2, cv2_module=FakeCv2,
+            capture_timings_ms=capture_timings_ms)]
+
+    frames = asyncio.run(consume())
+
+    assert opened == [("/dev/video-test", FakeCv2.CAP_V4L2)]
+    assert released == [True]
+    assert len(frames) == len(capture_timings_ms) == 2
+    assert all(frame.shape == (240, 320) and frame.dtype == np.uint8 for frame in frames)
+    assert all(sample >= 0 for sample in capture_timings_ms)
+
+
+def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
+    summary = summarize_stage_timings_ms({
+        "capture": [1.0, 3.0], "encode": [2.0],
+        "dma": [4.0, 6.0], "postprocess": [],
+    })
+
+    assert summary == {
+        "avg_capture_ms": 2.0, "capture_timing_samples": 2,
+        "avg_encode_ms": 2.0, "encode_timing_samples": 1,
+        "avg_dma_ms": 5.0, "dma_timing_samples": 2,
+        "avg_postprocess_ms": None, "postprocess_timing_samples": 0,
+    }

@@ -39,6 +39,7 @@ import board_once
 import board_preflight as preflight
 import camera_dma_oneshot
 from camera_adapter import gray320x240_to_rgb_packet
+from packet_encoder import gray320x240_to_rgb_packet_into
 from mjpeg_preview import MjpegFrameHub, MjpegPreviewServer, render_preview_jpeg
 from stream_counter import (
     HEIGHT,
@@ -207,7 +208,9 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
 
 async def camera_gray_frames(device: str, *, max_frames: int,
                              cv2_module: Any = cv2,
-                             read_timeout_s: float = 5.0) -> AsyncIterator[np.ndarray]:
+                             read_timeout_s: float = 5.0,
+                             capture_timings_ms: list[float] | None = None
+                             ) -> AsyncIterator[np.ndarray]:
     """Read the OV9281 MJPG 640x400 mode and yield resized Gray8 320x240 frames."""
     if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
         raise ValueError("max_frames must be a positive integer")
@@ -238,6 +241,7 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 f"{actual_format!r} {actual_width}x{actual_height}; expected MJPG 640x400"
             )
         for _ in range(max_frames):
+            capture_started = time.perf_counter()
             try:
                 ok, frame = await _daemon_call_with_timeout(
                     capture.read, timeout_s=float(read_timeout_s),
@@ -255,7 +259,10 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 image = image[:, :, 0]
             if image.shape != (400, 640):
                 raise RuntimeError(f"camera frame geometry is {image.shape}; expected (400, 640)")
-            yield camera_dma_oneshot.resize_gray8(image, width=WIDTH, height=HEIGHT)
+            gray = camera_dma_oneshot.resize_gray8(image, width=WIDTH, height=HEIGHT)
+            if capture_timings_ms is not None:
+                capture_timings_ms.append((time.perf_counter() - capture_started) * 1000.0)
+            yield gray
     except BaseException:
         failed = True
         raise
@@ -440,6 +447,8 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         hub = MjpegFrameHub()
         preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
         frame_times: list[float] = []
+        stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
+            "capture", "encode", "dma", "postprocess")}
 
         def publish_frame(result: Any, mask: np.ndarray) -> None:
             hub.publish(render_preview_jpeg(mask, total_count=result.total_count,
@@ -456,15 +465,18 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             rx_buffers=rx_buffers,
             counter=counter,
             packet_encoder=gray320x240_to_rgb_packet,
+            packet_encoder_into=gray320x240_to_rgb_packet_into,
             before_transfer=arm_frame,
             after_transfer=verify_frame,
             on_frame=publish_frame,
+            stage_timings_ms=stage_timings_ms,
             transfer_timeout_s=args.timeout_s,
         )
         started = time.perf_counter()
         results = asyncio.run(stream.run(camera_gray_frames(
             args.camera, max_frames=args.max_frames, cv2_module=cv2,
-            read_timeout_s=args.timeout_s)))
+            read_timeout_s=args.timeout_s,
+            capture_timings_ms=stage_timings_ms["capture"])))
         elapsed = max(time.perf_counter() - started, 1e-9)
         total_count = results[-1].total_count if results else 0
         accuracy = _count_accuracy(total_count, args.ground_truth_count)
@@ -485,6 +497,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             "elapsed_seconds": elapsed,
             "throughput_fps": len(results) / elapsed,
             "hardware_fps": len(results) / elapsed,
+            **summarize_stage_timings_ms(stage_timings_ms),
             "preview_url": f"http://{args.host}:{preview.port}/",
             "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
             "packer_output_frames_verified": len(results),
@@ -599,6 +612,18 @@ def _count_accuracy(predicted: int, ground_truth: int | None) -> float | None:
     if ground_truth == 0:
         return 100.0 if predicted == 0 else 0.0
     return round(max(0.0, 100.0 * (1.0 - abs(predicted - ground_truth) / ground_truth)), 4)
+
+
+def summarize_stage_timings_ms(timings: Mapping[str, list[float]]) -> dict[str, Any]:
+    """Return per-frame average stage durations and sample counts in milliseconds."""
+    result: dict[str, Any] = {}
+    for stage in ("capture", "encode", "dma", "postprocess"):
+        samples = timings.get(stage, [])
+        result[f"avg_{stage}_ms"] = (
+            round(sum(samples) / len(samples), 3) if samples else None
+        )
+        result[f"{stage}_timing_samples"] = len(samples)
+    return result
 
 
 def _parser() -> argparse.ArgumentParser:

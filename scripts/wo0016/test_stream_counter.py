@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "wo0015"))
 
 from camera_adapter import gray320x240_to_rgb_packet
+from packet_encoder import gray320x240_to_rgb_packet_into
 from stream_counter import (
     BufferState,
     DoubleBufferStream,
@@ -154,7 +155,9 @@ def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
         tx_buffers=tx_buffers,
         rx_buffers=rx_buffers,
         counter=MaskCounter(),
-        packet_encoder=gray320x240_to_rgb_packet,
+        packet_encoder=lambda gray, *, frame_id: pytest.fail("bytes encoder should not run"),
+        packet_encoder_into=gray320x240_to_rgb_packet_into,
+        stage_timings_ms={"encode": [], "dma": [], "postprocess": []},
     )
 
     results = asyncio.run(stream.run(_frames(1)))
@@ -164,6 +167,9 @@ def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
     assert np.asarray(send.buffer).tobytes() == gray320x240_to_rgb_packet(
         np.zeros((240, 320), dtype=np.uint8), frame_id=0
     )
+    assert len(stream.stage_timings_ms["encode"]) == 1
+    assert len(stream.stage_timings_ms["dma"]) == 1
+    assert len(stream.stage_timings_ms["postprocess"]) == 1
 
 
 class MockRxChannel:
