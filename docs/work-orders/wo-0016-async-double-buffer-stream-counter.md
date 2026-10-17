@@ -2,7 +2,7 @@
 
 | 项目 | 内容 |
 |---|---|
-| 状态 | Offline/Mock 回归完成；Stage A Attempt 8 完成 30 帧，15.157 FPS 达到 15 FPS 门槛；`roi_count_ms=17.657 ms` 未达到 `<=2.5 ms` 子目标；M6 螺母/垫片准确率待 Stage B 真值验收 |
+| 状态 | Stage A Attempt 8 完成 30/30 帧并通过 Packer 校验，端到端 15.157 FPS（1.979244 s，65.975 ms/帧）；`roi_count_ms=17.657 ms` 仍未达到 `<=2.5 ms` 子目标，CCL 实测调用 30/30 帧；回环预览收到 8 帧、5.921 FPS、零编码错误。Stage B 已就绪：计划动态投放 M6 螺母/垫片、150 帧、人工真值 5；待板端重新上电并完成运行前门禁。离线回归为 244 passed、1 skipped，测试输入清单来源限制见验收记录 |
 | 基线 | `feat/pl-stream-skeleton`，WO-0015 50 MHz、320×240 Binary8 S2MM 合同 |
 | 工作分支 | `codex/wo0016-counting-20261017` |
 | 范围 | Python PS 侧双缓冲调度、过线计数、MJPEG 预览和离线 Mock |

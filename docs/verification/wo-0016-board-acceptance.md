@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-**最新 Stage A Attempt 8 完成 30/30 帧，端到端吞吐为 15.157 FPS，达到 15 FPS 门槛；`avg_roi_count_ms=17.657 ms`，未达到 `<=2.5 ms` 目标。** 本次为空载基线，观测总计数与给定真值均为 0；该结果不代表 M6 螺母/垫片准确率。Packer 验证 30 帧，最终两个 DMA 通道 Idle 且无错，缓冲区已释放。Stage B 物料工况尚未运行。
+**最新 Stage A Attempt 8 完成 30/30 帧，端到端吞吐为 15.157 FPS（1.979244 s，65.975 ms/帧），达到 15 FPS 门槛；`avg_roi_count_ms=17.657 ms`，仍未达到 `<=2.5 ms` 目标。** 本次为空载基线，观测总计数与给定真值均为 0；该结果不代表 M6 螺母/垫片准确率。Packer 验证 30 帧，最终两个 DMA 通道 Idle 且无错，缓冲区已释放。Stage B 计划使用 150 帧动态投料、真值 `EXPECTED_COUNT=5`，尚未执行。
 
 ## Attempt 1 依赖对齐与 Guard 隔离
 
@@ -94,11 +94,12 @@ Attempt 3 原始 JSON 保存在 `/home/xilinx/wo0016/stage-a-30frames-attempt3-r
 | 完成处理帧数 / 30 帧目标 | Attempt 8：30 / 30 |
 | DMA / Checker / Packer 已验证完成帧数 | Attempt 8：30；运行后两个 DMA 通道 Idle 且无错 |
 | 总计数、人工真值、误差、准确率 | Attempt 8 空载基线：0 / 0 / 0 / 100%；不代表物料计数准确率 |
-| M6 螺母、垫片及混合物料样本 | NOT RUN |
+| M6 螺母、垫片及混合物料样本 | Stage B READY；计划真值 5、150 帧；实板采集 NOT RUN |
 | 输入 FPS、端到端处理 FPS、回环预览 FPS | 相机请求/回读 60 FPS；Attempt 8 端到端 15.157 FPS；HTTP 回环 5.921 FPS；浏览器渲染 FPS 未测 |
+| ROI 热路径 | `49×320` 窄带；Attempt 8 `avg_roi_count_ms=17.657 ms`；CCL 调用 30/30 帧，短路条件本次未触发 |
 | 传送带速度、照明、视野及物料过线工况 | NOT RUN |
 
-Attempt 8 结果记录 `guard.consumed=true`；板端复核无残留流计数进程，DMA 已静止且缓冲区已释放。当前最高端到端吞吐为 15.157 FPS，达到 15 FPS 门槛，但 ROI 计数仍高于 `2.5 ms` 目标。空载真值不能替代 M6 螺母或垫片准确率验收。
+Attempt 8 结果记录 `guard.consumed=true`；板端复核无残留流计数进程，DMA 已静止且缓冲区已释放。当前最高端到端吞吐为 15.157 FPS，达到 15 FPS 门槛，但 ROI 计数仍高于 `2.5 ms` 目标。空载真值不能替代 M6 螺母或垫片准确率验收。操作员本次交接报告板端已安全下电；该供电状态未在本轮独立读取，重新上电后需先执行只读门禁检查。
 
 ## Attempt 4 前的离线性能审计与优化
 
@@ -243,19 +244,19 @@ Attempt 7 的 `roi_count_ms=27.070` 是 `asyncio.to_thread(MaskCounter.update)` 
 
 CLI 现在接受 `--expected-count`（保留 `--ground-truth-count` 兼容名）和 `--material-label`，输出 `accuracy = 1 - abs(total_count - expected_count) / max(expected_count, 1)`。传入 `--measure-preview-client` 时，独立回环线程会连接本机 `/stream.mjpg` 并报告实际收到的帧数与 `preview_client_fps`；`avg_mjpeg_encode_ms` 汇总后台预览绘制/编码时长，快照移交单独报告为 `avg_mjpeg_handoff_ms`。回环速率是本机 HTTP MJPEG 交付速率，不是浏览器渲染帧率。
 
-离线回归 `pytest scripts/wo0016 scripts/wo0015` 为 `244 passed, 1 skipped`。功能实现提交 `ee362b8b8325df6fb4aa67f0e2a4bcc4b4cf99e3`（`codex/wo0016-counting-20261017`）。
+离线回归运行 `pytest scripts/wo0016 scripts/wo0015` 得到 `244 passed, 1 skipped`。由于该 checkout 中缺少 WO-0014 原始 `data/results/wo0014-offline-20261014/vectors/manifest.json`，本次通过临时目录中按现存 487 张 H3 PNG 重建输入清单，并将归档 WO-0015 向量清单中的源帧哈希逐一交叉核对后运行；原始输入清单的规范哈希来源未能复核。测试没有改写仓库测试或源数据。功能实现提交 `ee362b8b8325df6fb4aa67f0e2a4bcc4b4cf99e3`（`codex/wo0016-counting-20261017`）。
 
 板端只做预部署和只读检查，没有启动采集、PYNQ、Overlay 或 DMA。Attempt 7 活动 Guard 原样移动至 `/var/lib/wo0016/attempt-7/stream-counter-consumed.json`，归档 SHA-256 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671` 与归档前相同，原活动路径已不存在；目录/文件权限为 `0700/0600`。`/home/xilinx/wo0016/` 已部署并逐文件核对：`run_stream_counter.py` SHA-256 `fc58d73f14433c9a0917e82283ee43b918ea6bd9f81baadabb0410e980913956`，`stream_counter.py` `67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625`，`mjpeg_preview.py` `86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6`。
 
 预部署后只读快照：Boot ID 与固定值相同；CmaFree 为 67,440 KiB（门槛 32,768 KiB）；`/dev/video0` 没有进程持有；V4L2 回读 `auto_exposure=1`（Manual Mode）及 `exposure_time_absolute=50`；8080 没有监听；MM2S/S2MM DMASR 均为 `0x00001002`。这些状态只代表预部署时的只读观测，下一次经授权运行前仍需重新检查。
 
-Stage B 单次命令模板（仅待投料就绪并获得操作员执行口令后使用；操作员届时填写 `EXPECTED_COUNT`，当前留空并有格式门禁，本次不运行）：
+Stage B 单次命令格式参考（按当前交接计划设置 `EXPECTED_COUNT=5`；板端重新上电后不得照抄旧 Boot ID、旧目录或旧 Guard。由于 Stage 1 回执与本次运行必须同 Boot，需先读取新 Boot ID，重新核验/生成同 Boot 的 WO-0015 Stage 1 回执、manifest 与一次性 Guard，再替换下方旧路径和 SHA-256。本次不运行）：
 
 ```bash
 PY=/usr/local/share/pynq-venv/bin/python3
 WO16=/home/xilinx/wo0016
 WO15_FINAL=/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd
-EXPECTED_COUNT=
+EXPECTED_COUNT=5
 
 case "$EXPECTED_COUNT" in
   ''|*[!0-9]*) echo "Set EXPECTED_COUNT to the operator's ground-truth integer first"; exit 1 ;;
@@ -281,6 +282,8 @@ sudo -n env XILINX_XRT=/usr "$PY" "$WO16/run_stream_counter.py" \
 | 总耗时 / wall frame / 端到端吞吐 | 1.979244 s / 65.975 ms / 15.157 FPS |
 | `avg_capture_ms` / `avg_encode_ms` / `avg_dma_ms` | 37.909 / 13.426 / 9.753 ms |
 | `avg_postprocess_ms` / `avg_roi_count_ms` | 25.810 / 17.657 ms |
+| AFI1 RD / WR 读回 | `0x00000001` / `0x00000f01`（32-bit 寄存器值） |
+| 双缓冲布局 / 采集预取深度 | 2 DMA 槽、4 个缓冲区 / 1 帧 |
 | ROI `validate_ms` / `projection_ms` / `ccl_ms` / `track_ms` | 1.705 / 5.117 / 3.976 / 1.467 ms |
 | CCL 调用 / 最大 ROI 前景像素 | 30 / 30 帧 / 5,400 |
 | 回环预览客户端帧数 / `preview_client_fps` | 8 / 5.921 FPS |
@@ -288,6 +291,15 @@ sudo -n env XILINX_XRT=/usr "$PY" "$WO16/run_stream_counter.py" \
 | 观测计数 / 人工真值 / JSON 准确率 | 0 / 0 / 100%（仅空载基线） |
 | 最终 MM2S / S2MM DMASR / 缓冲区释放 | `0x00001002` / `0x00001002` / 是 |
 
-本次吞吐门槛通过，但 ROI 计时目标未通过。四个 ROI 子项合计 12.265 ms，与 `avg_roi_count_ms` 相差约 5.392 ms；CCL 每帧均运行，故空 ROI 短路没有生效。回环 FPS 表示本机 HTTP MJPEG 交付速率，不是浏览器渲染 FPS。空载总计数与真值相符不构成 M6 螺母/垫片准确率验收，Stage B 仍待投料就绪和单次执行授权。
+本次吞吐门槛通过，但 ROI 计时目标未通过。四个 ROI 子项合计 12.265 ms，与 `avg_roi_count_ms` 相差约 5.392 ms；CCL 每帧均运行，故本次空 ROI 短路没有命中。回环 FPS 表示本机 HTTP MJPEG 交付速率，不是浏览器渲染 FPS。空载总计数与真值相符不构成 M6 螺母/垫片准确率验收，Stage B 仍待投料与板端上电后的同 Boot 门禁准备。
 
 执行前独立只读门禁通过：固定 Boot ID、CmaFree 66,460 KiB、摄像头空闲、手动曝光 `1/50`、8080 端口空闲、两个 DMASR 均为 `0x00001002`。运行器 JSON 的 CMA 快照则分别为启动前 51,828 KiB、缓冲区分配后 36,304 KiB、释放后 38,232 KiB；流程结束后的另一次只读检查为 66,952 KiB。这些是不同采样时点，不应视作同一 CMA 水位或要求数值相等。结束复核还确认 Boot ID 未变、摄像头空闲、曝光 `1/50`、8080 已关闭、无残留流计数进程，两个 DMASR 仍为 `0x00001002`。结果 JSON 记录 `buffers_released=true` 与 `guard.consumed=true`。
+
+## Stage B 状态交接
+
+- Stage A 的 Attempt 7 与 Attempt 8 均完成 30/30 帧并通过 Packer；Attempt 8 为当前吞吐记录：15.157 FPS、65.975 ms/帧。Attempt 8 空载计数为 0，不能作为物料准确率证明。
+- 已实现的 Binary8 校验限制在 49×320 窄带 ROI，且代码含 `min_area` 短路；但 Attempt 8 的 ROI 前景峰值为 5,400 像素，短路条件没有命中，CCL 实测调用 30/30 帧。`avg_roi_count_ms=17.657 ms`，因此 ROI 子目标仍未通过，不能记作热点已完全消除。
+- MJPEG 本机回环收到 8 帧，实测 5.921 FPS、编码错误 0；这不是浏览器渲染 FPS。异步预取深度为 1、DMA 双槽已在该 Stage A 运行中使用。
+- Stage B 计划为动态投放 M6 螺母与垫片、150 帧、人工真值 `EXPECTED_COUNT=5`。物料工况及准确率仍为 NOT RUN。
+- 操作员交接称板端已安全下电；本轮没有板端连接或独立确认供电状态。重新上电会形成新的 Boot ID，因此必须先运行只读门禁并准备新的同 Boot Stage 1 回执、manifest 与一次性 Guard，再进入 Stage B；不能复用本报告中固定为旧 Boot ID 的命令字段。
+- 离线回归记录为 `244 passed, 1 skipped`，其临时重建源清单的限制见前文。本次交接以隔离分支提交 `3d05133` 为基线；该分支已推送，尚未合并至 `main`。
