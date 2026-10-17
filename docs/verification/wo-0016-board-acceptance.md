@@ -87,18 +87,18 @@ Attempt 3 原始 JSON 保存在 `/home/xilinx/wo0016/stage-a-30frames-attempt3-r
 
 运行后只读检查确认 Boot ID 不变、CmaFree 为 73932 KiB、没有残留流计数进程或 `/dev/video0` 占用，8080 监听已关闭，两个 DMA 通道仍 Idle 且无错。Attempt 2 Guard 保留在归档目录；Attempt 3 一次性 Guard 留在活动路径，未清除。此次只证明 30 帧链路完成，不代表达到实时帧率目标，也不证明传送带上 M6 螺母或垫片的计数准确率。
 
-## 尚未完成的物料验收
+## 当前 Stage A 与物料验收状态
 
 | 记录项 | 结果 |
 |---|---|
-| 完成处理帧数 / 30 帧目标 | Attempt 5：30 / 30 |
-| DMA / Checker / Packer 已验证完成帧数 | Attempt 5：30；运行后两个 DMA 通道 Idle 且无错 |
-| 总计数、人工真值、误差、准确率 | Attempt 5 观测计数 0；无人工真值，误差与准确率不可计算 |
+| 完成处理帧数 / 30 帧目标 | Attempt 8：30 / 30 |
+| DMA / Checker / Packer 已验证完成帧数 | Attempt 8：30；运行后两个 DMA 通道 Idle 且无错 |
+| 总计数、人工真值、误差、准确率 | Attempt 8 空载基线：0 / 0 / 0 / 100%；不代表物料计数准确率 |
 | M6 螺母、垫片及混合物料样本 | NOT RUN |
-| 输入 FPS、端到端处理 FPS、浏览器预览 FPS | 相机请求/回读 60 FPS；Attempt 5 端到端 11.409 FPS；浏览器实际显示 FPS 未测 |
+| 输入 FPS、端到端处理 FPS、回环预览 FPS | 相机请求/回读 60 FPS；Attempt 8 端到端 15.157 FPS；HTTP 回环 5.921 FPS；浏览器渲染 FPS 未测 |
 | 传送带速度、照明、视野及物料过线工况 | NOT RUN |
 
-Attempt 2、3、4 Guard 已归档，Attempt 5 Guard 保留在活动路径；板端无残留流计数进程，DMA 已静止且缓冲区已释放。当前最高端到端吞吐为 11.409 FPS，未达到 15 FPS 实时门槛；没有物料真值，不能推断 M6 螺母或垫片计数准确率。
+Attempt 8 结果记录 `guard.consumed=true`；板端复核无残留流计数进程，DMA 已静止且缓冲区已释放。当前最高端到端吞吐为 15.157 FPS，达到 15 FPS 门槛，但 ROI 计数仍高于 `2.5 ms` 目标。空载真值不能替代 M6 螺母或垫片准确率验收。
 
 ## Attempt 4 前的离线性能审计与优化
 
@@ -290,4 +290,4 @@ sudo -n env XILINX_XRT=/usr "$PY" "$WO16/run_stream_counter.py" \
 
 本次吞吐门槛通过，但 ROI 计时目标未通过。四个 ROI 子项合计 12.265 ms，与 `avg_roi_count_ms` 相差约 5.392 ms；CCL 每帧均运行，故空 ROI 短路没有生效。回环 FPS 表示本机 HTTP MJPEG 交付速率，不是浏览器渲染 FPS。空载总计数与真值相符不构成 M6 螺母/垫片准确率验收，Stage B 仍待投料就绪和单次执行授权。
 
-执行前只读门禁通过：固定 Boot ID、CmaFree 66,460 KiB、摄像头空闲、手动曝光 `1/50`、8080 端口空闲、两个 DMASR 均为 `0x00001002`。结束后复核 Boot ID 未变、CmaFree 66,952 KiB、摄像头空闲、曝光 `1/50`、8080 已关闭、无残留流计数进程，两个 DMASR 仍为 `0x00001002`。结果 JSON 记录 `buffers_released=true` 与 `guard.consumed=true`。
+执行前独立只读门禁通过：固定 Boot ID、CmaFree 66,460 KiB、摄像头空闲、手动曝光 `1/50`、8080 端口空闲、两个 DMASR 均为 `0x00001002`。运行器 JSON 的 CMA 快照则分别为启动前 51,828 KiB、缓冲区分配后 36,304 KiB、释放后 38,232 KiB；流程结束后的另一次只读检查为 66,952 KiB。这些是不同采样时点，不应视作同一 CMA 水位或要求数值相等。结束复核还确认 Boot ID 未变、摄像头空闲、曝光 `1/50`、8080 已关闭、无残留流计数进程，两个 DMASR 仍为 `0x00001002`。结果 JSON 记录 `buffers_released=true` 与 `guard.consumed=true`。
