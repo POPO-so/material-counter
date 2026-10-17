@@ -1,0 +1,29 @@
+{
+  "source_files": {
+    "rx_raw.bin": {
+      "bytes": 76800,
+      "sha256": "7a007545ac170b9fa1a4379f4e10e9cddfcb7bd1f2cfe59bdb4f399c5fb2727e"
+    },
+    "expected_golden.bin": {
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e"
+    }
+  },
+  "rx_word_count": 19200,
+  "golden_word_count": 19200,
+  "even_rx_word_count": 9600,
+  "even_rx_vs_golden_even_indices": {
+    "word_count": 9600,
+    "word_matches": 9180,
+    "word_mismatches": 420,
+    "matching_bytes": 37280,
+    "byte_mismatches": 1120
+  },
+  "even_rx_vs_golden_first_9600_words": {
+    "word_count": 9600,
+    "word_matches": 8850,
+    "word_mismatches": 750,
+    "matching_bytes": 36000,
+    "byte_mismatches": 2400
+  }
+}
