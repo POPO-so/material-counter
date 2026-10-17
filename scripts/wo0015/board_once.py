@@ -191,7 +191,8 @@ def write_afi1_phys32(address: int, value: int, *, mem_path: str = "/dev/mem",
         mapped = mmap_fn(fd, page_size, access=mmap.ACCESS_WRITE, offset=page_base)
         try:
             mapped[page_offset:page_offset + 4] = value.to_bytes(4, "little")
-            mapped.flush()
+            # Device MMIO stores take effect at assignment time; mmap.flush()
+            # is for file-backed mappings and may fail with EINVAL on /dev/mem.
         finally:
             mapped.close()
     finally:

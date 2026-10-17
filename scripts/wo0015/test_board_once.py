@@ -88,6 +88,7 @@ def test_afi1_physical_writer_uses_writable_mapping_only_for_allowlisted_words()
 
         def flush(self):
             self.flushed = True
+            raise OSError(22, "Invalid argument")
 
         def close(self):
             self.closed = True
@@ -103,7 +104,7 @@ def test_afi1_physical_writer_uses_writable_mapping_only_for_allowlisted_words()
     )
 
     assert int.from_bytes(mapped[0x14:0x18], "little") == 0x00000F01
-    assert mapped.flushed and mapped.closed
+    assert not mapped.flushed and mapped.closed
     assert events[0][0:2] == ("open", "/dev/mem")
     assert events[1] == ("mmap", 7, 4096, {"access": runner.mmap.ACCESS_WRITE, "offset": 0xF8009000})
     assert events[-1] == ("close", 7)
