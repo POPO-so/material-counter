@@ -298,6 +298,7 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         CAP_PROP_FRAME_HEIGHT = 4
         CAP_PROP_FPS = 5
         INTER_NEAREST = 6
+        CAP_PROP_BUFFERSIZE = 7
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -335,6 +336,7 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         (FakeCv2.CAP_PROP_FRAME_WIDTH, 640),
         (FakeCv2.CAP_PROP_FRAME_HEIGHT, 400),
         (FakeCv2.CAP_PROP_FPS, 60),
+        (FakeCv2.CAP_PROP_BUFFERSIZE, 1),
     ]
     assert resize_calls == [(2, (320, 240), FakeCv2.INTER_NEAREST, 77)] * 2
     assert len(steady_start_time) == 1
@@ -342,11 +344,178 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         "camera_fps_requested": 60,
         "camera_fps_actual": 60.0,
         "camera_warmup_frames": 2,
+        "camera_buffer_size": 1,
+        "camera_prefetch_depth": 1,
         "camera_width": 640,
         "camera_height": 400,
         "camera_output_width": 320,
         "camera_output_height": 240,
     }
+
+
+def test_camera_prefetches_next_ordered_frame_and_joins_before_release():
+    next_read_started = threading.Event()
+    allow_next_read_to_finish = threading.Event()
+    read_lock = threading.Lock()
+    active_reads = 0
+    max_active_reads = 0
+    release_active_reads = []
+
+    class Capture:
+        def __init__(self):
+            self.properties = {}
+            self.reads = 0
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            self.properties[prop] = value
+            return True
+
+        def get(self, prop):
+            if prop == FakeCv2.CAP_PROP_FOURCC:
+                return FakeCv2.VideoWriter_fourcc(*"MJPG")
+            return self.properties[prop]
+
+        def read(self):
+            nonlocal active_reads, max_active_reads
+            with read_lock:
+                self.reads += 1
+                read_number = self.reads
+                active_reads += 1
+                max_active_reads = max(max_active_reads, active_reads)
+            try:
+                if read_number == 4:
+                    next_read_started.set()
+                    if not allow_next_read_to_finish.wait(timeout=1.0):
+                        return False, None
+                frame = np.full((400, 640, 3), read_number, dtype=np.uint8)
+                return True, frame
+            finally:
+                with read_lock:
+                    active_reads -= 1
+
+        def release(self):
+            with read_lock:
+                release_active_reads.append(active_reads)
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        INTER_NEAREST = 6
+        CAP_PROP_BUFFERSIZE = 7
+
+        @staticmethod
+        def VideoCapture(device, backend):
+            return Capture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        @staticmethod
+        def resize(gray, dimensions, interpolation):
+            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+
+    async def consume_two():
+        frames = camera_gray_frames("/dev/video-test", max_frames=2,
+                                    cv2_module=FakeCv2, read_timeout_s=0.5)
+        first = await anext(frames)
+        # Simulate work on frame 0 while the one-slot camera worker reads frame 1.
+        assert await asyncio.to_thread(next_read_started.wait, 0.2)
+        allow_next_read_to_finish.set()
+        second = await anext(frames)
+        with pytest.raises(StopAsyncIteration):
+            await anext(frames)
+        return first, second
+
+    first, second = asyncio.run(consume_two())
+
+    assert first.shape == second.shape == (240, 320)
+    assert (int(first[0, 0]), int(second[0, 0])) == (3, 4)
+    assert max_active_reads == 1
+    assert release_active_reads == [0]
+
+
+def test_camera_close_joins_an_inflight_prefetch_before_releasing_device():
+    next_read_started = threading.Event()
+    allow_next_read_to_finish = threading.Event()
+    active_reads = 0
+    released_with_active_reads = []
+
+    class Capture:
+        def __init__(self):
+            self.properties = {}
+            self.reads = 0
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            self.properties[prop] = value
+            return True
+
+        def get(self, prop):
+            if prop == FakeCv2.CAP_PROP_FOURCC:
+                return FakeCv2.VideoWriter_fourcc(*"MJPG")
+            return self.properties[prop]
+
+        def read(self):
+            nonlocal active_reads
+            self.reads += 1
+            read_number = self.reads
+            active_reads += 1
+            try:
+                if read_number == 4:
+                    next_read_started.set()
+                    assert allow_next_read_to_finish.wait(timeout=1.0)
+                return True, np.full((400, 640, 3), read_number, dtype=np.uint8)
+            finally:
+                active_reads -= 1
+
+        def release(self):
+            released_with_active_reads.append(active_reads)
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        INTER_NEAREST = 6
+        CAP_PROP_BUFFERSIZE = 7
+
+        @staticmethod
+        def VideoCapture(device, backend):
+            return Capture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        @staticmethod
+        def resize(gray, dimensions, interpolation):
+            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+
+    async def close_after_first_frame():
+        frames = camera_gray_frames("/dev/video-test", max_frames=2,
+                                    cv2_module=FakeCv2, read_timeout_s=0.5)
+        first = await anext(frames)
+        assert int(first[0, 0]) == 3
+        assert await asyncio.to_thread(next_read_started.wait, 0.2)
+        close_task = asyncio.create_task(frames.aclose())
+        await asyncio.sleep(0.02)
+        assert not released_with_active_reads
+        allow_next_read_to_finish.set()
+        await close_task
+
+    asyncio.run(close_after_first_frame())
+
+    assert released_with_active_reads == [0]
 
 
 def test_camera_rejects_v4l2_fps_below_50_before_starting_stream():

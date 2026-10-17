@@ -135,8 +135,57 @@ def test_roi_passes_cached_uint8_view_to_fast_connected_components(monkeypatch):
     assert np.shares_memory(observed["image"], mask)
     if fast_algorithm is not None and callable(fast_ccl):
         assert observed["connectivity"] == 8
-        assert observed["ltype"] == cv2.CV_32S
+        assert observed["ltype"] == cv2.CV_16U
         assert observed["ccltype"] == fast_algorithm
+
+
+def test_default_line_roi_is_narrow_and_empty_band_skips_connected_components(monkeypatch):
+    counter = MaskCounter()
+    assert counter.roi_half_height == 24
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    observed = {}
+
+    def forbidden_ccl(*args, **kwargs):
+        pytest.fail("an empty line band must short-circuit before CCL")
+
+    monkeypatch.setattr(cv2, "connectedComponentsWithStats", forbidden_ccl)
+    fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
+    if callable(fast_ccl):
+        monkeypatch.setattr(cv2, "connectedComponentsWithStatsWithAlgorithm", forbidden_ccl)
+
+    detections, top, bottom, row_projection, column_projection = (
+        counter._extract_roi_detections(mask)
+    )
+
+    assert (top, bottom) == (96, 145)
+    assert len(row_projection) == 49
+    assert not detections
+    assert row_projection == (0,) * 49
+    assert column_projection == (0,) * 320
+
+
+def test_small_total_foreground_short_circuits_without_changing_projections(monkeypatch):
+    counter = MaskCounter(line_y=120, roi_half_height=24, min_area=12)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    mask[118, 20:31] = 0xFF
+
+    def forbidden_ccl(*args, **kwargs):
+        pytest.fail("foreground below min_area must short-circuit before CCL")
+
+    monkeypatch.setattr(cv2, "connectedComponentsWithStats", forbidden_ccl)
+    fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
+    if callable(fast_ccl):
+        monkeypatch.setattr(cv2, "connectedComponentsWithStatsWithAlgorithm", forbidden_ccl)
+
+    detections, top, bottom, row_projection, column_projection = (
+        counter._extract_roi_detections(mask)
+    )
+
+    assert (top, bottom) == (96, 145)
+    assert not detections
+    assert row_projection[22] == 11
+    assert sum(row_projection) == 11
+    assert sum(column_projection) == 11
 
 
 def test_top_to_bottom_track_counts_once_after_confirmation_and_hysteresis():

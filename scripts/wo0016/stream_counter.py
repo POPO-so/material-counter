@@ -94,7 +94,7 @@ class MaskCounter:
     """Count confirmed connected components crossing a horizontal Binary8 line."""
 
     def __init__(self, *, width: int = WIDTH, height: int = HEIGHT,
-                 line_y: int = 120, roi_half_height: int = 48,
+                 line_y: int = 120, roi_half_height: int = 24,
                  min_area: int = 12, direction: int = 1,
                  hysteresis: float = 2.0, confirm_hits: int = 2,
                  max_missing: int = 1, max_step: float = 24.0,
@@ -156,15 +156,17 @@ class MaskCounter:
             roi = np.ascontiguousarray(roi)
         row_projection = tuple(int(value) for value in np.count_nonzero(roi, axis=1))
         column_projection = tuple(int(value) for value in np.count_nonzero(roi, axis=0))
+        if cv2.countNonZero(roi) < self.min_area:
+            return [], top, bottom, row_projection, column_projection
         fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
         fast_algorithm = getattr(cv2, "CCL_GRANA", None)
         if callable(fast_ccl) and fast_algorithm is not None:
             count, _, stats, centroids = fast_ccl(
-                roi, 8, cv2.CV_32S, fast_algorithm
+                roi, 8, cv2.CV_16U, fast_algorithm
             )
         else:
             count, _, stats, centroids = cv2.connectedComponentsWithStats(
-                roi, connectivity=8, ltype=cv2.CV_32S
+                roi, connectivity=8, ltype=cv2.CV_16U
             )
         qualified_labels = np.flatnonzero(
             stats[1:count, cv2.CC_STAT_AREA] >= self.min_area
@@ -414,8 +416,11 @@ class DoubleBufferStream:
             raise RuntimeError("a DoubleBufferStream instance can run only once")
         self._has_run = True
         consumer = asyncio.create_task(self._consume_ready_slots())
+        frame_iterator = frames.__aiter__()
         try:
-            async for frame_id, gray in _enumerate_frames(frames):
+            async for frame_id, gray in _enumerate_frames(frame_iterator):
+                if consumer.done():
+                    consumer.result()
                 gray = np.asarray(gray)
                 if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
                     raise ValueError(f"source frames must be uint8 Gray8 {(HEIGHT, WIDTH)} arrays")
@@ -484,6 +489,8 @@ class DoubleBufferStream:
                     self._record_timing("packer_check", packer_check_seconds)
                 self._postprocess_ms[frame_id] = postprocess_ms
 
+                if consumer.done():
+                    consumer.result()
                 slot.state = BufferState.CPU_READY
                 await self._ready_slots.put(slot)
 
@@ -499,6 +506,10 @@ class DoubleBufferStream:
                 except asyncio.CancelledError:
                     pass
             raise
+        finally:
+            close_frames = getattr(frame_iterator, "aclose", None)
+            if callable(close_frames):
+                await close_frames()
 
     async def _consume_ready_slots(self) -> None:
         while True:

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from concurrent.futures import Future, ThreadPoolExecutor
 import hashlib
 import json
 import math
@@ -219,7 +220,7 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                              steady_start_time: list[float] | None = None,
                              capture_metadata: dict[str, Any] | None = None
                              ) -> AsyncIterator[np.ndarray]:
-    """Warm up the 60 FPS OV9281 MJPG mode, then yield timed Gray8 frames."""
+    """Warm up and yield ordered Gray8 frames with one-frame camera prefetch."""
     if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
         raise ValueError("max_frames must be a positive integer")
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
@@ -227,6 +228,10 @@ async def camera_gray_frames(device: str, *, max_frames: int,
         raise ValueError("read_timeout_s must be finite and positive")
     capture = cv2_module.VideoCapture(device, cv2_module.CAP_V4L2)
     failed = False
+    released = False
+    executor: ThreadPoolExecutor | None = None
+    pending: Future | None = None
+    pending_waiter: asyncio.Future | None = None
     try:
         if not capture.isOpened():
             raise RuntimeError(f"cannot open V4L2 camera device {device}")
@@ -239,6 +244,10 @@ async def camera_gray_frames(device: str, *, max_frames: int,
         )
         if any(not capture.set(prop, value) for prop, value in requested):
             raise RuntimeError("V4L2 rejected the configured MJPG 640x400 60 FPS capture mode")
+        buffer_size_property = getattr(cv2_module, "CAP_PROP_BUFFERSIZE", None)
+        if (buffer_size_property is not None
+                and not capture.set(buffer_size_property, 1)):
+            raise RuntimeError("V4L2 rejected the single-frame camera buffer setting")
         actual_fourcc = int(round(capture.get(cv2_module.CAP_PROP_FOURCC)))
         actual_format = "".join(chr((actual_fourcc >> (8 * byte)) & 0xFF)
                                 for byte in range(4))
@@ -256,39 +265,15 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
             )
 
-        async def read_camera_frame(*, warmup: bool) -> np.ndarray:
-            try:
-                ok, frame = await _daemon_call_with_timeout(
-                    capture.read, timeout_s=float(read_timeout_s),
-                    thread_name="wo0016-camera-read",
-                )
-            except asyncio.TimeoutError as exc:
-                prefix = "V4L2 warm-up read" if warmup else "V4L2 camera read"
-                raise RuntimeError(f"{prefix} timed out; no retry was attempted") from exc
+        def read_gray_frame(*, warmup: bool) -> tuple[np.ndarray, float]:
+            capture_started = time.perf_counter()
+            ok, frame = capture.read()
             if not ok or frame is None:
                 prefix = "V4L2 warm-up" if warmup else "V4L2"
                 raise RuntimeError(f"{prefix} returned no camera frame")
-            return np.asarray(frame)
-
-        warmup_frames = 2
-        for _ in range(warmup_frames):
-            await read_camera_frame(warmup=True)
-        if capture_metadata is not None:
-            capture_metadata.update({
-                "camera_fps_requested": 60,
-                "camera_fps_actual": actual_fps,
-                "camera_warmup_frames": warmup_frames,
-                "camera_width": actual_width,
-                "camera_height": actual_height,
-                "camera_output_width": WIDTH,
-                "camera_output_height": HEIGHT,
-            })
-        if steady_start_time is not None:
-            steady_start_time[:] = [time.perf_counter()]
-
-        for _ in range(max_frames):
-            capture_started = time.perf_counter()
-            image = await read_camera_frame(warmup=False)
+            image = np.asarray(frame)
+            if warmup:
+                return image, (time.perf_counter() - capture_started) * 1000.0
             if image.ndim == 3 and image.shape[2] in (1, 3, 4):
                 image = image[:, :, 0]
             if image.dtype != np.uint8 or image.shape != (400, 640):
@@ -302,17 +287,88 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                     f"resized camera frame is {gray.dtype} {gray.shape}; "
                     f"expected uint8 {(HEIGHT, WIDTH)}"
                 )
+            return gray, (time.perf_counter() - capture_started) * 1000.0
+
+        executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="wo0016-camera")
+
+        async def get_frame(*, warmup: bool) -> tuple[np.ndarray, float]:
+            nonlocal pending, pending_waiter
+            if pending is None:
+                raise RuntimeError("camera prefetch slot is empty")
+            done, _ = await asyncio.wait(
+                (pending_waiter,), timeout=float(read_timeout_s)
+            )
+            if not done:
+                prefix = "V4L2 warm-up read" if warmup else "V4L2 camera read"
+                raise RuntimeError(f"{prefix} timed out; no retry was attempted")
+            frame_result = await pending_waiter
+            pending = None
+            pending_waiter = None
+            return frame_result
+
+        def prefetch(*, warmup: bool) -> None:
+            nonlocal pending, pending_waiter
+            if executor is None or pending is not None:
+                raise RuntimeError("camera prefetch slot is not available")
+            pending = executor.submit(read_gray_frame, warmup=warmup)
+            pending_waiter = asyncio.wrap_future(pending)
+
+        warmup_frames = 2
+        for _ in range(warmup_frames):
+            prefetch(warmup=True)
+            await get_frame(warmup=True)
+        if capture_metadata is not None:
+            capture_metadata.update({
+                "camera_fps_requested": 60,
+                "camera_fps_actual": actual_fps,
+                "camera_warmup_frames": warmup_frames,
+                "camera_buffer_size": 1 if buffer_size_property is not None else None,
+                "camera_prefetch_depth": 1,
+                "camera_width": actual_width,
+                "camera_height": actual_height,
+                "camera_output_width": WIDTH,
+                "camera_output_height": HEIGHT,
+            })
+        if steady_start_time is not None:
+            steady_start_time[:] = [time.perf_counter()]
+
+        for frame_index in range(max_frames):
+            if pending is None:
+                prefetch(warmup=False)
+            gray, capture_ms = await get_frame(warmup=False)
             if capture_timings_ms is not None:
-                capture_timings_ms.append((time.perf_counter() - capture_started) * 1000.0)
+                capture_timings_ms.append(capture_ms)
+            if frame_index + 1 < max_frames:
+                prefetch(warmup=False)
             yield gray
+    except GeneratorExit:
+        raise
     except BaseException:
         failed = True
         raise
     finally:
-        if failed:
-            threading.Thread(target=capture.release, name="wo0016-camera-release",
-                             daemon=True).start()
-        else:
+        if executor is not None:
+            if pending is not None:
+                if not pending.done():
+                    if failed:
+                        # On an exceptional close, release is the only way to unblock a
+                        # driver read; after it returns the single worker is joined below.
+                        capture.release()
+                        released = True
+                    else:
+                        done, _ = await asyncio.wait(
+                            (pending_waiter,), timeout=float(read_timeout_s)
+                        )
+                        if not done:
+                            capture.release()
+                            released = True
+                try:
+                    await pending_waiter
+                except BaseException:
+                    if not failed:
+                        raise
+            executor.shutdown(wait=True, cancel_futures=True)
+        if not released:
             await _daemon_call_with_timeout(
                 capture.release, timeout_s=float(read_timeout_s),
                 thread_name="wo0016-camera-release",
