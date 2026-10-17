@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-**Stage A Attempt 5 完成 30/30 帧，端到端吞吐为 11.409 FPS，仍低于 15 FPS 目标；物料准确率尚未验收。** Packer 验证 30 帧，最终两个 DMA 通道 Idle 且无错，缓冲区已释放。未提供人工真值，故观测总计数 0 不能转换为准确率。M6 螺母、垫片及传送带工况仍未验收。
+**最新 Stage A Attempt 8 完成 30/30 帧，端到端吞吐为 15.157 FPS，达到 15 FPS 门槛；`avg_roi_count_ms=17.657 ms`，未达到 `<=2.5 ms` 目标。** 本次为空载基线，观测总计数与给定真值均为 0；该结果不代表 M6 螺母/垫片准确率。Packer 验证 30 帧，最终两个 DMA 通道 Idle 且无错，缓冲区已释放。Stage B 物料工况尚未运行。
 
 ## Attempt 1 依赖对齐与 Guard 隔离
 
@@ -270,3 +270,24 @@ sudo -n env XILINX_XRT=/usr "$PY" "$WO16/run_stream_counter.py" \
   --material-label M6_nut_and_washer --measure-preview-client \
   --output-json "$WO16/stage-b-m6-150frames-result.json"
 ```
+
+## Attempt 8 单次空载基准与回环预览（2026-10-18）
+
+操作员授权后执行了一次 30 帧实测，`material_label=empty_belt_baseline`、人工真值 `0`。原始 JSON 位于板端 `/home/xilinx/wo0016/stage-a-30frames-attempt8-result.json`，本地副本为 [`stage-a-30frames-attempt8-result.json`](../../data/results/wo0016-stage-a-attempt8-20261018/stage-a-30frames-attempt8-result.json)，SHA-256 为 `90e653ecf61a148bfd0fde68ae52edbca2547103fcf234ff340240bc975bfd56`。
+
+| 指标 | Attempt 8 实测 |
+|---|---:|
+| 状态、处理帧数、Packer 验证帧数 | `BOARD_STREAM_COMPLETE`，30 / 30，30 / 30 |
+| 总耗时 / wall frame / 端到端吞吐 | 1.979244 s / 65.975 ms / 15.157 FPS |
+| `avg_capture_ms` / `avg_encode_ms` / `avg_dma_ms` | 37.909 / 13.426 / 9.753 ms |
+| `avg_postprocess_ms` / `avg_roi_count_ms` | 25.810 / 17.657 ms |
+| ROI `validate_ms` / `projection_ms` / `ccl_ms` / `track_ms` | 1.705 / 5.117 / 3.976 / 1.467 ms |
+| CCL 调用 / 最大 ROI 前景像素 | 30 / 30 帧 / 5,400 |
+| 回环预览客户端帧数 / `preview_client_fps` | 8 / 5.921 FPS |
+| `avg_mjpeg_encode_ms` / `avg_mjpeg_handoff_ms` | 33.752 / 0.411 ms |
+| 观测计数 / 人工真值 / JSON 准确率 | 0 / 0 / 100%（仅空载基线） |
+| 最终 MM2S / S2MM DMASR / 缓冲区释放 | `0x00001002` / `0x00001002` / 是 |
+
+本次吞吐门槛通过，但 ROI 计时目标未通过。四个 ROI 子项合计 12.265 ms，与 `avg_roi_count_ms` 相差约 5.392 ms；CCL 每帧均运行，故空 ROI 短路没有生效。回环 FPS 表示本机 HTTP MJPEG 交付速率，不是浏览器渲染 FPS。空载总计数与真值相符不构成 M6 螺母/垫片准确率验收，Stage B 仍待投料就绪和单次执行授权。
+
+执行前只读门禁通过：固定 Boot ID、CmaFree 66,460 KiB、摄像头空闲、手动曝光 `1/50`、8080 端口空闲、两个 DMASR 均为 `0x00001002`。结束后复核 Boot ID 未变、CmaFree 66,952 KiB、摄像头空闲、曝光 `1/50`、8080 已关闭、无残留流计数进程，两个 DMASR 仍为 `0x00001002`。结果 JSON 记录 `buffers_released=true` 与 `guard.consumed=true`。
