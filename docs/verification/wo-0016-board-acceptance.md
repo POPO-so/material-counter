@@ -202,4 +202,35 @@ Attempt 6 的 30 帧链路通过，但吞吐仍低于 15 FPS 目标；ROI 计数
 
 板端单次运行后，`_extract_roi_detections` 又做了离线优化：直接把 Cached `uint8` ROI 视图交给 CCL，不再为二值化创建布尔整帧副本；若 OpenCV 提供接口，则使用 `CCL_GRANA`，并先用 NumPy 向量化筛掉面积不足的标签，避免 Python 遍历无效连通域。新增用例检查 ROI 与输入缓存共享内存，现有合成样本和 WO-0015 实拍样本仍与旧面积、质心和投影结果一致。
 
-这项后续改动没有部署到板端，也没有消耗第二次 Stage A 尝试。当前 Attempt 6 结果仍只对应提交 `60b2610eee84264c8d8a030c8654dd7eaa32ecde`；后续 ROI 快速路径只完成离线回归，需在另行授权的板端运行中测量实际 `roi_count_ms` 和吞吐。
+这项后续改动在 Attempt 6 之后当时只完成了离线回归，Attempt 6 结果仍只对应提交 `60b2610eee84264c8d8a030c8654dd7eaa32ecde`。以下 Attempt 7 记录了该 ROI 快速路径和单槽采集预取流水线的首次板端测量。
+
+## Attempt 6 的延迟核算与 Attempt 7 离线改动
+
+Attempt 6 原始 JSON 的 `elapsed_seconds=2.609150131`、`frames_processed=30`，因此 `wall_frame_ms=2.609150131 × 1000 / 30 = 86.971671 ms`。分阶段均值为：capture 38.888 ms、encode 11.922 ms、DMA 8.328 ms、postprocess 31.945 ms，ROI 计数 25.909 ms。四个顶层阶段均值相加为 91.083 ms，比单帧墙钟时间多 4.111 ms；这些阶段跨帧重叠，且 ROI 计数是 postprocess 的子项，所以不能把阶段均值相加解释成单帧墙钟构成。RX 同步/复制分别为 0.366/0.521 ms，预览快照移交为 0.307 ms；后台 JPEG 没有样本，因为没有客户端请求。
+
+Attempt 7 最终源码提交为 `e305b02959e9226b4747cbcbeb12e3e9df146029`（分支 `codex/wo0016-counting-20261017`）。ROI 默认限制在过线中心上下各 24 行，即 `cached_mask[96:145, :]` 的 49×320 视图；前景数不足 `min_area=12` 时短路，不进入连通域标记；否则只对该 ROI 调用 `connectedComponentsWithStats` / `CCL_GRANA`，标签类型为 `CV_16U`。ROI 投影、CCL 与计数输入均来自 S2MM 后复制得到的 Cached 掩码。采集线程使用单槽预取并将 V4L2 缓冲数设为 1；消费者失败时会取消等待中的下一帧请求，并在关闭源时保留原始异常。MJPEG 编码仍由低优先级预览线程在有客户端请求时处理。
+
+离线回归命令为 `pytest scripts/wo0016 scripts/wo0015`，结果 `239 passed, 1 skipped`。在 Windows/Python 3.14 上运行；WO-0015 测试的 `ORIGINAL_ROOT` 仅在 pytest 进程内指向只读临时源样本副本，仓库测试和受保护源样本未改动。Attempt 7 运行脚本 SHA-256：`run_stream_counter.py` `d8facbcbd7e91a09a3ff704e88f0505d75b6315fd32098de2d0d62568452ddb3`，`stream_counter.py` `dabcc9dba7732e141c880774d2af9e487f337bfbfbc49a2270f66e4a90f79d4d`。其他运行文件 `mjpeg_preview.py` 与 `packet_encoder.py` 分别为 `f9555feec0a301704accc6550a2de5e49d75c91fce1e8141205b078c34a31c30`、`19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8`。板端实际选用的 WO-0015 bundled helper 哈希与本地一致：`board_once.py` `95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525`、`board_preflight.py` `f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6`、`camera_adapter.py` `80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba`。
+
+## Attempt 7 Stage A 实测（2026-10-18）
+
+运行前最后一次只读检查确认 Boot ID `f8b24aee-ed7e-430a-b3f3-d26056746bfd`、CmaFree 70,928 KiB（高于 32,768 KiB 门槛）、`/dev/video0` 空闲、手动曝光 `1/50`、两个 `DMASR=0x00001002`、8080 空闲。Attempt 6 活动 Guard 原样归档到 `/var/lib/wo0016/attempt-6/stream-counter-consumed.json`，前后 SHA-256 均为 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`；目录/文件权限为 `0700/0600`。部署后 `run_stream_counter.py`、`stream_counter.py` 与上表 SHA 逐项一致。使用原固定 Manifest SHA-256 `2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b` 和单次 board-mode 授权执行 30 帧命令，没有自动重试或重新加载 Overlay。
+
+原始结果保存在板端 `/home/xilinx/wo0016/stage-a-30frames-attempt7-result.json`，本地副本为 [`stage-a-30frames-attempt7-result.json`](../../data/results/wo0016-stage-a-attempt7-20261018/stage-a-30frames-attempt7-result.json)，SHA-256 为 `fc0382e9146ecd79583b7eb1fd898ce901aa05c808118e2acab3e838e5f63c1f`。一次实测数据如下：
+
+| 指标 | Attempt 7 实测 |
+|---|---:|
+| 状态、处理帧数 | `BOARD_STREAM_COMPLETE`，30 / 30 |
+| Packer 验证帧数 / 缓冲区释放 | 30 / 30，是 |
+| 总耗时 / wall frame / 端到端吞吐 | 1.986029222 s / 66.200974 ms / 15.105518 FPS |
+| `avg_capture_ms` / `avg_encode_ms` / `avg_dma_ms` | 40.011 / 14.627 / 12.125 ms |
+| `avg_postprocess_ms` / `avg_roi_count_ms` | 35.791 / 27.070 ms |
+| `avg_packer_check_ms` / `avg_rx_sync_ms` / `avg_rx_copy_ms` | 0.337 / 0.443 / 0.919 ms |
+| MJPEG 快照移交 / 后台编码 | 0.350 ms / 无样本、0 帧编码 |
+| 观测计数 / 人工真值 / 准确率 | 0 / 未提供 / 不可计算 |
+| 最终 MM2S / S2MM DMASR | `0x00001002` / `0x00001002` |
+| runner admission / 四缓冲分配后 / 释放后 CmaFree | 54,192 / 38,544 / 40,084 KiB |
+
+Stage A 的 30 帧吞吐门槛达到：15 FPS 对应 66.667 ms/帧，本次 wall frame 为 66.201 ms，余量约 0.466 ms。相较 Attempt 6 的 86.972 ms/帧，下降约 20.771 ms；吞吐从 11.498 提升到 15.106 FPS。ROI 计数均值为 27.070 ms，仍未达到离线目标 `<=2.5 ms`，且比 Attempt 6 的 25.909 ms 高 1.161 ms；因此吞吐门槛通过不代表 ROI 子阶段目标也通过。当前 `roi_count_ms` 计时包围完整的 `MaskCounter.update()`，包括线程调度、Binary8 检查、ROI 行列投影、可能发生的 CCL 和跟踪；结果 JSON 没有单独记录 ROI 前景像素数、CCL 是否触发或 CCL 本体耗时，不能仅凭这一字段把 27.070 ms 归因给连通域实现。预览移交小于 1 ms，但没有客户端，所以实际 JPEG 后台编码耗时仍未测得。
+
+运行结束后只读复核 Boot ID 未变、CmaFree 70,428 KiB、摄像头空闲、曝光仍为手动 `1/50`、8080 已关闭、两个 DMA 通道仍为 Idle / 无错，且无残留 `run_stream_counter.py` 进程。JSON 记录 `buffers_released=true` 和最终状态 `4098`（`0x1002`）/`4098`。Attempt 7 一次性 Guard 保留在活动路径且已消费，SHA-256 为 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`。本次没有人工真值或传送带物料工况，不据此宣称 M6 螺母/垫片计数准确率。
