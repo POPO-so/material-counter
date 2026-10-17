@@ -15,6 +15,7 @@ from mjpeg_preview import MjpegFrameHub, PeriodicMjpegPublisher
 from packet_encoder import gray320x240_to_rgb_packet_into
 from stream_counter import (
     BufferState,
+    Detection,
     DoubleBufferStream,
     MaskCounter,
     RX_BYTES,
@@ -70,6 +71,26 @@ def _legacy_roi_signature(mask, counter):
     return tuple(detections), row_projection, column_projection
 
 
+class LegacyCclMaskCounter(MaskCounter):
+    """Reference counter using the pre-optimization CV_32S ROI implementation."""
+
+    def _extract_roi_detections(self, mask):
+        top = max(0, self.line_y - self.roi_half_height)
+        bottom = min(self.height, self.line_y + self.roi_half_height + 1)
+        expected, row_projection, column_projection = _legacy_roi_signature(mask, self)
+        detections = [Detection(
+            x_min=x_min,
+            x_max=x_max,
+            y_min=y_min,
+            y_max=y_max,
+            area=area,
+            centroid_x=centroid_x,
+            centroid_y=centroid_y,
+        ) for (x_min, x_max, y_min, y_max, area,
+               centroid_x, centroid_y) in expected]
+        return detections, top, bottom, row_projection, column_projection
+
+
 def test_cached_roi_outputs_match_legacy_results_on_synthetic_and_board_mask_samples():
     synthetic = np.zeros((240, 320), dtype=np.uint8)
     synthetic[75:81, 21:29] = 0xFF
@@ -84,7 +105,7 @@ def test_cached_roi_outputs_match_legacy_results_on_synthetic_and_board_mask_sam
     assert set(np.unique(real_sample)) <= {0, 0xFF}
 
     for sample in (synthetic, real_sample):
-        counter = MaskCounter(line_y=120, roi_half_height=48, min_area=12)
+        counter = MaskCounter(line_y=120, roi_half_height=24, min_area=12)
         expected = _legacy_roi_signature(sample, counter)
         actual = counter._extract_roi_detections(np.array(sample, copy=True))
         actual_signature = (
@@ -95,7 +116,9 @@ def test_cached_roi_outputs_match_legacy_results_on_synthetic_and_board_mask_sam
         )
         assert actual_signature == expected
 
-    reference_counter = MaskCounter(line_y=120, confirm_hits=2, max_step=12)
+    reference_counter = LegacyCclMaskCounter(
+        line_y=120, roi_half_height=24, confirm_hits=2, max_step=12
+    )
     cached_counter = MaskCounter(line_y=120, confirm_hits=2, max_step=12)
     crossing_sequence = [_mask(y) for y in (108, 116, 124, 132)]
     for frame_id, sample in enumerate(crossing_sequence):
@@ -127,11 +150,11 @@ def test_roi_passes_cached_uint8_view_to_fast_connected_components(monkeypatch):
 
         monkeypatch.setattr(cv2, "connectedComponentsWithStats", capture)
 
-    counter = MaskCounter(line_y=120, roi_half_height=48, min_area=12)
+    counter = MaskCounter(line_y=120, roi_half_height=24, min_area=12)
     counter._extract_roi_detections(mask)
 
     assert observed["image"].dtype == np.uint8
-    assert observed["image"].shape == (97, 320)
+    assert observed["image"].shape == (49, 320)
     assert np.shares_memory(observed["image"], mask)
     if fast_algorithm is not None and callable(fast_ccl):
         assert observed["connectivity"] == 8
@@ -143,8 +166,6 @@ def test_default_line_roi_is_narrow_and_empty_band_skips_connected_components(mo
     counter = MaskCounter()
     assert counter.roi_half_height == 24
     mask = np.zeros((240, 320), dtype=np.uint8)
-    observed = {}
-
     def forbidden_ccl(*args, **kwargs):
         pytest.fail("an empty line band must short-circuit before CCL")
 
