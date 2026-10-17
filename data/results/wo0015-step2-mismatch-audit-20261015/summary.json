@@ -1,0 +1,29 @@
+{
+  "status": "OFFLINE_AUDIT_COMPLETE_ROOT_CAUSE_UNCONFIRMED",
+  "board_operations": 0,
+  "checker_foreground_derived": 2240,
+  "checker_foreground_register_exists": false,
+  "historical_mismatches": 39520,
+  "historical_first_mismatch": 4,
+  "historical_actual_rx_available": false,
+  "static_s2mm_width_bits": 32,
+  "static_hp1_width_bits": 32,
+  "runtime_afi1_width_known": false,
+  "priority_next_evidence": [
+    "AFI1 bit0 at 0xF8009000 and 0xF8009014",
+    "one separately authorized RX capture with new diagnostics"
+  ],
+  "confirmed_defect_fixed_offline": "Golden failure discarded RX before durable binary capture",
+  "diagnostic_tests_passed": 11,
+  "full_offline": "459 passed + 5 subtests",
+  "executor_sha256": "c276840080b8c70bd3294d74ab84061ce3596e087dfb83abfef63690903e58a6",
+  "historical_indices_verified": {
+    "wo0015-first-board-retry3-20261015": 114,
+    "wo0015-runonly-proposal-20261015": 16,
+    "wo0015-runonly-resume-20261015": 34,
+    "wo0015-runonly-resume-retry1-20261015": 84,
+    "wo0015-runonly-resume-retry2-20261015": 104
+  },
+  "deployment_performed": false,
+  "bitstream_rebuilt": false
+}

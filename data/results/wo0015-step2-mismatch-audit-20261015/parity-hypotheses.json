@@ -1,0 +1,715 @@
+{
+  "evidence_type": "OFFLINE_SYNTHETIC_NOT_BOARD_RX",
+  "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+  "golden_bytes": 76800,
+  "golden_foreground_total": 2240,
+  "golden_foreground_by_word_parity": {
+    "even": 1120,
+    "odd": 1120
+  },
+  "words_per_parity": 9600,
+  "actual_rx_pattern_confirmed": false,
+  "nonunique_aggregate_proved": true,
+  "analyses": {
+    "even_zero_odd_a5": {
+      "schema": 1,
+      "byte_count": 76800,
+      "word_bytes": 4,
+      "poison_byte": 165,
+      "poison_u32": 2779096485,
+      "rx_sha256": "bbdf2f4838860a933cbe1390aeceaa17ee4928f7f449ba4d87fe790f4542aea7",
+      "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "mismatch_bytes": 39520,
+      "first_mismatch": 4,
+      "first_mismatches": [
+        {
+          "offset": 4,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 5,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 6,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 7,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 12,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 13,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 14,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 15,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 20,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 21,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 22,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 23,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 28,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 29,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 30,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 31,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 36,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 37,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 38,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 39,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 44,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 45,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 46,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 47,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 52,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 53,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 54,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 55,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 60,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 61,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 62,
+          "expected": 0,
+          "actual": 165
+        },
+        {
+          "offset": 63,
+          "expected": 0,
+          "actual": 165
+        }
+      ],
+      "first_64_bytes_words": [
+        {
+          "word_index": 0,
+          "offset": 0,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 1,
+          "offset": 4,
+          "parity": "odd",
+          "rx_hex": "a5a5a5a5",
+          "golden_hex": "00000000",
+          "rx_u32_le": 2779096485,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 2,
+          "offset": 8,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 3,
+          "offset": 12,
+          "parity": "odd",
+          "rx_hex": "a5a5a5a5",
+          "golden_hex": "00000000",
+          "rx_u32_le": 2779096485,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 4,
+          "offset": 16,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 5,
+          "offset": 20,
+          "parity": "odd",
+          "rx_hex": "a5a5a5a5",
+          "golden_hex": "00000000",
+          "rx_u32_le": 2779096485,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 6,
+          "offset": 24,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 7,
+          "offset": 28,
+          "parity": "odd",
+          "rx_hex": "a5a5a5a5",
+          "golden_hex": "00000000",
+          "rx_u32_le": 2779096485,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 8,
+          "offset": 32,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 9,
+          "offset": 36,
+          "parity": "odd",
+          "rx_hex": "a5a5a5a5",
+          "golden_hex": "00000000",
+          "rx_u32_le": 2779096485,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 10,
+          "offset": 40,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 11,
+          "offset": 44,
+          "parity": "odd",
+          "rx_hex": "a5a5a5a5",
+          "golden_hex": "00000000",
+          "rx_u32_le": 2779096485,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 12,
+          "offset": 48,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 13,
+          "offset": 52,
+          "parity": "odd",
+          "rx_hex": "a5a5a5a5",
+          "golden_hex": "00000000",
+          "rx_u32_le": 2779096485,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 14,
+          "offset": 56,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 15,
+          "offset": 60,
+          "parity": "odd",
+          "rx_hex": "a5a5a5a5",
+          "golden_hex": "00000000",
+          "rx_u32_le": 2779096485,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        }
+      ],
+      "parity": {
+        "even": {
+          "word_count": 9600,
+          "mismatch_bytes": 1120,
+          "zero_words": 9600,
+          "poison_words": 0
+        },
+        "odd": {
+          "word_count": 9600,
+          "mismatch_bytes": 38400,
+          "zero_words": 0,
+          "poison_words": 9600
+        }
+      },
+      "evidence_type": "OFFLINE_SYNTHETIC_NOT_BOARD_RX"
+    },
+    "different_contiguous_corruption": {
+      "schema": 1,
+      "byte_count": 76800,
+      "word_bytes": 4,
+      "poison_byte": 165,
+      "poison_u32": 2779096485,
+      "rx_sha256": "f3dcdad3a164349ae183741e808aba51eaefe9a92fc266033df196de3c4e0387",
+      "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "mismatch_bytes": 39520,
+      "first_mismatch": 4,
+      "first_mismatches": [
+        {
+          "offset": 4,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 5,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 6,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 7,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 8,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 9,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 10,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 11,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 12,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 13,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 14,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 15,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 16,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 17,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 18,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 19,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 20,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 21,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 22,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 23,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 24,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 25,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 26,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 27,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 28,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 29,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 30,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 31,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 32,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 33,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 34,
+          "expected": 0,
+          "actual": 1
+        },
+        {
+          "offset": 35,
+          "expected": 0,
+          "actual": 1
+        }
+      ],
+      "first_64_bytes_words": [
+        {
+          "word_index": 0,
+          "offset": 0,
+          "parity": "even",
+          "rx_hex": "00000000",
+          "golden_hex": "00000000",
+          "rx_u32_le": 0,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 0
+        },
+        {
+          "word_index": 1,
+          "offset": 4,
+          "parity": "odd",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 2,
+          "offset": 8,
+          "parity": "even",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 3,
+          "offset": 12,
+          "parity": "odd",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 4,
+          "offset": 16,
+          "parity": "even",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 5,
+          "offset": 20,
+          "parity": "odd",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 6,
+          "offset": 24,
+          "parity": "even",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 7,
+          "offset": 28,
+          "parity": "odd",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 8,
+          "offset": 32,
+          "parity": "even",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 9,
+          "offset": 36,
+          "parity": "odd",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 10,
+          "offset": 40,
+          "parity": "even",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 11,
+          "offset": 44,
+          "parity": "odd",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 12,
+          "offset": 48,
+          "parity": "even",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 13,
+          "offset": 52,
+          "parity": "odd",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 14,
+          "offset": 56,
+          "parity": "even",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        },
+        {
+          "word_index": 15,
+          "offset": 60,
+          "parity": "odd",
+          "rx_hex": "01010101",
+          "golden_hex": "00000000",
+          "rx_u32_le": 16843009,
+          "golden_u32_le": 0,
+          "mismatch_bytes": 4
+        }
+      ],
+      "parity": {
+        "even": {
+          "word_count": 9600,
+          "mismatch_bytes": 19760,
+          "zero_words": 4599,
+          "poison_words": 0
+        },
+        "odd": {
+          "word_count": 9600,
+          "mismatch_bytes": 19760,
+          "zero_words": 4599,
+          "poison_words": 0
+        }
+      },
+      "evidence_type": "OFFLINE_SYNTHETIC_NOT_BOARD_RX"
+    }
+  }
+}
