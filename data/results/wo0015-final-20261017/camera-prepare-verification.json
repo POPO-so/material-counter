@@ -1,0 +1,27 @@
+{
+  "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+  "camera_manifest_sha256": "f0bafdd7c99892574a41a6fce6ecfa76221402ea0fcc7d63a94132cd1c16ca87",
+  "capture_shape": [
+    400,
+    640
+  ],
+  "frame_id": 3,
+  "golden_bytes": 76800,
+  "golden_foreground_pixels": 23004,
+  "golden_sha256": "24b78ed82c1a48aeb345dadaadfcd0739c2d37c4d74086e2da126210523c8a39",
+  "golden_threshold_mismatches": 0,
+  "packet_adapter_mismatches": 0,
+  "packet_bytes": 230432,
+  "packet_sha256": "6ac8ea1b499ba5de74c0ca5e31982eb42c292950b58afdb9a2e2dae74f3a39ff",
+  "resized_gray_pixels_sha256": "3d4585bf1ae8bc598275b454fb1fffb15649e19a96f4b0faa98f90cebbf9f50b",
+  "resized_pixels_at_or_above_threshold": 23004,
+  "resized_shape": [
+    240,
+    320
+  ],
+  "scope": "file/hash/software comparison only; no PL DMA claim",
+  "source_gray_pixels_sha256": "aa0f92b554cf0a95222ce45c0e0da8140cb3557a53cc9a5402be449c4ceb1504",
+  "status": "CAMERA_PREPARE_ARTIFACTS_VERIFIED_OFFLINE",
+  "template_manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b",
+  "threshold": 128
+}
