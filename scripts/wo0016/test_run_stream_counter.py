@@ -180,6 +180,7 @@ def test_camera_read_timeout_returns_without_waiting_for_a_stuck_v4l2_thread():
         CAP_PROP_FOURCC = 2
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -197,7 +198,7 @@ def test_camera_read_timeout_returns_without_waiting_for_a_stuck_v4l2_thread():
             pytest.fail("the stuck camera must not produce a frame")
 
     started = time.perf_counter()
-    with pytest.raises(RuntimeError, match="camera read timed out"):
+    with pytest.raises(RuntimeError, match="warm-up read timed out"):
         asyncio.run(consume_one())
     assert time.perf_counter() - started < 0.2
     assert released.wait(0.2)
@@ -229,6 +230,7 @@ def test_camera_mode_fails_closed_when_v4l2_negotiates_another_format():
         CAP_PROP_FOURCC = 2
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -251,11 +253,106 @@ def test_camera_mode_fails_closed_when_v4l2_negotiates_another_format():
 def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
     opened = []
     released = []
+    set_calls = []
+    resize_calls = []
+    steady_start_time = []
+    capture_metadata = {}
 
     class Capture:
         def __init__(self):
             self.properties = {}
             self.reads = 0
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            set_calls.append((prop, value))
+            self.properties[prop] = value
+            return True
+
+        def get(self, prop):
+            if prop == FakeCv2.CAP_PROP_FOURCC:
+                return FakeCv2.VideoWriter_fourcc(*"MJPG")
+            return self.properties[prop]
+
+        def read(self):
+            self.reads += 1
+            if self.reads <= 2:
+                assert not steady_start_time
+            else:
+                assert len(steady_start_time) == 1
+            frame = np.empty((400, 640, 3), dtype=np.uint8)
+            frame[:, :, 0] = 77
+            frame[:, :, 1] = 12
+            frame[:, :, 2] = 200
+            return True, frame
+
+        def release(self):
+            released.append(True)
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        INTER_NEAREST = 6
+
+        @staticmethod
+        def VideoCapture(device, backend):
+            opened.append((device, backend))
+            return Capture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        @staticmethod
+        def resize(gray, dimensions, interpolation):
+            resize_calls.append((gray.ndim, dimensions, interpolation, int(gray[0, 0])))
+            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+
+    capture_timings_ms = []
+
+    async def consume():
+        return [frame async for frame in camera_gray_frames(
+            "/dev/video-test", max_frames=2, cv2_module=FakeCv2,
+            capture_timings_ms=capture_timings_ms,
+            steady_start_time=steady_start_time,
+            capture_metadata=capture_metadata)]
+
+    frames = asyncio.run(consume())
+
+    assert opened == [("/dev/video-test", FakeCv2.CAP_V4L2)]
+    assert released == [True]
+    assert len(frames) == len(capture_timings_ms) == 2
+    assert all(frame.shape == (240, 320) and frame.dtype == np.uint8 for frame in frames)
+    assert all(np.all(frame == 77) for frame in frames)
+    assert all(sample >= 0 for sample in capture_timings_ms)
+    assert set_calls == [
+        (FakeCv2.CAP_PROP_FOURCC, FakeCv2.VideoWriter_fourcc(*"MJPG")),
+        (FakeCv2.CAP_PROP_FRAME_WIDTH, 640),
+        (FakeCv2.CAP_PROP_FRAME_HEIGHT, 400),
+        (FakeCv2.CAP_PROP_FPS, 60),
+    ]
+    assert resize_calls == [(2, (320, 240), FakeCv2.INTER_NEAREST, 77)] * 2
+    assert len(steady_start_time) == 1
+    assert capture_metadata == {
+        "camera_fps_requested": 60,
+        "camera_fps_actual": 60.0,
+        "camera_warmup_frames": 2,
+        "camera_width": 640,
+        "camera_height": 400,
+        "camera_output_width": 320,
+        "camera_output_height": 240,
+    }
+
+
+def test_camera_rejects_v4l2_fps_below_50_before_starting_stream():
+    class SlowCapture:
+        def __init__(self):
+            self.properties = {}
 
         def isOpened(self):
             return True
@@ -267,55 +364,56 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         def get(self, prop):
             if prop == FakeCv2.CAP_PROP_FOURCC:
                 return FakeCv2.VideoWriter_fourcc(*"MJPG")
-            return self.properties[prop]
+            if prop == FakeCv2.CAP_PROP_FPS:
+                return 30.0
+            return 640 if prop == FakeCv2.CAP_PROP_FRAME_WIDTH else 400
 
         def read(self):
-            self.reads += 1
-            return True, np.full((400, 640), self.reads, dtype=np.uint8)
+            pytest.fail("a slow negotiated camera mode must stop before streaming")
 
         def release(self):
-            released.append(True)
+            pass
 
     class FakeCv2:
         CAP_V4L2 = 1
         CAP_PROP_FOURCC = 2
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
 
         @staticmethod
         def VideoCapture(device, backend):
-            opened.append((device, backend))
-            return Capture()
+            return SlowCapture()
 
         @staticmethod
         def VideoWriter_fourcc(*chars):
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
-    capture_timings_ms = []
+    async def consume_one():
+        async for _ in camera_gray_frames("/dev/video-test", max_frames=1,
+                                          cv2_module=FakeCv2, read_timeout_s=0.1):
+            pytest.fail("the slow camera must not produce a stream frame")
 
-    async def consume():
-        return [frame async for frame in camera_gray_frames(
-            "/dev/video-test", max_frames=2, cv2_module=FakeCv2,
-            capture_timings_ms=capture_timings_ms)]
-
-    frames = asyncio.run(consume())
-
-    assert opened == [("/dev/video-test", FakeCv2.CAP_V4L2)]
-    assert released == [True]
-    assert len(frames) == len(capture_timings_ms) == 2
-    assert all(frame.shape == (240, 320) and frame.dtype == np.uint8 for frame in frames)
-    assert all(sample >= 0 for sample in capture_timings_ms)
+    with pytest.raises(
+        RuntimeError,
+        match="negotiated .* fps 30.0; at least 50 fps is required",
+    ):
+        asyncio.run(consume_one())
 
 
 def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
     summary = summarize_stage_timings_ms({
         "capture": [1.0, 3.0], "encode": [2.0],
-        "dma": [4.0, 6.0], "postprocess": [],
+        "dma": [4.0, 6.0], "packer_check": [0.5, 1.5],
+        "roi_count": [2.0], "mjpeg_encode": [40.0], "postprocess": [],
     })
 
     assert summary == {
         "avg_capture_ms": 2.0, "capture_timing_samples": 2,
         "avg_encode_ms": 2.0, "encode_timing_samples": 1,
         "avg_dma_ms": 5.0, "dma_timing_samples": 2,
+        "avg_packer_check_ms": 1.0, "packer_check_timing_samples": 2,
+        "avg_roi_count_ms": 2.0, "roi_count_timing_samples": 1,
+        "avg_mjpeg_encode_ms": 40.0, "mjpeg_encode_timing_samples": 1,
         "avg_postprocess_ms": None, "postprocess_timing_samples": 0,
     }

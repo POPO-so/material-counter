@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mjpeg_preview import (  # noqa: E402
     MjpegFrameHub,
     MjpegPreviewServer,
+    PeriodicMjpegPublisher,
     render_preview_frame,
     render_preview_jpeg,
 )
@@ -34,6 +35,33 @@ def test_preview_jpeg_is_valid_and_invalid_binary_masks_are_rejected():
     assert jpeg[:2] == b"\xff\xd8"
     with pytest.raises(ValueError, match="Binary8"):
         render_preview_jpeg(np.ones((240, 320), dtype=np.uint8), total_count=0, line_y=120)
+
+
+def test_periodic_publisher_encodes_every_fourth_frame_at_quality_70(monkeypatch):
+    import mjpeg_preview
+
+    encoded = []
+
+    def fake_render(mask, *, total_count, line_y, quality):
+        encoded.append((total_count, line_y, quality))
+        return b"jpeg"
+
+    monkeypatch.setattr(mjpeg_preview, "render_preview_jpeg", fake_render)
+    hub = MjpegFrameHub()
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+
+    for frame_id in range(9):
+        publisher(type("Frame", (), {"frame_id": frame_id,
+                                      "total_count": frame_id // 3})(), mask)
+
+    assert publisher.interval == 4
+    assert publisher.quality == 70
+    assert publisher.encoded_frames == 3
+    assert encoded == [(0, 120, 70), (1, 120, 70), (2, 120, 70)]
+    assert hub.sequence == 3
+    assert len(publisher.encode_timings_ms) == 3
+    hub.close()
 
 
 def test_frame_hub_returns_latest_frame_without_a_backlog():

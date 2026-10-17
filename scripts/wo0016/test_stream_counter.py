@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "wo0015"))
 
 from camera_adapter import gray320x240_to_rgb_packet
+from mjpeg_preview import MjpegFrameHub, PeriodicMjpegPublisher
 from packet_encoder import gray320x240_to_rgb_packet_into
 from stream_counter import (
     BufferState,
@@ -157,7 +158,8 @@ def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
         counter=MaskCounter(),
         packet_encoder=lambda gray, *, frame_id: pytest.fail("bytes encoder should not run"),
         packet_encoder_into=gray320x240_to_rgb_packet_into,
-        stage_timings_ms={"encode": [], "dma": [], "postprocess": []},
+        stage_timings_ms={"encode": [], "dma": [], "packer_check": [],
+                          "roi_count": [], "postprocess": []},
     )
 
     results = asyncio.run(stream.run(_frames(1)))
@@ -169,6 +171,7 @@ def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
     )
     assert len(stream.stage_timings_ms["encode"]) == 1
     assert len(stream.stage_timings_ms["dma"]) == 1
+    assert len(stream.stage_timings_ms["roi_count"]) == 1
     assert len(stream.stage_timings_ms["postprocess"]) == 1
 
 
@@ -273,6 +276,36 @@ def test_async_dma_pipeline_alternates_slots_and_overlaps_processing():
     assert results[-1].total_count == 1
     assert processed_while_next_dma_active == [True]
     assert all(slot.state is BufferState.FREE for slot in stream.slots)
+
+
+def test_periodic_preview_does_not_skip_counter_updates():
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    ys = (108, 112, 116, 120, 124, 128)
+    dma = MockDma([_mask(y) for y in ys])
+    dma.release_frame1.set()
+    hub = MjpegFrameHub()
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120)
+    counter = MaskCounter(line_y=120, confirm_hits=2, max_step=12)
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=counter,
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        on_frame=publisher,
+        transfer_timeout_s=1.0,
+    )
+
+    results = asyncio.run(stream.run(_frames(len(ys))))
+
+    assert len(results) == len(ys)
+    assert counter.last_frame_id == len(ys) - 1
+    assert results[-1].total_count == 1
+    assert publisher.encoded_frames == 2
+    assert hub.sequence == 2
+    hub.close()
 
 
 def test_transfer_async_uses_nonblocking_start_and_async_wait_when_available():
@@ -416,6 +449,8 @@ def test_frame_callbacks_arm_before_dma_and_validate_completed_output():
     def processed(result, mask):
         dma.events.append(("processed", result.frame_id))
 
+    stage_timings_ms = {name: [] for name in (
+        "packer_check", "roi_count", "postprocess")}
     stream = DoubleBufferStream(
         recv_channel=dma.recvchannel,
         send_channel=dma.sendchannel,
@@ -426,6 +461,7 @@ def test_frame_callbacks_arm_before_dma_and_validate_completed_output():
         before_transfer=arm,
         after_transfer=validate,
         on_frame=processed,
+        stage_timings_ms=stage_timings_ms,
         transfer_timeout_s=1.0,
     )
 
@@ -435,6 +471,8 @@ def test_frame_callbacks_arm_before_dma_and_validate_completed_output():
     assert names.index("arm") < names.index("rx-start") < names.index("tx-start")
     assert names.index("rx-done") < names.index("validated")
     assert names.index("tx-done") < names.index("validated") < names.index("processed")
+    assert all(len(samples) == 1 and samples[0] >= 0
+               for samples in stage_timings_ms.values())
 
 def test_timed_out_blocking_wait_does_not_block_asyncio_shutdown():
     import threading

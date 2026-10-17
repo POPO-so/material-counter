@@ -2,7 +2,7 @@
 
 | 项目 | 内容 |
 |---|---|
-| 状态 | Offline/Mock 回归完成；Stage A Attempt 2 进入 FAIL_HOLD（0/30 完成帧），物料计数板端验收未通过 |
+| 状态 | Offline/Mock 回归完成；Attempt 4 连续流完成但未达实时帧率门槛；Attempt 5 高速优化已实现，待一次受控板端实测 |
 | 基线 | `feat/pl-stream-skeleton`，WO-0015 50 MHz、320×240 Binary8 S2MM 合同 |
 | 工作分支 | `codex/wo0016-counting-20261017` |
 | 范围 | Python PS 侧双缓冲调度、过线计数、MJPEG 预览和离线 Mock |
@@ -28,6 +28,6 @@ PYNQ Simple DMA 通道提供非阻塞 `transfer()`，该方法返回 `None`；�
 
 板端部署包将所需 WO-0015 Python 辅助模块放在 `/home/xilinx/wo0016/wo0015/`，运行器优先从该独立副本加载，不覆盖既有 `/home/xilinx/wo0015/`。`board_once.py` 和 `board_preflight.py` 必须逐字节匹配所选 manifest `executor_sha256`；禁止为接受新 boot ID 而直接修改或运行时覆盖其门禁。当前 manifest 的 `board_preflight.py` SHA-256 `f6556d…` 已从板端隔离验收目录恢复并同步；相机 DMA 依赖也已对齐为 `5b9684…`。Attempt 1 在首帧编码前失败，Guard 保存在 attempt-1 归档目录；Attempt 2 在 DMA 启动后的完成等待中异常并进入 fail-hold，必须保持进程与 CMA 缓冲区。详情见[板端验收记录](../verification/wo-0016-board-acceptance.md)。
 
-V4L2 采集明确请求并回读核验 MJPG 640×400；不改变相机曝光控制。板端启动命令以 `sudo -n env XILINX_XRT=/usr` 运行 PYNQ venv，运行证据记录 `XILINX_XRT` 值。
+V4L2 采集明确请求 MJPG 640×400、60 FPS，并回读确认格式、分辨率及至少 50 FPS；两帧预热在稳态计时前完成。稳态帧取解码图像首通道作为 Gray8，并以最近邻缩放至 320×240；不改变相机曝光控制。若驱动回读低于 50 FPS，则在 DMA 开始前拒绝该相机模式。网页预览 JPEG 每 4 帧编码一次（质量 70），而计数器仍对每个 DMA 完成帧运行。板端 JSON 分别记录相机采集、编码、DMA、Packer 校验、ROI 计数、MJPEG 编码与完整后处理均值及样本数。板端启动命令以 `sudo -n env XILINX_XRT=/usr` 运行 PYNQ venv，运行证据记录 `XILINX_XRT` 值。
 
 本工单的 Offline/Mock 结果只证明软件路径、合成掩码和网页编码行为。它们不证明摄像头输入、真实传送带、M6 螺母/垫片准确率或实板 FPS。请以[板端验收表](../verification/wo-0016-board-acceptance.md)记录实际物料真值、工况和现场测量。

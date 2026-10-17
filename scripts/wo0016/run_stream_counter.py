@@ -37,10 +37,16 @@ for _path in (SCRIPT_DIR, WO15_DIR):
 
 import board_once
 import board_preflight as preflight
-import camera_dma_oneshot
 from camera_adapter import gray320x240_to_rgb_packet
 from packet_encoder import gray320x240_to_rgb_packet_into
-from mjpeg_preview import MjpegFrameHub, MjpegPreviewServer, render_preview_jpeg
+from mjpeg_preview import (
+    PREVIEW_FRAME_INTERVAL,
+    PREVIEW_JPEG_QUALITY,
+    MjpegFrameHub,
+    MjpegPreviewServer,
+    PeriodicMjpegPublisher,
+    render_preview_jpeg,
+)
 from stream_counter import (
     HEIGHT,
     RX_BYTES,
@@ -209,9 +215,11 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
 async def camera_gray_frames(device: str, *, max_frames: int,
                              cv2_module: Any = cv2,
                              read_timeout_s: float = 5.0,
-                             capture_timings_ms: list[float] | None = None
+                             capture_timings_ms: list[float] | None = None,
+                             steady_start_time: list[float] | None = None,
+                             capture_metadata: dict[str, Any] | None = None
                              ) -> AsyncIterator[np.ndarray]:
-    """Read the OV9281 MJPG 640x400 mode and yield resized Gray8 320x240 frames."""
+    """Warm up the 60 FPS OV9281 MJPG mode, then yield timed Gray8 frames."""
     if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
         raise ValueError("max_frames must be a positive integer")
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
@@ -227,9 +235,10 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             (cv2_module.CAP_PROP_FOURCC, requested_fourcc),
             (cv2_module.CAP_PROP_FRAME_WIDTH, 640),
             (cv2_module.CAP_PROP_FRAME_HEIGHT, 400),
+            (cv2_module.CAP_PROP_FPS, 60),
         )
         if any(not capture.set(prop, value) for prop, value in requested):
-            raise RuntimeError("V4L2 rejected the configured MJPG 640x400 capture mode")
+            raise RuntimeError("V4L2 rejected the configured MJPG 640x400 60 FPS capture mode")
         actual_fourcc = int(round(capture.get(cv2_module.CAP_PROP_FOURCC)))
         actual_format = "".join(chr((actual_fourcc >> (8 * byte)) & 0xFF)
                                 for byte in range(4))
@@ -240,26 +249,59 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 "V4L2 negotiated "
                 f"{actual_format!r} {actual_width}x{actual_height}; expected MJPG 640x400"
             )
-        for _ in range(max_frames):
-            capture_started = time.perf_counter()
+        actual_fps = float(capture.get(cv2_module.CAP_PROP_FPS))
+        if not math.isfinite(actual_fps) or actual_fps < 50.0:
+            raise RuntimeError(
+                f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height} "
+                f"fps {actual_fps}; at least 50 fps is required for the steady stream"
+            )
+
+        async def read_camera_frame(*, warmup: bool) -> np.ndarray:
             try:
                 ok, frame = await _daemon_call_with_timeout(
                     capture.read, timeout_s=float(read_timeout_s),
                     thread_name="wo0016-camera-read",
                 )
             except asyncio.TimeoutError as exc:
-                raise RuntimeError("V4L2 camera read timed out; no retry was attempted") from exc
+                prefix = "V4L2 warm-up read" if warmup else "V4L2 camera read"
+                raise RuntimeError(f"{prefix} timed out; no retry was attempted") from exc
             if not ok or frame is None:
-                raise RuntimeError("V4L2 returned no frame during the continuous stream")
-            image = np.asarray(frame)
-            if image.ndim == 3 and image.shape[2] in (3, 4):
-                code = cv2_module.COLOR_BGRA2GRAY if image.shape[2] == 4 else cv2_module.COLOR_BGR2GRAY
-                image = cv2_module.cvtColor(image, code)
-            elif image.ndim == 3 and image.shape[2] == 1:
+                prefix = "V4L2 warm-up" if warmup else "V4L2"
+                raise RuntimeError(f"{prefix} returned no camera frame")
+            return np.asarray(frame)
+
+        warmup_frames = 2
+        for _ in range(warmup_frames):
+            await read_camera_frame(warmup=True)
+        if capture_metadata is not None:
+            capture_metadata.update({
+                "camera_fps_requested": 60,
+                "camera_fps_actual": actual_fps,
+                "camera_warmup_frames": warmup_frames,
+                "camera_width": actual_width,
+                "camera_height": actual_height,
+                "camera_output_width": WIDTH,
+                "camera_output_height": HEIGHT,
+            })
+        if steady_start_time is not None:
+            steady_start_time[:] = [time.perf_counter()]
+
+        for _ in range(max_frames):
+            capture_started = time.perf_counter()
+            image = await read_camera_frame(warmup=False)
+            if image.ndim == 3 and image.shape[2] in (1, 3, 4):
                 image = image[:, :, 0]
-            if image.shape != (400, 640):
+            if image.dtype != np.uint8 or image.shape != (400, 640):
                 raise RuntimeError(f"camera frame geometry is {image.shape}; expected (400, 640)")
-            gray = camera_dma_oneshot.resize_gray8(image, width=WIDTH, height=HEIGHT)
+            gray = cv2_module.resize(
+                image, (WIDTH, HEIGHT), interpolation=cv2_module.INTER_NEAREST
+            )
+            gray = np.asarray(gray)
+            if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
+                raise RuntimeError(
+                    f"resized camera frame is {gray.dtype} {gray.shape}; "
+                    f"expected uint8 {(HEIGHT, WIDTH)}"
+                )
             if capture_timings_ms is not None:
                 capture_timings_ms.append((time.perf_counter() - capture_started) * 1000.0)
             yield gray
@@ -446,14 +488,16 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
 
         hub = MjpegFrameHub()
         preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
-        frame_times: list[float] = []
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
-            "capture", "encode", "dma", "postprocess")}
-
-        def publish_frame(result: Any, mask: np.ndarray) -> None:
-            hub.publish(render_preview_jpeg(mask, total_count=result.total_count,
-                                            line_y=args.line_y))
-            frame_times.append(time.perf_counter())
+            "capture", "encode", "dma", "packer_check", "roi_count",
+            "mjpeg_encode", "postprocess")}
+        preview_publisher = PeriodicMjpegPublisher(
+            hub=hub, line_y=args.line_y,
+            interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
+        )
+        # The publisher records only actual JPEG encodes; the counter callback still
+        # runs after every completed S2MM frame.
+        stage_timings_ms["mjpeg_encode"] = preview_publisher.encode_timings_ms
 
         counter = MaskCounter(line_y=args.line_y, min_area=args.min_area,
                               direction=args.direction, hysteresis=args.hysteresis,
@@ -468,16 +512,21 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             packet_encoder_into=gray320x240_to_rgb_packet_into,
             before_transfer=arm_frame,
             after_transfer=verify_frame,
-            on_frame=publish_frame,
+            on_frame=preview_publisher,
             stage_timings_ms=stage_timings_ms,
             transfer_timeout_s=args.timeout_s,
         )
-        started = time.perf_counter()
+        steady_start_time: list[float] = []
+        capture_metadata: dict[str, Any] = {}
         results = asyncio.run(stream.run(camera_gray_frames(
             args.camera, max_frames=args.max_frames, cv2_module=cv2,
             read_timeout_s=args.timeout_s,
-            capture_timings_ms=stage_timings_ms["capture"])))
-        elapsed = max(time.perf_counter() - started, 1e-9)
+            capture_timings_ms=stage_timings_ms["capture"],
+            steady_start_time=steady_start_time,
+            capture_metadata=capture_metadata)))
+        if not steady_start_time:
+            raise RuntimeError("camera did not establish a steady-stream timing boundary")
+        elapsed = max(time.perf_counter() - steady_start_time[0], 1e-9)
         total_count = results[-1].total_count if results else 0
         accuracy = _count_accuracy(total_count, args.ground_truth_count)
         s2mm_status = api.read32(preflight.DMA_BASE, 0x34)
@@ -498,6 +547,10 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             "throughput_fps": len(results) / elapsed,
             "hardware_fps": len(results) / elapsed,
             **summarize_stage_timings_ms(stage_timings_ms),
+            **capture_metadata,
+            "preview_frame_interval": preview_publisher.interval,
+            "preview_jpeg_quality": preview_publisher.quality,
+            "preview_jpeg_frames_encoded": preview_publisher.encoded_frames,
             "preview_url": f"http://{args.host}:{preview.port}/",
             "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
             "packer_output_frames_verified": len(results),
@@ -617,7 +670,8 @@ def _count_accuracy(predicted: int, ground_truth: int | None) -> float | None:
 def summarize_stage_timings_ms(timings: Mapping[str, list[float]]) -> dict[str, Any]:
     """Return per-frame average stage durations and sample counts in milliseconds."""
     result: dict[str, Any] = {}
-    for stage in ("capture", "encode", "dma", "postprocess"):
+    for stage in ("capture", "encode", "dma", "packer_check", "roi_count",
+                  "mjpeg_encode", "postprocess"):
         samples = timings.get(stage, [])
         result[f"avg_{stage}_ms"] = (
             round(sum(samples) / len(samples), 3) if samples else None

@@ -2,11 +2,15 @@
 from __future__ import annotations
 
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
 import cv2
 import numpy as np
+
+PREVIEW_FRAME_INTERVAL = 4
+PREVIEW_JPEG_QUALITY = 70
 
 
 _HTML_PAGE = b"""<!doctype html>
@@ -101,6 +105,35 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
     if not encoded:
         raise RuntimeError("OpenCV failed to encode the preview JPEG")
     return payload.tobytes()
+
+
+class PeriodicMjpegPublisher:
+    """Encode a preview every N frames while the caller processes every frame."""
+
+    def __init__(self, *, hub: MjpegFrameHub, line_y: int,
+                 interval: int = PREVIEW_FRAME_INTERVAL,
+                 quality: int = PREVIEW_JPEG_QUALITY):
+        if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
+            raise ValueError("preview interval must be a positive integer")
+        if isinstance(quality, bool) or not isinstance(quality, int) or not 1 <= quality <= 100:
+            raise ValueError("JPEG quality must be an integer in 1..100")
+        self.hub = hub
+        self.line_y = line_y
+        self.interval = interval
+        self.quality = quality
+        self.encoded_frames = 0
+        self.encode_timings_ms: list[float] = []
+
+    def __call__(self, result: Any, mask: np.ndarray) -> None:
+        frame_id = result.frame_id
+        if frame_id % self.interval:
+            return
+        started = time.perf_counter()
+        jpeg = render_preview_jpeg(mask, total_count=result.total_count,
+                                   line_y=self.line_y, quality=self.quality)
+        self.hub.publish(jpeg)
+        self.encode_timings_ms.append((time.perf_counter() - started) * 1000.0)
+        self.encoded_frames += 1
 
 
 class MjpegPreviewServer:

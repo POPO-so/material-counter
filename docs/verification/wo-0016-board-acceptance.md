@@ -136,3 +136,11 @@ Attempt 3 活动 Guard 在复核 DMA Idle 后原样移动至 `/var/lib/wo0016/at
 | 运行前 / 分配后 / 释放后 CmaFree | 62300 / 45712 / 47464 KiB |
 
 与 Attempt 3 的 0.402 FPS 相比，本次吞吐约提升 10.48 倍，但仍比 15 FPS 门槛低约 3.56 倍。计时指出 capture 与 postprocess 均值高于 66 ms 目标帧周期；encode 和 DMA 均值较低。因为处理阶段会重叠，这些平均数不相加作为端到端耗时。运行后 Boot ID 未变，CmaFree 为 74372 KiB，摄像头无占用，流进程与 8080 监听均已退出，DMA 仍为 Idle / 无错。该一次实测不提供物料真值，也未运行 M6 螺母、垫片或传送带速度验收。
+
+## Attempt 5 的离线优化（2026-10-18，板端待测）
+
+采集器在打开相机后一次性请求 MJPG 640×400 和 60 FPS，并回读验证实际帧率至少 50 FPS；开流后的两帧预热及相机协商都排除在稳态 FPS 计时之外。稳态彩色帧直接使用首通道视图，并通过 `cv2.resize(..., INTER_NEAREST)` 缩放；没有逐帧启动 `v4l2-ctl`，也未修改 Manifest 固定的 WO-0015 文件。软件在传输完成后仍对每张 Binary8 掩码执行 Packer 检查和 ROI 计数，预览 JPEG 则以质量 70 每 4 帧更新一次。
+
+新的 JSON 打点分别给出 `avg_capture_ms`、`avg_encode_ms`、`avg_dma_ms`、`avg_packer_check_ms`、`avg_roi_count_ms`、`avg_mjpeg_encode_ms` 和 `avg_postprocess_ms`，并记录每项样本数、相机 FPS 回读、预热帧数及实际预览编码帧数。
+
+离线回归为 `pytest scripts/wo0016 scripts/wo0015`，`228 passed, 1 skipped`。Windows 主机转换微基准（Python 3.12、OpenCV 5.0.0、NumPy 2.5.2，100 次）中，旧的 BGR 转灰度加双线性缩放均值为 2.254 ms，新首通道视图加最近邻缩放为 0.082 ms（约 27.39 倍）。主机 JPEG 基准为质量 85 的 0.128 ms、质量 70 的 0.126 ms；每四帧编码的主机摊销值为 0.032 ms/输入帧。此微基准不包含 V4L2 读帧、Cortex-A9 负载、DMA、Packer 或 ROI 计数，不能作为板端吞吐证据。Attempt 5 是否达到 15 FPS 仅以其板端 JSON 为准。

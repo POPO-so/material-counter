@@ -449,7 +449,9 @@ class DoubleBufferStream:
                     validated = self.after_transfer(frame_id, slot)
                     if inspect.isawaitable(validated):
                         await validated
-                    postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
+                    packer_check_seconds = time.perf_counter() - postprocess_started
+                    postprocess_ms += packer_check_seconds * 1000.0
+                    self._record_timing("packer_check", packer_check_seconds)
                 self._postprocess_ms[frame_id] = postprocess_ms
 
                 slot.state = BufferState.CPU_READY
@@ -481,7 +483,10 @@ class DoubleBufferStream:
             mask = np.asarray(slot.rx_buffer).reshape((HEIGHT, WIDTH))
             frame_id = slot.frame_id
             postprocess_started = time.perf_counter()
+            roi_started = time.perf_counter()
             result = await asyncio.to_thread(self.counter.update, slot.frame_id, mask)
+            roi_seconds = time.perf_counter() - roi_started
+            self._record_timing("roi_count", roi_seconds)
             if self.on_frame is not None:
                 if inspect.iscoroutinefunction(self.on_frame):
                     await self.on_frame(result, mask)
