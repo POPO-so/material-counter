@@ -1,6 +1,6 @@
 # WO-0016 Offline/Mock Verification
 
-**State:** Offline implementation verified. **Board Stage A: FAILED before DMA frame 1; counting acceptance incomplete.**
+**State:** Offline implementation verified. **Board Stage A: Attempt 2 entered FAIL_HOLD with 0 verified frames; counting acceptance incomplete.**
 
 ## Scope and environment
 
@@ -35,4 +35,4 @@ Additional checks: board mode without opt-in is rejected before PYNQ import; sim
 
 ## Acceptance boundary
 
-The offline tests run for this report did not import PYNQ or touch the board. A separate single Stage A attempt on 2026-10-18 imported PYNQ, passed the AFI1/Overlay and CMA buffer gates, then failed during the first packet encode with zero DMA frames. The one-shot board guard is consumed; the raw failure JSON remains on the board and is recorded in the [board acceptance record](../../docs/verification/wo-0016-board-acceptance.md). Conveyor speed, M6 nut/washer ground truth, real count accuracy, end-to-end board FPS, and browser FPS remain `NOT RUN`. Synthetic score and host FPS must not be presented as physical acceptance.
+The offline tests run for this report did not import PYNQ or touch the board. Two separately authorized Stage A attempts occurred on 2026-10-18: Attempt 1 failed before DMA start on a packet-encoder signature mismatch; Attempt 2 passed AFI1/Overlay and CMA gates, then failed during the DMA completion wait and entered fail-hold with buffers retained. It produced zero verified frames. The active guard is consumed and the fail-hold process remains running; raw evidence hashes and locations are in the [board acceptance record](../../docs/verification/wo-0016-board-acceptance.md). Conveyor speed, M6 nut/washer ground truth, real count accuracy, end-to-end board FPS, and browser FPS remain `NOT RUN`. Synthetic score and host FPS must not be presented as physical acceptance.
