@@ -21,6 +21,97 @@ def _plan(tmp_path: Path, frame_count: int = 3):
     return preflight.validate_manifest(manifest_path), manifest_path
 
 
+def test_afi1_sync_sets_32bit_bits_and_preserves_other_register_bits(tmp_path):
+    plan, _ = _plan(tmp_path)
+    api = runner.MockBoardAPI(plan)
+    api.physical_registers[runner.SLCR_FPGA_RST_CTRL] = 0
+    api.physical_registers[runner.AFI1_RDCHAN_CTRL] = 0x00000000
+    api.physical_registers[runner.AFI1_WRCHAN_CTRL] = 0x00000F00
+
+    result = runner.sync_afi1_hp1_32bit(api, plan, stage="unit-test")
+
+    assert result["hwh_hp1_data_width_bits"] == 32
+    assert result["fpga_rst_ctrl"] == 0
+    assert api.physical_registers[runner.AFI1_RDCHAN_CTRL] == 0x00000001
+    assert api.physical_registers[runner.AFI1_WRCHAN_CTRL] == 0x00000F01
+    assert api.physical_write_trace == [
+        (runner.AFI1_RDCHAN_CTRL, 0x00000001),
+        (runner.AFI1_WRCHAN_CTRL, 0x00000F01),
+    ]
+    assert [item["readback"] for item in result["registers"].values()] == [1, 0xF01]
+
+
+def test_afi1_sync_refuses_write_until_fpga_reset_is_fully_released(tmp_path):
+    plan, _ = _plan(tmp_path)
+    api = runner.MockBoardAPI(plan)
+    api.physical_registers[runner.SLCR_FPGA_RST_CTRL] = 0x00000001
+
+    with pytest.raises(preflight.PreflightError, match="FPGA_RST_CTRL.*0x00000000"):
+        runner.sync_afi1_hp1_32bit(api, plan, stage="unit-test")
+
+    assert api.physical_write_trace == []
+
+
+def test_afi1_sync_fails_when_bit0_readback_does_not_latch(tmp_path):
+    plan, _ = _plan(tmp_path)
+    api = runner.MockBoardAPI(plan)
+    api.physical_registers[runner.SLCR_FPGA_RST_CTRL] = 0
+    api.fail_afi1_readback = True
+
+    with pytest.raises(preflight.PreflightError, match="AFI1_RDCHAN_CTRL.*readback.*bit 0"):
+        runner.sync_afi1_hp1_32bit(api, plan, stage="unit-test")
+
+    assert api.physical_write_trace == [(runner.AFI1_RDCHAN_CTRL, 1)]
+
+
+def test_afi1_sync_requires_hwh_hp1_width_to_be_32(tmp_path):
+    plan, _ = _plan(tmp_path)
+    text = plan.hwh_path.read_text(encoding="utf-8")
+    text = text.replace('NAME="PCW_S_AXI_HP1_DATA_WIDTH" VALUE="32"',
+                        'NAME="PCW_S_AXI_HP1_DATA_WIDTH" VALUE="64"')
+    plan.hwh_path.write_text(text, encoding="utf-8")
+    api = runner.MockBoardAPI(plan)
+    api.physical_registers[runner.SLCR_FPGA_RST_CTRL] = 0
+
+    with pytest.raises(preflight.PreflightError, match="HWH.*HP1.*32-bit"):
+        runner.sync_afi1_hp1_32bit(api, plan, stage="unit-test")
+
+    assert api.physical_write_trace == []
+
+
+def test_afi1_physical_writer_uses_writable_mapping_only_for_allowlisted_words():
+    class Mapping(bytearray):
+        def __init__(self, size):
+            super().__init__(size)
+            self.flushed = False
+            self.closed = False
+
+        def flush(self):
+            self.flushed = True
+
+        def close(self):
+            self.closed = True
+
+    events = []
+    mapped = Mapping(4096)
+
+    runner.write_afi1_phys32(
+        runner.AFI1_WRCHAN_CTRL, 0x00000F01, page_size=4096,
+        open_fn=lambda path, flags: events.append(("open", path, flags)) or 7,
+        mmap_fn=lambda fd, size, **kwargs: events.append(("mmap", fd, size, kwargs)) or mapped,
+        close_fn=lambda fd: events.append(("close", fd)),
+    )
+
+    assert int.from_bytes(mapped[0x14:0x18], "little") == 0x00000F01
+    assert mapped.flushed and mapped.closed
+    assert events[0][0:2] == ("open", "/dev/mem")
+    assert events[1] == ("mmap", 7, 4096, {"access": runner.mmap.ACCESS_WRITE, "offset": 0xF8009000})
+    assert events[-1] == ("close", 7)
+
+    with pytest.raises(ValueError, match="AFI1 control allowlist"):
+        runner.write_afi1_phys32(runner.SLCR_FPGA_RST_CTRL, 0)
+
+
 @pytest.mark.parametrize("timeout_s", [float("nan"), float("inf"), float("-inf")])
 def test_run_frames_rejects_nonfinite_timeout_before_board_api_use(tmp_path, timeout_s):
     plan, _ = _plan(tmp_path, 1)
@@ -365,13 +456,25 @@ def test_overlay_only_loads_once_and_writes_same_boot_manifest_hash_receipt(tmp_
     assert api.overlay_load_count == 1
     assert [snapshot["stage"] for snapshot in result["afi1_snapshots"]] == [
         "before_overlay_load", "after_overlay_load"]
-    # MockBoardAPI holds the FPGA output-reset bits asserted, so each snapshot
-    # reads only the two SLCR words and safely skips both AFI1 addresses.
+    before = result["afi1_snapshots"][0]["registers"]
+    after = result["afi1_snapshots"][1]["registers"]
+    assert before["AFI1_RDCHAN_CTRL"]["width_bit0"] == 0
+    assert before["AFI1_WRCHAN_CTRL"]["raw_hex"] == "0x00000f00"
+    assert after["AFI1_RDCHAN_CTRL"]["raw_hex"] == "0x00000001"
+    assert after["AFI1_WRCHAN_CTRL"]["raw_hex"] == "0x00000f01"
+    assert result["afi1_sync"]["hwh_hp1_data_width_bits"] == 32
     assert api.physical_read_trace == [
         runner.SLCR_FPGA0_CLK_CTRL, runner.SLCR_FPGA_RST_CTRL,
+        runner.AFI1_RDCHAN_CTRL, runner.AFI1_WRCHAN_CTRL,
+        runner.SLCR_FPGA_RST_CTRL, runner.AFI1_RDCHAN_CTRL,
+        runner.AFI1_RDCHAN_CTRL, runner.AFI1_WRCHAN_CTRL,
+        runner.AFI1_WRCHAN_CTRL,
         runner.SLCR_FPGA0_CLK_CTRL, runner.SLCR_FPGA_RST_CTRL,
+        runner.AFI1_RDCHAN_CTRL, runner.AFI1_WRCHAN_CTRL,
     ]
-    assert api.write_trace == []
+    assert api.physical_write_trace == [
+        (runner.AFI1_RDCHAN_CTRL, 1), (runner.AFI1_WRCHAN_CTRL, 0xF01),
+    ]
     assert receipt["boot_id"] == plan.boot_id
     assert receipt["manifest_sha256"] == plan.manifest_sha256
     assert guard.exists()
@@ -399,6 +502,17 @@ def test_staged_mock_consumes_distinct_guards_and_single_pass_gates_three(tmp_pa
 
     assert single["status"] == "DMA_SINGLE_PASS"
     assert three["status"] == "DMA_THREE_PASS"
+    assert [snapshot["stage"] for snapshot in single["afi1_snapshots"]] == [
+        "pre_dma_afi1_sync", "post_overlay_afi1_sync", "post_dma"]
+    assert [snapshot["stage"] for snapshot in three["afi1_snapshots"]] == [
+        "pre_dma_afi1_sync", "post_overlay_afi1_sync", "post_dma"]
+    for result in (single, three):
+        post_overlay = result["afi1_snapshots"][1]["registers"]
+        post_dma = result["afi1_snapshots"][2]["registers"]
+        assert post_overlay["AFI1_RDCHAN_CTRL"]["raw_hex"] == "0x00000001"
+        assert post_overlay["AFI1_WRCHAN_CTRL"]["raw_hex"] == "0x00000f01"
+        assert post_dma["AFI1_RDCHAN_CTRL"]["width_bit0"] == 1
+        assert post_dma["AFI1_WRCHAN_CTRL"]["width_bit0"] == 1
     assert guards["dma-single"].exists() and guards["dma-three"].exists()
     assert len(api.allocations) == 4 and api.free_count == 4
     assert api.overlay_load_count == 0

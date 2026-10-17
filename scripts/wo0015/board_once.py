@@ -14,6 +14,7 @@ import os
 import signal
 import sys
 import time
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -32,10 +33,13 @@ DMA_S2MM_DMASR = 0x34
 DMA_S2MM_DA = 0x48
 DMA_S2MM_LENGTH = 0x58
 
-# Zynq-7000 AFI1 and SLCR read-only observation points. The physical reader
-# below opens /dev/mem with O_RDONLY and maps each page with PROT_READ.
+# Zynq-7000 AFI1 and SLCR observation points. Snapshot reads stay read-only;
+# the narrowly allowlisted AFI1 writer is used only for the authorized HP1
+# 32-bit mode synchronization after the FPGA reset-release gate.
 AFI1_RDCHAN_CTRL = 0xF8009000
 AFI1_WRCHAN_CTRL = 0xF8009014
+AFI1_WIDTH_32BIT = 1 << 0
+AFI1_WRITE_REGISTERS = frozenset((AFI1_RDCHAN_CTRL, AFI1_WRCHAN_CTRL))
 SLCR_FPGA0_CLK_CTRL = 0xF8000170
 SLCR_FPGA_RST_CTRL = 0xF8000240
 FPGA_FCLK_RESET_MASK = 0x0000000F
@@ -163,6 +167,104 @@ def read_phys32_readonly(address: int, *, mem_path: str = "/dev/mem",
             mapped.close()
     finally:
         close_fn(fd)
+
+
+def write_afi1_phys32(address: int, value: int, *, mem_path: str = "/dev/mem",
+                      page_size: int | None = None, open_fn: Any = None,
+                      mmap_fn: Any = None, close_fn: Any = None) -> None:
+    """Write one 32-bit AFI1 control word; no other physical address is writable."""
+    if isinstance(address, bool) or not isinstance(address, int) or address not in AFI1_WRITE_REGISTERS:
+        raise ValueError("physical write address is not in the AFI1 control allowlist")
+    if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 0xFFFFFFFF:
+        raise ValueError("physical register write must be an unsigned 32-bit integer")
+    if page_size is None:
+        page_size = int(os.sysconf("SC_PAGE_SIZE"))
+    if page_size <= 0 or page_size & (page_size - 1):
+        raise ValueError("page_size must be a positive power of two")
+    open_fn = os.open if open_fn is None else open_fn
+    mmap_fn = mmap.mmap if mmap_fn is None else mmap_fn
+    close_fn = os.close if close_fn is None else close_fn
+    page_base = address & ~(page_size - 1)
+    page_offset = address - page_base
+    fd = open_fn(mem_path, os.O_RDWR | getattr(os, "O_SYNC", 0))
+    try:
+        mapped = mmap_fn(fd, page_size, access=mmap.ACCESS_WRITE, offset=page_base)
+        try:
+            mapped[page_offset:page_offset + 4] = value.to_bytes(4, "little")
+            mapped.flush()
+        finally:
+            mapped.close()
+    finally:
+        close_fn(fd)
+
+
+def _hwh_hp1_data_width_bits(hwh_path: Path) -> int:
+    try:
+        root = ET.parse(hwh_path).getroot()
+    except (ET.ParseError, OSError) as exc:
+        raise preflight.PreflightError(f"cannot inspect HP1 width in HWH {hwh_path}: {exc}") from exc
+    ps_modules = [node for node in root.iter("MODULE")
+                  if node.attrib.get("INSTANCE") == "ps7"]
+    if len(ps_modules) != 1:
+        raise preflight.PreflightError("HWH must contain exactly one PS7 module for HP1 width check")
+    ps_module = ps_modules[0]
+    params = [node.attrib.get("VALUE") for node in ps_module.iter("PARAMETER")
+              if node.attrib.get("NAME") == "PCW_S_AXI_HP1_DATA_WIDTH"]
+    interfaces = [node for node in ps_module.iter("BUSINTERFACE")
+                  if node.attrib.get("NAME") == "S_AXI_HP1"]
+    if params != ["32"] or len(interfaces) != 1 or interfaces[0].attrib.get("DATAWIDTH") != "32":
+        raise preflight.PreflightError(
+            "HWH must declare PS7 S_AXI_HP1 as 32-bit in both PS parameters and bus interface"
+        )
+    return 32
+
+
+def sync_afi1_hp1_32bit(api: Any, plan: preflight.ValidatedRun, *, stage: str) -> dict[str, Any]:
+    """Enable AFI1 32-bit mode only for a 32-bit HWH and fully released FPGA reset."""
+    if not stage or not isinstance(stage, str):
+        raise ValueError("AFI1 synchronization stage must be a nonempty string")
+    width_bits = _hwh_hp1_data_width_bits(plan.hwh_path)
+    reset_value = api.read_phys32(SLCR_FPGA_RST_CTRL)
+    if isinstance(reset_value, bool) or not isinstance(reset_value, int) or not 0 <= reset_value <= 0xFFFFFFFF:
+        raise ValueError("SLCR_FPGA_RST_CTRL read did not return an unsigned 32-bit integer")
+    if reset_value != 0:
+        raise preflight.PreflightError(
+            "refusing AFI1 32-bit write until FPGA_RST_CTRL is exactly 0x00000000; "
+            f"observed 0x{reset_value:08x}"
+        )
+
+    registers: dict[str, dict[str, int | str]] = {}
+    for name, address in (("AFI1_RDCHAN_CTRL", AFI1_RDCHAN_CTRL),
+                          ("AFI1_WRCHAN_CTRL", AFI1_WRCHAN_CTRL)):
+        before = api.read_phys32(address)
+        if isinstance(before, bool) or not isinstance(before, int) or not 0 <= before <= 0xFFFFFFFF:
+            raise ValueError(f"{name} read did not return an unsigned 32-bit integer")
+        requested = before | AFI1_WIDTH_32BIT
+        api.write_phys32(address, requested)
+        readback = api.read_phys32(address)
+        if isinstance(readback, bool) or not isinstance(readback, int) or not 0 <= readback <= 0xFFFFFFFF:
+            raise ValueError(f"{name} readback did not return an unsigned 32-bit integer")
+        if readback & AFI1_WIDTH_32BIT != AFI1_WIDTH_32BIT:
+            raise preflight.PreflightError(
+                f"{name} readback failed: bit 0 (32BitEn) is 0 after write; "
+                f"requested 0x{requested:08x}, read 0x{readback:08x}"
+            )
+        registers[name] = {
+            "address": f"0x{address:08x}", "before": before,
+            "before_raw_hex": f"0x{before:08x}", "write_value": requested,
+            "write_raw_hex": f"0x{requested:08x}", "readback": readback,
+            "readback_raw_hex": f"0x{readback:08x}",
+            "width_bit0": readback & AFI1_WIDTH_32BIT,
+        }
+    return {
+        "stage": stage, "status": "AFI1_HP1_32BIT_SYNC_PASS",
+        "hwh_path": str(plan.hwh_path),
+        "hwh_sha256": preflight.sha256_file(plan.hwh_path),
+        "hwh_hp1_data_width_bits": width_bits,
+        "fpga_rst_ctrl": reset_value,
+        "fpga_rst_ctrl_raw_hex": f"0x{reset_value:08x}",
+        "registers": registers,
+    }
 
 
 def read_afi1_snapshot(api: Any, stage: str) -> dict[str, Any]:
@@ -889,6 +991,15 @@ class MockBoardAPI:
         self._packer_error = 0
         self._actual_s2mm_length = 0
         self.physical_read_trace: list[int] = []
+        self.physical_write_trace: list[tuple[int, int]] = []
+        self.physical_registers: dict[int, int] = {
+            AFI1_RDCHAN_CTRL: 0x00000000,
+            AFI1_WRCHAN_CTRL: 0x00000F00,
+            SLCR_FPGA0_CLK_CTRL: 0x0001A00A,
+            SLCR_FPGA_RST_CTRL: 0x00000000,
+        }
+        self.fail_afi1_readback = False
+        self._afi1_written: set[int] = set()
         self._checker: dict[int, int] = {
             CHECKER_STATUS: 0,
             CHECKER_ERROR_CODE: 0,
@@ -1025,16 +1136,20 @@ class MockBoardAPI:
 
     def read_phys32(self, address: int) -> int:
         self.physical_read_trace.append(address)
-        values = {
-            AFI1_RDCHAN_CTRL: 0x00000000,
-            AFI1_WRCHAN_CTRL: 0x00000000,
-            SLCR_FPGA0_CLK_CTRL: 0x0001A00A,
-            SLCR_FPGA_RST_CTRL: 0x0000000F,
-        }
         try:
-            return values[address]
+            value = self.physical_registers[address]
         except KeyError as exc:
             raise AssertionError(f"unexpected physical register 0x{address:x}") from exc
+        if self.fail_afi1_readback and address in self._afi1_written:
+            return value & ~AFI1_WIDTH_32BIT
+        return value
+
+    def write_phys32(self, address: int, value: int) -> None:
+        if address not in AFI1_WRITE_REGISTERS:
+            raise AssertionError(f"unexpected physical register write 0x{address:x}")
+        self.physical_write_trace.append((address, value))
+        self.physical_registers[address] = value
+        self._afi1_written.add(address)
 
     def write32(self, base: int, offset: int, value: int) -> None:
         self.write_trace.append((base, offset, value))
@@ -1120,7 +1235,7 @@ class PynqBoardAPI:
 
     def __init__(self, plan: preflight.ValidatedRun, *, stage: str,
                  cma_ranges: tuple[tuple[int, int], ...] | None = None,
-                 phys_reader: Any = None):
+                 phys_reader: Any = None, phys_writer: Any = None):
         self.plan = plan
         self.stage = stage
         self.cma_ranges = cma_ranges
@@ -1129,6 +1244,7 @@ class PynqBoardAPI:
         self._allocate = None
         self._pynq = None
         self._phys_reader = read_phys32_readonly if phys_reader is None else phys_reader
+        self._phys_writer = write_afi1_phys32 if phys_writer is None else phys_writer
         self.board_accessed = False
 
     def _load_pynq(self) -> Any:
@@ -1242,6 +1358,13 @@ class PynqBoardAPI:
         _mark_board_accessed()
         self.board_accessed = True
         return self._phys_reader(address)
+
+    def write_phys32(self, address: int, value: int) -> None:
+        if address not in AFI1_WRITE_REGISTERS:
+            raise ValueError("physical write address is not in the AFI1 control allowlist")
+        _mark_board_accessed()
+        self.board_accessed = True
+        self._phys_writer(address, value)
 
     def write32(self, base: int, offset: int, value: int) -> None:
         self._mmio[base].write(offset, value)
@@ -1562,9 +1685,10 @@ def _overlay_stage(plan: preflight.ValidatedRun, live_boot_id: str,
     try:
         afi_before = read_afi1_snapshot(api, "before_overlay_load")
         api.load_overlay()
+        afi_sync = sync_afi1_hp1_32bit(api, plan, stage="overlay-only")
         afi_after = read_afi1_snapshot(api, "after_overlay_load")
         api.open_mmio()
-        # Overlay-only means download plus exactly these two read-only signature reads.
+        # Overlay-only reads the checker and packer signatures after AFI1 sync.
         checker_signature = api.read32(preflight.CHECKER_BASE, 0x04)
         packer_signature = api.read32(preflight.CHECKER_BASE, PACKER_SIGNATURE)
         if checker_signature != preflight.PACKET_MAGIC or packer_signature != preflight.PACKER_SIGNATURE:
@@ -1578,8 +1702,10 @@ def _overlay_stage(plan: preflight.ValidatedRun, live_boot_id: str,
             raise preflight.PreflightError("boot_id changed after overlay PASS receipt was written")
         result = {
             "task": "WO-0015", "status": "OVERLAY_LOAD_PASS",
-            "operation": "AFI1/SLCR read-only snapshots around Overlay download plus two signature reads",
+            "operation": ("Overlay download, guarded AFI1 HP1 32-bit synchronization, "
+                          "AFI1/SLCR snapshots, and two signature reads"),
             "afi1_snapshots": [afi_before, afi_after],
+            "afi1_sync": afi_sync,
             "board_accessed": bool(getattr(api, "board_accessed", False)),
             "pynq_imported": _PYNQ_IMPORTED,
             "runtime_preflight": before, "post_stage_audit": post_audit, **receipt,
@@ -1620,11 +1746,28 @@ def _dma_stage(plan: preflight.ValidatedRun, live_boot_id: str, stage: str,
                                manifest_sha256=plan.manifest_sha256, stage=stage)
     try:
         api.open_mmio()  # Attach to the already loaded BIT; never construct/download Overlay here.
-        result = run_frames(plan, api, timeout_s=timeout_s,
-                            frame_limit=frame_limit,
-                            expected_prior_frames=expected_prior_frames,
-                            diagnostic_dir=(Path(evidence_path).parent / f"{stage}-diagnostics"
-                                            if evidence_path else plan.manifest_path.parent / f"{stage}-diagnostics"))
+        afi1_snapshots = [read_afi1_snapshot(api, "pre_dma_afi1_sync")]
+        afi1_sync = sync_afi1_hp1_32bit(api, plan, stage=stage)
+        afi1_snapshots.append(read_afi1_snapshot(api, "post_overlay_afi1_sync"))
+        try:
+            result = run_frames(plan, api, timeout_s=timeout_s,
+                                frame_limit=frame_limit,
+                                expected_prior_frames=expected_prior_frames,
+                                diagnostic_dir=(Path(evidence_path).parent / f"{stage}-diagnostics"
+                                                if evidence_path else plan.manifest_path.parent / f"{stage}-diagnostics"))
+        except ExecutionFailure as exc:
+            exc.evidence["afi1_sync"] = afi1_sync
+            if not exc.dma_may_be_active:
+                try:
+                    afi1_snapshots.append(read_afi1_snapshot(api, "post_dma"))
+                    exc.evidence["afi1_snapshots"] = afi1_snapshots
+                except BaseException as snapshot_exc:
+                    exc.evidence["afi1_post_dma_snapshot_error"] = (
+                        f"{type(snapshot_exc).__name__}: {snapshot_exc}")
+            raise
+        afi1_snapshots.append(read_afi1_snapshot(api, "post_dma"))
+        result["afi1_sync"] = afi1_sync
+        result["afi1_snapshots"] = afi1_snapshots
         post_audit = _post_stage_audit(api, plan, before)
         result["runtime_preflight"] = before
         result["post_stage_audit"] = post_audit
