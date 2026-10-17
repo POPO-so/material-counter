@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import os
+import socket
 import threading
 import time
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Iterator
+from urllib.request import urlopen
 
 import cv2
 import numpy as np
@@ -253,6 +255,117 @@ class PeriodicMjpegPublisher:
         self._worker.join()
         with self._condition:
             self._closed = True
+
+
+class MjpegLoopbackClient:
+    """Read the local multipart endpoint and measure delivered preview frames."""
+
+    def __init__(self, url: str, *, timeout_s: float = 0.5):
+        if not isinstance(url, str) or not url.startswith("http://127.0.0.1:"):
+            raise ValueError("loopback preview URL must use http://127.0.0.1")
+        if isinstance(timeout_s, bool) or not isinstance(timeout_s, (int, float)) or timeout_s <= 0:
+            raise ValueError("timeout_s must be a positive number")
+        self.url = url
+        self.timeout_s = float(timeout_s)
+        self.frames_received = 0
+        self.frame_sequences: list[int] = []
+        self.first_frame_time: float | None = None
+        self.last_frame_time: float | None = None
+        self.error: str | None = None
+        self._stop = threading.Event()
+        self._lock = threading.Lock()
+        self._response: Any = None
+        self._thread = threading.Thread(
+            target=self._read_stream,
+            name="wo0016-mjpeg-loopback-client",
+            daemon=True,
+        )
+
+    @property
+    def preview_client_fps(self) -> float | None:
+        first = self.first_frame_time
+        last = self.last_frame_time
+        if self.frames_received < 2 or first is None or last is None or last <= first:
+            return None
+        return (self.frames_received - 1) / (last - first)
+
+    def start(self) -> "MjpegLoopbackClient":
+        if self._thread.is_alive():
+            raise RuntimeError("loopback preview client is already running")
+        self._thread.start()
+        return self
+
+    def _readline(self, response: Any) -> bytes | None:
+        while not self._stop.is_set():
+            try:
+                return response.readline()
+            except (socket.timeout, TimeoutError):
+                continue
+        return None
+
+    @staticmethod
+    def _read_exactly(response: Any, size: int) -> bytes:
+        chunks = bytearray()
+        while len(chunks) < size:
+            chunk = response.read(size - len(chunks))
+            if not chunk:
+                break
+            chunks.extend(chunk)
+        return bytes(chunks)
+
+    def _read_stream(self) -> None:
+        try:
+            with urlopen(self.url, timeout=self.timeout_s) as response:
+                with self._lock:
+                    self._response = response
+                if response.status != 200:
+                    raise RuntimeError(f"preview endpoint returned HTTP {response.status}")
+                boundary = b"--frame"
+                while not self._stop.is_set():
+                    line = self._readline(response)
+                    if line is None or not line:
+                        break
+                    if line.strip() != boundary:
+                        continue
+                    headers: dict[str, str] = {}
+                    while not self._stop.is_set():
+                        line = self._readline(response)
+                        if line is None or not line:
+                            return
+                        if line in (b"\r\n", b"\n"):
+                            break
+                        key, separator, value = line.decode("ascii").partition(":")
+                        if separator:
+                            headers[key.strip().lower()] = value.strip()
+                    size = int(headers["content-length"])
+                    frame = self._read_exactly(response, size)
+                    if len(frame) != size:
+                        break
+                    if "x-frame-sequence" in headers:
+                        self.frame_sequences.append(int(headers["x-frame-sequence"]))
+                    timestamp = time.perf_counter()
+                    if self.first_frame_time is None:
+                        self.first_frame_time = timestamp
+                    self.last_frame_time = timestamp
+                    self.frames_received += 1
+                    self._readline(response)  # Consume the MIME separator CRLF.
+        except (OSError, RuntimeError, ValueError, KeyError) as exc:
+            if not self._stop.is_set():
+                self.error = f"{type(exc).__name__}: {exc}"
+        finally:
+            with self._lock:
+                self._response = None
+
+    def close(self) -> None:
+        self._stop.set()
+        with self._lock:
+            response = self._response
+        if response is not None:
+            response.close()
+        if self._thread.ident is not None:
+            self._thread.join(timeout=max(1.0, self.timeout_s * 3))
+            if self._thread.is_alive():
+                raise RuntimeError("loopback preview client did not stop")
 
 
 class MjpegPreviewServer:

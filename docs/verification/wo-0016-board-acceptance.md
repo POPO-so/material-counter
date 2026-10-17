@@ -234,3 +234,30 @@ Attempt 7 最终源码提交为 `e305b02959e9226b4747cbcbeb12e3e9df146029`（分
 Stage A 的 30 帧吞吐门槛达到：15 FPS 对应 66.667 ms/帧，本次 wall frame 为 66.201 ms，余量约 0.466 ms。相较 Attempt 6 的 86.972 ms/帧，下降约 20.771 ms；吞吐从 11.498 提升到 15.106 FPS。ROI 计数均值为 27.070 ms，仍未达到离线目标 `<=2.5 ms`，且比 Attempt 6 的 25.909 ms 高 1.161 ms；因此吞吐门槛通过不代表 ROI 子阶段目标也通过。当前 `roi_count_ms` 计时包围完整的 `MaskCounter.update()`，包括线程调度、Binary8 检查、ROI 行列投影、可能发生的 CCL 和跟踪；结果 JSON 没有单独记录 ROI 前景像素数、CCL 是否触发或 CCL 本体耗时，不能仅凭这一字段把 27.070 ms 归因给连通域实现。预览移交小于 1 ms，但没有客户端，所以实际 JPEG 后台编码耗时仍未测得。
 
 运行结束后只读复核 Boot ID 未变、CmaFree 70,428 KiB、摄像头空闲、曝光仍为手动 `1/50`、8080 已关闭、两个 DMA 通道仍为 Idle / 无错，且无残留 `run_stream_counter.py` 进程。JSON 记录 `buffers_released=true` 和最终状态 `4098`（`0x1002`）/`4098`。Attempt 7 一次性 Guard 保留在活动路径且已消费，SHA-256 为 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`。本次没有人工真值或传送带物料工况，不据此宣称 M6 螺母/垫片计数准确率。
+
+## Attempt 7 后续离线优化与 Stage B 预部署
+
+Attempt 7 的 `roi_count_ms=27.070` 是 `asyncio.to_thread(MaskCounter.update)` 的包围计时；原结果 JSON 没有子阶段采样，因此不能把这 27.070 ms 全部归因到单一内部函数。对 Attempt 7 运行代码的静态核查确认：Binary8 值域校验对整个 240×320 掩码执行 `(image != 0) & (image != 255)`，每帧生成多个整帧布尔临时数组；而连通域、行列投影及统计只需要过线 49×320 ROI。这是已确认的可消除整帧路径。本次改为只校验 ROI，并把单次更新拆成 `validate_ms`、`projection_ms`、`ccl_ms`、`track_ms`；板端各阶段的真实占比仍需在之后获准的 Stage B 采集中读取。
+
+`roi_subtimings_ms` 汇报各阶段平均耗时与样本数，并额外记录 ROI 最大前景像素数、CCL 调用数和发生 CCL 帧的平均 CCL 耗时。对 49×320 ROI 中前景总数小于 `min_area` 的帧，直接跳过 CCL。Windows/Python 3.14 主机上对空掩码执行 2,000 次 `MaskCounter.update()`（50 次预热后）得到均值 0.0570 ms、中位数 0.0538 ms、P95 0.0665 ms；子阶段均值为校验 0.0059 ms、投影/前景统计 0.0478 ms、CCL 0.0001 ms、跟踪 0.0010 ms。该结果只证明主机的空 ROI 快路径，不能替代 Cortex-A9 实测。
+
+CLI 现在接受 `--expected-count`（保留 `--ground-truth-count` 兼容名）和 `--material-label`，输出 `accuracy = 1 - abs(total_count - expected_count) / max(expected_count, 1)`。传入 `--measure-preview-client` 时，独立回环线程会连接本机 `/stream.mjpg` 并报告实际收到的帧数与 `preview_client_fps`；`avg_mjpeg_encode_ms` 汇总后台预览绘制/编码时长，快照移交单独报告为 `avg_mjpeg_handoff_ms`。回环速率是本机 HTTP MJPEG 交付速率，不是浏览器渲染帧率。
+
+离线回归 `pytest scripts/wo0016 scripts/wo0015` 为 `244 passed, 1 skipped`。此更新未启动相机、PYNQ、Overlay 或 DMA。板端预部署状态：待归档 Guard、同步并哈希核验脚本后填写只读检查结果。
+
+Stage B 单次命令模板（仅待投料就绪并获得操作员执行口令后使用；`<EXPECTED_COUNT>` 由操作员填写，本次不运行）：
+
+```bash
+PY=/usr/local/share/pynq-venv/bin/python3
+WO16=/home/xilinx/wo0016
+WO15_FINAL=/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd
+
+test "$(cat /proc/sys/kernel/random/boot_id)" = "f8b24aee-ed7e-430a-b3f3-d26056746bfd" || exit 1
+sudo -n env XILINX_XRT=/usr "$PY" "$WO16/run_stream_counter.py" \
+  --mode board --execute --authorize-stage wo0016-stream --approve-once \
+  --manifest "$WO15_FINAL/wo0015-manifest.json" \
+  --manifest-sha256 2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b \
+  --max-frames 150 --expected-count <EXPECTED_COUNT> \
+  --material-label M6_nut_and_washer --measure-preview-client \
+  --output-json "$WO16/stage-b-m6-150frames-result.json"
+```

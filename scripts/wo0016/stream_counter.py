@@ -6,7 +6,7 @@ import inspect
 import math
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, AsyncIterable, Callable, Protocol
 
@@ -75,6 +75,9 @@ class FrameResult:
     roi_bottom: int
     row_projection: tuple[int, ...]
     column_projection: tuple[int, ...]
+    roi_foreground_pixels: int = 0
+    ccl_executed: bool = False
+    roi_subtimings_ms: dict[str, float] = field(default_factory=dict, compare=False)
 
 
 @dataclass
@@ -124,17 +127,29 @@ class MaskCounter:
         frame_id = _integer(frame_id, "frame_id", minimum=0)
         if self.last_frame_id is not None and frame_id <= self.last_frame_id:
             raise ValueError("frame IDs must strictly increase")
+
+        validate_started = time.perf_counter()
         image = np.asarray(mask)
         if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (self.height, self.width):
             raise ValueError(f"mask must be a uint8 array with shape {(self.height, self.width)}")
-        if np.any((image != 0) & (image != 0xFF)):
+        roi_top, roi_bottom = self._roi_bounds()
+        roi = image[roi_top:roi_bottom, :]
+        if np.any((roi != 0) & (roi != 0xFF)):
             raise ValueError("mask values must be Binary8 0x00 or 0xFF")
+        validate_ms = (time.perf_counter() - validate_started) * 1000.0
 
-        detections, roi_top, roi_bottom, row_projection, column_projection = (
-            self._extract_roi_detections(image)
-        )
+        projection_started = time.perf_counter()
+        row_projection, column_projection, foreground_pixels = self._project_roi(roi)
+        projection_ms = (time.perf_counter() - projection_started) * 1000.0
+
+        ccl_started = time.perf_counter()
+        detections = self._roi_components(roi, roi_top, foreground_pixels)
+        ccl_ms = (time.perf_counter() - ccl_started) * 1000.0
+
+        track_started = time.perf_counter()
         self.last_frame_id = frame_id
         events = self._associate_and_update(frame_id, detections)
+        track_ms = (time.perf_counter() - track_started) * 1000.0
         return FrameResult(
             frame_id=frame_id,
             total_count=self.total_count,
@@ -144,20 +159,34 @@ class MaskCounter:
             roi_bottom=roi_bottom,
             row_projection=row_projection,
             column_projection=column_projection,
+            roi_foreground_pixels=foreground_pixels,
+            ccl_executed=foreground_pixels >= self.min_area,
+            roi_subtimings_ms={
+                "validate_ms": validate_ms,
+                "projection_ms": projection_ms,
+                "ccl_ms": ccl_ms,
+                "track_ms": track_ms,
+            },
         )
 
-    def _extract_roi_detections(
-        self, mask: np.ndarray
-    ) -> tuple[list[Detection], int, int, tuple[int, ...], tuple[int, ...]]:
+    def _roi_bounds(self) -> tuple[int, int]:
         top = max(0, self.line_y - self.roi_half_height)
         bottom = min(self.height, self.line_y + self.roi_half_height + 1)
-        roi = mask[top:bottom, :]
-        if not roi.flags.c_contiguous:
-            roi = np.ascontiguousarray(roi)
+        return top, bottom
+
+    @staticmethod
+    def _project_roi(roi: np.ndarray) -> tuple[tuple[int, ...], tuple[int, ...], int]:
         row_projection = tuple(int(value) for value in np.count_nonzero(roi, axis=1))
         column_projection = tuple(int(value) for value in np.count_nonzero(roi, axis=0))
-        if cv2.countNonZero(roi) < self.min_area:
-            return [], top, bottom, row_projection, column_projection
+        foreground_pixels = int(cv2.countNonZero(roi))
+        return row_projection, column_projection, foreground_pixels
+
+    def _roi_components(self, roi: np.ndarray, top: int,
+                        foreground_pixels: int) -> list[Detection]:
+        if foreground_pixels < self.min_area:
+            return []
+        if not roi.flags.c_contiguous:
+            roi = np.ascontiguousarray(roi)
         fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
         fast_algorithm = getattr(cv2, "CCL_GRANA", None)
         if callable(fast_ccl) and fast_algorithm is not None:
@@ -186,6 +215,15 @@ class MaskCounter:
                 centroid_y=float(centroids[label, 1] + top),
             ))
         detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
+        return detections
+
+    def _extract_roi_detections(
+        self, mask: np.ndarray
+    ) -> tuple[list[Detection], int, int, tuple[int, ...], tuple[int, ...]]:
+        top, bottom = self._roi_bounds()
+        roi = mask[top:bottom, :]
+        row_projection, column_projection, foreground_pixels = self._project_roi(roi)
+        detections = self._roi_components(roi, top, foreground_pixels)
         return detections, top, bottom, row_projection, column_projection
 
     def _side(self, detection: Detection) -> float:

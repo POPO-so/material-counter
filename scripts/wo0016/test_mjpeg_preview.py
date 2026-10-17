@@ -1,5 +1,6 @@
 import sys
 import threading
+import time
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -8,6 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import mjpeg_preview as preview_module  # noqa: E402
 from mjpeg_preview import (  # noqa: E402
     MjpegFrameHub,
     MjpegPreviewServer,
@@ -161,4 +163,25 @@ def test_http_server_serves_page_and_live_mjpeg_multipart_stream():
             frame = response.read(int(part_headers["content-length"]))
             assert frame == b"mock-jpeg-frame"
     finally:
+        server.close()
+
+
+def test_loopback_client_reads_multipart_frames_and_measures_delivery_fps():
+    hub = MjpegFrameHub()
+    server = MjpegPreviewServer(hub=hub, host="127.0.0.1", port=0).start()
+    client = preview_module.MjpegLoopbackClient(
+        f"http://127.0.0.1:{server.port}/stream.mjpg", timeout_s=0.2
+    ).start()
+    try:
+        deadline = time.monotonic() + 2.0
+        while client.frames_received < 3 and time.monotonic() < deadline:
+            hub.publish(b"mock-jpeg-frame")
+            time.sleep(0.04)
+
+        assert client.frames_received >= 2
+        assert client.preview_client_fps is not None
+        assert client.preview_client_fps > 0
+        assert client.error is None
+    finally:
+        client.close()
         server.close()

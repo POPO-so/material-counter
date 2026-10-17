@@ -9,6 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import run_stream_counter as runner  # noqa: E402
 from run_stream_counter import (  # noqa: E402
     build_synthetic_masks,
     claim_once_guard,
@@ -81,6 +82,54 @@ def test_reverse_direction_mock_sequence_matches_its_separate_ground_truth():
 
     assert payload["status"] == "MOCK_PASS"
     assert payload["total_count"] == payload["ground_truth_count"] == 2
+
+
+def test_expected_count_and_material_label_are_available_to_stage_b_cli():
+    args = runner._parser().parse_args([
+        "--mode", "board", "--expected-count", "6",
+        "--material-label", "M6_nut_and_washer", "--measure-preview-client",
+    ])
+
+    assert args.ground_truth_count == 6
+    assert args.material_label == "M6_nut_and_washer"
+    assert args.measure_preview_client is True
+    assert runner._count_accuracy_fraction(5, 6) == pytest.approx(5 / 6)
+    assert runner._count_accuracy_fraction(3, 0) == -2.0
+    legacy_args = runner._parser().parse_args(["--ground-truth-count", "4"])
+    assert legacy_args.ground_truth_count == 4
+
+
+def test_mock_result_serializes_expected_count_material_and_fractional_accuracy():
+    payload = run_mock_simulation(
+        frame_count=8, expected_count=3, material_label="M6_nut_and_washer"
+    )
+
+    assert payload["total_count"] == 2
+    assert payload["expected_count"] == payload["ground_truth_count"] == 3
+    assert payload["material_label"] == "M6_nut_and_washer"
+    assert payload["accuracy"] == pytest.approx(1.0 - 1 / 3)
+
+
+def test_roi_subtimings_summary_keeps_named_stages_and_sample_count():
+    counter = MaskCounter()
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    results = [counter.update(frame_id, mask) for frame_id in range(2)]
+
+    summary = runner.summarize_roi_subtimings_ms(results)
+
+    assert set(summary) == {
+        "validate_ms", "projection_ms", "ccl_ms", "track_ms",
+        "validate_timing_samples", "projection_timing_samples",
+        "ccl_timing_samples", "track_timing_samples",
+        "ccl_invocations", "ccl_avg_ms_when_invoked", "roi_foreground_pixels_max",
+    }
+    assert all(summary[f"{name}_timing_samples"] == 2 for name in
+               ("validate", "projection", "ccl", "track"))
+    assert all(summary[name] >= 0 for name in
+               ("validate_ms", "projection_ms", "ccl_ms", "track_ms"))
+    assert summary["ccl_invocations"] == 0
+    assert summary["ccl_avg_ms_when_invoked"] is None
+    assert summary["roi_foreground_pixels_max"] == 0
 
 
 def test_board_mode_without_one_shot_flags_rejects_before_pynq_import(capsys, tmp_path):
@@ -640,7 +689,8 @@ def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
     summary = summarize_stage_timings_ms({
         "capture": [1.0, 3.0], "encode": [2.0],
         "dma": [4.0, 6.0], "packer_check": [0.5, 1.5],
-        "roi_count": [2.0], "mjpeg_encode": [40.0], "postprocess": [],
+        "roi_count": [2.0], "mjpeg_encode": [1.0], "mjpeg_handoff": [40.0],
+        "postprocess": [],
     })
 
     assert summary == {
@@ -651,7 +701,8 @@ def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
         "avg_rx_copy_ms": None, "rx_copy_timing_samples": 0,
         "avg_packer_check_ms": 1.0, "packer_check_timing_samples": 2,
         "avg_roi_count_ms": 2.0, "roi_count_timing_samples": 1,
-        "avg_mjpeg_encode_ms": 40.0, "mjpeg_encode_timing_samples": 1,
+        "avg_mjpeg_encode_ms": 1.0, "mjpeg_encode_timing_samples": 1,
+        "avg_mjpeg_handoff_ms": 40.0, "mjpeg_handoff_timing_samples": 1,
         "avg_mjpeg_background_encode_ms": None,
         "mjpeg_background_encode_timing_samples": 0,
         "avg_postprocess_ms": None, "postprocess_timing_samples": 0,

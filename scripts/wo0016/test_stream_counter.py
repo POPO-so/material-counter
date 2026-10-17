@@ -48,6 +48,8 @@ def test_area_filter_and_roi_keep_only_qualified_line_band_components():
     assert result.detections[0].centroid_x == pytest.approx(172.0)
     assert result.detections[0].centroid_y == pytest.approx(112.0)
     assert result.total_count == 0
+    assert result.roi_foreground_pixels == 34
+    assert result.ccl_executed is True
 
 
 def _legacy_roi_signature(mask, counter):
@@ -75,21 +77,29 @@ def _legacy_roi_signature(mask, counter):
 class LegacyCclMaskCounter(MaskCounter):
     """Reference counter using the pre-optimization CV_32S ROI implementation."""
 
-    def _extract_roi_detections(self, mask):
-        top = max(0, self.line_y - self.roi_half_height)
-        bottom = min(self.height, self.line_y + self.roi_half_height + 1)
-        expected, row_projection, column_projection = _legacy_roi_signature(mask, self)
-        detections = [Detection(
-            x_min=x_min,
-            x_max=x_max,
-            y_min=y_min,
-            y_max=y_max,
-            area=area,
-            centroid_x=centroid_x,
-            centroid_y=centroid_y,
-        ) for (x_min, x_max, y_min, y_max, area,
-               centroid_x, centroid_y) in expected]
-        return detections, top, bottom, row_projection, column_projection
+    def _roi_components(self, roi, top, foreground_pixels):
+        if foreground_pixels < self.min_area:
+            return []
+        foreground = np.ascontiguousarray(roi == 0xFF, dtype=np.uint8)
+        count, _, stats, centroids = cv2.connectedComponentsWithStats(
+            foreground, connectivity=8, ltype=cv2.CV_32S
+        )
+        detections = []
+        for label in range(1, count):
+            x, y, box_width, box_height, area = (int(value) for value in stats[label])
+            if area < self.min_area:
+                continue
+            detections.append(Detection(
+                x_min=x,
+                x_max=x + box_width - 1,
+                y_min=y + top,
+                y_max=y + top + box_height - 1,
+                area=area,
+                centroid_x=float(centroids[label, 0]),
+                centroid_y=float(centroids[label, 1] + top),
+            ))
+        detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
+        return detections
 
 
 def test_cached_roi_outputs_match_legacy_results_on_synthetic_and_board_mask_samples():
@@ -735,6 +745,35 @@ def test_non_binary_mask_is_rejected_before_tracking_state_changes():
         counter.update(0, invalid)
     assert counter.last_frame_id is None
     assert counter.total_count == 0
+
+
+def test_update_validates_only_the_counting_roi_and_reports_subtimings(monkeypatch):
+    counter = MaskCounter(line_y=120, roi_half_height=24)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    mask[10, 10] = 1  # Outside the ROI and irrelevant to line counting.
+
+    def forbidden_ccl(*args, **kwargs):
+        pytest.fail("a below-threshold ROI must skip connected components")
+
+    monkeypatch.setattr(cv2, "connectedComponentsWithStats", forbidden_ccl)
+    fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
+    if callable(fast_ccl):
+        monkeypatch.setattr(cv2, "connectedComponentsWithStatsWithAlgorithm", forbidden_ccl)
+
+    result = counter.update(0, mask)
+
+    assert result.total_count == 0
+    assert result.roi_foreground_pixels == 0
+    assert result.ccl_executed is False
+    assert set(result.roi_subtimings_ms) == {
+        "validate_ms", "projection_ms", "ccl_ms", "track_ms",
+    }
+    assert all(value >= 0 for value in result.roi_subtimings_ms.values())
+
+    invalid_in_roi = np.zeros((240, 320), dtype=np.uint8)
+    invalid_in_roi[120, 10] = 1
+    with pytest.raises(ValueError, match="Binary8"):
+        MaskCounter().update(0, invalid_in_roi)
 
 
 def test_transfer_async_falls_back_to_channel_wait_in_a_worker_thread():

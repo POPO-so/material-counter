@@ -44,6 +44,7 @@ from mjpeg_preview import (
     PREVIEW_FRAME_INTERVAL,
     PREVIEW_JPEG_QUALITY,
     MjpegFrameHub,
+    MjpegLoopbackClient,
     MjpegPreviewServer,
     PeriodicMjpegPublisher,
     render_preview_jpeg,
@@ -90,7 +91,9 @@ def build_synthetic_masks(*, frame_count: int = 8, line_y: int = 120,
 
 
 def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
-                        direction: int = 1, min_area: int = 12) -> dict[str, Any]:
+                        direction: int = 1, min_area: int = 12,
+                        expected_count: int | None = None,
+                        material_label: str | None = None) -> dict[str, Any]:
     """Run synthetic Binary8 masks through the actual counter and JPEG renderer."""
     counter = MaskCounter(line_y=line_y, direction=direction,
                           min_area=min_area, max_step=24.0)
@@ -114,7 +117,7 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
     elapsed = max(time.perf_counter() - start, 1e-9)
     predicted = results[-1].total_count if results else 0
     # Synthetic ground truth is kept outside MaskCounter and is used only for scoring.
-    ground_truth = 2 if frame_count >= 2 else 0
+    ground_truth = (2 if frame_count >= 2 else 0) if expected_count is None else expected_count
     return {
         "schema": 1,
         "work_order": "WO-0016",
@@ -128,8 +131,12 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
         "frames_processed": len(results),
         "total_count": predicted,
         "ground_truth_count": ground_truth,
+        "expected_count": ground_truth,
+        "material_label": material_label,
         "count_error": predicted - ground_truth,
         "accuracy_percent": _count_accuracy(predicted, ground_truth),
+        "accuracy": _count_accuracy_fraction(predicted, ground_truth),
+        "roi_subtimings_ms": summarize_roi_subtimings_ms(results),
         "elapsed_seconds": elapsed,
         "throughput_fps": len(results) / elapsed,
         "preview_jpeg_sha256": hashlib.sha256(last_jpeg).hexdigest()
@@ -506,6 +513,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
     stream: DoubleBufferStream | None = None
     preview: MjpegPreviewServer | None = None
     preview_publisher: PeriodicMjpegPublisher | None = None
+    loopback_client: MjpegLoopbackClient | None = None
     dma = None
     released_buffer_ids: set[int] = set()
     evidence: dict[str, Any] = {
@@ -533,6 +541,8 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         "direction": args.direction,
         "min_area": args.min_area,
         "ground_truth_count": args.ground_truth_count,
+        "expected_count": args.ground_truth_count,
+        "material_label": args.material_label,
         "frames_processed": 0,
     }
     try:
@@ -625,15 +635,21 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
             "capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
-            "mjpeg_encode", "mjpeg_background_encode", "postprocess")}
+            "mjpeg_encode", "mjpeg_handoff", "mjpeg_background_encode", "postprocess")}
         preview_publisher = PeriodicMjpegPublisher(
             hub=hub, line_y=args.line_y,
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
         )
-        stage_timings_ms["mjpeg_encode"] = preview_publisher.handoff_timings_ms
+        stage_timings_ms["mjpeg_encode"] = preview_publisher.background_encode_timings_ms
         stage_timings_ms["mjpeg_background_encode"] = (
             preview_publisher.background_encode_timings_ms
         )
+        stage_timings_ms["mjpeg_handoff"] = preview_publisher.handoff_timings_ms
+        if args.measure_preview_client:
+            loopback_client = MjpegLoopbackClient(
+                f"http://127.0.0.1:{preview.port}/stream.mjpg",
+                timeout_s=min(1.0, args.timeout_s),
+            ).start()
 
         counter = MaskCounter(line_y=args.line_y, min_area=args.min_area,
                               direction=args.direction, hysteresis=args.hysteresis,
@@ -665,8 +681,11 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             raise RuntimeError("camera did not establish a steady-stream timing boundary")
         elapsed = max(time.perf_counter() - steady_start_time[0], 1e-9)
         preview_publisher.close()
+        if loopback_client is not None:
+            loopback_client.close()
         total_count = results[-1].total_count if results else 0
         accuracy = _count_accuracy(total_count, args.ground_truth_count)
+        accuracy_fraction = _count_accuracy_fraction(total_count, args.ground_truth_count)
         s2mm_status = api.read32(preflight.DMA_BASE, 0x34)
         mm2s_status = api.read32(preflight.DMA_BASE, 0x04)
         for status, label in ((s2mm_status, "S2MM"), (mm2s_status, "MM2S")):
@@ -678,23 +697,33 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             "frames_processed": len(results),
             "total_count": total_count,
             "ground_truth_count": args.ground_truth_count,
+            "expected_count": args.ground_truth_count,
+            "material_label": args.material_label,
             "count_error": (None if args.ground_truth_count is None
                             else total_count - args.ground_truth_count),
             "accuracy_percent": accuracy,
+            "accuracy": accuracy_fraction,
             "elapsed_seconds": elapsed,
             "throughput_fps": len(results) / elapsed,
             "hardware_fps": len(results) / elapsed,
             **summarize_stage_timings_ms(stage_timings_ms),
+            "roi_subtimings_ms": summarize_roi_subtimings_ms(results),
             **capture_metadata,
             "preview_frame_interval": preview_publisher.interval,
             "preview_jpeg_quality": preview_publisher.quality,
             "preview_jpeg_frames_encoded": preview_publisher.encoded_frames,
             "preview_encode_errors": tuple(preview_publisher.encode_errors),
+            "preview_client_frames_received": (None if loopback_client is None
+                                                else loopback_client.frames_received),
+            "preview_client_fps": (None if loopback_client is None
+                                   else loopback_client.preview_client_fps),
+            "preview_client_error": (None if loopback_client is None
+                                     else loopback_client.error),
             "preview_url": f"http://{args.host}:{preview.port}/",
             "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
             "packer_output_frames_verified": len(results),
             "pynq_imported": True,
-            "accuracy_formula": "100 * max(0, 1 - abs(predicted - ground_truth) / ground_truth); zero GT is exact-match",
+            "accuracy_formula": "1 - abs(total_count - expected_count) / max(expected_count, 1)",
             "note": "Measured only for the supplied finite live-camera interval; no automatic retry/reset/reload.",
         })
         _release_buffers(api, tx_buffers + rx_buffers, released_buffer_ids)
@@ -718,6 +747,8 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         })
         if preview_publisher is not None:
             preview_publisher.close()
+        if loopback_client is not None:
+            loopback_client.close()
         if preview is not None:
             preview.close()
         if hold:
@@ -737,6 +768,8 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
     finally:
         if preview_publisher is not None:
             preview_publisher.close()
+        if loopback_client is not None:
+            loopback_client.close()
         if preview is not None:
             preview.close()
 
@@ -810,16 +843,56 @@ def _count_accuracy(predicted: int, ground_truth: int | None) -> float | None:
     return round(max(0.0, 100.0 * (1.0 - abs(predicted - ground_truth) / ground_truth)), 4)
 
 
+def _count_accuracy_fraction(predicted: int, expected_count: int | None) -> float | None:
+    if expected_count is None:
+        return None
+    if (isinstance(expected_count, bool) or not isinstance(expected_count, int)
+            or expected_count < 0):
+        raise ValueError("expected_count must be a nonnegative integer")
+    return 1.0 - abs(predicted - expected_count) / max(expected_count, 1)
+
+
+def summarize_roi_subtimings_ms(results: tuple[Any, ...] | list[Any]) -> dict[str, Any]:
+    """Summarize the per-update validation, projection, CCL, and tracking timers."""
+    names = ("validate_ms", "projection_ms", "ccl_ms", "track_ms")
+    summary: dict[str, Any] = {}
+    for name in names:
+        samples = [float(result.roi_subtimings_ms[name]) for result in results
+                   if name in result.roi_subtimings_ms]
+        summary[name] = round(sum(samples) / len(samples), 3) if samples else None
+        summary[f"{name.removesuffix('_ms')}_timing_samples"] = len(samples)
+    ccl_results = [result for result in results if result.ccl_executed]
+    ccl_times = [float(result.roi_subtimings_ms["ccl_ms"]) for result in ccl_results]
+    summary["ccl_invocations"] = len(ccl_results)
+    summary["ccl_avg_ms_when_invoked"] = (
+        round(sum(ccl_times) / len(ccl_times), 3) if ccl_times else None
+    )
+    summary["roi_foreground_pixels_max"] = max(
+        (int(result.roi_foreground_pixels) for result in results), default=0
+    )
+    return summary
+
+
 def summarize_stage_timings_ms(timings: Mapping[str, list[float]]) -> dict[str, Any]:
     """Return per-frame average stage durations and sample counts in milliseconds."""
     result: dict[str, Any] = {}
     for stage in ("capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
-                  "mjpeg_encode", "mjpeg_background_encode", "postprocess"):
+                  "mjpeg_encode", "mjpeg_handoff", "mjpeg_background_encode", "postprocess"):
         samples = timings.get(stage, [])
         result[f"avg_{stage}_ms"] = (
             round(sum(samples) / len(samples), 3) if samples else None
         )
         result[f"{stage}_timing_samples"] = len(samples)
+    return result
+
+
+def _nonnegative_count_argument(value: str) -> int:
+    try:
+        result = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("expected count must be an integer") from exc
+    if result < 0:
+        raise argparse.ArgumentTypeError("expected count must be nonnegative")
     return result
 
 
@@ -835,7 +908,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--hysteresis", type=float, default=2.0)
     parser.add_argument("--confirm-hits", type=int, default=2)
     parser.add_argument("--max-step", type=float, default=24.0)
-    parser.add_argument("--ground-truth-count", type=int)
+    parser.add_argument("--ground-truth-count", "--expected-count", dest="ground_truth_count",
+                        type=_nonnegative_count_argument)
+    parser.add_argument("--material-label")
+    parser.add_argument("--measure-preview-client", action="store_true")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8080)
     parser.add_argument("--timeout-s", type=float, default=5.0)
@@ -855,7 +931,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.mode == "mock":
             result = run_mock_simulation(frame_count=args.mock_frames,
                                          line_y=args.line_y,
-                                         min_area=args.min_area)
+                                         min_area=args.min_area,
+                                         expected_count=args.ground_truth_count,
+                                         material_label=args.material_label)
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 0 if result["status"] == "MOCK_PASS" else 1
         result = execute_board_stream(args)
