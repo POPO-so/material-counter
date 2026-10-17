@@ -1,0 +1,102 @@
+{
+  "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "manifest_sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935",
+  "stage1_status": "OVERLAY_LOAD_PASS",
+  "stage2_status": "DMA_SINGLE_PASS",
+  "tx_bytes": 230432,
+  "rx_bytes": 76800,
+  "byte_mismatches": 0,
+  "mm2s_dmasr": "0x00001002",
+  "s2mm_dmasr": "0x00001002",
+  "registers": {
+    "pre-overlay": {
+      "FPGA0_CLK_CTRL": "0x00400800",
+      "FPGA_RST_CTRL": "0x00000000",
+      "AFI1_RDCHAN_CTRL": "0x00000001",
+      "AFI1_WRCHAN_CTRL": "0x00000F01"
+    },
+    "post-overlay": {
+      "FPGA0_CLK_CTRL": "0x00400800",
+      "FPGA_RST_CTRL": "0x00000000",
+      "AFI1_RDCHAN_CTRL": "0x00000001",
+      "AFI1_WRCHAN_CTRL": "0x00000F01"
+    },
+    "post-dma": {
+      "FPGA0_CLK_CTRL": "0x00400800",
+      "FPGA_RST_CTRL": "0x00000000",
+      "AFI1_RDCHAN_CTRL": "0x00000001",
+      "AFI1_WRCHAN_CTRL": "0x00000F01"
+    }
+  },
+  "parity": {
+    "even": {
+      "word_count": 9600,
+      "poison_words": 0,
+      "zero_words": 9250,
+      "golden_match_words": 9600,
+      "golden_match_bytes": 38400,
+      "zero_byte_count": 37280,
+      "poison_byte_count": 0,
+      "mismatch_bytes": 0,
+      "poison_word_bytes": 0,
+      "zero_word_bytes": 37000
+    },
+    "odd": {
+      "word_count": 9600,
+      "poison_words": 0,
+      "zero_words": 9250,
+      "golden_match_words": 9600,
+      "golden_match_bytes": 38400,
+      "zero_byte_count": 37280,
+      "poison_byte_count": 0,
+      "mismatch_bytes": 0,
+      "poison_word_bytes": 0,
+      "zero_word_bytes": 37000
+    }
+  },
+  "raw_files": {
+    "rx_raw.bin": {
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e"
+    },
+    "tx_raw.bin": {
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae"
+    },
+    "expected_golden.bin": {
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e"
+    }
+  },
+  "downloaded_evidence_files_verified": 6,
+  "guard_receipts_verified": 4,
+  "terminal_failure_present": false,
+  "precheck": {
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "hex": "0x00000001",
+        "value": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "hex": "0x00000F01",
+        "value": 3841
+      },
+      "FPGA0_CLK_CTRL": {
+        "address": "0xf8000170",
+        "hex": "0x00400800",
+        "value": 4196352
+      },
+      "FPGA_RST_CTRL": {
+        "address": "0xf8000240",
+        "hex": "0x00000000",
+        "value": 0
+      }
+    },
+    "recorded_bit_path": "/home/xilinx/wo0015/wo15.bit",
+    "failed_expected_bit_path": "/home/xilinx/wo0015/afi1-rerun-v3/deploy/wo15.bit",
+    "canonical_expected_bit_path": "/home/xilinx/wo0015/wo15.bit"
+  },
+  "captured_before_release": true
+}

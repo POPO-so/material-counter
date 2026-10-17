@@ -1,0 +1,192 @@
+[
+  {
+    "original": "data/results/roi-crop-20261012-184057/manager-verification.json",
+    "copy": "data/results/roi-handoff-20261012/matrix-manager-verification.json",
+    "sha256": "2dc77ceacab493f7d3e65b3b13bc22b2d9098a3a7bf5df752d4132290bfe98c0"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/source-hashes.json",
+    "copy": "data/results/roi-handoff-20261012/matrix-source-hashes.json",
+    "sha256": "0542119dd9abb2225099e7c6cec8498b1777ca81e2ba305dfd653b01a1f2a9fc"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/case-matrix.json",
+    "copy": "data/results/roi-handoff-20261012/case-matrix.json",
+    "sha256": "cde33ff97ebc4723462e2e360336db50a384f2a6bf7c4027755ea459547c01bc"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184847/source-hashes.json",
+    "copy": "data/results/roi-handoff-20261012/final-source-hashes.json",
+    "sha256": "c2f523b2addb219343c6945361a9b90c97cb0103ac5861fb1a167aafdea8d5e5"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184847/resource-summary.json",
+    "copy": "data/results/roi-handoff-20261012/resource-center.json",
+    "sha256": "c0f3535d24cadefa763f469c5f46f317c95c74bad3e477f8351f9f32e6290a53"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184847/lint.rpt",
+    "copy": "data/results/roi-handoff-20261012/lint.rpt",
+    "sha256": "0b71166b0b8a7f35b76059880675c9453c34da1aa02bb187551bd1d5036aed6c"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184847/lint-parsed.csv",
+    "copy": "data/results/roi-handoff-20261012/lint-parsed.csv",
+    "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184847/lint-parser-raw.csv",
+    "copy": "data/results/roi-handoff-20261012/lint-parser-raw.csv",
+    "sha256": "b594f872b8832034c45fecf3437f53e60d0617b66215946206ea5b01450e61cb"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184847/lint-normalization.json",
+    "copy": "data/results/roi-handoff-20261012/lint-normalization.json",
+    "sha256": "d3892ad6a3bbfd94e9fa324cc6147d6dd9a425b7c550f0ace892d0fbced801f0"
+  },
+  {
+    "original": "data/results/roi-manager-20261012/utilization-full.rpt",
+    "copy": "data/results/roi-handoff-20261012/utilization-full.rpt",
+    "sha256": "774a1d6d60ddbb36825e30a4f89859b444afcef14ea785b6145056c91a113b2f"
+  },
+  {
+    "original": "data/results/roi-manager-20261012/utilization-center.rpt",
+    "copy": "data/results/roi-handoff-20261012/utilization-center.rpt",
+    "sha256": "9ec7ab9ec99cb96cf34c4e94fd2f055dfdfcbc6af197c9ea72dd5cc1e7a7f6cb"
+  },
+  {
+    "original": "data/results/roi-manager-20261012/timing-center.rpt",
+    "copy": "data/results/roi-handoff-20261012/timing-center.rpt",
+    "sha256": "ae526bf6170c85eb97c662d2ed6aa826c4d5607afa089d750f040c4d8b114ae7"
+  },
+  {
+    "original": "data/results/roi-manager-20261012/source-provenance-and-mcp.json",
+    "copy": "data/results/roi-handoff-20261012/source-provenance-and-mcp.json",
+    "sha256": "52bfcb83d525ba6657429aa811a5c1204aae803a3531f1ae90638a64e191d36b"
+  },
+  {
+    "original": "data/results/roi-manager-20261012/vivado_agentic_ai_reports/rtl-lint/rtl_lint_report.md",
+    "copy": "data/results/roi-handoff-20261012/rtl-lint-analysis.md",
+    "sha256": "97dd38b20abc1a7e7bc7018c06b48a067dcb6a5c579b46d11bddb28ab4911580"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-center/chain0-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "fed0863513ad0fa7429bbcbb03fba350f6d1e894297114106f47d8b760dd1692"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-center/chain0-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "b69dd07e042ec536c49348171355acb9af2348bd938721bcdd588827cb76fe1a"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-center/chain1-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "449c937f84ecb595bb64789485f2a8b08e8751dccc98ff12a22ef65a9e5bea00"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-center/chain1-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "47172b8dbdf66bab6f3589b2c2b50caa257a377c40ddec9dd8ee5143c0d97b99"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-full/chain0-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "25c919f0d7dfbb60ec719d4141fb5406b41539913f5ebf401bd77e6578bdb2ae"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-full/chain0-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "b20bf8d5e8a8ab4a091c9d020da6a12242d542fd571e8f1fc61e0c64b3bdcc2f"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-full/chain1-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "36baff3dea3e7e23cb2e826b239b94cd12106d73bd520392cdb1647afd3594ae"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-full/chain1-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "9dbc3086a0c6a8fa2a4aeac054476d9572cc9938777796429fc475180cd01797"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-left-border-column/chain0-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "0c1fab68b6c4841a47f4dac71557940df5cb3957fc34c52ac314ab1b49edc4d2"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-left-border-column/chain0-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "1d55895f30ca10664353ea682c6e5465c467a8dd2f2025601b54801c3b1b839c"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-left-border-column/chain1-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "3cf15207b73054e2a2e65266482d6c6295c7b088fa43712b79e9612a8fe1d7ae"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/h3-left-border-column/chain1-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "dccc0163075a15be6a5530d3abc4f20ed427d98a1323932afa2f06b92d61674d"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/one-by-one-full/chain0-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "fee8959f2e011a8a79d4ce129bbb09e6cc51d1bff38f3f08cb7fa128e84f3daa"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/power-two-full/chain0-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "b6b517f654ea9b80e9d1650032081ba362426a911fc4dcdd6cd22803bee9a3f0"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-bottom-right-pixel/chain0-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "0bb0011040d55af21df059bd18387d373994540d8091ceeac46aecaf7720d7b6"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-bottom-right-pixel/chain1-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "6252b529aa6c1c8cb49acb2d111acb5098530660827c968cc45fcf6b01f7e90c"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-center/chain0-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "703f484ff3fba410e476454b2493af8709f9f6a3d8b201ede2b3badf7dffd6dd"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-center/chain1-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "9fd46c6fb1ace936f91f19355c9e5c8d1587e08a6f583fa7b0e07b3697fd0bbe"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-center/chain1-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "12be911c67b8c7265228add1765ec1ab80a812dc9b821bf70d88e0cf62932774"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-empty-height/chain0-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "d7ec292ebfd6b735f6a9d2fe5e475241ff033ec2040a784ab8c912962936d639"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-empty-width/chain0-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "f81fffa12a04f4d989c74bb28ff837f601468cbe6efa19eb4e8a38be71257616"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-empty-width/chain1-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "aa227e38cd99016cb5a972af2fdf92df70ba72efb1dd5d83a2495804e27481a7"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-full/chain0-mode0/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "6d867b8b634ea181b4d61d0a753f248f5a2de249f0c5191665144e7fb842a6d2"
+  },
+  {
+    "original": "data/results/roi-crop-20261012-184057/runs/small-full/chain1-mode1/xsim-logs/simulate.log",
+    "aggregation": "matrix-runtime.txt",
+    "sha256": "adb304822daf225fdf247cefd2fbf39126e99060d13f32e24ed359e4e7d3b594"
+  }
+]

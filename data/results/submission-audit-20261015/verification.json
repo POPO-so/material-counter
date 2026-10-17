@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "inventory_files": 319,
+  "batches": 5,
+  "hardware_actions": 0,
+  "historical_pairs": {
+    "50": {
+      "bit_sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d",
+      "timing": {
+        "wns": 9.526,
+        "tns": 0.0,
+        "whs": 0.068,
+        "ths": 0.0,
+        "wpws": 8.75
+      }
+    },
+    "100": {
+      "bit_sha256": "585c83ec455d237516c30cda2709e42882edecb83acc6f401e724f6418f368bd",
+      "timing": {
+        "wns": 1.167,
+        "tns": 0.0,
+        "whs": 0.066,
+        "ths": 0.0,
+        "wpws": 3.75
+      }
+    }
+  },
+  "board_closeout": "FAIL_STOPPED",
+  "scope": "Integrity and source correspondence; no new synthesis or board proof",
+  "pr12_manifest_records_matched": 15,
+  "original_checkout_preserved": {
+    "head": "7a868c070024bdc29cdeb057fbec9ccaf94ef160",
+    "head_unchanged": true,
+    "index_sha256": "67bb0217f1d7f358111aaeb96482466fbf5f8046bb450f64f32ec568a55c9011",
+    "index_unchanged": true,
+    "status_unchanged": true,
+    "original_staged_paths": ""
+  },
+  "software_checks": {
+    "synth": 9,
+    "ps_reference_and_wo13": 120,
+    "diagnostic50": 144,
+    "closeout_and_helper": 24,
+    "subtests": 5
+  },
+  "manager_generator_regression": {
+    "focused_cases": 2,
+    "result": "PASS"
+  },
+  "source_sha256": {
+    "python/synth/generate.py": "faebc536e91f755b7ad882918081c49142d5045f0370abb108bdb77fde9e61c2",
+    "python/synth/tests/test_generate.py": "2b056aa55ada0f417a63c7e33c2f023d4cf4bf4be50c9c074c12fe74b04ad5d0",
+    "scripts/delivery/verify_delivery.py": "8a90d2b0717188fd1f9269a2d448faa2203e7482ef74a46e39b7601fc975b7ce"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "top": "axis_morphology3x3",
+  "part": "xc7z020clg400-1",
+  "frame_width": 320,
+  "frame_height": 240,
+  "clock_constraint": "10ns aclk; no I/O delays",
+  "modes": {
+    "0": {
+      "lut": 105,
+      "ff": 45,
+      "dsp": 0,
+      "bram_tiles": 0
+    },
+    "1": {
+      "lut": 112,
+      "ff": 55,
+      "dsp": 0,
+      "bram_tiles": 0
+    },
+    "2": {
+      "lut": 112,
+      "ff": 55,
+      "dsp": 0,
+      "bram_tiles": 0
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "source_manifest_checks": [
+    {
+      "ref": "origin/feat/pl-stream-skeleton",
+      "path": "fpga/rtl/axis_rgb2gray.v",
+      "status": "MATCH",
+      "expected": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+      "git_blob_sha256": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb"
+    },
+    {
+      "ref": "origin/feat/pl-stream-skeleton",
+      "path": "fpga/sim/tb_axis_rgb2gray.sv",
+      "status": "MATCH",
+      "expected": "446f9f9bc4e2c7a58df826ec241e69781c6b49bd6ed25708bded783fd76ab248",
+      "git_blob_sha256": "446f9f9bc4e2c7a58df826ec241e69781c6b49bd6ed25708bded783fd76ab248"
+    },
+    {
+      "ref": "origin/feat/pl-stream-skeleton",
+      "path": "fpga/rtl/axis_gray2binary.v",
+      "status": "MATCH",
+      "expected": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+      "git_blob_sha256": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83"
+    },
+    {
+      "ref": "origin/feat/pl-stream-skeleton",
+      "path": "fpga/rtl/axis_rgb2gray.v",
+      "status": "MATCH",
+      "expected": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+      "git_blob_sha256": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb"
+    },
+    {
+      "ref": "origin/feat/pl-stream-skeleton",
+      "path": "fpga/sim/tb_axis_gray2binary.sv",
+      "status": "MATCH",
+      "expected": "d521298de340a79cb0a7e4a5cbefb6a6a1900ba36547a2c7360003baa017406a",
+      "git_blob_sha256": "d521298de340a79cb0a7e4a5cbefb6a6a1900ba36547a2c7360003baa017406a"
+    },
+    {
+      "ref": "origin/feat/pl-stream-skeleton",
+      "path": "python/refmodel/gray2binary_vectors.py",
+      "status": "MATCH",
+      "expected": "c104e69dfba7cfb316693a69c12b36c713d3b48a37edab22954463ee7410837a",
+      "git_blob_sha256": "c104e69dfba7cfb316693a69c12b36c713d3b48a37edab22954463ee7410837a"
+    },
+    {
+      "ref": "origin/feat/pl-stream-skeleton",
+      "path": "python/refmodel/check_gray2binary_output.py",
+      "status": "MATCH",
+      "expected": "26578ec4690a86129a406161f15678f9ca2564d709dd0b2e0d541bcd0ed20b93",
+      "git_blob_sha256": "26578ec4690a86129a406161f15678f9ca2564d709dd0b2e0d541bcd0ed20b93"
+    },
+    {
+      "ref": "origin/feat/pl-stream-skeleton",
+      "path": "fpga/scripts/run_gray2binary_mcp.py",
+      "status": "MATCH",
+      "expected": "0cff0322ebe697910507b6058cb7c4ea07b07c2d502bc7544e788d904be2a409",
+      "git_blob_sha256": "0cff0322ebe697910507b6058cb7c4ea07b07c2d502bc7544e788d904be2a409"
+    },
+    {
+      "ref": "origin/codex/wo-0008-roi",
+      "path": "fpga/rtl/axis_roi_crop.v",
+      "status": "MATCH",
+      "expected": "1711f05b7be03f9dd5458f4a9d713ad79c75867af0bf9136caf762ce2bad9fa0",
+      "git_blob_sha256": "1711f05b7be03f9dd5458f4a9d713ad79c75867af0bf9136caf762ce2bad9fa0"
+    },
+    {
+      "ref": "origin/codex/wo-0008-roi",
+      "path": "fpga/rtl/axis_rgb2gray.v",
+      "status": "MATCH",
+      "expected": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+      "git_blob_sha256": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb"
+    },
+    {
+      "ref": "origin/codex/wo-0008-roi",
+      "path": "fpga/rtl/axis_gray2binary.v",
+      "status": "MATCH",
+      "expected": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+      "git_blob_sha256": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83"
+    },
+    {
+      "ref": "origin/codex/wo-0008-roi",
+      "path": "fpga/sim/tb_axis_roi_crop.sv",
+      "status": "MATCH",
+      "expected": "24a4dbd80ce49421861de4ecf1b002f88ff9e333966864da5dc646332482e43f",
+      "git_blob_sha256": "24a4dbd80ce49421861de4ecf1b002f88ff9e333966864da5dc646332482e43f"
+    },
+    {
+      "ref": "origin/codex/wo-0008-roi",
+      "path": "python/refmodel/roi_crop_vectors.py",
+      "status": "MATCH",
+      "expected": "3f586cc61453c4a5f3b5f95dfb164ceee54930aed9a261368d38207e0567efda",
+      "git_blob_sha256": "3f586cc61453c4a5f3b5f95dfb164ceee54930aed9a261368d38207e0567efda"
+    },
+    {
+      "ref": "origin/codex/wo-0008-roi",
+      "path": "python/refmodel/check_roi_crop_output.py",
+      "status": "MATCH",
+      "expected": "c602753930a5e72d108852a643379b1eeb01d9c7d4a1dfd530e69d9c156c74b9",
+      "git_blob_sha256": "c602753930a5e72d108852a643379b1eeb01d9c7d4a1dfd530e69d9c156c74b9"
+    },
+    {
+      "ref": "origin/codex/wo-0008-roi",
+      "path": "fpga/scripts/run_roi_crop_mcp.py",
+      "status": "MATCH",
+      "expected": "491d89b24d2a8c87574c16b8d6be4ec829b47a961a2d5ad777b74fb0c5ebca48",
+      "git_blob_sha256": "491d89b24d2a8c87574c16b8d6be4ec829b47a961a2d5ad777b74fb0c5ebca48"
+    }
+  ],
+  "note": "Read-only remote-tracking-ref object comparison after fetch; differences require explicit explanation; no tests rerun."
+}

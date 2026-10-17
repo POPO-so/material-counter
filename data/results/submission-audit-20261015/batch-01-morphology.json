@@ -1,0 +1,168 @@
+{
+  "batch": "01-morphology",
+  "source_head": "7a868c070024bdc29cdeb057fbec9ccaf94ef160",
+  "files": [
+    {
+      "path": "data/results/morphology-acceptance-20261013/manager-verification.json",
+      "sha256": "1253747e039a22cc7c6a96d7bb04ff3b9feecc6663aecda8125d20211b89ef3d",
+      "bytes": 75979,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-lint-final-20261013/lint-mode-0.rpt",
+      "sha256": "63e70594a1f8108f606204b0b6dabe4030486b7ef13410b61d3f9e87a142674e",
+      "bytes": 2157,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-lint-final-20261013/lint-mode-1-authoritative-zero.json",
+      "sha256": "ee60788583f84f5e9065b1dd295950552182a914542d74ed74275af1c5421b6d",
+      "bytes": 134,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-lint-final-20261013/lint-mode-1-normalization.json",
+      "sha256": "8a5209a09b3ff85656f495bfdbf5890fadb60e93329d6a5ea8cf2f9e8d18a507",
+      "bytes": 203,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-lint-final-20261013/lint-mode-1.rpt",
+      "sha256": "dc2aa79fd718390004f7e761cb660f4750dd4c338532b945f439bf812b0541e7",
+      "bytes": 1422,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-lint-final-20261013/lint-mode-2-authoritative-zero.json",
+      "sha256": "ee60788583f84f5e9065b1dd295950552182a914542d74ed74275af1c5421b6d",
+      "bytes": 134,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-lint-final-20261013/lint-mode-2-normalization.json",
+      "sha256": "8a5209a09b3ff85656f495bfdbf5890fadb60e93329d6a5ea8cf2f9e8d18a507",
+      "bytes": 203,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-lint-final-20261013/lint-mode-2.rpt",
+      "sha256": "2f7c06d2e2b7bbb1ef70a579e9d048e3ec1e2f7634b95b4bd46c536b81997a98",
+      "bytes": 1422,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-lint-final-20261013/source-hashes.json",
+      "sha256": "aa620aed550b47595d559fccae466e7d4d68213ff695a16bce55d10fc7bbc001",
+      "bytes": 754,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-synth-final-20261013/resource-summary.json",
+      "sha256": "50a8eea2592f82ff0cf48d31bd182d2495ff2f97e5b83a635baa2fdab05b43a0",
+      "bytes": 470,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-synth-final-20261013/source-hashes.json",
+      "sha256": "27de1077123d2ed7a675fcfe76edac55cb4a081054043cfc72f9b6127058caa1",
+      "bytes": 754,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-synth-final-20261013/timing-summary-mode-0.rpt",
+      "sha256": "8eb16db9412cdf72043a57ee44a55e2cbccac600d65f703457df065291f876ac",
+      "bytes": 17112,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-synth-final-20261013/timing-summary-mode-1.rpt",
+      "sha256": "339ba12c1071d8986c50a9526eb78c3f7ede8d71976ee104a04a4be9ad9e0caa",
+      "bytes": 16871,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-synth-final-20261013/timing-summary-mode-2.rpt",
+      "sha256": "3f603448a0e6cf20faece73ab78236d2cbbbb3167f4129ddbdafe0548c211c2f",
+      "bytes": 17068,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-synth-final-20261013/utilization-mode-0.rpt",
+      "sha256": "eee0813b2fb7cbd4f9deaa7e28d52204ab00cef6331f80aca10666006bdcde96",
+      "bytes": 8450,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-synth-final-20261013/utilization-mode-1.rpt",
+      "sha256": "b6864ad1e7ddbb8d0e60c4a2aa9e859367005c032cd5dca0f35596efcb16fdb3",
+      "bytes": 8450,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "data/results/morphology-synth-final-20261013/utilization-mode-2.rpt",
+      "sha256": "4918afdfda33939ccba4d093380d9ae0234bc10b24a1e1b4ca53f6d2628ea285",
+      "bytes": 8450,
+      "origin": "untracked original snapshot 2026-10-15"
+    },
+    {
+      "path": "docs/gray2binary-verification-20261013.md",
+      "sha256": "22db3feab558fe2cfb6f7514e2131347fcc3a35709bc5f4dcfc66ebaf97b4fe2",
+      "bytes": 8352,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/morphology-verification-20261013.md",
+      "sha256": "6a3ddd537607610fc54e638f790c2320152ef4896bf56800877f36448c84a46f",
+      "bytes": 14049,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "docs/work-orders/wo-0008-morphology.md",
+      "sha256": "3dc1adac1502cd9187a1c44c2a3dee57b283cb9461322c2a9c26146b0f6c62e6",
+      "bytes": 6607,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/rtl/axis_morphology3x3.v",
+      "sha256": "41bd8ac2bd659357807c172ddc0e14b0b6a85d14afc8d5323836c60e8b277cb1",
+      "bytes": 7583,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/scripts/run_gray2binary_mcp.py",
+      "sha256": "d98da7806d4356b328a6003b9c0b2cf3864a48c0d85bf5812c9dae8394e0082b",
+      "bytes": 22838,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/scripts/run_morphology_mcp.py",
+      "sha256": "ef2e6fc288c5cd56315892485fe6dfcba573195c7785af3be8befc5419cb2d03",
+      "bytes": 29148,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "fpga/sim/tb_axis_morphology3x3.sv",
+      "sha256": "c8fae70a16a08e7922cc8466d4acf8a33c64283057f2cf9da3534c669d8cffa8",
+      "bytes": 24809,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/check_morphology_output.py",
+      "sha256": "931724f9efcfb20384c99fd2d917c814a33d326b838734a1ac3c42b96bbe931a",
+      "bytes": 23303,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/gray2binary_vectors.py",
+      "sha256": "e5399de2095eef723d6326acbff35279784f036865d01953e7b4dd67fb5c3cb4",
+      "bytes": 7930,
+      "origin": "local commit 7a868c0"
+    },
+    {
+      "path": "python/refmodel/morphology_vectors.py",
+      "sha256": "e70590e42e42ba7a637ef00e4186e5c36733c23eee79437f34578ccb4a535c91",
+      "bytes": 17187,
+      "origin": "local commit 7a868c0"
+    }
+  ]
+}

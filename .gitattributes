@@ -22,22 +22,41 @@
 *.bit   binary
 *.dcp   binary
 *.pdf   binary
+# Preserve immutable experiment evidence bytes across Windows/Linux checkouts.
+/data/results/** -text whitespace=cr-at-eol
+/data/results/**/*.rpt -diff
+/data/results/**/*.log -diff
+/docs/verification/wo-0011-failure-evidence.json -text
+/docs/verification/wo-0011-missed-events.csv -text
+/docs/verification/wo-0011-failure-evidence.json whitespace=cr-at-eol
+/docs/verification/wo-0011-missed-events.csv whitespace=cr-at-eol
+/data/results/wo0013-resetfix-20261014/export/wo0013_dma_recreate.tcl -diff
+/data/results/wo0013-resetfix-20261014/reports/implemented_constraints.xdc -diff
+/scripts/wo0014/** -text whitespace=cr-at-eol
+/scripts/wo0014_hw/** -text whitespace=cr-at-eol
+/.agents/skills/vivado-ip-configurator/lib/** -text whitespace=cr-at-eol
+/.agents/skills/vivado-revision-control/helper-procedures/helper_scripts.tcl -text whitespace=cr-at-eol
+/data/results/wo0014-hw-50mhz-20261014/export/wo0014_image_recreate.tcl -diff
+/data/results/wo0014-hw-100mhz-20261014/export/wo0014_image_recreate.tcl -diff
+/data/results/wo0014-hw-50mhz-20261014/reports/implemented-constraints.xdc -diff
+/data/results/wo0014-hw-100mhz-20261014/reports/implemented-constraints.xdc -diff
+# The next helper is an immutable third-party source snapshot.
+/.agents/skills/vivado-revision-control/helper-procedures/helper_scripts.tcl whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
 
+/fpga/experimental/wo0013/axis_dma_rx_monitor_bd.v -text whitespace=cr-at-eol
+
+# Target-branch specific byte-preservation rules follow broader source rules.
 # Preserve byte hashes of the reviewed WO-0013 artifact/evidence package.
 /data/results/wo0013-resetfix-20261014/** -text
 /data/results/wo0013-pagemap-policy-20261014-120205/** -text
 /data/results/wo0013-level2-once-20261014-113914/remote-common.py -text
 # Vendor-generated reports/recreation script are immutable raw evidence.
 /data/results/wo0013-resetfix-20261014/reports/*.rpt -diff
-/data/results/wo0013-resetfix-20261014/reports/implemented_constraints.xdc -diff
-/data/results/wo0013-resetfix-20261014/export/wo0013_dma_recreate.tcl -diff
-
 /data/results/wo0013-resetfix-20261014/export/wo0013_phase_a.hwh -diff
 /data/results/wo0013-pagemap-policy-20261014-120205/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /data/results/wo0013-resetfix-20261014/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /data/results/wo0013-level2-once-20261014-113914/remote-common.py whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /data/results/wo0013-pagemap-policy-20261014-120205/*.txt -diff
-
 # Preserve reviewed WO-0014 executor and raw receipt/evidence SHA-256 bytes.
 /scripts/wo0014_hw/diagnostic50/** -text
 /scripts/wo0014_hw/pynq_image_once.py -text
@@ -53,7 +72,6 @@
 /data/results/wo0014-diagnostic50-hardening-20261014/run-20261015-031611-696569/*.rpt -diff
 /data/results/wo0014-diagnostic50-hardening-20261014/run-20261015-031611-696569/*.log -diff
 /data/results/wo0014-pg021-ready-20261015/core.diff -diff
-
 # Preserve the bounded WO-0014 closeout source pins and board evidence.
 /scripts/wo0014_hw/closeout/** -text
 /scripts/wo0014_hw/closeout/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

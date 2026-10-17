@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "clock_mhz": 50,
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "hwh_contract": "PASS",
+  "hwh_bus_links": "PASS",
+  "hp1_auto_converter_readback": "PASS",
+  "implemented_timing": {
+    "wns_ns": 9.009,
+    "tns_ns": 0.0,
+    "setup_failing_endpoints": 0,
+    "setup_total_endpoints": 10250,
+    "whs_ns": 0.028,
+    "ths_ns": 0.0,
+    "hold_failing_endpoints": 0,
+    "hold_total_endpoints": 10250,
+    "wpws_ns": 8.75,
+    "tpws_ns": 0.0,
+    "pulse_width_failing_endpoints": 0,
+    "pulse_width_total_endpoints": 3763
+  },
+  "drc_severity_counts": {
+    "Error": 0,
+    "Critical Warning": 0,
+    "Warning": 4,
+    "Advisory": 2
+  },
+  "methodology_severity_counts": {
+    "Error": 0,
+    "Critical Warning": 0,
+    "Warning": 1,
+    "Advisory": 0
+  },
+  "board_tested": false,
+  "pair_manifest": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\export\\pair-manifest.json"
+}

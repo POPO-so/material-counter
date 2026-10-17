@@ -14,7 +14,7 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 
 系统采用全局快门摄像头和固定光源降低高速运动造成的拖影，通过振动盘/供料器配合单条可调速主输送带实现连续供料，并通过供料节拍与输送速度形成不同物料密度工况。实时画面及计数结果计划通过显示屏输出，可同步显示累计数量、输送速度、处理帧率和当前运行状态。
 
-上面是目标系统口径，不代表所有模块已经实现。当前仓库已包含确定性 synthetic dataset、ground truth 和回归测试；PL 图像前端、PS 跟踪计数、编码器采集、真实摄像头接入和显示输出仍按计划逐项实现与验证。
+上面是目标系统口径，不代表所有模块已经实现。PR #1～#8 已于 2026-10-15 合并到 `main`。主线已有 synthetic dataset、PL 前端（含 ROI 和形态学）、PS 离线跟踪计数参考、WO-0013 DMA 通信和 WO-0014 实验图像链路。真实摄像头、PL→PS 回传、板上跟踪计数与显示仍未形成闭环，整机物料计数尚未完成。具体证据与限制见下方“当前状态”。
 
 ## 系统主链路
 
@@ -56,11 +56,46 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 
 | 状态 | 内容 |
 |---|---|
-| **Implemented** | `python/synth` 确定性合成数据生成器、配置、ground truth 和回归测试；代码与数据不因作品改名而重构。 |
-| **Planned** | PL 图像前端、轻量区域/连通域特征提取、PS 跟踪计数、编码器实际带速输入、全局快门摄像头接入、显示输出、Vivado/Vitis/PYNQ 集成。 |
+| **Implemented / Offline verified** | `python/synth/` 确定性合成数据与回归；`fpga/rtl/` 流骨架、RGB→Gray、Gray→Binary、ROI、3×3 形态学；`python/refmodel/ps_reference/` 区域/跟踪/越线参考；`fpga/experimental/wo0014/` RGB 包流水线。离线验证不等于上板验收。 |
+| **Board-tested / 有限通信证据** | WO-0013 单次 MM2S→PL Monitor 已通过；WO-0014 50 MHz 单帧及三帧聚合统计已取得板上证据，但三帧任务最终为 `FAIL_STOPPED`。没有逐像素回读或整机计数证据。 |
+| **Synthesized / Implemented timing** | WO-0014 的 50/100 MHz 完整工程均有综合、布线时序及 BIT/HWH；100 MHz 板测为 `NOT_VERIFIED`。ROI、形态学的独立 OOC 综合不能当作完整系统时序闭合。 |
+| **Planned / Proposed** | 正式 PL 特征提取、PL→PS 回传与板上跟踪计数闭环、编码器实际带速、真实摄像头和显示。WO-0012 特征/序列化仍为候选草案。 |
 | **Exploratory** | 结合计数、在途量和实际带速进行送料停止时机预测与控制；失败不影响 Core/MVP。 |
 
-现阶段状态仍为 **Pre-POC / Architecture Not Frozen**。Route A、Route B、Hybrid 以及真实视频输入路线必须以实验、工具链和硬件证据冻结，不能提前声称已实现。
+当前已完成若干隔离 POC，**Architecture / Route Not Frozen**。Route A、Route B、Hybrid 以及真实视频输入路线仍需正式决策；PR 合并不代表架构冻结或硬件验收。
+
+### 合并范围与验证依据
+
+本节以合并后的源码及已有验收证据为准。PR #1 交付公共图像前端，#2 交付 ROI，#3 交付阈值回归与形态学，#4 交付 PS 参考与候选研究，#5 交付 WO-0013，#6/#7 交付 WO-0014 离线链路及硬件依赖/证据，#8 交付审计、复现入口和生成器非空输出目录保护。它们均已合入 `main`（本次核验基线 `4332ba9`）。
+
+[提交进度核验](docs/verification/submission-status-20261015.md)、[ROI 交付说明](docs/verification/wo-0008-handoff.md)及 `PROJECT_INDEX.md` 中关于 PR 待合并、草稿链或 ROI 独立交付的文字是合并前快照；其中源码、哈希、测试和失败记录仍用于追溯，Git 合并状态以本节及 GitHub 记录为准。ROI 与 morphology 的历史 Work Order 都使用 WO-0008 编号，按文件名区分。
+
+| 模块 / 实验 | 已有证据 | 适用边界 |
+|---|---|---|
+| [公共前端](docs/verification/frontend-handoff.md) | 流骨架、RGB→Gray、Gray→Binary 的模块仿真、独立像素比对与综合；后续阈值回归见审计记录。 | 模块功能通过不代表真实摄像头输入或完整系统验收。 |
+| [ROI](docs/verification/wo-0008-handoff.md) | `axis_roi_crop.v` 实现真实裁剪、重建 SOF/EOL；24 组有效测试、8 组非法参数拒绝及 3 组联合入口检查，独立比对零差异，Lint/OOC 综合完成。 | 半开窗口、空 ROI 无输出；未接入 WO-0014 板测链，未上板或校准实物窗口，无完整系统时序证据。 |
+| [3×3 形态学](docs/morphology-verification-20261013.md) | `axis_morphology3x3.v` 支持旁路/腐蚀/膨胀、零背景边界；84/84 仿真用例、2,806,344 像素独立比对零差异，Lint/OOC 综合完成。 | 行接收/行输出交替，不能宣称持续每周期输入一像素；未串入 WO-0014 板测 BIT，无该模块板测或完整实现时序证据。 |
+| [PS 计数参考](docs/verification/wo-0010-ps-reference.md) | PC 离线 Binary8→8 连通区域→关联跟踪→越线去重。`[Measured: wo0010-reference-final-20261013]` 原 PNG 通路在 31 个可确认事件中 TP=19、FN=12，召回率 61.29%。 | 无缝接触导致的分割漏计仍存在；GT 身份不进入关联器。不是板端 DMA 接收服务，不能把 GT 几何诊断或精确率当作整机准确率。 |
+| [WO-0013 DMA](docs/verification/wo-0013-level2-accepted-20261014.md) | `[Measured: wo0013-pagemap-policy-20261014-120205]` PYNQ-Z2 单次发送 76,816 字节，PL 接受 19,204 拍、1 次 TLAST，首末字和校验和一致；测试后 Ping/SSH/Linux 健康检查通过。 | 仅 Binary8+元数据的 DDR→MM2S→Monitor，不是 RGB 图像处理；无 S2MM、无整帧回读、无持续运行或整机计数验收。使用记录中的 resetfix BIT/HWH，不可随意替换产物。 |
+| [WO-0014 离线链路](docs/verification/wo-0014-offline-integration-20261014.md)与[优化时序](docs/verification/wo-0014-timing-acceptance-20261014.md) | RGB 包→adapter→Gray→Binary→checker；15 项 XSim，487 帧、37,401,600 像素独立比对零差异，覆盖 7 种坏包及恢复；后续优化完成 OOC 时序验收。 | ROI/形态学未串入该链。错误帧前缀必须整帧作废；`packet_done` 不表示输出已排空，checker 不是通用异常帧守卫。 |
+| [WO-0014 完整实现](docs/verification/wo-0014-hw-integration-20261014.md)、[50 MHz 单帧板测](data/results/wo0014-pg021-ready-20261015/report.md)与[三帧收官](data/results/wo0014-closeout-20261015/report.md) | 50/100 MHz 完整实现时序通过，BIT/HWH 与源码有哈希绑定；50 MHz 单帧 PASS，另有三帧 DMA/checker/Golden 聚合统计 PASS。 | 三帧任务最终因 CMA 健康门为 `FAIL_STOPPED`；100 MHz 板测全部 `NOT_VERIFIED`。聚合统计不能替代逐像素回读；DRC 的 14 Warning、2 Advisory 及 LUTAR-1 methodology 风险仍保留。 |
+
+### DMA / Overlay 安全限制
+
+- 已有证据不授权再次执行硬件操作。Overlay、MMIO、DMA 均需新的明确批准，限定产物、板身份和单次范围；失败即停，不自动重试、reset 或 reload。Overlay 加载成功、一次寄存器读取与 DMA 完成是不同证据等级。
+- WO-0014 三帧任务外层状态必须保留为 `FAIL_STOPPED`。CMA 前后原始数值未持久化，既不能据此断言泄漏，也不能忽略健康门或宣称恢复准入。不得放宽 CMA 门、删除/更换 Guard 或绕过停止状态；只读 OS 取证也需单独批准。
+- WO-0013 通用 `python/boardtests/wo0013/dma_replay_verify.py` 会加载 Overlay 并在错误时 reset/re-arm，**不是已验收单次实验的入口**，不可用于禁止 reset/reload 的授权。一次成功不代表可重复安全运行。
+- [WO-0014 DMA 长度评估](docs/verification/wo-0014-dma-length-assessment-20261014.md)：320×240 RGB 实验包为 230,432 字节，硬件使用 18 位 DMA 长度字段，S2MM 未启用。输入包 TLAST 结束整个包，图像输出 TLAST=EOL；未经 EOF 回传桥设计，不能直接当作整帧 DMA 完成边界。
+
+### 离线完整性与复现
+
+从仓库根目录运行以下只读完整性检查（仅需 Python 标准库，不访问开发板）：
+
+```powershell
+python scripts/delivery/verify_delivery.py
+```
+
+它核对交付清单、关键源码/测试/产物哈希、受保护文件及 `FAIL_STOPPED` 状态，不能替代新仿真、综合或板测。跨目录离线输入准备、XSim 和独立比对步骤见 [scripts/delivery/REPLAY.md](scripts/delivery/REPLAY.md)，依赖快照见 [requirements.txt](scripts/delivery/requirements.txt)。生成输入及仿真输出必须使用新的目录，禁止覆盖已有数据或证据。
 
 ## 术语纪律
 
@@ -79,8 +114,9 @@ Route 尚未冻结。文档与代码中优先使用**视觉感知 / 目标区域
 
 ```
 docs/        文档（scope / 接口契约 / 风险 / Route 记录 / ADR / AI 协作记录）
-python/      算法与评测（synth 合成数据生成器、后续 refmodel / routes / metrics）
-fpga/        PL 侧（rtl / constraints，后续 hls / sim / scripts / ip）
+python/      合成数据、图像参考模型、PS 离线计数参考及实验/测试
+fpga/        PL RTL、仿真、实验模块、约束与复现脚本
+scripts/     精选交付校验、离线复现与实验工程构建入口
 hw/          硬件平台（BOM / 接线 / 装配 / 标定 / 引脚预算）
 skill/       AI 协作 skill 候选池
 data/        数据集与实验证据（synthetic / recorded / labeled / results）

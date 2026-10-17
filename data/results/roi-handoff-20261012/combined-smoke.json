@@ -1,0 +1,176 @@
+[
+  {
+    "simulation": {
+      "case": "small-center",
+      "frame": [
+        6,
+        4
+      ],
+      "roi": [
+        2,
+        1,
+        5,
+        3
+      ],
+      "chain": 0,
+      "mode": 1,
+      "seed": 20261013,
+      "input_beats": 72,
+      "expected_output_beats": 18,
+      "pass_marker": "TEST_PASS roi=2,1,5,3 frame=6x4 chain=0 mode=1",
+      "xsim_logs": [
+        "xsim-logs\\compile.log",
+        "xsim-logs\\elaborate.log",
+        "xsim-logs\\simulate.log",
+        "xsim-logs\\xvlog.log"
+      ]
+    },
+    "comparison": {
+      "status": "PASS",
+      "source_profile": "coordinate",
+      "frame_dimensions": [
+        6,
+        4
+      ],
+      "frame_count": 3,
+      "roi": {
+        "x0": 2,
+        "y0": 1,
+        "x1": 5,
+        "y1": 3,
+        "width": 3,
+        "height": 2
+      },
+      "chain": 0,
+      "mode": 1,
+      "threshold": null,
+      "beats": 18,
+      "data_mismatches": 0,
+      "sideband_mismatches": 0,
+      "input_beats": 72,
+      "source_checks": {
+        "h3_frames": [],
+        "coordinate_frames": 3,
+        "random_color_frame": false
+      },
+      "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184847\\runs\\small-center\\chain0-mode1\\output_roi.hex",
+      "output_sha256": "f7bdaec133d5d953e74fcdc066c128ba0cd1c0e0bee4d4fb4e6c7f51155098be"
+    }
+  },
+  {
+    "simulation": {
+      "case": "small-center",
+      "frame": [
+        6,
+        4
+      ],
+      "roi": [
+        2,
+        1,
+        5,
+        3
+      ],
+      "chain": 1,
+      "mode": 0,
+      "seed": 20261130,
+      "input_beats": 72,
+      "expected_output_beats": 18,
+      "pass_marker": "TEST_PASS roi=2,1,5,3 frame=6x4 chain=1 mode=0",
+      "xsim_logs": [
+        "xsim-logs\\compile.log",
+        "xsim-logs\\elaborate.log",
+        "xsim-logs\\simulate.log",
+        "xsim-logs\\xvlog.log"
+      ]
+    },
+    "comparison": {
+      "status": "PASS",
+      "source_profile": "coordinate",
+      "frame_dimensions": [
+        6,
+        4
+      ],
+      "frame_count": 3,
+      "roi": {
+        "x0": 2,
+        "y0": 1,
+        "x1": 5,
+        "y1": 3,
+        "width": 3,
+        "height": 2
+      },
+      "chain": 1,
+      "mode": 0,
+      "threshold": 128,
+      "beats": 18,
+      "data_mismatches": 0,
+      "sideband_mismatches": 0,
+      "input_beats": 72,
+      "source_checks": {
+        "h3_frames": [],
+        "coordinate_frames": 3,
+        "random_color_frame": false
+      },
+      "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184847\\runs\\small-center\\chain1-mode0\\output_roi.hex",
+      "output_sha256": "2b04c49fdbe4351cfc2c6fec21d10e927301f89cd42e6a588d414990eacdf7f0"
+    }
+  },
+  {
+    "simulation": {
+      "case": "small-center",
+      "frame": [
+        6,
+        4
+      ],
+      "roi": [
+        2,
+        1,
+        5,
+        3
+      ],
+      "chain": 1,
+      "mode": 1,
+      "seed": 20261232,
+      "input_beats": 72,
+      "expected_output_beats": 18,
+      "pass_marker": "TEST_PASS roi=2,1,5,3 frame=6x4 chain=1 mode=1",
+      "xsim_logs": [
+        "xsim-logs\\compile.log",
+        "xsim-logs\\elaborate.log",
+        "xsim-logs\\simulate.log",
+        "xsim-logs\\xvlog.log"
+      ]
+    },
+    "comparison": {
+      "status": "PASS",
+      "source_profile": "coordinate",
+      "frame_dimensions": [
+        6,
+        4
+      ],
+      "frame_count": 3,
+      "roi": {
+        "x0": 2,
+        "y0": 1,
+        "x1": 5,
+        "y1": 3,
+        "width": 3,
+        "height": 2
+      },
+      "chain": 1,
+      "mode": 1,
+      "threshold": 128,
+      "beats": 18,
+      "data_mismatches": 0,
+      "sideband_mismatches": 0,
+      "input_beats": 72,
+      "source_checks": {
+        "h3_frames": [],
+        "coordinate_frames": 3,
+        "random_color_frame": false
+      },
+      "output_path": "C:\\Users\\POP\\.codex\\worktrees\\wo-0008-roi\\material-counter\\data\\results\\roi-crop-20261012-184847\\runs\\small-center\\chain1-mode1\\output_roi.hex",
+      "output_sha256": "2b04c49fdbe4351cfc2c6fec21d10e927301f89cd42e6a588d414990eacdf7f0"
+    }
+  }
+]

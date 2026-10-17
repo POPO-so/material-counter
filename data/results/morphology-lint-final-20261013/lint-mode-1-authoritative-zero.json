@@ -1,0 +1,12 @@
+{
+  "cols": [
+    "id",
+    "description",
+    "name",
+    "info",
+    "module",
+    "file",
+    "line"
+  ],
+  "rows": []
+}

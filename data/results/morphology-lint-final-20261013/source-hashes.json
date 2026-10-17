@@ -1,0 +1,9 @@
+{
+  "fpga/rtl/axis_morphology3x3.v": "41bd8ac2bd659357807c172ddc0e14b0b6a85d14afc8d5323836c60e8b277cb1",
+  "fpga/rtl/axis_rgb2gray.v": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+  "fpga/rtl/axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+  "fpga/sim/tb_axis_morphology3x3.sv": "d96126cdc3098f858272345c2f8e5781b068562bd42d8c7b4da435a0d38e9a6c",
+  "python/refmodel/morphology_vectors.py": "e70590e42e42ba7a637ef00e4186e5c36733c23eee79437f34578ccb4a535c91",
+  "python/refmodel/check_morphology_output.py": "931724f9efcfb20384c99fd2d917c814a33d326b838734a1ac3c42b96bbe931a",
+  "fpga/scripts/run_morphology_mcp.py": "ef2e6fc288c5cd56315892485fe6dfcba573195c7785af3be8befc5419cb2d03"
+}
