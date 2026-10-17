@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-**Stage A Attempt 3 完成 30/30 帧，但性能与物料准确率尚未验收。** Attempt 2 已在 DMA 静止读数通过后终止并归档 Guard；Attempt 3 的 DMA/Checker/Packer 帧级验证全部完成，最终 DMA 空闲、缓冲区已释放。实测总耗时 74.62 s，端到端吞吐 0.402 FPS；没有提供人工真值，不能计算准确率。M6 螺母、垫片及传送带工况仍未验收。
+**Stage A Attempt 4 完成 30/30 帧，吞吐提升至 4.213 FPS，但仍未达到 15 FPS 目标；物料准确率尚未验收。** Packer 验证 30 帧，最终两个 DMA 通道 Idle 且无错，缓冲区已释放。未提供人工真值，故观测总计数 0 不能转换为准确率。M6 螺母、垫片及传送带工况仍未验收。
 
 ## Attempt 1 依赖对齐与 Guard 隔离
 
@@ -91,14 +91,14 @@ Attempt 3 原始 JSON 保存在 `/home/xilinx/wo0016/stage-a-30frames-attempt3-r
 
 | 记录项 | 结果 |
 |---|---|
-| 完成处理帧数 / 30 帧目标 | 30 / 30 |
-| DMA / Checker / Packer 已验证完成帧数 | 30；运行后两个 DMA 通道 Idle 且无错 |
-| 总计数、人工真值、误差、准确率 | 观测计数 3；无人工真值，误差与准确率不可计算 |
+| 完成处理帧数 / 30 帧目标 | Attempt 4：30 / 30 |
+| DMA / Checker / Packer 已验证完成帧数 | Attempt 4：30；运行后两个 DMA 通道 Idle 且无错 |
+| 总计数、人工真值、误差、准确率 | Attempt 4 观测计数 0；无人工真值，误差与准确率不可计算 |
 | M6 螺母、垫片及混合物料样本 | NOT RUN |
-| 输入 FPS、端到端处理 FPS、浏览器预览 FPS | 输入/预览 FPS 未单独测量；端到端 0.402 FPS |
+| 输入 FPS、端到端处理 FPS、浏览器预览 FPS | 输入/预览 FPS 未单独测量；Attempt 4 端到端 4.213 FPS |
 | 传送带速度、照明、视野及物料过线工况 | NOT RUN |
 
-Attempt 2 Guard 与已消费的 Attempt 3 Guard 均保留，板端无残留流计数进程，DMA 已静止且本次缓冲区已释放。本记录证明 30 帧传输链路完成，但 0.402 FPS 未证明实时运行能力；没有物料真值，不能推断 M6 螺母或垫片计数准确率。后续硬件运行须使用新的有界验收目标、独立结果路径和新的单次授权。
+Attempt 2、3 Guard 已归档，Attempt 4 Guard 保留在活动路径；板端无残留流计数进程，DMA 已静止且缓冲区已释放。当前最高端到端吞吐为 4.213 FPS，尚未证明实时运行能力；没有物料真值，不能推断 M6 螺母或垫片计数准确率。
 
 ## Attempt 4 前的离线性能审计与优化
 
@@ -110,6 +110,29 @@ Attempt 3 的 JSON 只保存总耗时 `74.621 s` 和 `0.402 FPS`，没有 captur
 
 主机微基准（Python 3.12.10、NumPy 2.5.2，320×240，5 次）：旧路径平均 `35.908 ms`，优化后的预分配缓冲区原地写入平均 `0.377 ms`，约 `95.33×`；所有迭代的 230,432 字节输出逐字节相同。此结果是 Windows 主机编码微基准，不代表 Cortex-A9 或整机吞吐。
 
-优化版还为有限板端运行加入每帧打点：`avg_capture_ms`（read、Gray8 转换与缩放）、`avg_encode_ms`（Packet 原地写入 CMA TX）、`avg_dma_ms`（缓存同步/Checker arm、双通道传输及 wait）、`avg_postprocess_ms`（Packer 回读校验、ROI 计数和预览 JPEG 更新）。各字段同时记录样本数；不同阶段可与相邻帧并行，均值不应简单求和作为端到端帧周期。Attempt 4 仍需板端实测验证是否达到 15 FPS。
+优化版还为有限板端运行加入每帧打点：`avg_capture_ms`（read、Gray8 转换与缩放）、`avg_encode_ms`（Packet 原地写入 CMA TX）、`avg_dma_ms`（缓存同步/Checker arm、双通道传输及 wait）、`avg_postprocess_ms`（Packer 回读校验、ROI 计数和预览 JPEG 更新）。各字段同时记录样本数；不同阶段可与相邻帧并行，均值不应简单求和作为端到端帧周期。
 
-Attempt 4 之前的离线回归：`pytest scripts/wo0016 scripts/wo0015`，`225 passed, 1 skipped`。板端结果尚未运行。
+Attempt 4 之前的离线回归：`pytest scripts/wo0016 scripts/wo0015`，`225 passed, 1 skipped`。
+
+## Attempt 4 结果（2026-10-18）
+
+Attempt 3 活动 Guard 在复核 DMA Idle 后原样移动至 `/var/lib/wo0016/attempt-3/stream-counter-consumed.json`；SHA-256 仍为 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`，权限为目录 0700、文件 0600。执行前 Boot ID 为 `f8b24aee-ed7e-430a-b3f3-d26056746bfd`，CmaFree 为 73948 KiB，`/dev/video0` 无占用，曝光为手动模式 1 / 50，8080 空闲，MM2S/S2MM DMASR 均为 `0x00001002`。
+
+优化版 `run_stream_counter.py`、`stream_counter.py`、`packet_encoder.py` 已部署并逐项匹配本地 SHA-256；WO-0015 `camera_adapter.py` 和 `board_preflight.py` 仍匹配 `80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba` 与 `f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6`。运行使用现有 Stage 1 Overlay（`download=False`）、Manifest `2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b`、`XILINX_XRT=/usr` 及单次 30 帧授权。
+
+板端 JSON `/home/xilinx/wo0016/stage-a-30frames-attempt4-result.json` 的 SHA-256 为 `48a9573bcc5937bfc6da395441a2a8d5cc538007dba85c059fb6dadccd972ca2`；运行日志保存在 `/home/xilinx/wo0016/stage-a-30frames-attempt4.stdout.log`。Attempt 4 活动 Guard 保留于 `/var/lib/wo0016/stream-counter-consumed.json`，SHA-256 为 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`，权限为 0600；它与 Attempt 3 Guard 内容相同，因为复用同一 Boot、Manifest、BIT、HWH 和帧数标识。
+
+| 指标 | Attempt 4 实测 |
+|---|---:|
+| 状态、帧数 | `BOARD_STREAM_COMPLETE`，30 / 30 |
+| 总耗时 / 端到端吞吐 | 7.122 s / 4.213 FPS |
+| `avg_capture_ms`（30 样本） | 167.085 ms |
+| `avg_encode_ms`（30 样本） | 14.872 ms |
+| `avg_dma_ms`（30 样本） | 10.493 ms |
+| `avg_postprocess_ms`（30 样本） | 193.861 ms |
+| 观测计数 / 人工真值 / 准确率 | 0 / 未提供 / 不可计算 |
+| Packer 验证帧数、缓冲区释放 | 30 / 30，是 |
+| 最终 MM2S / S2MM DMASR | `0x00001002` / `0x00001002` |
+| 运行前 / 分配后 / 释放后 CmaFree | 62300 / 45712 / 47464 KiB |
+
+与 Attempt 3 的 0.402 FPS 相比，本次吞吐约提升 10.48 倍，但仍比 15 FPS 门槛低约 3.56 倍。计时指出 capture 与 postprocess 均值高于 66 ms 目标帧周期；encode 和 DMA 均值较低。因为处理阶段会重叠，这些平均数不相加作为端到端耗时。运行后 Boot ID 未变，CmaFree 为 74372 KiB，摄像头无占用，流进程与 8080 监听均已退出，DMA 仍为 Idle / 无错。该一次实测不提供物料真值，也未运行 M6 螺母、垫片或传送带速度验收。
