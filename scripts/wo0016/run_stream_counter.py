@@ -1,0 +1,642 @@
+"""WO-0016 continuous camera-to-DMA stream counter entry point.
+
+Default mode is a host-only synthetic simulation. Physical access requires the
+exact one-shot switches, a hash-pinned WO-0015 50 MHz manifest, and a fresh
+board-side preflight. This module never downloads/reloads the Overlay.
+"""
+from __future__ import annotations
+
+import argparse
+import asyncio
+import hashlib
+import json
+import math
+import os
+import sys
+import threading
+import time
+from pathlib import Path
+from typing import Any, AsyncIterator, Mapping
+
+import cv2
+import numpy as np
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+WO15_DIR = SCRIPT_DIR.parent / "wo0015"
+for _path in (SCRIPT_DIR, WO15_DIR):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
+
+import board_once
+import board_preflight as preflight
+import camera_dma_oneshot
+from camera_adapter import gray320x240_to_rgb_packet
+from mjpeg_preview import MjpegFrameHub, MjpegPreviewServer, render_preview_jpeg
+from stream_counter import (
+    HEIGHT,
+    RX_BYTES,
+    TX_BYTES,
+    WIDTH,
+    BufferState,
+    DoubleBufferStream,
+    MaskCounter,
+    allocate_ping_pong_buffers,
+)
+
+WO16_STAGE = "wo0016-stream"
+WO16_GUARD = Path("/var/lib/wo0016/stream-counter-consumed.json")
+CMA_WATERMARK_KIB = 32768
+AFI1_EXPECTED_READBACK = {
+    "AFI1_RDCHAN_CTRL": 0x00000001,
+    "AFI1_WRCHAN_CTRL": 0x00000F01,
+}
+
+
+def build_synthetic_masks(*, frame_count: int = 8, line_y: int = 120,
+                           direction: int = 1) -> tuple[np.ndarray, ...]:
+    """Build two separated moving objects plus a sub-threshold noise blob."""
+    if isinstance(frame_count, bool) or not isinstance(frame_count, int) or frame_count < 5:
+        raise ValueError("frame_count must be at least five for the synthetic crossing sequence")
+    if isinstance(line_y, bool) or not isinstance(line_y, int) or not 44 <= line_y <= HEIGHT - 45:
+        raise ValueError("synthetic line_y must leave a 44-pixel margin in the frame")
+    if direction not in (-1, 1):
+        raise ValueError("direction must be +1 or -1")
+    ys = np.rint(np.linspace(line_y - 44 * direction,
+                             line_y + 44 * direction, frame_count)).astype(np.int32)
+    masks = []
+    for center_y in ys:
+        mask = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
+        for center_x in (68, 252):
+            mask[center_y - 3:center_y + 4, center_x - 3:center_x + 4] = 0xFF
+        mask[line_y - 1:line_y + 2, 154:157] = 0xFF  # 9 px: below min_area=12
+        masks.append(mask)
+    return tuple(masks)
+
+
+def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
+                        direction: int = 1, min_area: int = 12) -> dict[str, Any]:
+    """Run synthetic Binary8 masks through the actual counter and JPEG renderer."""
+    counter = MaskCounter(line_y=line_y, direction=direction,
+                          min_area=min_area, max_step=24.0)
+    hub = MjpegFrameHub()
+    preview = MjpegPreviewServer(hub=hub, host="127.0.0.1", port=0)
+    results = []
+    start = time.perf_counter()
+    preview.start()
+    try:
+        last_jpeg = None
+        for frame_id, mask in enumerate(build_synthetic_masks(frame_count=frame_count,
+                                                               line_y=line_y,
+                                                               direction=direction)):
+            result = counter.update(frame_id, mask)
+            last_jpeg = render_preview_jpeg(mask, total_count=result.total_count,
+                                            line_y=line_y)
+            hub.publish(last_jpeg)
+            results.append(result)
+    finally:
+        preview.close()
+    elapsed = max(time.perf_counter() - start, 1e-9)
+    predicted = results[-1].total_count if results else 0
+    # Synthetic ground truth is kept outside MaskCounter and is used only for scoring.
+    ground_truth = 2 if frame_count >= 2 else 0
+    return {
+        "schema": 1,
+        "work_order": "WO-0016",
+        "status": "MOCK_PASS" if predicted == ground_truth else "MOCK_COUNT_MISMATCH",
+        "mode": "offline-synthetic",
+        "board_accessed": False,
+        "pynq_imported": False,
+        "frame_geometry": [HEIGHT, WIDTH],
+        "line_y": line_y,
+        "min_area": min_area,
+        "frames_processed": len(results),
+        "total_count": predicted,
+        "ground_truth_count": ground_truth,
+        "count_error": predicted - ground_truth,
+        "accuracy_percent": _count_accuracy(predicted, ground_truth),
+        "elapsed_seconds": elapsed,
+        "throughput_fps": len(results) / elapsed,
+        "preview_jpeg_sha256": hashlib.sha256(last_jpeg).hexdigest()
+        if results else None,
+        "hardware_fps": None,
+        "note": "Synthetic Offline evidence only; it is not PYNQ, camera, conveyor, or board acceptance.",
+    }
+
+
+def claim_once_guard(path: str | Path, identity: Mapping[str, Any]) -> dict[str, Any]:
+    """Atomically consume a one-shot guard; an existing guard is never reset."""
+    if not isinstance(identity, Mapping) or not identity:
+        raise ValueError("guard identity must be a non-empty mapping")
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    receipt = {**dict(identity), "consumed": True}
+    fd = os.open(str(target), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
+            stream.write(json.dumps(receipt, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            directory_fd = os.open(str(target.parent), os.O_RDONLY)
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+        except OSError:
+            pass
+    except BaseException:
+        # O_EXCL has consumed the marker; leave it in place after a write error.
+        raise
+    return receipt
+
+
+def require_board_opt_in(*, execute: bool, authorize_stage: str | None,
+                         approve_once: bool, manifest: str | None,
+                         manifest_sha256: str | None, max_frames: int,
+                         evidence_json: str | None) -> None:
+    if execute is not True or approve_once is not True or authorize_stage != WO16_STAGE:
+        raise ValueError("board mode requires --execute --authorize-stage wo0016-stream --approve-once")
+    if not manifest or not manifest_sha256:
+        raise ValueError("board mode requires a WO-0015 50 MHz manifest and its reviewed SHA-256")
+    if max_frames < 1:
+        raise ValueError("board mode requires a finite positive --max-frames limit")
+    if not evidence_json or not Path(evidence_json).is_absolute():
+        raise ValueError("board mode requires an absolute --evidence-json path")
+    if Path(evidence_json).exists():
+        raise FileExistsError("evidence path already exists; choose a new result path")
+
+
+async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
+                                    thread_name: str) -> Any:
+    """Await a blocking device call without letting a stuck call block asyncio shutdown."""
+    loop = asyncio.get_running_loop()
+    completed = loop.create_future()
+
+    def finish(value: Any = None, error: BaseException | None = None) -> None:
+        if completed.done():
+            return
+        if error is None:
+            completed.set_result(value)
+        else:
+            completed.set_exception(error)
+
+    def invoke() -> None:
+        try:
+            value = function()
+            try:
+                loop.call_soon_threadsafe(finish, value, None)
+            except RuntimeError:
+                pass
+        except BaseException as exc:
+            try:
+                loop.call_soon_threadsafe(finish, None, exc)
+            except RuntimeError:
+                pass
+
+    threading.Thread(target=invoke, name=thread_name, daemon=True).start()
+    return await asyncio.wait_for(completed, timeout=timeout_s)
+
+
+async def camera_gray_frames(device: str, *, max_frames: int,
+                             cv2_module: Any = cv2,
+                             read_timeout_s: float = 5.0) -> AsyncIterator[np.ndarray]:
+    """Read the OV9281 MJPG 640x400 mode and yield resized Gray8 320x240 frames."""
+    if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
+        raise ValueError("max_frames must be a positive integer")
+    if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
+            or not math.isfinite(float(read_timeout_s)) or read_timeout_s <= 0):
+        raise ValueError("read_timeout_s must be finite and positive")
+    capture = cv2_module.VideoCapture(device, cv2_module.CAP_V4L2)
+    failed = False
+    try:
+        if not capture.isOpened():
+            raise RuntimeError(f"cannot open V4L2 camera device {device}")
+        requested_fourcc = cv2_module.VideoWriter_fourcc(*"MJPG")
+        requested = (
+            (cv2_module.CAP_PROP_FOURCC, requested_fourcc),
+            (cv2_module.CAP_PROP_FRAME_WIDTH, 640),
+            (cv2_module.CAP_PROP_FRAME_HEIGHT, 400),
+        )
+        if any(not capture.set(prop, value) for prop, value in requested):
+            raise RuntimeError("V4L2 rejected the configured MJPG 640x400 capture mode")
+        actual_fourcc = int(round(capture.get(cv2_module.CAP_PROP_FOURCC)))
+        actual_format = "".join(chr((actual_fourcc >> (8 * byte)) & 0xFF)
+                                for byte in range(4))
+        actual_width = int(round(capture.get(cv2_module.CAP_PROP_FRAME_WIDTH)))
+        actual_height = int(round(capture.get(cv2_module.CAP_PROP_FRAME_HEIGHT)))
+        if (actual_format != "MJPG" or actual_width != 640 or actual_height != 400):
+            raise RuntimeError(
+                "V4L2 negotiated "
+                f"{actual_format!r} {actual_width}x{actual_height}; expected MJPG 640x400"
+            )
+        for _ in range(max_frames):
+            try:
+                ok, frame = await _daemon_call_with_timeout(
+                    capture.read, timeout_s=float(read_timeout_s),
+                    thread_name="wo0016-camera-read",
+                )
+            except asyncio.TimeoutError as exc:
+                raise RuntimeError("V4L2 camera read timed out; no retry was attempted") from exc
+            if not ok or frame is None:
+                raise RuntimeError("V4L2 returned no frame during the continuous stream")
+            image = np.asarray(frame)
+            if image.ndim == 3 and image.shape[2] in (3, 4):
+                code = cv2_module.COLOR_BGRA2GRAY if image.shape[2] == 4 else cv2_module.COLOR_BGR2GRAY
+                image = cv2_module.cvtColor(image, code)
+            elif image.ndim == 3 and image.shape[2] == 1:
+                image = image[:, :, 0]
+            if image.shape != (400, 640):
+                raise RuntimeError(f"camera frame geometry is {image.shape}; expected (400, 640)")
+            yield camera_dma_oneshot.resize_gray8(image, width=WIDTH, height=HEIGHT)
+    except BaseException:
+        failed = True
+        raise
+    finally:
+        if failed:
+            threading.Thread(target=capture.release, name="wo0016-camera-release",
+                             daemon=True).start()
+        else:
+            await _daemon_call_with_timeout(
+                capture.release, timeout_s=float(read_timeout_s),
+                thread_name="wo0016-camera-release",
+            )
+
+
+def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+    """Run one finite, guarded streaming session against the already-loaded WO-0015 BIT."""
+    require_board_opt_in(
+        execute=args.execute,
+        authorize_stage=args.authorize_stage,
+        approve_once=args.approve_once,
+        manifest=args.manifest,
+        manifest_sha256=args.manifest_sha256,
+        max_frames=args.max_frames,
+        evidence_json=args.evidence_json,
+    )
+    plan = preflight.validate_manifest(args.manifest, args.manifest_sha256)
+    if not plan.ready_for_board:
+        raise preflight.PreflightError("manifest is not marked ready_for_board")
+    if plan.manifest.get("clock_mhz") != 50:
+        raise preflight.PreflightError("WO-0016 is locked to the WO-0015 50 MHz image")
+    stage1_receipt = board_once.require_overlay_pass_receipt(
+        board_once.OVERLAY_PASS_RECEIPT, plan
+    )
+    live_boot = preflight.read_boot_id()
+    if live_boot != plan.boot_id:
+        raise preflight.PreflightError("live boot_id does not match the pinned WO-0015 manifest")
+    meminfo = preflight.read_cma_meminfo()
+    if meminfo["CmaFree"] < CMA_WATERMARK_KIB:
+        raise preflight.PreflightError("CmaFree is below the WO-0016 pre-allocation watermark")
+    admission = preflight.read_cma_admission(meminfo=meminfo)
+    ownership = preflight.audit_process_ownership()
+    manager = preflight.read_fpga_manager()
+    guard_dir = WO16_GUARD.parent
+    if guard_dir.is_symlink():
+        raise preflight.PreflightError("WO-0016 guard directory must not be a symlink")
+    guard_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    guard_stat = guard_dir.stat()
+    if guard_stat.st_uid != 0 or guard_stat.st_mode & 0o077:
+        raise preflight.PreflightError("WO-0016 guard directory must be root-owned and mode 0700")
+    guard = claim_once_guard(WO16_GUARD, {
+        "schema": 1,
+        "work_order": "WO-0016",
+        "stage": WO16_STAGE,
+        "boot_id": plan.boot_id,
+        "manifest_sha256": plan.manifest_sha256,
+        "bit_sha256": plan.bit_sha256,
+        "hwh_sha256": plan.hwh_sha256,
+        "max_frames": args.max_frames,
+    })
+
+    api = board_once.PynqBoardAPI(plan, stage=WO16_STAGE, cma_ranges=admission.ranges)
+    tx_buffers: tuple[Any, ...] = ()
+    rx_buffers: tuple[Any, ...] = ()
+    stream: DoubleBufferStream | None = None
+    preview: MjpegPreviewServer | None = None
+    dma = None
+    released_buffer_ids: set[int] = set()
+    evidence: dict[str, Any] = {
+        "schema": 1,
+        "work_order": "WO-0016",
+        "status": "WO0016_RUNNING",
+        "board_accessed": False,
+        "boot_id": plan.boot_id,
+        "manifest_sha256": plan.manifest_sha256,
+        "bit_sha256": plan.bit_sha256,
+        "hwh_sha256": plan.hwh_sha256,
+        "clock_mhz": 50,
+        "guard": guard,
+        "cma_admission": admission.as_evidence(),
+        "stage1_overlay_pass_receipt": stage1_receipt,
+        "process_ownership": ownership,
+        "fpga_manager": manager,
+        "cma_free_before_kib": meminfo["CmaFree"],
+        "cma_watermark_kib": CMA_WATERMARK_KIB,
+        "max_frames": args.max_frames,
+        "camera_device": args.camera,
+        "camera_mode": "MJPG 640x400 resized to Gray8 320x240",
+        "xilinx_xrt": os.environ.get("XILINX_XRT"),
+        "line_y": args.line_y,
+        "direction": args.direction,
+        "min_area": args.min_area,
+        "ground_truth_count": args.ground_truth_count,
+        "frames_processed": 0,
+    }
+    try:
+        audit = api.audit_environment(require_empty_shutdown=False, require_loaded_bit=True)
+        if audit["boot_id"] != plan.boot_id:
+            raise preflight.PreflightError("boot_id changed during WO-0016 preflight")
+        evidence["runtime_audit"] = audit
+        api.open_mmio()
+        pynq = api._pynq
+        overlay = pynq.Overlay(str(plan.bit_path), download=False)
+        api._overlay = overlay
+        checker_signature = api.read32(preflight.CHECKER_BASE, 0x04)
+        packer_signature = api.read32(preflight.CHECKER_BASE, board_once.PACKER_SIGNATURE)
+        if checker_signature != preflight.PACKET_MAGIC or packer_signature != preflight.PACKER_SIGNATURE:
+            raise preflight.PreflightError("loaded Checker/Packer signatures do not match WO-0015")
+        evidence["checker_signature"] = f"0x{checker_signature:08x}"
+        evidence["packer_signature"] = f"0x{packer_signature:08x}"
+        afi = board_once.read_afi1_snapshot(api, "wo0016-preflight")
+        evidence["afi1_exact_readback"] = verify_afi1_readback(afi)
+        evidence["afi1_snapshot"] = afi
+        for offset, label in ((0x04, "MM2S"), (0x34, "S2MM")):
+            status = api.read32(preflight.DMA_BASE, offset)
+            if status & board_once.DMA_ERROR_MASK:
+                raise preflight.PreflightError(f"{label} DMA begins with an error status")
+            if not (status & board_once.DMA_HALTED) and not (status & board_once.DMA_IDLE):
+                raise preflight.PreflightError(f"{label} DMA is already active")
+        if api.cma_free_kib() < CMA_WATERMARK_KIB:
+            raise preflight.PreflightError("CmaFree fell below watermark before allocation")
+
+        def allocate_with_watermark(*, shape: tuple[int, ...], dtype: Any) -> Any:
+            if api.cma_free_kib() < CMA_WATERMARK_KIB:
+                raise preflight.PreflightError("CmaFree fell below watermark before a buffer allocation")
+            buffer = api.allocate(int(np.prod(shape)))
+            if api.cma_free_kib() < CMA_WATERMARK_KIB:
+                raise preflight.PreflightError("CmaFree fell below watermark after a buffer allocation")
+            return buffer
+
+        tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocate_with_watermark)
+        buffer_gates = []
+        for index in range(2):
+            tx_address = api.device_address(tx_buffers[index])
+            rx_address = api.device_address(rx_buffers[index])
+            buffer_gates.append(preflight.validate_dma_buffer_pair(
+                tx_address=tx_address,
+                tx_size=int(memoryview(tx_buffers[index]).nbytes),
+                rx_address=rx_address,
+                rx_size=int(memoryview(rx_buffers[index]).nbytes),
+                cma_ranges=admission.ranges,
+                hp0_range=plan.hp0_range,
+                hp1_range=plan.hp1_range,
+            ))
+        evidence["buffer_gates"] = buffer_gates
+        evidence["buffer_layout"] = {
+            "tx_bytes_per_slot": TX_BYTES,
+            "rx_bytes_per_slot": RX_BYTES,
+            "slot_count": 2,
+            "allocation_count": 4,
+            "cma_free_after_allocation_kib": api.cma_free_kib(),
+        }
+
+        # Accessing the PYNQ DMA driver starts its channels; this is after all static,
+        # process, Overlay identity, CMA and physical-span gates have passed.
+        dma = overlay.axi_dma_0
+        checker = api._mmio[preflight.CHECKER_BASE]
+
+        def arm_frame(frame_id: int, slot: Any) -> None:
+            status = api.read32(preflight.CHECKER_BASE, board_once.PACKER_STATUS)
+            if status & (board_once.PACKER_BUSY | board_once.PACKER_FAULT):
+                raise RuntimeError(f"Packer is busy or faulted before frame {frame_id}")
+            if api.read32(preflight.CHECKER_BASE, board_once.PACKER_ERROR_CODE):
+                raise RuntimeError(f"Packer error register is nonzero before frame {frame_id}")
+            api.sync_to_device(slot.tx_buffer)
+            slot.rx_buffer[:] = np.uint8(0xA5)
+            api.sync_to_device(slot.rx_buffer)
+            api.write32(preflight.CHECKER_BASE, board_once.PACKER_ARM, 1)
+
+        def verify_frame(frame_id: int, slot: Any) -> None:
+            api.sync_from_device(slot.rx_buffer)
+            if int(dma.recvchannel.transferred) != RX_BYTES:
+                raise RuntimeError(f"frame {frame_id} S2MM transferred length is not {RX_BYTES}")
+            status = api.read32(preflight.CHECKER_BASE, board_once.PACKER_STATUS)
+            accepted = api.read32(preflight.CHECKER_BASE, board_once.PACKER_ACCEPTED_PIXELS)
+            sent = api.read32(preflight.CHECKER_BASE, board_once.PACKER_SENT_BEATS)
+            error_code = api.read32(preflight.CHECKER_BASE, board_once.PACKER_ERROR_CODE)
+            if status & board_once.PACKER_FAULT or status & board_once.PACKER_BUSY:
+                raise RuntimeError(f"frame {frame_id} Packer is faulted or still busy")
+            if not status & board_once.PACKER_DONE or accepted != RX_BYTES or sent != RX_BYTES // 4 or error_code:
+                raise RuntimeError(f"frame {frame_id} Packer frame counters/status are inconsistent")
+
+        hub = MjpegFrameHub()
+        preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
+        frame_times: list[float] = []
+
+        def publish_frame(result: Any, mask: np.ndarray) -> None:
+            hub.publish(render_preview_jpeg(mask, total_count=result.total_count,
+                                            line_y=args.line_y))
+            frame_times.append(time.perf_counter())
+
+        counter = MaskCounter(line_y=args.line_y, min_area=args.min_area,
+                              direction=args.direction, hysteresis=args.hysteresis,
+                              confirm_hits=args.confirm_hits, max_step=args.max_step)
+        stream = DoubleBufferStream(
+            recv_channel=dma.recvchannel,
+            send_channel=dma.sendchannel,
+            tx_buffers=tx_buffers,
+            rx_buffers=rx_buffers,
+            counter=counter,
+            packet_encoder=gray320x240_to_rgb_packet,
+            before_transfer=arm_frame,
+            after_transfer=verify_frame,
+            on_frame=publish_frame,
+            transfer_timeout_s=args.timeout_s,
+        )
+        started = time.perf_counter()
+        results = asyncio.run(stream.run(camera_gray_frames(
+            args.camera, max_frames=args.max_frames, cv2_module=cv2,
+            read_timeout_s=args.timeout_s)))
+        elapsed = max(time.perf_counter() - started, 1e-9)
+        total_count = results[-1].total_count if results else 0
+        accuracy = _count_accuracy(total_count, args.ground_truth_count)
+        s2mm_status = api.read32(preflight.DMA_BASE, 0x34)
+        mm2s_status = api.read32(preflight.DMA_BASE, 0x04)
+        for status, label in ((s2mm_status, "S2MM"), (mm2s_status, "MM2S")):
+            if status & board_once.DMA_ERROR_MASK or not status & board_once.DMA_IDLE:
+                raise RuntimeError(f"{label} is not error-free and idle at normal shutdown")
+        evidence.update({
+            "status": "BOARD_STREAM_COMPLETE",
+            "board_accessed": True,
+            "frames_processed": len(results),
+            "total_count": total_count,
+            "ground_truth_count": args.ground_truth_count,
+            "count_error": (None if args.ground_truth_count is None
+                            else total_count - args.ground_truth_count),
+            "accuracy_percent": accuracy,
+            "elapsed_seconds": elapsed,
+            "throughput_fps": len(results) / elapsed,
+            "hardware_fps": len(results) / elapsed,
+            "preview_url": f"http://{args.host}:{preview.port}/",
+            "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
+            "packer_output_frames_verified": len(results),
+            "pynq_imported": True,
+            "accuracy_formula": "100 * max(0, 1 - abs(predicted - ground_truth) / ground_truth); zero GT is exact-match",
+            "note": "Measured only for the supplied finite live-camera interval; no automatic retry/reset/reload.",
+        })
+        _release_buffers(api, tx_buffers + rx_buffers, released_buffer_ids)
+        evidence["cma_free_after_release_kib"] = api.cma_free_kib()
+        evidence["cma_free_delta_kib"] = (evidence["cma_free_after_release_kib"]
+                                             - evidence["cma_free_before_kib"])
+        evidence["buffers_released"] = True
+        _write_json_exclusive(Path(args.evidence_json), evidence)
+        return evidence
+    except BaseException as exc:
+        dma_safe_to_release = _dma_buffers_safe_to_release(api, dma, stream)
+        hold = not dma_safe_to_release
+        evidence.update({
+            "status": "BOARD_STREAM_FAIL_HOLD" if hold else "BOARD_STREAM_FAILED",
+            "board_accessed": bool(api.board_accessed),
+            "pynq_imported": bool(api._pynq is not None),
+            "buffers_released": False,
+            "hold_reason": ("DMA ownership or channel-idle state is uncertain; retain all CMA buffers"
+                            if hold else None),
+            "error": f"{type(exc).__name__}: {exc}",
+        })
+        if preview is not None:
+            preview.close()
+        if hold:
+            api.fail_hold(args.evidence_json, evidence)
+        if tx_buffers or rx_buffers:
+            _release_buffers(api, tx_buffers + rx_buffers, released_buffer_ids)
+            evidence["buffers_released"] = True
+            try:
+                evidence["cma_free_after_release_kib"] = api.cma_free_kib()
+                evidence["cma_free_delta_kib"] = (evidence["cma_free_after_release_kib"]
+                                                     - evidence["cma_free_before_kib"])
+            except BaseException:
+                evidence["cma_free_after_release_kib"] = None
+        if not Path(args.evidence_json).exists():
+            _write_json_exclusive(Path(args.evidence_json), evidence)
+        raise
+    finally:
+        if preview is not None:
+            preview.close()
+
+
+def _release_buffers(api: Any, buffers: tuple[Any, ...], released: set[int] | None = None) -> None:
+    if released is None:
+        released = set()
+    for buffer in buffers:
+        identity = id(buffer)
+        if identity in released:
+            continue
+        api.free(buffer)
+        released.add(identity)
+
+
+def _dma_buffers_safe_to_release(api: Any, dma: Any,
+                                 stream: DoubleBufferStream | None) -> bool:
+    """Release CMA only when no transfer could still own the backing memory."""
+    if dma is None:
+        return True
+    if stream is not None and stream.dma_may_be_active:
+        return False
+    try:
+        s2mm_status = api.read32(preflight.DMA_BASE, 0x34)
+        mm2s_status = api.read32(preflight.DMA_BASE, 0x04)
+    except BaseException:
+        return False
+    safe_mask = board_once.DMA_IDLE
+    for status in (s2mm_status, mm2s_status):
+        if status & board_once.DMA_ERROR_MASK or not status & safe_mask:
+            return False
+    return True
+
+
+def verify_afi1_readback(snapshot: Mapping[str, Any]) -> dict[str, str]:
+    """Require the exact Stage 1 AFI1 readback before constructing AXI DMA."""
+    if not isinstance(snapshot, Mapping) or snapshot.get("afi1_status") != "READ":
+        raise preflight.PreflightError("AFI1 was not readable after the Stage 1 Overlay PASS")
+    registers = snapshot.get("registers")
+    if not isinstance(registers, Mapping):
+        raise preflight.PreflightError("AFI1 register snapshot is malformed")
+    actual: dict[str, str] = {}
+    for name, expected in AFI1_EXPECTED_READBACK.items():
+        register = registers.get(name)
+        value = register.get("value") if isinstance(register, Mapping) else None
+        if isinstance(value, bool) or not isinstance(value, int) or value != expected:
+            rendered = "unavailable" if value is None else f"0x{value:08x}"
+            raise preflight.PreflightError(
+                f"{name} is {rendered}; expected exact Stage 1 value 0x{expected:08x}"
+            )
+        actual[name] = f"0x{value:08x}"
+    return actual
+
+
+def _write_json_exclusive(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd = os.open(str(path), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def _count_accuracy(predicted: int, ground_truth: int | None) -> float | None:
+    if ground_truth is None:
+        return None
+    if isinstance(ground_truth, bool) or not isinstance(ground_truth, int) or ground_truth < 0:
+        raise ValueError("ground_truth_count must be a nonnegative integer")
+    if ground_truth == 0:
+        return 100.0 if predicted == 0 else 0.0
+    return round(max(0.0, 100.0 * (1.0 - abs(predicted - ground_truth) / ground_truth)), 4)
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="WO-0016 asynchronous double-buffer Binary8 counter")
+    parser.add_argument("--mode", choices=("mock", "board"), default="mock")
+    parser.add_argument("--mock-frames", type=int, default=8)
+    parser.add_argument("--camera", default="/dev/video0")
+    parser.add_argument("--max-frames", type=int, default=0)
+    parser.add_argument("--line-y", type=int, default=120)
+    parser.add_argument("--direction", type=int, choices=(-1, 1), default=1)
+    parser.add_argument("--min-area", type=int, default=12)
+    parser.add_argument("--hysteresis", type=float, default=2.0)
+    parser.add_argument("--confirm-hits", type=int, default=2)
+    parser.add_argument("--max-step", type=float, default=24.0)
+    parser.add_argument("--ground-truth-count", type=int)
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=8080)
+    parser.add_argument("--timeout-s", type=float, default=5.0)
+    parser.add_argument("--manifest")
+    parser.add_argument("--manifest-sha256")
+    parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--authorize-stage")
+    parser.add_argument("--approve-once", action="store_true")
+    parser.add_argument("--evidence-json", "--output-json", dest="evidence_json")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _parser()
+    args = parser.parse_args(argv)
+    try:
+        if args.mode == "mock":
+            result = run_mock_simulation(frame_count=args.mock_frames,
+                                         line_y=args.line_y,
+                                         min_area=args.min_area)
+            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+            return 0 if result["status"] == "MOCK_PASS" else 1
+        result = execute_board_stream(args)
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
+    except (OSError, ValueError, RuntimeError, preflight.PreflightError) as exc:
+        print(json.dumps({"status": "BOARD_STREAM_REJECTED", "board_accessed": False,
+                          "pynq_imported": False, "error": f"{type(exc).__name__}: {exc}"},
+                         ensure_ascii=False, indent=2, sort_keys=True), file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
