@@ -18,7 +18,7 @@
 
 ## PYNQ DMA API 约束
 
-PYNQ Simple DMA 通道提供非阻塞 `transfer()`，并通过 `wait()` 或支持中断时的 `wait_async()` 完成操作。本地 `transfer_async()` 是项目异步适配器：它立即调用官方 `transfer()`，再异步等待完成。不要调用不存在的 `recvchannel.transfer_async()` 方法。
+PYNQ Simple DMA 通道提供非阻塞 `transfer()`，该方法返回 `None`；完成状态通过同一通道对象的 `wait()` 查询。PYNQ 的 `wait_async()` 依赖已配置的中断句柄，因此本项目优先在线程中调用通道 `wait()`，仅在没有同步 `wait()` 的替代通道上使用异步等待。本地 `transfer_async()` 是项目适配器：它启动传输后异步等待完成。不要调用不存在的 `recvchannel.transfer_async()` 方法，也不要对 `transfer()` 返回值调用 `wait()`。
 
 参考：[PYNQ DMA API](https://pynq.readthedocs.io/en/latest/pynq_package/pynq.lib/pynq.lib.dma.html)、[PYNQ DMA 源码文档](https://pynq.readthedocs.io/en/latest/_modules/pynq/lib/dma.html)。
 

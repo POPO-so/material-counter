@@ -25,7 +25,7 @@ Also supply `--manifest`, `--manifest-sha256`, `--max-frames`, and `--evidence-j
 
 For an isolated board deployment, place the required WO-0015 Python modules in a sibling `wo0015/` directory inside the package directory. The runner prefers that bundle and falls back to the repository's `scripts/wo0015/` while running from source. Required modules: `board_once.py`, `board_preflight.py`, `camera_dma_oneshot.py`, `camera_adapter.py`, and `prepare_vectors.py`. Preserve the exact executor hashes bound by the selected WO-0015 manifest: do not edit or patch `board_preflight.py` to bypass its boot check. This keeps deployed helpers isolated without replacing the board's existing WO-0015 files.
 
-PYNQ uses `channel.transfer(buffer, nbytes=...)` to start a nonblocking transfer. The local `transfer_async()` adapter waits using `wait_async()` if available or a daemon thread around `wait()`. Capture explicitly requests and verifies the negotiated MJPG 640×400 V4L2 mode. A successful transfer is followed by Packer/length checks and `sync_from_device()` before CPU reads the RX mask.
+PYNQ uses `channel.transfer(buffer, nbytes=...)` to start a nonblocking transfer; it returns `None`, and completion is reported by the channel object. The local `transfer_async()` adapter prefers a daemon thread around `channel.wait()` because PYNQ's `wait_async()` requires a configured interrupt handle. Capture explicitly requests and verifies the negotiated MJPG 640×400 V4L2 mode. A successful transfer is followed by Packer/length checks and `sync_from_device()` before CPU reads the RX mask.
 
 For a board run, launch the PYNQ interpreter with `sudo -n env XILINX_XRT=/usr`; the selected value is included in the JSON evidence.
 

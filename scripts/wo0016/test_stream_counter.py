@@ -283,6 +283,46 @@ def test_transfer_async_uses_nonblocking_start_and_async_wait_when_available():
     asyncio.run(exercise())
 
 
+def test_pynq_none_transfer_uses_channel_wait_when_interrupt_is_unconfigured():
+    class PynqLikeChannel:
+        def __init__(self):
+            self._interrupt = None
+            self.started = False
+            self.wait_calls = 0
+            self.wait_async_calls = 0
+            self.transfer_return = "not-called"
+
+        def transfer(self, buffer, *, nbytes):
+            assert nbytes == RX_BYTES
+            self.started = True
+            self.transfer_return = None
+            return None
+
+        async def wait_async(self):
+            self.wait_async_calls += 1
+            await self._interrupt.wait()
+
+        def wait(self):
+            assert self.started
+            self.wait_calls += 1
+            self.started = False
+
+    allocator = MockAllocator()
+    _, rx_buffers = allocate_ping_pong_buffers(allocator)
+    channel = PynqLikeChannel()
+
+    async def exercise():
+        pending = transfer_async(channel, rx_buffers[0], RX_BYTES)
+        assert channel.transfer_return is None
+        await pending
+
+    asyncio.run(exercise())
+
+    assert channel.wait_calls == 1
+    assert channel.wait_async_calls == 0
+    assert not channel.started
+
+
 
 
 

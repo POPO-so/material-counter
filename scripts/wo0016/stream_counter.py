@@ -246,49 +246,50 @@ class MaskCounter:
 
 
 async def _wait_channel(channel: Any) -> None:
-    wait_async = getattr(channel, "wait_async", None)
-    if callable(wait_async):
-        result = wait_async()
-        if not inspect.isawaitable(result):
-            raise TypeError("channel.wait_async() must return an awaitable")
-        await result
-        return
     wait = getattr(channel, "wait", None)
-    if not callable(wait):
-        raise TypeError("DMA channel must provide wait_async() or wait()")
-    loop = asyncio.get_running_loop()
-    completed = loop.create_future()
+    if callable(wait):
+        loop = asyncio.get_running_loop()
+        completed = loop.create_future()
 
-    def finish(error: BaseException | None) -> None:
-        if completed.done():
-            return
-        if error is None:
-            completed.set_result(None)
-        else:
-            completed.set_exception(error)
+        def finish(error: BaseException | None) -> None:
+            if completed.done():
+                return
+            if error is None:
+                completed.set_result(None)
+            else:
+                completed.set_exception(error)
 
-    def blocking_wait() -> None:
-        error: BaseException | None = None
-        try:
-            wait()
-        except BaseException as exc:
-            error = exc
-        try:
-            loop.call_soon_threadsafe(finish, error)
-        except RuntimeError:
-            # A timed-out DMA wait may finish after the fail-hold loop closes.
-            pass
+        def blocking_wait() -> None:
+            error: BaseException | None = None
+            try:
+                wait()
+            except BaseException as exc:
+                error = exc
+            try:
+                loop.call_soon_threadsafe(finish, error)
+            except RuntimeError:
+                # A timed-out DMA wait may finish after the fail-hold loop closes.
+                pass
 
-    threading.Thread(target=blocking_wait, name="wo0016-dma-wait", daemon=True).start()
-    await completed
+        threading.Thread(target=blocking_wait, name="wo0016-dma-wait", daemon=True).start()
+        await completed
+        return
+
+    wait_async = getattr(channel, "wait_async", None)
+    if not callable(wait_async):
+        raise TypeError("DMA channel must provide wait() or wait_async()")
+    result = wait_async()
+    if not inspect.isawaitable(result):
+        raise TypeError("channel.wait_async() must return an awaitable")
+    await result
 
 
 def transfer_async(channel: Any, buffer: Any, nbytes: int) -> asyncio.Task:
     """Start PYNQ's non-blocking transfer and return an async completion task.
 
-    PYNQ's channel object has ``transfer`` rather than ``transfer_async``.
-    This adapter starts it immediately, then awaits ``wait_async`` when the
-    channel has interrupts or runs its blocking ``wait`` in a worker thread.
+    PYNQ's ``transfer`` starts the operation and returns ``None``; completion
+    methods belong to the channel. Prefer its blocking ``wait`` in a worker
+    thread because PYNQ's ``wait_async`` requires a configured interrupt.
     """
     nbytes = _integer(nbytes, "nbytes", minimum=1)
     channel.transfer(buffer, nbytes=nbytes)

@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-**Stage A Attempt 2 进入 BOARD_STREAM_FAIL_HOLD，完成帧数为 0；板端计数验收未通过。** 首帧数据已到达 DMA 通道启动阶段，等待完成时发生异常，DMA 是否完成/仍在运行无法确认。运行器按保护逻辑保留全部 CMA 缓冲区并进入永久 fail-hold。板端 Python 进程仍在运行；不得中断、杀进程、复位 DMA、释放 CMA、回收缓存或重试。
+**Stage A Attempt 2 进入 BOARD_STREAM_FAIL_HOLD，完成帧数为 0；板端计数验收未通过。** 原始 JSON 只记录异常摘要，没有 Python traceback。之后按授权只读读取了 AXI DMA 状态：MM2S/S2MM 均为 Idle、无错误。按授权向 Python fail-hold 进程发送一次 SIGTERM，但它仍在运行；源码安装了忽略 SIGTERM/SIGINT 的处理函数。进程仍持有 CMA 缓冲区，活动 Guard 仍在原路径。尚未执行 SIGKILL、缓存回收、Guard 归档、DMA/Overlay 复位或重试。
 
 ## Attempt 1 依赖对齐与 Guard 隔离
 
@@ -40,18 +40,35 @@ Attempt 1 因关键字参数不匹配，在 DMA 启动前失败。其 Guard 没�
 - Checker/Packer 签名：0x574f3134 / 0x574f3135。
 - CMA admission 时 CmaFree=95460 KiB；四个 CMA 缓冲区分配后为 59684 KiB，仍高于 32768 KiB 门槛。
 - status=BOARD_STREAM_FAIL_HOLD，board_accessed=true，pynq_imported=true，frames_processed=0。
-- 异常为 AttributeError: 'NoneType' object has no attribute 'wait'。在流处理逻辑中，S2MM 与 MM2S transfer 启动后才等待完成；因此本次传输完成状态不确定，不能记为 DMA PASS。
+- 异常摘要为 `AttributeError: 'NoneType' object has no attribute 'wait'`。流处理先调用 S2MM 与 MM2S 的 `transfer()`，再等待完成；因此本次 0 帧，不能记为 DMA PASS。
 - buffers_released=false；hold_reason 为 DMA ownership or channel-idle state is uncertain; retain all CMA buffers。
 - 只读进程快照显示 sudo PID 23668 和 Python PID 23673 仍运行于板端。没有对 DMA 寄存器作额外读写，也没有终止该进程。
 
 Attempt 2 原始 JSON 保存在 /home/xilinx/wo0016/stage-a-30frames-attempt2-result.json，SHA-256 为 161fa38f8561915d9e45f26fd741f72c3f9d511c11b0d1168c2a53dbc50b3fe9。新的活动 Guard 位于 /var/lib/wo0016/stream-counter-consumed.json，SHA-256 为 44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671。其哈希与归档 Attempt 1 Guard 相同，因为两者记录同一 Boot、Manifest、BIT、HWH、stage 和帧数；两份文件通过路径分别保留。
+
+## Attempt 2 静止状态只读核验与恢复门
+
+原始 JSON 已拉取到本地临时审阅目录并复核 SHA-256 为 `161fa38f8561915d9e45f26fd741f72c3f9d511c11b0d1168c2a53dbc50b3fe9`；JSON 未包含 traceback，仅有上述异常摘要。读取前先从 Manifest 对应 HWH 复核其 SHA-256 为 `bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6`，确认 `axi_dma_0` 基址为 `0x40400000`。
+
+在不加载 Overlay 的情况下，通过 `/dev/mem` 的只读映射读取一次 DMA 寄存器：
+
+| 寄存器 | 读值 |
+|---|---:|
+| MM2S_DMACR | `0x00010003` |
+| MM2S_DMASR | `0x00001002` |
+| S2MM_DMACR | `0x00010003` |
+| S2MM_DMASR | `0x00001002` |
+
+两通道 `Idle=1`、`Halted=0`，错误位 4–6 均为 0。Boot ID 仍为 `f8b24aee-ed7e-430a-b3f3-d26056746bfd`。进程快照确认 PID 23668（sudo）及 PID 23673（Python）存在。根据本次授权，只向 PID 23673 发送过一次 `sudo -n kill -TERM`；随后进程仍为 `SLl`，因为 `board_once.py` 的 fail-hold 明确忽略 SIGTERM。当前仍不能释放缓冲区或清理 CMA；若要继续恢复，需在重新只读确认 DMA 仍 Idle/无错后另行授权强制终止。
+
+本地复现测试使用 PYNQ 通道形状：`transfer()` 返回 `None`、存在 `wait_async()`、且中断对象为 `None`。板端安装的 PYNQ `dma.py` 中 `wait_async()` 会执行 `await self._interrupt.wait()`；此路径与 Attempt 2 的异常吻合。修复后的 `transfer_async()` 优先在线程中调用 `channel.wait()`，不依赖传输返回值或未配置的中断句柄。离线回归结果：`210 passed, 1 skipped`。
 
 ## 尚未完成的物料验收
 
 | 记录项 | 结果 |
 |---|---|
 | 完成处理帧数 / 30 帧目标 | 0 / 30 |
-| DMA / Checker / Packer 已验证完成帧数 | 0；DMA 完成状态不确定，处于 fail-hold |
+| DMA / Checker / Packer 已验证完成帧数 | 0；运行时等待失败后仍进入 fail-hold；后续只读快照显示两个 DMA 通道 Idle 且无错 |
 | 总计数、人工真值、误差、准确率 | NOT RUN |
 | M6 螺母、垫片及混合物料样本 | NOT RUN |
 | 输入 FPS、端到端处理 FPS、浏览器预览 FPS | NOT RUN |
