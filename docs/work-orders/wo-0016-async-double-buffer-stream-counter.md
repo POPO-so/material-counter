@@ -2,7 +2,7 @@
 
 | 项目 | 内容 |
 |---|---|
-| 状态 | Offline/Mock 回归完成；Attempt 4 连续流完成但未达实时帧率门槛；Attempt 5 高速优化已实现，待一次受控板端实测 |
+| 状态 | Offline/Mock 回归完成；Attempt 5 完成 30 帧，但 11.409 FPS 未达到 15 FPS 门槛；物料计数准确率待真值验收 |
 | 基线 | `feat/pl-stream-skeleton`，WO-0015 50 MHz、320×240 Binary8 S2MM 合同 |
 | 工作分支 | `codex/wo0016-counting-20261017` |
 | 范围 | Python PS 侧双缓冲调度、过线计数、MJPEG 预览和离线 Mock |

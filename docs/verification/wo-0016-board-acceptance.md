@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-**Stage A Attempt 4 完成 30/30 帧，吞吐提升至 4.213 FPS，但仍未达到 15 FPS 目标；物料准确率尚未验收。** Packer 验证 30 帧，最终两个 DMA 通道 Idle 且无错，缓冲区已释放。未提供人工真值，故观测总计数 0 不能转换为准确率。M6 螺母、垫片及传送带工况仍未验收。
+**Stage A Attempt 5 完成 30/30 帧，端到端吞吐为 11.409 FPS，仍低于 15 FPS 目标；物料准确率尚未验收。** Packer 验证 30 帧，最终两个 DMA 通道 Idle 且无错，缓冲区已释放。未提供人工真值，故观测总计数 0 不能转换为准确率。M6 螺母、垫片及传送带工况仍未验收。
 
 ## Attempt 1 依赖对齐与 Guard 隔离
 
@@ -91,14 +91,14 @@ Attempt 3 原始 JSON 保存在 `/home/xilinx/wo0016/stage-a-30frames-attempt3-r
 
 | 记录项 | 结果 |
 |---|---|
-| 完成处理帧数 / 30 帧目标 | Attempt 4：30 / 30 |
-| DMA / Checker / Packer 已验证完成帧数 | Attempt 4：30；运行后两个 DMA 通道 Idle 且无错 |
-| 总计数、人工真值、误差、准确率 | Attempt 4 观测计数 0；无人工真值，误差与准确率不可计算 |
+| 完成处理帧数 / 30 帧目标 | Attempt 5：30 / 30 |
+| DMA / Checker / Packer 已验证完成帧数 | Attempt 5：30；运行后两个 DMA 通道 Idle 且无错 |
+| 总计数、人工真值、误差、准确率 | Attempt 5 观测计数 0；无人工真值，误差与准确率不可计算 |
 | M6 螺母、垫片及混合物料样本 | NOT RUN |
-| 输入 FPS、端到端处理 FPS、浏览器预览 FPS | 输入/预览 FPS 未单独测量；Attempt 4 端到端 4.213 FPS |
+| 输入 FPS、端到端处理 FPS、浏览器预览 FPS | 相机请求/回读 60 FPS；Attempt 5 端到端 11.409 FPS；浏览器实际显示 FPS 未测 |
 | 传送带速度、照明、视野及物料过线工况 | NOT RUN |
 
-Attempt 2、3 Guard 已归档，Attempt 4 Guard 保留在活动路径；板端无残留流计数进程，DMA 已静止且缓冲区已释放。当前最高端到端吞吐为 4.213 FPS，尚未证明实时运行能力；没有物料真值，不能推断 M6 螺母或垫片计数准确率。
+Attempt 2、3、4 Guard 已归档，Attempt 5 Guard 保留在活动路径；板端无残留流计数进程，DMA 已静止且缓冲区已释放。当前最高端到端吞吐为 11.409 FPS，未达到 15 FPS 实时门槛；没有物料真值，不能推断 M6 螺母或垫片计数准确率。
 
 ## Attempt 4 前的离线性能审计与优化
 
@@ -137,10 +137,35 @@ Attempt 3 活动 Guard 在复核 DMA Idle 后原样移动至 `/var/lib/wo0016/at
 
 与 Attempt 3 的 0.402 FPS 相比，本次吞吐约提升 10.48 倍，但仍比 15 FPS 门槛低约 3.56 倍。计时指出 capture 与 postprocess 均值高于 66 ms 目标帧周期；encode 和 DMA 均值较低。因为处理阶段会重叠，这些平均数不相加作为端到端耗时。运行后 Boot ID 未变，CmaFree 为 74372 KiB，摄像头无占用，流进程与 8080 监听均已退出，DMA 仍为 Idle / 无错。该一次实测不提供物料真值，也未运行 M6 螺母、垫片或传送带速度验收。
 
-## Attempt 5 的离线优化（2026-10-18，板端待测）
+## Attempt 5 的离线优化（2026-10-18）
 
 采集器在打开相机后一次性请求 MJPG 640×400 和 60 FPS，并回读验证实际帧率至少 50 FPS；开流后的两帧预热及相机协商都排除在稳态 FPS 计时之外。稳态彩色帧直接使用首通道视图，并通过 `cv2.resize(..., INTER_NEAREST)` 缩放；没有逐帧启动 `v4l2-ctl`，也未修改 Manifest 固定的 WO-0015 文件。软件在传输完成后仍对每张 Binary8 掩码执行 Packer 检查和 ROI 计数，预览 JPEG 则以质量 70 每 4 帧更新一次。
 
 新的 JSON 打点分别给出 `avg_capture_ms`、`avg_encode_ms`、`avg_dma_ms`、`avg_packer_check_ms`、`avg_roi_count_ms`、`avg_mjpeg_encode_ms` 和 `avg_postprocess_ms`，并记录每项样本数、相机 FPS 回读、预热帧数及实际预览编码帧数。
 
-离线回归为 `pytest scripts/wo0016 scripts/wo0015`，`228 passed, 1 skipped`。Windows 主机转换微基准（Python 3.12、OpenCV 5.0.0、NumPy 2.5.2，100 次）中，旧的 BGR 转灰度加双线性缩放均值为 2.254 ms，新首通道视图加最近邻缩放为 0.082 ms（约 27.39 倍）。主机 JPEG 基准为质量 85 的 0.128 ms、质量 70 的 0.126 ms；每四帧编码的主机摊销值为 0.032 ms/输入帧。此微基准不包含 V4L2 读帧、Cortex-A9 负载、DMA、Packer 或 ROI 计数，不能作为板端吞吐证据。Attempt 5 是否达到 15 FPS 仅以其板端 JSON 为准。
+离线回归为 `pytest scripts/wo0016 scripts/wo0015`，`228 passed, 1 skipped`。Windows 主机转换微基准（Python 3.12、OpenCV 5.0.0、NumPy 2.5.2，100 次）中，旧的 BGR 转灰度加双线性缩放均值为 2.254 ms，新首通道视图加最近邻缩放为 0.082 ms（约 27.39 倍）。主机 JPEG 基准为质量 85 的 0.128 ms、质量 70 的 0.126 ms；每四帧编码的主机摊销值为 0.032 ms/输入帧。此微基准不包含 V4L2 读帧、Cortex-A9 负载、DMA、Packer 或 ROI 计数，不能作为板端吞吐证据。
+
+## Attempt 5 受控实测结果（2026-10-18）
+
+本次运行对应提交 `3a4349f8fde1946ae57bff9956842f2ee0640c58`。运行前只读检查确认 Boot ID 为 `f8b24aee-ed7e-430a-b3f3-d26056746bfd`、CmaFree 为 74372 KiB、`/dev/video0` 空闲、`auto_exposure=1` / `exposure_time_absolute=50`，8080 端口空闲，两个 DMASR 都为 `0x00001002`。V4L2 能力列表中 MJPG 640×400 支持 60、120 和 210 FPS。运行器请求 60 FPS，回读 60 FPS；完成两帧预热后开始稳态计时。运行复用已加载的 50 MHz Overlay（`download=False`），AFI1 精确回读 RD=`0x00000001`、WR=`0x00000f01`，没有下载 BIT。
+
+板端原始 JSON 位于 `/home/xilinx/wo0016/stage-a-30frames-attempt5-result.json`，本地副本为 [`stage-a-30frames-attempt5-result.json`](../../data/results/wo0016-stage-a-attempt5-20261018/stage-a-30frames-attempt5-result.json)，SHA-256 为 `46006ef24ae9dc0e31b97ee5f017bec18e65f128920aa6de9c452815f1f49244`。板端 stdout 日志 SHA-256 与 JSON 相同。部署脚本 SHA-256：`run_stream_counter.py` `ac8680972c672959dcae9cdeb3f0adc95ec19ea9ea449a72f4bb7aa108da0b50`、`stream_counter.py` `a176154dacda6b2059b71c374f0377c979b8293eecec469ef1b0c2a5d0e8c547`、`mjpeg_preview.py` `d8136bc34d360837e954efbd9a2813f9f905cbff76b78bccd927cc4ab76d112`。WO-0015 `camera_adapter.py` 与 `board_preflight.py` 仍分别匹配 `80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba`、`f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6`。
+
+| 指标 | Attempt 5 实测 |
+|---|---:|
+| 状态、帧数 | `BOARD_STREAM_COMPLETE`，30 / 30 |
+| 总耗时 / 端到端吞吐 | 2.630 s / 11.409 FPS |
+| `avg_capture_ms`（30 样本） | 38.231 ms |
+| `avg_encode_ms`（30 样本） | 13.869 ms |
+| `avg_dma_ms`（30 样本） | 10.155 ms |
+| `avg_packer_check_ms`（30 样本） | 0.535 ms |
+| `avg_roi_count_ms`（30 样本） | 51.054 ms |
+| `avg_mjpeg_encode_ms`（8 个编码样本） | 49.696 ms |
+| `avg_postprocess_ms`（30 样本） | 68.735 ms |
+| 预览 JPEG | 每 4 帧一次，质量 70；8 帧已编码 |
+| 观测计数 / 人工真值 / 准确率 | 0 / 未提供 / 不可计算 |
+| Packer 验证帧数、缓冲区释放 | 30 / 30，是 |
+| 最终 MM2S / S2MM DMASR | `0x00001002` / `0x00001002` |
+| 运行前 / 分配后 / 释放后 CmaFree | 59136 / 43060 / 43540 KiB |
+
+Attempt 5 比 Attempt 4 的 4.213 FPS 提升约 2.71 倍；capture 从 167.085 ms 降到 38.231 ms，postprocess 从 193.861 ms 降到 68.735 ms，但都仍高于设定子阶段目标，整机吞吐也未达到 15 FPS。子阶段显示 ROI 计数为主要剩余开销；JPEG 每次编码均值 49.696 ms，虽然每四帧才编码一次。运行后 Boot ID 未变，CmaFree 为 74076 KiB，摄像头无占用、8080 已关闭、DMA 仍 Idle 且无错、缓冲区已释放。Attempt 4 Guard 原样归档至 `/var/lib/wo0016/attempt-4/stream-counter-consumed.json`，SHA-256 保持 `44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671`；Attempt 5 的一次性 Guard 已消费并保留在活动路径，未执行第二次实测。此次没有人工真值或传送带物料工况，不能据此宣称计数准确率。
