@@ -126,7 +126,40 @@ Live stages put these files beside their evidence JSON in a `<stage>-diagnostics
 
 ## Offline Gray8 camera adapter
 
-`camera_adapter.py` exposes `gray320x240_to_rgb_packet(gray, frame_id=0)`. It accepts a `uint8` 320×240 matrix, copies `R=G=B=Y`, and reuses `prepare_vectors.make_packet` to emit the existing 230,432-byte packet. Its synthetic test compares the existing PL Binary8 derivation against a background-32 / foreground-195 expected mask. It does not open V4L2, resize frames, allocate CMA, or start DMA. Any V4L2 latest-frame-wins and Copy-and-Pack path remains future PS integration, and the Step 2 zero-mismatch gate remains in force.
+`camera_adapter.py` exposes `gray320x240_to_rgb_packet(gray, frame_id=0)`. It accepts a `uint8` 320×240 matrix, copies `R=G=B=Y`, and reuses `prepare_vectors.make_packet` to emit the existing 230,432-byte packet. `camera_dma_oneshot.py` adds offline `.npy` / `.pgm` / `.png` loading, one-read V4L2 capture, bilinear resize, independent threshold-128 Golden generation, and a separate camera-only DMA guard. Capture/preparation never imports PYNQ or touches MMIO. Its live stage attaches to the existing Overlay and reuses `board_once.run_frames`, AFI1 synchronization, CMA allocation checks and cache synchronization. It requires a matching same-boot `DMA_THREE_PASS` result and exactly one `--execute --authorize-stage camera-dma-single --approve-once` invocation. It saves source/resized Gray8 PGM images, the packet/Golden, PL Binary8 bytes and a PL output PGM. The generated three-entry camera manifest sends only its first frame; the other two consecutive frame IDs are reserved and unrun to satisfy the shared runner's fixed manifest shape.
+
+### OV9281 camera bridge command sequence
+
+Deploy the reviewed `camera_dma_oneshot.py` and `camera_adapter.py` beside the already verified `board_once.py`, `board_preflight.py`, and `wo0015-manifest.json` under `/home/xilinx/wo0015`. The V4L2 capture leaves camera controls unchanged and expects `ov9281-init.service` to have established the 5.0 ms exposure.
+
+First, capture and prepare one image without running DMA:
+
+```bash
+WO=/home/xilinx/wo0015
+sudo python3 "$WO/camera_dma_oneshot.py" --mode prepare \
+  --capture-device /dev/video0 \
+  --template-manifest "$WO/wo0015-manifest.json" \
+  --template-manifest-sha256 e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935 \
+  --output-root "$WO/camera-runs"
+```
+
+Review the emitted `camera_run_dir` and `manifest_sha256`, plus the saved `camera-source-gray.pgm` and `camera-gray-320x240.pgm`. After that exact camera manifest digest has been separately approved, execute one frame only:
+
+```bash
+CAMERA_RUN='<camera_run_dir printed by prepare>'
+CAMERA_MANIFEST="$CAMERA_RUN/wo0015-camera-manifest.json"
+CAMERA_MANIFEST_SHA256='<manifest_sha256 printed by prepare>'
+WO=/home/xilinx/wo0015
+sudo python3 "$WO/camera_dma_oneshot.py" --mode camera-dma-single \
+  --manifest "$CAMERA_MANIFEST" --manifest-sha256 "$CAMERA_MANIFEST_SHA256" \
+  --step3-manifest "$WO/wo0015-manifest.json" \
+  --step3-manifest-sha256 e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935 \
+  --step3-evidence "$WO/dma-three-result.json" \
+  --execute --authorize-stage camera-dma-single --approve-once \
+  --evidence-json "$CAMERA_RUN/camera-dma-result.json"
+```
+
+The camera stage consumes `/var/lib/wo0015-s2mm/camera-dma-single-consumed.json` and writes a separate PASS receipt only after the DMA/Checker/Packer completion checks, byte-for-byte Golden comparison, output image save, and post-stage audit all pass. Any consumed-stage failure is terminal for this boot; do not retry, reload the Overlay, or reset DMA.
 
 Because `board_once.py` changed, the packaged board manifest's `executor_sha256.board_once.py` and the review-bound source hashes must be regenerated from the exact candidate package before any separately approved hardware attempt.
 
