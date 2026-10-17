@@ -15,7 +15,7 @@
 | Command | Result |
 |---|---|
 | `C:\fpga\material-counter\.venv\Scripts\python.exe -m pytest -q scripts/wo0016` | 28 passed in 3.02 s |
-| `C:\fpga\material-counter\.venv\Scripts\python.exe -m pytest -q -rs scripts/wo0016 scripts/wo0015` | 208 passed, 1 skipped in 18.77 s. Skip: `test_cma_compat.py::test_actual_probe_satisfies_authorized_kernel_accounting_admission`; live metadata artifact is absent in this checkout. |
+| `C:\fpga\material-counter\.venv\Scripts\python.exe -m pytest -q -rs scripts/wo0016 scripts/wo0015` | 208 passed, 1 skipped in 18.41 s. Skip: `test_cma_compat.py::test_actual_probe_satisfies_authorized_kernel_accounting_admission`; live metadata artifact is absent in this checkout. |
 | `C:\fpga\material-counter\.venv\Scripts\python.exe scripts/wo0016/run_stream_counter.py --mode mock --mock-frames 8` | `MOCK_PASS`; 8 frames, 2 predicted/2 synthetic ground-truth objects, 0 count error, 100% synthetic score. |
 
 The saved Mock result reports 15.8176 frames/s for this host run, including local preview server startup and JPEG rendering. It is not camera, conveyor, or FPGA performance; `hardware_fps` is null. The scene contains two synthetic moving 7×7 components and a 9-pixel noise blob below the configured area threshold.
