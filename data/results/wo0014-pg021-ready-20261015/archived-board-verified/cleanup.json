@@ -1,0 +1,36 @@
+{
+  "pid": 6311,
+  "process_after": {
+    "pid": 6311,
+    "state": "Z",
+    "starttime": "357032",
+    "argv": [
+      ""
+    ],
+    "fds": [],
+    "maps": "",
+    "stat": "6311 (python) Z 6288 6283 6282 34819 6283 4228364 17646 0 0 0 1366 199 0 0 20 0 1 0 357032 0 0 4294967295 0 0 0 0 0 0 0 16781312 16387 1 0 0 17 1 0 0 0 0 0 0 0 0 0 0 0 0 9\n",
+    "status": "Name:\tpython\nState:\tZ (zombie)\nTgid:\t6311\nNgid:\t0\nPid:\t6311\nPPid:\t6288\nTracerPid:\t0\nUid:\t0\t0\t0\t0\nGid:\t0\t0\t0\t0\nFDSize:\t0\nGroups:\t0 \nNStgid:\t6311\nNSpid:\t6311\nNSpgid:\t6283\nNSsid:\t6282\nKthread:\t0\nThreads:\t1\nSigQ:\t0/2901\nSigPnd:\t0000000000000000\nShdPnd:\t0000000000000100\nSigBlk:\t0000000000000000\nSigIgn:\t0000000001001000\nSigCgt:\t0000000100004003\nCapInh:\t0000000000000000\nCapPrm:\t000001ffffffffff\nCapEff:\t000001ffffffffff\nCapBnd:\t000001ffffffffff\nCapAmb:\t0000000000000000\nNoNewPrivs:\t0\nSeccomp:\t0\nSeccomp_filters:\t0\nSpeculation_Store_Bypass:\tunknown\nSpeculationIndirectBranch:\tunsupported\nCpus_allowed:\t3\nCpus_allowed_list:\t0-1\nMems_allowed:\t1\nMems_allowed_list:\t0\nvoluntary_ctxt_switches:\t4122\nnonvoluntary_ctxt_switches:\t210\n"
+  },
+  "cma_before": {
+    "CmaTotal_kib": 131072,
+    "CmaFree_kib": 8664
+  },
+  "cma_after": {
+    "CmaTotal_kib": 131072,
+    "CmaFree_kib": 25980
+  },
+  "cma_free_increase_kib": 17316,
+  "old_packet_allocation_rounded_kib": 228,
+  "signal_method": "pidfd stop then kill",
+  "cma_release_samples": [
+    {
+      "monotonic_s": 6950.359579281,
+      "CmaTotal_kib": 131072,
+      "CmaFree_kib": 25980
+    }
+  ],
+  "sa_writes": 0,
+  "length_writes": 0,
+  "post_no_owners": true
+}

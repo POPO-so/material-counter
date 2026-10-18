@@ -1,0 +1,26 @@
+[
+  {
+    "mode": "multi50",
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"OFFLINE_READY\",\n  \"hardware_attempted\": false,\n  \"mode\": \"multi50\",\n  \"manifest_sha256\": \"79b7f4dbc317d6eb0aca0130b3474b430499e40a6e0e753a3a28b3a3e7fbbff7\",\n  \"clock_mhz\": \"50\",\n  \"frame_ids\": [\n    1,\n    2,\n    3\n  ]\n}\n",
+    "stderr": ""
+  },
+  {
+    "mode": "overlay100",
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"OFFLINE_READY\",\n  \"hardware_attempted\": false,\n  \"mode\": \"overlay100\",\n  \"manifest_sha256\": \"79b7f4dbc317d6eb0aca0130b3474b430499e40a6e0e753a3a28b3a3e7fbbff7\",\n  \"clock_mhz\": \"100\",\n  \"frame_ids\": []\n}\n",
+    "stderr": ""
+  },
+  {
+    "mode": "single100",
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"OFFLINE_READY\",\n  \"hardware_attempted\": false,\n  \"mode\": \"single100\",\n  \"manifest_sha256\": \"79b7f4dbc317d6eb0aca0130b3474b430499e40a6e0e753a3a28b3a3e7fbbff7\",\n  \"clock_mhz\": \"100\",\n  \"frame_ids\": [\n    0\n  ]\n}\n",
+    "stderr": ""
+  },
+  {
+    "mode": "multi100",
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"OFFLINE_READY\",\n  \"hardware_attempted\": false,\n  \"mode\": \"multi100\",\n  \"manifest_sha256\": \"79b7f4dbc317d6eb0aca0130b3474b430499e40a6e0e753a3a28b3a3e7fbbff7\",\n  \"clock_mhz\": \"100\",\n  \"frame_ids\": [\n    1,\n    2,\n    3\n  ]\n}\n",
+    "stderr": ""
+  }
+]

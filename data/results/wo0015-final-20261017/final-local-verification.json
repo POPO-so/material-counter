@@ -1,0 +1,52 @@
+﻿{
+  "result": "FINAL_LOCAL_EVIDENCE_VERIFIED",
+  "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+  "step3_manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b",
+  "camera_manifest_sha256": "f0bafdd7c99892574a41a6fce6ecfa76221402ea0fcc7d63a94132cd1c16ca87",
+  "cache_reclaim": {
+    "before_kib": 28892,
+    "after_kib": 113868,
+    "total_kib": 131072
+  },
+  "overlay": {
+    "result_sha256": "aa67452a7e7cde786d51cab5af259f0c296f8ac241059ac42f49b3cd3455d6c5",
+    "afi1_sync": "AFI1_HP1_32BIT_SYNC_PASS",
+    "status": "OVERLAY_LOAD_PASS"
+  },
+  "dma_single": {
+    "rx_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+    "result_sha256": "27a4e553645160f896e958d815816f8b13cb508796421471dad5b4da54ee70f0",
+    "frame_id": 0,
+    "status": "DMA_SINGLE_PASS",
+    "frame_count": 1,
+    "byte_mismatches": 0
+  },
+  "dma_three": {
+    "per_frame_mismatches": [
+      0,
+      0,
+      0
+    ],
+    "frame_ids": [
+      0,
+      1,
+      2
+    ],
+    "status": "DMA_THREE_PASS",
+    "result_sha256": "cabe117bd4edf70fe7e40fc6aa8321f0c7b58f97401d55e86276dc66a27e1436"
+  },
+  "camera_dma": {
+    "software_golden_sha256": "24b78ed82c1a48aeb345dadaadfcd0739c2d37c4d74086e2da126210523c8a39",
+    "byte_mismatches": 0,
+    "frame_id": 3,
+    "status": "CAMERA_DMA_SINGLE_PASS",
+    "packet_sha256": "6ac8ea1b499ba5de74c0ca5e31982eb42c292950b58afdb9a2e2dae74f3a39ff",
+    "source_image": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-board-once-20261017\\final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd\\camera-prepares-final-20261017\\camera-e03610ba8fc34b3d830d12f315749e6e\\camera-source-gray.png",
+    "rx_bytes": 76800,
+    "pl_mask_image": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-board-once-20261017\\final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd\\camera-prepares-final-20261017\\camera-e03610ba8fc34b3d830d12f315749e6e\\pl-binary8-output.png",
+    "pl_output_sha256": "24b78ed82c1a48aeb345dadaadfcd0739c2d37c4d74086e2da126210523c8a39",
+    "result_sha256": "830b7166eb41e907c419e63cdca2b4ec62d779ff7d9724c3ebfe663a4a7bcb99",
+    "local_pl_vs_golden_mismatches": 0,
+    "tx_bytes": 230432
+  }
+}

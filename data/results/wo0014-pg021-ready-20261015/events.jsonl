@@ -1,0 +1,15 @@
+{"stage": "cleanup-deploy_AUTH_BEGIN", "client_time": "2026-10-15T03:01:47.844524+08:00"}
+{"stage": "cleanup-deploy_EXECUTION_BEGIN", "client_time": "2026-10-15T03:03:15.034640+08:00"}
+{"stage": "cleanup-deploy_EXIT", "client_time": "2026-10-15T03:03:19.892857+08:00", "exit_code": 0}
+{"stage": "overlay-only_AUTH_BEGIN", "client_time": "2026-10-15T03:03:20.331473+08:00"}
+{"stage": "overlay-only_EXECUTION_BEGIN", "client_time": "2026-10-15T03:03:34.007841+08:00"}
+{"stage": "overlay-only_EXIT", "client_time": "2026-10-15T03:03:57.351808+08:00", "exit_code": 0}
+{"stage": "overlay-only_PASS", "client_time": "2026-10-15T03:03:57.393836+08:00"}
+{"stage": "mmio-read-only_AUTH_BEGIN", "client_time": "2026-10-15T03:03:57.448344+08:00"}
+{"stage": "mmio-read-only_EXECUTION_BEGIN", "client_time": "2026-10-15T03:05:00.706400+08:00"}
+{"stage": "mmio-read-only_EXIT", "client_time": "2026-10-15T03:05:19.336318+08:00", "exit_code": 0}
+{"stage": "mmio-read-only_PASS", "client_time": "2026-10-15T03:05:19.376740+08:00"}
+{"stage": "dma-once_AUTH_BEGIN", "client_time": "2026-10-15T03:05:19.443109+08:00"}
+{"stage": "dma-once_EXECUTION_BEGIN", "client_time": "2026-10-15T03:05:30.328497+08:00"}
+{"stage": "dma-once_EXIT", "client_time": "2026-10-15T03:05:50.521388+08:00", "exit_code": 0}
+{"stage": "dma-once_PASS", "client_time": "2026-10-15T03:05:50.566383+08:00"}

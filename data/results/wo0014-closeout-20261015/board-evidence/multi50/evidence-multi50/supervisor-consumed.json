@@ -1,0 +1,1 @@
+{"argv": ["/usr/local/share/pynq-venv/bin/python", "-u", "/home/xilinx/wo0014_closeout_20261015/closeout/closeout_child.py", "--execute", "--approve-once", "--mode", "multi50", "--authorize-stage", "multi50", "--manifest-sha256", "79b7f4dbc317d6eb0aca0130b3474b430499e40a6e0e753a3a28b3a3e7fbbff7"]}

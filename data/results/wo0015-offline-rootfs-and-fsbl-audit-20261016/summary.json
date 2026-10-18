@@ -1,0 +1,50 @@
+{
+  "status": "STOPPED_PRECONDITION_UNVERIFIED",
+  "audit_scope": "PURE_OFFLINE_HOST_ONLY",
+  "board_connections": 0,
+  "mmio_reads_or_writes": 0,
+  "overlay_loads": 0,
+  "dma_runs": 0,
+  "images_mounted": 0,
+  "target_binary_executions": 0,
+  "commits_or_merges": 0,
+  "restricted_raw": "NOT_TRAVERSED_NOT_READ_NOT_COPIED",
+  "new_targeted_test_methods_passed": 50,
+  "new_targeted_subtests_passed": 20,
+  "junit_cases_including_subtests": 70,
+  "historical_test_counts": "459/76/43 are separate historical suites; not added",
+  "historical_indexed_files_verified": 320,
+  "protected_nonrestricted_files_verified": 389,
+  "hardware_locks": {
+    "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+  },
+  "candidate_boot_sha256": "3bf9c24025a489926fd76872754977c5954e2ab25c91957373386e1f20915af6",
+  "candidate_image_sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+  "test_collection_deviation": "An initial recursive pytest collection entered extracted image test modules and failed with 26 import/collection errors because PYNQ was unavailable. No PYNQ driver/C extension or ARM target binary ran. Explicit four-file final suite replaced it; failed logs preserved.",
+  "candidate_image_runtime_equivalence": "UNKNOWN until separately authorized binding evidence",
+  "historical_rx_pattern_and_root_cause": "UNKNOWN",
+  "b1_b2": "NOT_APPROVED_DO_NOT_EXECUTE",
+  "report": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\verification-report.md",
+  "posix_closeout": {
+    "scope": "incremental existing-artifact hardening; host mocks/static review only",
+    "large_image_rehashed": false,
+    "image_reparsed": false,
+    "fsbl_21_tables_reparsed": false,
+    "max_proc_read_bytes": 65536,
+    "max_boot_bin_bytes": 33554432,
+    "b1_nonroot_gate_before_any_open": true,
+    "b2_nonblocking_open": true,
+    "b2_preread_regular_positive_size_same_device_gates": true,
+    "b2_capture_metadata": [
+      "boot_dev_differs_from_root"
+    ],
+    "previous_audit_test_counts": {
+      "methods": 44,
+      "subtests": 11
+    },
+    "counts_policy": "current combined explicit-four-file suite; previous counts not added",
+    "proposal_core_sha256": "6b68476d78b254244eaaae579bed23dc4bceefa7f3b1b1e02e5b390afb85bd91",
+    "awaiting_user_decision": "remain offline or separately review/approve B1; no action inferred"
+  }
+}

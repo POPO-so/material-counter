@@ -1,0 +1,20 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- C:\fpga\material-counter\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\fpga\material-counter
+collecting ... collected 11 items
+
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_dry_run_never_imports_pynq PASSED [  9%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_execute_flag_without_human_approval_cannot_load_overlay PASSED [ 18%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_fresh_reset_halt_transitions_to_idle_before_single_transfer PASSED [ 27%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_hwh_length_width_and_address_map_must_match_manifest PASSED [ 36%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_length_is_blocked_until_runstop_reaches_idle PASSED [ 45%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_one_successful_send_requires_complete_output_statistics PASSED [ 54%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_packet_and_pair_manifest_validate_from_independent_files PASSED [ 63%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_packet_header_checksum_and_trailer_mutations_are_rejected 
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_packet_header_checksum_and_trailer_mutations_are_rejected PASSED [ 72%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_timeout_does_not_retry_or_reset_and_quarantines_active_buffer PASSED [ 81%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_unknown_active_prestate_never_enables_or_sends_dma PASSED [ 90%]
+scripts/wo0014_hw/test_pynq_image_once.py::PynqImageOnceTests::test_unsafe_buffer_address_never_writes_dma_length PASSED [100%]
+
+==================== 11 passed, 3 subtests passed in 1.26s ====================

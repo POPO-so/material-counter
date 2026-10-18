@@ -1,0 +1,14 @@
+{"stage": "preflight_AUTH_BEGIN", "client_time": "2026-10-15T03:29:03.548163+08:00"}
+{"stage": "preflight_EXECUTION_BEGIN", "client_time": "2026-10-15T03:29:17.127585+08:00"}
+{"stage": "preflight_EXIT", "client_time": "2026-10-15T03:29:18.434483+08:00", "exit_code": 0}
+{"stage": "upload_BEGIN", "client_time": "2026-10-15T03:29:18.489027+08:00"}
+{"stage": "upload_EXIT", "client_time": "2026-10-15T03:29:25.262533+08:00", "exit_code": 0}
+{"stage": "deploy_AUTH_BEGIN", "client_time": "2026-10-15T03:29:25.330231+08:00"}
+{"stage": "deploy_EXECUTION_BEGIN", "client_time": "2026-10-15T03:29:36.676515+08:00"}
+{"stage": "deploy_EXIT", "client_time": "2026-10-15T03:29:40.740851+08:00", "exit_code": 0}
+{"stage": "multi50_AUTH_BEGIN", "client_time": "2026-10-15T03:29:40.852593+08:00"}
+{"stage": "multi50_EXECUTION_BEGIN", "client_time": "2026-10-15T03:29:54.507684+08:00"}
+{"stage": "multi50_EXIT", "client_time": "2026-10-15T03:30:34.675946+08:00", "exit_code": 1}
+{"stage": "collect-failure_AUTH_BEGIN", "client_time": "2026-10-15T03:32:46.777759+08:00"}
+{"stage": "collect-failure_EXECUTION_BEGIN", "client_time": "2026-10-15T03:33:12.918711+08:00"}
+{"stage": "collect-failure_EXIT", "client_time": "2026-10-15T03:33:14.321679+08:00", "exit_code": 0}

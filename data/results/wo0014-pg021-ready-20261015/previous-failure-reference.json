@@ -1,0 +1,52 @@
+{
+  "guard": {
+    "overlay-receipt.json": {
+      "sha256": "f9fa75d8892686a345b95c9cf7bbee7e92a05398a5a1ceffa04008fc47190f21"
+    },
+    "dma-once-consumed.json": {
+      "sha256": "1ba11f90c1f82c92c37b0e18c30dbd5191d49d12045a283b93091d737edfe3d9"
+    },
+    "mmio-read-only-consumed.json": {
+      "sha256": "be2e41718706485d6521fbe99f2c581da4d1bb516909b4da0ab4099f258c6ba8"
+    },
+    "supervision-overlay-only-pass.json": {
+      "sha256": "93c7bba39b905415de503031b113554be6c1e400069234b1f2ee60ce6d6aa45c"
+    },
+    "library-stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "terminal-fail.json": {
+      "sha256": "a698f9bb3e452085762c776f7e5e376e43ed90ef58526df5af7f65de0fd2b04b"
+    },
+    "exclusive.lock": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervision-mmio-read-only-pass.json": {
+      "sha256": "48c07f0b6eadf4b8b680b8f372b38eff8d16bf8b87fbfcc0f1b29df51a15ed71"
+    },
+    "events.jsonl": {
+      "sha256": "142c4f5853f4b83257f245c9dda99c1c0af82e49de4542dabac9810f5a007f09"
+    },
+    "supervision-overlay-only-consumed.json": {
+      "sha256": "93c7bba39b905415de503031b113554be6c1e400069234b1f2ee60ce6d6aa45c"
+    },
+    "supervision-dma-once-consumed.json": {
+      "sha256": "3759fd61b0bf0a4d1a704677b37fff1966faeb22227912c33ca9c9e4723c77de"
+    },
+    "overlay-attempt.json": {
+      "sha256": "42b6338b06086df5bfdd09dbbace38f3d1553ea4a9a4be4e61dfe8ef17729381"
+    },
+    "mmio-receipt.json": {
+      "sha256": "94fb4fd3200f7f82245b0e3a5d7ca49668ae2afc6c502e547f98b87871af65a9"
+    },
+    "supervision-mmio-read-only-consumed.json": {
+      "sha256": "48c07f0b6eadf4b8b680b8f372b38eff8d16bf8b87fbfcc0f1b29df51a15ed71"
+    }
+  },
+  "hardware_process_records": {
+    "6311": {
+      "stat": "6311 (python) S 6288 6283 6282 34819 6283 4194560 17645 0 0 0 1280 175 0 0 20 0 2 0 357032 87920640 14562 4294967295 4718592 8641352 3198565296 0 0 0 0 16781312 16387 0 0 0 17 1 0 0 0 0 0 8707416 8850920 9003008 3198565621 3198565879 3198565879 3198570454 0\n",
+      "cmdline": "/usr/local/share/pynq-venv/bin/python\u0000-u\u0000/home/xilinx/wo0014_diagnostic50_recovery_20261015/child.py\u0000--execute\u0000--approve-once\u0000--mode\u0000dma-once\u0000--authorize-stage\u0000dma-once\u0000--executor-manifest-sha\u00003e878328b2e1203579a318d6624e61bd9123d6aeca582e0c07e5b7850969e4df\u0000"
+    }
+  }
+}

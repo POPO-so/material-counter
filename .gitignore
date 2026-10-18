@@ -45,6 +45,23 @@ data/recorded/
 !data/synthetic/**/config.json
 !data/labeled/**
 
+# Reproducible tool workspaces and caches stay out of evidence snapshots.
+# Reports, manifests and committed baseline vectors under data/results remain visible.
+data/results/**/project/
+data/results/**/rootfs/extracted/
+data/results/**/xsim.dir/
+data/results/**/__pycache__/
+data/results/**/.pytest_cache/
+data/results/**/*.py[cod]
+data/results/**/*.jou
+data/results/**/*.str
+data/results/**/*.wdb
+data/results/**/*.vcd
+data/results/**/*.fst
+data/results/**/*.fsdb
+data/results/**/*.vpd
+.vivado-ai/
+
 # ===== 编辑器 / 系统 =====
 .vscode/
 .idea/
