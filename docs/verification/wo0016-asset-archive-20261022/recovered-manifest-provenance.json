@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "recovered_from_dangling_commit": "71c3917dc2db8b5724c5cb6cff639912edff569f",
+  "stash_third_parent": "04b3b8ee481c5bf332b5c864c5c36729bfdcc99b",
+  "original_path": "data/results/wo0014-offline-20261014/vectors/manifest.json",
+  "git_blob": "64fe82a671cb885046d4b0f6e845a4be68aa676b",
+  "bytes": 192452,
+  "sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+  "matches_historical_source_manifest_sha256": true,
+  "external_exact_copy": "C:\\fpga\\material-counter-asset-archive-20261022\\dangling-history\\recovered-wo0014-original-manifest.json",
+  "tracked_archival_copy": "recovered-wo0014-original-manifest.json",
+  "original_object_store_read_only": true,
+  "current_canonical_fixture_or_runtime_code_changed": false,
+  "interpretation": "Recovered original source manifest; documentary provenance only. Does not change any hardware or acceptance result."
+}

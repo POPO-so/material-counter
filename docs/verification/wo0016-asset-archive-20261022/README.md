@@ -45,10 +45,12 @@ WO-0015 验收报告的 helper 源码哈希修正完整迁入；两个 helper �
 
 stash 第三父中的历史材料代表包括 `scripts/wo0014_hw/diagnostic50_implicit_audit/` 下的源码与测试、`docs/verification/wo-0013-phase-a-report.md`、`data/results/wo0014-diagnostic50-hardening-20261014/` 的原始诊断输出。它们具有来源追溯价值；本轮没有运行这些历史脚本，也没有重新认定历史实验有效性。
 
+本次新增发现：stash 第三父中找回了原始 `data/results/wo0014-offline-20261014/vectors/manifest.json`（192,452 字节），SHA-256 为 `8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d`，与历史声明完全相符。已保存[原件逐字节副本](recovered-wo0014-original-manifest.json)及[来源复核](recovered-manifest-provenance.json)，外部备份另有同样副本。该发现补充此前“原件未找到”的检索结论；本轮未替换既有回归夹具或改动运行代码，也不改变任何实验验收结论。
+
 三者完整可达对象图已从共享对象库只读复制到仓库外 `dangling-history/complete-reachable-history.pack` 与 `.idx`，共 11,700 个不同对象；严格 index-pack 与 verify-pack 均通过。没有创建救援 refs，也没有导入、重写或清理共享对象。[外部包校验记录](dangling-pack-verification.json) 记录 SHA-256；完整树清单留在外部备份中，路径和哈希载于机器报告。
 
 ## 主工作区清理与合并门禁
 
-归档完成后的证据见 [清理前复核](verification-before-cleanup.json)。只有 archive committed blobs、外部备份和待清理源文件全部匹配，且收口修正已提交后，才恢复 main 的四个受控文档并逐项移除已存档的 145 个未跟踪路径。Ignored 资产与 `.git/objects/**/tmp_obj_*` 不在清理范围。实际清理结果另由 `main-cleanup-receipt.json` 记录；在该回执存在前，本记录不表示主工作区已清理。
+归档完成后的证据见 [清理前复核](verification-before-cleanup.json)。只有 archive committed blobs、外部备份和待清理源文件全部匹配，且收口修正已提交后，才恢复 main 的四个受控文档并逐项移除已存档的 145 个未跟踪路径。Ignored 资产与 `.git/objects/**/tmp_obj_*` 不在清理范围。清理已完成：[实际清理回执](main-cleanup-receipt.json) 记录四个受控路径已恢复至原 main HEAD、145 个已归档未跟踪文件已逐项移除，主工作区 Git status 干净。归档 149/149 原文件仍经复核；Ignored 列表及文件大小/mtime 全部保持，5 个 tmp_obj 文件的 SHA-256 全部保持。main HEAD 仍为原 `5926820`，它是收口内容提交的祖先，具备本地快进条件；merge-tree 只读演练退出码 0。实际主线合并没有执行。
 
 本轮不合并 main，不推送远端，不改写历史，不运行 clean/reset-hard/gc-prune。每次 Git 写操作显式设置 `gc.auto=0` 与 `maintenance.auto=false`。本地快进条件与最终工作区状态以清理后回执为准；远端状态只使用本地现有引用，未联网刷新。
