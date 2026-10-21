@@ -1,0 +1,30 @@
+{
+  "scope": "Read-only SHA-256 baseline; these files must not be deleted or rewritten.",
+  "files": [
+    {
+      "path": "objects/89/tmp_obj_plIEeh",
+      "bytes": 135,
+      "sha256": "ccde3f5f04cd1f0ebd3737e717c2e08a7518e48c8e1a82ae305fb3c553a1ad34"
+    },
+    {
+      "path": "objects/c0/tmp_obj_DISDrE",
+      "bytes": 368640,
+      "sha256": "9e658a4dd28a81de9b9ada42461343292fa2542258a91f5dc334e7a718818fd5"
+    },
+    {
+      "path": "objects/c0/tmp_obj_HPYup2",
+      "bytes": 20893696,
+      "sha256": "ab76f3bf63883a018d145c08862ac78609d27bb281608b3a8d7824e6959e4b51"
+    },
+    {
+      "path": "objects/c0/tmp_obj_KF00pK",
+      "bytes": 17707008,
+      "sha256": "0d517dddf48466416e76a092f2f111a1abc1287c44e08214ffc0b987d58f4a67"
+    },
+    {
+      "path": "objects/c0/tmp_obj_xDlNCk",
+      "bytes": 23795373,
+      "sha256": "7313a6e1245194a5f1997ec6c7b5441d03b6ee3e613e2be32e83100ea27f12e9"
+    }
+  ]
+}

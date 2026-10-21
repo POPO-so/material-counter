@@ -1,0 +1,459 @@
+{
+  "scope": "Read-only dangling-commit inspection, including all three stash parents. New archive refs excluded from baseline comparison.",
+  "commits": [
+    {
+      "commit": "71c3917dc2db8b5724c5cb6cff639912edff569f",
+      "author": "material-counter team",
+      "author_email": "material-counter@local",
+      "author_date": "2026-10-18T04:38:47+08:00",
+      "committer": "material-counter team",
+      "committer_email": "material-counter@local",
+      "commit_date": "2026-10-18T04:38:47+08:00",
+      "subject": "On pl-stream-skeleton: Stashed Codex worktree changes",
+      "parents": [
+        "e3f7d7ab9753b1f67263a81815b442cf79a768ac",
+        "e23d9c30b5eb56d09f3a0058c300e713de721b98",
+        "04b3b8ee481c5bf332b5c864c5c36729bfdcc99b"
+      ],
+      "changed_paths_vs_first_parent": [],
+      "changed_paths_with_unique_blob": [],
+      "result_tree_files": 789,
+      "result_tree_unique_blob_files": 0,
+      "stash_untracked_parent": {
+        "commit": "04b3b8ee481c5bf332b5c864c5c36729bfdcc99b",
+        "files": 16100,
+        "bytes": 1423514013,
+        "unique_blob_files": 15050,
+        "top_directory_counts": {
+          ".agents/skills": 661,
+          ".codex/config.toml": 1,
+          "data/results": 15400,
+          "docs/runtime_flow.md": 1,
+          "docs/verification": 9,
+          "docs/work-orders": 1,
+          "scripts/wo0014_hw": 24,
+          "xelab.pb": 1,
+          "xvhdl.pb": 1,
+          "xvlog.pb": 1
+        },
+        "distinct_blob_oids": 7532,
+        "distinct_blob_oids_absent_from_baseline_refs": 7456
+      },
+      "assessment": "Result tree duplicates feat/pl-stream-skeleton, but third stash parent retains historical untracked source/report/evidence plus build caches; these require preservation and are not newly validated experiments.",
+      "changed_path_count": 0
+    },
+    {
+      "commit": "a6cc8231f6bb3947dd0f8e4d93423d8e74c6ed5d",
+      "author": "material-counter team",
+      "author_email": "material-counter@local",
+      "author_date": "2026-09-18T08:17:02+08:00",
+      "committer": "material-counter team",
+      "committer_email": "material-counter@local",
+      "commit_date": "2026-09-18T08:17:02+08:00",
+      "subject": "feat(synth): expand H3 dataset to 21 sequences at 320x240 Gray8",
+      "parents": [
+        "22261eed6da482b4c6c869ee7c5416186520ccd1"
+      ],
+      "changed_paths_vs_first_parent": [
+        ".gitignore",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_fast/config.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_fast/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_fast_drop/config.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_fast_drop/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_mid/config.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_mid/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_mid_noise/config.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_mid_noise/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_slow/config.json",
+        "data/synthetic/h3_full/backbone_gap_normal_speed_slow/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_fast/config.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_fast/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_mid/config.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_mid/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_mid_noise/config.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_mid_noise/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_slow/config.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_slow/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_slow_noise/config.json",
+        "data/synthetic/h3_full/backbone_gap_tight_speed_slow_noise/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_fast/config.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_fast/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_fast_drop/config.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_fast_drop/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_mid/config.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_mid/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_mid_noise/config.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_mid_noise/ground_truth.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_slow/config.json",
+        "data/synthetic/h3_full/backbone_gap_wide_speed_slow/ground_truth.json",
+        "data/synthetic/h3_full/config.json",
+        "data/synthetic/h3_full/special_lateral_offset/config.json",
+        "data/synthetic/h3_full/special_lateral_offset/ground_truth.json",
+        "data/synthetic/h3_full/special_projection_overlap_noncontact/config.json",
+        "data/synthetic/h3_full/special_projection_overlap_noncontact/ground_truth.json",
+        "data/synthetic/h3_full/special_short_pause/config.json",
+        "data/synthetic/h3_full/special_short_pause/ground_truth.json",
+        "data/synthetic/h3_full/special_single_column_normal_spacing/config.json",
+        "data/synthetic/h3_full/special_single_column_normal_spacing/ground_truth.json",
+        "data/synthetic/h3_full/special_small_spacing/config.json",
+        "data/synthetic/h3_full/special_small_spacing/ground_truth.json",
+        "data/synthetic/h3_full/special_speed_variation/config.json",
+        "data/synthetic/h3_full/special_speed_variation/ground_truth.json",
+        "docs/ai_collaboration_log.md",
+        "docs/work-orders/wo-0001-h3-generator-fix.md",
+        "python/synth/__init__.py",
+        "python/synth/generate.py",
+        "python/synth/requirements.txt",
+        "python/synth/scene.py",
+        "python/synth/specs/h3_matrix.json",
+        "python/synth/tests/test_generate.py",
+        "python/synth/tools/__init__.py",
+        "python/synth/tools/h3_dataset_stats.py"
+      ],
+      "changed_paths_with_unique_blob": [
+        {
+          "path": ".gitignore",
+          "oid": "2034763b62aa7e260f17f7a8ffa12eeeb502a9ad",
+          "bytes": 1038
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_fast/config.json",
+          "oid": "089605cb4bb1901a7efe941ae814c027d37345c5",
+          "bytes": 3685
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_fast/ground_truth.json",
+          "oid": "bd3e6069ac3b764117edef5f1fd4ae88cf7bb5c2",
+          "bytes": 142794
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_fast_drop/config.json",
+          "oid": "6e274f1b768fa51a1aa837a8c948942a6b02440f",
+          "bytes": 3707
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_fast_drop/ground_truth.json",
+          "oid": "94d2901acd79f179a1a27d058aaaf7513b9c55b6",
+          "bytes": 142829
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_mid/config.json",
+          "oid": "882e1b7df26f05ba8de5134adcf9492ebe9224fb",
+          "bytes": 3683
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_mid/ground_truth.json",
+          "oid": "d066b02293138700bab25f2e99ef9c618c61bcd8",
+          "bytes": 142768
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_mid_noise/config.json",
+          "oid": "328e9de4eb52761722730aa665fa168b4c5e0976",
+          "bytes": 3690
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_mid_noise/ground_truth.json",
+          "oid": "fb145ad1e060b4ecb8d87ab9c34c283d704ac296",
+          "bytes": 142774
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_slow/config.json",
+          "oid": "6c0ecd90a0b0fd274a9b4b1764ed539fea5a6e11",
+          "bytes": 3732
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_normal_speed_slow/ground_truth.json",
+          "oid": "85440a72ca3f3a58ff884d5d49b7eb99b6ee7468",
+          "bytes": 143289
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_fast/config.json",
+          "oid": "d5d277485d58d8ed7ab0809f655f02c91a9ac65c",
+          "bytes": 3683
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_fast/ground_truth.json",
+          "oid": "887f3c8473b0e2c2df79c9b817cc26531a2c0c09",
+          "bytes": 142748
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_mid/config.json",
+          "oid": "1b2511bc4940e74f3ca68f247b3eceb041a2f0dc",
+          "bytes": 3682
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_mid/ground_truth.json",
+          "oid": "78b4a79aaf808f42cfe8f2fe185e38396eaa1b9c",
+          "bytes": 142724
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_mid_noise/config.json",
+          "oid": "fdc9ac0b8b3bf18fe2ad0b2147362c08892b6e20",
+          "bytes": 3688
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_mid_noise/ground_truth.json",
+          "oid": "466e3a746de87b8ad9ea262a63b9fd318ae9727a",
+          "bytes": 142730
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_slow/config.json",
+          "oid": "ee3a5108a7a3e77b9f6c70e22bccbf886c552838",
+          "bytes": 3697
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_slow/ground_truth.json",
+          "oid": "031b49a9629d29f9c02ac6a44adc62a9861b86fd",
+          "bytes": 143185
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_slow_noise/config.json",
+          "oid": "113a66e65b59136bb96bcc9c21d4c303bbd6016f",
+          "bytes": 3704
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_tight_speed_slow_noise/ground_truth.json",
+          "oid": "00b51af31c228ae77b231c40e216d7f2de1f28e2",
+          "bytes": 143191
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_fast/config.json",
+          "oid": "37bc142ec42d8edbfa4a2192c201e959b1ebb4ff",
+          "bytes": 3682
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_fast/ground_truth.json",
+          "oid": "54049c4e9480b9b9ca6c67e2bf5d533449e548ab",
+          "bytes": 142844
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_fast_drop/config.json",
+          "oid": "90b69a84629a2eab12af7ab83436af442e62e6fd",
+          "bytes": 3723
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_fast_drop/ground_truth.json",
+          "oid": "4b8aad375bd00574f90fee1a46ef682c93923da1",
+          "bytes": 142905
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_mid/config.json",
+          "oid": "d9b4f2f49e6f9faa32118b329a0ef49b75ab5c45",
+          "bytes": 3699
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_mid/ground_truth.json",
+          "oid": "4b34d39bb86fade8f2a69e016ea2d7676dac24b8",
+          "bytes": 142852
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_mid_noise/config.json",
+          "oid": "bb2d4163aea51734e430318edbc34402ffcc2c40",
+          "bytes": 3688
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_mid_noise/ground_truth.json",
+          "oid": "f784f61f0236fdb9f0c7248f1b7cd7f0b8c80982",
+          "bytes": 142828
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_slow/config.json",
+          "oid": "c38444c20d216762a5160bf1c0d2231a661be5f7",
+          "bytes": 3698
+        },
+        {
+          "path": "data/synthetic/h3_full/backbone_gap_wide_speed_slow/ground_truth.json",
+          "oid": "4d12e955f5d7e6118fc52ca4cba12ce73ade5093",
+          "bytes": 143273
+        },
+        {
+          "path": "data/synthetic/h3_full/config.json",
+          "oid": "bc7df60cebb663681188b1ae477cd9775102dd77",
+          "bytes": 123201
+        },
+        {
+          "path": "data/synthetic/h3_full/special_lateral_offset/config.json",
+          "oid": "4e924dc25942e674160758a7e4631d7a8f25061a",
+          "bytes": 3661
+        },
+        {
+          "path": "data/synthetic/h3_full/special_lateral_offset/ground_truth.json",
+          "oid": "03363233b60804335f557fea566a3a11571450f7",
+          "bytes": 141222
+        },
+        {
+          "path": "data/synthetic/h3_full/special_projection_overlap_noncontact/config.json",
+          "oid": "81c3f4083c89e36e763ae99bb4c8807f0299046a",
+          "bytes": 3675
+        },
+        {
+          "path": "data/synthetic/h3_full/special_projection_overlap_noncontact/ground_truth.json",
+          "oid": "0ccbe5d0a5893c650906ea3c6b80fb984ca21127",
+          "bytes": 141252
+        },
+        {
+          "path": "data/synthetic/h3_full/special_short_pause/config.json",
+          "oid": "db80db5f5400102e08ea5e0dd15d5450042f5dc6",
+          "bytes": 8023
+        },
+        {
+          "path": "data/synthetic/h3_full/special_short_pause/ground_truth.json",
+          "oid": "3e88f9ac2e9f5e37b282bcc0b596113b0e854b1b",
+          "bytes": 142740
+        },
+        {
+          "path": "data/synthetic/h3_full/special_single_column_normal_spacing/config.json",
+          "oid": "e32c54b0b827741f20c22a75f1b5e3d8d18265ea",
+          "bytes": 3689
+        },
+        {
+          "path": "data/synthetic/h3_full/special_single_column_normal_spacing/ground_truth.json",
+          "oid": "a5c42e88dc0e9146279bc165bc709c08d79bad5a",
+          "bytes": 142756
+        },
+        {
+          "path": "data/synthetic/h3_full/special_small_spacing/config.json",
+          "oid": "f870132f85f2fc916c167aaedcdb49fe006ae579",
+          "bytes": 3674
+        },
+        {
+          "path": "data/synthetic/h3_full/special_small_spacing/ground_truth.json",
+          "oid": "49e1fd953108a5b178d51f23ffa7b5628bb32181",
+          "bytes": 142627
+        },
+        {
+          "path": "data/synthetic/h3_full/special_speed_variation/config.json",
+          "oid": "2602ddff7cb75d6274e7ac492b8d07c606e9375b",
+          "bytes": 8027
+        },
+        {
+          "path": "data/synthetic/h3_full/special_speed_variation/ground_truth.json",
+          "oid": "384184fb287679207d1ea7ea2c478220c126d1e1",
+          "bytes": 142769
+        },
+        {
+          "path": "docs/ai_collaboration_log.md",
+          "oid": "4514394e9f4515601f344739be292dab05fb05bd",
+          "bytes": 8805
+        },
+        {
+          "path": "docs/work-orders/wo-0001-h3-generator-fix.md",
+          "oid": "d4e829dd6d18f9ae0225c320828779ed80f7c176",
+          "bytes": 5139
+        },
+        {
+          "path": "python/synth/__init__.py",
+          "oid": "0a43793e50b2f6cbdcd37187790ceb0194a5ba44",
+          "bytes": 75
+        },
+        {
+          "path": "python/synth/generate.py",
+          "oid": "463ff533071698025f3acff22adb948b9133c77f",
+          "bytes": 17564
+        },
+        {
+          "path": "python/synth/scene.py",
+          "oid": "39b94ec4470b417a83ef6632c709f24a84bce05c",
+          "bytes": 4207
+        },
+        {
+          "path": "python/synth/specs/h3_matrix.json",
+          "oid": "5265c9739c461e9865739fc4784b3d7451cfe4f9",
+          "bytes": 6877
+        },
+        {
+          "path": "python/synth/tests/test_generate.py",
+          "oid": "2df8caf242946bd86a5d366d8e085ecd688ca76c",
+          "bytes": 10760
+        },
+        {
+          "path": "python/synth/tools/h3_dataset_stats.py",
+          "oid": "36a54096cf377bff1a83fbf96142e1c50c8c8cb3",
+          "bytes": 2226
+        }
+      ],
+      "result_tree_files": 70,
+      "result_tree_unique_blob_files": 52,
+      "assessment": "52 changed blobs absent from baseline refs include 43 H3 config/ground-truth JSONs, six source/spec/test/tool files, two historical documents and .gitignore. Preserve as historical implementation, not current canonical fixture proof.",
+      "changed_path_count": 54
+    },
+    {
+      "commit": "45eb152359b174b1b37e9bd2393985e179cb6880",
+      "author": "material-counter team",
+      "author_email": "material-counter@local",
+      "author_date": "2026-10-14T12:22:48+08:00",
+      "committer": "material-counter team",
+      "committer_email": "material-counter@local",
+      "commit_date": "2026-10-14T12:22:48+08:00",
+      "subject": "feat: validate WO-0013 PS-to-PL DMA replay on PYNQ-Z2",
+      "parents": [
+        "390d4cbe41fe9ea32fffac6f56cf43f4509b4876"
+      ],
+      "changed_paths_vs_first_parent": [
+        ".gitattributes",
+        "data/results/wo0013-level2-once-20261014-113914/remote-common.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/acceptance-summary.json",
+        "data/results/wo0013-pagemap-policy-20261014-120205/allocate-preflight.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/artifact-final-verification.json",
+        "data/results/wo0013-pagemap-policy-20261014-120205/boundary-tests-green.txt",
+        "data/results/wo0013-pagemap-policy-20261014-120205/boundary-tests-red.txt",
+        "data/results/wo0013-pagemap-policy-20261014-120205/buffer-evidence.json",
+        "data/results/wo0013-pagemap-policy-20261014-120205/complete-terminal-transcript.txt",
+        "data/results/wo0013-pagemap-policy-20261014-120205/current-audit.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/ddr_validate.executed.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/ddr_validate.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/final-evidence-verification.txt",
+        "data/results/wo0013-pagemap-policy-20261014-120205/git-delivery-manifest.json",
+        "data/results/wo0013-pagemap-policy-20261014-120205/post-health.json",
+        "data/results/wo0013-pagemap-policy-20261014-120205/post-health.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/post-ping.txt",
+        "data/results/wo0013-pagemap-policy-20261014-120205/post-ssh-banner.json",
+        "data/results/wo0013-pagemap-policy-20261014-120205/raw-registers.json",
+        "data/results/wo0013-pagemap-policy-20261014-120205/remote-send-once.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/review-boundary-red.txt",
+        "data/results/wo0013-pagemap-policy-20261014-120205/runtime-buffer-check.executed.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/runtime-buffer-check.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/single-send-static-check.txt",
+        "data/results/wo0013-pagemap-policy-20261014-120205/test_ddr_validate.py",
+        "data/results/wo0013-pagemap-policy-20261014-120205/verification-report.md",
+        "data/results/wo0013-resetfix-20261014/export/PYNQ_README.md",
+        "data/results/wo0013-resetfix-20261014/export/SAFETY_READ_FIRST.md",
+        "data/results/wo0013-resetfix-20261014/export/dma_replay_verify.py",
+        "data/results/wo0013-resetfix-20261014/export/load_reviewed_overlay_only.py",
+        "data/results/wo0013-resetfix-20261014/export/manifest.json",
+        "data/results/wo0013-resetfix-20261014/export/wo0013_dma_recreate.tcl",
+        "data/results/wo0013-resetfix-20261014/export/wo0013_phase_a.bit",
+        "data/results/wo0013-resetfix-20261014/export/wo0013_phase_a.hwh",
+        "data/results/wo0013-resetfix-20261014/reports/drc.rpt",
+        "data/results/wo0013-resetfix-20261014/reports/implemented_constraints.xdc",
+        "data/results/wo0013-resetfix-20261014/reports/methodology.rpt",
+        "data/results/wo0013-resetfix-20261014/reports/timing_summary.rpt",
+        "data/results/wo0013-resetfix-20261014/reports/utilization.rpt",
+        "docs/verification/wo-0013-level2-accepted-20261014.md",
+        "fpga/experimental/wo0013/axis_dma_rx_monitor.v",
+        "fpga/experimental/wo0013/axis_dma_rx_monitor_bd.v",
+        "fpga/sim/wo0013/tb_axis_dma_rx_monitor.sv",
+        "python/boardtests/wo0013/README.md",
+        "python/boardtests/wo0013/dma_replay_verify.py",
+        "python/boardtests/wo0013/test_dma_replay_verify.py",
+        "scripts/wo0013/build_dma_replay.tcl",
+        "scripts/wo0013/create_dma_replay_bd.tcl",
+        "scripts/wo0013/export_dma_replay.tcl",
+        "scripts/wo0013/run_batch.tcl"
+      ],
+      "changed_paths_with_unique_blob": [
+        {
+          "path": ".gitattributes",
+          "oid": "be711797d9e925d86a36b89167c4150cbe0dd378",
+          "bytes": 544
+        }
+      ],
+      "result_tree_files": 233,
+      "result_tree_unique_blob_files": 1,
+      "assessment": "49 of 50 changed payload blobs already occur in baseline refs; only old .gitattributes bytes are unique. Current attributes retain its WO-0013 preservation rules; no unique WO-0013 experiment payload found.",
+      "changed_path_count": 50
+    }
+  ],
+  "tree_inventory_sha256": "e7e00488afad5c2a2350df7d08b60aafddab855abbdcc87ccfc7d413f410272e",
+  "tree_inventory_file": "C:\\fpga\\material-counter-asset-archive-20261022\\dangling-history\\tree-inventory.json"
+}

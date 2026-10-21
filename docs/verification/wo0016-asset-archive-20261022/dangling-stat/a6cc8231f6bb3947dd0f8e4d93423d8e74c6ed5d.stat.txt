@@ -1,0 +1,81 @@
+commit a6cc8231f6bb3947dd0f8e4d93423d8e74c6ed5d
+Author:     material-counter team <material-counter@local>
+AuthorDate: Fri Sep 18 08:17:02 2026 +0800
+Commit:     material-counter team <material-counter@local>
+CommitDate: Fri Sep 18 08:17:02 2026 +0800
+
+    feat(synth): expand H3 dataset to 21 sequences at 320x240 Gray8
+    
+    Implements WO-0001.
+    
+    - backbone: 15 sequences covering the full 3 speeds x 3 spacings matrix
+      plus noise and dropped-frame variants
+    - special: 6 sequences (single-column, small spacing, lateral offset,
+      x-projection-overlap/non-contact, speed variation, short pause)
+    - resolution unified to 320x240 Gray8; width/height stay spec-driven
+    - spec gains a parameterised grid object ({count, spacing, stagger}) so the
+      matrix stays compact; ids remain explicit
+    - Pillow kept and confined to PNG I/O; no algorithm use
+    - .gitignore: data/synthetic/**/frames/ so generated frames never enter git
+    - tests: 7 acceptance tests incl. the R2 falsification sample asserted over
+      every valid frame, byte-identical determinism, and a Pillow-scope guard
+    - removed docs/superpowers/ (superseded planning artifact); its durable
+      scope statement moved into the synth module docstring
+    
+    No detection, segmentation, tracking, counting or Route A/B/Hybrid code.
+
+ .gitignore                                         |    5 +-
+ .../backbone_gap_normal_speed_fast/config.json     |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../config.json                                    |  175 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../backbone_gap_normal_speed_mid/config.json      |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../config.json                                    |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../backbone_gap_normal_speed_slow/config.json     |  177 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../backbone_gap_tight_speed_fast/config.json      |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../backbone_gap_tight_speed_mid/config.json       |  172 +
+ .../backbone_gap_tight_speed_mid/ground_truth.json | 5929 ++++++++++++++++++++
+ .../backbone_gap_tight_speed_mid_noise/config.json |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../backbone_gap_tight_speed_slow/config.json      |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../config.json                                    |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../backbone_gap_wide_speed_fast/config.json       |  172 +
+ .../backbone_gap_wide_speed_fast/ground_truth.json | 5929 ++++++++++++++++++++
+ .../backbone_gap_wide_speed_fast_drop/config.json  |  177 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../backbone_gap_wide_speed_mid/config.json        |  175 +
+ .../backbone_gap_wide_speed_mid/ground_truth.json  | 5929 ++++++++++++++++++++
+ .../backbone_gap_wide_speed_mid_noise/config.json  |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../backbone_gap_wide_speed_slow/config.json       |  172 +
+ .../backbone_gap_wide_speed_slow/ground_truth.json | 5929 ++++++++++++++++++++
+ data/synthetic/h3_full/config.json                 | 4233 ++++++++++++++
+ .../h3_full/special_lateral_offset/config.json     |  172 +
+ .../special_lateral_offset/ground_truth.json       | 5929 ++++++++++++++++++++
+ .../config.json                                    |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../h3_full/special_short_pause/config.json        |  382 ++
+ .../h3_full/special_short_pause/ground_truth.json  | 5929 ++++++++++++++++++++
+ .../config.json                                    |  172 +
+ .../ground_truth.json                              | 5929 ++++++++++++++++++++
+ .../h3_full/special_small_spacing/config.json      |  172 +
+ .../special_small_spacing/ground_truth.json        | 5929 ++++++++++++++++++++
+ .../h3_full/special_speed_variation/config.json    |  382 ++
+ .../special_speed_variation/ground_truth.json      | 5929 ++++++++++++++++++++
+ docs/ai_collaboration_log.md                       |   19 +
+ docs/work-orders/wo-0001-h3-generator-fix.md       |  143 +
+ python/synth/__init__.py                           |    2 +
+ python/synth/generate.py                           |  457 ++
+ python/synth/requirements.txt                      |    3 +
+ python/synth/scene.py                              |  155 +
+ python/synth/specs/h3_matrix.json                  |  155 +
+ python/synth/tests/test_generate.py                |  288 +
+ python/synth/tools/__init__.py                     |    0
+ python/synth/tools/h3_dataset_stats.py             |   50 +
+ 54 files changed, 134065 insertions(+), 2 deletions(-)

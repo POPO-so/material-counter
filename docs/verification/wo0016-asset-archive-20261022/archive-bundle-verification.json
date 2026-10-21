@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "bundle": "C:\\fpga\\material-counter-asset-archive-20261022\\original-workspace-archive.bundle",
+  "bytes": 5070188,
+  "sha256": "720e75c9e57ca2551181788b26d2de51568b7c7c73f85d53f153f33302f38eb9",
+  "archive_commit": "180741b41bf3c7a6654fed48ca26edb90f2d74e6",
+  "independent_empty_bare_recovery": "C:\\fpga\\material-counter-asset-archive-20261022\\archive-bundle-recovery.git",
+  "recovered_original_files_verified": 149,
+  "no_shared_repository_fetch_or_ref_change": true,
+  "recovered_archive_sidecars_verified": 9
+}

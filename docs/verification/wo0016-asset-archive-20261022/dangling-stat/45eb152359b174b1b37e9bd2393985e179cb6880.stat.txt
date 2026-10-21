@@ -1,0 +1,59 @@
+commit 45eb152359b174b1b37e9bd2393985e179cb6880
+Author:     material-counter team <material-counter@local>
+AuthorDate: Wed Oct 14 12:22:48 2026 +0800
+Commit:     material-counter team <material-counter@local>
+CommitDate: Wed Oct 14 12:22:48 2026 +0800
+
+    feat: validate WO-0013 PS-to-PL DMA replay on PYNQ-Z2
+
+ .gitattributes                                     |  32 +-
+ .../remote-common.py                               |  48 +++
+ .../acceptance-summary.json                        |  45 +++
+ .../allocate-preflight.py                          |  17 +
+ .../artifact-final-verification.json               |  11 +
+ .../boundary-tests-green.txt                       | Bin 0 -> 1304 bytes
+ .../boundary-tests-red.txt                         | Bin 0 -> 2658 bytes
+ .../buffer-evidence.json                           | 212 +++++++++++
+ .../complete-terminal-transcript.txt               | Bin 0 -> 23353 bytes
+ .../current-audit.py                               |   9 +
+ .../ddr_validate.executed.py                       |  26 ++
+ .../ddr_validate.py                                |  34 ++
+ .../final-evidence-verification.txt                | Bin 0 -> 101 bytes
+ .../git-delivery-manifest.json                     |  50 +++
+ .../post-health.json                               |  51 +++
+ .../post-health.py                                 |   9 +
+ .../post-ping.txt                                  | Bin 0 -> 290 bytes
+ .../post-ssh-banner.json                           |   1 +
+ .../raw-registers.json                             |  54 +++
+ .../remote-send-once.py                            |  80 ++++
+ .../review-boundary-red.txt                        | Bin 0 -> 2001 bytes
+ .../runtime-buffer-check.executed.py               |  78 ++++
+ .../runtime-buffer-check.py                        |  82 ++++
+ .../single-send-static-check.txt                   | Bin 0 -> 130 bytes
+ .../test_ddr_validate.py                           |  43 +++
+ .../verification-report.md                         |  62 +++
+ .../wo0013-resetfix-20261014/export/PYNQ_README.md |  98 +++++
+ .../export/SAFETY_READ_FIRST.md                    |  13 +
+ .../export/dma_replay_verify.py                    | 423 +++++++++++++++++++++
+ .../export/load_reviewed_overlay_only.py           |  50 +++
+ .../wo0013-resetfix-20261014/export/manifest.json  |  43 +++
+ .../export/wo0013_dma_recreate.tcl                 | Bin 0 -> 17013 bytes
+ .../export/wo0013_phase_a.bit                      | Bin 0 -> 4045773 bytes
+ .../export/wo0013_phase_a.hwh                      | Bin 0 -> 255111 bytes
+ .../wo0013-resetfix-20261014/reports/drc.rpt       | Bin 0 -> 23786 bytes
+ .../reports/implemented_constraints.xdc            | Bin 0 -> 2709 bytes
+ .../reports/methodology.rpt                        | Bin 0 -> 5541 bytes
+ .../reports/timing_summary.rpt                     | Bin 0 -> 290262 bytes
+ .../reports/utilization.rpt                        | Bin 0 -> 9989 bytes
+ .../wo-0013-level2-accepted-20261014.md            |  13 +
+ fpga/experimental/wo0013/axis_dma_rx_monitor.v     | 193 ++++++++++
+ fpga/experimental/wo0013/axis_dma_rx_monitor_bd.v  |  57 +++
+ fpga/sim/wo0013/tb_axis_dma_rx_monitor.sv          | 144 +++++++
+ python/boardtests/wo0013/README.md                 |  98 +++++
+ python/boardtests/wo0013/dma_replay_verify.py      | 423 +++++++++++++++++++++
+ python/boardtests/wo0013/test_dma_replay_verify.py | 101 +++++
+ scripts/wo0013/build_dma_replay.tcl                |  10 +
+ scripts/wo0013/create_dma_replay_bd.tcl            | 103 +++++
+ scripts/wo0013/export_dma_replay.tcl               |  31 ++
+ scripts/wo0013/run_batch.tcl                       |  24 ++
+ 50 files changed, 2744 insertions(+), 24 deletions(-)

@@ -1,10 +1,12 @@
 {
-  "scope": "Final audit/fix files and shared packaging support; this manifest excludes its own hash",
+  "scope": "Current repository support-file integrity after 2026-10-22 reconciliation; excludes its own hash. Historical board receipts and acceptance outcomes are unchanged.",
+  "reconciled_on": "2026-10-22 Asia/Shanghai",
+  "historical_manifest_ref": "6a845a01f73e44ac6237c47233b42d95a9e9c943:data/results/submission-audit-20261015/support-files.json",
   "files": [
     {
       "path": ".gitattributes",
-      "sha256": "65f022e2a13d8f1ed9476f4441167b952b386a4849b7c2c81c8629e32f520e2a",
-      "bytes": 1904
+      "sha256": "bcf55300c7c72a5cde598119da3917f5ebd96a7469d21c935345c6ec4f198d2f",
+      "bytes": 4483
     },
     {
       "path": "fpga/scripts/THIRD_PARTY_NOTICES.md",
@@ -13,13 +15,13 @@
     },
     {
       "path": "README.md",
-      "sha256": "83e5623f84dbd117290d563c6a6075af891036eb0e16d9603bc175f4ca1643d8",
-      "bytes": 8007
+      "sha256": "ba1b2e298c46c4a3771a3f36e83d9eac1d4571ccb147a1e609931563fff47b61",
+      "bytes": 14836
     },
     {
       "path": "PROJECT_INDEX.md",
-      "sha256": "e77e0493d2a2eaa5693fb22852dd35d8325c52032bf29a84cb99110bb8da16bc",
-      "bytes": 5274
+      "sha256": "6c093ed603f9acf0df768cb4ee8095be1248064c4cb5a3270ab1e9161ad5ba89",
+      "bytes": 6336
     },
     {
       "path": "python/synth/generate.py",
@@ -38,8 +40,8 @@
     },
     {
       "path": "docs/verification/submission-status-20261015.md",
-      "sha256": "23842076f087d64be653edced26c2a8c72cb698adb1e36f9e16152141fe3d21e",
-      "bytes": 15366
+      "sha256": "f41a49373878272d455a5a4235b9130cd2dec0e0b1360c4159eb799e2f4afe0f",
+      "bytes": 16093
     },
     {
       "path": "scripts/delivery/prepare_replay.py",
@@ -48,8 +50,8 @@
     },
     {
       "path": "scripts/delivery/verify_delivery.py",
-      "sha256": "8a90d2b0717188fd1f9269a2d448faa2203e7482ef74a46e39b7601fc975b7ce",
-      "bytes": 4092
+      "sha256": "16b2817cb4eb66792e973282bb1df3307ae4a64e0be923b08ee0ee001471d338",
+      "bytes": 4319
     },
     {
       "path": "scripts/delivery/REPLAY.md",
@@ -85,6 +87,16 @@
       "path": "data/results/submission-audit-20261015/replay-preparation-checks.json",
       "sha256": "35eb092e50b4c0f3372fb19099b2cf03046c46f6f7f61d0eba55864b719a77c4",
       "bytes": 4796
+    },
+    {
+      "path": "data/results/wo0015-final-20261017/acceptance-report.md",
+      "sha256": "d269a8e8743b24dca6e018e409e174f429323d451ac55f5167d02c3d50ecc617",
+      "bytes": 3112
+    },
+    {
+      "path": "docs/verification/submission-status-20261018.md",
+      "sha256": "4cc0a48cabc819d1d19bbded9e2768f528a05539cac9d05729fe1c9b7bd2ea3c",
+      "bytes": 4126
     }
   ]
 }

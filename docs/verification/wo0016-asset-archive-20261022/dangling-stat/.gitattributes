@@ -1,0 +1,2 @@
+# Preserve raw git-show command output, including its indented blank lines.
+*.txt -text -filter whitespace=-blank-at-eol,-blank-at-eof

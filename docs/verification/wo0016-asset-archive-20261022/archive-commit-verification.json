@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "archive_branch": "archive/wo0016-stageb-raw-evidence-20261021",
+  "archive_commit": "180741b41bf3c7a6654fed48ca26edb90f2d74e6",
+  "original_files_verified": 149,
+  "raw_experiment_files_verified": 144,
+  "workspace_documents_verified": 5,
+  "all_source_and_backup_sha256_match_committed_git_blobs": true,
+  "original_diff_sha256": "502148f9710b096258c1d24b9bfea15f9c8700adf9eaa2ffd835c28ab061dc18",
+  "main_files_unchanged": true,
+  "tmp_objects_unchanged": true
+}

@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "checkpoint": "Before main cleanup; original main files still present and unchanged.",
+  "archive_commit": "180741b41bf3c7a6654fed48ca26edb90f2d74e6",
+  "original_file_hashes_verified": 149,
+  "raw_experiment_files_verified": 144,
+  "delivery_verifier": {
+    "status": "PASS",
+    "inventory_files": 319,
+    "batches": 5,
+    "hardware_actions": 0,
+    "historical_pairs": {
+      "50": {
+        "bit_sha256": "56c1af5f043148c1c19a4ad182622ea3d5400344cb701da43da7a48755e03d1d",
+        "timing": {
+          "wns": 9.526,
+          "tns": 0.0,
+          "whs": 0.068,
+          "ths": 0.0,
+          "wpws": 8.75
+        }
+      },
+      "100": {
+        "bit_sha256": "585c83ec455d237516c30cda2709e42882edecb83acc6f401e724f6418f368bd",
+        "timing": {
+          "wns": 1.167,
+          "tns": 0.0,
+          "whs": 0.066,
+          "ths": 0.0,
+          "wpws": 3.75
+        }
+      }
+    },
+    "board_closeout": "FAIL_STOPPED",
+    "scope": "Integrity and source correspondence; no new synthesis or board proof"
+  },
+  "current_support_files_verified": 19,
+  "helper_source_reconciliation": {
+    "scripts/wo0015/camera_dma_oneshot.py": {
+      "sha256": "5b9684f4b02988e8a822c36ef0ac7faec78c0a7980f2fca1574afd3027c9df28",
+      "matches_main_and_b1cf74a": true
+    },
+    "scripts/wo0015/board_preflight.py": {
+      "sha256": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6",
+      "matches_main_and_b1cf74a": true
+    }
+  },
+  "readme_matches_6a845a0": true,
+  "hardware_actions": 0,
+  "tmp_objects_unchanged": true,
+  "main_merge_performed": false,
+  "cleanup_receipt": "main-cleanup-receipt.json will be added after the conditional cleanup actually completes."
+}

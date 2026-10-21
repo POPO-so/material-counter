@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "commits": [
+    "71c3917dc2db8b5724c5cb6cff639912edff569f",
+    "a6cc8231f6bb3947dd0f8e4d93423d8e74c6ed5d",
+    "45eb152359b174b1b37e9bd2393985e179cb6880"
+  ],
+  "object_count": 11700,
+  "pack": "C:\\fpga\\material-counter-asset-archive-20261022\\dangling-history\\complete-reachable-history.pack",
+  "pack_bytes": 41259416,
+  "pack_sha256": "95a90ec045fda484e1df8735a65732c8e46b233048af604d7ac61c496414ccf8",
+  "index": "C:\\fpga\\material-counter-asset-archive-20261022\\dangling-history\\complete-reachable-history.idx",
+  "index_bytes": 328672,
+  "index_sha256": "bb0735959335c95e5b19e7638d3918c1da0be2cd053844b4bdbd5ec11c019a0b",
+  "strict_index_pack_and_verify_pack_passed": true,
+  "all_three_commit_graphs_preserved": true,
+  "refs_created_or_changed": false,
+  "tmp_objects_unchanged": true,
+  "expected_reachable_object_count": 11700,
+  "all_reachable_object_ids_found": true
+}

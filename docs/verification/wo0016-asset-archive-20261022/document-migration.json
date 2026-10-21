@@ -1,0 +1,50 @@
+{
+  "files": [
+    {
+      "path": "PROJECT_INDEX.md",
+      "source_bytes": 5450,
+      "source_sha256": "1cbb9f93f386358da76ecb573fb3680c1f6b1e65f977b060892386e2b14ada49",
+      "closeout_bytes": 6336,
+      "closeout_sha256": "6c093ed603f9acf0df768cb4ee8095be1248064c4cb5a3270ab1e9161ad5ba89",
+      "disposition": "archived_original; retained_latest_index_and_added_archive_link",
+      "raw_original_archive_commit": "180741b41bf3c7a6654fed48ca26edb90f2d74e6"
+    },
+    {
+      "path": "README.md",
+      "source_bytes": 15409,
+      "source_sha256": "e1ffbce43eb081acdd223bbcb78c29d7a826e0a56e808b5148ada77c3351296f",
+      "closeout_bytes": 14836,
+      "closeout_sha256": "ba1b2e298c46c4a3771a3f36e83d9eac1d4571ccb147a1e609931563fff47b61",
+      "disposition": "archived_original; retained_closeout_base",
+      "raw_original_archive_commit": "180741b41bf3c7a6654fed48ca26edb90f2d74e6"
+    },
+    {
+      "path": "data/results/wo0015-final-20261017/acceptance-report.md",
+      "source_bytes": 3112,
+      "source_sha256": "d269a8e8743b24dca6e018e409e174f429323d451ac55f5167d02c3d50ecc617",
+      "closeout_bytes": 3112,
+      "closeout_sha256": "d269a8e8743b24dca6e018e409e174f429323d451ac55f5167d02c3d50ecc617",
+      "disposition": "byte_exact_correction_migration",
+      "raw_original_archive_commit": "180741b41bf3c7a6654fed48ca26edb90f2d74e6"
+    },
+    {
+      "path": "docs/verification/submission-status-20261015.md",
+      "source_bytes": 15662,
+      "source_sha256": "3535a6523e9edae326ec8fd55c239230369ba9c361db4a1fbeb0e50c1e45ded5",
+      "closeout_bytes": 16093,
+      "closeout_sha256": "f41a49373878272d455a5a4235b9130cd2dec0e0b1360c4159eb799e2f4afe0f",
+      "disposition": "historical_body_migrated_with_current_status_banner; LF checkout normalization",
+      "raw_original_archive_commit": "180741b41bf3c7a6654fed48ca26edb90f2d74e6"
+    },
+    {
+      "path": "docs/verification/submission-status-20261018.md",
+      "source_bytes": 3695,
+      "source_sha256": "db62e8882ed3e2197bc891ccca86fe8227b472cb23ecbc6ba94dd6bd938a4f98",
+      "closeout_bytes": 4126,
+      "closeout_sha256": "4cc0a48cabc819d1d19bbded9e2768f528a05539cac9d05729fe1c9b7bd2ea3c",
+      "disposition": "historical_body_migrated_with_current_status_banner; LF checkout normalization",
+      "raw_original_archive_commit": "180741b41bf3c7a6654fed48ca26edb90f2d74e6"
+    }
+  ],
+  "acceptance_boundary": "165/165, 4/5, 80%, 22.132 FPS, material accuracy acceptance failed, no retest; Stage A ROI 17.657 ms > 2.5 ms."
+}

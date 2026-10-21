@@ -1,0 +1,11 @@
+refs/heads/codex/pynq-exposure-buttons-20261021 59268209148888c135ff7ff5c0aa7dba8ddbaf66
+refs/heads/codex/wo0015-design-20261015 a50ab3f77ac3297f5e132ab49cc2542d464b5021
+refs/heads/codex/wo0016-counting-20261017 59268209148888c135ff7ff5c0aa7dba8ddbaf66
+refs/heads/codex/wo0016-stageb-phase1-5 59268209148888c135ff7ff5c0aa7dba8ddbaf66
+refs/heads/codex/wo0016-stageb2-closeout-20261021 6a845a01f73e44ac6237c47233b42d95a9e9c943
+refs/heads/feat/pl-stream-skeleton e3f7d7ab9753b1f67263a81815b442cf79a768ac
+refs/heads/main 59268209148888c135ff7ff5c0aa7dba8ddbaf66
+refs/remotes/origin/HEAD 59268209148888c135ff7ff5c0aa7dba8ddbaf66
+refs/remotes/origin/codex/wo0016-counting-20261017 60389df1dc0ee50e4c009f7bbde06fd981415d45
+refs/remotes/origin/codex/wo0016-stageb2-closeout-20261021 da84b70adaa23a560e79103f2500f478c0b00295
+refs/remotes/origin/main 59268209148888c135ff7ff5c0aa7dba8ddbaf66
