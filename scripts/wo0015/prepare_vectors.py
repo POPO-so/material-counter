@@ -28,7 +28,7 @@ EXPECTED_PNGS = 487
 MAGIC = 0x574F3134
 TRAILER_MAGIC = 0x454E4434
 TRAILER_END = 0xC0DEC014
-DEFAULT_MANIFEST_REL = Path("data/results/wo0014-offline-20261014/vectors/manifest.json")
+DEFAULT_MANIFEST_REL = Path("scripts/wo0015/fixtures/wo0014-h3-source-manifest.json")
 NORMAL_CASES = {
     "A": (0,),
     "B": (0, 1, 2),
@@ -108,8 +108,6 @@ def resolve_inputs(root: Path, h3_root_arg: Path | None,
         manifest_path = manifest_arg.resolve()
     else:
         manifest_path = (root / DEFAULT_MANIFEST_REL).resolve()
-        if not manifest_path.is_file():
-            manifest_path = (ORIGINAL_ROOT / DEFAULT_MANIFEST_REL).resolve()
     if not h3_root.is_dir():
         raise FileNotFoundError(f"H3 directory not found: {h3_root}")
     if not manifest_path.is_file():

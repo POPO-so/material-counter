@@ -22,6 +22,29 @@ from prepare_vectors import (
 
 
 class VectorContractTests(unittest.TestCase):
+    def test_default_offline_manifest_is_a_traceable_canonical_fixture(self) -> None:
+        h3_root, manifest_path = resolve_inputs(REPO_ROOT, None, None)
+        fixture_path = REPO_ROOT / "scripts/wo0015/fixtures/wo0014-h3-source-manifest.json"
+        self.assertEqual(manifest_path, fixture_path.resolve())
+        fixture = json.loads(manifest_path.read_text(encoding="utf-8"))
+        provenance = fixture["fixture_provenance"]
+        self.assertEqual(provenance["kind"], "reconstructed_offline_test_fixture")
+        self.assertEqual(
+            provenance["original_manifest_sha256_reference"],
+            "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+        )
+        self.assertIn("not the original manifest bytes", provenance["claim_limit"])
+        self.assertEqual(
+            fixture["h3"]["input_sha256"],
+            "ad5a5e5ca5bd95c41df900cc72ef0e1096dffa255d5e698ff904018e5fab1391",
+        )
+        self.assertEqual(
+            fixture["h3"]["expected_sha256"],
+            "3e2f35b2dbbb21b55408dcc62da11aa29217e304a9f976f7feac207aa384cced",
+        )
+        _, records = validate_source_manifest(h3_root, manifest_path)
+        self.assertEqual(len(records), 487)
+
     def test_gray_formula_is_exact_for_equal_rgb_lanes(self) -> None:
         for value in (0, 1, 24, 73, 127, 128, 220, 254, 255):
             self.assertEqual(gray_from_rgb(value, value, value), value)

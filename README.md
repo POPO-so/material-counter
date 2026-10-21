@@ -14,7 +14,7 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 
 系统采用全局快门摄像头和固定光源降低高速运动造成的拖影，通过振动盘/供料器配合单条可调速主输送带实现连续供料，并通过供料节拍与输送速度形成不同物料密度工况。实时画面及计数结果计划通过显示屏输出，可同步显示累计数量、输送速度、处理帧率和当前运行状态。
 
-上面是目标系统口径，不代表所有模块已经实现。PR #1～#8 已于 2026-10-15 合并到 `main`。主线已有 synthetic dataset、PL 前端（含 ROI 和形态学）、PS 离线跟踪计数参考、WO-0013 DMA 通信和 WO-0014 实验图像链路。真实摄像头、PL→PS 回传、板上跟踪计数与显示仍未形成闭环，整机物料计数尚未完成。具体证据与限制见下方“当前状态”。
+上面是目标系统口径，不代表所有模块已经实现。PR #1～#8 已于 2026-10-15 合并，PR #10 于 2026-10-18 合并到 `main`；后者包含 WO-0015 S2MM 帧回传和 WO-0016 Stage A。WO-0016 Stage B-2 随后完成一轮 165 帧样本，计数 4/5（80%），准确率验收未通过且不再重测。生产 PL 特征接口、持续物料计数和显示仍未形成闭环。具体证据与限制见下方“当前状态”。
 
 ## 系统主链路
 
@@ -58,6 +58,7 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 |---|---|
 | **Implemented / Offline verified** | `python/synth/` 确定性合成数据与回归；`fpga/rtl/` 流骨架、RGB→Gray、Gray→Binary、ROI、3×3 形态学；`python/refmodel/ps_reference/` 区域/跟踪/越线参考；`fpga/experimental/wo0014/` RGB 包流水线。离线验证不等于上板验收。 |
 | **Board-tested / 有限通信证据** | WO-0013 单次 MM2S→PL Monitor 已通过；WO-0014 50 MHz 单帧及三帧聚合统计已取得板上证据，但三帧任务最终为 `FAIL_STOPPED`。没有逐像素回读或整机计数证据。 |
+| **WO-0016 / Stage B-2 Closeout** | Attempt-5 Recovery-2 完成 165/165 帧，计数 4/5（80%），端到端 22.132 FPS；板端流采集完成，物料准确率验收未通过，已确定不再重测。Stage A Attempt 8 为 15.157 FPS；ROI 平均计数耗时 17.657 ms，高于 2.5 ms 目标，CCL 实测运行 30/30 帧。详见 [WO-0016 板端验收记录](docs/verification/wo-0016-board-acceptance.md)。 |
 | **Synthesized / Implemented timing** | WO-0014 的 50/100 MHz 完整工程均有综合、布线时序及 BIT/HWH；100 MHz 板测为 `NOT_VERIFIED`。ROI、形态学的独立 OOC 综合不能当作完整系统时序闭合。 |
 | **Planned / Proposed** | 正式 PL 特征提取、PL→PS 回传与板上跟踪计数闭环、编码器实际带速、真实摄像头和显示。WO-0012 特征/序列化仍为候选草案。 |
 | **Exploratory** | 结合计数、在途量和实际带速进行送料停止时机预测与控制；失败不影响 Core/MVP。 |
@@ -67,6 +68,8 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 ### 合并范围与验证依据
 
 本节以合并后的源码及已有验收证据为准。PR #1 交付公共图像前端，#2 交付 ROI，#3 交付阈值回归与形态学，#4 交付 PS 参考与候选研究，#5 交付 WO-0013，#6/#7 交付 WO-0014 离线链路及硬件依赖/证据，#8 交付审计、复现入口和生成器非空输出目录保护。它们均已合入 `main`（本次核验基线 `4332ba9`）。
+
+[PR #10](https://github.com/POPO-so/material-counter/pull/10) 已于 2026-10-18 合入 `main`（merge commit `5926820`），交付 WO-0015 S2MM 收口和 WO-0016 Stage A Attempt 8；PR #10 的 Stage A 空载基线不代表物料准确率通过。WO-0016 的当前工单结论以 2026-10-21 Stage B-2 Closeout 为准：165/165 帧，4/5（80%），22.132 FPS，物料准确率验收未通过且不再重测。
 
 [提交进度核验](docs/verification/submission-status-20261015.md)、[ROI 交付说明](docs/verification/wo-0008-handoff.md)及 `PROJECT_INDEX.md` 中关于 PR 待合并、草稿链或 ROI 独立交付的文字是合并前快照；其中源码、哈希、测试和失败记录仍用于追溯，Git 合并状态以本节及 GitHub 记录为准。ROI 与 morphology 的历史 Work Order 都使用 WO-0008 编号，按文件名区分。
 

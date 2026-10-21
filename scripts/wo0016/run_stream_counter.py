@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import hashlib
+import hmac
 import json
 import math
 import os
@@ -290,6 +291,7 @@ def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
                                     attempt_id: str,
                                     operator_prearm_delay_s: float,
                                     runner_sha256: str,
+                                    gate_launcher_sha256: str,
                                     counting_config: Mapping[str, Any] | None = None,
                                     counter_sha256: str | None = None) -> dict[str, Any]:
     """Bind one named Stage B-2 invocation to the unchanged READY Guard."""
@@ -309,6 +311,8 @@ def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
         raise ValueError("READY Guard SHA-256 must be lowercase hexadecimal")
     if not re.fullmatch(r"[0-9a-f]{64}", runner_sha256):
         raise ValueError("runner SHA-256 must be lowercase hexadecimal")
+    if not re.fullmatch(r"[0-9a-f]{64}", gate_launcher_sha256):
+        raise ValueError("operator gate launcher SHA-256 must be lowercase hexadecimal")
     extra = {}
     if counting_config is not None:
         MaskCounter(**dict(counting_config))
@@ -322,6 +326,7 @@ def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
         "attempt_id": attempt_id,
         "operator_prearm_delay_s": float(operator_prearm_delay_s),
         "runner_sha256": runner_sha256,
+        "gate_launcher_sha256": gate_launcher_sha256,
         **extra,
     }
 
@@ -438,17 +443,18 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
     return await asyncio.wait_for(completed, timeout=timeout_s)
 
 
-async def camera_gray_frames(device: str, *, max_frames: int,
-                             cv2_module: Any = cv2,
-                             read_timeout_s: float = 5.0,
-                             stabilization_delay_s: float = 0.0,
-                             operator_prearm_delay_s: float = 0.0,
-                             milestone_callback: Callable[[str, float], None] | None = None,
-                             capture_timings_ms: list[float] | None = None,
-                             steady_start_time: list[float] | None = None,
-                             capture_metadata: dict[str, Any] | None = None
-                             ) -> AsyncIterator[np.ndarray]:
-    """Warm up and yield ordered Gray8 frames with one-frame camera prefetch."""
+async def _camera_gray_frames_impl(device: str, *, max_frames: int,
+                                   cv2_module: Any = cv2,
+                                   read_timeout_s: float = 5.0,
+                                   stabilization_delay_s: float = 0.0,
+                                   operator_prearm_delay_s: float = 0.0,
+                                   operator_gate: Any | None = None,
+                                   milestone_callback: Callable[[str, float], None] | None = None,
+                                   capture_timings_ms: list[float] | None = None,
+                                   steady_start_time: list[float] | None = None,
+                                   capture_metadata: dict[str, Any] | None = None
+                                   ) -> AsyncIterator[np.ndarray]:
+    """Internal capture loop; board callers must use camera_gray_frames()."""
     if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
         raise ValueError("max_frames must be a positive integer")
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
@@ -630,6 +636,10 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 "camera_output_height": HEIGHT,
             })
         emit_milestone("CAMERA_OPEN_READY_FOR_OPERATOR")
+        if operator_gate is not None:
+            operator_gate.wait_for_operator()
+        elif operator_prearm_delay_s > 0:
+            raise RuntimeError("operator gate session is required before sampling")
         _countdown_wait(float(operator_prearm_delay_s), label="OPERATOR_PREARM")
         emit_milestone("CAMERA_OPEN_AND_STABILIZING_START")
         _countdown_wait(float(stabilization_delay_s), label="STABILIZATION")
@@ -709,8 +719,57 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 raise RuntimeError(message)
 
 
-def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+async def camera_gray_frames(device: str, *, max_frames: int,
+                             operator_gate: Any,
+                             cv2_module: Any = cv2,
+                             read_timeout_s: float = 5.0,
+                             stabilization_delay_s: float = 0.0,
+                             operator_prearm_delay_s: float = 0.0,
+                             milestone_callback: Callable[[str, float], None] | None = None,
+                             capture_timings_ms: list[float] | None = None,
+                             steady_start_time: list[float] | None = None,
+                             capture_metadata: dict[str, Any] | None = None
+                             ) -> AsyncIterator[np.ndarray]:
+    """Yield camera frames only through a live, authenticated operator session."""
+    import operator_gate_launcher
+    if (not isinstance(operator_gate, operator_gate_launcher.OperatorGate)
+            or not operator_gate_launcher.is_registered_operator_gate_session(operator_gate)):
+        raise ValueError("camera capture requires a live operator control server session")
+    async for frame in _camera_gray_frames_impl(
+            device, max_frames=max_frames, cv2_module=cv2_module,
+            read_timeout_s=read_timeout_s,
+            stabilization_delay_s=stabilization_delay_s,
+            operator_prearm_delay_s=operator_prearm_delay_s,
+            operator_gate=operator_gate, milestone_callback=milestone_callback,
+            capture_timings_ms=capture_timings_ms,
+            steady_start_time=steady_start_time,
+            capture_metadata=capture_metadata):
+        yield frame
+
+
+def validate_operator_gate_launcher_sha256(value: str | None,
+                                           operator_gate: Any | None) -> str:
+    """Require the authenticated operator-gate context and its reviewed launcher."""
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise ValueError("Stage B-2 board mode requires the operator gate launcher")
+    import operator_gate_launcher
+    if (not isinstance(operator_gate, operator_gate_launcher.OperatorGate)
+            or not operator_gate_launcher.is_registered_operator_gate_session(operator_gate)):
+        raise ValueError("Stage B-2 board mode requires a live operator control server session")
+    gate_path = SCRIPT_DIR / "operator_gate_launcher.py"
+    actual = hashlib.sha256(gate_path.read_bytes()).hexdigest()
+    if not hmac.compare_digest(value, actual):
+        raise RuntimeError("operator gate launcher SHA-256 does not match the current file")
+    return actual
+
+
+def execute_board_stream(args: argparse.Namespace, *,
+                         operator_gate_sha256: str | None = None,
+                         operator_gate: Any | None = None) -> dict[str, Any]:
     """Run one finite, guarded streaming session against the already-loaded WO-0015 BIT."""
+    gate_launcher_sha256 = validate_operator_gate_launcher_sha256(
+        operator_gate_sha256, operator_gate
+    )
     require_board_opt_in(
         execute=args.execute,
         authorize_stage=args.authorize_stage,
@@ -772,6 +831,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             attempt_id=args.attempt_id,
             operator_prearm_delay_s=args.operator_prearm_delay_s,
             runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            gate_launcher_sha256=gate_launcher_sha256,
             counting_config=counting_configuration(args),
             counter_sha256=hashlib.sha256(Path(__file__).with_name("stream_counter.py").read_bytes()).hexdigest(),
         )
@@ -792,6 +852,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             "hwh_sha256": plan.hwh_sha256,
             "ready_guard_sha256": stageb2_ready_guard["sha256"],
             "attempt_permit_sha256": stageb2_attempt_permit["sha256"],
+            "gate_launcher_sha256": gate_launcher_sha256,
             "max_frames": args.max_frames,
             "expected_count": args.ground_truth_count,
             "material_label": args.material_label,
@@ -1013,6 +1074,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             stabilization_delay_s=args.stabilization_delay_s,
             operator_prearm_delay_s=(args.operator_prearm_delay_s
                                      if args.no_consume_guard else 0.0),
+            operator_gate=operator_gate,
             milestone_callback=record_camera_milestone,
             capture_timings_ms=stage_timings_ms["capture"],
             steady_start_time=steady_start_time,
@@ -1285,7 +1347,9 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, *,
+         operator_gate_sha256: str | None = None,
+         operator_gate: Any | None = None) -> int:
     process_start_monotonic = time.monotonic()
     parser = _parser()
     args = parser.parse_args(argv)
@@ -1308,7 +1372,8 @@ def main(argv: list[str] | None = None) -> int:
                                          material_label=args.material_label)
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 0 if result["status"] == "MOCK_PASS" else 1
-        result = execute_board_stream(args)
+        result = execute_board_stream(args, operator_gate_sha256=operator_gate_sha256,
+                                      operator_gate=operator_gate)
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
     except (OSError, ValueError, RuntimeError, preflight.PreflightError) as exc:

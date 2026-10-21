@@ -5,6 +5,7 @@ import sys
 import threading
 import time
 from pathlib import Path
+import urllib.request
 
 import numpy as np
 import pytest
@@ -16,7 +17,7 @@ from run_stream_counter import (  # noqa: E402
     build_synthetic_masks,
     claim_once_guard,
     _dma_buffers_safe_to_release,
-    camera_gray_frames,
+    _camera_gray_frames_impl,
     resolve_wo15_dependency_dir,
     run_mock_simulation,
     summarize_stage_timings_ms,
@@ -98,12 +99,14 @@ def test_attempt4_permit_binds_counting_config_and_counter_hash(tmp_path):
     identity = runner.stageb2_attempt_permit_identity(
         ready_identity={"boot_id":"same-boot"}, ready_guard_sha256="a"*64,
         attempt_id="attempt-4", operator_prearm_delay_s=15, runner_sha256="b"*64,
+        gate_launcher_sha256="d"*64,
         counting_config=runner.counting_configuration(args), counter_sha256="c"*64)
     path = tmp_path/"permit.json"
     path.write_text(json.dumps({**identity, "permit_status":"AUTHORIZED", "consumed":False}))
     path.chmod(0o600)
     tmp_path.chmod(0o700)
-    for changed in ({**identity,"counter_sha256":"d"*64},
+    for changed in ({**identity,"counter_sha256":"e"*64},
+                    {**identity,"gate_launcher_sha256":"f"*64},
                     {**identity,"counting_config":{**identity["counting_config"],"max_step":20}}):
         with pytest.raises(RuntimeError, match="does not match"):
             runner.validate_stageb2_attempt_permit(path, changed, expected_uid=path.stat().st_uid)
@@ -255,6 +258,7 @@ def test_stageb2_attempt_permit_is_private_boot_bound_and_read_only(tmp_path):
         attempt_id="attempt-2",
         operator_prearm_delay_s=15.0,
         runner_sha256="e" * 64,
+        gate_launcher_sha256="f" * 64,
     )
     original = json.dumps(
         identity | {"permit_status": "AUTHORIZED", "consumed": False},
@@ -272,6 +276,7 @@ def test_stageb2_attempt_permit_is_private_boot_bound_and_read_only(tmp_path):
     assert receipt["permit"]["attempt_id"] == "attempt-2"
     assert receipt["permit"]["consumed"] is False
     assert receipt["permit"]["runner_sha256"] == "e" * 64
+    assert receipt["permit"]["gate_launcher_sha256"] == "f" * 64
     assert receipt["sha256"] == hashlib.sha256(original).hexdigest()
     assert path.read_bytes() == original
 
@@ -287,7 +292,204 @@ def test_stageb2_attempt_permit_rejects_wrong_attempt_and_unsafe_ids():
             ready_identity=ready_identity, ready_guard_sha256="d" * 64,
             attempt_id="../attempt-2", operator_prearm_delay_s=15.0,
             runner_sha256="e" * 64,
+            gate_launcher_sha256="f" * 64,
         )
+
+
+def test_board_mode_requires_operator_gate_launcher_before_preflight(capsys):
+    result = runner.main(["--mode", "board"], operator_gate_sha256=None)
+    payload = json.loads(capsys.readouterr().err)
+
+    assert result == 2
+    assert payload["status"] == "BOARD_STREAM_REJECTED"
+    assert "operator gate launcher" in payload["error"].lower()
+    assert payload["board_accessed"] is False
+    assert payload["pynq_imported"] is False
+
+
+def test_public_launcher_hash_alone_cannot_bypass_operator_gate(capsys):
+    launcher = Path(runner.SCRIPT_DIR) / "operator_gate_launcher.py"
+    launcher_sha256 = hashlib.sha256(launcher.read_bytes()).hexdigest()
+
+    result = runner.main(["--mode", "board"], operator_gate_sha256=launcher_sha256)
+    payload = json.loads(capsys.readouterr().err)
+
+    assert result == 2
+    assert payload["status"] == "BOARD_STREAM_REJECTED"
+    assert "live operator control server" in payload["error"].lower()
+    assert payload["board_accessed"] is False
+    assert payload["pynq_imported"] is False
+
+
+def test_operator_gate_object_must_be_registered_to_live_control_server(monkeypatch, capsys):
+    from operator_gate_launcher import OperatorGate, make_server
+
+    monkeypatch.setattr("operator_gate_launcher.secrets.token_urlsafe", lambda _n: "test-token")
+    gate = OperatorGate()
+    launcher = Path(runner.SCRIPT_DIR) / "operator_gate_launcher.py"
+    launcher_sha256 = hashlib.sha256(launcher.read_bytes()).hexdigest()
+
+    with pytest.raises(ValueError, match="live operator control server"):
+        runner.validate_operator_gate_launcher_sha256(launcher_sha256, gate)
+
+    server = make_server(gate, port=0)
+    try:
+        assert runner.validate_operator_gate_launcher_sha256(launcher_sha256, gate) == launcher_sha256
+    finally:
+        server.server_close()
+    with pytest.raises(ValueError, match="live operator control server"):
+        runner.validate_operator_gate_launcher_sha256(launcher_sha256, gate)
+    capsys.readouterr()
+
+
+def test_public_camera_stream_rejects_missing_operator_gate_before_opening_device():
+    opened = []
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+
+        @staticmethod
+        def VideoCapture(device, backend):
+            opened.append((device, backend))
+            raise AssertionError("camera must not be opened without a live gate session")
+
+    async def consume():
+        return [frame async for frame in runner.camera_gray_frames(
+            "/dev/video-test", max_frames=1, cv2_module=FakeCv2,
+            operator_gate=None,
+        )]
+
+    with pytest.raises(ValueError, match="live operator control server"):
+        asyncio.run(consume())
+    assert opened == []
+
+
+def test_camera_stream_waits_for_operator_gate_before_first_sample(monkeypatch):
+    from operator_gate_launcher import OperatorGate, make_server
+
+    monkeypatch.setattr("operator_gate_launcher.secrets.token_urlsafe", lambda _n: "test-token")
+    gate = OperatorGate(handoff_timeout_s=2.0, countdown_s=0.0)
+    server = make_server(gate, port=0)
+    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
+    milestones = []
+    frames_result = []
+    errors = []
+    read_count = [0]
+
+    class Gate:
+        def wait_for_operator(self):
+            waited.set()
+
+    class Capture:
+        def __init__(self):
+            self.properties = {}
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            self.properties[prop] = value
+            return True
+
+        def get(self, prop):
+            if prop == FakeCv2.CAP_PROP_FOURCC:
+                return FakeCv2.VideoWriter_fourcc(*"MJPG")
+            if prop == FakeCv2.CAP_PROP_FRAME_WIDTH:
+                return 640
+            if prop == FakeCv2.CAP_PROP_FRAME_HEIGHT:
+                return 400
+            if prop == FakeCv2.CAP_PROP_FPS:
+                return 60
+            return self.properties[prop]
+
+        def read(self):
+            read_count[0] += 1
+            return True, np.zeros((400, 640), dtype=np.uint8)
+
+        def release(self):
+            return None
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        CAP_PROP_BUFFERSIZE = 6
+        INTER_NEAREST = 0
+
+        @staticmethod
+        def VideoCapture(_device, _backend):
+            return Capture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        @staticmethod
+        def resize(_image, size, interpolation):
+            assert size == (320, 240)
+            assert interpolation == FakeCv2.INTER_NEAREST
+            return np.zeros((240, 320), dtype=np.uint8)
+
+    def on_milestone(name, _at):
+        if name == "FRAME_0_CAPTURE_START_FEED_NOW":
+            assert gate.snapshot()["phase"] == "COUNTDOWN", (
+                "sampling began before operator authentication"
+            )
+        milestones.append(name)
+
+    async def consume():
+        return [
+            frame async for frame in runner.camera_gray_frames(
+                "/dev/video-test", max_frames=1, cv2_module=FakeCv2,
+                operator_gate=gate, milestone_callback=on_milestone,
+                stabilization_delay_s=0.0,
+            )
+        ]
+
+    def consume_in_thread():
+        try:
+            frames_result.extend(asyncio.run(consume()))
+        except BaseException as error:
+            errors.append(error)
+
+    worker = threading.Thread(target=consume_in_thread, daemon=True)
+    worker.start()
+    try:
+        deadline = time.monotonic() + 1.5
+        while gate.snapshot()["phase"] != "READY" and time.monotonic() < deadline:
+            time.sleep(0.005)
+        assert gate.snapshot()["phase"] == "READY"
+        assert read_count[0] == 2, "only two warm-up reads may precede authorization"
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/start",
+            data=b'{"operator_passcode":"test-token"}', method="POST",
+            headers={"Content-Type": "application/json"})
+        assert urllib.request.urlopen(request).status == 200
+        worker.join(timeout=2)
+        assert not worker.is_alive()
+        assert errors == []
+        assert len(frames_result) == 1
+        assert read_count[0] == 3
+        assert milestones.index("CAMERA_OPEN_READY_FOR_OPERATOR") < milestones.index(
+            "CAMERA_OPEN_AND_STABILIZING_START"
+        ) < milestones.index("FRAME_0_CAPTURE_START_FEED_NOW")
+    finally:
+        if worker.is_alive():
+            try:
+                request = urllib.request.Request(
+                    f"http://127.0.0.1:{server.server_port}/start",
+                    data=b'{"operator_passcode":"test-token"}', method="POST",
+                    headers={"Content-Type": "application/json"})
+                urllib.request.urlopen(request, timeout=0.5).close()
+            except BaseException:
+                pass
+            worker.join(timeout=2)
+        server.shutdown()
+        server.server_close()
+        server_thread.join(timeout=2)
 
 
 def test_stageb2_no_consume_cli_rejects_missing_attempt_id_before_board_access(capsys):
@@ -540,7 +742,7 @@ def test_camera_read_timeout_returns_without_waiting_for_a_stuck_v4l2_thread():
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
     async def consume_one():
-        async for _ in camera_gray_frames("/dev/video-test", max_frames=1,
+        async for _ in _camera_gray_frames_impl("/dev/video-test", max_frames=1,
                                           cv2_module=FakeCv2, read_timeout_s=0.02):
             pytest.fail("the stuck camera must not produce a frame")
 
@@ -597,7 +799,7 @@ def test_camera_timeout_is_bounded_when_release_cannot_unblock_native_read():
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
     async def consume_one():
-        async for _ in camera_gray_frames("/dev/video-test", max_frames=1,
+        async for _ in _camera_gray_frames_impl("/dev/video-test", max_frames=1,
                                           cv2_module=FakeCv2, read_timeout_s=0.02):
             pytest.fail("the blocked camera must not produce a frame")
 
@@ -654,7 +856,7 @@ def test_camera_mode_fails_closed_when_v4l2_negotiates_another_format():
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
     async def consume_one():
-        async for _ in camera_gray_frames("/dev/video-test", max_frames=1,
+        async for _ in _camera_gray_frames_impl("/dev/video-test", max_frames=1,
                                           cv2_module=FakeCv2, read_timeout_s=0.1):
             pytest.fail("the negotiated format mismatch must stop capture")
 
@@ -732,7 +934,7 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
     capture_timings_ms = []
 
     async def consume():
-        return [frame async for frame in camera_gray_frames(
+        return [frame async for frame in _camera_gray_frames_impl(
             "/dev/video-test", max_frames=2, cv2_module=FakeCv2,
             capture_timings_ms=capture_timings_ms,
                 milestone_callback=lambda name, at: milestones.append((name, at)),
@@ -846,7 +1048,7 @@ def test_camera_prefetches_next_ordered_frame_and_joins_before_release():
             return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
 
     async def consume_two():
-        frames = camera_gray_frames("/dev/video-test", max_frames=2,
+        frames = _camera_gray_frames_impl("/dev/video-test", max_frames=2,
                                     cv2_module=FakeCv2, read_timeout_s=0.5)
         first = await anext(frames)
         # Simulate work on frame 0 while the one-slot camera worker reads frame 1.
@@ -926,7 +1128,7 @@ def test_camera_close_joins_an_inflight_prefetch_before_releasing_device():
             return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
 
     async def close_after_first_frame():
-        frames = camera_gray_frames("/dev/video-test", max_frames=2,
+        frames = _camera_gray_frames_impl("/dev/video-test", max_frames=2,
                                     cv2_module=FakeCv2, read_timeout_s=0.5)
         first = await anext(frames)
         assert int(first[0, 0]) == 3
@@ -983,7 +1185,7 @@ def test_camera_rejects_v4l2_fps_below_50_before_starting_stream():
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
     async def consume_one():
-        async for _ in camera_gray_frames("/dev/video-test", max_frames=1,
+        async for _ in _camera_gray_frames_impl("/dev/video-test", max_frames=1,
                                           cv2_module=FakeCv2, read_timeout_s=0.1):
             pytest.fail("the slow camera must not produce a stream frame")
 

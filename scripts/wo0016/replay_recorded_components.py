@@ -11,7 +11,27 @@ from pathlib import Path
 from stream_counter import Detection, MaskCounter
 
 
-def replay(frames, config):
+DEFAULT_COUNTING_CONFIG = {
+    "count_axis": "x",
+    "line_x": 160,
+    "line_y": 120,
+    "direction": 1,
+    "min_area": 12,
+    "max_area": None,
+    "max_step": 60.0,
+    "max_lateral_step": 18.0,
+    "hysteresis": 2.0,
+    "confirm_hits": 2,
+    "component_cluster_dx": 24.0,
+    "component_cluster_dy": 12.0,
+    "cooldown_frames": 3,
+    "cooldown_lateral": 15.0,
+    "edge_max_missing": 4,
+}
+
+
+def replay(frames, config=None):
+    config = dict(DEFAULT_COUNTING_CONFIG if config is None else config)
     counter = MaskCounter(**config)
     associations, events, totals = [], [], []
     for frame in frames:
@@ -36,9 +56,7 @@ def main():
     args = parser.parse_args()
     raw = args.source.read_bytes()
     frames = json.loads(raw)
-    config = dict(count_axis="x", line_x=160, line_y=120, direction=1,
-                  min_area=12, max_area=None, max_step=60.0, max_lateral_step=10.0,
-                  hysteresis=2.0, confirm_hits=2)
+    config = dict(DEFAULT_COUNTING_CONFIG)
     result = replay(frames, config)
     result.update(source_sha256=hashlib.sha256(raw).hexdigest(), board_accessed=False,
                   evidence_scope="Recorded qualified CCL only; no masks, no physical object labels")

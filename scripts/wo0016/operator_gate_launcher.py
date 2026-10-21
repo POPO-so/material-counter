@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import hashlib
+import hmac
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import math
@@ -16,13 +17,28 @@ from pathlib import Path
 import secrets
 import threading
 import time
+import weakref
+
+
+_ACTIVE_CONTROL_GATES = weakref.WeakSet()
+_ACTIVE_CONTROL_GATES_LOCK = threading.Lock()
+
+
+def is_registered_operator_gate_session(gate):
+    with _ACTIVE_CONTROL_GATES_LOCK:
+        return gate in _ACTIVE_CONTROL_GATES
 
 
 class OperatorGate:
-    def __init__(self, *, clock=time.monotonic):
+    def __init__(self, *, handoff_timeout_s=300, countdown_s=18.0,
+                 clock=time.monotonic):
         self.clock = clock
+        self.handoff_timeout_s = handoff_timeout_s
+        self.countdown_s = countdown_s
+        self.audit_callback = None
         self.lock = threading.Lock()
-        self.start_event = threading.Event()
+        self._start_event = threading.Event()
+        self._operator_authenticated = False
         self.phase = "INITIALIZING"
         self.deadline = None
         self.frame_zero = None
@@ -32,18 +48,24 @@ class OperatorGate:
         with self.lock:
             self.phase = "READY"
 
-    def request_start(self):
-        with self.lock:
-            if self.phase != "READY" or self.start_event.is_set():
-                return False
-            self.phase = "START_REQUESTED"
-            self.start_event.set()
-            return True
-
-    def wait_for_operator(self, *, timeout_s):
+    def wait_for_operator(self, *, timeout_s=None, countdown_s=None):
+        timeout = self.handoff_timeout_s if timeout_s is None else timeout_s
+        countdown = self.countdown_s if countdown_s is None else countdown_s
+        if self.audit_callback is not None:
+            self.audit_callback("WAITING_FOR_BROWSER_OPERATOR_CLICK")
+        print("[OPERATOR_GATE] CAMERA_READY_WAITING_FOR_BROWSER_CLICK", flush=True)
         self.mark_ready()
-        if not self.start_event.wait(timeout_s):
+        if not self._start_event.wait(timeout):
+            with self.lock:
+                self.phase = "TIMED_OUT"
             raise RuntimeError("operator start was not received before the handoff timeout")
+        with self.lock:
+            if not self._operator_authenticated:
+                self.phase = "REJECTED_UNAUTHENTICATED_START"
+                raise RuntimeError("operator start did not come from an authenticated browser request")
+        if self.audit_callback is not None:
+            self.audit_callback("BROWSER_OPERATOR_CLICK_ACCEPTED")
+        self.begin_countdown(countdown)
 
     def begin_countdown(self, seconds):
         with self.lock:
@@ -86,12 +108,17 @@ body{margin:0;background:#101820;color:#f7fafc;font:24px system-ui;text-align:ce
 h1{font-size:32px}#big{font-size:100px;font-weight:800;margin:20px}#msg{min-height:80px}
 button{font:700 28px system-ui;padding:22px 36px;border:0;border-radius:14px;background:#46db91;color:#082015;cursor:pointer}
 button:disabled{background:#677580;color:#d0d5db;cursor:default}.sub{color:#b7c4cf;font-size:18px;margin-top:30px}
+input{font:24px system-ui;padding:12px;border-radius:8px;border:1px solid #8395a3;margin:16px}
 </style><h1>Stage B-2 · 5 颗 M6 螺母</h1><div id="big">等待</div>
-<div id="msg">相机初始化中，请勿投料</div><button id="start" disabled>相机就绪后可开始</button>
+<div id="msg">相机初始化中，请勿投料</div>
+<label>操作口令 <input id="passcode" type="password" autocomplete="off" spellcheck="false"></label>
+<button id="start" disabled>相机就绪后可开始</button>
 <div class="sub">点击后：15 秒准备 + 3 秒稳姿 → 绿色“立即投料”<br>FRAME_0 后 0~3.5 秒内投完 5 颗；约 0.75 秒/颗<br>放在皮带纵向正中央，远离 ROI 上下边缘；有效采样固定为 165 帧</div>
-<script>const big=document.querySelector('#big'),msg=document.querySelector('#msg'),btn=document.querySelector('#start');
+<script>const big=document.querySelector('#big'),msg=document.querySelector('#msg'),btn=document.querySelector('#start'),passcode=document.querySelector('#passcode');
 let submitting=false;btn.onclick=async()=>{if(submitting)return;submitting=true;btn.disabled=true;
-try{let r=await fetch('/start',{method:'POST',headers:{'X-Operator-Token':'__TOKEN__'}});if(!r.ok){submitting=false;}}catch(e){submitting=false;}};
+try{let r=await fetch('/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operator_passcode:passcode.value})});
+passcode.value='';if(r.status===401){msg.textContent='操作口令不正确，请重新输入';submitting=false;}
+else if(!r.ok){msg.textContent='无法开始，请检查许可状态';submitting=false;}}catch(e){passcode.value='';submitting=false;}};
 async function poll(){try{const s=await(await fetch('/status',{cache:'no-store'})).json();
 btn.disabled=s.phase!=='READY'||submitting;
 if(s.phase==='READY'){big.textContent='已就绪';msg.textContent='握好 5 颗螺母，点击后按页面倒计时投料';btn.textContent='开始 18 秒倒计时';}
@@ -101,7 +128,23 @@ else if(s.phase==='COMPLETE'){big.textContent='采样结束';big.style.color='#f
 }catch(e){}setTimeout(poll,100);}poll();</script></html>'''
 
 
-def make_server(gate, *, port, token):
+def make_server(gate, *, port, host="127.0.0.1"):
+    operator_passcode = secrets.token_urlsafe(32)
+    with _ACTIVE_CONTROL_GATES_LOCK:
+        if gate in _ACTIVE_CONTROL_GATES:
+            raise ValueError("operator gate already has a registered control server")
+        _ACTIVE_CONTROL_GATES.add(gate)
+    print(f"[OPERATOR_GATE] One-time operator passcode: {operator_passcode}", flush=True)
+
+    def accept_authenticated_browser_start():
+        with gate.lock:
+            if gate.phase != "READY" or gate._start_event.is_set():
+                return False
+            gate.phase = "START_REQUESTED"
+            gate._operator_authenticated = True
+            gate._start_event.set()
+            return True
+
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_args):
             pass
@@ -116,37 +159,87 @@ def make_server(gate, *, port, token):
 
         def do_GET(self):
             if self.path == "/":
-                self.respond(200, PAGE.replace("__TOKEN__", token).encode(), "text/html; charset=utf-8")
+                self.respond(200, PAGE.encode(), "text/html; charset=utf-8")
             elif self.path == "/status":
                 self.respond(200, json.dumps(gate.snapshot()).encode(), "application/json")
             else:
                 self.respond(404, b"not found", "text/plain")
 
         def do_POST(self):
-            if self.path != "/start" or self.headers.get("X-Operator-Token") != token:
-                self.respond(403, b"forbidden", "text/plain")
+            if self.path != "/start":
+                self.respond(404, b"not found", "text/plain")
                 return
-            self.respond(200 if gate.request_start() else 409, b"{}", "application/json")
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length < 1 or length > 4096:
+                    raise ValueError("invalid body length")
+                request = json.loads(self.rfile.read(length))
+                candidate = request.get("operator_passcode") if isinstance(request, dict) else None
+                if not isinstance(candidate, str):
+                    authorized = False
+                    started = False
+                else:
+                    try:
+                        authorized = hmac.compare_digest(
+                            candidate.encode("utf-8"), operator_passcode.encode("utf-8")
+                        )
+                    except UnicodeError:
+                        authorized = False
+                    started = accept_authenticated_browser_start() if authorized else False
+            except (ValueError, UnicodeError, json.JSONDecodeError):
+                authorized = False
+                started = False
+            if not authorized:
+                self.respond(401, b"unauthorized", "text/plain")
+                return
+            self.respond(200 if started else 409, b"{}", "application/json")
 
-    return ThreadingHTTPServer(("0.0.0.0", port), Handler)
+    class GateServer(ThreadingHTTPServer):
+        def server_close(self):
+            try:
+                super().server_close()
+            finally:
+                with _ACTIVE_CONTROL_GATES_LOCK:
+                    _ACTIVE_CONTROL_GATES.discard(gate)
+
+    try:
+        return GateServer((host, port), Handler)
+    except BaseException:
+        with _ACTIVE_CONTROL_GATES_LOCK:
+            _ACTIVE_CONTROL_GATES.discard(gate)
+        raise
 
 
-def main(argv=None):
+def _parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--attempt-dir", type=Path, required=True)
     parser.add_argument("--control-port", type=int, default=8081)
+    parser.add_argument("--host", default="127.0.0.1",
+                        help="control listener address (default: loopback)")
     parser.add_argument("--handoff-timeout-s", type=float, default=300)
     parser.add_argument("runner_args", nargs=argparse.REMAINDER)
-    args = parser.parse_args(argv)
+    return parser
+
+
+def main(argv=None):
+    args = _parser().parse_args(argv)
     runner_args = args.runner_args[1:] if args.runner_args[:1] == ["--"] else args.runner_args
     import run_stream_counter as runner
     run_options = runner._parser().parse_args(runner_args)
-    gate = OperatorGate()
-    token = secrets.token_hex(16)
-    server = make_server(gate, port=args.control_port, token=token)
+    gate = OperatorGate(
+        handoff_timeout_s=args.handoff_timeout_s,
+        countdown_s=(float(run_options.operator_prearm_delay_s)
+                     + float(run_options.stabilization_delay_s)),
+    )
+    gate_launcher_sha256 = hashlib.sha256(Path(__file__).resolve().read_bytes()).hexdigest()
+    if args.host not in {"127.0.0.1", "::1", "localhost"}:
+        print("[OPERATOR_GATE] WARNING: non-loopback binding uses plaintext HTTP; "
+              "the one-time passcode is exposed to network interception. Prefer a "
+              "loopback listener with SSH forwarding; forwarding does not protect "
+              "a non-loopback listener.", flush=True)
+    server = make_server(gate, host=args.host, port=args.control_port)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    original_wait = runner._countdown_wait
     original_emit = runner._emit_milestone
     original_run = runner.DoubleBufferStream.run
     captured = {}
@@ -156,15 +249,6 @@ def main(argv=None):
             stream.write(json.dumps({"event": name, "monotonic": time.monotonic()}) + "\n")
             stream.flush()
             os.fsync(stream.fileno())
-
-    def wait(duration_s, *, label):
-        if label == "OPERATOR_PREARM":
-            audit_event("WAITING_FOR_BROWSER_OPERATOR_CLICK")
-            print("[OPERATOR_GATE] CAMERA_READY_WAITING_FOR_BROWSER_CLICK", flush=True)
-            gate.wait_for_operator(timeout_s=args.handoff_timeout_s)
-            audit_event("BROWSER_OPERATOR_CLICK_ACCEPTED")
-            gate.begin_countdown(float(duration_s) + 3.0)
-        return original_wait(duration_s, label=label)
 
     def emit(name, at, log_path, *, boot_id):
         value = original_emit(name, at, log_path, boot_id=boot_id)
@@ -176,12 +260,13 @@ def main(argv=None):
         captured["frames"] = value
         return value
 
-    runner._countdown_wait = wait
+    gate.audit_callback = audit_event
     runner._emit_milestone = emit
     runner.DoubleBufferStream.run = observe
     code = 2
     try:
-        code = runner.main(runner_args)
+        code = runner.main(runner_args, operator_gate_sha256=gate_launcher_sha256,
+                           operator_gate=gate)
     finally:
         if "frames" in captured:
             with (args.attempt_dir / "frame-results.json").open("x") as stream:

@@ -1,35 +1,100 @@
-import threading
 import json
+import threading
+import time
 import urllib.error
 import urllib.request
 
 from operator_gate_launcher import OperatorGate, make_server
 
 
-def test_gate_requires_camera_ready_and_accepts_only_one_click():
-    gate = OperatorGate(clock=lambda: 100.0)
-    assert gate.request_start() is False
-    gate.mark_ready()
-    assert gate.snapshot()["phase"] == "READY"
-    assert gate.request_start() is True
-    assert gate.request_start() is False
-    assert gate.start_event.is_set()
+def start_server(monkeypatch, passcode="secret", **gate_kwargs):
+    monkeypatch.setattr("operator_gate_launcher.secrets.token_urlsafe", lambda _n: passcode)
+    gate = OperatorGate(**gate_kwargs)
+    server = make_server(gate, port=0)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return gate, server, thread, f"http://127.0.0.1:{server.server_port}"
 
 
-def test_browser_countdown_and_feed_ticks_use_board_monotonic_time():
+def post_start(url, passcode):
+    body = (b"{}" if passcode is None else
+            json.dumps({"operator_passcode": passcode}).encode())
+    request = urllib.request.Request(
+        url + "/start", data=body, method="POST",
+        headers={"Content-Type": "application/json"})
+    return urllib.request.urlopen(request).status
+
+
+def stop_server(server, thread):
+    server.shutdown()
+    server.server_close()
+    thread.join(timeout=2)
+
+
+def test_gate_requires_camera_ready_and_accepts_only_one_authenticated_click(monkeypatch):
+    gate, server, thread, url = start_server(monkeypatch)
+    try:
+        try:
+            post_start(url, "wrong")
+        except urllib.error.HTTPError as error:
+            assert error.code == 401
+        else:
+            raise AssertionError("incorrect passcode must be rejected")
+        assert gate.snapshot()["phase"] == "INITIALIZING"
+
+        try:
+            post_start(url, "secret")
+        except urllib.error.HTTPError as error:
+            assert error.code == 409
+        else:
+            raise AssertionError("a correct passcode must wait until the camera is ready")
+        gate.mark_ready()
+        assert gate.snapshot()["phase"] == "READY"
+        assert post_start(url, "secret") == 200
+        try:
+            post_start(url, "secret")
+        except urllib.error.HTTPError as error:
+            assert error.code == 409
+        else:
+            raise AssertionError("a second click must not start another attempt")
+        assert gate._start_event.is_set()
+    finally:
+        stop_server(server, thread)
+
+
+def test_browser_countdown_and_feed_ticks_use_board_monotonic_time(monkeypatch):
     current = [100.0]
-    gate = OperatorGate(clock=lambda: current[0])
-    gate.mark_ready()
-    gate.request_start()
-    gate.begin_countdown(18.0)
-    current[0] = 105.2
-    assert gate.snapshot()["seconds_remaining"] == 13
-    gate.milestone("FRAME_0_CAPTURE_START_FEED_NOW", 118.0)
-    current[0] = 120.1
-    assert gate.snapshot()["feed_number"] == 3
-    gate.finish({"total_count": 5, "frames_processed": 165})
-    assert gate.snapshot()["phase"] == "COMPLETE"
-    assert gate.snapshot()["result"]["total_count"] == 5
+    gate, server, thread, url = start_server(
+        monkeypatch, clock=lambda: current[0], countdown_s=18.0)
+    errors = []
+
+    def wait_for_click():
+        try:
+            gate.wait_for_operator(timeout_s=2.0)
+        except BaseException as error:
+            errors.append(error)
+
+    waiter = threading.Thread(target=wait_for_click, daemon=True)
+    waiter.start()
+    try:
+        deadline = time.monotonic() + 1.0
+        while gate.snapshot()["phase"] != "READY" and time.monotonic() < deadline:
+            time.sleep(0.005)
+        assert gate.snapshot()["phase"] == "READY"
+        assert post_start(url, "secret") == 200
+        waiter.join(timeout=2)
+        assert not waiter.is_alive()
+        assert errors == []
+        current[0] = 105.2
+        assert gate.snapshot()["seconds_remaining"] == 13
+        gate.milestone("FRAME_0_CAPTURE_START_FEED_NOW", 118.0)
+        current[0] = 120.1
+        assert gate.snapshot()["feed_number"] == 3
+        gate.finish({"total_count": 5, "frames_processed": 165})
+        assert gate.snapshot()["phase"] == "COMPLETE"
+        assert gate.snapshot()["result"]["total_count"] == 5
+    finally:
+        stop_server(server, thread)
 
 
 def test_feed_number_advances_every_three_quarters_second_after_frame_zero():
@@ -53,17 +118,27 @@ def test_ready_gate_times_out_without_starting_countdown():
         assert "operator start" in str(error)
     else:
         raise AssertionError("gate must fail closed when no operator clicks")
-    assert not gate.start_event.is_set()
+    assert not gate._start_event.is_set()
 
 
-def test_control_page_click_starts_only_the_ready_single_attempt():
+def test_raw_event_cannot_forge_authenticated_browser_request():
     gate = OperatorGate()
-    server = make_server(gate, port=0, token="test-token")
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    url = f"http://127.0.0.1:{server.server_port}"
+    gate._start_event.set()
+    assert not hasattr(gate, "start_event")
+    try:
+        gate.wait_for_operator(timeout_s=0.01)
+    except RuntimeError as error:
+        assert "authenticated browser request" in str(error)
+    else:
+        raise AssertionError("a raw event must not authorize sampling")
+
+
+def test_control_page_does_not_disclose_passcode_and_click_starts_once(monkeypatch):
+    gate, server, thread, url = start_server(monkeypatch, "test-passcode")
     try:
         page = urllib.request.urlopen(url).read().decode()
+        assert "test-passcode" not in page
+        assert 'type="password"' in page
         assert "15 秒准备 + 3 秒稳姿" in page
         assert "165 帧" in page
         assert "FRAME_0 后 0~3.5 秒内投完 5 颗" in page
@@ -72,16 +147,48 @@ def test_control_page_click_starts_only_the_ready_single_attempt():
         state = json.load(urllib.request.urlopen(url + "/status"))
         assert state["phase"] == "INITIALIZING"
         gate.mark_ready()
-        request = urllib.request.Request(url + "/start", method="POST",
-                                         headers={"X-Operator-Token": "test-token"})
-        assert urllib.request.urlopen(request).status == 200
+        assert post_start(url, "test-passcode") == 200
         try:
-            urllib.request.urlopen(request)
+            post_start(url, "test-passcode")
         except urllib.error.HTTPError as error:
             assert error.code == 409
         else:
             raise AssertionError("a second click must not start another attempt")
     finally:
-        server.shutdown()
-        server.server_close()
-        thread.join(timeout=2)
+        stop_server(server, thread)
+
+
+def test_start_rejects_missing_and_wrong_passcodes_without_starting_gate(monkeypatch):
+    gate, server, thread, url = start_server(monkeypatch, "correct-passcode")
+    gate.mark_ready()
+    try:
+        for candidate in (None, "wrong-passcode"):
+            try:
+                post_start(url, candidate)
+            except urllib.error.HTTPError as error:
+                assert error.code == 401
+            else:
+                raise AssertionError("missing and incorrect passcodes must be rejected")
+            assert gate.snapshot()["phase"] == "READY"
+            assert not gate._start_event.is_set()
+    finally:
+        stop_server(server, thread)
+
+
+def test_control_server_defaults_to_loopback(monkeypatch):
+    gate, server, thread, _url = start_server(monkeypatch, "test-passcode")
+    try:
+        assert server.server_address[0] == "127.0.0.1"
+    finally:
+        stop_server(server, thread)
+
+
+def test_host_argument_defaults_to_loopback_and_accepts_explicit_override():
+    from operator_gate_launcher import _parser
+
+    parser = _parser()
+    default = parser.parse_args(["--attempt-dir", "."])
+    override = parser.parse_args(["--attempt-dir", ".", "--host", "0.0.0.0"])
+
+    assert default.host == "127.0.0.1"
+    assert override.host == "0.0.0.0"

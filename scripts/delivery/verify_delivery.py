@@ -16,10 +16,14 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
-def check(path, expected):
+def check(path, expected, expected_bytes=None):
     file = ROOT / path.replace("\\", "/")
     require(file.is_file(), "Missing: " + str(path))
-    require(hashlib.sha256(file.read_bytes()).hexdigest() == expected,
+    raw = file.read_bytes()
+    if expected_bytes is not None:
+        require(len(raw) == expected_bytes,
+                f"Byte count mismatch: {path} expected={expected_bytes} actual={len(raw)}")
+    require(hashlib.sha256(raw).hexdigest() == expected,
             "SHA-256 mismatch: " + str(path))
 
 
@@ -29,7 +33,7 @@ def main():
     count = 0
     for manifest in batches:
         for record in json.loads(manifest.read_text(encoding="utf-8"))["files"]:
-            check(record["path"], record["sha256"])
+            check(record["path"], record["sha256"], record.get("bytes"))
             count += 1
     for name in ("morphology-lint-final-20261013", "morphology-synth-final-20261013"):
         for path, digest in load("data/results/" + name + "/source-hashes.json").items():

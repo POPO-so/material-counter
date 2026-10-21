@@ -244,8 +244,8 @@
     },
     {
       "path": "fpga/experimental/wo0013/axis_dma_rx_monitor_bd.v",
-      "sha256": "c91debb4340ddb41d65eef47ee1d4a5c4564e81f97039460a21bcb90ae06162c",
-      "bytes": 2139,
+      "sha256": "00193f9aeb70919cae18da0aa3d484560f5104fda9559a674d7d727061e76c21",
+      "bytes": 2082,
       "origin": "local commit 7a868c0"
     },
     {

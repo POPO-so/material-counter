@@ -28,14 +28,14 @@
     },
     {
       "path": "data/results/wo0014-offline-20261014/changed-files.txt",
-      "sha256": "ec754621c04c427ba04caf0c93d29b23136347b331605468ecb5987462865e4a",
-      "bytes": 767,
+      "sha256": "6c8b0250be727acd4d3a994939244cc43165681981ee009d481214d227da75b7",
+      "bytes": 750,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-offline-20261014/delivery-audit.json",
-      "sha256": "d315bf13caa8d7f7a96f11ec0b52e567f3aa5ade19ae6edfb27f1c16c0079d75",
-      "bytes": 457,
+      "sha256": "ebc50c7125b4a6ac022dfea65155ef175e4b4b70e64018bd2c25b22ccbab0977",
+      "bytes": 446,
       "origin": "local commit 7a868c0"
     },
     {
@@ -100,8 +100,8 @@
     },
     {
       "path": "data/results/wo0014-offline-20261014/legacy-verification.json",
-      "sha256": "c12e28eba64183e300c9beb8aabe9ac5aefe9c77447541c46fe8509766da790a",
-      "bytes": 1394,
+      "sha256": "33ce2598467d2f35f792aa77725752f70f825ecfa262510e2c6d45f4e5a83c2d",
+      "bytes": 1355,
       "origin": "local commit 7a868c0"
     },
     {
@@ -112,38 +112,38 @@
     },
     {
       "path": "data/results/wo0014-offline-20261014/protected-after.json",
-      "sha256": "fa4d944ab7f81752669030280b67a1b000fa5e4f95e60e5cc5c19c9754431717",
-      "bytes": 874,
+      "sha256": "d1f94054be88e18406c341f4ca8382cf71ab27daa4318ce886624c19ededc94d",
+      "bytes": 864,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-offline-20261014/protected-before.json",
-      "sha256": "fa4d944ab7f81752669030280b67a1b000fa5e4f95e60e5cc5c19c9754431717",
-      "bytes": 874,
+      "sha256": "d1f94054be88e18406c341f4ca8382cf71ab27daa4318ce886624c19ededc94d",
+      "bytes": 864,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-offline-20261014/pytest-final.txt",
-      "sha256": "aecb0d07e4f665272aab0f47dbcbc584c9c1266833094afa47030253810842af",
-      "bytes": 184,
+      "sha256": "b715cd59b08b25a043741d133dc6e0b70d7941e97724e8e0ccf60ff2b7fd4eee",
+      "bytes": 181,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-offline-20261014/reports/directed-final-comparison.json",
-      "sha256": "b4773b35d1e87f5359bf479f83633eaa04eafc9258ff979b9c52fcadb4f59df9",
-      "bytes": 12563,
+      "sha256": "e7ff4c1711f32c73ff2d8f025710f6a0d028bc97ab00da42c075aa64dd2f5f97",
+      "bytes": 12170,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-offline-20261014/reports/h3-final-pixel-comparison.json",
-      "sha256": "3f331dafe47fa98a73f2f4228604bc35d68886dad08b58b01834960798a1c89b",
-      "bytes": 78140,
+      "sha256": "bb3a668b3d7e2198c493f80de1660ba7414c82c802548ba5b541fdb1c6cca7bc",
+      "bytes": 74233,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-offline-20261014/reports/linter-final.csv",
-      "sha256": "7b7078a2105e5bf73e05adb0264deb1f708476b1f844bf75b6c318ef16be9d9b",
-      "bytes": 138,
+      "sha256": "e92766a83065d97afff8fcb0ab1191c3183a0a8bc1a2fb5241e77d010226c579",
+      "bytes": 136,
       "origin": "local commit 7a868c0"
     },
     {
@@ -160,14 +160,14 @@
     },
     {
       "path": "data/results/wo0014-offline-20261014/source-hashes.json",
-      "sha256": "cf7bc6244466dc4d6bf5e78f51b23a1a689c3d1528058e150bae3e669a461d1d",
-      "bytes": 2011,
+      "sha256": "10dcef01bf0bb6ec5f2a3be9173c3992c15f49d73b40d7a936db08be8bbbab5f",
+      "bytes": 1993,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-offline-20261014/summary.json",
-      "sha256": "317c253103d1b19be00bf95e5a2d1785788c7cf7b1b9449e83b1f4f91cff5d1e",
-      "bytes": 7003,
+      "sha256": "7623edcc25a4a5583ff79bb67f19cb6bcc0cd59f81978a6e9fee03a5465357aa",
+      "bytes": 6873,
       "origin": "local commit 7a868c0"
     },
     {
@@ -196,8 +196,8 @@
     },
     {
       "path": "data/results/wo0014-timing-20261014/agent.log",
-      "sha256": "2782a484b7ccb10faf917458dce0924df328e30baddf3e3944001be9457b173c",
-      "bytes": 1187,
+      "sha256": "38290a6a3b40e47b4a2ed081ac472c0d55742c586659271a820ab254361ae401",
+      "bytes": 1186,
       "origin": "local commit 7a868c0"
     },
     {
@@ -226,8 +226,8 @@
     },
     {
       "path": "data/results/wo0014-timing-20261014/delivery-summary.json",
-      "sha256": "86364788ce534509252c00c9baf3459ed3dc8dce5c862614a6a1428d0f2dc7af",
-      "bytes": 6220,
+      "sha256": "7e672f8c739eef5bd5666c5f7c7b67cbf8914f1b8ad68e48a0fb70400d2fb748",
+      "bytes": 6143,
       "origin": "local commit 7a868c0"
     },
     {
@@ -244,8 +244,8 @@
     },
     {
       "path": "data/results/wo0014-timing-20261014/evidence-sha256.json",
-      "sha256": "0532ff3b6da6efaa363ecbe5f15c41920a5a851d019c408e9b64f5db6198c7ad",
-      "bytes": 5233,
+      "sha256": "e60fd1ef709ce5666a066725a4e9c6b9ea846c29c59659e78bee723f01a55404",
+      "bytes": 5192,
       "origin": "local commit 7a868c0"
     },
     {
@@ -262,8 +262,8 @@
     },
     {
       "path": "data/results/wo0014-timing-20261014/input-hashes.json",
-      "sha256": "085b243354e5bcd64c9f7fc4291b89116c5d078d8364a2408815777d80cbd7f6",
-      "bytes": 328,
+      "sha256": "18a2c743a382aba901fcddc3ee66312f627a880ef452adbc484bf1fc3e585c56",
+      "bytes": 322,
       "origin": "local commit 7a868c0"
     },
     {
@@ -310,26 +310,26 @@
     },
     {
       "path": "data/results/wo0014-timing-20261014/pytest.txt",
-      "sha256": "315f1f121ecead4b9dc1037cac710ab112b2eff88aa24f63e2aafdb766a82640",
-      "bytes": 184,
+      "sha256": "983f49c6649a834e663b633f56bc943d2c45677806c77d02585202a95bf45775",
+      "bytes": 181,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-timing-20261014/reports/directed-comparison.json",
-      "sha256": "b4773b35d1e87f5359bf479f83633eaa04eafc9258ff979b9c52fcadb4f59df9",
-      "bytes": 12563,
+      "sha256": "e7ff4c1711f32c73ff2d8f025710f6a0d028bc97ab00da42c075aa64dd2f5f97",
+      "bytes": 12170,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-timing-20261014/reports/h3-comparison.json",
-      "sha256": "3f331dafe47fa98a73f2f4228604bc35d68886dad08b58b01834960798a1c89b",
-      "bytes": 78140,
+      "sha256": "bb3a668b3d7e2198c493f80de1660ba7414c82c802548ba5b541fdb1c6cca7bc",
+      "bytes": 74233,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "data/results/wo0014-timing-20261014/reports/methodology.json",
-      "sha256": "5d82a91f885950122144fec9ab5effafb44805d76b16c427faf21f4ea75b878a",
-      "bytes": 33415,
+      "sha256": "f0d34521d80ddbb0fa823f1ee0ced9c6ddfc30fac9f015f13f4cde89c524358b",
+      "bytes": 33165,
       "origin": "local commit 7a868c0"
     },
     {
@@ -460,26 +460,26 @@
     },
     {
       "path": "scripts/wo0014/run_directed.tcl",
-      "sha256": "e9d2256fecec31a6fbd1acb52a106f26f1c33bf9e277c3786294b6ac0ffc908c",
-      "bytes": 5682,
+      "sha256": "0ef0e9d832339807a732e8c3762078ee21c306516e36af9e1e5a74bc0730cb41",
+      "bytes": 5650,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "scripts/wo0014/run_full.tcl",
-      "sha256": "fc5c0e0785ac3e46589314c34bbbb1a97cfde005868e82c75901fab086a875bf",
-      "bytes": 2138,
+      "sha256": "8fa7d94ffab7cbc539f9210353fd9aff3acaec22c9c3af2ef16d93b868871645",
+      "bytes": 2137,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "scripts/wo0014/run_legacy.tcl",
-      "sha256": "908794a21f07b322fd18be780915303923e32faf2f6ed92a376f824ac8874525",
-      "bytes": 2836,
+      "sha256": "5791fc51b917c47afc9f54f801ac4b1b87d0ba24b6119b83041e3ffedbbb9a80",
+      "bytes": 2835,
       "origin": "local commit 7a868c0"
     },
     {
       "path": "scripts/wo0014/run_negative.tcl",
-      "sha256": "91734b268ce275a0b24a52867eed0d3564dd20bbc466603eb979381b06b2c56b",
-      "bytes": 5964,
+      "sha256": "5903087c82468624af41e477022c8bdb597acf955fd519a507d52ef145edb2cf",
+      "bytes": 5934,
       "origin": "local commit 7a868c0"
     },
     {
