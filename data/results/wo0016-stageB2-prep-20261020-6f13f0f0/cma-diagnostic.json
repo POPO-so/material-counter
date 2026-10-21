@@ -1,0 +1,45 @@
+{
+  "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+  "buddyinfo": "Node 0, zone   Normal     45    398    426    239     58     56     10     11      3      0      0 \n",
+  "cma_debugfs": "not mounted/available",
+  "device_holders": [],
+  "fd_scan_access": "root process enumeration; transient process races may omit descriptors",
+  "listeners_8080": {
+    "argv": [
+      "ss",
+      "-ltnp",
+      "sport",
+      "=",
+      ":8080"
+    ],
+    "rc": 0,
+    "stderr": "",
+    "stdout": "State Recv-Q Send-Q Local Address:Port Peer Address:PortProcess\n"
+  },
+  "meminfo_selected": {
+    "Cached": "Cached:           319040 kB",
+    "CmaFree": "CmaFree:           20048 kB",
+    "CmaTotal": "CmaTotal:         131072 kB",
+    "MemAvailable": "MemAvailable:     383304 kB",
+    "MemFree": "MemFree:           39972 kB",
+    "SReclaimable": "SReclaimable:      13984 kB"
+  },
+  "pagetypeinfo_cma": "Node    0, zone   Normal, type    Unmovable     14     11      5      7      4      2      2      0      0      0      0 \nNode    0, zone   Normal, type      Movable      1     22    173    177     33      8      4      5      2      0      0 \nNode    0, zone   Normal, type  Reclaimable      2      5      2      1      1      1      0      0      0      0      0 \nNode    0, zone   Normal, type   HighAtomic     20     16      7      8      3      0      0      0      0      0      0 \nNode    0, zone   Normal, type          CMA      8    344    239     46     17     45      4      6      1      0      0 \nNode    0, zone   Normal, type      Isolate      0      0      0      0      0      0      0      0      0      0      0 \nNumber of blocks type     Unmovable      Movable  Reclaimable   HighAtomic          CMA      Isolate \nNode 0, zone   Normal            9           83            3            1           32            0 ",
+  "python_hud_processes": {
+    "argv": [
+      "ps",
+      "-eo",
+      "pid,ppid,etime,rss,stat,args"
+    ],
+    "rc": 0,
+    "stderr": "",
+    "stdout": "  PID  PPID     ELAPSED   RSS STAT COMMAND\n    1     0       12:00  7508 Ss   /sbin/init earlyprintk\n    2     0       12:00     0 S    [kthreadd]\n    3     2       12:00     0 S    [pool_workqueue_release]\n    4     2       12:00     0 I<   [kworker/R-rcu_g]\n    5     2       12:00     0 I<   [kworker/R-rcu_p]\n    6     2       12:00     0 I<   [kworker/R-slub_]\n    7     2       12:00     0 I<   [kworker/R-netns]\n   12     2       12:00     0 I<   [kworker/R-mm_pe]\n   13     2       12:00     0 I    [rcu_tasks_kthread]\n   14     2       12:00     0 I    [rcu_tasks_trace_kthread]\n   15     2       12:00     0 S    [ksoftirqd/0]\n   16     2       12:00     0 I    [rcu_preempt]\n   17     2       12:00     0 S    [migration/0]\n   18     2       12:00     0 S    [cpuhp/0]\n   19     2       12:00     0 S    [cpuhp/1]\n   20     2       12:00     0 S    [migration/1]\n   21     2       12:00     0 S    [ksoftirqd/1]\n   24     2       12:00     0 S    [kdevtmpfs]\n   25     2       12:00     0 I<   [kworker/R-inet_]\n   27     2       12:00     0 S    [oom_reaper]\n   28     2       12:00     0 I<   [kworker/R-write]\n   29     2       12:00     0 I<   [kworker/R-kbloc]\n   30     2       12:00     0 I<   [kworker/R-blkcg]\n   32     2       11:59     0 I<   [kworker/R-edac-]\n   33     2       11:59     0 S    [watchdogd]\n   34     2       11:59     0 I<   [kworker/0:1H-mmc_complete]\n   35     2       11:59     0 I<   [kworker/R-rpcio]\n   36     2       11:59     0 I<   [kworker/R-xprti]\n   37     2       11:59     0 I<   [kworker/R-cfg80]\n   38     2       11:59     0 S    [kswapd0]\n   39     2       11:59     0 I<   [kworker/R-nfsio]\n   40     2       11:59     0 I<   [kworker/R-kthro]\n   44     2       11:20     0 I<   [kworker/R-ci_ot]\n   45     2       11:20     0 I<   [kworker/R-dm_bu]\n   46     2       11:20     0 I<   [kworker/u5:0-uvcvideo]\n   47     2       11:20     0 I<   [kworker/R-sdhci]\n   48     2       11:20     0 S    [irq/45-mmc0]\n   49     2       11:20     0 I<   [kworker/1:1H-kblockd]\n   50     2       11:20     0 I    [kworker/1:2-events_long]\n   51     2       11:20     0 I<   [kworker/R-mld]\n   52     2       11:20     0 I<   [kworker/R-ipv6_]\n   53     2       11:20     0 I<   [kworker/R-mmc_c]\n   54     2       11:20     0 I    [kworker/u4:2-events_unbound]\n   59     2       11:20     0 S    [jbd2/mmcblk0p2-8]\n   60     2       11:20     0 I<   [kworker/R-ext4-]\n   77     2       11:18     0 I<   [kworker/0:2H-mmc_complete]\n   78     2       11:17     0 I<   [kworker/1:2H-kblockd]\n   82     1       11:07 13904 S<s  /lib/systemd/systemd-journald\n  109     2       11:06     0 I    [kworker/u4:3-flush-179:0]\n  131     1       11:04  3456 Ss   /lib/systemd/systemd-udevd\n  146     1       11:02  9336 Ss   /lib/systemd/systemd-resolved\n  147     1       11:02  4608 Ssl  /lib/systemd/systemd-timesyncd\n  156     2       11:01     0 I    [kworker/0:3-events]\n  190     1       10:58  1792 Ss   /usr/sbin/cron -f -P\n  191     1       10:58  3072 Ss   @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only\n  199     1       10:58 12288 Ss   /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers\n  203     1       10:57  3200 Ssl  /usr/sbin/rsyslogd -n -iNONE\n  204     1       10:57  4992 Ss   /lib/systemd/systemd-logind\n  328     1       10:55  4288 Ssl  /sbin/dhclient -1 -4 -v -i -pf /run/dhclient.eth0.pid -lf /var/lib/dhcp/dhclient.eth0.leases -I -df /var/lib/dhcp/dhclient6.eth0.leases eth0\n  527     1       10:40 10624 Ss   /usr/sbin/nmbd --foreground --no-process-group\n  530     1       10:40 14464 Ssl  /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal\n  537     1       10:39  3200 Ss   /bin/login -f\n  541     1       10:39  1280 Ss+  /sbin/agetty -o -p -- \\u --noclear tty1 linux\n  546     1       10:37  6272 Ss   sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups\n  550     2       10:37     0 I    [kworker/u4:5-flush-179:0]\n  567     1       10:35  6272 Ss   /lib/systemd/systemd --user\n  572   567       10:35  3696 S    (sd-pam)\n  581   537       10:32  3200 S+   -bash\n  587     1       10:31 17536 Ss   /usr/sbin/smbd --foreground --no-process-group\n  611   587       10:28 10012 S    /usr/sbin/smbd --foreground --no-process-group\n  612   587       10:28  5532 S    /usr/sbin/smbd --foreground --no-process-group\n  617   587       10:27 14464 S    /usr/lib/arm-linux-gnueabihf/samba/samba-bgqd --ready-signal-fd=46 --parent-watch-fd=-1 --debuglevel=0 -F\n  619     1       10:21 53932 S    /usr/local/share/pynq-venv/bin/python3 /usr/local/share/pynq-venv/bin/jupyter-notebook --no-browser --allow-root\n  779     1       09:38 16384 S    python3 /usr/local/bin/redirect_server\n 1477     2       06:27     0 I<   [kworker/u5:1-uvcvideo]\n 1711     2       05:25     0 I    [kworker/0:0-mm_percpu_wq]\n 1759     2       05:18     0 I    [kworker/1:0]\n 2102     2       01:05     0 I<   [kworker/0:0H]\n 2243     2       00:20     0 I    [kworker/0:1-events_power_efficient]\n 2264   546       00:01  6912 Ss   sshd: xilinx [priv]\n 2294  2264       00:00  4832 S    sshd: xilinx@notty\n 2296  2294       00:00  3840 Ss   sudo -n python3 -\n 2301  2296       00:00  7296 S    python3 -\n 2302  2301       00:00  2048 R    ps -eo pid,ppid,etime,rss,stat,args\n"
+  },
+  "vmstat": {
+    "nr_file_pages": 85654,
+    "nr_free_cma": 5012,
+    "nr_free_pages": 9993,
+    "nr_shmem": 353,
+    "nr_slab_reclaimable": 3496
+  }
+}

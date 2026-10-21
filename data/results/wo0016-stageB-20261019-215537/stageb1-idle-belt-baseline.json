@@ -1,0 +1,100 @@
+{
+  "board_accessed_by_runner": false,
+  "board_stream_entered": false,
+  "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "failure": {
+    "actual_hwh_xml": "<PARAMETER NAME=\"THRESHOLD\" VALUE=\"128\"/> (wo15.hwh line 3115)",
+    "expected_by_launcher": "THRESHOLD=128",
+    "interpretation": "The reviewed HWH contains threshold 128; the custom launcher rejected its XML representation before camera capture, DMA, MMIO, or guard consumption.",
+    "message": "RuntimeError: reviewed HWH does not confirm the Stage B-1 threshold of 128",
+    "type": "preflight predicate mismatch"
+  },
+  "launcher_artifact": {
+    "deployed_path": "/home/xilinx/wo0016-phase110-58e6af6c-6660-4d44-b0c5-e18f4a564202/stageb1_idle_belt_launcher.py",
+    "path": "data/results/wo0016-stageB-20261019-215537/stageb1_idle_belt_launcher.py",
+    "sha256": "4faa6076b354579558ab9dffb75478acb6a737aaedf95f4a9650d552b1e78a14"
+  },
+  "metrics": {
+    "average_fps": null,
+    "components_after_min_area": null,
+    "frames": 0,
+    "measurement_status": "NOT_MEASURED",
+    "mm2s_dmasr_pass_rate": null,
+    "roi_bg_mean": null,
+    "roi_bg_ptp": null,
+    "roi_bg_rms": null,
+    "roi_fg_pixels_max": null,
+    "roi_fg_pixels_mean": null,
+    "s2mm_dmasr_pass_rate": null,
+    "seam_peak_gray8": null,
+    "total_count": null,
+    "total_count_zero_verified": false
+  },
+  "pipeline_parameters_known_from_reviewed_configuration": {
+    "confirm_hits": 2,
+    "direction": 1,
+    "hardware_threshold": 128,
+    "hysteresis": 2.0,
+    "line_y": 120,
+    "max_step": 24.0,
+    "min_area": 12,
+    "qualification": "Configuration values only; no idle-belt measurements were taken."
+  },
+  "preview_restore": {
+    "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+    "cma_free_kib_while_preview_running": 42112,
+    "hud": "Existing helper displays CAMERA ONLY - COUNTING PAUSED; no ROI/telemetry overlay is implemented.",
+    "pid": 2370,
+    "port": "0.0.0.0:8080",
+    "status": "CAMERA_ONLY_PREVIEW_RUNNING",
+    "video_device": "/dev/video0"
+  },
+  "raw_launcher_rejection": {
+    "board_accessed": false,
+    "boot_id_expected": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+    "error": "RuntimeError: reviewed HWH does not confirm the Stage B-1 threshold of 128",
+    "guard_consumed": false,
+    "guard_path": "/var/lib/wo0016/stageb1-idle-belt-58e6af6c-6660-4d44-b0c5-e18f4a564202-consumed.json",
+    "schema": 1,
+    "stageb1_kind": "wo0016-stageB1-idle-belt-baseline",
+    "stageb1_preflight": {},
+    "status": "BOARD_STAGEB1_PRECONDITION_REJECTED",
+    "work_order": "WO-0016"
+  },
+  "read_only_board_preflight_observations": {
+    "boot_id_matches": true,
+    "camera_exposure_before_attempt": {
+      "auto_exposure": 1,
+      "exposure_ms": 5.0,
+      "exposure_time_absolute": 50
+    },
+    "camera_format_before_attempt": {
+      "fps": 60.0,
+      "height": 400,
+      "pixel_format": "MJPG",
+      "width": 640
+    },
+    "cma_free_kib_after_preview_stop_before_attempt": 64504,
+    "cma_watermark_kib": 32768,
+    "port_8080_free_before_attempt": true,
+    "preview_stopped_gracefully": true,
+    "stageb1_guard_absent_after_rejection": true,
+    "video0_unowned_before_attempt": true
+  },
+  "remote_evidence_path": "/home/xilinx/wo0016-phase110-58e6af6c-6660-4d44-b0c5-e18f4a564202/evidence/stageb1-idle-belt-baseline.json",
+  "remote_rejection_evidence_sha256": "6a1583e1e275f43686222b6cc83c767af5e8325743ac4712e94c499c7b3e8d23",
+  "sampling_frames": 0,
+  "sampling_status": "NOT_RUN",
+  "schema": 1,
+  "stage": "B-1 idle belt baseline",
+  "stageb1_guard_consumed": false,
+  "stageb1_status": "BOARD_STAGEB1_PRECONDITION_REJECTED",
+  "status": "BOARD_STAGEB1_PRECONDITION_REJECTED",
+  "threshold_and_min_area_recommendation": {
+    "adjustment": "No measurement-based adjustment is justified because sampling did not run.",
+    "min_area": 12,
+    "next_step": "A fresh one-shot Stage B-1 authorization is required after fixing the launcher HWH XML predicate.",
+    "threshold": 128
+  },
+  "work_order": "WO-0016"
+}

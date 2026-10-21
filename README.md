@@ -14,7 +14,7 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 
 系统采用全局快门摄像头和固定光源降低高速运动造成的拖影，通过振动盘/供料器配合单条可调速主输送带实现连续供料，并通过供料节拍与输送速度形成不同物料密度工况。实时画面及计数结果计划通过显示屏输出，可同步显示累计数量、输送速度、处理帧率和当前运行状态。
 
-上面是目标系统口径，不代表所有模块已经实现。PR #1～#8 已于 2026-10-15 合并到 `main`。主线已有 synthetic dataset、PL 前端（含 ROI 和形态学）、PS 离线跟踪计数参考、WO-0013 DMA 通信和 WO-0014 实验图像链路。真实摄像头、PL→PS 回传、板上跟踪计数与显示仍未形成闭环，整机物料计数尚未完成。具体证据与限制见下方“当前状态”。
+上面是目标系统口径，不代表所有模块已经实现。PR #10 已于 2026-10-18 合并到 `main`（merge commit `5926820`），其中包括 WO-0015 S2MM Binary8 帧回传和 WO-0016 Stage A 连续流优化。WO-0015 记录了单帧、三帧及一次 OV9281 相机帧回传通过；WO-0016 Attempt 8 达到 15.157 FPS，但测量对象是空载 30 帧基线。Stage B 动态物料计数、计数准确率和整机验收仍未完成。具体证据与限制见下方“当前状态”。
 
 ## 系统主链路
 
@@ -56,19 +56,19 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 
 | 状态 | 内容 |
 |---|---|
-| **Implemented / Offline verified** | `python/synth/` 确定性合成数据与回归；`fpga/rtl/` 流骨架、RGB→Gray、Gray→Binary、ROI、3×3 形态学；`python/refmodel/ps_reference/` 区域/跟踪/越线参考；`fpga/experimental/wo0014/` RGB 包流水线。离线验证不等于上板验收。 |
-| **Board-tested / 有限通信证据** | WO-0013 单次 MM2S→PL Monitor 已通过；WO-0014 50 MHz 单帧及三帧聚合统计已取得板上证据，但三帧任务最终为 `FAIL_STOPPED`。没有逐像素回读或整机计数证据。 |
+| **Implemented / Offline verified** | `python/synth/` 确定性合成数据与回归；`fpga/rtl/` 流骨架、RGB→Gray、Gray→Binary、ROI、3×3 形态学；`python/refmodel/ps_reference/` 区域/跟踪/越线参考；WO-0014 RGB 包流水线及 WO-0015/WO-0016 软件链路。相关离线回归记录为 244 passed、1 skipped；测试输入清单由现存 H3 PNG 重建，原始清单的规范哈希来源未复核。离线验证不等于上板验收。 |
+| **Board-tested / 有限通信证据** | WO-0013 单次 MM2S→PL Monitor 已通过；WO-0014 50 MHz 单帧及三帧聚合统计有板上记录，但三帧任务最终为 `FAIL_STOPPED`；WO-0015 单帧、三帧和一次相机帧的 Binary8 S2MM 回传记录为 PASS；WO-0016 Attempt 8 通过 30/30 帧 Packer 校验，空载端到端吞吐 15.157 FPS。 |
 | **Synthesized / Implemented timing** | WO-0014 的 50/100 MHz 完整工程均有综合、布线时序及 BIT/HWH；100 MHz 板测为 `NOT_VERIFIED`。ROI、形态学的独立 OOC 综合不能当作完整系统时序闭合。 |
-| **Planned / Proposed** | 正式 PL 特征提取、PL→PS 回传与板上跟踪计数闭环、编码器实际带速、真实摄像头和显示。WO-0012 特征/序列化仍为候选草案。 |
+| **Planned / Proposed** | 正式 PL 特征提取与生产 ABI、持续板端 PS 跟踪/越线计数和显示、Stage B 动态 M6 物料验收及准确率、编码器带速验收仍待完成。Stage A `avg_roi_count_ms=17.657 ms`，高于 2.5 ms 子目标；Stage B 150 帧动态投料尚未运行。WO-0012 特征/序列化仍为候选草案。 |
 | **Exploratory** | 结合计数、在途量和实际带速进行送料停止时机预测与控制；失败不影响 Core/MVP。 |
 
 当前已完成若干隔离 POC，**Architecture / Route Not Frozen**。Route A、Route B、Hybrid 以及真实视频输入路线仍需正式决策；PR 合并不代表架构冻结或硬件验收。
 
 ### 合并范围与验证依据
 
-本节以合并后的源码及已有验收证据为准。PR #1 交付公共图像前端，#2 交付 ROI，#3 交付阈值回归与形态学，#4 交付 PS 参考与候选研究，#5 交付 WO-0013，#6/#7 交付 WO-0014 离线链路及硬件依赖/证据，#8 交付审计、复现入口和生成器非空输出目录保护。它们均已合入 `main`（本次核验基线 `4332ba9`）。
+本节以合并后的源码及已有验收证据为准。PR #10 将 WO-0015 S2MM Binary8 帧回传和 WO-0016 Stage A 连续流计数实现合入 `main`；当前核验基线为 merge commit `59268209148888c135ff7ff5c0aa7dba8ddbaf66`，与 `origin/main` 一致。历史交付批次及提交来源见 [2026-10-15 历史审计](docs/verification/submission-status-20261015.md)，当前汇总见 [2026-10-18 提交状态](docs/verification/submission-status-20261018.md)。
 
-[提交进度核验](docs/verification/submission-status-20261015.md)、[ROI 交付说明](docs/verification/wo-0008-handoff.md)及 `PROJECT_INDEX.md` 中关于 PR 待合并、草稿链或 ROI 独立交付的文字是合并前快照；其中源码、哈希、测试和失败记录仍用于追溯，Git 合并状态以本节及 GitHub 记录为准。ROI 与 morphology 的历史 Work Order 都使用 WO-0008 编号，按文件名区分。
+[2026-10-15 提交审计](docs/verification/submission-status-20261015.md)是历史快照，其中 PR 待合并、草稿链等文字只描述当时状态；当前 Git 基线及 WO-0015/WO-0016 证据见[最新提交状态](docs/verification/submission-status-20261018.md)。ROI 与 morphology 的历史 Work Order 都使用 WO-0008 编号，按文件名区分。
 
 | 模块 / 实验 | 已有证据 | 适用边界 |
 |---|---|---|
@@ -79,6 +79,8 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 | [WO-0013 DMA](docs/verification/wo-0013-level2-accepted-20261014.md) | `[Measured: wo0013-pagemap-policy-20261014-120205]` PYNQ-Z2 单次发送 76,816 字节，PL 接受 19,204 拍、1 次 TLAST，首末字和校验和一致；测试后 Ping/SSH/Linux 健康检查通过。 | 仅 Binary8+元数据的 DDR→MM2S→Monitor，不是 RGB 图像处理；无 S2MM、无整帧回读、无持续运行或整机计数验收。使用记录中的 resetfix BIT/HWH，不可随意替换产物。 |
 | [WO-0014 离线链路](docs/verification/wo-0014-offline-integration-20261014.md)与[优化时序](docs/verification/wo-0014-timing-acceptance-20261014.md) | RGB 包→adapter→Gray→Binary→checker；15 项 XSim，487 帧、37,401,600 像素独立比对零差异，覆盖 7 种坏包及恢复；后续优化完成 OOC 时序验收。 | ROI/形态学未串入该链。错误帧前缀必须整帧作废；`packet_done` 不表示输出已排空，checker 不是通用异常帧守卫。 |
 | [WO-0014 完整实现](docs/verification/wo-0014-hw-integration-20261014.md)、[50 MHz 单帧板测](data/results/wo0014-pg021-ready-20261015/report.md)与[三帧收官](data/results/wo0014-closeout-20261015/report.md) | 50/100 MHz 完整实现时序通过，BIT/HWH 与源码有哈希绑定；50 MHz 单帧 PASS，另有三帧 DMA/checker/Golden 聚合统计 PASS。 | 三帧任务最终因 CMA 健康门为 `FAIL_STOPPED`；100 MHz 板测全部 `NOT_VERIFIED`。聚合统计不能替代逐像素回读；DRC 的 14 Warning、2 Advisory 及 LUTAR-1 methodology 风险仍保留。 |
+| [WO-0015 S2MM Binary8 帧回传](docs/work-orders/wo-0015-s2mm-binary8-frame-return.md)与[最终板端记录](data/results/wo0015-final-20261017/acceptance-report.md) | 单帧、三帧及一次 OV9281 相机帧回传记录均为 PASS，逐字节差异为 0；当前 `main` 中两个相关执行脚本的 SHA-256 与板端结果记录一致。 | 这些证据证明 Binary8 实验回传，不代表生产特征接口或持续计数闭环；测试输入清单来源限制见离线回归说明。 |
+| [WO-0016 Stage A](docs/work-orders/wo-0016-async-double-buffer-stream-counter.md)与[板端验收记录](docs/verification/wo-0016-board-acceptance.md) | Attempt 8 完成 30/30 帧，Packer 校验 30/30，空载吞吐 15.157 FPS；本机 HTTP 回环收到 8 帧，5.921 FPS。 | 空载 0/0 不是物料准确率验收；ROI 计时 17.657 ms 高于 2.5 ms 子目标；Stage B 动态投料 150 帧仍为 `NOT RUN`。 |
 
 ### DMA / Overlay 安全限制
 

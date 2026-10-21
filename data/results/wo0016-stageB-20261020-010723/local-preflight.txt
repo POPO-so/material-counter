@@ -1,0 +1,5 @@
+Local pre-board validation completed before preview stop:
+- AST parse passed for HUD, HWH parser, and sampler launcher.
+- Real local WO-0015 HWH parsed via ElementTree; THRESHOLD=128.
+- Rightward adapter dry-run: a 16-pixel component inside centered y=96..144 ROI was retained, and original +x centroid 149.5 mapped to counter y=149.5.
+- Sampler target: 115 frames at 15.15 FPS, about 7.52 seconds from first to last frame.

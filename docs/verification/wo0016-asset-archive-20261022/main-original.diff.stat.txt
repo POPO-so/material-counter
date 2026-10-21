@@ -1,0 +1,5 @@
+ PROJECT_INDEX.md                                        |  6 +++---
+ README.md                                               | 14 ++++++++------
+ data/results/wo0015-final-20261017/acceptance-report.md |  4 ++--
+ docs/verification/submission-status-20261015.md         |  4 +++-
+ 4 files changed, 16 insertions(+), 12 deletions(-)

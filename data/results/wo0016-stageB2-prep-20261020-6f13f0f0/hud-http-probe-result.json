@@ -1,0 +1,13 @@
+{
+  "http_root_status": 200,
+  "http_root_type": "text/html; charset=utf-8",
+  "root_has_html": true,
+  "mjpeg_status": 200,
+  "mjpeg_content_type": "multipart/x-mixed-replace; boundary=frame",
+  "jpeg_part_complete": true,
+  "jpeg_bytes_observed": 16384,
+  "CmaFree_before_kib": 77136,
+  "CmaFree_after_kib": 76876,
+  "ready_guard_sha256": "f15464025abeabc2e52681aaa000caf25da217cdf5505781c3d7fcba45cd5b9b",
+  "ready_guard_unchanged": true
+}

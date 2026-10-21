@@ -21,9 +21,9 @@ Agent navigation map for `material-counter`. Use linked documents as the source 
 
 ## Current code boundary
 
-- **Implemented with bounded evidence:** `python/synth/`, frontend/morphology RTL in `fpga/rtl/`, testbenches in `fpga/sim/`, PS offline reference in `python/refmodel/ps_reference/`, and isolated WO-0013/0014 DMA experiments. These are distinct from a complete board counting system.
-- **Planned / Proposed:** production PL feature extraction, PL-to-PS return path, board-side tracking/counting/display integration, encoder and real camera acceptance. ROI remains separately delivered in PR #2.
-- **Current progress and source versions:** [2026-10-15 delivery audit](docs/verification/submission-status-20261015.md) distinguishes main, PRs, original local commits, source SHA-256, simulation, synthesis, implemented timing and board evidence. Offline integrity entry: `python scripts/delivery/verify_delivery.py`; relocatable replay: `scripts/delivery/REPLAY.md`.
+- **Implemented with bounded evidence:** `python/synth/`, frontend/morphology RTL in `fpga/rtl/`, testbenches in `fpga/sim/`, PS offline reference in `python/refmodel/ps_reference/`, and WO-0013/0014/0015/0016 experiments. WO-0015 includes Binary8 S2MM board receipts; WO-0016 Stage A has empty-belt throughput evidence. These are distinct from a complete board counting system.
+- **Planned / Proposed:** production PL feature extraction and ABI, sustained board-side tracking/counting/display, Stage B real-material accuracy acceptance, and encoder speed acceptance. ROI remains separately documented in its handoff.
+- **Current progress and source versions:** [2026-10-18 current delivery status](docs/verification/submission-status-20261018.md) is the current summary; [2026-10-15 delivery audit](docs/verification/submission-status-20261015.md) is a historical snapshot for source inventories and earlier evidence. Offline integrity entry: `python scripts/delivery/verify_delivery.py`; relocatable replay: `scripts/delivery/REPLAY.md`.
 - **Candidate:** Route A, Route B, Hybrid and real video-input choices are not frozen; consult `docs/07_routes.md` and ADR-0001 for their exact status.
 - **Current working baseline:** ADR-0002 records project identity and mechanical-speed baseline; it says team review is still required for effect, and hardware implementation remains Planned. **Accepted/frozen:** WO-0001a records `FINAL ACCEPTED` and the synthetic generator's frozen status. Check each record before applying its status elsewhere.
 

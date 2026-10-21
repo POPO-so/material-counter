@@ -1,0 +1,1174 @@
+{
+  "schema_version": 1,
+  "captured_on": "2026-10-22 Asia/Shanghai",
+  "main_head": "59268209148888c135ff7ff5c0aa7dba8ddbaf66",
+  "closeout_base": "6a845a01f73e44ac6237c47233b42d95a9e9c943",
+  "archive_branch": "archive/wo0016-stageb-raw-evidence-20261021",
+  "directory_counts": {
+    "wo0016-phase110-20261019": 6,
+    "wo0016-stageB-20261019-215537": 7,
+    "wo0016-stageB-20261019-221949": 5,
+    "wo0016-stageB-20261019-222926-repeat2": 11,
+    "wo0016-stageB-20261019-224057-confirmed-idle": 13,
+    "wo0016-stageB-20261019-225948-hud-preview-handoff": 6,
+    "wo0016-stageB-20261020-010723": 13,
+    "wo0016-stageB2-prep-20261020-6f13f0f0": 83
+  },
+  "claim_limit": "Raw preservation only. Historical permits/guards are not authorizations. Stage B-2 remains 165/165 frames, 4/5, 80%, material accuracy acceptance failed; no retest.",
+  "file_count": 144,
+  "files": [
+    {
+      "path": "data/results/wo0016-phase110-20261019/archive_sw_abort_guard.py",
+      "status": "??",
+      "bytes": 2037,
+      "sha256": "be89a8adfeec4943b97c75febb0dbc35d98cbfd23e9370413f28bfc6007861c9",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-phase110-20261019/archive_sw_abort_guard.py"
+    },
+    {
+      "path": "data/results/wo0016-phase110-20261019/launcher-mock-verification.txt",
+      "status": "??",
+      "bytes": 1196,
+      "sha256": "25d64ea27171b6e49f0702554e42d1c4743f4e6128d63f9dddac4d87eae15019",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-phase110-20261019/launcher-mock-verification.txt"
+    },
+    {
+      "path": "data/results/wo0016-phase110-20261019/phase110-static-dark-smoke-3frames.json",
+      "status": "??",
+      "bytes": 28373,
+      "sha256": "ee3b9eb731f1518e13eca5611ba714b046cfffe17e3b87959c6a6ad9d8ee4206",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-phase110-20261019/phase110-static-dark-smoke-3frames.json"
+    },
+    {
+      "path": "data/results/wo0016-phase110-20261019/phase110_camera_preview.py",
+      "status": "??",
+      "bytes": 2999,
+      "sha256": "9ca9bdb82f08383ae06436d6994e3b371c0028d2f938eaf6f8c9bf3e7f7ea16d",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-phase110-20261019/phase110_camera_preview.py"
+    },
+    {
+      "path": "data/results/wo0016-phase110-20261019/phase110_run.sh",
+      "status": "??",
+      "bytes": 826,
+      "sha256": "aeb1e28ac255af823a3db0123b4fd3bacfb49a85a2a4d800ab06bb51e44c3890",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-phase110-20261019/phase110_run.sh"
+    },
+    {
+      "path": "data/results/wo0016-phase110-20261019/phase110_same_process_launcher.py",
+      "status": "??",
+      "bytes": 4107,
+      "sha256": "b7fb09f92f8ae94f25df56a6bdd1769455afaf4d59f74ad4ee2c8a457f9ebee7",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-phase110-20261019/phase110_same_process_launcher.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-215537/stageb1-idle-belt-baseline.json",
+      "status": "??",
+      "bytes": 4112,
+      "sha256": "fce1d03893fde44c49cd8c215843b460577b55e2055d267140dc811e85b23334",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-215537/stageb1-idle-belt-baseline.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-215537/stageb1-idle-belt-baseline.md",
+      "status": "??",
+      "bytes": 2322,
+      "sha256": "68fc0a3f8605c79272d5d9a2c0148cbdd7286b34240ddbf9c87db4dc03325742",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-215537/stageb1-idle-belt-baseline.md"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-215537/stageb1_hwh.py",
+      "status": "??",
+      "bytes": 829,
+      "sha256": "dc0e210713e36ff18eac0852de57ef33065983b3ab1ef243128c047e41c9ed82",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-215537/stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-215537/stageb1_hwh_dry_run.py",
+      "status": "??",
+      "bytes": 1294,
+      "sha256": "1ca534ebbe460fef67fb4c28add71826f5b9b5ebd3e543c3596aaca2ce237273",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-215537/stageb1_hwh_dry_run.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-215537/stageb1_idle_belt_launcher.py",
+      "status": "??",
+      "bytes": 28881,
+      "sha256": "ec4544609c040385dcbd2620b4b41fde544569c0b33d46fe2cc09a94b84ce72d",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-215537/stageb1_idle_belt_launcher.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-215537/stageb1_idle_belt_launcher_pre_xml_fix.py",
+      "status": "??",
+      "bytes": 28661,
+      "sha256": "4faa6076b354579558ab9dffb75478acb6a737aaedf95f4a9650d552b1e78a14",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-215537/stageb1_idle_belt_launcher_pre_xml_fix.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-215537/test_stageb1_hwh.py",
+      "status": "??",
+      "bytes": 1906,
+      "sha256": "83e03b066e9a5d21442e9dde36483098fd8772607fbba593260659d739d37b64",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-215537/test_stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-221949/stageb1-idle-belt-baseline.json",
+      "status": "??",
+      "bytes": 117731,
+      "sha256": "469a9791ecdefcaea259e7261d1792c1ed6fbb54564b34e80ee807eb892bf894",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-221949/stageb1-idle-belt-baseline.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-221949/stageb1_hwh.py",
+      "status": "??",
+      "bytes": 829,
+      "sha256": "dc0e210713e36ff18eac0852de57ef33065983b3ab1ef243128c047e41c9ed82",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-221949/stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-221949/stageb1_hwh_dry_run.py",
+      "status": "??",
+      "bytes": 1294,
+      "sha256": "1ca534ebbe460fef67fb4c28add71826f5b9b5ebd3e543c3596aaca2ce237273",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-221949/stageb1_hwh_dry_run.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-221949/stageb1_idle_belt_launcher.py",
+      "status": "??",
+      "bytes": 28881,
+      "sha256": "ec4544609c040385dcbd2620b4b41fde544569c0b33d46fe2cc09a94b84ce72d",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-221949/stageb1_idle_belt_launcher.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-221949/test_stageb1_hwh.py",
+      "status": "??",
+      "bytes": 1906,
+      "sha256": "83e03b066e9a5d21442e9dde36483098fd8772607fbba593260659d739d37b64",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-221949/test_stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-luminance-frame-000.png",
+      "status": "??",
+      "bytes": 559,
+      "sha256": "6105a2d870b30f4fd1bd1ae9d9feb6e0c7489958194ef075cfcf985426b1e069",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-luminance-frame-000.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-luminance-frame-050.png",
+      "status": "??",
+      "bytes": 6501,
+      "sha256": "993fc3542683dad27895804561c5c1e18ef0194033c72cad7ab79dc6c6fa988d",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-luminance-frame-050.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-luminance-frame-099.png",
+      "status": "??",
+      "bytes": 559,
+      "sha256": "6105a2d870b30f4fd1bd1ae9d9feb6e0c7489958194ef075cfcf985426b1e069",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-luminance-frame-099.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-pipeline-frame-000.png",
+      "status": "??",
+      "bytes": 559,
+      "sha256": "6105a2d870b30f4fd1bd1ae9d9feb6e0c7489958194ef075cfcf985426b1e069",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-pipeline-frame-000.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-pipeline-frame-050.png",
+      "status": "??",
+      "bytes": 6501,
+      "sha256": "993fc3542683dad27895804561c5c1e18ef0194033c72cad7ab79dc6c6fa988d",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-pipeline-frame-050.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-pipeline-frame-099.png",
+      "status": "??",
+      "bytes": 559,
+      "sha256": "6105a2d870b30f4fd1bd1ae9d9feb6e0c7489958194ef075cfcf985426b1e069",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2-pipeline-frame-099.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2.json",
+      "status": "??",
+      "bytes": 145007,
+      "sha256": "121f461c2a1ee08e62b906c99f60049b3b5c00ecd79943335e7a32287aaec282",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1-idle-belt-baseline-repeat2.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1_hwh.py",
+      "status": "??",
+      "bytes": 829,
+      "sha256": "dc0e210713e36ff18eac0852de57ef33065983b3ab1ef243128c047e41c9ed82",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1_hwh_dry_run.py",
+      "status": "??",
+      "bytes": 1294,
+      "sha256": "1ca534ebbe460fef67fb4c28add71826f5b9b5ebd3e543c3596aaca2ce237273",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1_hwh_dry_run.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/stageb1_idle_belt_launcher.py",
+      "status": "??",
+      "bytes": 35218,
+      "sha256": "4a6087b9bde07319e394ea9a003279ba3f6f825b404f0068f8bd4967a7fdc38f",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/stageb1_idle_belt_launcher.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-222926-repeat2/test_stageb1_hwh.py",
+      "status": "??",
+      "bytes": 1906,
+      "sha256": "83e03b066e9a5d21442e9dde36483098fd8772607fbba593260659d739d37b64",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-222926-repeat2/test_stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-luminance-frame-000.png",
+      "status": "??",
+      "bytes": 43529,
+      "sha256": "3fd7acc68e4f7a8886ad8013999482fa6654050dd7f84d8b257280d05e300eed",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-luminance-frame-000.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-luminance-frame-050.png",
+      "status": "??",
+      "bytes": 42086,
+      "sha256": "4be92b722a614c82077856a15985248e7180b986c35876788b4cf1d4f377e7e7",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-luminance-frame-050.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-luminance-frame-099.png",
+      "status": "??",
+      "bytes": 42341,
+      "sha256": "0f3015b53fcf15480f4e091de277078ce9c7395bb285b7f25ffab68f5fbf7da4",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-luminance-frame-099.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-pipeline-frame-000.png",
+      "status": "??",
+      "bytes": 43529,
+      "sha256": "3fd7acc68e4f7a8886ad8013999482fa6654050dd7f84d8b257280d05e300eed",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-pipeline-frame-000.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-pipeline-frame-050.png",
+      "status": "??",
+      "bytes": 42086,
+      "sha256": "4be92b722a614c82077856a15985248e7180b986c35876788b4cf1d4f377e7e7",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-pipeline-frame-050.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-pipeline-frame-099.png",
+      "status": "??",
+      "bytes": 42341,
+      "sha256": "0f3015b53fcf15480f4e091de277078ce9c7395bb285b7f25ffab68f5fbf7da4",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3-pipeline-frame-099.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3.json",
+      "status": "??",
+      "bytes": 148740,
+      "sha256": "cfe79dcb947e9e82066dc1a1f46444c6e5ce2b80dc09d79362222ab09222416b",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline-repeat3.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline.json",
+      "status": "??",
+      "bytes": 148740,
+      "sha256": "cfe79dcb947e9e82066dc1a1f46444c6e5ce2b80dc09d79362222ab09222416b",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline.md",
+      "status": "??",
+      "bytes": 3363,
+      "sha256": "2d44d8dc57cd894e338c6025dcc375fc09b08440e15ed1e26952220188628cb9",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1-idle-belt-baseline.md"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1_hwh.py",
+      "status": "??",
+      "bytes": 829,
+      "sha256": "dc0e210713e36ff18eac0852de57ef33065983b3ab1ef243128c047e41c9ed82",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1_hwh_dry_run.py",
+      "status": "??",
+      "bytes": 1294,
+      "sha256": "1ca534ebbe460fef67fb4c28add71826f5b9b5ebd3e543c3596aaca2ce237273",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1_hwh_dry_run.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1_idle_belt_launcher.py",
+      "status": "??",
+      "bytes": 35218,
+      "sha256": "0cc32120736dc45e4dd03bf545ec67950944254255776eafb6148bb5559e62ad",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/stageb1_idle_belt_launcher.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-224057-confirmed-idle/test_stageb1_hwh.py",
+      "status": "??",
+      "bytes": 1906,
+      "sha256": "83e03b066e9a5d21442e9dde36483098fd8772607fbba593260659d739d37b64",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-224057-confirmed-idle/test_stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/execution-plan.md",
+      "status": "??",
+      "bytes": 468,
+      "sha256": "3bde007da31331318940c84579010af0177848fe40b862d6c88908e5978eef53",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/execution-plan.md"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1-preview-hud-handoff.md",
+      "status": "??",
+      "bytes": 2088,
+      "sha256": "4e6dbeb5bd5b1b9a4abd6b78b840512d20c2696d0234049071e629f356009a10",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1-preview-hud-handoff.md"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1-preview-rightward-line-update.md",
+      "status": "??",
+      "bytes": 1879,
+      "sha256": "45b65c72256b890e233df6039cd6f2e8ec88d3a83050acfe4df3e49c1f48bf56",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1-preview-rightward-line-update.md"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1_calibration_preview.py",
+      "status": "??",
+      "bytes": 6838,
+      "sha256": "66206cf7460818064639443b787ee4e2b20e9ab19f54e48e88186d1bc3d087ce",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1_calibration_preview.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1_hwh.py",
+      "status": "??",
+      "bytes": 829,
+      "sha256": "dc0e210713e36ff18eac0852de57ef33065983b3ab1ef243128c047e41c9ed82",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1_idle_belt_launcher.py",
+      "status": "??",
+      "bytes": 38905,
+      "sha256": "f8b3743596d615a03cda13a19906ebf41b35308c47b53f614c23e0124b5cb2d4",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/stageb1_idle_belt_launcher.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/local-preflight.txt",
+      "status": "??",
+      "bytes": 425,
+      "sha256": "ad95377975cdc9e01e0d010e45869c10df1cb224eac9a6b83236c01712e4410d",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/local-preflight.txt"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-board-raw.json",
+      "status": "??",
+      "bytes": 182717,
+      "sha256": "3e59b013b8227dc60f0fdb111717c346b27c8b82f6074b52799bbc2fd8a06cdf",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-board-raw.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-luminance-frame-000.png",
+      "status": "??",
+      "bytes": 24797,
+      "sha256": "524996447f95e853cc710f3dbca730176cc6fca84bed8ad2e8a5277e25ca47a4",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-luminance-frame-000.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-luminance-frame-050.png",
+      "status": "??",
+      "bytes": 22587,
+      "sha256": "12a16eaee948f6deb410d72682d0472d6e4cbf7c37d1c42ede1e0a8d82f7af28",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-luminance-frame-050.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-luminance-frame-114.png",
+      "status": "??",
+      "bytes": 19159,
+      "sha256": "a88803022a91be30623a87f2b572cafb0447e862b0c9f807a1598e8b89931055",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-luminance-frame-114.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-pipeline-frame-000.png",
+      "status": "??",
+      "bytes": 24797,
+      "sha256": "524996447f95e853cc710f3dbca730176cc6fca84bed8ad2e8a5277e25ca47a4",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-pipeline-frame-000.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-pipeline-frame-050.png",
+      "status": "??",
+      "bytes": 22587,
+      "sha256": "12a16eaee948f6deb410d72682d0472d6e4cbf7c37d1c42ede1e0a8d82f7af28",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-pipeline-frame-050.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-pipeline-frame-114.png",
+      "status": "??",
+      "bytes": 19159,
+      "sha256": "a88803022a91be30623a87f2b572cafb0447e862b0c9f807a1598e8b89931055",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline-pipeline-frame-114.png"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline.json",
+      "status": "??",
+      "bytes": 189804,
+      "sha256": "9a2892bf15c317bec10e934b44eaea7c59447f39f9b8593ea4e8b7aed19e6020",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline.md",
+      "status": "??",
+      "bytes": 4153,
+      "sha256": "538a2490d2d8b52f4c36edbce0bc729be301bfd423f9195b64f615bd1ee46ad7",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1-idle-belt-baseline.md"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1_calibration_preview.py",
+      "status": "??",
+      "bytes": 6838,
+      "sha256": "66206cf7460818064639443b787ee4e2b20e9ab19f54e48e88186d1bc3d087ce",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1_calibration_preview.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1_hwh.py",
+      "status": "??",
+      "bytes": 829,
+      "sha256": "dc0e210713e36ff18eac0852de57ef33065983b3ab1ef243128c047e41c9ed82",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1_hwh.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261020-010723/stageb1_idle_belt_launcher.py",
+      "status": "??",
+      "bytes": 38905,
+      "sha256": "f8b3743596d615a03cda13a19906ebf41b35308c47b53f614c23e0124b5cb2d4",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB-20261020-010723/stageb1_idle_belt_launcher.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/archive_old_guards.py",
+      "status": "??",
+      "bytes": 2853,
+      "sha256": "cb1c9263fdc958d4119c611166dd4ddee97d866fad11d4bc0cc25a03fadc8b37",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/archive_old_guards.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-readonly-final.json",
+      "status": "??",
+      "bytes": 30971,
+      "sha256": "07baad7d89adb79c6330b85195dff86aa12725f5af36daf87cb167799e8928dc",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-readonly-final.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-readonly-snapshot.json",
+      "status": "??",
+      "bytes": 30977,
+      "sha256": "09712234092d95cf5cb7c94b18e2e2e8c606151436f7ba4d21924bb36a6525e0",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-readonly-snapshot.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2.zip",
+      "status": "??",
+      "bytes": 397100,
+      "sha256": "88f23d8c7f02ef37029ec20ae85560056327556fca5360f800d6ae855f8050d5",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2.zip"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/PACKAGE_SHA256.json",
+      "status": "??",
+      "bytes": 2191,
+      "sha256": "bcdeb9d63b9396dffbf4436fb1a87450db487e43f9d215c1d41a568bb622b13f",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/PACKAGE_SHA256.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/board_once.py",
+      "status": "??",
+      "bytes": 92939,
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/board_once.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/board_preflight.py",
+      "status": "??",
+      "bytes": 51033,
+      "sha256": "d8446294581771be9fd52e69dafbb7a27dd0373a2ee08ea66a3a937180b79aea",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/board_preflight.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/camera_adapter.py",
+      "status": "??",
+      "bytes": 1720,
+      "sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/camera_adapter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/camera_dma_oneshot.py",
+      "status": "??",
+      "bytes": 45184,
+      "sha256": "5b9684f4b02988e8a822c36ef0ac7faec78c0a7980f2fca1574afd3027c9df28",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/camera_dma_oneshot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-0.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-0.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-0.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-0.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-1.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-1.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-1.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-1.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-2.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-2.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-2.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-2.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/prepare_vectors.py",
+      "status": "??",
+      "bytes": 15915,
+      "sha256": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/prepare_vectors.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/run-manifest.json",
+      "status": "??",
+      "bytes": 2405,
+      "sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/run-manifest.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/wo15.bit",
+      "status": "??",
+      "bytes": 4045767,
+      "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/wo15.bit"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/wo15.hwh",
+      "status": "??",
+      "bytes": 315912,
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/wo15.hwh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/mjpeg_preview.py",
+      "status": "??",
+      "bytes": 18871,
+      "sha256": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/mjpeg_preview.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/packet_encoder.py",
+      "status": "??",
+      "bytes": 2335,
+      "sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/packet_encoder.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/run_stream_counter.py",
+      "status": "??",
+      "bytes": 51994,
+      "sha256": "938d429b61b1c25657ddf4abb855da16561938f57b12704c3a2674da3da83748",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/run_stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/stream_counter.py",
+      "status": "??",
+      "bytes": 30446,
+      "sha256": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot.zip",
+      "status": "??",
+      "bytes": 429711,
+      "sha256": "7765d567054341d8e60ef3aac323f60f8cc452ed630b690ffe9467f87e5f844a",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot.zip"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/PACKAGE_SHA256.json",
+      "status": "??",
+      "bytes": 2326,
+      "sha256": "b3d5a8cef39101987bb89800393c234965567d1c93acbf31406f1ec7e29e5ad9",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/PACKAGE_SHA256.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/board_once.py",
+      "status": "??",
+      "bytes": 92939,
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/board_once.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/board_preflight.py",
+      "status": "??",
+      "bytes": 51033,
+      "sha256": "d8446294581771be9fd52e69dafbb7a27dd0373a2ee08ea66a3a937180b79aea",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/board_preflight.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/camera_adapter.py",
+      "status": "??",
+      "bytes": 1720,
+      "sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/camera_adapter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/camera_dma_oneshot.py",
+      "status": "??",
+      "bytes": 45184,
+      "sha256": "5b9684f4b02988e8a822c36ef0ac7faec78c0a7980f2fca1574afd3027c9df28",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/camera_dma_oneshot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-0.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-0.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-0.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-0.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-1.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-1.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-1.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-1.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-2.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-2.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-2.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-2.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/prepare_vectors.py",
+      "status": "??",
+      "bytes": 15915,
+      "sha256": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/prepare_vectors.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/run-manifest.json",
+      "status": "??",
+      "bytes": 2405,
+      "sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/run-manifest.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/wo15.bit",
+      "status": "??",
+      "bytes": 4045767,
+      "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/wo15.bit"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/wo15.hwh",
+      "status": "??",
+      "bytes": 315912,
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/wo15.hwh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/mjpeg_preview.py",
+      "status": "??",
+      "bytes": 18871,
+      "sha256": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/mjpeg_preview.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/packet_encoder.py",
+      "status": "??",
+      "bytes": 2335,
+      "sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/packet_encoder.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/run_stream_counter.py",
+      "status": "??",
+      "bytes": 51890,
+      "sha256": "205e49e5a5d9084544b91d39b9b16a452199eafab2bd0ad75efca23bdf8f6f00",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/run_stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/stream_counter.py",
+      "status": "??",
+      "bytes": 30446,
+      "sha256": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/board_once.py",
+      "status": "??",
+      "bytes": 92939,
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/board_once.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/board_preflight.py",
+      "status": "??",
+      "bytes": 51033,
+      "sha256": "d8446294581771be9fd52e69dafbb7a27dd0373a2ee08ea66a3a937180b79aea",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/board_preflight.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/camera_adapter.py",
+      "status": "??",
+      "bytes": 1720,
+      "sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/camera_adapter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/camera_dma_oneshot.py",
+      "status": "??",
+      "bytes": 45184,
+      "sha256": "5b9684f4b02988e8a822c36ef0ac7faec78c0a7980f2fca1574afd3027c9df28",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/camera_dma_oneshot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-0.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-0.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-0.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-0.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-1.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-1.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-1.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-1.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-2.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-2.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-2.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-2.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/prepare_vectors.py",
+      "status": "??",
+      "bytes": 15915,
+      "sha256": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/prepare_vectors.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/run-manifest.json",
+      "status": "??",
+      "bytes": 2405,
+      "sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/run-manifest.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/wo15.bit",
+      "status": "??",
+      "bytes": 4045767,
+      "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/wo15.bit"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/wo15.hwh",
+      "status": "??",
+      "bytes": 315912,
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/wo15.hwh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0016/run_stream_counter.py",
+      "status": "??",
+      "bytes": 51890,
+      "sha256": "205e49e5a5d9084544b91d39b9b16a452199eafab2bd0ad75efca23bdf8f6f00",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0016/run_stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/build_stageb2_package.py",
+      "status": "??",
+      "bytes": 4824,
+      "sha256": "b5449e4e10ebaf6156480136ce3a8906006fb508839d4b802fa37c304a4f4a48",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/build_stageb2_package.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/cma-diagnostic.json",
+      "status": "??",
+      "bytes": 7623,
+      "sha256": "d6d1e141f6d6dafdc44e6a316c5905a33741d9457db0b48d34326dfa6fdaf1e2",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/cma-diagnostic.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/cma_diagnostic.py",
+      "status": "??",
+      "bytes": 2359,
+      "sha256": "4ef67d73120e8239d99740f2d9cc19b28d047daa70cda253a46da44d2505f18e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/cma_diagnostic.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/create_stageb2_ready_guard.py",
+      "status": "??",
+      "bytes": 4390,
+      "sha256": "ede84f439fb36205c9f55605269a16ed0f6e89bb7c66e37964cece369a92cca1",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/create_stageb2_ready_guard.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-0.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-0.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-0.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-0.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-1.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-1.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-1.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-1.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-2.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-2.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-2.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-2.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud-http-probe-result.json",
+      "status": "??",
+      "bytes": 443,
+      "sha256": "c65ca13fa6b940e61a2c024a1793f8deca216a4b7691688e505bfe77c29bb920",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud-http-probe-result.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud-service-log.txt",
+      "status": "??",
+      "bytes": 669,
+      "sha256": "d19019f4507ec526c5d60195c1623f0e068e817438f9fc464f1c2177146d795b",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud-service-log.txt"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud_current_boot.py",
+      "status": "??",
+      "bytes": 964,
+      "sha256": "bee6a9ecd379cf241b8b5daaaccaa9bcad3f7684ba5ca0ef893f7a5db96730fc",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud_current_boot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/image-symlink-repair.json",
+      "status": "??",
+      "bytes": 575,
+      "sha256": "f3a7ef2870244f109c54a0eff9250915852cbc9dd27f309fad66df1b7b4e31a0",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/image-symlink-repair.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/original-wo15-run-manifest.json",
+      "status": "??",
+      "bytes": 2405,
+      "sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/original-wo15-run-manifest.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/preparation-report.md",
+      "status": "??",
+      "bytes": 6704,
+      "sha256": "23d105f2164abee3168c401a7811beaec4b4516cb2225087135bb7f63392c10c",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/preparation-report.md"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/probe_hud_http.py",
+      "status": "??",
+      "bytes": 2673,
+      "sha256": "51347a0f334354377e9196a0cdc6a83c9256b52f4d143afb1b81c11df5cef770",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/probe_hud_http.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/read_only_snapshot.py",
+      "status": "??",
+      "bytes": 2456,
+      "sha256": "920988e0a00609774a5668c370a33040e8ef814ed04c49d92983c8c7e8ee4532",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/read_only_snapshot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/repair_image_symlinks.py",
+      "status": "??",
+      "bytes": 1613,
+      "sha256": "50ed8053d092d71392a410f6c7b1debb5c7e1074bec0eb5d553a9e876e4b5b2e",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/repair_image_symlinks.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1-currentboot.json",
+      "status": "??",
+      "bytes": 28550,
+      "sha256": "0a7f601fbfb645775a698bec3f395fbfafa6286d5b31c0e6dc212dafc27dd7d3",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1-currentboot.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1_preflight_diagnostics.sh",
+      "status": "??",
+      "bytes": 943,
+      "sha256": "3da2409871d91cf8e82dc7c96fd2d705edd69d3edb03ec33c2c62eb8dce39343",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1_preflight_diagnostics.sh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1_run_currentboot.sh",
+      "status": "??",
+      "bytes": 1289,
+      "sha256": "61fe0a812c4823fcd9c0c3e1a425db26c81fefff498f4c11dc16098c103616ea",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1_run_currentboot.sh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stageb2-currentboot-result.json",
+      "status": "??",
+      "bytes": 44314,
+      "sha256": "eefe87dbeda4bc1eb1998ee6cf8cde6c8594dcc774bd2ba158d31c6207283ad1",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stageb2-currentboot-result.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stageb2-locked-config.json",
+      "status": "??",
+      "bytes": 3766,
+      "sha256": "139056bcc659662c0eeddb7ad1bed1e7594d07397de1efb745da4abf580d3d6a",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stageb2-locked-config.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/verify_stageb2_ready_guard.py",
+      "status": "??",
+      "bytes": 2391,
+      "sha256": "6734e873a8740bbd69476e1267bbb9a52ddcd65aba22d5e18e063c31cf153cb9",
+      "category": "raw_experiment",
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/verify_stageb2_ready_guard.py"
+    }
+  ],
+  "source_root": "C:/fpga/material-counter"
+}

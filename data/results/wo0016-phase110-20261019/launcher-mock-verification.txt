@@ -1,0 +1,41 @@
+{
+  "accuracy": 1.0,
+  "accuracy_percent": 100.0,
+  "board_accessed": false,
+  "count_error": 0,
+  "elapsed_seconds": 0.5066717999980028,
+  "expected_count": 2,
+  "frame_geometry": [
+    240,
+    320
+  ],
+  "frames_processed": 5,
+  "ground_truth_count": 2,
+  "hardware_fps": null,
+  "line_y": 120,
+  "material_label": null,
+  "min_area": 12,
+  "mode": "offline-synthetic",
+  "note": "Synthetic Offline evidence only; it is not PYNQ, camera, conveyor, or board acceptance.",
+  "preview_jpeg_sha256": "8c00c0afb51208236ec159315cd9ad4a82852656bd5f0fd412784fdb51eeea56",
+  "pynq_imported": false,
+  "roi_subtimings_ms": {
+    "ccl_avg_ms_when_invoked": 1.344,
+    "ccl_invocations": 3,
+    "ccl_ms": 0.807,
+    "ccl_timing_samples": 5,
+    "projection_ms": 0.102,
+    "projection_timing_samples": 5,
+    "roi_foreground_pixels_max": 107,
+    "track_ms": 0.01,
+    "track_timing_samples": 5,
+    "validate_ms": 0.024,
+    "validate_timing_samples": 5
+  },
+  "schema": 1,
+  "status": "MOCK_PASS",
+  "throughput_fps": 9.868321070996469,
+  "total_count": 2,
+  "work_order": "WO-0016"
+}
+{"phase110_same_process_timing": {"runner_wall_seconds": 0.508052500001213}}

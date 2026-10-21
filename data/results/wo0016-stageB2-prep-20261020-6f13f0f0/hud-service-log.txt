@@ -1,0 +1,6 @@
+May 06 14:06:15 pynq systemd[1]: Started /usr/local/share/pynq-venv/bin/python3 -u /home/xilinx/wo0016-b2-prep-hud-6f13f0f0.py.
+May 06 14:06:41 pynq python3[1309]: STAGEB1_CALIBRATION_HUD_LISTENING 0.0.0.0:8080
+May 06 14:06:49 pynq systemd[1]: Stopping /usr/local/share/pynq-venv/bin/python3 -u /home/xilinx/wo0016-b2-prep-hud-6f13f0f0.py...
+May 06 14:06:52 pynq systemd[1]: wo0016-b2-prep-hud-6f13f0f0.service: Deactivated successfully.
+May 06 14:06:52 pynq systemd[1]: Stopped /usr/local/share/pynq-venv/bin/python3 -u /home/xilinx/wo0016-b2-prep-hud-6f13f0f0.py.
+May 06 14:06:52 pynq systemd[1]: wo0016-b2-prep-hud-6f13f0f0.service: Consumed 12.039s CPU time.

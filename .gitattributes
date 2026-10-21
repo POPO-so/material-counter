@@ -80,3 +80,19 @@
 /data/results/wo0014-closeout-20261015/**/*.log -diff
 /data/results/wo0014-closeout-20261015/*.log -diff
 /data/results/wo0014-closeout-20261015/*.bin -diff
+
+# Archive-only rules: preserve every captured source/document byte.
+/PROJECT_INDEX.md -text -filter
+/README.md -text -filter
+/data/results/wo0015-final-20261017/acceptance-report.md -text -filter
+/docs/verification/submission-status-20261015.md -text -filter
+/docs/verification/submission-status-20261018.md -text -filter
+/docs/verification/wo0016-asset-archive-20261022/** -text -filter
+/data/results/wo0016-phase110-20261019/** -text -filter
+/data/results/wo0016-stageB-20261019-215537/** -text -filter
+/data/results/wo0016-stageB-20261019-221949/** -text -filter
+/data/results/wo0016-stageB-20261019-222926-repeat2/** -text -filter
+/data/results/wo0016-stageB-20261019-224057-confirmed-idle/** -text -filter
+/data/results/wo0016-stageB-20261019-225948-hud-preview-handoff/** -text -filter
+/data/results/wo0016-stageB-20261020-010723/** -text -filter
+/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/** -text -filter

@@ -1,0 +1,1182 @@
+{
+  "schema_version": 1,
+  "comparison_before_archive_creation": true,
+  "baseline_refs_file": "refs-before.txt",
+  "closeout_base": "6a845a01f73e44ac6237c47233b42d95a9e9c943",
+  "scope": "Byte-identical positive or zero size blobs reachable from all existing branches/remotes/tags; representative historical path per Git object. Current closeout paths listed separately. No files deduplicated or deleted on the basis of this report.",
+  "file_count": 83,
+  "current_closeout_matches": 38,
+  "existing_history_matches": 41,
+  "files": [
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/archive_old_guards.py",
+      "status": "??",
+      "bytes": 2853,
+      "sha256": "cb1c9263fdc958d4119c611166dd4ddee97d866fad11d4bc0cc25a03fadc8b37",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/archive_old_guards.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-readonly-final.json",
+      "status": "??",
+      "bytes": 30971,
+      "sha256": "07baad7d89adb79c6330b85195dff86aa12725f5af36daf87cb167799e8928dc",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-readonly-final.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-readonly-snapshot.json",
+      "status": "??",
+      "bytes": 30977,
+      "sha256": "09712234092d95cf5cb7c94b18e2e2e8c606151436f7ba4d21924bb36a6525e0",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-readonly-snapshot.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2.zip",
+      "status": "??",
+      "bytes": 397100,
+      "sha256": "88f23d8c7f02ef37029ec20ae85560056327556fca5360f800d6ae855f8050d5",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2.zip"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/PACKAGE_SHA256.json",
+      "status": "??",
+      "bytes": 2191,
+      "sha256": "bcdeb9d63b9396dffbf4436fb1a87450db487e43f9d215c1d41a568bb622b13f",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/PACKAGE_SHA256.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/board_once.py",
+      "status": "??",
+      "bytes": 92939,
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/board_once.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "ec8f5c994bbe29552feda3c81423d3b5002aec29",
+          "representative_path": "scripts/wo0015/board_once.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/board_once.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/board_preflight.py",
+      "status": "??",
+      "bytes": 51033,
+      "sha256": "d8446294581771be9fd52e69dafbb7a27dd0373a2ee08ea66a3a937180b79aea",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/board_preflight.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/camera_adapter.py",
+      "status": "??",
+      "bytes": 1720,
+      "sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/camera_adapter.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "5bc241fdb4b08b1bcd162d06abb9cfa2c0b3916e",
+          "representative_path": "scripts/wo0015/camera_adapter.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/camera_adapter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/camera_dma_oneshot.py",
+      "status": "??",
+      "bytes": 45184,
+      "sha256": "5b9684f4b02988e8a822c36ef0ac7faec78c0a7980f2fca1574afd3027c9df28",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/camera_dma_oneshot.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2d70e5ddff6054d2b93b2f1353ad51d12ecc1ee6",
+          "representative_path": "scripts/wo0015/camera_dma_oneshot.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/camera_dma_oneshot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-0.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_rx_raw.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/expected_golden.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/rx_raw.bin",
+        "data/results/wo0015-board-once-20261017/expected_golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/A/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_checksum/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_long/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_reset/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_short/golden.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2d95fbe9bf5c0bc7646019afd7a450ff80e9ed12",
+          "representative_path": "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-0.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-0.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-0.bin",
+        "data/results/wo0014-hw-100mhz-20261014/export/rgb_packet.bin",
+        "data/results/wo0014-hw-50mhz-20261014/export/rgb_packet.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_tx_raw.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/tx_raw.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "801982ab62fa53573614d0161a759a718178d9d7",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-0.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-0.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-1.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-1.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-1.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-1.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2857ea50b13a13969fd678d3a37203ade425d947",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-1.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-1.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-2.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-2.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-2.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-2.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "deb64e87c14d1b07630154116086fc04aa408905",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-2.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/frame-2.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/prepare_vectors.py",
+      "status": "??",
+      "bytes": 15915,
+      "sha256": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "e949be63e48ca8818a605429ada902d1d06a4780",
+          "representative_path": "scripts/wo0015/prepare_vectors.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/prepare_vectors.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/run-manifest.json",
+      "status": "??",
+      "bytes": 2405,
+      "sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/run-manifest.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/wo15.bit",
+      "status": "??",
+      "bytes": 4045767,
+      "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-hw-50mhz-20261015/export/wo15.bit"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "3228df2e0895fd9bf876d8e9800ae680adcafe80",
+          "representative_path": "data/results/wo0015-hw-50mhz-20261015/export/wo15.bit"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/wo15.bit"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/wo15.hwh",
+      "status": "??",
+      "bytes": 315912,
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "7067937857e66a3c94159cc2302a1e7c02f16646",
+          "representative_path": "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0015/wo15.hwh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/mjpeg_preview.py",
+      "status": "??",
+      "bytes": 18871,
+      "sha256": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/scripts/wo0016/mjpeg_preview.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "bf4f23671fc719553dbe6feedca03d30fb15c934",
+          "representative_path": "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/scripts/wo0016/mjpeg_preview.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/mjpeg_preview.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/packet_encoder.py",
+      "status": "??",
+      "bytes": 2335,
+      "sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0016-stageB2-attempt5-prep-20261021/deployment-source/packet_encoder.py",
+        "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/scripts/wo0016/packet_encoder.py",
+        "scripts/wo0016/packet_encoder.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "1274e60f033cd254201da9df31e5eed8b0195221",
+          "representative_path": "data/results/wo0016-stageB2-attempt5-prep-20261021/deployment-source/packet_encoder.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/packet_encoder.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/run_stream_counter.py",
+      "status": "??",
+      "bytes": 51994,
+      "sha256": "938d429b61b1c25657ddf4abb855da16561938f57b12704c3a2674da3da83748",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/run_stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/stream_counter.py",
+      "status": "??",
+      "bytes": 30446,
+      "sha256": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0016-stageB2-attempt3-20261020-6f13f0f0/home/xilinx/board-runtime-currentboot-v2/scripts/wo0016/stream_counter.py",
+        "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/scripts/wo0016/stream_counter.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "95fa9c86eeeacd687e310489cf6be6453f1c9b6f",
+          "representative_path": "data/results/wo0016-stageB2-attempt3-20261020-6f13f0f0/home/xilinx/board-runtime-currentboot-v2/scripts/wo0016/stream_counter.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot-v2/scripts/wo0016/stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot.zip",
+      "status": "??",
+      "bytes": 429711,
+      "sha256": "7765d567054341d8e60ef3aac323f60f8cc452ed630b690ffe9467f87e5f844a",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot.zip"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/PACKAGE_SHA256.json",
+      "status": "??",
+      "bytes": 2326,
+      "sha256": "b3d5a8cef39101987bb89800393c234965567d1c93acbf31406f1ec7e29e5ad9",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/PACKAGE_SHA256.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/board_once.py",
+      "status": "??",
+      "bytes": 92939,
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/board_once.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "ec8f5c994bbe29552feda3c81423d3b5002aec29",
+          "representative_path": "scripts/wo0015/board_once.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/board_once.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/board_preflight.py",
+      "status": "??",
+      "bytes": 51033,
+      "sha256": "d8446294581771be9fd52e69dafbb7a27dd0373a2ee08ea66a3a937180b79aea",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/board_preflight.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/camera_adapter.py",
+      "status": "??",
+      "bytes": 1720,
+      "sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/camera_adapter.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "5bc241fdb4b08b1bcd162d06abb9cfa2c0b3916e",
+          "representative_path": "scripts/wo0015/camera_adapter.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/camera_adapter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/camera_dma_oneshot.py",
+      "status": "??",
+      "bytes": 45184,
+      "sha256": "5b9684f4b02988e8a822c36ef0ac7faec78c0a7980f2fca1574afd3027c9df28",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/camera_dma_oneshot.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2d70e5ddff6054d2b93b2f1353ad51d12ecc1ee6",
+          "representative_path": "scripts/wo0015/camera_dma_oneshot.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/camera_dma_oneshot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-0.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_rx_raw.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/expected_golden.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/rx_raw.bin",
+        "data/results/wo0015-board-once-20261017/expected_golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/A/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_checksum/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_long/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_reset/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_short/golden.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2d95fbe9bf5c0bc7646019afd7a450ff80e9ed12",
+          "representative_path": "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-0.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-0.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-0.bin",
+        "data/results/wo0014-hw-100mhz-20261014/export/rgb_packet.bin",
+        "data/results/wo0014-hw-50mhz-20261014/export/rgb_packet.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_tx_raw.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/tx_raw.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "801982ab62fa53573614d0161a759a718178d9d7",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-0.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-0.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-1.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-1.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-1.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-1.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2857ea50b13a13969fd678d3a37203ade425d947",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-1.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-1.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-2.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-2.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-2.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-2.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "deb64e87c14d1b07630154116086fc04aa408905",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-2.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/frame-2.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/prepare_vectors.py",
+      "status": "??",
+      "bytes": 15915,
+      "sha256": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "e949be63e48ca8818a605429ada902d1d06a4780",
+          "representative_path": "scripts/wo0015/prepare_vectors.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/prepare_vectors.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/run-manifest.json",
+      "status": "??",
+      "bytes": 2405,
+      "sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/run-manifest.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/wo15.bit",
+      "status": "??",
+      "bytes": 4045767,
+      "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-hw-50mhz-20261015/export/wo15.bit"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "3228df2e0895fd9bf876d8e9800ae680adcafe80",
+          "representative_path": "data/results/wo0015-hw-50mhz-20261015/export/wo15.bit"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/wo15.bit"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/wo15.hwh",
+      "status": "??",
+      "bytes": 315912,
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "7067937857e66a3c94159cc2302a1e7c02f16646",
+          "representative_path": "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0015/wo15.hwh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/mjpeg_preview.py",
+      "status": "??",
+      "bytes": 18871,
+      "sha256": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/scripts/wo0016/mjpeg_preview.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "bf4f23671fc719553dbe6feedca03d30fb15c934",
+          "representative_path": "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/scripts/wo0016/mjpeg_preview.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/mjpeg_preview.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/packet_encoder.py",
+      "status": "??",
+      "bytes": 2335,
+      "sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0016-stageB2-attempt5-prep-20261021/deployment-source/packet_encoder.py",
+        "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/scripts/wo0016/packet_encoder.py",
+        "scripts/wo0016/packet_encoder.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "1274e60f033cd254201da9df31e5eed8b0195221",
+          "representative_path": "data/results/wo0016-stageB2-attempt5-prep-20261021/deployment-source/packet_encoder.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/packet_encoder.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/run_stream_counter.py",
+      "status": "??",
+      "bytes": 51890,
+      "sha256": "205e49e5a5d9084544b91d39b9b16a452199eafab2bd0ad75efca23bdf8f6f00",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/run_stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/stream_counter.py",
+      "status": "??",
+      "bytes": 30446,
+      "sha256": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0016-stageB2-attempt3-20261020-6f13f0f0/home/xilinx/board-runtime-currentboot-v2/scripts/wo0016/stream_counter.py",
+        "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/scripts/wo0016/stream_counter.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "95fa9c86eeeacd687e310489cf6be6453f1c9b6f",
+          "representative_path": "data/results/wo0016-stageB2-attempt3-20261020-6f13f0f0/home/xilinx/board-runtime-currentboot-v2/scripts/wo0016/stream_counter.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime-currentboot/scripts/wo0016/stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/board_once.py",
+      "status": "??",
+      "bytes": 92939,
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/board_once.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "ec8f5c994bbe29552feda3c81423d3b5002aec29",
+          "representative_path": "scripts/wo0015/board_once.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/board_once.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/board_preflight.py",
+      "status": "??",
+      "bytes": 51033,
+      "sha256": "d8446294581771be9fd52e69dafbb7a27dd0373a2ee08ea66a3a937180b79aea",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/board_preflight.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/camera_adapter.py",
+      "status": "??",
+      "bytes": 1720,
+      "sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/camera_adapter.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "5bc241fdb4b08b1bcd162d06abb9cfa2c0b3916e",
+          "representative_path": "scripts/wo0015/camera_adapter.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/camera_adapter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/camera_dma_oneshot.py",
+      "status": "??",
+      "bytes": 45184,
+      "sha256": "5b9684f4b02988e8a822c36ef0ac7faec78c0a7980f2fca1574afd3027c9df28",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "scripts/wo0015/camera_dma_oneshot.py"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2d70e5ddff6054d2b93b2f1353ad51d12ecc1ee6",
+          "representative_path": "scripts/wo0015/camera_dma_oneshot.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/camera_dma_oneshot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-0.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_rx_raw.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/expected_golden.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/rx_raw.bin",
+        "data/results/wo0015-board-once-20261017/expected_golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/A/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_checksum/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_long/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_reset/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_short/golden.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2d95fbe9bf5c0bc7646019afd7a450ff80e9ed12",
+          "representative_path": "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-0.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-0.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-0.bin",
+        "data/results/wo0014-hw-100mhz-20261014/export/rgb_packet.bin",
+        "data/results/wo0014-hw-50mhz-20261014/export/rgb_packet.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_tx_raw.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/tx_raw.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "801982ab62fa53573614d0161a759a718178d9d7",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-0.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-0.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-1.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-1.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-1.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-1.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2857ea50b13a13969fd678d3a37203ade425d947",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-1.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-1.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-2.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-2.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-2.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-2.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "deb64e87c14d1b07630154116086fc04aa408905",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-2.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/frame-2.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/prepare_vectors.py",
+      "status": "??",
+      "bytes": 15915,
+      "sha256": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "e949be63e48ca8818a605429ada902d1d06a4780",
+          "representative_path": "scripts/wo0015/prepare_vectors.py"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/prepare_vectors.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/run-manifest.json",
+      "status": "??",
+      "bytes": 2405,
+      "sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/run-manifest.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/wo15.bit",
+      "status": "??",
+      "bytes": 4045767,
+      "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-hw-50mhz-20261015/export/wo15.bit"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "3228df2e0895fd9bf876d8e9800ae680adcafe80",
+          "representative_path": "data/results/wo0015-hw-50mhz-20261015/export/wo15.bit"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/wo15.bit"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/wo15.hwh",
+      "status": "??",
+      "bytes": 315912,
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "7067937857e66a3c94159cc2302a1e7c02f16646",
+          "representative_path": "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0015/wo15.hwh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0016/run_stream_counter.py",
+      "status": "??",
+      "bytes": 51890,
+      "sha256": "205e49e5a5d9084544b91d39b9b16a452199eafab2bd0ad75efca23bdf8f6f00",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/board-runtime/scripts/wo0016/run_stream_counter.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/build_stageb2_package.py",
+      "status": "??",
+      "bytes": 4824,
+      "sha256": "b5449e4e10ebaf6156480136ce3a8906006fb508839d4b802fa37c304a4f4a48",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/build_stageb2_package.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/cma-diagnostic.json",
+      "status": "??",
+      "bytes": 7623,
+      "sha256": "d6d1e141f6d6dafdc44e6a316c5905a33741d9457db0b48d34326dfa6fdaf1e2",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/cma-diagnostic.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/cma_diagnostic.py",
+      "status": "??",
+      "bytes": 2359,
+      "sha256": "4ef67d73120e8239d99740f2d9cc19b28d047daa70cda253a46da44d2505f18e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/cma_diagnostic.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/create_stageb2_ready_guard.py",
+      "status": "??",
+      "bytes": 4390,
+      "sha256": "ede84f439fb36205c9f55605269a16ed0f6e89bb7c66e37964cece369a92cca1",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/create_stageb2_ready_guard.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-0.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_rx_raw.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/expected_golden.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/rx_raw.bin",
+        "data/results/wo0015-board-once-20261017/expected_golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/A/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_checksum/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_long/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_reset/golden.bin",
+        "data/results/wo0015-xsim-final-20261015/vectors/D_short/golden.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2d95fbe9bf5c0bc7646019afd7a450ff80e9ed12",
+          "representative_path": "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-0.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-0.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-0.bin",
+        "data/results/wo0014-hw-100mhz-20261014/export/rgb_packet.bin",
+        "data/results/wo0014-hw-50mhz-20261014/export/rgb_packet.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/dma-single-diagnostics/step2_frame00_id0000000000_tx_raw.bin",
+        "data/results/wo0015-board-once-20261017/canonical-v3/tx_raw.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "801982ab62fa53573614d0161a759a718178d9d7",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-0.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-0.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-1.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-1.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-1.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-1.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "2857ea50b13a13969fd678d3a37203ade425d947",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-1.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-1.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-2.binary.bin",
+      "status": "??",
+      "bytes": 76800,
+      "sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-2.binary.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-2.rgb.bin",
+      "status": "??",
+      "bytes": 230432,
+      "sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0014-closeout-20261015/frame-2.bin"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "deb64e87c14d1b07630154116086fc04aa408905",
+          "representative_path": "data/results/wo0014-closeout-20261015/frame-2.bin"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/frame-2.rgb.bin"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud-http-probe-result.json",
+      "status": "??",
+      "bytes": 443,
+      "sha256": "c65ca13fa6b940e61a2c024a1793f8deca216a4b7691688e505bfe77c29bb920",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud-http-probe-result.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud-service-log.txt",
+      "status": "??",
+      "bytes": 669,
+      "sha256": "d19019f4507ec526c5d60195c1623f0e068e817438f9fc464f1c2177146d795b",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud-service-log.txt"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud_current_boot.py",
+      "status": "??",
+      "bytes": 964,
+      "sha256": "bee6a9ecd379cf241b8b5daaaccaa9bcad3f7684ba5ca0ef893f7a5db96730fc",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/hud_current_boot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/image-symlink-repair.json",
+      "status": "??",
+      "bytes": 575,
+      "sha256": "f3a7ef2870244f109c54a0eff9250915852cbc9dd27f309fad66df1b7b4e31a0",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/image-symlink-repair.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/original-wo15-run-manifest.json",
+      "status": "??",
+      "bytes": 2405,
+      "sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/original-wo15-run-manifest.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/preparation-report.md",
+      "status": "??",
+      "bytes": 6704,
+      "sha256": "23d105f2164abee3168c401a7811beaec4b4516cb2225087135bb7f63392c10c",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/preparation-report.md"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/probe_hud_http.py",
+      "status": "??",
+      "bytes": 2673,
+      "sha256": "51347a0f334354377e9196a0cdc6a83c9256b52f4d143afb1b81c11df5cef770",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/probe_hud_http.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/read_only_snapshot.py",
+      "status": "??",
+      "bytes": 2456,
+      "sha256": "920988e0a00609774a5668c370a33040e8ef814ed04c49d92983c8c7e8ee4532",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/read_only_snapshot.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/repair_image_symlinks.py",
+      "status": "??",
+      "bytes": 1613,
+      "sha256": "50ed8053d092d71392a410f6c7b1debb5c7e1074bec0eb5d553a9e876e4b5b2e",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/repair_image_symlinks.py"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1-currentboot.json",
+      "status": "??",
+      "bytes": 28550,
+      "sha256": "0a7f601fbfb645775a698bec3f395fbfafa6286d5b31c0e6dc212dafc27dd7d3",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [
+        "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/stage1-currentboot.json"
+      ],
+      "matches_in_existing_branch_history": [
+        {
+          "git_blob": "e519ce553ba1306b5a4d36ed489c67a538d3d58b",
+          "representative_path": "data/results/wo0016-stageB2-offline-replay-20261020/board-evidence/var/lib/wo0016/history/boot-6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/stage1-currentboot.json"
+        }
+      ],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1-currentboot.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1_preflight_diagnostics.sh",
+      "status": "??",
+      "bytes": 943,
+      "sha256": "3da2409871d91cf8e82dc7c96fd2d705edd69d3edb03ec33c2c62eb8dce39343",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1_preflight_diagnostics.sh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1_run_currentboot.sh",
+      "status": "??",
+      "bytes": 1289,
+      "sha256": "61fe0a812c4823fcd9c0c3e1a425db26c81fefff498f4c11dc16098c103616ea",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stage1_run_currentboot.sh"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stageb2-currentboot-result.json",
+      "status": "??",
+      "bytes": 44314,
+      "sha256": "eefe87dbeda4bc1eb1998ee6cf8cde6c8594dcc774bd2ba158d31c6207283ad1",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stageb2-currentboot-result.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stageb2-locked-config.json",
+      "status": "??",
+      "bytes": 3766,
+      "sha256": "139056bcc659662c0eeddb7ad1bed1e7594d07397de1efb745da4abf580d3d6a",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/stageb2-locked-config.json"
+    },
+    {
+      "path": "data/results/wo0016-stageB2-prep-20261020-6f13f0f0/verify_stageb2_ready_guard.py",
+      "status": "??",
+      "bytes": 2391,
+      "sha256": "6734e873a8740bbd69476e1267bbb9a52ddcd65aba22d5e18e063c31cf153cb9",
+      "category": "raw_experiment",
+      "matches_in_closeout_base": [],
+      "matches_in_existing_branch_history": [],
+      "source_absolute_path": "C:/fpga/material-counter/data/results/wo0016-stageB2-prep-20261020-6f13f0f0/verify_stageb2_ready_guard.py"
+    }
+  ],
+  "source_root": "C:/fpga/material-counter"
+}
