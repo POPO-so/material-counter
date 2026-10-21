@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-**最新 Stage A Attempt 8 完成 30/30 帧，端到端吞吐为 15.157 FPS（1.979244 s，65.975 ms/帧），达到 15 FPS 门槛；`avg_roi_count_ms=17.657 ms`，仍未达到 `<=2.5 ms` 目标。** 本次为空载基线，观测总计数与给定真值均为 0；该结果不代表 M6 螺母/垫片准确率。Packer 验证 30 帧，最终两个 DMA 通道 Idle 且无错，缓冲区已释放。Stage B 计划使用 150 帧动态投料、真值 `EXPECTED_COUNT=5`，尚未执行。
+**Stage A Attempt 8 完成 30/30 帧，端到端吞吐为 15.157 FPS（1.979244 s，65.975 ms/帧），达到 15 FPS 门槛；`avg_roi_count_ms=17.657 ms`，仍未达到 `<=2.5 ms` 目标。Stage B-2 的 Attempt-5 Recovery-2 已完成 165/165 帧，5 颗 M6 螺母真值计数为 4（80%），采样链路完成但物料准确率验收未通过；用户确认本轮不重测。** Stage A 空载基线不代表物料准确率；详细实测与 SHA-256 链见本记录末尾的 Stage B-2 收口。
 
 ## Attempt 1 依赖对齐与 Guard 隔离
 
@@ -303,3 +303,29 @@ sudo -n env XILINX_XRT=/usr "$PY" "$WO16/run_stream_counter.py" \
 - Stage B 计划为动态投放 M6 螺母与垫片、150 帧、人工真值 `EXPECTED_COUNT=5`。物料工况及准确率仍为 NOT RUN。
 - 操作员交接称板端已安全下电；本轮没有板端连接或独立确认供电状态。重新上电会形成新的 Boot ID，因此必须先运行只读门禁并准备新的同 Boot Stage 1 回执、manifest 与一次性 Guard，再进入 Stage B；不能复用本报告中固定为旧 Boot ID 的命令字段。
 - 离线回归记录为 `244 passed, 1 skipped`，其临时重建源清单的限制见前文。本次交接以隔离分支提交 `3d05133` 为基线；该分支已推送，尚未合并至 `main`。
+
+## Stage B-2 收口：Attempt-5 Recovery-2（2026-10-21）
+
+本节收口的是 Stage B-2 单轮 M6 螺母实测。用户已确认采用 Attempt-5 Recovery-2 作为本轮唯一有效采样数据，不再重测。该结果应记为“板端流采集完成、实物计数验收未通过”，不能登记为 5/5 PASS，也不支持多轮重复性结论。
+
+本节更新并取代上一节“Stage B 状态交接”中“Stage B 尚未执行”的结论；此前内容保留为当时的状态快照。
+
+| 指标 | Attempt-5 Recovery-2 实测 |
+|---|---:|
+| Boot ID / Attempt ID | `d9f65950-d59b-4ea4-bee4-b28656cb176f` / `attempt-5-recovery-2` |
+| 执行状态 / 处理帧数 | `BOARD_STREAM_COMPLETE` / 165 / 165 |
+| 人工真值 / 计数 / 准确率 | 5 / 4 / 80%（少计 1 次，验收未通过） |
+| 执行器端到端吞吐 / 总时长 | 22.132 FPS / 7.455 s |
+| READY Guard | `consumed=false`，SHA-256 `e7c8a4ddfe93ced8b32ab42626697d235520df1b57d1c51a555b4edf6b56d365` |
+| Attempt 一次性许可 / marker | Permit SHA-256 `1efb4a63450c1c5449e7e7a79ce0d51e4ad66673898055c5e959174fcf7f7571`；本次 Attempt 已消费，marker SHA-256 `f82b96f4dbb9f986a0e5219d9c98a72bb7a06446ea564781e9cdee72b51d9801` |
+| Stage 1 / Manifest | 同 Boot `OVERLAY_LOAD_PASS`；回执 SHA-256 `8c79ff081bca5a40cf7bacaa5ab095bdfc0382e16e05604e45b448e6814fd745`；Manifest SHA-256 `517debdc3a7e94d58dde1d8db32995d498a9fc53acc48623d46dc39061dd08c0` |
+| BIT / HWH | `a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420` / `bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6` |
+| 缓冲区 / DMA 收尾 | `buffers_released=true`；最后一帧 MM2S/S2MM 均为 `0x00001002` |
+
+READY Guard 与 Attempt 一次性许可是不同门禁：样本 JSON 中 `stageb2_ready_guard.consumed=false`；`guard.consumed=true` 记录的是本次 Attempt 许可已消费。实际计数事件为帧 64、84、118、150；记录没有把少计归因到某一颗具体螺母。
+
+修复后的 Attempt 4 离线回放另有记录：165 帧回放得到 3 次合格跨线事件，其中 1 次为缺帧推断；该回放输入来自记录的连通域，不是板端实测，也不证明物理实体身份。收口时在当前隔离 worktree 对 `scripts/wo0016` 重新执行测试，结果为 `109 passed`。
+
+早先未进入有效投料采样的启动/浏览器交接失败记录均保留在结果目录，未计为有效样本。报告、原始证据包、逐帧数据与各次失败归档均未修改。原 Attempt-5 准备清单列出 46 项，其中 45 项与当前字节一致；唯一差异为后来更新过的 `current-status.txt` 状态快照，不涉及采样原始文件。新收口清单另行索引最终状态、测试日志、样本报告、原始包及历史失败归档，共 40 个文件；原准备清单及其哈希仍保留供审计。
+
+完整文件级 SHA-256 索引见[收口证据清单](../../data/results/wo0016-stageB2-attempt5-prep-20261021/attempt-5-recovery-2-sample-20261021/STAGEB2-CLOSEOUT-MANIFEST.json)；该清单 SHA-256 为 `74e8f625f5f47150486f4db6b69145dc0955b2b2be7c962cdb2bfa5b29bf64e1`。首次有效采样报告为[Attempt-5 Recovery-2 报告](../../data/results/wo0016-stageB2-attempt5-prep-20261021/attempt-5-recovery-2-sample-20261021/REPORT.md)，SHA-256 为 `d1552a5eefa4a6e12dcadf182b74c761d75425e21ba18de1c3b3ef8d8ce7a797`；原始包为[证据归档](../../data/results/wo0016-stageB2-attempt5-prep-20261021/attempt-5-recovery-2-sample-20261021/attempt-5-recovery-2-evidence-export-20261021.tar.gz)，SHA-256 为 `f4d54eaa0dd6b800fd72a4ec3a840d59adcb32cc9df6257839f7d43187146a60`。

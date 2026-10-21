@@ -1,0 +1,31 @@
+{
+  "attempt_id": "attempt-3",
+  "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+  "files": {
+    "PACKAGE_SHA256.json": "b05d493983fd80bc53e0d27effdefe6453646cf25ada93c6cdaa73e62178d509",
+    "attempt-records/attempt-permit.json": "23b75a0598568117af7839b8c4d1ee15dd84c5a40def08422fa9b8f491d2140c",
+    "attempt-records/consumed.json": "2f1e14807ed4c1e4c91f31e0b47e5a38632f8d5b05ad3d0ac6f2f1738ac7fcd3",
+    "attempt-records/exit-status.json": "f5e30a395cbb6b444201c2c673ded0018ca69d40653e086a3246eaed8fef1aa5",
+    "attempt-records/frame-results.json": "bcacadae888ec5166bea40b00bcd39db6857a0dc61e1143cdee1bfa0821b77dd",
+    "attempt-records/launch.json": "fa88c5ad175fbf4d63110411bd8ec4c5f5c4e45280067ec736e456d2e24cd187",
+    "attempt-records/operator-control-events.jsonl": "04fa8620f63e28a64701cde4bd25a38da4f36f970426d6449fd6f13919bb3b22",
+    "attempt-records/operator-statement.json": "722303d2acc79b0226aa73b696fbf4cc7d7897951a05d1ea34fae295d56ed2c5",
+    "attempt-records/stdout.log": "af50820e3cb6f6b80b1bab1561809e4e859505bce9682dac3b097e4688724d69",
+    "scripts/wo0016/mjpeg_preview.py": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6",
+    "scripts/wo0016/operator_gate_launcher.py": "fe1a943a090962dd11eb60c3ee3274b33469750f2b0eb763e9a0374d69dfbe0d",
+    "scripts/wo0016/packet_encoder.py": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+    "scripts/wo0016/run_stream_counter.py": "c6dedbc8444b0a2d7ab4e1dc0943e97916e4b9f3db5672c4f6f813be7303f999",
+    "scripts/wo0016/stream_counter.py": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625",
+    "stage1-currentboot.json": "0a7f601fbfb645775a698bec3f395fbfafa6286d5b31c0e6dc212dafc27dd7d3",
+    "stageb2-attempt-3-result.json": "7e4e24afb36fb78716e1bed12e8273c807fa33ad42feef1b8c066a2c773f3471",
+    "stageb2-attempt-3-result.milestones.jsonl": "7ad277ab1b5df4c2fad2c59aacfdd3a4c522bb4e1b8ba5274b0d15fa86f850a9",
+    "stageb2-ready-6f13f0f0-4433-445f-a023-fa403685aeee.json": "f15464025abeabc2e52681aaa000caf25da217cdf5505781c3d7fcba45cd5b9b"
+  },
+  "offline_replay_note": "Numerical replay only; no one-to-one physical identity proof",
+  "offline_replayed_total_count": 5,
+  "operator_report": "Five nuts fed together; individual timing/identity unverified",
+  "previous_archive_manifest_sha256": "6e7bd38d6fc9dc57a0d88500a77d754ef593e7c667e7fb735ad09aaef263a068",
+  "raw_total_count": 0,
+  "schema": 1,
+  "status": "FAILED_COUNT_SOFTWARE_AXIS_ASSOCIATION_GROUPED_FEED"
+}

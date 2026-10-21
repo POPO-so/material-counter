@@ -1,0 +1,70 @@
+{
+  "source_result_summary": {
+    "total_count": 0,
+    "frames_processed": 165,
+    "throughput_fps": 22.916291167323276,
+    "elapsed_seconds": 7.200117976999536
+  },
+  "ranges": [
+    {
+      "frames": [
+        24,
+        30
+      ],
+      "roi_foreground_pixels": {
+        "min": 2,
+        "max": 4292,
+        "max_frame": 29
+      },
+      "components_per_frame": {
+        "min": 0,
+        "max": 2,
+        "max_frame": 26
+      },
+      "component_observations": 7,
+      "areas": {
+        "min": 46,
+        "median": 2511,
+        "max": 4283
+      },
+      "x_range": [
+        50.61516034985423,
+        112.29185150595377
+      ],
+      "y_range": [
+        102.52173913043478,
+        138.50728862973762
+      ]
+    },
+    {
+      "frames": [
+        114,
+        135
+      ],
+      "roi_foreground_pixels": {
+        "min": 13,
+        "max": 812,
+        "max_frame": 127
+      },
+      "components_per_frame": {
+        "min": 0,
+        "max": 7,
+        "max_frame": 121
+      },
+      "component_observations": 77,
+      "areas": {
+        "min": 15,
+        "median": 48,
+        "max": 463
+      },
+      "x_range": [
+        0.6,
+        291.84
+      ],
+      "y_range": [
+        99.66666666666667,
+        122.07
+      ]
+    }
+  ]
+}

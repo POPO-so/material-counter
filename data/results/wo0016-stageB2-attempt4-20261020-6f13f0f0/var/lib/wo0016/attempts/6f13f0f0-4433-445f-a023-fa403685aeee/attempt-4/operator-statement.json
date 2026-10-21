@@ -1,0 +1,8 @@
+{
+  "attempt_id": "attempt-4",
+  "source": "Direct human reply in current chat",
+  "operator_reply": "Five nuts fed, but one may have passed after sampling ended",
+  "five_in_window_confirmed": false,
+  "late_fifth": "POSSIBLE_NOT_PROVEN",
+  "classification": "FIVE_NUT_ACCEPTANCE_NOT_ESTABLISHED_POSSIBLE_WINDOW_MISS"
+}

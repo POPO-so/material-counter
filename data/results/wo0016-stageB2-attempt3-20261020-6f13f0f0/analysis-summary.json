@@ -1,0 +1,70 @@
+{
+  "status": "BOARD_STREAM_COMPLETE",
+  "frames_processed": 165,
+  "total_count": 0,
+  "elapsed_seconds": 7.200117976999536,
+  "throughput_fps": 22.916291167323276,
+  "buffers_released": true,
+  "cma_free_before_kib": 97552,
+  "cma_free_after_release_kib": 58720,
+  "roi_subtimings_ms": {
+    "ccl_avg_ms_when_invoked": 4.568,
+    "ccl_invocations": 28,
+    "ccl_ms": 0.791,
+    "ccl_timing_samples": 165,
+    "projection_ms": 6.17,
+    "projection_timing_samples": 165,
+    "roi_foreground_pixels_max": 4292,
+    "track_ms": 0.197,
+    "track_timing_samples": 165,
+    "validate_ms": 3.021,
+    "validate_timing_samples": 165
+  },
+  "avg_roi_count_ms": 20.854,
+  "avg_capture_ms": 33.863,
+  "avg_dma_ms": 11.651,
+  "process_start_monotonic": 8456.339956908,
+  "overlay_ready_monotonic": 8473.579753103,
+  "camera_open_monotonic": 8473.848360845,
+  "frame_0_start_monotonic": 8499.48915952,
+  "line_y": 120,
+  "direction": 1,
+  "min_area": 12,
+  "dma_status_final": {
+    "mm2s": 4098,
+    "s2mm": 4098
+  },
+  "per_frame_dmasr_passed": 165,
+  "per_frame_dmasr_records": 165,
+  "foreground_frames": 29,
+  "detection_frames": 27,
+  "detection_observations": 84,
+  "episodes": [
+    {
+      "frame_start": 24,
+      "frame_end": 30,
+      "roi_foreground_peak": 4292,
+      "ccl_calls": 6,
+      "detections_peak": 2,
+      "detections_total": 7,
+      "events": []
+    },
+    {
+      "frame_start": 114,
+      "frame_end": 135,
+      "roi_foreground_peak": 812,
+      "ccl_calls": 22,
+      "detections_peak": 7,
+      "detections_total": 77,
+      "events": []
+    }
+  ],
+  "events": [],
+  "result_sha256": "7e4e24afb36fb78716e1bed12e8273c807fa33ad42feef1b8c066a2c773f3471",
+  "frame_results_sha256": "bcacadae888ec5166bea40b00bcd39db6857a0dc61e1143cdee1bfa0821b77dd",
+  "operator_report": "五颗连着一起投了",
+  "stage_acceptance": "TARGET_NOT_MET_NO_COUNT_EVENTS_GROUPED_FEED",
+  "cmafree_post_exit_latest_kib": 78112,
+  "operator_click_to_frame0_seconds": 18.036790902,
+  "confirmed_configuration_gap": "Y-axis crossing and 20 px lateral association limit conflict with predominantly positive-X motion; core algorithm not corrected in this run."
+}

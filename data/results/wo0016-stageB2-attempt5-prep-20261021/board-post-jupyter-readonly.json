@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "stage": "Attempt #5 after authorized Jupyter stop: read-only gate recheck",
+  "checked_date": "2026-10-21",
+  "boot_id": "d9f65950-d59b-4ea4-bee4-b28656cb176f",
+  "authorization_scope": "Stopped jupyter.service; read-only verification only. No cache reclaim, overlay load, or sampling.",
+  "cma_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 32092,
+    "required_min_exclusive": 32768,
+    "gate_pass": false
+  },
+  "jupyter": {
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "MainPID": 0
+  },
+  "listeners": {
+    "8080": false,
+    "8081": false,
+    "9090": false
+  },
+  "video_holders": {
+    "/dev/video0": false,
+    "/dev/video1": false
+  },
+  "v4l2": {
+    "format": "MJPG",
+    "width": 640,
+    "height": 400,
+    "auto_exposure": 1,
+    "exposure_time_absolute": 50,
+    "power_line_frequency": 1,
+    "gamma": 100
+  },
+  "ov9281_init_service": {
+    "Result": "success",
+    "ExecMainStatus": 0,
+    "ExecMainStartTimestampMonotonic": 96120828,
+    "ActiveState": "inactive",
+    "SubState": "dead"
+  },
+  "fpga_manager": {
+    "state": "operating",
+    "flags": "0"
+  },
+  "stage1_executed": false,
+  "ready_guard_issued": false,
+  "attempt5_permit_issued": false,
+  "sampling_started": false
+}

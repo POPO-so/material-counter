@@ -1,0 +1,32 @@
+{
+  "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+  "monotonic": 14714.31356781,
+  "result_sha256": "763e12aed5cbc50283da89836f5aa0d083ad190aa0128e8b26c2c5238913a85e",
+  "frame_records_sha256": "b17d868aa818fd6e156a9bf729dc24163ca98c604fd18a3151b60430d1bf9622",
+  "frames_processed": 165,
+  "frame_records": 165,
+  "exit_code": 0,
+  "mm2s_pass": 165,
+  "s2mm_pass": 165,
+  "frames_expected": 165,
+  "buffers_released": true,
+  "cma_free_after_release_kib": 57676,
+  "cma_free_after_process_exit_kib": 76544,
+  "ready_guard_sha256": "f15464025abeabc2e52681aaa000caf25da217cdf5505781c3d7fcba45cd5b9b",
+  "ready_guard_consumed": false,
+  "attempt_marker_consumed": true,
+  "video_and_mem_handles_free": true,
+  "fuser_stdout": "",
+  "fuser_stderr": "",
+  "port8080_listening": false,
+  "port8081_listening": false,
+  "fpga_manager": {
+    "state": "operating",
+    "flags": "0"
+  },
+  "deployed_package_hashes_verified": true,
+  "automatic_retry": false,
+  "stage_b2_acceptance": "FAIL_EXPECTED_FIVE_NOT_ESTABLISHED",
+  "count": 4,
+  "expected": 5
+}

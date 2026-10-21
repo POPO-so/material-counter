@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "work_order": "WO-0016",
+  "stage": "Stage B-2",
+  "attempt_id": "attempt-5",
+  "boot_id": "d9f65950-d59b-4ea4-bee4-b28656cb176f",
+  "status": "PRESTART_FAILED_XRT_ENV",
+  "launch": {
+    "systemd_unit": "wo0016-attempt5-operator-gate-d9f65950.service",
+    "result": "BOARD_STREAM_FAILED",
+    "error": "RuntimeError: No Devices Found",
+    "interactive_login_xilinx_xrt": "/usr",
+    "systemd_manager_xilinx_xrt": null,
+    "required_board_launch_environment": "XILINX_XRT=/usr",
+    "exit_code": 2,
+    "board_accessed": true,
+    "pynq_imported": true,
+    "frames_processed": 0,
+    "frame_records": 0,
+    "operator_click_received": false,
+    "overlay_ready_milestone": false,
+    "camera_opened_milestone": false,
+    "frame_zero_milestone": false,
+    "attempt_marker_consumed": true
+  },
+  "post_failure_readonly": {
+    "boot_id": "d9f65950-d59b-4ea4-bee4-b28656cb176f",
+    "cma_free_kib": 65960,
+    "fpga_manager_state": "operating",
+    "fpga_manager_flags": 0,
+    "camera_device_holders": [],
+    "ports_8080_8081_9090_listening": false,
+    "operator_unit_state": "inactive/dead"
+  },
+  "board_evidence": {
+    "result_path": "/var/lib/wo0016/attempts/d9f65950-d59b-4ea4-bee4-b28656cb176f/attempt-5/attempt5-result.json",
+    "result_sha256": "e11402ff1d707c711627c92fdd60502cd42514a31d6d5fd188c9e7dae19c4d27",
+    "marker_path": "/var/lib/wo0016/attempts/d9f65950-d59b-4ea4-bee4-b28656cb176f/attempt-5/consumed.json",
+    "marker_sha256": "93328c883de7d927119c4db6ddb7c9df4fd65dfb63207264b50d66f655e2370e",
+    "milestones_sha256": "50ff12b22cddf393f597285e52cda68a1f951e3ba1a193ce1785f19b09ee3edb",
+    "exit_status_sha256": "d914a9a46002de134eebc2267bc8a142695b92853332b932abce3a5a4d3593eb",
+    "operator_events_sha256": "311ecc15dfc8c85db1a6e2bbf7da018a758680efe51cb431fa15884de113c77c"
+  },
+  "next_action": "Preserve this marker and evidence. Do not retry or reissue without fresh user authorization. A future authorized launch must explicitly pass XILINX_XRT=/usr."
+}

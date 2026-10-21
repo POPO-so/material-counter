@@ -1,0 +1,11 @@
+STAGE_B2_SAMPLE_COMPLETE_ACCEPTANCE_NOT_MET
+Boot=d9f65950-d59b-4ea4-bee4-b28656cb176f
+Attempt=attempt-5-recovery-2
+Status=BOARD_STREAM_COMPLETE
+Frames=165/165
+ExpectedCount=5
+ObservedCount=4
+AccuracyPercent=80
+READY_Guard_consumed=false
+AttemptPermit_consumed=true
+Retest=false

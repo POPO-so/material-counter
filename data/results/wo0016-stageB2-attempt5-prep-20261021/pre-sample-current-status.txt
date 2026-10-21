@@ -1,0 +1,8 @@
+READY_WAITING_FOR_START
+Boot=d9f65950-d59b-4ea4-bee4-b28656cb176f
+CmaFreeKiB=94432
+Stage1=OVERLAY_LOAD_PASS
+READY_consumed=false
+Attempt5_permit=AUTHORIZED_consumed=false
+Attempt5_marker_exists=false
+Sampling_started=false

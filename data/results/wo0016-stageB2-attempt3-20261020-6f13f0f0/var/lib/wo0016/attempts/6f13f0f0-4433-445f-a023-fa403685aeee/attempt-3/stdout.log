@@ -1,0 +1,1422 @@
+[MILESTONE] PROCESS_START monotonic=8456.339957
+[MILESTONE] OVERLAY_READY_DOWNLOAD_FALSE monotonic=8473.579753
+[MILESTONE] CAMERA_OPENED monotonic=8473.848361
+[MILESTONE] CAMERA_OPEN_READY_FOR_OPERATOR monotonic=8475.128475
+[OPERATOR_GATE] CAMERA_READY_WAITING_FOR_BROWSER_CLICK
+[OPERATOR_PREARM] 15 seconds remaining
+[OPERATOR_PREARM] 14 seconds remaining
+[OPERATOR_PREARM] 13 seconds remaining
+[OPERATOR_PREARM] 12 seconds remaining
+[OPERATOR_PREARM] 11 seconds remaining
+[OPERATOR_PREARM] 10 seconds remaining
+[OPERATOR_PREARM] 9 seconds remaining
+[OPERATOR_PREARM] 8 seconds remaining
+[OPERATOR_PREARM] 7 seconds remaining
+[OPERATOR_PREARM] 6 seconds remaining
+[OPERATOR_PREARM] 5 seconds remaining
+[OPERATOR_PREARM] 4 seconds remaining
+[OPERATOR_PREARM] 3 seconds remaining
+[OPERATOR_PREARM] 2 seconds remaining
+[OPERATOR_PREARM] 1 seconds remaining
+[MILESTONE] CAMERA_OPEN_AND_STABILIZING_START monotonic=8496.470187
+[STABILIZATION] 3 seconds remaining
+[STABILIZATION] 2 seconds remaining
+[STABILIZATION] 1 seconds remaining
+[MILESTONE] FRAME_0_CAPTURE_START_FEED_NOW monotonic=8499.489160
+{
+  "accuracy": 0.0,
+  "accuracy_formula": "1 - abs(total_count - expected_count) / max(expected_count, 1)",
+  "accuracy_percent": 0.0,
+  "afi1_exact_readback": {
+    "AFI1_RDCHAN_CTRL": "0x00000001",
+    "AFI1_WRCHAN_CTRL": "0x00000f01"
+  },
+  "afi1_snapshot": {
+    "access": "read-only",
+    "afi1_skip_reason": null,
+    "afi1_status": "READ",
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "raw_hex": "0x00000001",
+        "value": 1,
+        "width_bit0": 1,
+        "width_bits": 32
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "raw_hex": "0x00000f01",
+        "value": 3841,
+        "width_bit0": 1,
+        "width_bits": 32
+      },
+      "SLCR_FPGA0_CLK_CTRL": {
+        "address": "0xf8000170",
+        "raw_hex": "0x00400800",
+        "value": 4196352
+      },
+      "SLCR_FPGA_RST_CTRL": {
+        "address": "0xf8000240",
+        "raw_hex": "0x00000000",
+        "value": 0
+      }
+    },
+    "stage": "wo0016-preflight"
+  },
+  "attempt_marker_path": "/var/lib/wo0016/attempts/6f13f0f0-4433-445f-a023-fa403685aeee/attempt-3/consumed.json",
+  "avg_capture_ms": 33.863,
+  "avg_dma_ms": 11.651,
+  "avg_encode_ms": 13.268,
+  "avg_mjpeg_background_encode_ms": null,
+  "avg_mjpeg_encode_ms": null,
+  "avg_mjpeg_handoff_ms": 0.395,
+  "avg_packer_check_ms": 0.476,
+  "avg_postprocess_ms": 30.782,
+  "avg_roi_count_ms": 20.854,
+  "avg_rx_copy_ms": 1.155,
+  "avg_rx_sync_ms": 0.475,
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": true,
+  "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+  "buffer_gates": [
+    {
+      "mm2s_physical_range": [
+        361234432,
+        361464864
+      ],
+      "permitted_buffer_ranges": [
+        [
+          1048576,
+          536870912
+        ]
+      ],
+      "rx_actual_bytes": 76800,
+      "s2mm_physical_range": [
+        361103360,
+        361180160
+      ],
+      "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+      "tx_actual_bytes": 230432
+    },
+    {
+      "mm2s_physical_range": [
+        361496576,
+        361727008
+      ],
+      "permitted_buffer_ranges": [
+        [
+          1048576,
+          536870912
+        ]
+      ],
+      "rx_actual_bytes": 76800,
+      "s2mm_physical_range": [
+        361758720,
+        361835520
+      ],
+      "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+      "tx_actual_bytes": 230432
+    }
+  ],
+  "buffer_layout": {
+    "allocation_count": 4,
+    "cma_free_after_allocation_kib": 60592,
+    "rx_bytes_per_slot": 76800,
+    "slot_count": 2,
+    "tx_bytes_per_slot": 230432
+  },
+  "buffers_released": true,
+  "camera_buffer_size": 1,
+  "camera_device": "/dev/video0",
+  "camera_fps_actual": 60.0,
+  "camera_fps_requested": 60,
+  "camera_height": 400,
+  "camera_mode": "MJPG 640x400 resized to Gray8 320x240",
+  "camera_open_monotonic": 8473.848360845,
+  "camera_output_height": 240,
+  "camera_output_width": 320,
+  "camera_prefetch_depth": 1,
+  "camera_warmup_frames": 2,
+  "camera_width": 640,
+  "capture_timing_samples": 165,
+  "checker_signature": "0x574f3134",
+  "clock_mhz": 50,
+  "cma_admission": {
+    "CmaFree_kib": 97552,
+    "CmaTotal_kib": 131072,
+    "limitation": "kernel CMA accounting and verified DDR safety envelope only; not a measured CMA interval or static CMA subregion; authoritative PYNQ physical-address, size, overlap and allocation accounting checks remain mandatory",
+    "permitted_buffer_ranges": [
+      [
+        1048576,
+        536870912
+      ]
+    ],
+    "physical_cma_range_known": false,
+    "requires_authoritative_post_alloc_gate": true,
+    "source": "MEMINFO_IOMEM_VERIFIED",
+    "system_ram_ranges": [
+      [
+        0,
+        536870912
+      ]
+    ]
+  },
+  "cma_free_after_release_kib": 58720,
+  "cma_free_before_kib": 97552,
+  "cma_free_delta_kib": -38832,
+  "cma_watermark_kib": 32768,
+  "count_error": -5,
+  "direction": 1,
+  "dma_status_final": {
+    "mm2s": 4098,
+    "s2mm": 4098
+  },
+  "dma_timing_samples": 165,
+  "elapsed_seconds": 7.200117976999536,
+  "encode_timing_samples": 165,
+  "expected_count": 5,
+  "fpga_manager": {
+    "flags": "0",
+    "state": "operating"
+  },
+  "frame_0_start_monotonic": 8499.48915952,
+  "frame_dma_status": [
+    {
+      "frame_id": 0,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 1,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 2,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 3,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 4,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 5,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 6,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 7,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 8,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 9,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 10,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 11,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 12,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 13,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 14,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 15,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 16,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 17,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 18,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 19,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 20,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 21,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 22,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 23,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 24,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 25,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 26,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 27,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 28,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 29,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 30,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 31,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 32,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 33,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 34,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 35,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 36,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 37,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 38,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 39,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 40,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 41,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 42,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 43,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 44,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 45,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 46,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 47,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 48,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 49,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 50,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 51,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 52,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 53,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 54,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 55,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 56,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 57,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 58,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 59,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 60,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 61,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 62,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 63,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 64,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 65,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 66,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 67,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 68,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 69,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 70,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 71,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 72,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 73,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 74,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 75,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 76,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 77,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 78,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 79,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 80,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 81,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 82,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 83,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 84,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 85,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 86,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 87,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 88,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 89,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 90,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 91,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 92,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 93,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 94,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 95,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 96,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 97,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 98,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 99,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 100,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 101,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 102,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 103,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 104,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 105,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 106,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 107,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 108,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 109,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 110,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 111,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 112,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 113,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 114,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 115,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 116,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 117,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 118,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 119,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 120,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 121,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 122,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 123,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 124,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 125,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 126,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 127,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 128,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 129,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 130,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 131,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 132,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 133,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 134,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 135,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 136,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 137,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 138,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 139,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 140,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 141,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 142,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 143,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 144,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 145,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 146,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 147,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 148,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 149,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 150,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 151,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 152,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 153,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 154,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 155,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 156,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 157,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 158,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 159,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 160,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 161,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 162,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 163,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    },
+    {
+      "frame_id": 164,
+      "mm2s": "0x00001002",
+      "s2mm": "0x00001002"
+    }
+  ],
+  "frames_processed": 165,
+  "ground_truth_count": 5,
+  "guard": {
+    "attempt_id": "attempt-3",
+    "attempt_permit_sha256": "23b75a0598568117af7839b8c4d1ee15dd84c5a40def08422fa9b8f491d2140c",
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+    "consumed": true,
+    "expected_count": 5,
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "manifest_sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+    "material_label": "M6_nut_no_washer",
+    "max_frames": 165,
+    "operator_prearm_delay_s": 15.0,
+    "ready_guard_sha256": "f15464025abeabc2e52681aaa000caf25da217cdf5505781c3d7fcba45cd5b9b",
+    "schema": 1,
+    "stabilization_delay_s": 3.0,
+    "stage": "wo0016-stageB2-attempt",
+    "work_order": "WO-0016"
+  },
+  "guard_mode": "READY Guard validate-only; attempt permit consumed-once",
+  "hardware_fps": 22.916291167323276,
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "line_y": 120,
+  "manifest_sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+  "material_label": "M6_nut_no_washer",
+  "max_frames": 165,
+  "milestone_log": "/home/xilinx/board-runtime-currentboot-v2/stageb2-attempt-3-result.milestones.jsonl",
+  "min_area": 12,
+  "mjpeg_background_encode_timing_samples": 0,
+  "mjpeg_encode_timing_samples": 0,
+  "mjpeg_handoff_timing_samples": 165,
+  "note": "Measured only for the supplied finite live-camera interval; no automatic retry/reset/reload.",
+  "operator_prearm_delay_s": 15.0,
+  "overlay_ready_monotonic": 8473.579753103,
+  "packer_check_timing_samples": 165,
+  "packer_output_frames_verified": 165,
+  "packer_signature": "0x574f3135",
+  "postprocess_timing_samples": 165,
+  "preview_client_error": null,
+  "preview_client_fps": null,
+  "preview_client_frames_received": null,
+  "preview_encode_errors": [],
+  "preview_frame_interval": 4,
+  "preview_jpeg_frames_encoded": 0,
+  "preview_jpeg_quality": 70,
+  "preview_url": "http://0.0.0.0:8080/",
+  "process_ownership": {
+    "denied": [],
+    "findings": [],
+    "scanned_proc": "/proc"
+  },
+  "process_start_monotonic": 8456.339956908,
+  "pynq_imported": true,
+  "roi_count_timing_samples": 165,
+  "roi_subtimings_ms": {
+    "ccl_avg_ms_when_invoked": 4.568,
+    "ccl_invocations": 28,
+    "ccl_ms": 0.791,
+    "ccl_timing_samples": 165,
+    "projection_ms": 6.17,
+    "projection_timing_samples": 165,
+    "roi_foreground_pixels_max": 4292,
+    "track_ms": 0.197,
+    "track_timing_samples": 165,
+    "validate_ms": 3.021,
+    "validate_timing_samples": 165
+  },
+  "runtime_audit": {
+    "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+    "fpga_manager": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "kernel_log": [
+      "[    1.500395] RPC: Registered tcp-with-tls transport module.",
+      "[    1.504585] RPC: Registered tcp NFSv4.1 backchannel transport module.",
+      "[    1.512760] PCI: CLS 0 bytes, default 64",
+      "[    1.516184] armv7-pmu f8891000.pmu: hw perfevents: no interrupt-affinity property, guessing.",
+      "[    1.523659] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available",
+      "[    1.532152] Initialise system trusted keyrings",
+      "[    1.535573] workingset: timestamp_bits=14 max_order=17 bucket_order=3",
+      "[    1.541358] squashfs: version 4.0 (2009/01/31) Phillip Lougher",
+      "[    1.546439] jffs2: version 2.2. (NAND) (SUMMARY)  © 2001-2006 Red Hat, Inc.",
+      "[    1.724088] xor: measuring software checksum speed",
+      "[    1.737019]    arm4regs        :  1046 MB/sec",
+      "[    1.752555]    8regs           :   790 MB/sec",
+      "[    1.767399]    32regs          :   836 MB/sec",
+      "[    1.770461] xor: using function: arm4regs (1046 MB/sec)",
+      "[    1.774403] Key type asymmetric registered",
+      "[    1.777208] Asymmetric key parser 'x509' registered",
+      "[    1.781109] io scheduler mq-deadline registered",
+      "[    1.784358] io scheduler kyber registered",
+      "[    1.787143] io scheduler bfq registered",
+      "[    1.790702] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized",
+      "[    1.799705] dma-pl330 f8003000.dma-controller: Loaded driver for PL330 DMAC-241330",
+      "[    1.806067] dma-pl330 f8003000.dma-controller: \tDBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16",
+      "[    1.829621] brd: module loaded",
+      "[    1.841252] loop: module loaded",
+      "[    1.845052] spi_master spi0: cannot find modalias for /axi/spi@e000d000/flash@0",
+      "[    1.851170] spi_master spi0: Failed to create SPI device for /axi/spi@e000d000/flash@0",
+      "[    1.861569] tun: Universal TUN/TAP device driver, 1.6",
+      "[    1.865674] CAN device driver interface",
+      "[    1.868977] macb e000b000.ethernet: invalid hw address, using random",
+      "[   39.947303] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 40 (52:83:e2:71:51:ff)",
+      "[   39.956275] e1000e: Intel(R) PRO/1000 Network Driver",
+      "[   39.960005] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.",
+      "[   39.965759] usbcore: registered new interface driver cdc_acm",
+      "[   39.970158] cdc_acm: USB Abstract Control Model driver for USB modems and ISDN adapters",
+      "[   39.976927] usbcore: registered new interface driver cdc_wdm",
+      "[   39.981382] usbcore: registered new interface driver usb-storage",
+      "[   39.986223] usbcore: registered new interface driver usbserial_generic",
+      "[   39.991520] usbserial: USB Serial support registered for generic",
+      "[   39.996303] usbcore: registered new interface driver usb_serial_simple",
+      "[   40.001604] usbserial: USB Serial support registered for carelink",
+      "[   40.006442] usbserial: USB Serial support registered for flashloader",
+      "[   40.011565] usbserial: USB Serial support registered for funsoft",
+      "[   40.016319] usbserial: USB Serial support registered for google",
+      "[   40.020999] usbserial: USB Serial support registered for hp4x",
+      "[   40.025493] usbserial: USB Serial support registered for kaufmann",
+      "[   40.030348] usbserial: USB Serial support registered for libtransistor",
+      "[   40.035636] usbserial: USB Serial support registered for moto_modem",
+      "[   40.040683] usbserial: USB Serial support registered for motorola_tetra",
+      "[   40.046042] usbserial: USB Serial support registered for nokia",
+      "[   40.050643] usbserial: USB Serial support registered for novatel_gps",
+      "[   40.055746] usbserial: USB Serial support registered for siemens_mpi",
+      "[   40.060934] usbserial: USB Serial support registered for suunto",
+      "[   40.065608] usbserial: USB Serial support registered for vivopay",
+      "[   40.070381] usbserial: USB Serial support registered for zio",
+      "[   40.076075] ULPI transceiver vendor/product ID 0x0451/0x1507",
+      "[   40.080491] Found TI TUSB1210 ULPI transceiver.",
+      "[   40.083740] ULPI integrity check: passed.",
+      "[   40.087458] ci_hdrc ci_hdrc.0: EHCI Host Controller",
+      "[   40.091136] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1",
+      "[   40.120256] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00",
+      "[   40.125782] hub 1-0:1.0: USB hub found",
+      "[   40.128325] hub 1-0:1.0: 1 port detected",
+      "[   40.133460] i2c_dev: i2c /dev entries driver",
+      "[   40.136604] cdns-i2c e0004000.i2c: can't get pinctrl, bus recovery not supported",
+      "[   40.143505] cdns-i2c e0004000.i2c: 400 kHz mmio e0004000 irq 42",
+      "[   40.148289] cdns-i2c e0005000.i2c: can't get pinctrl, bus recovery not supported",
+      "[   40.155131] cdns-i2c e0005000.i2c: 400 kHz mmio e0005000 irq 43",
+      "[   40.163315] cdns-wdt f8005000.watchdog: Xilinx Watchdog Timer with timeout 10s",
+      "[   40.169896] device-mapper: ioctl: 4.48.0-ioctl (2023-03-01) initialised: dm-devel@redhat.com",
+      "[   40.177552] EDAC MC: ECC not enabled",
+      "[   40.180069] Xilinx Zynq CpuIdle Driver started",
+      "[   40.183860] sdhci: Secure Digital Host Controller Interface driver",
+      "[   40.188794] sdhci: Copyright(c) Pierre Ossman",
+      "[   40.191859] sdhci-pltfm: SDHCI platform and OF driver helper",
+      "[   40.197371] ledtrig-cpu: registered to indicate activity on CPUs",
+      "[   40.202482] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 551318127 ns",
+      "[   40.210477] timer #0 at (ptrval), irq=46",
+      "[   40.213631] usbcore: registered new interface driver usbhid",
+      "[   40.217973] usbhid: USB HID core driver",
+      "[   40.222869] mmc0: SDHCI controller on e0100000.mmc [e0100000.mmc] using ADMA",
+      "[   40.229796] fpga_manager fpga0: Xilinx Zynq FPGA Manager registered",
+      "[   40.237022] IPVS: Registered protocols (TCP, UDP)",
+      "[   40.240614] IPVS: Connection hash table configured (size=4096, memory=16Kbytes)",
+      "[   40.247068] IPVS: ipvs loaded.",
+      "[   40.248873] IPVS: [rr] scheduler registered.",
+      "[   40.252350] Initializing XFRM netlink socket",
+      "[   40.255475] NET: Registered PF_INET6 protocol family",
+      "[   40.261405] Segment Routing with IPv6",
+      "[   40.263951] In-situ OAM (IOAM) with IPv6",
+      "[   40.266835] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver",
+      "[   40.272626] NET: Registered PF_PACKET protocol family",
+      "[   40.276401] can: controller area network core",
+      "[   40.279598] NET: Registered PF_CAN protocol family",
+      "[   40.283100] can: raw protocol",
+      "[   40.284833] can: broadcast manager protocol",
+      "[   40.287766] can: netlink gateway - max_hops=1",
+      "[   40.291632] Registering SWP/SWPB emulation handler",
+      "[   40.312628] Loading compiled-in X.509 certificates",
+      "[   40.316257] mmc0: new high speed SDHC card at address b36c",
+      "[   40.321535] mmcblk0: mmc0:b36c CBADS 14.6 GiB",
+      "[   40.327454]  mmcblk0: p1 p2",
+      "[   40.336935] Btrfs loaded, zoned=no, fsverity=no",
+      "[   40.352337] of-fpga-region fpga-region: FPGA Region probed",
+      "[   40.357174] of_cfs_init",
+      "[   40.358460] of_cfs_init: OK",
+      "[   40.360321] cfg80211: Loading compiled-in X.509 certificates for regulatory database",
+      "[   40.370912] Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'",
+      "[   40.378012] Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'",
+      "[   40.384091] clk: Not disabling unused clocks",
+      "[   40.387081] ALSA device list:",
+      "[   40.388754]   No soundcards found.",
+      "[   40.391040] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2",
+      "[   40.398380] cfg80211: failed to load regulatory.db",
+      "[   40.482370] EXT4-fs (mmcblk0p2): mounted filesystem 63b8b04d-af08-419a-a9dc-16f374e283dc r/w with ordered data mode. Quota mode: disabled.",
+      "[   40.493681] VFS: Mounted root (ext4 filesystem) on device 179:2.",
+      "[   40.519120] usb 1-1: new high-speed USB device number 2 using ci_hdrc",
+      "[   40.534995] devtmpfs: mounted",
+      "[   40.539664] Freeing unused kernel image (initmem) memory: 1024K",
+      "[   40.544823] Run /sbin/init as init process",
+      "[   40.547634]   with arguments:",
+      "[   40.547643]     /sbin/init",
+      "[   40.547653]     earlyprintk",
+      "[   40.547662]   with environment:",
+      "[   40.547671]     HOME=/",
+      "[   40.547681]     TERM=linux",
+      "[   41.705774] systemd[1]: System time before build time, advancing clock.",
+      "[   41.863119] systemd[1]: Failed to find module 'autofs4'",
+      "[   42.381681] systemd[1]: systemd 249.11-0ubuntu3 running in system mode (+PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT +GNUTLS -OPENSSL +ACL +BLKID +CURL +ELFUTILS -FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP -LIBFDISK +PCRE2 -PWQUALITY -P11KIT -QRENCODE +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified)",
+      "[   42.412145] systemd[1]: Detected architecture arm.",
+      "[   42.492473] systemd[1]: Hostname set to <pynq>.",
+      "[   50.096592] systemd[1]: Queued start job for default target Multi-User System.",
+      "[   52.829112] random: crng init done",
+      "[   52.873324] systemd[1]: Created slice Slice /system/modprobe.",
+      "[   52.912770] systemd[1]: Created slice Slice /system/serial-getty.",
+      "[   52.951550] systemd[1]: Created slice User and Session Slice.",
+      "[   52.990031] systemd[1]: Started Dispatch Password Requests to Console Directory Watch.",
+      "[   53.029798] systemd[1]: Started Forward Password Requests to Wall Directory Watch.",
+      "[   53.069926] systemd[1]: Condition check resulted in Arbitrary Executable File Formats File System Automount Point being skipped.",
+      "[   53.080724] systemd[1]: Reached target Local Encrypted Volumes.",
+      "[   53.119997] systemd[1]: Reached target Remote File Systems.",
+      "[   53.159397] systemd[1]: Reached target Slice Units.",
+      "[   53.189733] systemd[1]: Reached target Local Verity Protected Volumes.",
+      "[   53.230459] systemd[1]: Listening on Syslog Socket.",
+      "[   53.259911] systemd[1]: Listening on initctl Compatibility Named Pipe.",
+      "[   53.313588] systemd[1]: Condition check resulted in Journal Audit Socket being skipped.",
+      "[   53.321731] systemd[1]: Listening on Journal Socket (/dev/log).",
+      "[   53.360578] systemd[1]: Listening on Journal Socket.",
+      "[   53.395406] systemd[1]: Listening on udev Control Socket.",
+      "[   53.430412] systemd[1]: Listening on udev Kernel Socket.",
+      "[   53.470513] systemd[1]: Condition check resulted in Huge Pages File System being skipped.",
+      "[   53.539782] systemd[1]: Mounting POSIX Message Queue File System...",
+      "[   53.586980] systemd[1]: Mounting Kernel Debug File System...",
+      "[   53.620129] systemd[1]: Condition check resulted in Kernel Trace File System being skipped.",
+      "[   53.640574] systemd[1]: Starting Journal Service...",
+      "[   53.717339] systemd[1]: Starting Restore / save the current clock...",
+      "[   53.740165] systemd[1]: Starting Set the console keyboard layout...",
+      "[   53.779735] systemd[1]: Condition check resulted in Create List of Static Device Nodes being skipped.",
+      "[   53.797253] systemd[1]: Starting Load Kernel Module configfs...",
+      "[   53.848210] systemd[1]: Starting Load Kernel Module drm...",
+      "[   53.888209] systemd[1]: Starting Load Kernel Module fuse...",
+      "[   53.927569] systemd[1]: Started Nameserver information manager.",
+      "[   53.985889] systemd[1]: Reached target Preparation for Network.",
+      "[   54.140232] systemd[1]: Starting Load Kernel Modules...",
+      "[   54.177453] systemd[1]: Starting Remount Root and Kernel File Systems...",
+      "[   54.221728] systemd[1]: Starting Coldplug All udev Devices...",
+      "[   54.267247] systemd[1]: Started Journal Service.",
+      "[   54.842613] systemd-journald[82]: Received client request to flush runtime journal.",
+      "[   55.031085] Adding 524284k swap on /var/swap.  Priority:-2 extents:2 across:2097148k SS",
+      "[   55.167839] systemd-journald[82]: File /var/log/journal/c82cf5bcd3a14b95935d65bfb529d72d/system.journal corrupted or uncleanly shut down, renaming and replacing.",
+      "[   59.984066] zocl: loading out-of-tree module taints kernel.",
+      "[   60.012770] [drm] Probing for xlnx,zocl",
+      "[   60.012819] zocl-drm axi:zyxclmm_drm: error -ENXIO: IRQ index 0 not found",
+      "[   60.018427] [drm] PR[0] Isolation addr 0x0",
+      "[   60.039695] [drm] Initialized zocl 0.0.0  for axi:zyxclmm_drm on minor 0",
+      "[   61.284062] usb 1-1: Found UVC 1.00 device USB Camera (0edc:2076)",
+      "[   61.306878] usbcore: registered new interface driver uvcvideo",
+      "[   66.653874] FAT-fs (mmcblk0p1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.",
+      "[   66.870161] macb e000b000.ethernet eth0: PHY [e000b000.ethernet-ffffffff:00] driver [RTL8211E Gigabit Ethernet] (irq=POLL)",
+      "[   66.870204] macb e000b000.ethernet eth0: configuring for phy/rgmii-id link mode",
+      "[   70.016357] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx",
+      "[   85.821834] systemd[567]: memfd_create() called without MFD_EXEC or MFD_NOEXEC_SEAL set",
+      "[  136.545189] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(355), ret: 0",
+      "[  136.545303] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(355)",
+      "[  136.545994] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(355), ret: 0",
+      "[  153.257600] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(781), ret: 0",
+      "[  153.257732] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(781)",
+      "[  153.258479] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(781), ret: 0",
+      "[  155.209242] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(781)",
+      "[  165.605440] fpga_manager fpga0: writing base.bin to Xilinx Zynq FPGA Manager",
+      "[  165.706314] [drm] Loading xclbin a5a89eb3-5874-aa5f-2225-3b14a201e98c to slot 0",
+      "[  165.706349] [drm] skip kind 29(AIE_RESOURCES) return code: -22",
+      "[  165.706369] [drm] skip kind 8(IP_LAYOUT) return code: -22",
+      "[  165.706385] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22",
+      "[  165.706399] [drm] skip kind 25(AIE_METADATA) return code: -22",
+      "[  165.706413] [drm] skip kind 7(CONNECTIVITY) return code: -22",
+      "[  165.706426] [drm] found kind 6(MEM_TOPOLOGY)",
+      "[  165.706544] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA",
+      "[  165.706625] [drm] Memory 1 is not reserved in device tree. Will allocate memory from CMA",
+      "[  165.706696] [drm] Memory 2 is not reserved in device tree. Will allocate memory from CMA",
+      "[  165.706761] [drm] Memory 3 is not reserved in device tree. Will allocate memory from CMA",
+      "[  165.706826] [drm] Memory 4 is not reserved in device tree. Will allocate memory from CMA",
+      "[  165.706889] [drm] zocl_xclbin_read_axlf a5a89eb3-5874-aa5f-2225-3b14a201e98c ret: 0",
+      "[  165.734227] [drm] bitstream a5a89eb3-5874-aa5f-2225-3b14a201e98c locked, ref=1",
+      "[  165.734335] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(355) add context Domain(65535) CU(0xffff) shared(true)",
+      "[  165.734433] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(355) del context Domain(65535) CU(0xffff)",
+      "[  165.734485] [drm] bitstream a5a89eb3-5874-aa5f-2225-3b14a201e98c unlocked, ref=0",
+      "[  171.307673] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(355)",
+      "[  300.889331] macb e000b000.ethernet eth0: Link is Down",
+      "[  304.009664] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx",
+      "[  757.108023] sh (2401): drop_caches: 3",
+      "[ 1631.846043] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4656), ret: 0",
+      "[ 1631.846157] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4656)",
+      "[ 1631.846841] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4656), ret: 0",
+      "[ 1631.850178] [drm] bitstream a5a89eb3-5874-aa5f-2225-3b14a201e98c locked, ref=1",
+      "[ 1631.850274] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(4656) add context Domain(65535) CU(0xffff) shared(true)",
+      "[ 1631.855825] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(4656) del context Domain(65535) CU(0xffff)",
+      "[ 1631.855894] [drm] bitstream a5a89eb3-5874-aa5f-2225-3b14a201e98c unlocked, ref=0",
+      "[ 1635.053720] fpga_manager fpga0: writing wo15.bin to Xilinx Zynq FPGA Manager",
+      "[ 1635.151069] [drm] Loading xclbin e9fc7172-6625-b117-4102-9b09270b7f4a to slot 0",
+      "[ 1635.151103] [drm] skip kind 29(AIE_RESOURCES) return code: -22",
+      "[ 1635.151140] [drm] skip kind 8(IP_LAYOUT) return code: -22",
+      "[ 1635.151157] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22",
+      "[ 1635.151172] [drm] skip kind 25(AIE_METADATA) return code: -22",
+      "[ 1635.151185] [drm] skip kind 7(CONNECTIVITY) return code: -22",
+      "[ 1635.151199] [drm] found kind 6(MEM_TOPOLOGY)",
+      "[ 1635.151354] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA",
+      "[ 1635.151413] [drm] zocl_xclbin_read_axlf e9fc7172-6625-b117-4102-9b09270b7f4a ret: 0",
+      "[ 1635.176875] [drm] bitstream e9fc7172-6625-b117-4102-9b09270b7f4a locked, ref=1",
+      "[ 1635.176990] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(4656) add context Domain(65535) CU(0xffff) shared(true)",
+      "[ 1635.177099] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(4656) del context Domain(65535) CU(0xffff)",
+      "[ 1635.177156] [drm] bitstream e9fc7172-6625-b117-4102-9b09270b7f4a unlocked, ref=0",
+      "[ 1636.468415] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4656)",
+      "[ 1934.558947] sh (5573): drop_caches: 3",
+      "[ 3700.778842] sh (8784): drop_caches: 3",
+      "[ 4112.520773] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(9640), ret: 0",
+      "[ 4112.520893] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(9640)",
+      "[ 4112.521671] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(9640), ret: 0",
+      "[ 4112.524947] [drm] bitstream e9fc7172-6625-b117-4102-9b09270b7f4a locked, ref=1",
+      "[ 4112.525041] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(9640) add context Domain(65535) CU(0xffff) shared(true)",
+      "[ 4112.532153] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(9640) del context Domain(65535) CU(0xffff)",
+      "[ 4112.532231] [drm] bitstream e9fc7172-6625-b117-4102-9b09270b7f4a unlocked, ref=0",
+      "[ 4129.233898] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(9640)",
+      "[ 6728.867951] sh (14946): drop_caches: 3",
+      "[ 8084.840705] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(17714), ret: 0",
+      "[ 8084.840822] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(17714)",
+      "[ 8084.841604] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(17714), ret: 0",
+      "[ 8084.844985] [drm] bitstream e9fc7172-6625-b117-4102-9b09270b7f4a locked, ref=1",
+      "[ 8084.845080] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(17714) add context Domain(65535) CU(0xffff) shared(true)",
+      "[ 8084.852394] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(17714) del context Domain(65535) CU(0xffff)",
+      "[ 8084.852472] [drm] bitstream e9fc7172-6625-b117-4102-9b09270b7f4a unlocked, ref=0",
+      "[ 8116.939489] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(17714)",
+      "[ 8430.880874] python3 (18833): drop_caches: 3"
+    ],
+    "process_ownership": {
+      "denied": [],
+      "findings": [],
+      "scanned_proc": "/proc"
+    },
+    "pynq_state": {
+      "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+      "loaded_bit_path": "/home/xilinx/board-runtime-currentboot-v2/scripts/wo0015/wo15.bit",
+      "loaded_bit_sha1": "acb473c8c8dbae8b20a24aafb5d304b57c19845b",
+      "loaded_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "pl_state_status": "GLOBAL_STATE_PRESENT",
+      "shutdown_ips": {},
+      "shutdown_ips_empty": true
+    }
+  },
+  "rx_copy_timing_samples": 165,
+  "rx_sync_timing_samples": 165,
+  "schema": 1,
+  "stabilization_delay_s": 3.0,
+  "stage1_overlay_pass_receipt": {
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+    "build_id": "wo0015-hw-50mhz-20261015",
+    "checker_signature": 1464807732,
+    "clock_mhz": 50,
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "load_performed": true,
+    "manifest_sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+    "packer_signature": 1464807733,
+    "runtime_audit_sha256": "d020f647db493aaac0d579851009a275c13888baca068aa5a8ffb9a20a8b5d88",
+    "schema": 1,
+    "stage": "overlay-only",
+    "status": "OVERLAY_LOAD_PASS",
+    "work_order": "WO-0015"
+  },
+  "stageb2_attempt_id": "attempt-3",
+  "stageb2_attempt_permit": {
+    "permit": {
+      "attempt_id": "attempt-3",
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+      "consumed": false,
+      "expected_count": 5,
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "manifest_sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+      "material_label": "M6_nut_no_washer",
+      "max_frames": 165,
+      "operator_prearm_delay_s": 15.0,
+      "permit_status": "AUTHORIZED",
+      "ready_guard_sha256": "f15464025abeabc2e52681aaa000caf25da217cdf5505781c3d7fcba45cd5b9b",
+      "runner_sha256": "c6dedbc8444b0a2d7ab4e1dc0943e97916e4b9f3db5672c4f6f813be7303f999",
+      "schema": 1,
+      "stabilization_delay_s": 3.0,
+      "stage": "wo0016-stageB2-attempt",
+      "threshold": 128,
+      "work_order": "WO-0016"
+    },
+    "sha256": "23b75a0598568117af7839b8c4d1ee15dd84c5a40def08422fa9b8f491d2140c"
+  },
+  "stageb2_ready_guard": {
+    "guard": {
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+      "consumed": false,
+      "expected_count": 5,
+      "guard_status": "READY",
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "manifest_sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+      "material_label": "M6_nut_no_washer",
+      "max_frames": 165,
+      "schema": 1,
+      "stabilization_delay_s": 3.0,
+      "stage": "wo0016-stageB2-nuts",
+      "threshold": 128,
+      "work_order": "WO-0016"
+    },
+    "sha256": "f15464025abeabc2e52681aaa000caf25da217cdf5505781c3d7fcba45cd5b9b"
+  },
+  "status": "BOARD_STREAM_COMPLETE",
+  "threshold": 128,
+  "throughput_fps": 22.916291167323276,
+  "total_count": 0,
+  "work_order": "WO-0016",
+  "xilinx_xrt": "/usr"
+}

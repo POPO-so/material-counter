@@ -1,0 +1,12 @@
+--- before/replay_recorded_components.py
++++ after/replay_recorded_components.py
+@@ -16,7 +16,8 @@
+     associations, events, totals = [], [], []
+     for frame in frames:
+         result = counter.update_detections(frame["frame_id"],
+-                                           [Detection(**item) for item in frame["detections"]])
++                                           [Detection(**item) for item in
++                                            frame.get("raw_detections", frame["detections"])])
+         for match in counter.last_associations:
+             detection = result.detections[match["detection_index"]]
+             associations.append({"frame_id": result.frame_id, **match, **asdict(detection)})

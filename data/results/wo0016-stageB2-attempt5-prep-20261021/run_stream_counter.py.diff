@@ -1,0 +1,31 @@
+--- before/run_stream_counter.py
++++ after/run_stream_counter.py
+@@ -275,7 +275,12 @@
+               "line_y": args.line_y, "direction": args.direction,
+               "min_area": args.min_area, "max_area": args.max_area,
+               "max_step": args.max_step, "max_lateral_step": args.max_lateral_step,
+-              "hysteresis": args.hysteresis, "confirm_hits": args.confirm_hits}
++              "hysteresis": args.hysteresis, "confirm_hits": args.confirm_hits,
++              "component_cluster_dx": args.component_cluster_dx,
++              "component_cluster_dy": args.component_cluster_dy,
++              "cooldown_frames": args.cooldown_frames,
++              "cooldown_lateral": args.cooldown_lateral,
++              "edge_max_missing": args.edge_max_missing}
+     MaskCounter(**config)  # Validate before consuming the one-shot attempt.
+     return config
+ 
+@@ -1249,6 +1254,14 @@
+     parser.add_argument("--hysteresis", type=float, default=2.0)
+     parser.add_argument("--confirm-hits", type=int, default=2)
+     parser.add_argument("--max-step", type=float, default=24.0)
++    parser.add_argument("--component-cluster-dx", type=float, default=0.0,
++                        help="maximum pairwise centroid X spread; zero disables clustering")
++    parser.add_argument("--component-cluster-dy", type=float, default=12.0)
++    parser.add_argument("--cooldown-frames", type=int, default=0,
++                        help="inclusive same-corridor count suppression window; zero disables")
++    parser.add_argument("--cooldown-lateral", type=float, default=15.0)
++    parser.add_argument("--edge-max-missing", type=int, default=0,
++                        help="extra missing-frame budget for confirmed clipped X tracks only")
+     parser.add_argument("--ground-truth-count", "--expected-count", dest="ground_truth_count",
+                         type=_nonnegative_count_argument)
+     parser.add_argument("--material-label")

@@ -1,0 +1,6 @@
+{"boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee", "milestone": "PROCESS_START", "monotonic": 8456.339956908}
+{"boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee", "milestone": "OVERLAY_READY_DOWNLOAD_FALSE", "monotonic": 8473.579753103}
+{"boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee", "milestone": "CAMERA_OPENED", "monotonic": 8473.848360845}
+{"boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee", "milestone": "CAMERA_OPEN_READY_FOR_OPERATOR", "monotonic": 8475.12847475}
+{"boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee", "milestone": "CAMERA_OPEN_AND_STABILIZING_START", "monotonic": 8496.470187457}
+{"boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee", "milestone": "FRAME_0_CAPTURE_START_FEED_NOW", "monotonic": 8499.48915952}

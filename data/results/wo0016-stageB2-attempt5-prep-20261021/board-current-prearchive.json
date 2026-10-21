@@ -1,0 +1,180 @@
+{
+  "boot_id": "d9f65950-d59b-4ea4-bee4-b28656cb176f",
+  "cma": {
+    "CmaTotal": 131072,
+    "CmaFree": 72204
+  },
+  "fuser": {
+    "rc": 1,
+    "out": "",
+    "err": ""
+  },
+  "listeners": {
+    "rc": 0,
+    "out": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                   \nLISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*    users:((\"systemd-resolve\",pid=135,fd=14))\nLISTEN 0      128          0.0.0.0:9090      0.0.0.0:*    users:((\"jupyter-noteboo\",pid=651,fd=7)) \nLISTEN 0      50           0.0.0.0:445       0.0.0.0:*    users:((\"smbd\",pid=589,fd=47))           \nLISTEN 0      128          0.0.0.0:80        0.0.0.0:*    users:((\"python3\",pid=872,fd=3))         \nLISTEN 0      128          0.0.0.0:22        0.0.0.0:*    users:((\"sshd\",pid=546,fd=3))            \nLISTEN 0      50           0.0.0.0:139       0.0.0.0:*    users:((\"smbd\",pid=589,fd=48))           \nLISTEN 0      50              [::]:445          [::]:*    users:((\"smbd\",pid=589,fd=45))           \nLISTEN 0      128             [::]:80           [::]:*    users:((\"python3\",pid=872,fd=4))         \nLISTEN 0      128             [::]:22           [::]:*    users:((\"sshd\",pid=546,fd=4))            \nLISTEN 0      50              [::]:139          [::]:*    users:((\"smbd\",pid=589,fd=46))           \n",
+    "err": ""
+  },
+  "v4l2": {
+    "rc": 0,
+    "out": "power_line_frequency: 1\ngamma: 100\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \n",
+    "err": ""
+  },
+  "service": {
+    "rc": 0,
+    "out": "Result=success\nExecMainStartTimestamp=Tue 2025-05-06 18:16:13 UTC\nExecMainStatus=0\nActiveState=inactive\nSubState=dead\n",
+    "err": ""
+  },
+  "current_ready_exists": false,
+  "stage1_exists": false,
+  "manifest_exists": true,
+  "manifest_sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935",
+  "package_manifest_sha256": "3d4a1920f01e921511db3ab7ae4d9ec203a4d47abc2e0582bcac57f1a8f07d95",
+  "package_drift": {
+    "/home/xilinx/wo0015/wo15.bit": {
+      "exists": true,
+      "is_symlink": false,
+      "link_target": null,
+      "resolved": "/home/xilinx/wo0015/wo15.bit",
+      "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+    },
+    "/home/xilinx/wo0015/wo15.hwh": {
+      "exists": true,
+      "is_symlink": false,
+      "link_target": null,
+      "resolved": "/home/xilinx/wo0015/wo15.hwh",
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+    },
+    "/home/xilinx/wo0015/run-manifest.json": {
+      "exists": true,
+      "is_symlink": false,
+      "link_target": null,
+      "resolved": "/home/xilinx/wo0015/run-manifest.json",
+      "sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935"
+    },
+    "/home/xilinx/wo0015/board_once.py": {
+      "exists": true,
+      "is_symlink": false,
+      "link_target": null,
+      "resolved": "/home/xilinx/wo0015/board_once.py",
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525"
+    },
+    "/home/xilinx/wo0015/board_preflight.py": {
+      "exists": true,
+      "is_symlink": false,
+      "link_target": null,
+      "resolved": "/home/xilinx/wo0015/board_preflight.py",
+      "sha256": "df0fb5966822a9cb482cf42d38e1816d109d88e88366d9f4d1c26bd7189cfe43"
+    },
+    "/home/xilinx/board-runtime-currentboot-v2/scripts/wo0015/wo15.bit": {
+      "exists": true,
+      "is_symlink": false,
+      "target": null,
+      "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+    },
+    "/home/xilinx/board-runtime-currentboot-v2/scripts/wo0015/wo15.hwh": {
+      "exists": true,
+      "is_symlink": false,
+      "target": null,
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+    },
+    "/home/xilinx/board-runtime-currentboot-v2/scripts/wo0015/run-manifest.json": {
+      "exists": true,
+      "is_symlink": false,
+      "target": null,
+      "sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551"
+    }
+  },
+  "old_attempt4_exists": true,
+  "old_attempt4_entries": [
+    "attempt-permit.json",
+    "consumed.json",
+    "dispatch-request.json",
+    "exit-status.json",
+    "frame-results.json",
+    "launch.json",
+    "operator-control-events.jsonl",
+    "operator-statement.json",
+    "postflight.json",
+    "preparation.json",
+    "stdout.log"
+  ],
+  "old_attempt4_consumed_exists": true,
+  "old_history_exists": true,
+  "old_history_attempts": [
+    "attempt-1",
+    "attempt-2",
+    "attempt-3"
+  ],
+  "durable_manifest": {
+    "schema": 1,
+    "work_order": "WO-0015",
+    "stage": "S2MM_BINARY8_FRAME_RETURN",
+    "build_id": "wo0015-hw-50mhz-20261015",
+    "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+    "part": "xc7z020clg400-1",
+    "clock_mhz": 50,
+    "bit_path": "wo15.bit",
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "hwh_path": "wo15.hwh",
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "dma_base": 1077936128,
+    "checker_base": 1136787456,
+    "contract": {
+      "dma_mode": "simple",
+      "include_mm2s": true,
+      "include_s2mm": true,
+      "include_sg": false,
+      "micro_dma": false,
+      "dma_length_width_bits": 18,
+      "dma_addr_width_bits": 32,
+      "mm2s_memory_width_bits": 64,
+      "mm2s_stream_width_bits": 32,
+      "s2mm_memory_width_bits": 32,
+      "s2mm_stream_width_bits": 32,
+      "mm2s_dre": false,
+      "s2mm_dre": false,
+      "hp0_enabled": true,
+      "hp1_enabled": true,
+      "hp0_data_width_bits": 64,
+      "hp1_data_width_bits": 32,
+      "hp0_range": [
+        0,
+        536870912
+      ],
+      "hp1_range": [
+        0,
+        536870912
+      ],
+      "checker_signature": 1464807732,
+      "packer_signature": 1464807733
+    },
+    "executor_sha256": {
+      "board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "board_preflight.py": "df0fb5966822a9cb482cf42d38e1816d109d88e88366d9f4d1c26bd7189cfe43"
+    },
+    "ready_for_board": true,
+    "frames": [
+      {
+        "frame_id": 0,
+        "packet_path": "frame-0.rgb.bin",
+        "packet_sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+        "binary_path": "frame-0.binary.bin",
+        "binary_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e"
+      },
+      {
+        "frame_id": 1,
+        "packet_path": "frame-1.rgb.bin",
+        "packet_sha256": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+        "binary_path": "frame-1.binary.bin",
+        "binary_sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa"
+      },
+      {
+        "frame_id": 2,
+        "packet_path": "frame-2.rgb.bin",
+        "packet_sha256": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+        "binary_path": "frame-2.binary.bin",
+        "binary_sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7"
+      }
+    ]
+  }
+}

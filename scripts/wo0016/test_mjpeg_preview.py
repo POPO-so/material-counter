@@ -46,7 +46,7 @@ def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkey
     encoded = []
     caller_thread = threading.get_ident()
 
-    def fake_render(mask, *, total_count, line_y, quality):
+    def fake_render(mask, *, total_count, line_y, quality, count_axis, line_x):
         encoded.append((total_count, line_y, quality, threading.get_ident()))
         return b"jpeg"
 
@@ -94,7 +94,7 @@ def test_preview_callback_returns_while_background_jpeg_encode_is_blocked(monkey
     release_encode = threading.Event()
     callback_returned = threading.Event()
 
-    def slow_render(mask, *, total_count, line_y, quality):
+    def slow_render(mask, *, total_count, line_y, quality, count_axis, line_x):
         encode_started.set()
         assert release_encode.wait(2.0)
         return b"slow-jpeg"

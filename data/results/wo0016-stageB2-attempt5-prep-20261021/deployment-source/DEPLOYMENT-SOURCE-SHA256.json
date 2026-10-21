@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "work_order": "WO-0016",
+  "stage": "Stage B-2 Attempt #5 runtime source",
+  "boot_id": "d9f65950-d59b-4ea4-bee4-b28656cb176f",
+  "source_files": [
+    {
+      "path": "run_stream_counter.py",
+      "bytes": 65269,
+      "sha256": "8f6c1fe14e3d67b607eb728635076a782f7fa868a713be05b590abf1af3ae158"
+    },
+    {
+      "path": "stream_counter.py",
+      "bytes": 41759,
+      "sha256": "83d3bb62e32f778e8c800eac08a415aa3f85bc27290ead3f458f96daa1e3a8df"
+    },
+    {
+      "path": "mjpeg_preview.py",
+      "bytes": 19504,
+      "sha256": "4eef26f22781a773ecd3c5ec6bd419798e980686ca8675b3827abcc8cde55343"
+    },
+    {
+      "path": "packet_encoder.py",
+      "bytes": 2335,
+      "sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8"
+    },
+    {
+      "path": "operator_gate_launcher.py",
+      "bytes": 9509,
+      "sha256": "42e80065b62e3518807f137f05fdaa5a7d6d2eafcaea4bc18f12b1f76f6ee410"
+    }
+  ],
+  "source_verification": "matches Attempt5 offline-tested worktree; 109 WO-0016 tests recorded PASS"
+}

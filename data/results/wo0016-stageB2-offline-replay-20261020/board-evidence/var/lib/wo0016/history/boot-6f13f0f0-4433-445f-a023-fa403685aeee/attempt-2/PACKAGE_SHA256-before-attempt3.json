@@ -1,0 +1,25 @@
+{
+  "authorized_boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+  "baseline_commit": "59268209148888c135ff7ff5c0aa7dba8ddbaf66",
+  "files": {
+    "scripts/wo0015/board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+    "scripts/wo0015/board_preflight.py": "d8446294581771be9fd52e69dafbb7a27dd0373a2ee08ea66a3a937180b79aea",
+    "scripts/wo0015/camera_adapter.py": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+    "scripts/wo0015/camera_dma_oneshot.py": "5b9684f4b02988e8a822c36ef0ac7faec78c0a7980f2fca1574afd3027c9df28",
+    "scripts/wo0015/frame-0.binary.bin": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+    "scripts/wo0015/frame-0.rgb.bin": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+    "scripts/wo0015/frame-1.binary.bin": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa",
+    "scripts/wo0015/frame-1.rgb.bin": "08fb6880b244c236d10b98718e90d279c7c9dc71f13526b0050580f31565f98e",
+    "scripts/wo0015/frame-2.binary.bin": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7",
+    "scripts/wo0015/frame-2.rgb.bin": "1a33e6045d8f4494e1bc7bb04561bfef6a6d2933dd8ad4fb7bab8866256904c1",
+    "scripts/wo0015/prepare_vectors.py": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+    "scripts/wo0015/run-manifest.json": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551",
+    "scripts/wo0015/wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "scripts/wo0015/wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "scripts/wo0016/mjpeg_preview.py": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6",
+    "scripts/wo0016/packet_encoder.py": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+    "scripts/wo0016/run_stream_counter.py": "c6dedbc8444b0a2d7ab4e1dc0943e97916e4b9f3db5672c4f6f813be7303f999",
+    "scripts/wo0016/stream_counter.py": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625"
+  },
+  "manifest_sha256": "c5cb8ebd7bf50e8025d46d798ecf9aedb9cd043df5e16b34de294762dfb3b551"
+}

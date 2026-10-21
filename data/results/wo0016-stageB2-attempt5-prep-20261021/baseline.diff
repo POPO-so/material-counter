@@ -1,0 +1,1167 @@
+diff --git a/scripts/wo0016/mjpeg_preview.py b/scripts/wo0016/mjpeg_preview.py
+index bf4f236..11d16f0 100644
+--- a/scripts/wo0016/mjpeg_preview.py
++++ b/scripts/wo0016/mjpeg_preview.py
+@@ -105,7 +105,8 @@ class MjpegFrameHub:
+ 
+ 
+ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
+-                         label: str = "Total Count") -> np.ndarray:
++                         label: str = "Total Count", count_axis: str = "y",
++                         line_x: int = 160) -> np.ndarray:
+     """Render the Binary8 mask with a red line and a readable live count."""
+     image = np.asarray(mask)
+     if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (240, 320):
+@@ -120,7 +121,11 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
+         raise ValueError("label must be non-empty text")
+ 
+     frame = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+-    cv2.line(frame, (0, int(line_y)), (image.shape[1] - 1, int(line_y)),
++    if count_axis not in ("x", "y") or not isinstance(line_x, int) or not 0 <= line_x < image.shape[1]:
++        raise ValueError("invalid count axis or line_x")
++    start, end = (((line_x, 0), (line_x, image.shape[0]-1)) if count_axis == "x"
++                  else ((0, int(line_y)), (image.shape[1]-1, int(line_y))))
++    cv2.line(frame, start, end,
+              (0, 0, 255), 2, lineType=cv2.LINE_8)
+     text = f"{label}: {int(total_count)}"
+     cv2.rectangle(frame, (4, 6), (min(frame.shape[1] - 1, 244), 34), (24, 24, 24), -1)
+@@ -130,10 +135,11 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
+ 
+ 
+ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
+-                        quality: int = 85) -> bytes:
++                        quality: int = 85, count_axis: str = "y", line_x: int = 160) -> bytes:
+     if isinstance(quality, bool) or not isinstance(quality, (int, np.integer)) or not 1 <= quality <= 100:
+         raise ValueError("JPEG quality must be an integer in 1..100")
+-    frame = render_preview_frame(mask, total_count=total_count, line_y=line_y)
++    frame = render_preview_frame(mask, total_count=total_count, line_y=line_y,
++                                 count_axis=count_axis, line_x=line_x)
+     encoded, payload = cv2.imencode(".jpg", frame,
+                                     [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
+     if not encoded:
+@@ -146,13 +152,15 @@ class PeriodicMjpegPublisher:
+ 
+     def __init__(self, *, hub: MjpegFrameHub, line_y: int,
+                  interval: int = PREVIEW_FRAME_INTERVAL,
+-                 quality: int = PREVIEW_JPEG_QUALITY):
++                 quality: int = PREVIEW_JPEG_QUALITY, count_axis: str = "y", line_x: int = 160):
+         if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
+             raise ValueError("preview interval must be a positive integer")
+         if isinstance(quality, bool) or not isinstance(quality, int) or not 1 <= quality <= 100:
+             raise ValueError("JPEG quality must be an integer in 1..100")
+         self.hub = hub
+         self.line_y = line_y
++        self.count_axis = count_axis
++        self.line_x = line_x
+         self.interval = interval
+         self.quality = quality
+         self.encoded_frames = 0
+@@ -231,6 +239,7 @@ class PeriodicMjpegPublisher:
+                     total_count=total_count,
+                     line_y=line_y,
+                     quality=self.quality,
++                    count_axis=self.count_axis, line_x=self.line_x,
+                 )
+                 self.hub.publish(jpeg)
+                 self.encoded_frames += 1
+diff --git a/scripts/wo0016/run_stream_counter.py b/scripts/wo0016/run_stream_counter.py
+index 5f7504d..b8be427 100644
+--- a/scripts/wo0016/run_stream_counter.py
++++ b/scripts/wo0016/run_stream_counter.py
+@@ -13,11 +13,13 @@ import json
+ import math
+ import os
+ import queue
++import re
++import stat as stat_module
+ import sys
+ import threading
+ import time
+ from pathlib import Path
+-from typing import Any, AsyncIterator, Mapping
++from typing import Any, AsyncIterator, Callable, Mapping
+ 
+ import cv2
+ import numpy as np
+@@ -62,6 +64,16 @@ from stream_counter import (
+ 
+ WO16_STAGE = "wo0016-stream"
+ WO16_GUARD = Path("/var/lib/wo0016/stream-counter-consumed.json")
++STAGEB2_READY_GUARD_DIR = Path("/var/lib/wo0016")
++STAGEB2_ATTEMPT_DIR = STAGEB2_READY_GUARD_DIR / "attempts"
++STAGEB2_ATTEMPT_STAGE = "wo0016-stageB2-attempt"
++STAGEB2_VALID_FRAMES = 165
++STAGEB2_EXPECTED_COUNT = 5
++STAGEB2_MATERIAL_LABEL = "M6_nut_no_washer"
++STAGEB2_STABILIZATION_DELAY_S = 3.0
++STAGEB2_OPERATOR_PREARM_DELAY_S = 15.0
++STAGEB2_THRESHOLD = 128
++EXPECTED_FRAME_DMASR = 0x00001002
+ CMA_WATERMARK_KIB = 32768
+ AFI1_EXPECTED_READBACK = {
+     "AFI1_RDCHAN_CTRL": 0x00000001,
+@@ -173,6 +185,207 @@ def claim_once_guard(path: str | Path, identity: Mapping[str, Any]) -> dict[str,
+     return receipt
+ 
+ 
++def validate_non_consuming_guard(path: str | Path,
++                                 identity: Mapping[str, Any], *,
++                                 expected_uid: int = 0) -> dict[str, Any]:
++    """Validate an armed Stage B-2 record by reading it without modifying it."""
++    if not isinstance(identity, Mapping) or not identity:
++        raise ValueError("stage B-2 READY guard identity must be non-empty")
++    guard, raw = _read_private_json_record(
++        path, label="stage B-2 READY guard", expected_uid=expected_uid
++    )
++    expected = {**dict(identity), "guard_status": "READY", "consumed": False}
++    if not isinstance(guard, dict) or guard != expected:
++        raise RuntimeError("stage B-2 READY guard identity/status does not match this run")
++    return {"guard": guard, "sha256": hashlib.sha256(raw).hexdigest()}
++
++
++def _read_private_json_record(path: str | Path, *, label: str,
++                              expected_uid: int) -> tuple[dict[str, Any], bytes]:
++    target = Path(path)
++    try:
++        parent_stat = target.parent.stat(follow_symlinks=False)
++        before = target.stat(follow_symlinks=False)
++    except OSError as exc:
++        raise RuntimeError(f"{label} is unavailable: {exc}") from exc
++    if os.name == "posix" and (
++            not stat_module.S_ISDIR(parent_stat.st_mode)
++            or parent_stat.st_uid != expected_uid
++            or stat_module.S_IMODE(parent_stat.st_mode) & 0o077):
++        raise RuntimeError(f"{label} directory must be private and owner-controlled")
++    if (target.is_symlink() or not stat_module.S_ISREG(before.st_mode)
++            or (os.name == "posix" and (before.st_uid != expected_uid
++                                        or stat_module.S_IMODE(before.st_mode) != 0o600))):
++        raise RuntimeError(f"{label} must be a private owner-controlled regular file")
++    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
++    try:
++        fd = os.open(str(target), flags)
++        with os.fdopen(fd, "rb") as stream:
++            opened = os.fstat(stream.fileno())
++            if ((opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino)
++                    or (os.name == "posix" and (opened.st_uid != expected_uid
++                                                or stat_module.S_IMODE(opened.st_mode) != 0o600))):
++                raise RuntimeError(f"{label} changed while it was being opened")
++            raw = stream.read(8193)
++            if len(raw) > 8192:
++                raise RuntimeError(f"{label} exceeds its size limit")
++    except OSError as exc:
++        raise RuntimeError(f"{label} could not be read safely: {exc}") from exc
++    try:
++        record = json.loads(raw.decode("utf-8"))
++    except (UnicodeError, json.JSONDecodeError) as exc:
++        raise RuntimeError(f"{label} is not valid UTF-8 JSON") from exc
++    if not isinstance(record, dict):
++        raise RuntimeError(f"{label} must contain a JSON object")
++    return record, raw
++
++
++def stageb2_guard_identity(*, boot_id: str, manifest_sha256: str,
++                           bit_sha256: str, hwh_sha256: str,
++                           max_frames: int, expected_count: int | None,
++                           material_label: str | None,
++                           stabilization_delay_s: float) -> dict[str, Any]:
++    """Require the fixed five-nut, 165-frame profile for no-consume Guard mode."""
++    if (max_frames != STAGEB2_VALID_FRAMES
++            or expected_count != STAGEB2_EXPECTED_COUNT
++            or material_label != STAGEB2_MATERIAL_LABEL
++            or stabilization_delay_s != STAGEB2_STABILIZATION_DELAY_S):
++        raise ValueError(
++            "--no-consume-guard is restricted to Stage B-2: 165 frames, "
++            "3 seconds, target 5, M6_nut_no_washer"
++        )
++    return {
++        "schema": 1,
++        "work_order": "WO-0016",
++        "stage": "wo0016-stageB2-nuts",
++        "boot_id": boot_id,
++        "manifest_sha256": manifest_sha256,
++        "bit_sha256": bit_sha256,
++        "hwh_sha256": hwh_sha256,
++        "max_frames": max_frames,
++        "expected_count": expected_count,
++        "material_label": material_label,
++        "stabilization_delay_s": stabilization_delay_s,
++        "threshold": STAGEB2_THRESHOLD,
++    }
++
++
++def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
++    config = {"count_axis": args.count_axis, "line_x": args.line_x,
++              "line_y": args.line_y, "direction": args.direction,
++              "min_area": args.min_area, "max_area": args.max_area,
++              "max_step": args.max_step, "max_lateral_step": args.max_lateral_step,
++              "hysteresis": args.hysteresis, "confirm_hits": args.confirm_hits}
++    MaskCounter(**config)  # Validate before consuming the one-shot attempt.
++    return config
++
++
++def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
++                                    ready_guard_sha256: str,
++                                    attempt_id: str,
++                                    operator_prearm_delay_s: float,
++                                    runner_sha256: str,
++                                    counting_config: Mapping[str, Any] | None = None,
++                                    counter_sha256: str | None = None) -> dict[str, Any]:
++    """Bind one named Stage B-2 invocation to the unchanged READY Guard."""
++    if (not isinstance(attempt_id, str)
++            or re.fullmatch(r"[A-Za-z0-9_-]{1,32}", attempt_id, flags=re.ASCII) is None):
++        raise ValueError("attempt id must contain 1-32 ASCII letters, digits, '_' or '-'")
++    if (isinstance(operator_prearm_delay_s, bool)
++            or not isinstance(operator_prearm_delay_s, (int, float))
++            or not math.isfinite(float(operator_prearm_delay_s))
++            or float(operator_prearm_delay_s) != STAGEB2_OPERATOR_PREARM_DELAY_S):
++        raise ValueError(
++            f"Stage B-2 Attempt #2 requires a {STAGEB2_OPERATOR_PREARM_DELAY_S:g}-second operator pre-arm window"
++        )
++    if not isinstance(ready_identity, Mapping) or not ready_identity:
++        raise ValueError("stage B-2 READY identity must be non-empty")
++    if not re.fullmatch(r"[0-9a-f]{64}", ready_guard_sha256):
++        raise ValueError("READY Guard SHA-256 must be lowercase hexadecimal")
++    if not re.fullmatch(r"[0-9a-f]{64}", runner_sha256):
++        raise ValueError("runner SHA-256 must be lowercase hexadecimal")
++    extra = {}
++    if counting_config is not None:
++        MaskCounter(**dict(counting_config))
++        if counter_sha256 is None or not re.fullmatch(r"[0-9a-f]{64}", counter_sha256):
++            raise ValueError("counting configuration requires counter SHA-256")
++        extra = {"counting_config": dict(counting_config), "counter_sha256": counter_sha256}
++    return {
++        **dict(ready_identity),
++        "stage": STAGEB2_ATTEMPT_STAGE,
++        "ready_guard_sha256": ready_guard_sha256,
++        "attempt_id": attempt_id,
++        "operator_prearm_delay_s": float(operator_prearm_delay_s),
++        "runner_sha256": runner_sha256,
++        **extra,
++    }
++
++
++def validate_stageb2_attempt_permit(path: str | Path,
++                                    identity: Mapping[str, Any], *,
++                                    expected_uid: int = 0) -> dict[str, Any]:
++    """Read and verify a private, unconsumed permit without modifying it."""
++    if not isinstance(identity, Mapping) or not identity:
++        raise ValueError("stage B-2 attempt permit identity must be non-empty")
++    permit, raw = _read_private_json_record(
++        path, label="stage B-2 attempt permit", expected_uid=expected_uid
++    )
++    expected = {**dict(identity), "permit_status": "AUTHORIZED", "consumed": False}
++    if permit != expected:
++        raise RuntimeError("stage B-2 attempt permit identity/status does not match this run")
++    return {"permit": permit, "sha256": hashlib.sha256(raw).hexdigest()}
++
++
++def _emit_milestone(name: str, monotonic_value: float, log_path: str | Path, *,
++                    boot_id: str) -> dict[str, Any]:
++    """Write a flushed operator-visible marker and durable JSONL timestamp."""
++    record = {
++        "boot_id": boot_id,
++        "milestone": name,
++        "monotonic": float(monotonic_value),
++    }
++    print(f"[MILESTONE] {name} monotonic={float(monotonic_value):.6f}", flush=True)
++    target = Path(log_path)
++    target.parent.mkdir(parents=True, exist_ok=True)
++    with target.open("a", encoding="utf-8", newline="\n") as stream:
++        stream.write(json.dumps(record, sort_keys=True) + "\n")
++        stream.flush()
++        os.fsync(stream.fileno())
++    return record
++
++
++def _countdown_wait(duration_s: float, *, label: str) -> None:
++    """Wait against monotonic time, flushing each whole-second countdown tick."""
++    if (isinstance(duration_s, bool) or not isinstance(duration_s, (int, float))
++            or not math.isfinite(float(duration_s)) or duration_s < 0):
++        raise ValueError("countdown duration must be finite and nonnegative")
++    duration = float(duration_s)
++    if duration == 0:
++        return
++    deadline = time.monotonic() + duration
++    while True:
++        remaining = max(0, math.ceil(deadline - time.monotonic()))
++        if remaining <= 0:
++            return
++        print(f"[{label}] {remaining} seconds remaining", flush=True)
++        next_tick = deadline - (remaining - 1)
++        time.sleep(max(0.0, min(1.0, next_tick - time.monotonic())))
++
++
++def verify_frame_dmasr(api: Any, frame_id: int,
++                       records: list[dict[str, Any]]) -> None:
++    """Record and strictly validate both AXI DMA status registers per frame."""
++    mm2s = api.read32(preflight.DMA_BASE, 0x04)
++    s2mm = api.read32(preflight.DMA_BASE, 0x34)
++    records.append({"frame_id": frame_id, "mm2s": f"0x{mm2s:08x}",
++                    "s2mm": f"0x{s2mm:08x}"})
++    if mm2s != EXPECTED_FRAME_DMASR or s2mm != EXPECTED_FRAME_DMASR:
++        raise RuntimeError(
++            f"frame {frame_id} DMA status mismatch: "
++            f"MM2S=0x{mm2s:08x}, S2MM=0x{s2mm:08x}"
++        )
++
++
+ def require_board_opt_in(*, execute: bool, authorize_stage: str | None,
+                          approve_once: bool, manifest: str | None,
+                          manifest_sha256: str | None, max_frames: int,
+@@ -223,6 +436,9 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
+ async def camera_gray_frames(device: str, *, max_frames: int,
+                              cv2_module: Any = cv2,
+                              read_timeout_s: float = 5.0,
++                             stabilization_delay_s: float = 0.0,
++                             operator_prearm_delay_s: float = 0.0,
++                             milestone_callback: Callable[[str, float], None] | None = None,
+                              capture_timings_ms: list[float] | None = None,
+                              steady_start_time: list[float] | None = None,
+                              capture_metadata: dict[str, Any] | None = None
+@@ -233,6 +449,23 @@ async def camera_gray_frames(device: str, *, max_frames: int,
+     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
+             or not math.isfinite(float(read_timeout_s)) or read_timeout_s <= 0):
+         raise ValueError("read_timeout_s must be finite and positive")
++    if (isinstance(stabilization_delay_s, bool)
++            or not isinstance(stabilization_delay_s, (int, float))
++            or not math.isfinite(float(stabilization_delay_s))
++            or stabilization_delay_s < 0):
++        raise ValueError("stabilization_delay_s must be finite and nonnegative")
++    if (isinstance(operator_prearm_delay_s, bool)
++            or not isinstance(operator_prearm_delay_s, (int, float))
++            or not math.isfinite(float(operator_prearm_delay_s))
++            or operator_prearm_delay_s < 0):
++        raise ValueError("operator_prearm_delay_s must be finite and nonnegative")
++
++    def emit_milestone(name: str, at: float | None = None) -> float:
++        timestamp = time.monotonic() if at is None else float(at)
++        if milestone_callback is not None:
++            milestone_callback(name, timestamp)
++        return timestamp
++
+     capture = cv2_module.VideoCapture(device, cv2_module.CAP_V4L2)
+     failed = False
+     primary_error: BaseException | None = None
+@@ -262,6 +495,9 @@ async def camera_gray_frames(device: str, *, max_frames: int,
+     try:
+         if not capture.isOpened():
+             raise RuntimeError(f"cannot open V4L2 camera device {device}")
++        camera_open_monotonic = emit_milestone("CAMERA_OPENED")
++        if capture_metadata is not None:
++            capture_metadata["camera_open_monotonic"] = camera_open_monotonic
+         requested_fourcc = cv2_module.VideoWriter_fourcc(*"MJPG")
+         requested = (
+             (cv2_module.CAP_PROP_FOURCC, requested_fourcc),
+@@ -291,7 +527,6 @@ async def camera_gray_frames(device: str, *, max_frames: int,
+                 f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height} "
+                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
+             )
+-
+         def read_gray_frame(*, warmup: bool) -> tuple[np.ndarray, float]:
+             capture_started = time.perf_counter()
+             ok, frame = capture.read()
+@@ -389,11 +624,19 @@ async def camera_gray_frames(device: str, *, max_frames: int,
+                 "camera_output_width": WIDTH,
+                 "camera_output_height": HEIGHT,
+             })
++        emit_milestone("CAMERA_OPEN_READY_FOR_OPERATOR")
++        _countdown_wait(float(operator_prearm_delay_s), label="OPERATOR_PREARM")
++        emit_milestone("CAMERA_OPEN_AND_STABILIZING_START")
++        _countdown_wait(float(stabilization_delay_s), label="STABILIZATION")
+         if steady_start_time is not None:
+-            steady_start_time[:] = [time.perf_counter()]
++            steady_start_time.clear()
+ 
+         for frame_index in range(max_frames):
+             if pending_waiter is None:
++                if frame_index == 0:
++                    emit_milestone("FRAME_0_CAPTURE_START_FEED_NOW")
++                    if steady_start_time is not None:
++                        steady_start_time[:] = [time.perf_counter()]
+                 prefetch(warmup=False)
+             gray, capture_ms = await get_frame(warmup=False)
+             if capture_timings_ms is not None:
+@@ -472,6 +715,10 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+         max_frames=args.max_frames,
+         evidence_json=args.evidence_json,
+     )
++    process_start_monotonic = getattr(args, "process_start_monotonic", time.monotonic())
++    milestone_path = Path(args.evidence_json).with_suffix(".milestones.jsonl")
++    if milestone_path.exists():
++        raise FileExistsError("milestone log path already exists; choose a new attempt result path")
+     plan = preflight.validate_manifest(args.manifest, args.manifest_sha256)
+     if not plan.ready_for_board:
+         raise preflight.PreflightError("manifest is not marked ready_for_board")
+@@ -496,16 +743,67 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+     guard_stat = guard_dir.stat()
+     if guard_stat.st_uid != 0 or guard_stat.st_mode & 0o077:
+         raise preflight.PreflightError("WO-0016 guard directory must be root-owned and mode 0700")
+-    guard = claim_once_guard(WO16_GUARD, {
+-        "schema": 1,
+-        "work_order": "WO-0016",
+-        "stage": WO16_STAGE,
+-        "boot_id": plan.boot_id,
+-        "manifest_sha256": plan.manifest_sha256,
+-        "bit_sha256": plan.bit_sha256,
+-        "hwh_sha256": plan.hwh_sha256,
+-        "max_frames": args.max_frames,
+-    })
++    stageb2_ready_guard = None
++    stageb2_attempt_permit = None
++    attempt_path = None
++    if args.no_consume_guard:
++        if not getattr(args, "attempt_id", None):
++            raise ValueError("--no-consume-guard requires a unique --attempt-id")
++        identity = stageb2_guard_identity(
++            boot_id=plan.boot_id,
++            manifest_sha256=plan.manifest_sha256,
++            bit_sha256=plan.bit_sha256,
++            hwh_sha256=plan.hwh_sha256,
++            max_frames=args.max_frames,
++            expected_count=args.ground_truth_count,
++            material_label=args.material_label,
++            stabilization_delay_s=args.stabilization_delay_s,
++        )
++        ready_path = STAGEB2_READY_GUARD_DIR / f"stageb2-ready-{plan.boot_id}.json"
++        stageb2_ready_guard = validate_non_consuming_guard(ready_path, identity)
++        attempt_identity = stageb2_attempt_permit_identity(
++            ready_identity=identity,
++            ready_guard_sha256=stageb2_ready_guard["sha256"],
++            attempt_id=args.attempt_id,
++            operator_prearm_delay_s=args.operator_prearm_delay_s,
++            runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
++            counting_config=counting_configuration(args),
++            counter_sha256=hashlib.sha256(Path(__file__).with_name("stream_counter.py").read_bytes()).hexdigest(),
++        )
++        attempt_directory = STAGEB2_ATTEMPT_DIR / plan.boot_id / args.attempt_id
++        permit_path = attempt_directory / "attempt-permit.json"
++        stageb2_attempt_permit = validate_stageb2_attempt_permit(
++            permit_path, attempt_identity
++        )
++        attempt_path = attempt_directory / "consumed.json"
++        guard = claim_once_guard(attempt_path, {
++            "schema": 1,
++            "work_order": "WO-0016",
++            "stage": STAGEB2_ATTEMPT_STAGE,
++            "boot_id": plan.boot_id,
++            "attempt_id": args.attempt_id,
++            "manifest_sha256": plan.manifest_sha256,
++            "bit_sha256": plan.bit_sha256,
++            "hwh_sha256": plan.hwh_sha256,
++            "ready_guard_sha256": stageb2_ready_guard["sha256"],
++            "attempt_permit_sha256": stageb2_attempt_permit["sha256"],
++            "max_frames": args.max_frames,
++            "expected_count": args.ground_truth_count,
++            "material_label": args.material_label,
++            "stabilization_delay_s": args.stabilization_delay_s,
++            "operator_prearm_delay_s": args.operator_prearm_delay_s,
++        })
++    else:
++        guard = claim_once_guard(WO16_GUARD, {
++            "schema": 1,
++            "work_order": "WO-0016",
++            "stage": WO16_STAGE,
++            "boot_id": plan.boot_id,
++            "manifest_sha256": plan.manifest_sha256,
++            "bit_sha256": plan.bit_sha256,
++            "hwh_sha256": plan.hwh_sha256,
++            "max_frames": args.max_frames,
++        })
+ 
+     api = board_once.PynqBoardAPI(plan, stage=WO16_STAGE, cma_ranges=admission.ranges)
+     tx_buffers: tuple[Any, ...] = ()
+@@ -527,6 +825,12 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+         "hwh_sha256": plan.hwh_sha256,
+         "clock_mhz": 50,
+         "guard": guard,
++        "guard_mode": ("READY Guard validate-only; attempt permit consumed-once"
++                       if args.no_consume_guard else "consume-once"),
++        "stageb2_ready_guard": stageb2_ready_guard,
++        "stageb2_attempt_id": args.attempt_id if args.no_consume_guard else None,
++        "stageb2_attempt_permit": stageb2_attempt_permit,
++        "attempt_marker_path": str(attempt_path) if attempt_path is not None else None,
+         "cma_admission": admission.as_evidence(),
+         "stage1_overlay_pass_receipt": stage1_receipt,
+         "process_ownership": ownership,
+@@ -538,14 +842,26 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+         "camera_mode": "MJPG 640x400 resized to Gray8 320x240",
+         "xilinx_xrt": os.environ.get("XILINX_XRT"),
+         "line_y": args.line_y,
++        "counting_config": counting_configuration(args),
+         "direction": args.direction,
+         "min_area": args.min_area,
+         "ground_truth_count": args.ground_truth_count,
+         "expected_count": args.ground_truth_count,
+         "material_label": args.material_label,
++        "stabilization_delay_s": args.stabilization_delay_s,
++        "operator_prearm_delay_s": (args.operator_prearm_delay_s
++                                     if args.no_consume_guard else 0.0),
++        "threshold": STAGEB2_THRESHOLD,
+         "frames_processed": 0,
++        "process_start_monotonic": process_start_monotonic,
++        "overlay_ready_monotonic": None,
++        "camera_open_monotonic": None,
++        "frame_0_start_monotonic": None,
++        "milestone_log": str(milestone_path),
+     }
+     try:
++        _emit_milestone("PROCESS_START", process_start_monotonic,
++                        milestone_path, boot_id=plan.boot_id)
+         audit = api.audit_environment(require_empty_shutdown=False, require_loaded_bit=True)
+         if audit["boot_id"] != plan.boot_id:
+             raise preflight.PreflightError("boot_id changed during WO-0016 preflight")
+@@ -554,6 +870,10 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+         pynq = api._pynq
+         overlay = pynq.Overlay(str(plan.bit_path), download=False)
+         api._overlay = overlay
++        evidence["overlay_ready_monotonic"] = time.monotonic()
++        _emit_milestone("OVERLAY_READY_DOWNLOAD_FALSE",
++                        evidence["overlay_ready_monotonic"], milestone_path,
++                        boot_id=plan.boot_id)
+         checker_signature = api.read32(preflight.CHECKER_BASE, 0x04)
+         packer_signature = api.read32(preflight.CHECKER_BASE, board_once.PACKER_SIGNATURE)
+         if checker_signature != preflight.PACKET_MAGIC or packer_signature != preflight.PACKER_SIGNATURE:
+@@ -619,9 +939,12 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+             api.sync_to_device(slot.rx_buffer)
+             api.write32(preflight.CHECKER_BASE, board_once.PACKER_ARM, 1)
+ 
++        frame_dma_status: list[dict[str, Any]] = []
++
+         def verify_frame(frame_id: int, slot: Any) -> None:
+             if int(dma.recvchannel.transferred) != RX_BYTES:
+                 raise RuntimeError(f"frame {frame_id} S2MM transferred length is not {RX_BYTES}")
++            verify_frame_dmasr(api, frame_id, frame_dma_status)
+             status = api.read32(preflight.CHECKER_BASE, board_once.PACKER_STATUS)
+             accepted = api.read32(preflight.CHECKER_BASE, board_once.PACKER_ACCEPTED_PIXELS)
+             sent = api.read32(preflight.CHECKER_BASE, board_once.PACKER_SENT_BEATS)
+@@ -637,7 +960,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+             "capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
+             "mjpeg_encode", "mjpeg_handoff", "mjpeg_background_encode", "postprocess")}
+         preview_publisher = PeriodicMjpegPublisher(
+-            hub=hub, line_y=args.line_y,
++            hub=hub, line_y=args.line_y, count_axis=args.count_axis, line_x=args.line_x,
+             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
+         )
+         stage_timings_ms["mjpeg_encode"] = preview_publisher.background_encode_timings_ms
+@@ -651,9 +974,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+                 timeout_s=min(1.0, args.timeout_s),
+             ).start()
+ 
+-        counter = MaskCounter(line_y=args.line_y, min_area=args.min_area,
+-                              direction=args.direction, hysteresis=args.hysteresis,
+-                              confirm_hits=args.confirm_hits, max_step=args.max_step)
++        counter = MaskCounter(**counting_configuration(args))
+         stream = DoubleBufferStream(
+             recv_channel=dma.recvchannel,
+             send_channel=dma.sendchannel,
+@@ -671,9 +992,23 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+         )
+         steady_start_time: list[float] = []
+         capture_metadata: dict[str, Any] = {}
++
++        def record_camera_milestone(name: str, at: float) -> None:
++            evidence_key = {
++                "CAMERA_OPENED": "camera_open_monotonic",
++                "FRAME_0_CAPTURE_START_FEED_NOW": "frame_0_start_monotonic",
++            }.get(name)
++            if evidence_key is not None:
++                evidence[evidence_key] = at
++            _emit_milestone(name, at, milestone_path, boot_id=plan.boot_id)
++
+         results = asyncio.run(stream.run(camera_gray_frames(
+             args.camera, max_frames=args.max_frames, cv2_module=cv2,
+             read_timeout_s=args.timeout_s,
++            stabilization_delay_s=args.stabilization_delay_s,
++            operator_prearm_delay_s=(args.operator_prearm_delay_s
++                                     if args.no_consume_guard else 0.0),
++            milestone_callback=record_camera_milestone,
+             capture_timings_ms=stage_timings_ms["capture"],
+             steady_start_time=steady_start_time,
+             capture_metadata=capture_metadata)))
+@@ -721,6 +1056,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
+                                      else loopback_client.error),
+             "preview_url": f"http://{args.host}:{preview.port}/",
+             "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
++            "frame_dma_status": frame_dma_status,
+             "packer_output_frames_verified": len(results),
+             "pynq_imported": True,
+             "accuracy_formula": "1 - abs(total_count - expected_count) / max(expected_count, 1)",
+@@ -902,7 +1238,12 @@ def _parser() -> argparse.ArgumentParser:
+     parser.add_argument("--mock-frames", type=int, default=8)
+     parser.add_argument("--camera", default="/dev/video0")
+     parser.add_argument("--max-frames", type=int, default=0)
++    parser.add_argument("--stabilization-delay-s", type=float, default=0.0)
+     parser.add_argument("--line-y", type=int, default=120)
++    parser.add_argument("--count-axis", choices=("x", "y"), default="y")
++    parser.add_argument("--line-x", type=int, default=160)
++    parser.add_argument("--max-lateral-step", type=float, default=20.0)
++    parser.add_argument("--max-area", type=int)
+     parser.add_argument("--direction", type=int, choices=(-1, 1), default=1)
+     parser.add_argument("--min-area", type=int, default=12)
+     parser.add_argument("--hysteresis", type=float, default=2.0)
+@@ -920,14 +1261,32 @@ def _parser() -> argparse.ArgumentParser:
+     parser.add_argument("--execute", action="store_true")
+     parser.add_argument("--authorize-stage")
+     parser.add_argument("--approve-once", action="store_true")
++    parser.add_argument("--no-consume-guard", action="store_true",
++                        help="validate the current Stage B-2 READY guard without modifying it; a separate single-attempt record is still consumed")
++    parser.add_argument("--attempt-id",
++                        help="unique Stage B-2 permit identity, such as attempt-2")
++    parser.add_argument("--operator-prearm-delay-s", type=float,
++                        default=STAGEB2_OPERATOR_PREARM_DELAY_S,
++                        help="flushed operator countdown after camera warm-up and before the 3-second stabilization")
+     parser.add_argument("--evidence-json", "--output-json", dest="evidence_json")
+     return parser
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
++    process_start_monotonic = time.monotonic()
+     parser = _parser()
+     args = parser.parse_args(argv)
++    args.process_start_monotonic = process_start_monotonic
+     try:
++        if args.no_consume_guard and args.mode != "board":
++            raise ValueError("--no-consume-guard is only valid in explicitly authorized board mode")
++        if args.no_consume_guard and not args.attempt_id:
++            raise ValueError("--no-consume-guard requires a unique --attempt-id")
++        if (args.no_consume_guard
++                and args.operator_prearm_delay_s != STAGEB2_OPERATOR_PREARM_DELAY_S):
++            raise ValueError(
++                f"Stage B-2 Attempt #2 requires a {STAGEB2_OPERATOR_PREARM_DELAY_S:g}-second operator pre-arm window"
++            )
+         if args.mode == "mock":
+             result = run_mock_simulation(frame_count=args.mock_frames,
+                                          line_y=args.line_y,
+diff --git a/scripts/wo0016/stream_counter.py b/scripts/wo0016/stream_counter.py
+index 95fa9c8..f94d38b 100644
+--- a/scripts/wo0016/stream_counter.py
++++ b/scripts/wo0016/stream_counter.py
+@@ -94,14 +94,21 @@ class _Track:
+ 
+ 
+ class MaskCounter:
+-    """Count confirmed connected components crossing a horizontal Binary8 line."""
++    """Count confirmed components across a configurable X or Y line.
++
++    The horizontal ROI remains a conveyor lane even when counting across X.
++    max_step is longitudinal; max_lateral_step is perpendicular to motion.
++    """
+ 
+     def __init__(self, *, width: int = WIDTH, height: int = HEIGHT,
+                  line_y: int = 120, roi_half_height: int = 24,
+                  min_area: int = 12, direction: int = 1,
+                  hysteresis: float = 2.0, confirm_hits: int = 2,
+                  max_missing: int = 1, max_step: float = 24.0,
+-                 max_x_step: float = 20.0, backward_tolerance: float = 2.0):
++                 max_x_step: float = 20.0, backward_tolerance: float = 2.0,
++                 count_axis: str = "y", line_x: int = 160,
++                 max_lateral_step: float | None = None,
++                 max_area: int | None = None):
+         self.width = _integer(width, "width", minimum=1)
+         self.height = _integer(height, "height", minimum=1)
+         self.line_y = _integer(line_y, "line_y", minimum=0)
+@@ -109,6 +116,13 @@ class MaskCounter:
+             raise ValueError("line_y must be inside the frame")
+         self.roi_half_height = _integer(roi_half_height, "roi_half_height", minimum=1)
+         self.min_area = _integer(min_area, "min_area", minimum=1)
++        self.max_area = None if max_area is None else _integer(max_area, "max_area", minimum=self.min_area)
++        if count_axis not in ("x", "y"):
++            raise ValueError("count_axis must be x or y")
++        self.count_axis = count_axis
++        self.line_x = _integer(line_x, "line_x", minimum=0)
++        if self.line_x >= self.width:
++            raise ValueError("line_x must be inside the frame")
+         if direction not in (-1, 1):
+             raise ValueError("direction must be +1 (top to bottom) or -1")
+         self.direction = direction
+@@ -117,11 +131,44 @@ class MaskCounter:
+         self.max_missing = _integer(max_missing, "max_missing", minimum=0)
+         self.max_step = _positive_float(max_step, "max_step")
+         self.max_x_step = _positive_float(max_x_step, "max_x_step")
++        self.max_lateral_step = (self.max_x_step if max_lateral_step is None else
++                                 _positive_float(max_lateral_step, "max_lateral_step"))
+         self.backward_tolerance = _nonnegative_float(backward_tolerance, "backward_tolerance")
+         self.total_count = 0
+         self.last_frame_id: int | None = None
+         self._tracks: dict[int, _Track] = {}
+         self._next_track_id = 1
++        self.last_associations: list[dict[str, Any]] = []
++
++    def update_detections(self, frame_id: int, detections: Any) -> FrameResult:
++        """Replay recorded qualified CCL detections through the live tracker.
++
++        No masks are reconstructed and no segmentation claims are made here.
++        Area filtering is identical to the live CCL path.
++        """
++        frame_id = _integer(frame_id, "frame_id", minimum=0)
++        if self.last_frame_id is not None and frame_id <= self.last_frame_id:
++            raise ValueError("frame IDs must strictly increase")
++        accepted = []
++        for detection in detections:
++            if not isinstance(detection, Detection):
++                raise ValueError("replay requires Detection records")
++            if (not 0 <= detection.x_min <= detection.centroid_x <= detection.x_max < self.width
++                    or not 0 <= detection.y_min <= detection.centroid_y <= detection.y_max < self.height
++                    or detection.area < 1
++                    or detection.area > (detection.x_max-detection.x_min+1)*(detection.y_max-detection.y_min+1)):
++                raise ValueError("invalid recorded component geometry")
++            if self._area_allowed(detection.area):
++                accepted.append(detection)
++        accepted.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
++        self.last_frame_id = frame_id
++        events = self._associate_and_update(frame_id, accepted)
++        top, bottom = self._roi_bounds()
++        return FrameResult(frame_id, self.total_count, tuple(accepted), tuple(events),
++                           top, bottom, (), ())
++
++    def _area_allowed(self, area: int) -> bool:
++        return area >= self.min_area and (self.max_area is None or area <= self.max_area)
+ 
+     def update(self, frame_id: int, mask: np.ndarray) -> FrameResult:
+         frame_id = _integer(frame_id, "frame_id", minimum=0)
+@@ -205,6 +252,8 @@ class MaskCounter:
+             x, y, box_width, box_height, area = (
+                 int(value) for value in stats[label]
+             )
++            if not self._area_allowed(area):
++                continue
+             detections.append(Detection(
+                 x_min=x,
+                 x_max=x + box_width - 1,
+@@ -227,11 +276,14 @@ class MaskCounter:
+         return detections, top, bottom, row_projection, column_projection
+ 
+     def _side(self, detection: Detection) -> float:
+-        return self.direction * (detection.centroid_y - self.line_y)
++        position = (detection.centroid_x - self.line_x if self.count_axis == "x"
++                    else detection.centroid_y - self.line_y)
++        return self.direction * position
+ 
+     def _associate_and_update(self, frame_id: int,
+                               detections: list[Detection]) -> list[CountEvent]:
+         active = []
++        self.last_associations = []
+         for track in self._tracks.values():
+             if track.finished:
+                 continue
+@@ -245,11 +297,13 @@ class MaskCounter:
+             dt = frame_id - track.last_frame
+             old = track.detection
+             for index, detection in enumerate(detections):
+-                dx = abs(detection.centroid_x - old.centroid_x)
+-                dy = self.direction * (detection.centroid_y - old.centroid_y)
++                dx = detection.centroid_x - old.centroid_x
++                dy = detection.centroid_y - old.centroid_y
++                lateral = abs(dy if self.count_axis == "x" else dx)
++                forward = self.direction * (dx if self.count_axis == "x" else dy)
+                 area_ratio = detection.area / old.area
+-                if (dx <= self.max_x_step * dt
+-                        and -self.backward_tolerance <= dy <= self.max_step * dt
++                if (lateral <= self.max_lateral_step * dt
++                        and -self.backward_tolerance <= forward <= self.max_step * dt
+                         and 0.25 <= area_ratio <= 4.0):
+                     edges.append((dx * dx + dy * dy, track.track_id, index))
+ 
+@@ -262,6 +316,10 @@ class MaskCounter:
+             track = self._tracks[track_id]
+             detection = detections[index]
+             dt = frame_id - track.last_frame
++            self.last_associations.append({"track_id": track_id, "detection_index": index,
++                                           "previous_frame": track.last_frame, "kind": "matched",
++                                           "dx": detection.centroid_x-track.detection.centroid_x,
++                                           "dy": detection.centroid_y-track.detection.centroid_y})
+             track.streak = track.streak + 1 if dt == 1 else 1
+             track.confirmed = track.confirmed or track.streak >= self.confirm_hits
+             track.missed = 0
+@@ -298,6 +356,8 @@ class MaskCounter:
+                 confirmed=self.confirm_hits <= 1,
+             )
+             self._tracks[track.track_id] = track
++            self.last_associations.append({"track_id": track.track_id, "detection_index": index,
++                                           "previous_frame": None, "kind": "new", "dx": None, "dy": None})
+             self._next_track_id += 1
+         return sorted(events, key=lambda event: event.track_id)
+ 
+diff --git a/scripts/wo0016/test_mjpeg_preview.py b/scripts/wo0016/test_mjpeg_preview.py
+index 8c25987..69099d2 100644
+--- a/scripts/wo0016/test_mjpeg_preview.py
++++ b/scripts/wo0016/test_mjpeg_preview.py
+@@ -46,7 +46,7 @@ def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkey
+     encoded = []
+     caller_thread = threading.get_ident()
+ 
+-    def fake_render(mask, *, total_count, line_y, quality):
++    def fake_render(mask, *, total_count, line_y, quality, count_axis, line_x):
+         encoded.append((total_count, line_y, quality, threading.get_ident()))
+         return b"jpeg"
+ 
+@@ -94,7 +94,7 @@ def test_preview_callback_returns_while_background_jpeg_encode_is_blocked(monkey
+     release_encode = threading.Event()
+     callback_returned = threading.Event()
+ 
+-    def slow_render(mask, *, total_count, line_y, quality):
++    def slow_render(mask, *, total_count, line_y, quality, count_axis, line_x):
+         encode_started.set()
+         assert release_encode.wait(2.0)
+         return b"slow-jpeg"
+diff --git a/scripts/wo0016/test_run_stream_counter.py b/scripts/wo0016/test_run_stream_counter.py
+index 2eaf724..34b7300 100644
+--- a/scripts/wo0016/test_run_stream_counter.py
++++ b/scripts/wo0016/test_run_stream_counter.py
+@@ -1,4 +1,6 @@
+ import asyncio
++import hashlib
++import json
+ import sys
+ import threading
+ import time
+@@ -23,6 +25,90 @@ from run_stream_counter import (  # noqa: E402
+ from stream_counter import MaskCounter  # noqa: E402
+ 
+ 
++def test_five_rightward_nuts_cross_vertical_line_at_32_pixels_per_frame():
++    counter = MaskCounter(count_axis="x", line_x=160, max_step=60,
++                          max_lateral_step=10, min_area=32)
++    events = []
++    for frame in range(60):
++        mask = np.zeros((240, 320), dtype=np.uint8)
++        for launch in range(0, 50, 10):
++            x = 32 + (frame - launch) * 32
++            if launch <= frame and 5 <= x <= 314:
++                mask[111:122, x-5:x+6] = 255
++        events.extend(counter.update(frame, mask).events)
++    assert counter.total_count == 5
++    assert len({event.track_id for event in events}) == 5
++    assert [event.frame_id for event in events] == [5, 15, 25, 35, 45]
++
++
++def test_x_counter_rejects_lateral_jump_reverse_and_oversized_component():
++    from stream_counter import Detection
++    def det(x, y=116, area=121):
++        return Detection(x-5, x+5, y-5, y+5, area, float(x), float(y))
++    for sequence in ([det(128), det(164, 140)], [det(190), det(150), det(128)]):
++        counter = MaskCounter(count_axis="x", max_step=60, max_lateral_step=10)
++        for frame, detection in enumerate(sequence):
++            counter.update_detections(frame, [detection])
++        assert counter.total_count == 0
++    counter = MaskCounter(count_axis="x", max_area=120)
++    assert counter.update_detections(0, [det(128)]).detections == ()
++
++
++def test_recorded_detections_replay_matches_live_x_counting():
++    live = MaskCounter(count_axis="x", max_step=60, max_lateral_step=10)
++    replay = MaskCounter(count_axis="x", max_step=60, max_lateral_step=10)
++    for frame, x in enumerate([64, 96, 128, 160, 192, 224]):
++        mask = np.zeros((240, 320), dtype=np.uint8)
++        mask[111:122, x-5:x+6] = 255
++        actual = live.update(frame, mask)
++        recorded = replay.update_detections(frame, actual.detections)
++        assert recorded.events == actual.events
++        assert recorded.total_count == actual.total_count
++    assert replay.total_count == 1
++
++
++def test_x_configuration_is_explicit_and_vertical_preview_matches():
++    from mjpeg_preview import render_preview_frame
++    args = runner._parser().parse_args(["--count-axis", "x", "--line-x", "160",
++                                       "--max-step", "60", "--max-lateral-step", "10",
++                                       "--max-area", "600"])
++    config = runner.counting_configuration(args)
++    assert config["count_axis"] == "x" and config["max_area"] == 600
++    frame = render_preview_frame(np.zeros((240, 320), dtype=np.uint8),
++                                 total_count=0, line_y=120, count_axis="x", line_x=160)
++    assert tuple(frame[100, 160]) == (0, 0, 255)
++    assert tuple(frame[120, 100]) == (0, 0, 0)
++
++
++def test_rightward_track_counts_once_when_component_splits_after_crossing():
++    from stream_counter import Detection
++    def det(x, y):
++        return Detection(x-5, x+5, y-3, y+3, 60, float(x), float(y))
++    counter = MaskCounter(count_axis="x", max_step=60, max_lateral_step=10)
++    for frame, detections in enumerate(([det(96,116)], [det(128,116)],
++                                        [det(164,116)], [det(196,112),det(196,120)],
++                                        [det(228,112),det(228,120)])):
++        counter.update_detections(frame, detections)
++    assert counter.total_count == 1
++
++
++def test_attempt4_permit_binds_counting_config_and_counter_hash(tmp_path):
++    args = runner._parser().parse_args(["--count-axis", "x", "--max-step", "60",
++                                       "--max-lateral-step", "10"])
++    identity = runner.stageb2_attempt_permit_identity(
++        ready_identity={"boot_id":"same-boot"}, ready_guard_sha256="a"*64,
++        attempt_id="attempt-4", operator_prearm_delay_s=15, runner_sha256="b"*64,
++        counting_config=runner.counting_configuration(args), counter_sha256="c"*64)
++    path = tmp_path/"permit.json"
++    path.write_text(json.dumps({**identity, "permit_status":"AUTHORIZED", "consumed":False}))
++    path.chmod(0o600)
++    tmp_path.chmod(0o700)
++    for changed in ({**identity,"counter_sha256":"d"*64},
++                    {**identity,"counting_config":{**identity["counting_config"],"max_step":20}}):
++        with pytest.raises(RuntimeError, match="does not match"):
++            runner.validate_stageb2_attempt_permit(path, changed, expected_uid=path.stat().st_uid)
++
++
+ def test_wo15_dependency_path_prefers_isolated_bundle(tmp_path):
+     script_dir = tmp_path / "wo0016"
+     bundled = script_dir / "wo0015"
+@@ -77,6 +163,218 @@ def test_one_shot_guard_is_exclusive_and_records_exact_identity(tmp_path):
+         claim_once_guard(path, identity)
+ 
+ 
++def test_stageb2_ready_guard_is_validated_without_consuming_or_rewriting(tmp_path):
++    path = tmp_path / "stageb2-ready.json"
++    identity = {
++        "schema": 1,
++        "work_order": "WO-0016",
++        "stage": "wo0016-stageB2-nuts",
++        "boot_id": "test-boot",
++        "manifest_sha256": "a" * 64,
++        "bit_sha256": "b" * 64,
++        "hwh_sha256": "c" * 64,
++        "max_frames": 165,
++        "expected_count": 5,
++        "material_label": "M6_nut_no_washer",
++        "stabilization_delay_s": 3.0,
++    }
++    original = json.dumps(identity | {"guard_status": "READY", "consumed": False},
++                          sort_keys=True).encode() + b"\n"
++    path.write_bytes(original)
++    path.chmod(0o600)
++    path.parent.chmod(0o700)
++    owner_uid = path.stat().st_uid
++
++    receipt = runner.validate_non_consuming_guard(
++        path, identity, expected_uid=owner_uid
++    )
++
++    assert receipt["guard"]["consumed"] is False
++    assert receipt["guard"]["guard_status"] == "READY"
++    assert receipt["sha256"] == hashlib.sha256(original).hexdigest()
++    assert path.read_bytes() == original
++
++
++@pytest.mark.parametrize("mutation", [
++    {"boot_id": "other-boot"},
++    {"manifest_sha256": "d" * 64},
++    {"consumed": True},
++    {"guard_status": "CONSUMED"},
++])
++def test_stageb2_ready_guard_rejects_nonmatching_or_consumed_records(tmp_path, mutation):
++    path = tmp_path / "stageb2-ready.json"
++    identity = {
++        "schema": 1,
++        "work_order": "WO-0016",
++        "stage": "wo0016-stageB2-nuts",
++        "boot_id": "test-boot",
++        "manifest_sha256": "a" * 64,
++        "bit_sha256": "b" * 64,
++        "hwh_sha256": "c" * 64,
++        "max_frames": 165,
++        "expected_count": 5,
++        "material_label": "M6_nut_no_washer",
++        "stabilization_delay_s": 3.0,
++    }
++    record = identity | {"guard_status": "READY", "consumed": False} | mutation
++    path.write_text(json.dumps(record), encoding="utf-8")
++    path.chmod(0o600)
++    path.parent.chmod(0o700)
++
++    with pytest.raises(RuntimeError, match="stage B-2 READY guard"):
++        runner.validate_non_consuming_guard(
++            path, identity, expected_uid=path.stat().st_uid
++        )
++
++
++def test_stageb2_no_consume_cli_requires_an_explicit_flag_and_settle_time():
++    args = runner._parser().parse_args([
++        "--mode", "board", "--no-consume-guard", "--stabilization-delay-s", "3",
++        "--attempt-id", "attempt-2", "--operator-prearm-delay-s", "15",
++        "--max-frames", "165", "--expected-count", "5",
++        "--material-label", "M6_nut_no_washer",
++    ])
++
++    assert args.no_consume_guard is True
++    assert args.stabilization_delay_s == 3.0
++    assert args.max_frames == 165
++    assert args.ground_truth_count == 5
++    assert args.attempt_id == "attempt-2"
++    assert args.operator_prearm_delay_s == 15.0
++
++
++def test_stageb2_attempt_permit_is_private_boot_bound_and_read_only(tmp_path):
++    ready_identity = runner.stageb2_guard_identity(
++        boot_id="boot-1", manifest_sha256="a" * 64, bit_sha256="b" * 64,
++        hwh_sha256="c" * 64, max_frames=165, expected_count=5,
++        material_label="M6_nut_no_washer", stabilization_delay_s=3.0,
++    )
++    identity = runner.stageb2_attempt_permit_identity(
++        ready_identity=ready_identity,
++        ready_guard_sha256="d" * 64,
++        attempt_id="attempt-2",
++        operator_prearm_delay_s=15.0,
++        runner_sha256="e" * 64,
++    )
++    original = json.dumps(
++        identity | {"permit_status": "AUTHORIZED", "consumed": False},
++        sort_keys=True,
++    ).encode() + b"\n"
++    path = tmp_path / "attempt-2-permit.json"
++    path.write_bytes(original)
++    path.chmod(0o600)
++    path.parent.chmod(0o700)
++
++    receipt = runner.validate_stageb2_attempt_permit(
++        path, identity, expected_uid=path.stat().st_uid
++    )
++
++    assert receipt["permit"]["attempt_id"] == "attempt-2"
++    assert receipt["permit"]["consumed"] is False
++    assert receipt["permit"]["runner_sha256"] == "e" * 64
++    assert receipt["sha256"] == hashlib.sha256(original).hexdigest()
++    assert path.read_bytes() == original
++
++
++def test_stageb2_attempt_permit_rejects_wrong_attempt_and_unsafe_ids():
++    ready_identity = runner.stageb2_guard_identity(
++        boot_id="boot-1", manifest_sha256="a" * 64, bit_sha256="b" * 64,
++        hwh_sha256="c" * 64, max_frames=165, expected_count=5,
++        material_label="M6_nut_no_washer", stabilization_delay_s=3.0,
++    )
++    with pytest.raises(ValueError, match="attempt id"):
++        runner.stageb2_attempt_permit_identity(
++            ready_identity=ready_identity, ready_guard_sha256="d" * 64,
++            attempt_id="../attempt-2", operator_prearm_delay_s=15.0,
++            runner_sha256="e" * 64,
++        )
++
++
++def test_stageb2_no_consume_cli_rejects_missing_attempt_id_before_board_access(capsys):
++    result = runner.main(["--mode", "board", "--no-consume-guard"])
++    payload = json.loads(capsys.readouterr().err)
++
++    assert result == 2
++    assert payload["status"] == "BOARD_STREAM_REJECTED"
++    assert "unique --attempt-id" in payload["error"]
++    assert payload["board_accessed"] is False
++    assert payload["pynq_imported"] is False
++
++
++def test_emit_milestone_writes_jsonl_and_flushes_terminal(capsys, tmp_path):
++    path = tmp_path / "milestones.jsonl"
++
++    runner._emit_milestone(
++        "CAMERA_OPEN_AND_STABILIZING_START", 123.5, path,
++        boot_id="boot-1",
++    )
++
++    assert "[MILESTONE] CAMERA_OPEN_AND_STABILIZING_START" in capsys.readouterr().out
++    record = json.loads(path.read_text(encoding="utf-8"))
++    assert record == {
++        "boot_id": "boot-1",
++        "milestone": "CAMERA_OPEN_AND_STABILIZING_START",
++        "monotonic": 123.5,
++    }
++
++
++def test_countdown_uses_monotonic_time_and_reports_each_second(monkeypatch, capsys):
++    class FakeClock:
++        now = 10.0
++
++        def monotonic(self):
++            return self.now
++
++        def sleep(self, seconds):
++            self.now += seconds
++
++    clock = FakeClock()
++    monkeypatch.setattr(runner.time, "monotonic", clock.monotonic)
++    monkeypatch.setattr(runner.time, "sleep", clock.sleep)
++
++    runner._countdown_wait(3.0, label="STABILIZATION")
++
++    assert capsys.readouterr().out.splitlines() == [
++        "[STABILIZATION] 3 seconds remaining",
++        "[STABILIZATION] 2 seconds remaining",
++        "[STABILIZATION] 1 seconds remaining",
++    ]
++    assert clock.now == 13.0
++
++
++def test_stageb2_guard_identity_fails_closed_when_profile_values_differ():
++    with pytest.raises(ValueError, match="restricted to Stage B-2"):
++        runner.stageb2_guard_identity(
++            boot_id="boot",
++            manifest_sha256="a" * 64,
++            bit_sha256="b" * 64,
++            hwh_sha256="c" * 64,
++            max_frames=150,
++            expected_count=5,
++            material_label="M6_nut_no_washer",
++            stabilization_delay_s=3.0,
++        )
++
++
++def test_each_completed_frame_requires_exact_mm2s_and_s2mm_dmasr():
++    import board_preflight
++
++    class Readback:
++        def __init__(self, statuses):
++            self.statuses = statuses
++
++        def read32(self, base, offset):
++            assert base == board_preflight.DMA_BASE
++            return self.statuses[offset]
++
++    records = []
++    runner.verify_frame_dmasr(Readback({0x04: 0x1002, 0x34: 0x1002}), 7, records)
++    assert records == [{"frame_id": 7, "mm2s": "0x00001002", "s2mm": "0x00001002"}]
++
++    with pytest.raises(RuntimeError, match="frame 8 DMA status mismatch"):
++        runner.verify_frame_dmasr(Readback({0x04: 0x1002, 0x34: 0x1000}), 8, records)
++
++
+ def test_reverse_direction_mock_sequence_matches_its_separate_ground_truth():
+     payload = run_mock_simulation(frame_count=8, line_y=120, direction=-1, min_area=12)
+ 
+@@ -372,6 +670,7 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
+     resize_calls = []
+     steady_start_time = []
+     capture_metadata = {}
++    milestones = []
+ 
+     class Capture:
+         def __init__(self):
+@@ -397,6 +696,7 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
+                 assert not steady_start_time
+             else:
+                 assert len(steady_start_time) == 1
++                assert milestones[-1][0] == "FRAME_0_CAPTURE_START_FEED_NOW"
+             frame = np.empty((400, 640, 3), dtype=np.uint8)
+             frame[:, :, 0] = 77
+             frame[:, :, 1] = 12
+@@ -435,6 +735,7 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
+         return [frame async for frame in camera_gray_frames(
+             "/dev/video-test", max_frames=2, cv2_module=FakeCv2,
+             capture_timings_ms=capture_timings_ms,
++                milestone_callback=lambda name, at: milestones.append((name, at)),
+             steady_start_time=steady_start_time,
+             capture_metadata=capture_metadata)]
+ 
+@@ -465,7 +766,15 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
+         "camera_height": 400,
+         "camera_output_width": 320,
+         "camera_output_height": 240,
++        "camera_open_monotonic": capture_metadata["camera_open_monotonic"],
+     }
++    assert [name for name, _ in milestones] == [
++        "CAMERA_OPENED",
++        "CAMERA_OPEN_READY_FOR_OPERATOR",
++        "CAMERA_OPEN_AND_STABILIZING_START",
++        "FRAME_0_CAPTURE_START_FEED_NOW",
++    ]
++    assert milestones[0][1] <= milestones[-1][1]
+ 
+ 
+ def test_camera_prefetches_next_ordered_frame_and_joins_before_release():

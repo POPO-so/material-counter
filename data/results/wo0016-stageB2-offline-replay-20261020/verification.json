@@ -1,0 +1,13 @@
+{
+  "status": "OFFLINE_INTEGRITY_AND_REPLAY_PASS",
+  "board_accessed": false,
+  "verified_archive_hashes": {
+    "2": "6e7bd38d6fc9dc57a0d88500a77d754ef593e7c667e7fb735ad09aaef263a068",
+    "3": "a6d134f50f9ee4d9c825f8c6d35413b3ea3c5c923c2af0aa110109e3818f4206"
+  },
+  "permit_sha256": "7272a5ebe90d92d1b9ddb7ff80abe8108de1e1715ed8af2913b684f58910a4b3",
+  "ready_guard_sha256": "f15464025abeabc2e52681aaa000caf25da217cdf5505781c3d7fcba45cd5b9b",
+  "replayed_total_count": 5,
+  "physical_identity": "UNVERIFIED_FROM_CCL_ONLY",
+  "attempt4_sampling": "NOT_RUN"
+}

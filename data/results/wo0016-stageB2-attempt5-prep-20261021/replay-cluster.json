@@ -1,0 +1,1298 @@
+{
+  "configuration": {
+    "count_axis": "x",
+    "line_x": 160,
+    "line_y": 120,
+    "direction": 1,
+    "min_area": 12,
+    "max_area": null,
+    "max_step": 60.0,
+    "max_lateral_step": 10.0,
+    "hysteresis": 2.0,
+    "confirm_hits": 2,
+    "component_cluster_dx": 24,
+    "component_cluster_dy": 12
+  },
+  "frames_processed": 165,
+  "replayed_total_count": 2,
+  "events": [
+    {
+      "track_id": 1,
+      "frame_id": 48,
+      "centroid_x": 187.44117647058823,
+      "centroid_y": 116.19607843137256,
+      "inferred_gap": false
+    },
+    {
+      "track_id": 4,
+      "frame_id": 156,
+      "centroid_x": 171.3975903614458,
+      "centroid_y": 116.42168674698796,
+      "inferred_gap": false
+    }
+  ],
+  "associations": [
+    {
+      "frame_id": 42,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": null,
+      "kind": "new",
+      "dx": null,
+      "dy": null,
+      "x_min": 0,
+      "x_max": 3,
+      "y_min": 105,
+      "y_max": 121,
+      "area": 59,
+      "centroid_x": 1.3389830508474576,
+      "centroid_y": 112.89830508474576
+    },
+    {
+      "frame_id": 43,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 42,
+      "kind": "matched",
+      "dx": 28.68665797479357,
+      "dy": 0.45700627056559995,
+      "x_min": 20,
+      "x_max": 41,
+      "y_min": 101,
+      "y_max": 127,
+      "area": 273,
+      "centroid_x": 30.025641025641026,
+      "centroid_y": 113.35531135531136
+    },
+    {
+      "frame_id": 44,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 43,
+      "kind": "matched",
+      "dx": 39.81767694670921,
+      "dy": 0.4280987829374965,
+      "x_min": 60,
+      "x_max": 81,
+      "y_min": 102,
+      "y_max": 127,
+      "area": 217,
+      "centroid_x": 69.84331797235023,
+      "centroid_y": 113.78341013824885
+    },
+    {
+      "frame_id": 45,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 44,
+      "kind": "matched",
+      "dx": 32.92019554116328,
+      "dy": 0.6422655374268231,
+      "x_min": 94,
+      "x_max": 115,
+      "y_min": 104,
+      "y_max": 125,
+      "area": 148,
+      "centroid_x": 102.76351351351352,
+      "centroid_y": 114.42567567567568
+    },
+    {
+      "frame_id": 46,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 45,
+      "kind": "matched",
+      "dx": 27.068654318654325,
+      "dy": 0.4414571914571894,
+      "x_min": 121,
+      "x_max": 141,
+      "y_min": 105,
+      "y_max": 125,
+      "area": 143,
+      "centroid_x": 129.83216783216784,
+      "centroid_y": 114.86713286713287
+    },
+    {
+      "frame_id": 47,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 46,
+      "kind": "matched",
+      "dx": 30.882117882117882,
+      "dy": 0.8376290376290427,
+      "x_min": 154,
+      "x_max": 172,
+      "y_min": 107,
+      "y_max": 124,
+      "area": 105,
+      "centroid_x": 160.71428571428572,
+      "centroid_y": 115.70476190476191
+    },
+    {
+      "frame_id": 48,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 47,
+      "kind": "matched",
+      "dx": 26.72689075630251,
+      "dy": 0.49131652661064606,
+      "x_min": 181,
+      "x_max": 199,
+      "y_min": 108,
+      "y_max": 124,
+      "area": 102,
+      "centroid_x": 187.44117647058823,
+      "centroid_y": 116.19607843137256
+    },
+    {
+      "frame_id": 49,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 48,
+      "kind": "matched",
+      "dx": 37.12439729990356,
+      "dy": 0.08261009321761037,
+      "x_min": 215,
+      "x_max": 236,
+      "y_min": 107,
+      "y_max": 127,
+      "area": 122,
+      "centroid_x": 224.5655737704918,
+      "centroid_y": 116.27868852459017
+    },
+    {
+      "frame_id": 50,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 49,
+      "kind": "matched",
+      "dx": 29.164689387402944,
+      "dy": 0.33315358067299883,
+      "x_min": 242,
+      "x_max": 264,
+      "y_min": 106,
+      "y_max": 130,
+      "area": 152,
+      "centroid_x": 253.73026315789474,
+      "centroid_y": 116.61184210526316
+    },
+    {
+      "frame_id": 51,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 50,
+      "kind": "matched",
+      "dx": 29.063458815199454,
+      "dy": 1.3433148454094805,
+      "x_min": 271,
+      "x_max": 293,
+      "y_min": 106,
+      "y_max": 131,
+      "area": 223,
+      "centroid_x": 282.7937219730942,
+      "centroid_y": 117.95515695067265
+    },
+    {
+      "frame_id": 52,
+      "track_id": 1,
+      "detection_index": 0,
+      "previous_frame": 51,
+      "kind": "matched",
+      "dx": 30.416804342695286,
+      "dy": 1.4044921721343684,
+      "x_min": 308,
+      "x_max": 319,
+      "y_min": 107,
+      "y_max": 132,
+      "area": 114,
+      "centroid_x": 313.2105263157895,
+      "centroid_y": 119.35964912280701
+    },
+    {
+      "frame_id": 96,
+      "track_id": 2,
+      "detection_index": 0,
+      "previous_frame": null,
+      "kind": "new",
+      "dx": null,
+      "dy": null,
+      "x_min": 83,
+      "x_max": 91,
+      "y_min": 96,
+      "y_max": 97,
+      "area": 15,
+      "centroid_x": 87.2,
+      "centroid_y": 96.4
+    },
+    {
+      "frame_id": 97,
+      "track_id": 2,
+      "detection_index": 0,
+      "previous_frame": 96,
+      "kind": "matched",
+      "dx": 18.799999999999997,
+      "dy": 0.07619047619047592,
+      "x_min": 100,
+      "x_max": 111,
+      "y_min": 96,
+      "y_max": 98,
+      "area": 21,
+      "centroid_x": 106.0,
+      "centroid_y": 96.47619047619048
+    },
+    {
+      "frame_id": 102,
+      "track_id": 3,
+      "detection_index": 0,
+      "previous_frame": null,
+      "kind": "new",
+      "dx": null,
+      "dy": null,
+      "x_min": 245,
+      "x_max": 255,
+      "y_min": 96,
+      "y_max": 100,
+      "area": 19,
+      "centroid_x": 250.10526315789474,
+      "centroid_y": 98.6842105263158
+    },
+    {
+      "frame_id": 103,
+      "track_id": 3,
+      "detection_index": 0,
+      "previous_frame": 102,
+      "kind": "matched",
+      "dx": 33.20723684210526,
+      "dy": -0.3717105263157947,
+      "x_min": 276,
+      "x_max": 291,
+      "y_min": 96,
+      "y_max": 101,
+      "area": 48,
+      "centroid_x": 283.3125,
+      "centroid_y": 98.3125
+    },
+    {
+      "frame_id": 104,
+      "track_id": 3,
+      "detection_index": 0,
+      "previous_frame": 103,
+      "kind": "matched",
+      "dx": 21.6875,
+      "dy": 0.31014150943396146,
+      "x_min": 297,
+      "x_max": 313,
+      "y_min": 96,
+      "y_max": 101,
+      "area": 53,
+      "centroid_x": 305.0,
+      "centroid_y": 98.62264150943396
+    },
+    {
+      "frame_id": 150,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": null,
+      "kind": "new",
+      "dx": null,
+      "dy": null,
+      "x_min": 0,
+      "x_max": 6,
+      "y_min": 102,
+      "y_max": 124,
+      "area": 98,
+      "centroid_x": 2.9489795918367347,
+      "centroid_y": 112.4795918367347
+    },
+    {
+      "frame_id": 151,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 150,
+      "kind": "matched",
+      "dx": 18.29847803528191,
+      "dy": 0.3237979937737805,
+      "x_min": 11,
+      "x_max": 33,
+      "y_min": 101,
+      "y_max": 126,
+      "area": 295,
+      "centroid_x": 21.247457627118646,
+      "centroid_y": 112.80338983050848
+    },
+    {
+      "frame_id": 152,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 151,
+      "kind": "matched",
+      "dx": 26.762816345484094,
+      "dy": 0.38839099140932376,
+      "x_min": 37,
+      "x_max": 60,
+      "y_min": 101,
+      "y_max": 127,
+      "area": 292,
+      "centroid_x": 48.01027397260274,
+      "centroid_y": 113.1917808219178
+    },
+    {
+      "frame_id": 153,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 152,
+      "kind": "matched",
+      "dx": 33.410778658976206,
+      "dy": 1.2480688021423418,
+      "x_min": 71,
+      "x_max": 93,
+      "y_min": 102,
+      "y_max": 127,
+      "area": 266,
+      "centroid_x": 81.42105263157895,
+      "centroid_y": 114.43984962406014
+    },
+    {
+      "frame_id": 154,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 153,
+      "kind": "matched",
+      "dx": 34.58364220410181,
+      "dy": 1.400525962794319,
+      "x_min": 106,
+      "x_max": 127,
+      "y_min": 104,
+      "y_max": 127,
+      "area": 213,
+      "centroid_x": 116.00469483568075,
+      "centroid_y": 115.84037558685446
+    },
+    {
+      "frame_id": 155,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 154,
+      "kind": "matched",
+      "dx": 34.176623845637934,
+      "dy": 0.28050353402466044,
+      "x_min": 140,
+      "x_max": 161,
+      "y_min": 105,
+      "y_max": 127,
+      "area": 182,
+      "centroid_x": 150.1813186813187,
+      "centroid_y": 116.12087912087912
+    },
+    {
+      "frame_id": 156,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 155,
+      "kind": "matched",
+      "dx": 21.216271680127107,
+      "dy": 0.3008076261088348,
+      "x_min": 161,
+      "x_max": 182,
+      "y_min": 107,
+      "y_max": 127,
+      "area": 166,
+      "centroid_x": 171.3975903614458,
+      "centroid_y": 116.42168674698796
+    },
+    {
+      "frame_id": 157,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 156,
+      "kind": "matched",
+      "dx": 29.27888022678951,
+      "dy": 0.6312544294826239,
+      "x_min": 190,
+      "x_max": 211,
+      "y_min": 107,
+      "y_max": 127,
+      "area": 170,
+      "centroid_x": 200.6764705882353,
+      "centroid_y": 117.05294117647058
+    },
+    {
+      "frame_id": 158,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 157,
+      "kind": "matched",
+      "dx": 36.791822094691526,
+      "dy": 1.0202295552367389,
+      "x_min": 226,
+      "x_max": 248,
+      "y_min": 106,
+      "y_max": 130,
+      "area": 205,
+      "centroid_x": 237.46829268292683,
+      "centroid_y": 118.07317073170732
+    },
+    {
+      "frame_id": 159,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 158,
+      "kind": "matched",
+      "dx": 30.479983179142124,
+      "dy": -0.2542052144659408,
+      "x_min": 256,
+      "x_max": 278,
+      "y_min": 106,
+      "y_max": 130,
+      "area": 232,
+      "centroid_x": 267.94827586206895,
+      "centroid_y": 117.81896551724138
+    },
+    {
+      "frame_id": 160,
+      "track_id": 4,
+      "detection_index": 0,
+      "previous_frame": 159,
+      "kind": "matched",
+      "dx": 28.42891712038721,
+      "dy": 0.22050816696913955,
+      "x_min": 285,
+      "x_max": 307,
+      "y_min": 107,
+      "y_max": 131,
+      "area": 228,
+      "centroid_x": 296.37719298245617,
+      "centroid_y": 118.03947368421052
+    }
+  ],
+  "frame_totals": [
+    {
+      "frame_id": 0,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 1,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 2,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 3,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 4,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 5,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 6,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 7,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 8,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 9,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 10,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 11,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 12,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 13,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 14,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 15,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 16,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 17,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 18,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 19,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 20,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 21,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 22,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 23,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 24,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 25,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 26,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 27,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 28,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 29,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 30,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 31,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 32,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 33,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 34,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 35,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 36,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 37,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 38,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 39,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 40,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 41,
+      "accepted_components": 0,
+      "total_count": 0
+    },
+    {
+      "frame_id": 42,
+      "accepted_components": 1,
+      "total_count": 0
+    },
+    {
+      "frame_id": 43,
+      "accepted_components": 1,
+      "total_count": 0
+    },
+    {
+      "frame_id": 44,
+      "accepted_components": 1,
+      "total_count": 0
+    },
+    {
+      "frame_id": 45,
+      "accepted_components": 1,
+      "total_count": 0
+    },
+    {
+      "frame_id": 46,
+      "accepted_components": 1,
+      "total_count": 0
+    },
+    {
+      "frame_id": 47,
+      "accepted_components": 1,
+      "total_count": 0
+    },
+    {
+      "frame_id": 48,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 49,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 50,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 51,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 52,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 53,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 54,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 55,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 56,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 57,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 58,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 59,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 60,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 61,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 62,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 63,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 64,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 65,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 66,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 67,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 68,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 69,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 70,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 71,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 72,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 73,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 74,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 75,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 76,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 77,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 78,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 79,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 80,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 81,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 82,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 83,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 84,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 85,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 86,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 87,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 88,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 89,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 90,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 91,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 92,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 93,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 94,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 95,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 96,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 97,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 98,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 99,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 100,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 101,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 102,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 103,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 104,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 105,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 106,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 107,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 108,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 109,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 110,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 111,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 112,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 113,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 114,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 115,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 116,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 117,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 118,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 119,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 120,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 121,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 122,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 123,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 124,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 125,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 126,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 127,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 128,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 129,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 130,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 131,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 132,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 133,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 134,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 135,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 136,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 137,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 138,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 139,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 140,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 141,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 142,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 143,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 144,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 145,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 146,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 147,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 148,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 149,
+      "accepted_components": 0,
+      "total_count": 1
+    },
+    {
+      "frame_id": 150,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 151,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 152,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 153,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 154,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 155,
+      "accepted_components": 1,
+      "total_count": 1
+    },
+    {
+      "frame_id": 156,
+      "accepted_components": 1,
+      "total_count": 2
+    },
+    {
+      "frame_id": 157,
+      "accepted_components": 1,
+      "total_count": 2
+    },
+    {
+      "frame_id": 158,
+      "accepted_components": 1,
+      "total_count": 2
+    },
+    {
+      "frame_id": 159,
+      "accepted_components": 1,
+      "total_count": 2
+    },
+    {
+      "frame_id": 160,
+      "accepted_components": 1,
+      "total_count": 2
+    },
+    {
+      "frame_id": 161,
+      "accepted_components": 0,
+      "total_count": 2
+    },
+    {
+      "frame_id": 162,
+      "accepted_components": 0,
+      "total_count": 2
+    },
+    {
+      "frame_id": 163,
+      "accepted_components": 0,
+      "total_count": 2
+    },
+    {
+      "frame_id": 164,
+      "accepted_components": 0,
+      "total_count": 2
+    }
+  ],
+  "source_sha256": "b17d868aa818fd6e156a9bf729dc24163ca98c604fd18a3151b60430d1bf9622",
+  "board_accessed": false,
+  "evidence_scope": "Qualified CCL observations only; gap crossings inferred; physical identity unverified"
+}

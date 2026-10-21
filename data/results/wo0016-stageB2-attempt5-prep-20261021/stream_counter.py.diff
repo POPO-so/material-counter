@@ -1,0 +1,252 @@
+--- before/stream_counter.py
++++ after/stream_counter.py
+@@ -63,6 +63,7 @@
+     frame_id: int
+     centroid_x: float
+     centroid_y: float
++    inferred_gap: bool = False
+ 
+ 
+ @dataclass(frozen=True)
+@@ -78,6 +79,8 @@
+     roi_foreground_pixels: int = 0
+     ccl_executed: bool = False
+     roi_subtimings_ms: dict[str, float] = field(default_factory=dict, compare=False)
++    raw_detections: tuple[Detection, ...] = ()
++    suppressed_events: tuple[CountEvent, ...] = ()
+ 
+ 
+ @dataclass
+@@ -91,6 +94,7 @@
+     counted: bool = False
+     missed: int = 0
+     finished: bool = False
++    forward_velocity: float | None = None
+ 
+ 
+ class MaskCounter:
+@@ -108,7 +112,10 @@
+                  max_x_step: float = 20.0, backward_tolerance: float = 2.0,
+                  count_axis: str = "y", line_x: int = 160,
+                  max_lateral_step: float | None = None,
+-                 max_area: int | None = None):
++                 max_area: int | None = None,
++                 component_cluster_dx: float = 0.0, component_cluster_dy: float = 12.0,
++                 cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
++                 edge_max_missing: int = 0):
+         self.width = _integer(width, "width", minimum=1)
+         self.height = _integer(height, "height", minimum=1)
+         self.line_y = _integer(line_y, "line_y", minimum=0)
+@@ -134,6 +141,13 @@
+         self.max_lateral_step = (self.max_x_step if max_lateral_step is None else
+                                  _positive_float(max_lateral_step, "max_lateral_step"))
+         self.backward_tolerance = _nonnegative_float(backward_tolerance, "backward_tolerance")
++        self.component_cluster_dx = _nonnegative_float(component_cluster_dx, "component_cluster_dx")
++        self.component_cluster_dy = _nonnegative_float(component_cluster_dy, "component_cluster_dy")
++        self.cooldown_frames = _integer(cooldown_frames, "cooldown_frames", minimum=0)
++        self.cooldown_lateral = _nonnegative_float(cooldown_lateral, "cooldown_lateral")
++        self.edge_max_missing = _integer(edge_max_missing, "edge_max_missing", minimum=0)
++        self._recent_events: list[CountEvent] = []
++        self.last_suppressed_events: list[CountEvent] = []
+         self.total_count = 0
+         self.last_frame_id: int | None = None
+         self._tracks: dict[int, _Track] = {}
+@@ -161,11 +175,14 @@
+             if self._area_allowed(detection.area):
+                 accepted.append(detection)
+         accepted.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
++        raw_detections = tuple(accepted)
++        accepted = self._cluster_components(accepted)
+         self.last_frame_id = frame_id
+         events = self._associate_and_update(frame_id, accepted)
+         top, bottom = self._roi_bounds()
+         return FrameResult(frame_id, self.total_count, tuple(accepted), tuple(events),
+-                           top, bottom, (), ())
++                           top, bottom, (), (), raw_detections=raw_detections,
++                           suppressed_events=tuple(self.last_suppressed_events))
+ 
+     def _area_allowed(self, area: int) -> bool:
+         return area >= self.min_area and (self.max_area is None or area <= self.max_area)
+@@ -190,7 +207,8 @@
+         projection_ms = (time.perf_counter() - projection_started) * 1000.0
+ 
+         ccl_started = time.perf_counter()
+-        detections = self._roi_components(roi, roi_top, foreground_pixels)
++        raw_detections = self._roi_components(roi, roi_top, foreground_pixels)
++        detections = self._cluster_components(raw_detections)
+         ccl_ms = (time.perf_counter() - ccl_started) * 1000.0
+ 
+         track_started = time.perf_counter()
+@@ -208,6 +226,8 @@
+             column_projection=column_projection,
+             roi_foreground_pixels=foreground_pixels,
+             ccl_executed=foreground_pixels >= self.min_area,
++            raw_detections=tuple(raw_detections),
++            suppressed_events=tuple(self.last_suppressed_events),
+             roi_subtimings_ms={
+                 "validate_ms": validate_ms,
+                 "projection_ms": projection_ms,
+@@ -275,6 +295,52 @@
+         detections = self._roi_components(roi, top, foreground_pixels)
+         return detections, top, bottom, row_projection, column_projection
+ 
++    def _cluster_components(self, detections: list[Detection]) -> list[Detection]:
++        """Complete-link clusters bound every pair; no transitive nut chains.
++
++        Inputs have already passed CCL area filtering. Keep the original CCL
++        records separately for audit; observations use area-weighted centroids.
++        """
++        if self.component_cluster_dx == 0:
++            return detections
++        groups: list[list[Detection]] = []
++        for detection in detections:
++            for group in groups:
++                if all(abs(detection.centroid_x-other.centroid_x) <= self.component_cluster_dx
++                       and abs(detection.centroid_y-other.centroid_y) <= self.component_cluster_dy
++                       for other in group):
++                    group.append(detection)
++                    break
++            else:
++                groups.append([detection])
++        merged = []
++        for group in groups:
++            area = sum(d.area for d in group)
++            # Preserve max_area as a bound on the resulting entity as well.
++            if not self._area_allowed(area):
++                continue
++            merged.append(Detection(min(d.x_min for d in group), max(d.x_max for d in group),
++                min(d.y_min for d in group), max(d.y_max for d in group), area,
++                sum(d.area*d.centroid_x for d in group)/area,
++                sum(d.area*d.centroid_y for d in group)/area))
++        return sorted(merged, key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
++
++    def _edge(self, detection: Detection) -> int:
++        top, bottom = self._roi_bounds()
++        if detection.y_min <= top + 1:
++            return -1
++        if detection.y_max >= bottom - 2:
++            return 1
++        return 0
++
++    def _missing_budget(self, track: _Track) -> int:
++        # Only an established, uncounted X-motion target at a clipped lane edge
++        # can survive the extra gap. Normal tracks retain their old lifetime.
++        if (self.count_axis == "x" and track.confirmed and track.armed
++                and not track.counted and self._edge(track.detection)):
++            return max(self.max_missing, self.edge_max_missing)
++        return self.max_missing
++
+     def _side(self, detection: Detection) -> float:
+         position = (detection.centroid_x - self.line_x if self.count_axis == "x"
+                     else detection.centroid_y - self.line_y)
+@@ -284,10 +350,13 @@
+                               detections: list[Detection]) -> list[CountEvent]:
+         active = []
+         self.last_associations = []
++        self.last_suppressed_events = []
++        self._recent_events = [event for event in self._recent_events
++                               if frame_id-event.frame_id <= self.cooldown_frames]
+         for track in self._tracks.values():
+             if track.finished:
+                 continue
+-            if frame_id - track.last_frame > self.max_missing + 1:
++            if frame_id - track.last_frame > self._missing_budget(track) + 1:
+                 track.finished = True
+             else:
+                 active.append(track)
+@@ -302,27 +371,62 @@
+                 lateral = abs(dy if self.count_axis == "x" else dx)
+                 forward = self.direction * (dx if self.count_axis == "x" else dy)
+                 area_ratio = detection.area / old.area
++                # A clipped entry slice grows sharply when the nut becomes
++                # visible. Compare bbox occupancy only for a one-frame,
++                # incoming image-border slice and a nut-sized observation.
++                entering = (old.x_min == 0 if self.direction == 1
++                            else old.x_max == self.width - 1)
++                size_limit = max(self.component_cluster_dx, 2*self.component_cluster_dy) + 3
++                if (self.count_axis == "x" and self.component_cluster_dx > 0
++                        and dt == 1 and entering and self._side(old) < -self.hysteresis
++                        and detection.x_max-detection.x_min+1 <= size_limit
++                        and detection.y_max-detection.y_min+1 <= size_limit):
++                    old_box = (old.x_max-old.x_min+1)*(old.y_max-old.y_min+1)
++                    new_box = (detection.x_max-detection.x_min+1)*(detection.y_max-detection.y_min+1)
++                    area_ratio *= old_box/new_box
++                gap = dt > self.max_missing + 1
++                if gap:
++                    if (not self._edge(old) or self._edge(old) != self._edge(detection)
++                            or lateral > self.max_lateral_step
++                            or track.forward_velocity is None or track.forward_velocity <= 0
++                            or abs(forward-track.forward_velocity*dt) > self.max_step
++                            or max(detection.x_max-detection.x_min+1,
++                                   detection.y_max-detection.y_min+1) > size_limit):
++                        continue
+                 if (lateral <= self.max_lateral_step * dt
+                         and -self.backward_tolerance <= forward <= self.max_step * dt
+                         and 0.25 <= area_ratio <= 4.0):
+-                    edges.append((dx * dx + dy * dy, track.track_id, index))
++                    edges.append((dx * dx + dy * dy, track.track_id, index, gap))
++
++        # An inferred gap must have a unique candidate in both directions.
++        # Refuse nearest-neighbour guessing when more than one object fits.
++        ambiguous_tracks = {edge[1] for edge in edges
++                            if sum(e[1] == edge[1] for e in edges) > 1}
++        ambiguous_detections = {edge[2] for edge in edges
++                                if sum(e[2] == edge[2] for e in edges) > 1}
+ 
+         used_tracks: set[int] = set()
+         used_detections: set[int] = set()
+         events = []
+-        for _, track_id, index in sorted(edges):
++        for _, track_id, index, gap in sorted(edges):
++            if gap and (track_id in ambiguous_tracks or index in ambiguous_detections):
++                continue
+             if track_id in used_tracks or index in used_detections:
+                 continue
+             track = self._tracks[track_id]
+             detection = detections[index]
+             dt = frame_id - track.last_frame
+             self.last_associations.append({"track_id": track_id, "detection_index": index,
+-                                           "previous_frame": track.last_frame, "kind": "matched",
++                                           "previous_frame": track.last_frame,
++                                           "kind": "edge_gap_inferred" if gap else "matched",
+                                            "dx": detection.centroid_x-track.detection.centroid_x,
+                                            "dy": detection.centroid_y-track.detection.centroid_y})
+             track.streak = track.streak + 1 if dt == 1 else 1
+             track.confirmed = track.confirmed or track.streak >= self.confirm_hits
+             track.missed = 0
++            longitudinal = (detection.centroid_x-track.detection.centroid_x
++                            if self.count_axis == "x" else detection.centroid_y-track.detection.centroid_y)
++            track.forward_velocity = self.direction*longitudinal/dt
+             track.last_frame = frame_id
+             track.detection = detection
+             track.armed = track.armed or self._side(detection) < -self.hysteresis
+@@ -331,15 +435,25 @@
+             if (track.armed and track.confirmed and not track.counted
+                     and self._side(detection) >= self.hysteresis):
+                 track.counted = True
+-                self.total_count += 1
+-                events.append(CountEvent(track.track_id, frame_id,
+-                                         detection.centroid_x, detection.centroid_y))
++                event = CountEvent(track.track_id, frame_id,
++                                   detection.centroid_x, detection.centroid_y, inferred_gap=gap)
++                lateral_position = lambda e: (e.centroid_y if self.count_axis == "x" else e.centroid_x)
++                duplicate = self.cooldown_frames > 0 and any(
++                    frame_id-old.frame_id <= self.cooldown_frames
++                    and abs(lateral_position(event)-lateral_position(old)) <= self.cooldown_lateral
++                    for old in self._recent_events)
++                if duplicate:
++                    self.last_suppressed_events.append(event)
++                else:
++                    self.total_count += 1
++                    events.append(event)
++                    self._recent_events.append(event)
+ 
+         for track in active:
+             if track.track_id not in used_tracks:
+                 track.missed = frame_id - track.last_frame
+                 track.streak = 0
+-                if track.missed > self.max_missing:
++                if track.missed > self._missing_budget(track):
+                     track.finished = True
+ 
+         for index, detection in enumerate(detections):

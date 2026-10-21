@@ -13,11 +13,13 @@ import json
 import math
 import os
 import queue
+import re
+import stat as stat_module
 import sys
 import threading
 import time
 from pathlib import Path
-from typing import Any, AsyncIterator, Mapping
+from typing import Any, AsyncIterator, Callable, Mapping
 
 import cv2
 import numpy as np
@@ -62,6 +64,16 @@ from stream_counter import (
 
 WO16_STAGE = "wo0016-stream"
 WO16_GUARD = Path("/var/lib/wo0016/stream-counter-consumed.json")
+STAGEB2_READY_GUARD_DIR = Path("/var/lib/wo0016")
+STAGEB2_ATTEMPT_DIR = STAGEB2_READY_GUARD_DIR / "attempts"
+STAGEB2_ATTEMPT_STAGE = "wo0016-stageB2-attempt"
+STAGEB2_VALID_FRAMES = 165
+STAGEB2_EXPECTED_COUNT = 5
+STAGEB2_MATERIAL_LABEL = "M6_nut_no_washer"
+STAGEB2_STABILIZATION_DELAY_S = 3.0
+STAGEB2_OPERATOR_PREARM_DELAY_S = 15.0
+STAGEB2_THRESHOLD = 128
+EXPECTED_FRAME_DMASR = 0x00001002
 CMA_WATERMARK_KIB = 32768
 AFI1_EXPECTED_READBACK = {
     "AFI1_RDCHAN_CTRL": 0x00000001,
@@ -173,6 +185,212 @@ def claim_once_guard(path: str | Path, identity: Mapping[str, Any]) -> dict[str,
     return receipt
 
 
+def validate_non_consuming_guard(path: str | Path,
+                                 identity: Mapping[str, Any], *,
+                                 expected_uid: int = 0) -> dict[str, Any]:
+    """Validate an armed Stage B-2 record by reading it without modifying it."""
+    if not isinstance(identity, Mapping) or not identity:
+        raise ValueError("stage B-2 READY guard identity must be non-empty")
+    guard, raw = _read_private_json_record(
+        path, label="stage B-2 READY guard", expected_uid=expected_uid
+    )
+    expected = {**dict(identity), "guard_status": "READY", "consumed": False}
+    if not isinstance(guard, dict) or guard != expected:
+        raise RuntimeError("stage B-2 READY guard identity/status does not match this run")
+    return {"guard": guard, "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def _read_private_json_record(path: str | Path, *, label: str,
+                              expected_uid: int) -> tuple[dict[str, Any], bytes]:
+    target = Path(path)
+    try:
+        parent_stat = target.parent.stat(follow_symlinks=False)
+        before = target.stat(follow_symlinks=False)
+    except OSError as exc:
+        raise RuntimeError(f"{label} is unavailable: {exc}") from exc
+    if os.name == "posix" and (
+            not stat_module.S_ISDIR(parent_stat.st_mode)
+            or parent_stat.st_uid != expected_uid
+            or stat_module.S_IMODE(parent_stat.st_mode) & 0o077):
+        raise RuntimeError(f"{label} directory must be private and owner-controlled")
+    if (target.is_symlink() or not stat_module.S_ISREG(before.st_mode)
+            or (os.name == "posix" and (before.st_uid != expected_uid
+                                        or stat_module.S_IMODE(before.st_mode) != 0o600))):
+        raise RuntimeError(f"{label} must be a private owner-controlled regular file")
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        fd = os.open(str(target), flags)
+        with os.fdopen(fd, "rb") as stream:
+            opened = os.fstat(stream.fileno())
+            if ((opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino)
+                    or (os.name == "posix" and (opened.st_uid != expected_uid
+                                                or stat_module.S_IMODE(opened.st_mode) != 0o600))):
+                raise RuntimeError(f"{label} changed while it was being opened")
+            raw = stream.read(8193)
+            if len(raw) > 8192:
+                raise RuntimeError(f"{label} exceeds its size limit")
+    except OSError as exc:
+        raise RuntimeError(f"{label} could not be read safely: {exc}") from exc
+    try:
+        record = json.loads(raw.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{label} is not valid UTF-8 JSON") from exc
+    if not isinstance(record, dict):
+        raise RuntimeError(f"{label} must contain a JSON object")
+    return record, raw
+
+
+def stageb2_guard_identity(*, boot_id: str, manifest_sha256: str,
+                           bit_sha256: str, hwh_sha256: str,
+                           max_frames: int, expected_count: int | None,
+                           material_label: str | None,
+                           stabilization_delay_s: float) -> dict[str, Any]:
+    """Require the fixed five-nut, 165-frame profile for no-consume Guard mode."""
+    if (max_frames != STAGEB2_VALID_FRAMES
+            or expected_count != STAGEB2_EXPECTED_COUNT
+            or material_label != STAGEB2_MATERIAL_LABEL
+            or stabilization_delay_s != STAGEB2_STABILIZATION_DELAY_S):
+        raise ValueError(
+            "--no-consume-guard is restricted to Stage B-2: 165 frames, "
+            "3 seconds, target 5, M6_nut_no_washer"
+        )
+    return {
+        "schema": 1,
+        "work_order": "WO-0016",
+        "stage": "wo0016-stageB2-nuts",
+        "boot_id": boot_id,
+        "manifest_sha256": manifest_sha256,
+        "bit_sha256": bit_sha256,
+        "hwh_sha256": hwh_sha256,
+        "max_frames": max_frames,
+        "expected_count": expected_count,
+        "material_label": material_label,
+        "stabilization_delay_s": stabilization_delay_s,
+        "threshold": STAGEB2_THRESHOLD,
+    }
+
+
+def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
+    config = {"count_axis": args.count_axis, "line_x": args.line_x,
+              "line_y": args.line_y, "direction": args.direction,
+              "min_area": args.min_area, "max_area": args.max_area,
+              "max_step": args.max_step, "max_lateral_step": args.max_lateral_step,
+              "hysteresis": args.hysteresis, "confirm_hits": args.confirm_hits,
+              "component_cluster_dx": args.component_cluster_dx,
+              "component_cluster_dy": args.component_cluster_dy,
+              "cooldown_frames": args.cooldown_frames,
+              "cooldown_lateral": args.cooldown_lateral,
+              "edge_max_missing": args.edge_max_missing}
+    MaskCounter(**config)  # Validate before consuming the one-shot attempt.
+    return config
+
+
+def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
+                                    ready_guard_sha256: str,
+                                    attempt_id: str,
+                                    operator_prearm_delay_s: float,
+                                    runner_sha256: str,
+                                    counting_config: Mapping[str, Any] | None = None,
+                                    counter_sha256: str | None = None) -> dict[str, Any]:
+    """Bind one named Stage B-2 invocation to the unchanged READY Guard."""
+    if (not isinstance(attempt_id, str)
+            or re.fullmatch(r"[A-Za-z0-9_-]{1,32}", attempt_id, flags=re.ASCII) is None):
+        raise ValueError("attempt id must contain 1-32 ASCII letters, digits, '_' or '-'")
+    if (isinstance(operator_prearm_delay_s, bool)
+            or not isinstance(operator_prearm_delay_s, (int, float))
+            or not math.isfinite(float(operator_prearm_delay_s))
+            or float(operator_prearm_delay_s) != STAGEB2_OPERATOR_PREARM_DELAY_S):
+        raise ValueError(
+            f"Stage B-2 Attempt #2 requires a {STAGEB2_OPERATOR_PREARM_DELAY_S:g}-second operator pre-arm window"
+        )
+    if not isinstance(ready_identity, Mapping) or not ready_identity:
+        raise ValueError("stage B-2 READY identity must be non-empty")
+    if not re.fullmatch(r"[0-9a-f]{64}", ready_guard_sha256):
+        raise ValueError("READY Guard SHA-256 must be lowercase hexadecimal")
+    if not re.fullmatch(r"[0-9a-f]{64}", runner_sha256):
+        raise ValueError("runner SHA-256 must be lowercase hexadecimal")
+    extra = {}
+    if counting_config is not None:
+        MaskCounter(**dict(counting_config))
+        if counter_sha256 is None or not re.fullmatch(r"[0-9a-f]{64}", counter_sha256):
+            raise ValueError("counting configuration requires counter SHA-256")
+        extra = {"counting_config": dict(counting_config), "counter_sha256": counter_sha256}
+    return {
+        **dict(ready_identity),
+        "stage": STAGEB2_ATTEMPT_STAGE,
+        "ready_guard_sha256": ready_guard_sha256,
+        "attempt_id": attempt_id,
+        "operator_prearm_delay_s": float(operator_prearm_delay_s),
+        "runner_sha256": runner_sha256,
+        **extra,
+    }
+
+
+def validate_stageb2_attempt_permit(path: str | Path,
+                                    identity: Mapping[str, Any], *,
+                                    expected_uid: int = 0) -> dict[str, Any]:
+    """Read and verify a private, unconsumed permit without modifying it."""
+    if not isinstance(identity, Mapping) or not identity:
+        raise ValueError("stage B-2 attempt permit identity must be non-empty")
+    permit, raw = _read_private_json_record(
+        path, label="stage B-2 attempt permit", expected_uid=expected_uid
+    )
+    expected = {**dict(identity), "permit_status": "AUTHORIZED", "consumed": False}
+    if permit != expected:
+        raise RuntimeError("stage B-2 attempt permit identity/status does not match this run")
+    return {"permit": permit, "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def _emit_milestone(name: str, monotonic_value: float, log_path: str | Path, *,
+                    boot_id: str) -> dict[str, Any]:
+    """Write a flushed operator-visible marker and durable JSONL timestamp."""
+    record = {
+        "boot_id": boot_id,
+        "milestone": name,
+        "monotonic": float(monotonic_value),
+    }
+    print(f"[MILESTONE] {name} monotonic={float(monotonic_value):.6f}", flush=True)
+    target = Path(log_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("a", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(record, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    return record
+
+
+def _countdown_wait(duration_s: float, *, label: str) -> None:
+    """Wait against monotonic time, flushing each whole-second countdown tick."""
+    if (isinstance(duration_s, bool) or not isinstance(duration_s, (int, float))
+            or not math.isfinite(float(duration_s)) or duration_s < 0):
+        raise ValueError("countdown duration must be finite and nonnegative")
+    duration = float(duration_s)
+    if duration == 0:
+        return
+    deadline = time.monotonic() + duration
+    while True:
+        remaining = max(0, math.ceil(deadline - time.monotonic()))
+        if remaining <= 0:
+            return
+        print(f"[{label}] {remaining} seconds remaining", flush=True)
+        next_tick = deadline - (remaining - 1)
+        time.sleep(max(0.0, min(1.0, next_tick - time.monotonic())))
+
+
+def verify_frame_dmasr(api: Any, frame_id: int,
+                       records: list[dict[str, Any]]) -> None:
+    """Record and strictly validate both AXI DMA status registers per frame."""
+    mm2s = api.read32(preflight.DMA_BASE, 0x04)
+    s2mm = api.read32(preflight.DMA_BASE, 0x34)
+    records.append({"frame_id": frame_id, "mm2s": f"0x{mm2s:08x}",
+                    "s2mm": f"0x{s2mm:08x}"})
+    if mm2s != EXPECTED_FRAME_DMASR or s2mm != EXPECTED_FRAME_DMASR:
+        raise RuntimeError(
+            f"frame {frame_id} DMA status mismatch: "
+            f"MM2S=0x{mm2s:08x}, S2MM=0x{s2mm:08x}"
+        )
+
+
 def require_board_opt_in(*, execute: bool, authorize_stage: str | None,
                          approve_once: bool, manifest: str | None,
                          manifest_sha256: str | None, max_frames: int,
@@ -223,6 +441,9 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
 async def camera_gray_frames(device: str, *, max_frames: int,
                              cv2_module: Any = cv2,
                              read_timeout_s: float = 5.0,
+                             stabilization_delay_s: float = 0.0,
+                             operator_prearm_delay_s: float = 0.0,
+                             milestone_callback: Callable[[str, float], None] | None = None,
                              capture_timings_ms: list[float] | None = None,
                              steady_start_time: list[float] | None = None,
                              capture_metadata: dict[str, Any] | None = None
@@ -233,6 +454,23 @@ async def camera_gray_frames(device: str, *, max_frames: int,
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
             or not math.isfinite(float(read_timeout_s)) or read_timeout_s <= 0):
         raise ValueError("read_timeout_s must be finite and positive")
+    if (isinstance(stabilization_delay_s, bool)
+            or not isinstance(stabilization_delay_s, (int, float))
+            or not math.isfinite(float(stabilization_delay_s))
+            or stabilization_delay_s < 0):
+        raise ValueError("stabilization_delay_s must be finite and nonnegative")
+    if (isinstance(operator_prearm_delay_s, bool)
+            or not isinstance(operator_prearm_delay_s, (int, float))
+            or not math.isfinite(float(operator_prearm_delay_s))
+            or operator_prearm_delay_s < 0):
+        raise ValueError("operator_prearm_delay_s must be finite and nonnegative")
+
+    def emit_milestone(name: str, at: float | None = None) -> float:
+        timestamp = time.monotonic() if at is None else float(at)
+        if milestone_callback is not None:
+            milestone_callback(name, timestamp)
+        return timestamp
+
     capture = cv2_module.VideoCapture(device, cv2_module.CAP_V4L2)
     failed = False
     primary_error: BaseException | None = None
@@ -262,6 +500,9 @@ async def camera_gray_frames(device: str, *, max_frames: int,
     try:
         if not capture.isOpened():
             raise RuntimeError(f"cannot open V4L2 camera device {device}")
+        camera_open_monotonic = emit_milestone("CAMERA_OPENED")
+        if capture_metadata is not None:
+            capture_metadata["camera_open_monotonic"] = camera_open_monotonic
         requested_fourcc = cv2_module.VideoWriter_fourcc(*"MJPG")
         requested = (
             (cv2_module.CAP_PROP_FOURCC, requested_fourcc),
@@ -291,7 +532,6 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height} "
                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
             )
-
         def read_gray_frame(*, warmup: bool) -> tuple[np.ndarray, float]:
             capture_started = time.perf_counter()
             ok, frame = capture.read()
@@ -389,11 +629,19 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                 "camera_output_width": WIDTH,
                 "camera_output_height": HEIGHT,
             })
+        emit_milestone("CAMERA_OPEN_READY_FOR_OPERATOR")
+        _countdown_wait(float(operator_prearm_delay_s), label="OPERATOR_PREARM")
+        emit_milestone("CAMERA_OPEN_AND_STABILIZING_START")
+        _countdown_wait(float(stabilization_delay_s), label="STABILIZATION")
         if steady_start_time is not None:
-            steady_start_time[:] = [time.perf_counter()]
+            steady_start_time.clear()
 
         for frame_index in range(max_frames):
             if pending_waiter is None:
+                if frame_index == 0:
+                    emit_milestone("FRAME_0_CAPTURE_START_FEED_NOW")
+                    if steady_start_time is not None:
+                        steady_start_time[:] = [time.perf_counter()]
                 prefetch(warmup=False)
             gray, capture_ms = await get_frame(warmup=False)
             if capture_timings_ms is not None:
@@ -472,6 +720,10 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         max_frames=args.max_frames,
         evidence_json=args.evidence_json,
     )
+    process_start_monotonic = getattr(args, "process_start_monotonic", time.monotonic())
+    milestone_path = Path(args.evidence_json).with_suffix(".milestones.jsonl")
+    if milestone_path.exists():
+        raise FileExistsError("milestone log path already exists; choose a new attempt result path")
     plan = preflight.validate_manifest(args.manifest, args.manifest_sha256)
     if not plan.ready_for_board:
         raise preflight.PreflightError("manifest is not marked ready_for_board")
@@ -496,16 +748,67 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
     guard_stat = guard_dir.stat()
     if guard_stat.st_uid != 0 or guard_stat.st_mode & 0o077:
         raise preflight.PreflightError("WO-0016 guard directory must be root-owned and mode 0700")
-    guard = claim_once_guard(WO16_GUARD, {
-        "schema": 1,
-        "work_order": "WO-0016",
-        "stage": WO16_STAGE,
-        "boot_id": plan.boot_id,
-        "manifest_sha256": plan.manifest_sha256,
-        "bit_sha256": plan.bit_sha256,
-        "hwh_sha256": plan.hwh_sha256,
-        "max_frames": args.max_frames,
-    })
+    stageb2_ready_guard = None
+    stageb2_attempt_permit = None
+    attempt_path = None
+    if args.no_consume_guard:
+        if not getattr(args, "attempt_id", None):
+            raise ValueError("--no-consume-guard requires a unique --attempt-id")
+        identity = stageb2_guard_identity(
+            boot_id=plan.boot_id,
+            manifest_sha256=plan.manifest_sha256,
+            bit_sha256=plan.bit_sha256,
+            hwh_sha256=plan.hwh_sha256,
+            max_frames=args.max_frames,
+            expected_count=args.ground_truth_count,
+            material_label=args.material_label,
+            stabilization_delay_s=args.stabilization_delay_s,
+        )
+        ready_path = STAGEB2_READY_GUARD_DIR / f"stageb2-ready-{plan.boot_id}.json"
+        stageb2_ready_guard = validate_non_consuming_guard(ready_path, identity)
+        attempt_identity = stageb2_attempt_permit_identity(
+            ready_identity=identity,
+            ready_guard_sha256=stageb2_ready_guard["sha256"],
+            attempt_id=args.attempt_id,
+            operator_prearm_delay_s=args.operator_prearm_delay_s,
+            runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            counting_config=counting_configuration(args),
+            counter_sha256=hashlib.sha256(Path(__file__).with_name("stream_counter.py").read_bytes()).hexdigest(),
+        )
+        attempt_directory = STAGEB2_ATTEMPT_DIR / plan.boot_id / args.attempt_id
+        permit_path = attempt_directory / "attempt-permit.json"
+        stageb2_attempt_permit = validate_stageb2_attempt_permit(
+            permit_path, attempt_identity
+        )
+        attempt_path = attempt_directory / "consumed.json"
+        guard = claim_once_guard(attempt_path, {
+            "schema": 1,
+            "work_order": "WO-0016",
+            "stage": STAGEB2_ATTEMPT_STAGE,
+            "boot_id": plan.boot_id,
+            "attempt_id": args.attempt_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "ready_guard_sha256": stageb2_ready_guard["sha256"],
+            "attempt_permit_sha256": stageb2_attempt_permit["sha256"],
+            "max_frames": args.max_frames,
+            "expected_count": args.ground_truth_count,
+            "material_label": args.material_label,
+            "stabilization_delay_s": args.stabilization_delay_s,
+            "operator_prearm_delay_s": args.operator_prearm_delay_s,
+        })
+    else:
+        guard = claim_once_guard(WO16_GUARD, {
+            "schema": 1,
+            "work_order": "WO-0016",
+            "stage": WO16_STAGE,
+            "boot_id": plan.boot_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "max_frames": args.max_frames,
+        })
 
     api = board_once.PynqBoardAPI(plan, stage=WO16_STAGE, cma_ranges=admission.ranges)
     tx_buffers: tuple[Any, ...] = ()
@@ -527,6 +830,12 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         "hwh_sha256": plan.hwh_sha256,
         "clock_mhz": 50,
         "guard": guard,
+        "guard_mode": ("READY Guard validate-only; attempt permit consumed-once"
+                       if args.no_consume_guard else "consume-once"),
+        "stageb2_ready_guard": stageb2_ready_guard,
+        "stageb2_attempt_id": args.attempt_id if args.no_consume_guard else None,
+        "stageb2_attempt_permit": stageb2_attempt_permit,
+        "attempt_marker_path": str(attempt_path) if attempt_path is not None else None,
         "cma_admission": admission.as_evidence(),
         "stage1_overlay_pass_receipt": stage1_receipt,
         "process_ownership": ownership,
@@ -538,14 +847,26 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         "camera_mode": "MJPG 640x400 resized to Gray8 320x240",
         "xilinx_xrt": os.environ.get("XILINX_XRT"),
         "line_y": args.line_y,
+        "counting_config": counting_configuration(args),
         "direction": args.direction,
         "min_area": args.min_area,
         "ground_truth_count": args.ground_truth_count,
         "expected_count": args.ground_truth_count,
         "material_label": args.material_label,
+        "stabilization_delay_s": args.stabilization_delay_s,
+        "operator_prearm_delay_s": (args.operator_prearm_delay_s
+                                     if args.no_consume_guard else 0.0),
+        "threshold": STAGEB2_THRESHOLD,
         "frames_processed": 0,
+        "process_start_monotonic": process_start_monotonic,
+        "overlay_ready_monotonic": None,
+        "camera_open_monotonic": None,
+        "frame_0_start_monotonic": None,
+        "milestone_log": str(milestone_path),
     }
     try:
+        _emit_milestone("PROCESS_START", process_start_monotonic,
+                        milestone_path, boot_id=plan.boot_id)
         audit = api.audit_environment(require_empty_shutdown=False, require_loaded_bit=True)
         if audit["boot_id"] != plan.boot_id:
             raise preflight.PreflightError("boot_id changed during WO-0016 preflight")
@@ -554,6 +875,10 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         pynq = api._pynq
         overlay = pynq.Overlay(str(plan.bit_path), download=False)
         api._overlay = overlay
+        evidence["overlay_ready_monotonic"] = time.monotonic()
+        _emit_milestone("OVERLAY_READY_DOWNLOAD_FALSE",
+                        evidence["overlay_ready_monotonic"], milestone_path,
+                        boot_id=plan.boot_id)
         checker_signature = api.read32(preflight.CHECKER_BASE, 0x04)
         packer_signature = api.read32(preflight.CHECKER_BASE, board_once.PACKER_SIGNATURE)
         if checker_signature != preflight.PACKET_MAGIC or packer_signature != preflight.PACKER_SIGNATURE:
@@ -619,9 +944,12 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             api.sync_to_device(slot.rx_buffer)
             api.write32(preflight.CHECKER_BASE, board_once.PACKER_ARM, 1)
 
+        frame_dma_status: list[dict[str, Any]] = []
+
         def verify_frame(frame_id: int, slot: Any) -> None:
             if int(dma.recvchannel.transferred) != RX_BYTES:
                 raise RuntimeError(f"frame {frame_id} S2MM transferred length is not {RX_BYTES}")
+            verify_frame_dmasr(api, frame_id, frame_dma_status)
             status = api.read32(preflight.CHECKER_BASE, board_once.PACKER_STATUS)
             accepted = api.read32(preflight.CHECKER_BASE, board_once.PACKER_ACCEPTED_PIXELS)
             sent = api.read32(preflight.CHECKER_BASE, board_once.PACKER_SENT_BEATS)
@@ -637,7 +965,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
             "capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
             "mjpeg_encode", "mjpeg_handoff", "mjpeg_background_encode", "postprocess")}
         preview_publisher = PeriodicMjpegPublisher(
-            hub=hub, line_y=args.line_y,
+            hub=hub, line_y=args.line_y, count_axis=args.count_axis, line_x=args.line_x,
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
         )
         stage_timings_ms["mjpeg_encode"] = preview_publisher.background_encode_timings_ms
@@ -651,9 +979,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
                 timeout_s=min(1.0, args.timeout_s),
             ).start()
 
-        counter = MaskCounter(line_y=args.line_y, min_area=args.min_area,
-                              direction=args.direction, hysteresis=args.hysteresis,
-                              confirm_hits=args.confirm_hits, max_step=args.max_step)
+        counter = MaskCounter(**counting_configuration(args))
         stream = DoubleBufferStream(
             recv_channel=dma.recvchannel,
             send_channel=dma.sendchannel,
@@ -671,9 +997,23 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
         )
         steady_start_time: list[float] = []
         capture_metadata: dict[str, Any] = {}
+
+        def record_camera_milestone(name: str, at: float) -> None:
+            evidence_key = {
+                "CAMERA_OPENED": "camera_open_monotonic",
+                "FRAME_0_CAPTURE_START_FEED_NOW": "frame_0_start_monotonic",
+            }.get(name)
+            if evidence_key is not None:
+                evidence[evidence_key] = at
+            _emit_milestone(name, at, milestone_path, boot_id=plan.boot_id)
+
         results = asyncio.run(stream.run(camera_gray_frames(
             args.camera, max_frames=args.max_frames, cv2_module=cv2,
             read_timeout_s=args.timeout_s,
+            stabilization_delay_s=args.stabilization_delay_s,
+            operator_prearm_delay_s=(args.operator_prearm_delay_s
+                                     if args.no_consume_guard else 0.0),
+            milestone_callback=record_camera_milestone,
             capture_timings_ms=stage_timings_ms["capture"],
             steady_start_time=steady_start_time,
             capture_metadata=capture_metadata)))
@@ -721,6 +1061,7 @@ def execute_board_stream(args: argparse.Namespace) -> dict[str, Any]:
                                      else loopback_client.error),
             "preview_url": f"http://{args.host}:{preview.port}/",
             "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
+            "frame_dma_status": frame_dma_status,
             "packer_output_frames_verified": len(results),
             "pynq_imported": True,
             "accuracy_formula": "1 - abs(total_count - expected_count) / max(expected_count, 1)",
@@ -902,12 +1243,25 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--mock-frames", type=int, default=8)
     parser.add_argument("--camera", default="/dev/video0")
     parser.add_argument("--max-frames", type=int, default=0)
+    parser.add_argument("--stabilization-delay-s", type=float, default=0.0)
     parser.add_argument("--line-y", type=int, default=120)
+    parser.add_argument("--count-axis", choices=("x", "y"), default="y")
+    parser.add_argument("--line-x", type=int, default=160)
+    parser.add_argument("--max-lateral-step", type=float, default=20.0)
+    parser.add_argument("--max-area", type=int)
     parser.add_argument("--direction", type=int, choices=(-1, 1), default=1)
     parser.add_argument("--min-area", type=int, default=12)
     parser.add_argument("--hysteresis", type=float, default=2.0)
     parser.add_argument("--confirm-hits", type=int, default=2)
     parser.add_argument("--max-step", type=float, default=24.0)
+    parser.add_argument("--component-cluster-dx", type=float, default=0.0,
+                        help="maximum pairwise centroid X spread; zero disables clustering")
+    parser.add_argument("--component-cluster-dy", type=float, default=12.0)
+    parser.add_argument("--cooldown-frames", type=int, default=0,
+                        help="inclusive same-corridor count suppression window; zero disables")
+    parser.add_argument("--cooldown-lateral", type=float, default=15.0)
+    parser.add_argument("--edge-max-missing", type=int, default=0,
+                        help="extra missing-frame budget for confirmed clipped X tracks only")
     parser.add_argument("--ground-truth-count", "--expected-count", dest="ground_truth_count",
                         type=_nonnegative_count_argument)
     parser.add_argument("--material-label")
@@ -920,14 +1274,32 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--authorize-stage")
     parser.add_argument("--approve-once", action="store_true")
+    parser.add_argument("--no-consume-guard", action="store_true",
+                        help="validate the current Stage B-2 READY guard without modifying it; a separate single-attempt record is still consumed")
+    parser.add_argument("--attempt-id",
+                        help="unique Stage B-2 permit identity, such as attempt-2")
+    parser.add_argument("--operator-prearm-delay-s", type=float,
+                        default=STAGEB2_OPERATOR_PREARM_DELAY_S,
+                        help="flushed operator countdown after camera warm-up and before the 3-second stabilization")
     parser.add_argument("--evidence-json", "--output-json", dest="evidence_json")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
+    process_start_monotonic = time.monotonic()
     parser = _parser()
     args = parser.parse_args(argv)
+    args.process_start_monotonic = process_start_monotonic
     try:
+        if args.no_consume_guard and args.mode != "board":
+            raise ValueError("--no-consume-guard is only valid in explicitly authorized board mode")
+        if args.no_consume_guard and not args.attempt_id:
+            raise ValueError("--no-consume-guard requires a unique --attempt-id")
+        if (args.no_consume_guard
+                and args.operator_prearm_delay_s != STAGEB2_OPERATOR_PREARM_DELAY_S):
+            raise ValueError(
+                f"Stage B-2 Attempt #2 requires a {STAGEB2_OPERATOR_PREARM_DELAY_S:g}-second operator pre-arm window"
+            )
         if args.mode == "mock":
             result = run_mock_simulation(frame_count=args.mock_frames,
                                          line_y=args.line_y,

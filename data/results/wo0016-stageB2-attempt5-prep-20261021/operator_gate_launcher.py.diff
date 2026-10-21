@@ -1,0 +1,29 @@
+--- before/operator_gate_launcher.py
++++ after/operator_gate_launcher.py
+@@ -72,7 +72,7 @@
+                 "seconds_remaining": (None if self.deadline is None else
+                                       max(0, math.ceil(self.deadline - now))),
+                 "feed_number": (None if self.frame_zero is None else
+-                                min(5, max(1, int(now - self.frame_zero) + 1))),
++                                min(5, max(1, int(max(0.0, now - self.frame_zero) / 0.75) + 1))),
+                 "sampling_elapsed_s": (None if self.frame_zero is None else
+                                        max(0.0, now - self.frame_zero)),
+                 "result": self.result,
+@@ -88,7 +88,7 @@
+ button:disabled{background:#677580;color:#d0d5db;cursor:default}.sub{color:#b7c4cf;font-size:18px;margin-top:30px}
+ </style><h1>Stage B-2 · 5 颗 M6 螺母</h1><div id="big">等待</div>
+ <div id="msg">相机初始化中，请勿投料</div><button id="start" disabled>相机就绪后可开始</button>
+-<div class="sub">点击后：15 秒准备 + 3 秒稳姿 → 绿色“立即投料”<br>每秒 1 颗，连续 5 颗；有效采样固定为 165 帧</div>
++<div class="sub">点击后：15 秒准备 + 3 秒稳姿 → 绿色“立即投料”<br>FRAME_0 后 0~3.5 秒内投完 5 颗；约 0.75 秒/颗<br>放在皮带纵向正中央，远离 ROI 上下边缘；有效采样固定为 165 帧</div>
+ <script>const big=document.querySelector('#big'),msg=document.querySelector('#msg'),btn=document.querySelector('#start');
+ let submitting=false;btn.onclick=async()=>{if(submitting)return;submitting=true;btn.disabled=true;
+ try{let r=await fetch('/start',{method:'POST',headers:{'X-Operator-Token':'__TOKEN__'}});if(!r.ok){submitting=false;}}catch(e){submitting=false;}};
+@@ -96,7 +96,7 @@
+ btn.disabled=s.phase!=='READY'||submitting;
+ if(s.phase==='READY'){big.textContent='已就绪';msg.textContent='握好 5 颗螺母，点击后按页面倒计时投料';btn.textContent='开始 18 秒倒计时';}
+ else if(s.phase==='COUNTDOWN'||s.phase==='STABILIZING'){big.textContent=s.seconds_remaining;msg.textContent=(s.phase==='STABILIZING'?'稳姿中':'准备中')+'，现在不要投料';btn.textContent='倒计时进行中';}
+-else if(s.phase==='SAMPLING'){big.textContent='立即投料';big.style.color='#46db91';msg.textContent='第 '+s.feed_number+' / 5 颗 · 每秒 1 颗';btn.textContent='正在采样';}
++else if(s.phase==='SAMPLING'){big.textContent='立即投料';big.style.color='#46db91';msg.textContent='第 '+s.feed_number+' / 5 颗 · 约 0.75 秒/颗';btn.textContent='正在采样';}
+ else if(s.phase==='COMPLETE'){big.textContent='采样结束';big.style.color='#f7fafc';msg.textContent='请停止投料。计数 '+(s.result?.total_count??'?')+' / 5，完成 '+(s.result?.frames_processed??0)+' 帧';btn.textContent='本次许可已使用';}
+ }catch(e){}setTimeout(poll,100);}poll();</script></html>'''
+ 

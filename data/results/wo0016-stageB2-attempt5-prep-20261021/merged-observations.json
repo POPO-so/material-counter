@@ -1,0 +1,2411 @@
+[
+  {
+    "frame_id": 0,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 1,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 2,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 3,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 4,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 5,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 6,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 7,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 8,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 9,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 10,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 11,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 12,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 13,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 14,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 15,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 16,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 17,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 18,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 19,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 20,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 21,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 22,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 23,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 24,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 25,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 26,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 27,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 28,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 29,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 30,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 31,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 32,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 33,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 34,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 35,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 36,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 37,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 38,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 39,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 40,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 41,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 42,
+    "raw_detections": [
+      {
+        "x_min": 0,
+        "x_max": 3,
+        "y_min": 105,
+        "y_max": 121,
+        "area": 59,
+        "centroid_x": 1.3389830508474576,
+        "centroid_y": 112.89830508474576
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 0,
+        "x_max": 3,
+        "y_min": 105,
+        "y_max": 121,
+        "area": 59,
+        "centroid_x": 1.3389830508474576,
+        "centroid_y": 112.89830508474576
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": null,
+        "kind": "new",
+        "dx": null,
+        "dy": null
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 43,
+    "raw_detections": [
+      {
+        "x_min": 20,
+        "x_max": 41,
+        "y_min": 101,
+        "y_max": 127,
+        "area": 273,
+        "centroid_x": 30.025641025641026,
+        "centroid_y": 113.35531135531136
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 20,
+        "x_max": 41,
+        "y_min": 101,
+        "y_max": 127,
+        "area": 273,
+        "centroid_x": 30.025641025641026,
+        "centroid_y": 113.35531135531136
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 42,
+        "kind": "matched",
+        "dx": 28.68665797479357,
+        "dy": 0.45700627056559995
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 44,
+    "raw_detections": [
+      {
+        "x_min": 60,
+        "x_max": 81,
+        "y_min": 102,
+        "y_max": 127,
+        "area": 217,
+        "centroid_x": 69.84331797235023,
+        "centroid_y": 113.78341013824885
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 60,
+        "x_max": 81,
+        "y_min": 102,
+        "y_max": 127,
+        "area": 217,
+        "centroid_x": 69.84331797235023,
+        "centroid_y": 113.78341013824885
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 43,
+        "kind": "matched",
+        "dx": 39.81767694670921,
+        "dy": 0.4280987829374965
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 45,
+    "raw_detections": [
+      {
+        "x_min": 94,
+        "x_max": 100,
+        "y_min": 104,
+        "y_max": 125,
+        "area": 88,
+        "centroid_x": 96.625,
+        "centroid_y": 114.39772727272728
+      },
+      {
+        "x_min": 106,
+        "x_max": 112,
+        "y_min": 107,
+        "y_max": 123,
+        "area": 34,
+        "centroid_x": 110.08823529411765,
+        "centroid_y": 114.29411764705883
+      },
+      {
+        "x_min": 113,
+        "x_max": 115,
+        "y_min": 107,
+        "y_max": 122,
+        "area": 26,
+        "centroid_x": 113.96153846153847,
+        "centroid_y": 114.6923076923077
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 94,
+        "x_max": 115,
+        "y_min": 104,
+        "y_max": 125,
+        "area": 148,
+        "centroid_x": 102.76351351351352,
+        "centroid_y": 114.42567567567568
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 44,
+        "kind": "matched",
+        "dx": 32.92019554116328,
+        "dy": 0.6422655374268231
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 46,
+    "raw_detections": [
+      {
+        "x_min": 121,
+        "x_max": 126,
+        "y_min": 105,
+        "y_max": 125,
+        "area": 80,
+        "centroid_x": 123.2125,
+        "centroid_y": 114.7
+      },
+      {
+        "x_min": 132,
+        "x_max": 139,
+        "y_min": 107,
+        "y_max": 122,
+        "area": 35,
+        "centroid_x": 136.54285714285714,
+        "centroid_y": 114.54285714285714
+      },
+      {
+        "x_min": 139,
+        "x_max": 141,
+        "y_min": 107,
+        "y_max": 124,
+        "area": 28,
+        "centroid_x": 140.35714285714286,
+        "centroid_y": 115.75
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 121,
+        "x_max": 141,
+        "y_min": 105,
+        "y_max": 125,
+        "area": 143,
+        "centroid_x": 129.83216783216784,
+        "centroid_y": 114.86713286713287
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 45,
+        "kind": "matched",
+        "dx": 27.068654318654325,
+        "dy": 0.4414571914571894
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 47,
+    "raw_detections": [
+      {
+        "x_min": 154,
+        "x_max": 161,
+        "y_min": 107,
+        "y_max": 124,
+        "area": 73,
+        "centroid_x": 156.3835616438356,
+        "centroid_y": 115.47945205479452
+      },
+      {
+        "x_min": 168,
+        "x_max": 172,
+        "y_min": 110,
+        "y_max": 122,
+        "area": 32,
+        "centroid_x": 170.59375,
+        "centroid_y": 116.21875
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 154,
+        "x_max": 172,
+        "y_min": 107,
+        "y_max": 124,
+        "area": 105,
+        "centroid_x": 160.71428571428572,
+        "centroid_y": 115.70476190476191
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 46,
+        "kind": "matched",
+        "dx": 30.882117882117882,
+        "dy": 0.8376290376290427
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 0
+  },
+  {
+    "frame_id": 48,
+    "raw_detections": [
+      {
+        "x_min": 181,
+        "x_max": 189,
+        "y_min": 108,
+        "y_max": 124,
+        "area": 72,
+        "centroid_x": 183.25,
+        "centroid_y": 115.80555555555556
+      },
+      {
+        "x_min": 195,
+        "x_max": 199,
+        "y_min": 112,
+        "y_max": 122,
+        "area": 30,
+        "centroid_x": 197.5,
+        "centroid_y": 117.13333333333333
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 181,
+        "x_max": 199,
+        "y_min": 108,
+        "y_max": 124,
+        "area": 102,
+        "centroid_x": 187.44117647058823,
+        "centroid_y": 116.19607843137256
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 47,
+        "kind": "matched",
+        "dx": 26.72689075630251,
+        "dy": 0.49131652661064606
+      }
+    ],
+    "events": [
+      {
+        "track_id": 1,
+        "frame_id": 48,
+        "centroid_x": 187.44117647058823,
+        "centroid_y": 116.19607843137256,
+        "inferred_gap": false
+      }
+    ],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 49,
+    "raw_detections": [
+      {
+        "x_min": 215,
+        "x_max": 223,
+        "y_min": 108,
+        "y_max": 125,
+        "area": 66,
+        "centroid_x": 217.25757575757575,
+        "centroid_y": 115.5909090909091
+      },
+      {
+        "x_min": 229,
+        "x_max": 234,
+        "y_min": 113,
+        "y_max": 123,
+        "area": 30,
+        "centroid_x": 231.83333333333334,
+        "centroid_y": 117.36666666666667
+      },
+      {
+        "x_min": 232,
+        "x_max": 236,
+        "y_min": 107,
+        "y_max": 127,
+        "area": 26,
+        "centroid_x": 234.73076923076923,
+        "centroid_y": 116.76923076923077
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 215,
+        "x_max": 236,
+        "y_min": 107,
+        "y_max": 127,
+        "area": 122,
+        "centroid_x": 224.5655737704918,
+        "centroid_y": 116.27868852459017
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 48,
+        "kind": "matched",
+        "dx": 37.12439729990356,
+        "dy": 0.08261009321761037
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 50,
+    "raw_detections": [
+      {
+        "x_min": 242,
+        "x_max": 252,
+        "y_min": 107,
+        "y_max": 125,
+        "area": 67,
+        "centroid_x": 245.4179104477612,
+        "centroid_y": 115.0
+      },
+      {
+        "x_min": 253,
+        "x_max": 264,
+        "y_min": 106,
+        "y_max": 130,
+        "area": 85,
+        "centroid_x": 260.2823529411765,
+        "centroid_y": 117.88235294117646
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 242,
+        "x_max": 264,
+        "y_min": 106,
+        "y_max": 130,
+        "area": 152,
+        "centroid_x": 253.73026315789474,
+        "centroid_y": 116.61184210526316
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 49,
+        "kind": "matched",
+        "dx": 29.164689387402944,
+        "dy": 0.33315358067299883
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 51,
+    "raw_detections": [
+      {
+        "x_min": 271,
+        "x_max": 293,
+        "y_min": 106,
+        "y_max": 131,
+        "area": 223,
+        "centroid_x": 282.7937219730942,
+        "centroid_y": 117.95515695067265
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 271,
+        "x_max": 293,
+        "y_min": 106,
+        "y_max": 131,
+        "area": 223,
+        "centroid_x": 282.7937219730942,
+        "centroid_y": 117.95515695067265
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 50,
+        "kind": "matched",
+        "dx": 29.063458815199454,
+        "dy": 1.3433148454094805
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 52,
+    "raw_detections": [
+      {
+        "x_min": 308,
+        "x_max": 319,
+        "y_min": 107,
+        "y_max": 132,
+        "area": 114,
+        "centroid_x": 313.2105263157895,
+        "centroid_y": 119.35964912280701
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 308,
+        "x_max": 319,
+        "y_min": 107,
+        "y_max": 132,
+        "area": 114,
+        "centroid_x": 313.2105263157895,
+        "centroid_y": 119.35964912280701
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 1,
+        "detection_index": 0,
+        "previous_frame": 51,
+        "kind": "matched",
+        "dx": 30.416804342695286,
+        "dy": 1.4044921721343684
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 53,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 54,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 55,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 56,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 57,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 58,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 59,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 60,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 61,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 62,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 63,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 64,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 65,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 66,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 67,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 68,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 69,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 70,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 71,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 72,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 73,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 74,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 75,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 76,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 77,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 78,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 79,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 80,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 81,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 82,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 83,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 84,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 85,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 86,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 87,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 88,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 89,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 90,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 91,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 92,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 93,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 94,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 95,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 96,
+    "raw_detections": [
+      {
+        "x_min": 83,
+        "x_max": 91,
+        "y_min": 96,
+        "y_max": 97,
+        "area": 15,
+        "centroid_x": 87.2,
+        "centroid_y": 96.4
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 83,
+        "x_max": 91,
+        "y_min": 96,
+        "y_max": 97,
+        "area": 15,
+        "centroid_x": 87.2,
+        "centroid_y": 96.4
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 2,
+        "detection_index": 0,
+        "previous_frame": null,
+        "kind": "new",
+        "dx": null,
+        "dy": null
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 97,
+    "raw_detections": [
+      {
+        "x_min": 100,
+        "x_max": 111,
+        "y_min": 96,
+        "y_max": 98,
+        "area": 21,
+        "centroid_x": 106.0,
+        "centroid_y": 96.47619047619048
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 100,
+        "x_max": 111,
+        "y_min": 96,
+        "y_max": 98,
+        "area": 21,
+        "centroid_x": 106.0,
+        "centroid_y": 96.47619047619048
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 2,
+        "detection_index": 0,
+        "previous_frame": 96,
+        "kind": "matched",
+        "dx": 18.799999999999997,
+        "dy": 0.07619047619047592
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 98,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 99,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 100,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 101,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 1
+  },
+  {
+    "frame_id": 102,
+    "raw_detections": [
+      {
+        "x_min": 245,
+        "x_max": 255,
+        "y_min": 96,
+        "y_max": 100,
+        "area": 19,
+        "centroid_x": 250.10526315789474,
+        "centroid_y": 98.6842105263158
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 245,
+        "x_max": 255,
+        "y_min": 96,
+        "y_max": 100,
+        "area": 19,
+        "centroid_x": 250.10526315789474,
+        "centroid_y": 98.6842105263158
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 2,
+        "detection_index": 0,
+        "previous_frame": 97,
+        "kind": "edge_gap_inferred",
+        "dx": 144.10526315789474,
+        "dy": 2.208020050125313
+      }
+    ],
+    "events": [
+      {
+        "track_id": 2,
+        "frame_id": 102,
+        "centroid_x": 250.10526315789474,
+        "centroid_y": 98.6842105263158,
+        "inferred_gap": true
+      }
+    ],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 103,
+    "raw_detections": [
+      {
+        "x_min": 276,
+        "x_max": 291,
+        "y_min": 96,
+        "y_max": 101,
+        "area": 48,
+        "centroid_x": 283.3125,
+        "centroid_y": 98.3125
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 276,
+        "x_max": 291,
+        "y_min": 96,
+        "y_max": 101,
+        "area": 48,
+        "centroid_x": 283.3125,
+        "centroid_y": 98.3125
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 2,
+        "detection_index": 0,
+        "previous_frame": 102,
+        "kind": "matched",
+        "dx": 33.20723684210526,
+        "dy": -0.3717105263157947
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 104,
+    "raw_detections": [
+      {
+        "x_min": 297,
+        "x_max": 313,
+        "y_min": 96,
+        "y_max": 101,
+        "area": 53,
+        "centroid_x": 305.0,
+        "centroid_y": 98.62264150943396
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 297,
+        "x_max": 313,
+        "y_min": 96,
+        "y_max": 101,
+        "area": 53,
+        "centroid_x": 305.0,
+        "centroid_y": 98.62264150943396
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 2,
+        "detection_index": 0,
+        "previous_frame": 103,
+        "kind": "matched",
+        "dx": 21.6875,
+        "dy": 0.31014150943396146
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 105,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 106,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 107,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 108,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 109,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 110,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 111,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 112,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 113,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 114,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 115,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 116,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 117,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 118,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 119,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 120,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 121,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 122,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 123,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 124,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 125,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 126,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 127,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 128,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 129,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 130,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 131,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 132,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 133,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 134,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 135,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 136,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 137,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 138,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 139,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 140,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 141,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 142,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 143,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 144,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 145,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 146,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 147,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 148,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 149,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 150,
+    "raw_detections": [
+      {
+        "x_min": 0,
+        "x_max": 6,
+        "y_min": 102,
+        "y_max": 124,
+        "area": 98,
+        "centroid_x": 2.9489795918367347,
+        "centroid_y": 112.4795918367347
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 0,
+        "x_max": 6,
+        "y_min": 102,
+        "y_max": 124,
+        "area": 98,
+        "centroid_x": 2.9489795918367347,
+        "centroid_y": 112.4795918367347
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": null,
+        "kind": "new",
+        "dx": null,
+        "dy": null
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 151,
+    "raw_detections": [
+      {
+        "x_min": 11,
+        "x_max": 33,
+        "y_min": 101,
+        "y_max": 126,
+        "area": 295,
+        "centroid_x": 21.247457627118646,
+        "centroid_y": 112.80338983050848
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 11,
+        "x_max": 33,
+        "y_min": 101,
+        "y_max": 126,
+        "area": 295,
+        "centroid_x": 21.247457627118646,
+        "centroid_y": 112.80338983050848
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 150,
+        "kind": "matched",
+        "dx": 18.29847803528191,
+        "dy": 0.3237979937737805
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 152,
+    "raw_detections": [
+      {
+        "x_min": 37,
+        "x_max": 60,
+        "y_min": 101,
+        "y_max": 127,
+        "area": 292,
+        "centroid_x": 48.01027397260274,
+        "centroid_y": 113.1917808219178
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 37,
+        "x_max": 60,
+        "y_min": 101,
+        "y_max": 127,
+        "area": 292,
+        "centroid_x": 48.01027397260274,
+        "centroid_y": 113.1917808219178
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 151,
+        "kind": "matched",
+        "dx": 26.762816345484094,
+        "dy": 0.38839099140932376
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 153,
+    "raw_detections": [
+      {
+        "x_min": 71,
+        "x_max": 93,
+        "y_min": 102,
+        "y_max": 127,
+        "area": 266,
+        "centroid_x": 81.42105263157895,
+        "centroid_y": 114.43984962406014
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 71,
+        "x_max": 93,
+        "y_min": 102,
+        "y_max": 127,
+        "area": 266,
+        "centroid_x": 81.42105263157895,
+        "centroid_y": 114.43984962406014
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 152,
+        "kind": "matched",
+        "dx": 33.410778658976206,
+        "dy": 1.2480688021423418
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 154,
+    "raw_detections": [
+      {
+        "x_min": 106,
+        "x_max": 127,
+        "y_min": 104,
+        "y_max": 127,
+        "area": 213,
+        "centroid_x": 116.00469483568075,
+        "centroid_y": 115.84037558685446
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 106,
+        "x_max": 127,
+        "y_min": 104,
+        "y_max": 127,
+        "area": 213,
+        "centroid_x": 116.00469483568075,
+        "centroid_y": 115.84037558685446
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 153,
+        "kind": "matched",
+        "dx": 34.58364220410181,
+        "dy": 1.400525962794319
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 155,
+    "raw_detections": [
+      {
+        "x_min": 140,
+        "x_max": 146,
+        "y_min": 105,
+        "y_max": 127,
+        "area": 95,
+        "centroid_x": 143.25263157894736,
+        "centroid_y": 116.0
+      },
+      {
+        "x_min": 153,
+        "x_max": 161,
+        "y_min": 107,
+        "y_max": 125,
+        "area": 87,
+        "centroid_x": 157.7471264367816,
+        "centroid_y": 116.25287356321839
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 140,
+        "x_max": 161,
+        "y_min": 105,
+        "y_max": 127,
+        "area": 182,
+        "centroid_x": 150.1813186813187,
+        "centroid_y": 116.12087912087912
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 154,
+        "kind": "matched",
+        "dx": 34.176623845637934,
+        "dy": 0.28050353402466044
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 2
+  },
+  {
+    "frame_id": 156,
+    "raw_detections": [
+      {
+        "x_min": 161,
+        "x_max": 168,
+        "y_min": 107,
+        "y_max": 127,
+        "area": 87,
+        "centroid_x": 164.41379310344828,
+        "centroid_y": 116.01149425287356
+      },
+      {
+        "x_min": 175,
+        "x_max": 182,
+        "y_min": 107,
+        "y_max": 126,
+        "area": 79,
+        "centroid_x": 179.08860759493672,
+        "centroid_y": 116.87341772151899
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 161,
+        "x_max": 182,
+        "y_min": 107,
+        "y_max": 127,
+        "area": 166,
+        "centroid_x": 171.3975903614458,
+        "centroid_y": 116.42168674698796
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 155,
+        "kind": "matched",
+        "dx": 21.216271680127107,
+        "dy": 0.3008076261088348
+      }
+    ],
+    "events": [
+      {
+        "track_id": 3,
+        "frame_id": 156,
+        "centroid_x": 171.3975903614458,
+        "centroid_y": 116.42168674698796,
+        "inferred_gap": false
+      }
+    ],
+    "suppressed_events": [],
+    "total_count": 3
+  },
+  {
+    "frame_id": 157,
+    "raw_detections": [
+      {
+        "x_min": 190,
+        "x_max": 197,
+        "y_min": 108,
+        "y_max": 125,
+        "area": 83,
+        "centroid_x": 193.0843373493976,
+        "centroid_y": 116.18072289156626
+      },
+      {
+        "x_min": 204,
+        "x_max": 211,
+        "y_min": 107,
+        "y_max": 127,
+        "area": 87,
+        "centroid_x": 207.91954022988506,
+        "centroid_y": 117.88505747126436
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 190,
+        "x_max": 211,
+        "y_min": 107,
+        "y_max": 127,
+        "area": 170,
+        "centroid_x": 200.6764705882353,
+        "centroid_y": 117.05294117647058
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 156,
+        "kind": "matched",
+        "dx": 29.27888022678951,
+        "dy": 0.6312544294826239
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 3
+  },
+  {
+    "frame_id": 158,
+    "raw_detections": [
+      {
+        "x_min": 226,
+        "x_max": 236,
+        "y_min": 108,
+        "y_max": 127,
+        "area": 91,
+        "centroid_x": 229.62637362637363,
+        "centroid_y": 116.49450549450549
+      },
+      {
+        "x_min": 235,
+        "x_max": 248,
+        "y_min": 106,
+        "y_max": 130,
+        "area": 114,
+        "centroid_x": 243.7280701754386,
+        "centroid_y": 119.33333333333333
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 226,
+        "x_max": 248,
+        "y_min": 106,
+        "y_max": 130,
+        "area": 205,
+        "centroid_x": 237.46829268292683,
+        "centroid_y": 118.07317073170732
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 157,
+        "kind": "matched",
+        "dx": 36.791822094691526,
+        "dy": 1.0202295552367389
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 3
+  },
+  {
+    "frame_id": 159,
+    "raw_detections": [
+      {
+        "x_min": 256,
+        "x_max": 278,
+        "y_min": 106,
+        "y_max": 130,
+        "area": 232,
+        "centroid_x": 267.94827586206895,
+        "centroid_y": 117.81896551724138
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 256,
+        "x_max": 278,
+        "y_min": 106,
+        "y_max": 130,
+        "area": 232,
+        "centroid_x": 267.94827586206895,
+        "centroid_y": 117.81896551724138
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 158,
+        "kind": "matched",
+        "dx": 30.479983179142124,
+        "dy": -0.2542052144659408
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 3
+  },
+  {
+    "frame_id": 160,
+    "raw_detections": [
+      {
+        "x_min": 285,
+        "x_max": 307,
+        "y_min": 107,
+        "y_max": 131,
+        "area": 228,
+        "centroid_x": 296.37719298245617,
+        "centroid_y": 118.03947368421052
+      }
+    ],
+    "merged_detections": [
+      {
+        "x_min": 285,
+        "x_max": 307,
+        "y_min": 107,
+        "y_max": 131,
+        "area": 228,
+        "centroid_x": 296.37719298245617,
+        "centroid_y": 118.03947368421052
+      }
+    ],
+    "associations": [
+      {
+        "track_id": 3,
+        "detection_index": 0,
+        "previous_frame": 159,
+        "kind": "matched",
+        "dx": 28.42891712038721,
+        "dy": 0.22050816696913955
+      }
+    ],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 3
+  },
+  {
+    "frame_id": 161,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 3
+  },
+  {
+    "frame_id": 162,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 3
+  },
+  {
+    "frame_id": 163,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 3
+  },
+  {
+    "frame_id": 164,
+    "raw_detections": [],
+    "merged_detections": [],
+    "associations": [],
+    "events": [],
+    "suppressed_events": [],
+    "total_count": 3
+  }
+]

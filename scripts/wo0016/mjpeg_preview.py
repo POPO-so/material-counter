@@ -105,7 +105,8 @@ class MjpegFrameHub:
 
 
 def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
-                         label: str = "Total Count") -> np.ndarray:
+                         label: str = "Total Count", count_axis: str = "y",
+                         line_x: int = 160) -> np.ndarray:
     """Render the Binary8 mask with a red line and a readable live count."""
     image = np.asarray(mask)
     if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (240, 320):
@@ -120,7 +121,11 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
         raise ValueError("label must be non-empty text")
 
     frame = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-    cv2.line(frame, (0, int(line_y)), (image.shape[1] - 1, int(line_y)),
+    if count_axis not in ("x", "y") or not isinstance(line_x, int) or not 0 <= line_x < image.shape[1]:
+        raise ValueError("invalid count axis or line_x")
+    start, end = (((line_x, 0), (line_x, image.shape[0]-1)) if count_axis == "x"
+                  else ((0, int(line_y)), (image.shape[1]-1, int(line_y))))
+    cv2.line(frame, start, end,
              (0, 0, 255), 2, lineType=cv2.LINE_8)
     text = f"{label}: {int(total_count)}"
     cv2.rectangle(frame, (4, 6), (min(frame.shape[1] - 1, 244), 34), (24, 24, 24), -1)
@@ -130,10 +135,11 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
 
 
 def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
-                        quality: int = 85) -> bytes:
+                        quality: int = 85, count_axis: str = "y", line_x: int = 160) -> bytes:
     if isinstance(quality, bool) or not isinstance(quality, (int, np.integer)) or not 1 <= quality <= 100:
         raise ValueError("JPEG quality must be an integer in 1..100")
-    frame = render_preview_frame(mask, total_count=total_count, line_y=line_y)
+    frame = render_preview_frame(mask, total_count=total_count, line_y=line_y,
+                                 count_axis=count_axis, line_x=line_x)
     encoded, payload = cv2.imencode(".jpg", frame,
                                     [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
     if not encoded:
@@ -146,13 +152,15 @@ class PeriodicMjpegPublisher:
 
     def __init__(self, *, hub: MjpegFrameHub, line_y: int,
                  interval: int = PREVIEW_FRAME_INTERVAL,
-                 quality: int = PREVIEW_JPEG_QUALITY):
+                 quality: int = PREVIEW_JPEG_QUALITY, count_axis: str = "y", line_x: int = 160):
         if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
             raise ValueError("preview interval must be a positive integer")
         if isinstance(quality, bool) or not isinstance(quality, int) or not 1 <= quality <= 100:
             raise ValueError("JPEG quality must be an integer in 1..100")
         self.hub = hub
         self.line_y = line_y
+        self.count_axis = count_axis
+        self.line_x = line_x
         self.interval = interval
         self.quality = quality
         self.encoded_frames = 0
@@ -231,6 +239,7 @@ class PeriodicMjpegPublisher:
                     total_count=total_count,
                     line_y=line_y,
                     quality=self.quality,
+                    count_axis=self.count_axis, line_x=self.line_x,
                 )
                 self.hub.publish(jpeg)
                 self.encoded_frames += 1

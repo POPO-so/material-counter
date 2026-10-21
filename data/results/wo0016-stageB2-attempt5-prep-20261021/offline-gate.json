@@ -1,0 +1,64 @@
+{
+  "status": "PASS_CCL_REPLAY_ONLY",
+  "frames": 165,
+  "original_frame_totals_and_events_exact": true,
+  "original_total": 4,
+  "replay_total": 3,
+  "segments": [
+    {
+      "start": 42,
+      "end": 52,
+      "track_ids": [
+        1
+      ],
+      "events": [
+        {
+          "track_id": 1,
+          "frame_id": 48,
+          "centroid_x": 187.44117647058823,
+          "centroid_y": 116.19607843137256,
+          "inferred_gap": false
+        }
+      ]
+    },
+    {
+      "start": 93,
+      "end": 104,
+      "track_ids": [
+        2
+      ],
+      "events": [
+        {
+          "track_id": 2,
+          "frame_id": 102,
+          "centroid_x": 250.10526315789474,
+          "centroid_y": 98.6842105263158,
+          "inferred_gap": true
+        }
+      ]
+    },
+    {
+      "start": 150,
+      "end": 160,
+      "track_ids": [
+        3
+      ],
+      "events": [
+        {
+          "track_id": 3,
+          "frame_id": 156,
+          "centroid_x": 171.3975903614458,
+          "centroid_y": 116.42168674698796,
+          "inferred_gap": false
+        }
+      ]
+    }
+  ],
+  "observed_crossings": 2,
+  "inferred_gap_crossings": 1,
+  "suppressed_events": 0,
+  "physical_identity_verified": false,
+  "five_nut_acceptance": "NOT_ESTABLISHED",
+  "board_sampling_started": false,
+  "source_sha256": "b17d868aa818fd6e156a9bf729dc24163ca98c604fd18a3151b60430d1bf9622"
+}

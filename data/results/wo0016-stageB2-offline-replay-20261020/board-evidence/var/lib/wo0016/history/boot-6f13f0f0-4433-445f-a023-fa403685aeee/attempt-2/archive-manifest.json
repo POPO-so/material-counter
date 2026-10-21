@@ -1,0 +1,21 @@
+{
+  "attempt_id": "attempt-2",
+  "boot_id": "6f13f0f0-4433-445f-a023-fa403685aeee",
+  "files": {
+    "PACKAGE_SHA256-before-attempt3.json": "9f7e19a910196526d2688d628039b925a6f2c02dbafee8ab0aa4b6136ea852fd",
+    "attempt-permit.json": "d5588fde9823b2bceb111022e078478267baaaf9abc1c8b7e22f3e68bdd9f9f1",
+    "consumed.json": "b6b8a9e189e11b4320940eda9c280d35b8705fa24cedfcb196c61112bfc50e71",
+    "exit-status.json": "a157dfd996822a2cbfcbf47499f9f0fa61b2a9a2bfb5014a158b94715fbc448a",
+    "frame-results.json": "33f9f75105911a038fea061c315d4d6264cbd5cd59b60c9171df71c802a7e66a",
+    "launch.json": "43514aa6e76ced87afcdef3b1f176f45c002305eef3ed4d455ce862d937e1a73",
+    "observe_attempt2.py": "9865d2355be444160eefd10a25d6c2d3973ea2860e08b9988c91c575fbe42605",
+    "stageb2-attempt-2-result.json": "e672fe58ac894fa7987bcfe4cc674d5c1751b1edcee22c8015987a178b4872b6",
+    "stageb2-attempt-2-result.milestones.jsonl": "54e7ffafc824476c5947d84aacf0fb96c53e5747221676d43eb07d623a7559af",
+    "stdout.log": "298ae66d9ab0a9660cad40fef0d93ab4cbb1c22c4a8415ac3cfbe9b75bb3df87"
+  },
+  "next_attempt_authorization": "User explicitly requested \u91cd\u65b0\u6765 after reviewing the incomplete feed.",
+  "operator_report": "\u5c1a\u672a\u6295\u6599\u6216\u672a\u6295\u5b8c 5 \u9897; exact physical quantity unconfirmed",
+  "result_total_count": 0,
+  "schema": 1,
+  "status": "INVALID_FIVE_NUT_ACCEPTANCE_INCOMPLETE_OPERATOR_FEED"
+}

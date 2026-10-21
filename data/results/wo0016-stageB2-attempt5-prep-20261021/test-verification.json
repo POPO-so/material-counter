@@ -1,0 +1,25 @@
+{
+  "command": [
+    "C:\\fpga\\material-counter\\.venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "scripts/wo0016",
+    "scripts/wo0015",
+    "-q",
+    "--junitxml=data\\results\\wo0016-stageB2-attempt5-prep-20261021\\pytest-final.xml"
+  ],
+  "returncode": 1,
+  "results": {
+    "wo0016": {
+      "passed": 109,
+      "failures": 0,
+      "skipped": 0
+    },
+    "wo0015": {
+      "passed": 177,
+      "failures": 1,
+      "skipped": 1
+    }
+  },
+  "known_failure": "Missing original WO0014 H3 source manifest; not reconstructed or tests bypassed."
+}
