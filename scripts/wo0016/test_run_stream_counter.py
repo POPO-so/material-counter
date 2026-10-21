@@ -1362,3 +1362,84 @@ def test_replay_uses_raw_ccl_to_avoid_reclustering_merged_observations():
     assert len(result.detections) == 2
     repeated=replay([asdict(result)],config)
     assert repeated['frame_totals'][0]['accepted_components'] == 2
+
+def test_optional_camera_capture_metadata_identifies_sequence_and_host_timestamps():
+    class Capture:
+        def __init__(self):
+            self.reads = 0
+        def isOpened(self):
+            return True
+        def set(self, *args):
+            return True
+        def get(self, prop):
+            fourcc = sum(ord(char) << (8 * index)
+                         for index, char in enumerate("MJPG"))
+            return {2: fourcc, 3: 640, 4: 400, 5: 60.0}.get(prop, 1)
+        def read(self):
+            self.reads += 1
+            return True, np.full((400, 640), 40 + self.reads, dtype=np.uint8)
+        def release(self):
+            return None
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        CAP_PROP_BUFFERSIZE = 6
+        INTER_NEAREST = 7
+        @staticmethod
+        def VideoCapture(device, backend):
+            return Capture()
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+        @staticmethod
+        def resize(gray, dimensions, interpolation):
+            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+
+    from stream_counter import FrameInput
+    async def collect():
+        return [frame async for frame in runner._camera_gray_frames_impl(
+            "/dev/video-capture-test", max_frames=2, cv2_module=FakeCv2,
+            include_capture_metadata=True)]
+    frames = asyncio.run(collect())
+    assert all(isinstance(frame, FrameInput) for frame in frames)
+    assert [frame.source_sequence for frame in frames] == [0, 1]
+    assert [int(frame.gray[0, 0]) for frame in frames] == [43, 44]
+    assert all(frame.capture_monotonic_ns > 0 and frame.capture_wall_time_ns > 0
+               and frame.camera_read_ms >= 0 for frame in frames)
+
+
+def test_capture_cli_is_disabled_by_default():
+    args = runner._parser().parse_args(["--mode", "mock"])
+    assert args.capture_dir is None
+    assert args.capture_max_bytes == 64 * 1024 * 1024
+
+
+def test_stageb2_attempt_permit_binds_optional_capture_destination_and_limits(tmp_path):
+    ready_identity = runner.stageb2_guard_identity(
+        boot_id="boot-1", manifest_sha256="a" * 64, bit_sha256="b" * 64,
+        hwh_sha256="c" * 64, max_frames=165, expected_count=5,
+        material_label="M6_nut_no_washer", stabilization_delay_s=3.0,
+    )
+    identity = runner.stageb2_attempt_permit_identity(
+        ready_identity=ready_identity, ready_guard_sha256="d" * 64,
+        attempt_id="capture-1", operator_prearm_delay_s=15.0,
+        runner_sha256="e" * 64, gate_launcher_sha256="f" * 64,
+        capture_config={"enabled": True,
+                        "output_directory": str((tmp_path / "new-capture").resolve()),
+                        "max_bytes": 64 * 1024 * 1024,
+                        "queue_depth": 2, "schema_version": 1},
+    )
+    assert identity["capture_config"]["output_directory"].endswith("new-capture")
+    assert identity["capture_config"]["max_bytes"] == 64 * 1024 * 1024
+    with pytest.raises(ValueError, match="capture configuration"):
+        runner.stageb2_attempt_permit_identity(
+            ready_identity=ready_identity, ready_guard_sha256="d" * 64,
+            attempt_id="capture-2", operator_prearm_delay_s=15.0,
+            runner_sha256="e" * 64, gate_launcher_sha256="f" * 64,
+            capture_config={"enabled": True, "output_directory": "relative",
+                            "max_bytes": 10, "queue_depth": 2},
+        )

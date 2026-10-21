@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from dataclasses import asdict
 import hashlib
 import hmac
 import json
@@ -52,6 +53,9 @@ from mjpeg_preview import (
     PeriodicMjpegPublisher,
     render_preview_jpeg,
 )
+from capture_dataset import (
+    CaptureError, CaptureWriter, DEFAULT_MAX_BYTES, preflight_capture_target,
+)
 from stream_counter import (
     HEIGHT,
     RX_BYTES,
@@ -59,6 +63,7 @@ from stream_counter import (
     WIDTH,
     BufferState,
     DoubleBufferStream,
+    FrameInput,
     MaskCounter,
     allocate_ping_pong_buffers,
 )
@@ -293,7 +298,8 @@ def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
                                     runner_sha256: str,
                                     gate_launcher_sha256: str,
                                     counting_config: Mapping[str, Any] | None = None,
-                                    counter_sha256: str | None = None) -> dict[str, Any]:
+                                    counter_sha256: str | None = None,
+                                    capture_config: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """Bind one named Stage B-2 invocation to the unchanged READY Guard."""
     if (not isinstance(attempt_id, str)
             or re.fullmatch(r"[A-Za-z0-9_-]{1,32}", attempt_id, flags=re.ASCII) is None):
@@ -319,6 +325,17 @@ def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
         if counter_sha256 is None or not re.fullmatch(r"[0-9a-f]{64}", counter_sha256):
             raise ValueError("counting configuration requires counter SHA-256")
         extra = {"counting_config": dict(counting_config), "counter_sha256": counter_sha256}
+    if capture_config is not None:
+        capture_value = dict(capture_config)
+        output_directory = capture_value.get("output_directory")
+        max_bytes = capture_value.get("max_bytes")
+        if (capture_value.get("enabled") is not True
+                or not isinstance(output_directory, str)
+                or not Path(output_directory).is_absolute()
+                or isinstance(max_bytes, bool) or not isinstance(max_bytes, int)
+                or max_bytes < 1 or capture_value.get("queue_depth") != 2):
+            raise ValueError("capture configuration must bind an absolute path, capacity and queue depth")
+        extra["capture_config"] = capture_value
     return {
         **dict(ready_identity),
         "stage": STAGEB2_ATTEMPT_STAGE,
@@ -452,8 +469,9 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                                    milestone_callback: Callable[[str, float], None] | None = None,
                                    capture_timings_ms: list[float] | None = None,
                                    steady_start_time: list[float] | None = None,
-                                   capture_metadata: dict[str, Any] | None = None
-                                   ) -> AsyncIterator[np.ndarray]:
+                                   capture_metadata: dict[str, Any] | None = None,
+                                   include_capture_metadata: bool = False
+                                   ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Internal capture loop; board callers must use camera_gray_frames()."""
     if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
         raise ValueError("max_frames must be a positive integer")
@@ -538,15 +556,18 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                 f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height} "
                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
             )
-        def read_gray_frame(*, warmup: bool) -> tuple[np.ndarray, float]:
+        def read_gray_frame(*, warmup: bool) -> tuple[np.ndarray, float, int, int]:
             capture_started = time.perf_counter()
             ok, frame = capture.read()
             if not ok or frame is None:
                 prefix = "V4L2 warm-up" if warmup else "V4L2"
                 raise RuntimeError(f"{prefix} returned no camera frame")
+            capture_monotonic_ns = time.monotonic_ns() if include_capture_metadata else 0
+            capture_wall_time_ns = time.time_ns() if include_capture_metadata else 0
             image = np.asarray(frame)
             if warmup:
-                return image, (time.perf_counter() - capture_started) * 1000.0
+                return (image, (time.perf_counter() - capture_started) * 1000.0,
+                        capture_monotonic_ns, capture_wall_time_ns)
             if image.ndim == 3 and image.shape[2] in (1, 3, 4):
                 image = image[:, :, 0]
             if image.dtype != np.uint8 or image.shape != (400, 640):
@@ -560,7 +581,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                     f"resized camera frame is {gray.dtype} {gray.shape}; "
                     f"expected uint8 {(HEIGHT, WIDTH)}"
                 )
-            return gray, (time.perf_counter() - capture_started) * 1000.0
+            return (gray, (time.perf_counter() - capture_started) * 1000.0,
+                    capture_monotonic_ns, capture_wall_time_ns)
 
         loop = asyncio.get_running_loop()
         tasks = queue.Queue(maxsize=1)
@@ -598,7 +620,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
         )
         worker.start()
 
-        async def get_frame(*, warmup: bool) -> tuple[np.ndarray, float]:
+        async def get_frame(*, warmup: bool) -> tuple[np.ndarray, float, int, int]:
             nonlocal pending_waiter
             if pending_waiter is None:
                 raise RuntimeError("camera prefetch slot is empty")
@@ -653,12 +675,16 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                     if steady_start_time is not None:
                         steady_start_time[:] = [time.perf_counter()]
                 prefetch(warmup=False)
-            gray, capture_ms = await get_frame(warmup=False)
+            gray, capture_ms, capture_monotonic_ns, capture_wall_time_ns = await get_frame(warmup=False)
             if capture_timings_ms is not None:
                 capture_timings_ms.append(capture_ms)
             if frame_index + 1 < max_frames:
                 prefetch(warmup=False)
-            yield gray
+            if include_capture_metadata:
+                yield FrameInput(gray, frame_index, capture_monotonic_ns,
+                                 capture_wall_time_ns, capture_ms)
+            else:
+                yield gray
     except GeneratorExit:
         raise
     except BaseException as exc:
@@ -728,8 +754,9 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                              milestone_callback: Callable[[str, float], None] | None = None,
                              capture_timings_ms: list[float] | None = None,
                              steady_start_time: list[float] | None = None,
-                             capture_metadata: dict[str, Any] | None = None
-                             ) -> AsyncIterator[np.ndarray]:
+                             capture_metadata: dict[str, Any] | None = None,
+                             include_capture_metadata: bool = False
+                             ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Yield camera frames only through a live, authenticated operator session."""
     import operator_gate_launcher
     if (not isinstance(operator_gate, operator_gate_launcher.OperatorGate)
@@ -743,7 +770,8 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             operator_gate=operator_gate, milestone_callback=milestone_callback,
             capture_timings_ms=capture_timings_ms,
             steady_start_time=steady_start_time,
-            capture_metadata=capture_metadata):
+            capture_metadata=capture_metadata,
+            include_capture_metadata=include_capture_metadata):
         yield frame
 
 
@@ -779,6 +807,11 @@ def execute_board_stream(args: argparse.Namespace, *,
         max_frames=args.max_frames,
         evidence_json=args.evidence_json,
     )
+    capture_dir = getattr(args, "capture_dir", None)
+    capture_max_bytes = getattr(args, "capture_max_bytes", DEFAULT_MAX_BYTES)
+    capture_preflight = (preflight_capture_target(
+        capture_dir, expected_frames=args.max_frames, max_bytes=capture_max_bytes
+    ) if capture_dir else None)
     process_start_monotonic = getattr(args, "process_start_monotonic", time.monotonic())
     milestone_path = Path(args.evidence_json).with_suffix(".milestones.jsonl")
     if milestone_path.exists():
@@ -834,6 +867,13 @@ def execute_board_stream(args: argparse.Namespace, *,
             gate_launcher_sha256=gate_launcher_sha256,
             counting_config=counting_configuration(args),
             counter_sha256=hashlib.sha256(Path(__file__).with_name("stream_counter.py").read_bytes()).hexdigest(),
+            capture_config=({
+                "enabled": True,
+                "output_directory": capture_preflight["path"],
+                "max_bytes": capture_max_bytes,
+                "queue_depth": 2,
+                "schema_version": 1,
+            } if capture_preflight is not None else None),
         )
         attempt_directory = STAGEB2_ATTEMPT_DIR / plan.boot_id / args.attempt_id
         permit_path = attempt_directory / "attempt-permit.json"
@@ -875,6 +915,7 @@ def execute_board_stream(args: argparse.Namespace, *,
     tx_buffers: tuple[Any, ...] = ()
     rx_buffers: tuple[Any, ...] = ()
     stream: DoubleBufferStream | None = None
+    capture_writer: CaptureWriter | None = None
     preview: MjpegPreviewServer | None = None
     preview_publisher: PeriodicMjpegPublisher | None = None
     loopback_client: MjpegLoopbackClient | None = None
@@ -989,6 +1030,32 @@ def execute_board_stream(args: argparse.Namespace, *,
             "cma_free_after_allocation_kib": api.cma_free_kib(),
         }
 
+        if capture_preflight is not None:
+            capture_writer = CaptureWriter(
+                capture_dir,
+                expected_frames=args.max_frames,
+                config={
+                    "algorithm": "baseline",
+                    **counting_configuration(args),
+                    "threshold": STAGEB2_THRESHOLD,
+                    "input_resolution": [WIDTH, HEIGHT],
+                    "mask_resolution": [WIDTH, HEIGHT],
+                    "roi_bounds_convention": "[top,bottom), clipped to image",
+                },
+                max_bytes=capture_max_bytes,
+                queue_depth=2,
+                metadata={
+                    "work_order": "WO-0017 Phase 1B",
+                    "input_stage": "decoded camera frame first channel, nearest resize to FPGA Gray8 input",
+                    "camera_requested_mode": "MJPG 640x400 60 FPS; actual negotiated mode recorded in runner evidence",
+                    "mask_source": "same S2MM RX DMA slot and software Frame ID as MM2S input",
+                    "mask_frame_id_echoed_by_hardware": False,
+                    "capacity_preflight": capture_preflight,
+                },
+            )
+            evidence["capture_directory"] = capture_preflight["path"]
+            evidence["capture_status"] = "IN_PROGRESS"
+
         # Accessing the PYNQ DMA driver starts its channels; this is after all static,
         # process, Overlay identity, CMA and physical-span gates have passed.
         dma = overlay.axi_dma_0
@@ -1006,11 +1073,15 @@ def execute_board_stream(args: argparse.Namespace, *,
             api.write32(preflight.CHECKER_BASE, board_once.PACKER_ARM, 1)
 
         frame_dma_status: list[dict[str, Any]] = []
+        packer_frame_status: list[dict[str, Any]] = []
 
         def verify_frame(frame_id: int, slot: Any) -> None:
             if int(dma.recvchannel.transferred) != RX_BYTES:
                 raise RuntimeError(f"frame {frame_id} S2MM transferred length is not {RX_BYTES}")
             verify_frame_dmasr(api, frame_id, frame_dma_status)
+            dma_record = dict(frame_dma_status[-1])
+            if slot.capture_metadata is not None:
+                slot.capture_metadata["dma_status"] = dma_record
             status = api.read32(preflight.CHECKER_BASE, board_once.PACKER_STATUS)
             accepted = api.read32(preflight.CHECKER_BASE, board_once.PACKER_ACCEPTED_PIXELS)
             sent = api.read32(preflight.CHECKER_BASE, board_once.PACKER_SENT_BEATS)
@@ -1019,6 +1090,17 @@ def execute_board_stream(args: argparse.Namespace, *,
                 raise RuntimeError(f"frame {frame_id} Packer is faulted or still busy")
             if not status & board_once.PACKER_DONE or accepted != RX_BYTES or sent != RX_BYTES // 4 or error_code:
                 raise RuntimeError(f"frame {frame_id} Packer frame counters/status are inconsistent")
+            packer_record = {
+                "frame_id": frame_id,
+                "status": f"0x{status:08x}",
+                "accepted_pixels": accepted,
+                "sent_beats": sent,
+                "error_code": error_code,
+                "validation": "PASS",
+            }
+            packer_frame_status.append(packer_record)
+            if slot.capture_metadata is not None:
+                slot.capture_metadata["packer_status"] = dict(packer_record)
 
         hub = MjpegFrameHub()
         preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
@@ -1041,6 +1123,42 @@ def execute_board_stream(args: argparse.Namespace, *,
             ).start()
 
         counter = MaskCounter(**counting_configuration(args))
+        def capture_frame(result: Any, slot: Any) -> None:
+            if capture_writer is None or slot.capture_gray is None or slot.capture_mask is None:
+                raise CaptureError("capture writer or raw source/mask slot snapshot is unavailable")
+            metadata = {
+                **(slot.capture_metadata or {}),
+                "frame_id": result.frame_id,
+                "dma_slot_index": slot.index,
+                "dma_complete_monotonic_ns": slot.dma_complete_monotonic_ns,
+                "camera_mode_readback": dict(capture_metadata),
+                "software_pairing": {
+                    "input_sequence_equals_dma_frame_id": True,
+                    "input_and_output_use_same_slot": True,
+                    "mask_echoes_frame_id": False,
+                    "mask_source": "S2MM output copied from this slot after its DMA completion and cache sync",
+                },
+                "resolution": {"width": WIDTH, "height": HEIGHT,
+                               "dtype": "uint8", "input": "Gray8", "mask": "Binary8"},
+                "threshold": STAGEB2_THRESHOLD,
+                "algorithm_config": counting_configuration(args),
+                "roi": {"top": result.roi_top, "bottom_exclusive": result.roi_bottom,
+                        "line_y": args.line_y, "line_x": args.line_x,
+                        "count_axis": args.count_axis},
+                "raw_detections": [asdict(item) for item in result.raw_detections],
+                "detections": [asdict(item) for item in result.detections],
+                "associations": list(counter.last_associations),
+                "tracks": list(counter.tracking_snapshot()),
+                "events": [asdict(item) for item in result.events],
+                "suppressed_events": [asdict(item) for item in result.suppressed_events],
+                "total_count": result.total_count,
+                "frame_result": {
+                    "roi_foreground_pixels": result.roi_foreground_pixels,
+                    "ccl_executed": result.ccl_executed,
+                },
+            }
+            capture_writer.submit(result.frame_id, slot.capture_gray, slot.capture_mask, metadata)
+
         stream = DoubleBufferStream(
             recv_channel=dma.recvchannel,
             send_channel=dma.sendchannel,
@@ -1053,6 +1171,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
             on_frame=preview_publisher,
+            capture_callback=(capture_frame if capture_writer is not None else None),
             stage_timings_ms=stage_timings_ms,
             transfer_timeout_s=args.timeout_s,
         )
@@ -1078,21 +1197,29 @@ def execute_board_stream(args: argparse.Namespace, *,
             milestone_callback=record_camera_milestone,
             capture_timings_ms=stage_timings_ms["capture"],
             steady_start_time=steady_start_time,
-            capture_metadata=capture_metadata)))
+            capture_metadata=capture_metadata,
+            include_capture_metadata=(capture_writer is not None))))
         if not steady_start_time:
             raise RuntimeError("camera did not establish a steady-stream timing boundary")
-        elapsed = max(time.perf_counter() - steady_start_time[0], 1e-9)
-        preview_publisher.close()
-        if loopback_client is not None:
-            loopback_client.close()
-        total_count = results[-1].total_count if results else 0
-        accuracy = _count_accuracy(total_count, args.ground_truth_count)
-        accuracy_fraction = _count_accuracy_fraction(total_count, args.ground_truth_count)
+        # Confirm the final hardware state before any potentially blocking writer drain.
         s2mm_status = api.read32(preflight.DMA_BASE, 0x34)
         mm2s_status = api.read32(preflight.DMA_BASE, 0x04)
         for status, label in ((s2mm_status, "S2MM"), (mm2s_status, "MM2S")):
             if status & board_once.DMA_ERROR_MASK or not status & board_once.DMA_IDLE:
                 raise RuntimeError(f"{label} is not error-free and idle at normal shutdown")
+        elapsed = max(time.perf_counter() - steady_start_time[0], 1e-9)
+        total_count = results[-1].total_count if results else 0
+        accuracy = _count_accuracy(total_count, args.ground_truth_count)
+        accuracy_fraction = _count_accuracy_fraction(total_count, args.ground_truth_count)
+        preview_publisher.close()
+        if loopback_client is not None:
+            loopback_client.close()
+        if capture_writer is not None:
+            capture_result = capture_writer.close()
+            evidence["capture"] = capture_result
+            evidence["capture_status"] = capture_result["status"]
+            if capture_result["status"] != "COMPLETE":
+                raise CaptureError("requested evidence capture is incomplete")
         evidence.update({
             "status": "BOARD_STREAM_COMPLETE",
             "board_accessed": True,
@@ -1124,6 +1251,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             "preview_url": f"http://{args.host}:{preview.port}/",
             "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
             "frame_dma_status": frame_dma_status,
+            "packer_frame_status": packer_frame_status,
             "packer_output_frames_verified": len(results),
             "pynq_imported": True,
             "accuracy_formula": "1 - abs(total_count - expected_count) / max(expected_count, 1)",
@@ -1148,14 +1276,30 @@ def execute_board_stream(args: argparse.Namespace, *,
                             if hold else None),
             "error": f"{type(exc).__name__}: {exc}",
         })
+        if hold:
+            if capture_writer is not None and not capture_writer._closed:
+                evidence["capture_status"] = "INCOMPLETE_FAIL_HOLD"
+                evidence["capture_error"] = (
+                    "capture was interrupted before writer finalization because DMA safety requires fail-hold; "
+                    "the dataset manifest remains non-COMPLETE and must not be replayed"
+                )
+            # fail_hold may wait indefinitely by design. Never wait on storage or
+            # close preview resources before establishing the DMA fail-hold.
+            api.fail_hold(args.evidence_json, evidence)
+        if capture_writer is not None:
+            try:
+                capture_result = capture_writer.close()
+                evidence["capture"] = capture_result
+                evidence["capture_status"] = capture_result["status"]
+            except BaseException as capture_error:
+                evidence["capture_status"] = "INCOMPLETE"
+                evidence["capture_error"] = f"{type(capture_error).__name__}: {capture_error}"
         if preview_publisher is not None:
             preview_publisher.close()
         if loopback_client is not None:
             loopback_client.close()
         if preview is not None:
             preview.close()
-        if hold:
-            api.fail_hold(args.evidence_json, evidence)
         if tx_buffers or rx_buffers:
             _release_buffers(api, tx_buffers + rx_buffers, released_buffer_ids)
             evidence["buffers_released"] = True
@@ -1344,6 +1488,10 @@ def _parser() -> argparse.ArgumentParser:
                         default=STAGEB2_OPERATOR_PREARM_DELAY_S,
                         help="flushed operator countdown after camera warm-up and before the 3-second stabilization")
     parser.add_argument("--evidence-json", "--output-json", dest="evidence_json")
+    parser.add_argument("--capture-dir",
+                        help="opt-in lossless Gray8 input + raw Binary8 mask dataset directory")
+    parser.add_argument("--capture-max-bytes", type=int, default=DEFAULT_MAX_BYTES,
+                        help="maximum total bytes for the optional evidence dataset")
     return parser
 
 
@@ -1364,6 +1512,8 @@ def main(argv: list[str] | None = None, *,
             raise ValueError(
                 f"Stage B-2 Attempt #2 requires a {STAGEB2_OPERATOR_PREARM_DELAY_S:g}-second operator pre-arm window"
             )
+        if args.mode == "mock" and args.capture_dir:
+            raise ValueError("--capture-dir is available only for an explicitly authorized board stream")
         if args.mode == "mock":
             result = run_mock_simulation(frame_count=args.mock_frames,
                                          line_y=args.line_y,

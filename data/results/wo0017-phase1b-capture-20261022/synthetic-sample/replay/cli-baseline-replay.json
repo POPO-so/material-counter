@@ -1,0 +1,95 @@
+{
+  "algorithm": "baseline",
+  "dataset_records_sha256": "aed61a2123c8be6539429bdca9e4378ca0a71f58dba5c3e10a9f3766173f6925",
+  "dataset_source_type": "synthetic_software_test_only",
+  "entity_report": {
+    "duplicate_count": null,
+    "entities": [],
+    "missed_count": null,
+    "reason": "no independent ground-truth.json annotation is present",
+    "status": "NOT VERIFIED",
+    "unmatched_event_count": null,
+    "wrong_merge_count": null
+  },
+  "frame_count": 1,
+  "frames": [
+    {
+      "associations": [
+        {
+          "detection_index": 0,
+          "dx": null,
+          "dy": null,
+          "kind": "new",
+          "previous_frame": null,
+          "track_id": 1
+        }
+      ],
+      "ccl_executed": true,
+      "detections": [
+        {
+          "area": 81,
+          "centroid_x": 90.0,
+          "centroid_y": 120.0,
+          "x_max": 94,
+          "x_min": 86,
+          "y_max": 124,
+          "y_min": 116
+        }
+      ],
+      "events": [],
+      "frame_id": 0,
+      "raw_detections": [
+        {
+          "area": 81,
+          "centroid_x": 90.0,
+          "centroid_y": 120.0,
+          "x_max": 94,
+          "x_min": 86,
+          "y_max": 124,
+          "y_min": 116
+        }
+      ],
+      "roi": {
+        "bottom_exclusive": 145,
+        "top": 96
+      },
+      "roi_foreground_pixels": 81,
+      "suppressed_events": [],
+      "total_count": 0,
+      "tracks": [
+        {
+          "armed": false,
+          "confirmed": false,
+          "counted": true,
+          "detection": {
+            "area": 81,
+            "centroid_x": 90.0,
+            "centroid_y": 120.0,
+            "x_max": 94,
+            "x_min": 86,
+            "y_max": 124,
+            "y_min": 116
+          },
+          "finished": false,
+          "forward_velocity": null,
+          "last_frame": 0,
+          "missed": 0,
+          "streak": 1,
+          "track_id": 1
+        }
+      ]
+    }
+  ],
+  "performance": {
+    "elapsed_ms": 4.7437,
+    "frames": 1,
+    "input": "verified stored raw Binary8 NPY masks",
+    "mean_replay_ms_per_frame": 4.7437,
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10",
+    "statistic": "single sequential replay wall time; not board real-time performance"
+  },
+  "schema_version": 1,
+  "status": "REPLAY_COMPLETE",
+  "total_count": 0
+}

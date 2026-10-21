@@ -1,0 +1,51 @@
+{
+  "accepted_frames": 1,
+  "bytes_written": 155742,
+  "capacity": {
+    "expected_bytes": 190464,
+    "free_bytes_at_preflight": 106898808832,
+    "max_bytes": 1000000,
+    "path": "C:\\wt\\w17\\data\\results\\wo0017-phase1b-capture-20261022\\synthetic-sample-v2"
+  },
+  "captured_frames": 1,
+  "completed_utc": "2026-10-21T18:19:26.516303+00:00",
+  "config": {
+    "algorithm": "baseline",
+    "input_resolution": [
+      320,
+      240
+    ],
+    "line_y": 120,
+    "mask_resolution": [
+      320,
+      240
+    ],
+    "min_area": 12,
+    "roi_bounds_convention": "[top,bottom), clipped to image",
+    "threshold": 128
+  },
+  "created_utc": "2026-10-21T18:19:26.496626+00:00",
+  "dropped_frames": 0,
+  "error": null,
+  "estimated_total_bytes": 190464,
+  "expected_frames": 1,
+  "frame_records_sha256": "baa44bcc64b66e7806bfd31ce505f8a2374584cd09491b673b8d2aec9581c246",
+  "frame_shape": [
+    240,
+    320
+  ],
+  "gray_dtype": "uint8",
+  "gray_encoding": "unmodified FPGA input Gray8; uncompressed NPY",
+  "mask_dtype": "uint8",
+  "mask_encoding": "raw Binary8 values 0x00/0xFF; uncompressed NPY",
+  "max_bytes": 1000000,
+  "metadata": {
+    "source_type": "synthetic_software_test_only"
+  },
+  "missing_frames": 0,
+  "schema_version": 1,
+  "source_type": "synthetic_software_test_only",
+  "status": "COMPLETE",
+  "submitted_frames": 1,
+  "writer_active": false
+}

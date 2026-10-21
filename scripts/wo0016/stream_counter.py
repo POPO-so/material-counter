@@ -28,6 +28,16 @@ class PacketEncoderInto(Protocol):
     def __call__(self, gray: np.ndarray, output: Any, *, frame_id: int) -> None: ...
 
 
+@dataclass(frozen=True)
+class FrameInput:
+    """Gray8 FPGA input plus host-side camera read identity and timestamps."""
+    gray: np.ndarray
+    source_sequence: int
+    capture_monotonic_ns: int
+    capture_wall_time_ns: int
+    camera_read_ms: float
+
+
 class BufferState(str, Enum):
     FREE = "FREE"
     DMA_OWNED = "DMA_OWNED"
@@ -44,6 +54,10 @@ class DmaBufferSlot:
     cached_mask: np.ndarray | None = None
     state: BufferState = BufferState.FREE
     frame_id: int | None = None
+    capture_gray: np.ndarray | None = None
+    capture_mask: np.ndarray | None = None
+    capture_metadata: dict[str, Any] | None = None
+    dma_complete_monotonic_ns: int | None = None
 
 
 @dataclass(frozen=True)
@@ -183,6 +197,29 @@ class MaskCounter:
         return FrameResult(frame_id, self.total_count, tuple(accepted), tuple(events),
                            top, bottom, (), (), raw_detections=raw_detections,
                            suppressed_events=tuple(self.last_suppressed_events))
+
+    def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
+        """Return serializable track state without mutating tracker behavior."""
+        return tuple({
+            "track_id": track.track_id,
+            "detection": {
+                "x_min": track.detection.x_min,
+                "x_max": track.detection.x_max,
+                "y_min": track.detection.y_min,
+                "y_max": track.detection.y_max,
+                "area": track.detection.area,
+                "centroid_x": track.detection.centroid_x,
+                "centroid_y": track.detection.centroid_y,
+            },
+            "last_frame": track.last_frame,
+            "streak": track.streak,
+            "confirmed": track.confirmed,
+            "armed": track.armed,
+            "counted": track.counted,
+            "missed": track.missed,
+            "finished": track.finished,
+            "forward_velocity": track.forward_velocity,
+        } for track in sorted(self._tracks.values(), key=lambda item: item.track_id))
 
     def _area_allowed(self, area: int) -> bool:
         return area >= self.min_area and (self.max_area is None or area <= self.max_area)
@@ -588,6 +625,7 @@ class DoubleBufferStream:
                  before_rx_copy: Callable[[int, DmaBufferSlot], Any] | None = None,
                  after_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
                  on_frame: Callable[[FrameResult, np.ndarray], Any] | None = None,
+                 capture_callback: Callable[[FrameResult, DmaBufferSlot], Any] | None = None,
                  stage_timings_ms: dict[str, list[float]] | None = None,
                  transfer_timeout_s: float = 5.0):
         if len(tx_buffers) != 2 or len(rx_buffers) != 2:
@@ -605,12 +643,17 @@ class DoubleBufferStream:
         self.before_rx_copy = before_rx_copy
         self.after_transfer = after_transfer
         self.on_frame = on_frame
+        self.capture_callback = capture_callback
         self.stage_timings_ms = stage_timings_ms
         self._postprocess_ms: dict[int, float] = {}
         self.transfer_timeout_s = _positive_float(transfer_timeout_s, "transfer_timeout_s")
         self.slots = [
             DmaBufferSlot(i, tx_buffers[i], rx_buffers[i],
-                          cached_mask=np.empty((HEIGHT, WIDTH), dtype=np.uint8))
+                          cached_mask=np.empty((HEIGHT, WIDTH), dtype=np.uint8),
+                          capture_gray=(np.empty((HEIGHT, WIDTH), dtype=np.uint8)
+                                        if capture_callback is not None else None),
+                          capture_mask=(np.empty((HEIGHT, WIDTH), dtype=np.uint8)
+                                        if capture_callback is not None else None))
             for i in range(2)
         ]
         self._free_slots: asyncio.Queue[DmaBufferSlot] = asyncio.Queue(maxsize=2)
@@ -623,7 +666,7 @@ class DoubleBufferStream:
         self.dma_may_be_active = False
         self._has_run = False
 
-    async def run(self, frames: AsyncIterable[np.ndarray]) -> tuple[FrameResult, ...]:
+    async def run(self, frames: AsyncIterable[np.ndarray | FrameInput]) -> tuple[FrameResult, ...]:
         if self._has_run:
             raise RuntimeError("a DoubleBufferStream instance can run only once")
         self._has_run = True
@@ -653,14 +696,15 @@ class DoubleBufferStream:
                         raise source_error
                     raise RuntimeError("DMA consumer stopped before the frame source")
                 try:
-                    gray = pending_source_task.result()
+                    source_frame = pending_source_task.result()
                 except StopAsyncIteration:
                     pending_source_task = None
                     break
                 if consumer.done():
                     consumer.result()
                 pending_source_task = None
-                gray = np.asarray(gray)
+                frame_input = source_frame if isinstance(source_frame, FrameInput) else None
+                gray = np.asarray(frame_input.gray if frame_input is not None else source_frame)
                 if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
                     raise ValueError(f"source frames must be uint8 Gray8 {(HEIGHT, WIDTH)} arrays")
                 slot = await self._get_free_slot_or_consumer_failure(consumer)
@@ -668,6 +712,29 @@ class DoubleBufferStream:
                     raise RuntimeError("buffer pool returned a slot that is not free")
                 slot.state = BufferState.CPU_OWNED
                 slot.frame_id = frame_id
+                slot.dma_complete_monotonic_ns = None
+                if frame_input is not None and frame_input.source_sequence != frame_id:
+                    raise ValueError("camera source sequence does not match DMA frame ID")
+                if self.capture_callback is not None:
+                    if slot.capture_gray is None:
+                        raise RuntimeError("capture-enabled slot has no Gray8 snapshot storage")
+                    np.copyto(slot.capture_gray, gray, casting="no")
+                    if frame_input is None:
+                        slot.capture_metadata = {
+                            "source_sequence": frame_id,
+                            "capture_monotonic_ns": time.monotonic_ns(),
+                            "capture_wall_time_ns": time.time_ns(),
+                            "camera_read_ms": None,
+                            "capture_timestamp_kind": "host time at source handoff",
+                        }
+                    else:
+                        slot.capture_metadata = {
+                            "source_sequence": frame_input.source_sequence,
+                            "capture_monotonic_ns": frame_input.capture_monotonic_ns,
+                            "capture_wall_time_ns": frame_input.capture_wall_time_ns,
+                            "camera_read_ms": frame_input.camera_read_ms,
+                            "capture_timestamp_kind": "host time after VideoCapture.read",
+                        }
                 encode_started = time.perf_counter()
                 if self.packet_encoder_into is not None:
                     self.packet_encoder_into(gray, slot.tx_buffer, frame_id=frame_id)
@@ -699,6 +766,7 @@ class DoubleBufferStream:
                         timeout=self.transfer_timeout_s,
                     )
                     self.dma_may_be_active = False
+                    slot.dma_complete_monotonic_ns = time.monotonic_ns()
                     self._record_timing("dma", time.perf_counter() - dma_started)
                 except BaseException:
                     self._hold_nonfree_slots()
@@ -716,6 +784,10 @@ class DoubleBufferStream:
                 copy_started = time.perf_counter()
                 rx_view = np.asarray(slot.rx_buffer)
                 np.copyto(slot.cached_mask.reshape(-1), rx_view, casting="no")
+                if self.capture_callback is not None:
+                    if slot.capture_mask is None:
+                        raise RuntimeError("capture-enabled slot has no raw mask snapshot storage")
+                    np.copyto(slot.capture_mask, slot.cached_mask, casting="no")
                 self._record_timing("rx_copy", time.perf_counter() - copy_started)
                 postprocess_ms = 0.0
                 if self.after_transfer is not None:
@@ -819,12 +891,24 @@ class DoubleBufferStream:
                     callback_result = await asyncio.to_thread(self.on_frame, result, mask)
                     if inspect.isawaitable(callback_result):
                         await callback_result
+            if self.capture_callback is not None:
+                if (slot.capture_gray is None or slot.capture_mask is None
+                        or slot.capture_metadata is None):
+                    raise RuntimeError("capture-enabled slot is missing its raw snapshots")
+                if inspect.iscoroutinefunction(self.capture_callback):
+                    await self.capture_callback(result, slot)
+                else:
+                    capture_result = await asyncio.to_thread(self.capture_callback, result, slot)
+                    if inspect.isawaitable(capture_result):
+                        await capture_result
             postprocess_ms = self._postprocess_ms.pop(frame_id, 0.0)
             postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
             self._record_timing("postprocess", postprocess_ms / 1000.0)
             self._results.append(result)
             slot.state = BufferState.FREE
             slot.frame_id = None
+            slot.capture_metadata = None
+            slot.dma_complete_monotonic_ns = None
             self._free_slots.put_nowait(slot)
 
     def _record_timing(self, stage: str, elapsed_seconds: float) -> None:

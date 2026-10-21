@@ -1,0 +1,30 @@
+{
+  "status": "HOST_SYNTHETIC_SOFTWARE_TEST_ONLY",
+  "platform": "win32",
+  "python": "3.12.10",
+  "input": "165 synthetic 320x240 uint8 Gray8/Binary8 pairs, paced at 60 Hz",
+  "storage": "local temporary directory",
+  "writer_queue_depth": 2,
+  "capture_status": "COMPLETE",
+  "frames_written": 165,
+  "bytes_written": 25608770,
+  "raw_pixel_bytes": 25344000,
+  "elapsed_s_including_final_flush": 2.770405999996001,
+  "effective_fps_including_final_flush": 59.55805755554896,
+  "capture_writer_submit_ms": {
+    "mean": 0.15148,
+    "p95": 0.29467999999999994,
+    "max": 0.4582
+  },
+  "empty_mask_counter_update_ms": {
+    "mean": 0.22868363636363637,
+    "p95": 0.3869599999999999,
+    "max": 0.5627
+  },
+  "notes": [
+    "single host run",
+    "not PYNQ CPU/storage/throughput evidence",
+    "empty-mask counter measurements are software only"
+  ],
+  "platform_full": "Windows-11-10.0.26200-SP0"
+}

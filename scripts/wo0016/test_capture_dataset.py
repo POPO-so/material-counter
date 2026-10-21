@@ -1,0 +1,415 @@
+import json
+import sys
+import threading
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from capture_dataset import (  # noqa: E402
+    CaptureError,
+    CaptureWriter,
+    evaluate_entities,
+    load_dataset,
+)
+
+
+
+def _frame_metadata(frame_id):
+    return {
+        "frame_id": frame_id,
+        "source_sequence": frame_id,
+        "capture_monotonic_ns": 1000 + frame_id,
+        "capture_wall_time_ns": 3000 + frame_id,
+        "camera_read_ms": 0.5,
+        "capture_timestamp_kind": "host-after-read",
+        "dma_complete_monotonic_ns": 2000 + frame_id,
+        "dma_slot_index": frame_id % 2,
+        "software_pairing": {"input_sequence_equals_dma_frame_id": True,
+                             "input_and_output_use_same_slot": True,
+                             "mask_echoes_frame_id": False},
+        "resolution": {"width": 320, "height": 240},
+        "threshold": 128,
+        "algorithm_config": {"line_y": 120, "min_area": 12},
+        "roi": {"top": 96, "bottom_exclusive": 145},
+        "dma_status": {"frame_id": frame_id, "state": "IDLE"},
+        "packer_status": {"frame_id": frame_id, "validation": "PASS"},
+        "raw_detections": [], "detections": [], "associations": [], "tracks": [],
+        "events": [], "suppressed_events": [], "total_count": 0,
+        "frame_result": {},
+    }
+
+
+def _session(tmp_path, *, frames=2, max_bytes=2_000_000, queue_depth=2):
+    return CaptureWriter(
+        tmp_path / "capture",
+        expected_frames=frames,
+        config={"line_y": 120, "min_area": 12},
+        max_bytes=max_bytes,
+        queue_depth=queue_depth,
+    )
+
+
+def test_lossless_gray_and_raw_mask_round_trip(tmp_path):
+    writer = _session(tmp_path)
+    gray0 = np.arange(240 * 320, dtype=np.uint32).reshape(240, 320).astype(np.uint8)
+    gray1 = np.flipud(gray0).copy()
+    mask0 = np.zeros((240, 320), dtype=np.uint8)
+    mask0[101:108, 33:44] = 255
+    mask1 = np.zeros((240, 320), dtype=np.uint8)
+    mask1[110:120, 200:212] = 255
+    for frame_id, gray, mask in ((0, gray0, mask0), (1, gray1, mask1)):
+        writer.submit(frame_id, gray, mask, _frame_metadata(frame_id))
+    manifest = writer.close()
+
+    assert manifest["status"] == "COMPLETE"
+    stored_manifest, frames = load_dataset(tmp_path / "capture")
+    assert stored_manifest["captured_frames"] == 2
+    assert [frame.frame_id for frame in frames] == [0, 1]
+    np.testing.assert_array_equal(frames[0].gray, gray0)
+    np.testing.assert_array_equal(frames[1].gray, gray1)
+    np.testing.assert_array_equal(frames[0].mask, mask0)
+    np.testing.assert_array_equal(frames[1].mask, mask1)
+
+
+def test_dataset_validator_rejects_missing_or_mismatched_frame_metadata(tmp_path):
+    writer = _session(tmp_path, frames=1)
+    writer.submit(0, np.zeros((240, 320), np.uint8),
+                  np.zeros((240, 320), np.uint8), _frame_metadata(0))
+    writer.close()
+    records_path = tmp_path / "capture" / "frame-records.jsonl"
+    row = json.loads(records_path.read_text(encoding="utf-8"))
+    row["frame_id"] = 9
+    records_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    manifest_path = tmp_path / "capture" / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    import hashlib
+    manifest["frame_records_sha256"] = hashlib.sha256(records_path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="frame ID|frame_id"):
+        load_dataset(tmp_path / "capture")
+
+
+def test_capacity_preflight_and_write_failure_are_fail_closed(tmp_path, monkeypatch):
+    too_small = tmp_path / "too-small"
+    with pytest.raises(CaptureError, match="capacity"):
+        CaptureWriter(too_small, expected_frames=2, config={}, max_bytes=100)
+    assert not too_small.exists()
+
+    writer = CaptureWriter(tmp_path / "broken", expected_frames=1, config={},
+                           max_bytes=1_000_000)
+    def fail_write(*args, **kwargs):
+        raise OSError("simulated disk full")
+    monkeypatch.setattr(writer, "_write_frame", fail_write)
+    writer.submit(0, np.zeros((240, 320), np.uint8),
+                  np.zeros((240, 320), np.uint8), _frame_metadata(0))
+    manifest = writer.close()
+    assert manifest["status"] == "INCOMPLETE"
+    assert "simulated disk full" in manifest["error"]
+
+
+def test_bounded_queue_overflow_is_reported_not_silently_dropped(tmp_path, monkeypatch):
+    writer = CaptureWriter(tmp_path / "overflow", expected_frames=3, config={},
+                           max_bytes=2_000_000, queue_depth=1)
+    entered = threading.Event()
+    release = threading.Event()
+    original = writer._write_frame
+    def blocked_write(item):
+        entered.set()
+        release.wait(timeout=2)
+        return original(item)
+    monkeypatch.setattr(writer, "_write_frame", blocked_write)
+    gray = np.zeros((240, 320), np.uint8)
+    mask = np.zeros_like(gray)
+    writer.submit(0, gray, mask, _frame_metadata(0))
+    assert entered.wait(timeout=2)
+    writer.submit(1, gray, mask, _frame_metadata(1))
+    with pytest.raises(CaptureError, match="queue|overflow"):
+        writer.submit(2, gray, mask, _frame_metadata(2))
+    release.set()
+    manifest = writer.close()
+    assert manifest["status"] == "INCOMPLETE"
+    assert manifest["dropped_frames"] >= 1
+    assert manifest["missing_frames"] == 0
+
+
+def test_entity_report_requires_independent_ground_truth_and_manual_identity():
+    algorithm = [{"frame_id": 5, "total_count": 1,
+                  "raw_detections": [{"x_min": 85, "x_max": 95, "y_min": 110,
+                                       "area": 81}],
+                  "detections": [{"x_min": 85, "x_max": 95, "y_min": 110,
+                                  "y_max": 120, "area": 81,
+                                  "centroid_x": 90.0, "centroid_y": 115.0}],
+                  "associations": [{"track_id": 7, "detection_index": 0}],
+                  "events": [{"track_id": 7, "frame_id": 5}]}]
+    unreviewed = {
+        "status": "CONFIRMED", "provenance": "independent_video",
+        "observer": "reviewer", "independent_record_reference": "video.mp4",
+        "actual_window_entity_count": 1, "window_count_confirmed": True,
+        "entities": [{"entity_id": "E1", "entered_detection_window": True,
+                      "insertion_order": 1, "put_in_monotonic_ns": 100,
+                      "first_visible_frame": 5, "last_visible_frame": 5,
+                      "fully_visible": True, "completed_pass": True,
+                      "identity_evidence": "reviewed video", "track_ids": [7],
+                      "identity_reviewed": False}],
+    }
+    assert evaluate_entities(unreviewed, algorithm)["status"] == "NOT VERIFIED"
+
+    reviewed = json.loads(json.dumps(unreviewed))
+    reviewed["entities"][0]["identity_reviewed"] = True
+    report = evaluate_entities(reviewed, algorithm)
+    assert report["status"] == "PASS"
+    assert report["entities"][0]["event_count"] == 1
+    assert report["entities"][0]["detected_frame_range"] == [5, 5]
+    assert report["entities"][0]["key_evidence_frames"] == [5]
+    assert report["duplicate_count"] == 0
+
+def test_dataset_validator_rejects_missing_array_file(tmp_path):
+    writer = _session(tmp_path, frames=1)
+    writer.submit(0, np.zeros((240, 320), np.uint8),
+                  np.zeros((240, 320), np.uint8), _frame_metadata(0))
+    writer.close()
+    (tmp_path / "capture" / "frames" / "000000.mask.npy").unlink()
+    with pytest.raises(FileNotFoundError):
+        load_dataset(tmp_path / "capture")
+
+
+def test_dataset_validator_rejects_non_binary_mask(tmp_path):
+    writer = _session(tmp_path, frames=1)
+    mask = np.zeros((240, 320), np.uint8)
+    mask[100, 100] = 1
+    with pytest.raises(CaptureError, match="Binary8"):
+        writer.submit(0, np.zeros_like(mask), mask, _frame_metadata(0))
+    manifest = writer.close()
+    assert manifest["status"] == "INCOMPLETE"
+
+
+def test_independent_entity_report_flags_duplicate_and_wrong_merge():
+    ground_truth = {
+        "status": "CONFIRMED", "provenance": "independent_video",
+        "observer": "reviewer", "independent_record_reference": "video.mp4",
+        "actual_window_entity_count": 2, "window_count_confirmed": True,
+        "entities": [
+            {"entity_id": "E1", "entered_detection_window": True,
+             "insertion_order": 1, "put_in_monotonic_ns": 100,
+             "first_visible_frame": 1, "last_visible_frame": 9,
+             "fully_visible": True, "completed_pass": True,
+             "identity_evidence": "video frames", "track_ids": [7],
+             "identity_reviewed": True},
+            {"entity_id": "E2", "entered_detection_window": True,
+             "insertion_order": 2, "put_in_monotonic_ns": 200,
+             "first_visible_frame": 10, "last_visible_frame": 19,
+             "fully_visible": True, "completed_pass": True,
+             "identity_evidence": "video frames", "track_ids": [7],
+             "identity_reviewed": True},
+        ],
+    }
+    frames = [{"frame_id": frame_id, "raw_detections": [],
+               "detections": [], "associations": [],
+               "events": ([{"track_id": 7, "frame_id": frame_id}]
+                          if frame_id in (4, 5) else [])}
+              for frame_id in range(20)]
+    report = evaluate_entities(ground_truth, frames)
+    assert report["status"] == "FAIL"
+    assert report["duplicate_count"] == 1
+    assert report["missed_count"] == 1
+    assert report["wrong_merge_count"] == 1
+
+
+def test_baseline_replay_reads_raw_masks_and_does_not_infer_ground_truth(tmp_path):
+    from replay_capture_dataset import replay_capture_dataset
+
+    writer = CaptureWriter(tmp_path / "capture", expected_frames=1,
+                           config={"line_y": 120, "roi_half_height": 24, "min_area": 12},
+                           max_bytes=1_000_000)
+    gray = np.full((240, 320), 37, np.uint8)
+    mask = np.zeros((240, 320), np.uint8)
+    mask[116:125, 86:95] = 255
+    metadata = _frame_metadata(0)
+    metadata["algorithm_config"]["roi_half_height"] = 24
+    writer.submit(0, gray, mask, metadata)
+    assert writer.close()["status"] == "COMPLETE"
+
+    report = replay_capture_dataset(tmp_path / "capture")
+
+    assert report["status"] == "REPLAY_COMPLETE"
+    assert report["frame_count"] == 1
+    assert report["frames"][0]["raw_detections"][0]["area"] == 81
+    assert report["entity_report"]["status"] == "NOT VERIFIED"
+
+
+def test_empty_belt_ground_truth_can_pass_only_when_independently_confirmed():
+    truth = {"status": "CONFIRMED", "provenance": "human_observation",
+             "observer": "observer", "independent_record_reference": "log-1",
+             "actual_window_entity_count": 0, "window_count_confirmed": True,
+             "empty_belt_first_frame": 0, "empty_belt_last_frame": 0,
+             "empty_belt_observed_frames": 1, "entities": []}
+    empty_frame = {"frame_id": 0, "raw_detections": [], "detections": [],
+                   "associations": [], "events": []}
+    assert evaluate_entities(truth, [empty_frame])["status"] == "PASS"
+    truth["window_count_confirmed"] = False
+    assert evaluate_entities(truth, [empty_frame])["status"] == "NOT VERIFIED"
+
+
+def test_empty_belt_fails_on_raw_component_or_detection_without_count_event():
+    truth = {"status": "CONFIRMED", "provenance": "human_observation",
+             "observer": "observer", "independent_record_reference": "empty-belt-log",
+             "actual_window_entity_count": 0, "window_count_confirmed": True,
+             "empty_belt_first_frame": 0, "empty_belt_last_frame": 0,
+             "empty_belt_observed_frames": 1, "entities": []}
+    frame = {"frame_id": 0, "raw_detections": [{"area": 12}],
+             "detections": [], "associations": [], "events": []}
+    report = evaluate_entities(truth, [frame])
+    assert report["status"] == "FAIL"
+    assert report["false_positive_raw_component_count"] == 1
+    assert report["unmatched_event_count"] == 0
+
+
+def test_ground_truth_missing_independent_fields_and_duplicate_ids_are_not_verified():
+    from copy import deepcopy
+
+    good = {
+        "status": "CONFIRMED", "provenance": "independent_video",
+        "observer": "reviewer", "independent_record_reference": "video.mp4",
+        "actual_window_entity_count": 1, "window_count_confirmed": True,
+        "entities": [{"entity_id": "E1", "entered_detection_window": True,
+                      "insertion_order": 1, "put_in_monotonic_ns": 100,
+                      "first_visible_frame": 0, "last_visible_frame": 5,
+                      "fully_visible": True, "completed_pass": True,
+                      "identity_evidence": "video frame review", "track_ids": [7],
+                      "identity_reviewed": True}],
+    }
+    replay = [{"frame_id": 0, "raw_detections": [], "detections": [],
+               "associations": [], "events": []},
+              {"frame_id": 1, "raw_detections": [], "detections": [], "associations": [],
+               "events": [{"track_id": 7, "frame_id": 1}]}]
+    missing_record = deepcopy(good)
+    missing_record["observer"] = " "
+    assert evaluate_entities(missing_record, replay)["status"] == "NOT VERIFIED"
+    duplicate_rows = deepcopy(good)
+    duplicate_rows["entities"].append(deepcopy(duplicate_rows["entities"][0]))
+    duplicate_rows["actual_window_entity_count"] = 2
+    assert evaluate_entities(duplicate_rows, replay)["status"] == "NOT VERIFIED"
+
+
+def test_event_outside_independent_entity_frame_range_cannot_pass():
+    truth = {
+        "status": "CONFIRMED", "provenance": "independent_video",
+        "observer": "reviewer", "independent_record_reference": "video.mp4",
+        "actual_window_entity_count": 1, "window_count_confirmed": True,
+        "entities": [{"entity_id": "E1", "entered_detection_window": True,
+                      "insertion_order": 1, "put_in_monotonic_ns": 100,
+                      "first_visible_frame": 2, "last_visible_frame": 4,
+                      "fully_visible": True, "completed_pass": True,
+                      "identity_evidence": "video frame review", "track_ids": [7],
+                      "identity_reviewed": True}],
+    }
+    replay = [{"frame_id": i, "raw_detections": [], "detections": [], "associations": [],
+               "events": ([{"track_id": 7, "frame_id": i}] if i == 1 else [])}
+              for i in range(5)]
+    report = evaluate_entities(truth, replay)
+    assert report["status"] == "FAIL"
+    assert report["missed_count"] == 1
+    assert report["unmatched_event_count"] == 1
+    assert report["entities"][0]["out_of_window_event_frames"] == [1]
+
+
+def test_dataset_validator_rejects_manifest_counter_config_tampering(tmp_path):
+    writer = _session(tmp_path, frames=1)
+    metadata = _frame_metadata(0)
+    writer.submit(0, np.zeros((240, 320), np.uint8),
+                  np.zeros((240, 320), np.uint8), metadata)
+    writer.close()
+    manifest_path = tmp_path / "capture" / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["config"]["line_y"] = 121
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="config"):
+        load_dataset(tmp_path / "capture")
+
+
+def test_capture_path_rejects_protected_wo0016_archive(tmp_path):
+    protected = tmp_path / "data" / "results" / "wo0016-sealed" / "new-child"
+    protected.parent.mkdir(parents=True)
+    with pytest.raises(CaptureError, match="protected WO-0016"):
+        CaptureWriter(protected, expected_frames=1,
+                      config={"line_y": 120, "min_area": 12},
+                      max_bytes=1_000_000)
+    assert not protected.exists()
+
+
+def test_replay_records_ground_truth_sha256_when_annotation_is_present(tmp_path):
+    import hashlib
+    from replay_capture_dataset import replay_capture_dataset
+
+    writer = CaptureWriter(tmp_path / "capture", expected_frames=1,
+                           config={"line_y": 120, "min_area": 12},
+                           max_bytes=1_000_000)
+    metadata = _frame_metadata(0)
+    writer.submit(0, np.zeros((240, 320), np.uint8),
+                  np.zeros((240, 320), np.uint8), metadata)
+    assert writer.close()["status"] == "COMPLETE"
+    truth = {"status": "CONFIRMED", "provenance": "human_observation",
+             "observer": "observer", "independent_record_reference": "empty-belt-log",
+             "actual_window_entity_count": 0, "window_count_confirmed": True,
+             "empty_belt_first_frame": 0, "empty_belt_last_frame": 0,
+             "empty_belt_observed_frames": 1, "entities": []}
+    truth_path = tmp_path / "capture" / "ground-truth.json"
+    truth_path.write_text(json.dumps(truth), encoding="utf-8")
+    source_hash = hashlib.sha256(truth_path.read_bytes()).hexdigest()
+
+    report = replay_capture_dataset(tmp_path / "capture")
+
+    assert report["ground_truth_source"]["sha256"] == source_hash
+    assert report["ground_truth_source"]["status"] == "PRESENT"
+    assert report["entity_report"]["status"] == "PASS"
+
+
+def test_writer_timeout_remains_unreadable_even_if_worker_finishes_later(tmp_path, monkeypatch):
+    writer = CaptureWriter(tmp_path / "unstable", expected_frames=1,
+                           config={"line_y": 120, "min_area": 12},
+                           max_bytes=1_000_000)
+    entered = threading.Event()
+    release = threading.Event()
+    original_write = writer._write_frame
+    def blocked_write(item):
+        entered.set()
+        release.wait(timeout=5)
+        return original_write(item)
+    monkeypatch.setattr(writer, "_write_frame", blocked_write)
+    real_join = writer._thread.join
+    writer.submit(0, np.zeros((240, 320), np.uint8),
+                  np.zeros((240, 320), np.uint8), _frame_metadata(0))
+    assert entered.wait(timeout=2)
+    monkeypatch.setattr(writer._thread, "join", lambda timeout=None: None)
+    manifest = writer.close()
+    assert manifest["status"] == "INCOMPLETE"
+    assert manifest["writer_active"] is True
+    with pytest.raises(ValueError, match="not stable"):
+        load_dataset(tmp_path / "unstable", require_complete=False)
+    release.set()
+    real_join(timeout=2)
+    assert not writer._thread.is_alive()
+    with pytest.raises(ValueError, match="not stable"):
+        load_dataset(tmp_path / "unstable", require_complete=False)
+
+
+def test_independently_confirmed_entity_without_track_is_reported_as_missed():
+    truth = {"status": "CONFIRMED", "provenance": "independent_video",
+             "observer": "reviewer", "independent_record_reference": "video.mp4",
+             "actual_window_entity_count": 1, "window_count_confirmed": True,
+             "entities": [{"entity_id": "E-missed", "entered_detection_window": True,
+                           "insertion_order": 1, "put_in_monotonic_ns": 100,
+                           "first_visible_frame": 0, "last_visible_frame": 2,
+                           "fully_visible": True, "completed_pass": True,
+                           "identity_evidence": "reviewer confirms no Track ID was assigned",
+                           "track_ids": [], "identity_reviewed": True}],
+    }
+    replay = [{"frame_id": i, "raw_detections": [], "detections": [],
+               "associations": [], "events": []} for i in range(3)]
+    report = evaluate_entities(truth, replay)
+    assert report["status"] == "FAIL"
+    assert report["missed_count"] == 1
+    assert report["entities"][0]["track_ids"] == []

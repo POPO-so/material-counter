@@ -18,6 +18,7 @@ from stream_counter import (
     BufferState,
     Detection,
     DoubleBufferStream,
+    FrameInput,
     MaskCounter,
     RX_BYTES,
     TX_BYTES,
@@ -914,3 +915,85 @@ def test_roi_row_and_column_projections_match_foreground_pixels():
     assert sum(result.column_projection) == 25
     assert result.row_projection[10] == 5
     assert result.column_projection[80] == 5
+
+
+
+def test_capture_mode_preserves_gray_mask_pairing_across_ping_pong_reuse(tmp_path):
+    from capture_dataset import CaptureWriter, load_dataset
+
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    masks = []
+    grays = []
+    for frame_id in range(5):
+        gray = np.full((240, 320), frame_id + 10, dtype=np.uint8)
+        mask = np.zeros((240, 320), dtype=np.uint8)
+        mask[100 + frame_id:105 + frame_id, 20 + frame_id:25 + frame_id] = 255
+        grays.append(gray.copy())
+        masks.append(mask)
+    dma = MockDma(masks)
+    writer = CaptureWriter(tmp_path / "capture", expected_frames=5,
+                           config={"line_y": 120, "min_area": 12},
+                           max_bytes=2_000_000, queue_depth=5)
+
+    async def source():
+        for frame_id, gray in enumerate(grays):
+            yield FrameInput(gray, frame_id, 10_000 + frame_id,
+                             20_000 + frame_id, 1.25)
+
+    def capture(result, slot):
+        from test_capture_dataset import _frame_metadata
+        writer.submit(result.frame_id, slot.capture_gray, slot.capture_mask, {
+            **_frame_metadata(result.frame_id),
+            **slot.capture_metadata,
+            "frame_id": result.frame_id,
+            "dma_slot_index": slot.index,
+            "dma_complete_monotonic_ns": slot.dma_complete_monotonic_ns,
+            "dma_status": {"frame_id": result.frame_id, "state": "IDLE"},
+            "packer_status": {"frame_id": result.frame_id, "validation": "PASS"},
+        })
+
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel, send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers, rx_buffers=rx_buffers, counter=MaskCounter(),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        capture_callback=capture,
+        on_frame=lambda result, mask: (dma.release_frame1.set() if result.frame_id == 0 else None,
+                                       mask.fill(0)),
+        transfer_timeout_s=1.0,
+    )
+    results = asyncio.run(stream.run(source()))
+    manifest = writer.close()
+    assert manifest["status"] == "COMPLETE"
+    assert [result.frame_id for result in results] == list(range(5))
+    reference = MaskCounter()
+    expected_results = [reference.update(frame_id, mask)
+                        for frame_id, mask in enumerate(masks)]
+    assert [result.total_count for result in results] == [
+        result.total_count for result in expected_results]
+    assert [result.detections for result in results] == [
+        result.detections for result in expected_results]
+    _, stored = load_dataset(tmp_path / "capture")
+    for frame_id, frame in enumerate(stored):
+        np.testing.assert_array_equal(frame.gray, grays[frame_id])
+        np.testing.assert_array_equal(frame.mask, masks[frame_id])
+        assert frame.metadata["source_sequence"] == frame_id
+        assert frame.metadata["dma_slot_index"] == frame_id % 2
+        assert frame.metadata["dma_complete_monotonic_ns"] is not None
+
+
+def test_capture_disabled_allocates_no_gray_snapshots():
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    dma = MockDma([_mask(120)])
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel, send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers, rx_buffers=rx_buffers, counter=MaskCounter(),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        transfer_timeout_s=1.0,
+    )
+
+    asyncio.run(stream.run(_frames(1)))
+
+    assert all(slot.capture_gray is None and slot.capture_mask is None
+               for slot in stream.slots)

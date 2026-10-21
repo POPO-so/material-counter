@@ -31,6 +31,22 @@ ROI extraction uses the cached 320-pixel-wide slice spanning 49 rows around the 
 
 For a board run, launch the PYNQ interpreter with `sudo -n env XILINX_XRT=/usr`; the selected value is included in the JSON evidence.
 
+## WO-0017 optional raw capture
+
+The guarded board runner can opt in to a separate lossless dataset with `--capture-dir <new-directory>`; capture remains disabled by default. Also set a finite `--max-frames` and, when needed, `--capture-max-bytes` (default 64 MiB). The output path must not already exist and its parent must have enough free space. Paths inside sealed `data/results/wo0016-*` archives are rejected. The Stage B-2 one-shot permit binds the capture path, byte limit, and fixed queue depth when capture is enabled.
+
+Each frame stores the exact 320×240 Gray8 array handed to the packet encoder and the same slot's raw S2MM Binary8 output after sync/copy, as uncompressed `.npy` files. Frame IDs and host timestamps identify the camera input and slot pairing; the mask does not echo a frame ID from hardware. A bounded writer queue (depth 2) performs file writes outside the counter callback. Queue overflow, write errors, or a short frame set fail the capture run; the dataset cannot be presented as complete. When DMA is idle its manifest is finalized as `INCOMPLETE`; if ownership is uncertain, fail-hold takes priority, run evidence records `INCOMPLETE_FAIL_HOLD`, and the manifest remains non-`COMPLETE`. Evidence is never silently discarded. The manifest includes the counter configuration, threshold, schema, hashes, and capacity state. Every frame record carries the manifest config digest; the loader rejects a top-level config that differs from hash-covered frame snapshots. A ground-truth template is created alongside the arrays.
+
+Validate and replay only complete datasets from the repository root:
+
+```powershell
+python scripts/wo0016/replay_capture_dataset.py <dataset-directory> --output <new-replay.json>
+```
+
+The replay reads the saved raw masks through the baseline `MaskCounter`; it does not reconstruct masks from previews. The Python API accepts a future counter factory so the same stored masks can be compared against a later V2 implementation. Entity-level PASS requires an independent observer/video record, full-pass visibility, unique entity IDs, in-range frame intervals, and manually reviewed entity-to-Track-ID links. Events outside an entity interval cannot satisfy it. A reviewed empty Track ID list records an independently confirmed miss. Empty-belt PASS requires zero raw components, detections, and events in the independently confirmed interval. Replay output records the Ground Truth SHA-256. Missing or incomplete Ground Truth is `NOT VERIFIED`.
+
+Capture is not proof that the hardware mask carries an echoed frame ID, nor is a software-synthetic dataset board evidence. Review the current capture report and hardware checklist before any separate board authorization.
+
 ## Evidence boundary
 
 The offline simulation is not camera, conveyor, M6 nut/washer accuracy, or FPGA board evidence. Record physical measurements only in [`WO-0016 board acceptance`](../../docs/verification/wo-0016-board-acceptance.md). Current offline results are in [`verification report`](../../data/results/wo0016-offline-20261017/verification-report.md).

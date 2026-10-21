@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "status": "REPLAY_COMPLETE",
+  "algorithm": "baseline",
+  "dataset_source_type": "synthetic_software_test_only",
+  "dataset_records_sha256": "baa44bcc64b66e7806bfd31ce505f8a2374584cd09491b673b8d2aec9581c246",
+  "frame_count": 1,
+  "total_count": 0,
+  "frames": [
+    {
+      "frame_id": 0,
+      "total_count": 0,
+      "roi": {
+        "top": 96,
+        "bottom_exclusive": 145
+      },
+      "raw_detections": [
+        {
+          "x_min": 145,
+          "x_max": 160,
+          "y_min": 112,
+          "y_max": 127,
+          "area": 256,
+          "centroid_x": 152.5,
+          "centroid_y": 119.5
+        }
+      ],
+      "detections": [
+        {
+          "x_min": 145,
+          "x_max": 160,
+          "y_min": 112,
+          "y_max": 127,
+          "area": 256,
+          "centroid_x": 152.5,
+          "centroid_y": 119.5
+        }
+      ],
+      "associations": [
+        {
+          "track_id": 1,
+          "detection_index": 0,
+          "previous_frame": null,
+          "kind": "new",
+          "dx": null,
+          "dy": null
+        }
+      ],
+      "tracks": [
+        {
+          "track_id": 1,
+          "detection": {
+            "x_min": 145,
+            "x_max": 160,
+            "y_min": 112,
+            "y_max": 127,
+            "area": 256,
+            "centroid_x": 152.5,
+            "centroid_y": 119.5
+          },
+          "last_frame": 0,
+          "streak": 1,
+          "confirmed": false,
+          "armed": false,
+          "counted": true,
+          "missed": 0,
+          "finished": false,
+          "forward_velocity": null
+        }
+      ],
+      "events": [],
+      "suppressed_events": [],
+      "roi_foreground_pixels": 256,
+      "ccl_executed": true
+    }
+  ],
+  "performance": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10",
+    "input": "verified stored raw Binary8 NPY masks",
+    "frames": 1,
+    "elapsed_ms": 0.2198,
+    "mean_replay_ms_per_frame": 0.2198,
+    "statistic": "single sequential replay wall time; not board real-time performance"
+  },
+  "ground_truth_source": {
+    "path": "ground-truth.json",
+    "sha256": null,
+    "status": "ABSENT"
+  },
+  "entity_report": {
+    "status": "NOT VERIFIED",
+    "reason": "no independent ground-truth.json annotation is present",
+    "entities": [],
+    "duplicate_count": null,
+    "missed_count": null,
+    "wrong_merge_count": null,
+    "unmatched_event_count": null
+  }
+}
