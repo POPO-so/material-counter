@@ -1,5 +1,5 @@
 {
-  "scope": "Current repository support-file integrity after 2026-10-22 reconciliation; excludes its own hash. Historical board receipts and acceptance outcomes are unchanged.",
+  "scope": "Current repository support-file integrity after 2026-10-22 reconciliation and recovery of the original WO-0014 manifest; excludes its own hash. Historical board receipts and acceptance outcomes are unchanged.",
   "reconciled_on": "2026-10-22 Asia/Shanghai",
   "historical_manifest_ref": "6a845a01f73e44ac6237c47233b42d95a9e9c943:data/results/submission-audit-20261015/support-files.json",
   "files": [
@@ -9,59 +9,14 @@
       "bytes": 4483
     },
     {
-      "path": "fpga/scripts/THIRD_PARTY_NOTICES.md",
-      "sha256": "7e7cc7dd1f80d7d38d4b6ac9e3f1dd35aa456e5a0b9e972ce72c174633b2d876",
-      "bytes": 2026
-    },
-    {
-      "path": "README.md",
-      "sha256": "ba1b2e298c46c4a3771a3f36e83d9eac1d4571ccb147a1e609931563fff47b61",
-      "bytes": 14836
-    },
-    {
       "path": "PROJECT_INDEX.md",
       "sha256": "6c093ed603f9acf0df768cb4ee8095be1248064c4cb5a3270ab1e9161ad5ba89",
       "bytes": 6336
     },
     {
-      "path": "python/synth/generate.py",
-      "sha256": "faebc536e91f755b7ad882918081c49142d5045f0370abb108bdb77fde9e61c2",
-      "bytes": 10880
-    },
-    {
-      "path": "python/synth/tests/test_generate.py",
-      "sha256": "2b056aa55ada0f417a63c7e33c2f023d4cf4bf4be50c9c074c12fe74b04ad5d0",
-      "bytes": 14718
-    },
-    {
-      "path": "docs/verification/submission-delivery-plan-20261015.md",
-      "sha256": "d4d4cb00422a4c6140d44cd779c3ee5ee52781df53b02f27d6f4beda6f5d8a4f",
-      "bytes": 2151
-    },
-    {
-      "path": "docs/verification/submission-status-20261015.md",
-      "sha256": "f41a49373878272d455a5a4235b9130cd2dec0e0b1360c4159eb799e2f4afe0f",
-      "bytes": 16093
-    },
-    {
-      "path": "scripts/delivery/prepare_replay.py",
-      "sha256": "ebb27d0558c0c6fced4dbe14b5258ef7abe2a392ffd3e9ec73436cdc98def5b5",
-      "bytes": 11779
-    },
-    {
-      "path": "scripts/delivery/verify_delivery.py",
-      "sha256": "16b2817cb4eb66792e973282bb1df3307ae4a64e0be923b08ee0ee001471d338",
-      "bytes": 4319
-    },
-    {
-      "path": "scripts/delivery/REPLAY.md",
-      "sha256": "42217d06fe15699e41b9a71e3167e0119350c90527837f22e7e688184da2864c",
-      "bytes": 4394
-    },
-    {
-      "path": "scripts/delivery/requirements.txt",
-      "sha256": "56338ed1b4ebd217a9d38d769431ee131b91e5aae3feb5194689cf3ee8be8e31",
-      "bytes": 144
+      "path": "README.md",
+      "sha256": "ba1b2e298c46c4a3771a3f36e83d9eac1d4571ccb147a1e609931563fff47b61",
+      "bytes": 14836
     },
     {
       "path": "data/results/submission-audit-20261015/delivery-revisions.json",
@@ -79,14 +34,14 @@
       "bytes": 4912
     },
     {
-      "path": "data/results/submission-audit-20261015/verification.json",
-      "sha256": "3bd2d815af134d6b299c9ebf5181a287f4f6705059943b2893e7dbdbb76dfb42",
-      "bytes": 1696
-    },
-    {
       "path": "data/results/submission-audit-20261015/replay-preparation-checks.json",
       "sha256": "35eb092e50b4c0f3372fb19099b2cf03046c46f6f7f61d0eba55864b719a77c4",
       "bytes": 4796
+    },
+    {
+      "path": "data/results/submission-audit-20261015/verification.json",
+      "sha256": "3bd2d815af134d6b299c9ebf5181a287f4f6705059943b2893e7dbdbb76dfb42",
+      "bytes": 1696
     },
     {
       "path": "data/results/wo0015-final-20261017/acceptance-report.md",
@@ -94,9 +49,79 @@
       "bytes": 3112
     },
     {
+      "path": "docs/verification/submission-delivery-plan-20261015.md",
+      "sha256": "d4d4cb00422a4c6140d44cd779c3ee5ee52781df53b02f27d6f4beda6f5d8a4f",
+      "bytes": 2151
+    },
+    {
+      "path": "docs/verification/submission-status-20261015.md",
+      "sha256": "f41a49373878272d455a5a4235b9130cd2dec0e0b1360c4159eb799e2f4afe0f",
+      "bytes": 16093
+    },
+    {
       "path": "docs/verification/submission-status-20261018.md",
       "sha256": "4cc0a48cabc819d1d19bbded9e2768f528a05539cac9d05729fe1c9b7bd2ea3c",
       "bytes": 4126
+    },
+    {
+      "path": "docs/verification/wo0016-asset-archive-20261022/recovered-manifest-provenance.json",
+      "sha256": "ec86b4133fdd972a148ad7298f344246c687ed894b9a53c9a4874a9c83d4a86c",
+      "bytes": 1328
+    },
+    {
+      "path": "fpga/scripts/THIRD_PARTY_NOTICES.md",
+      "sha256": "7e7cc7dd1f80d7d38d4b6ac9e3f1dd35aa456e5a0b9e972ce72c174633b2d876",
+      "bytes": 2026
+    },
+    {
+      "path": "python/synth/generate.py",
+      "sha256": "faebc536e91f755b7ad882918081c49142d5045f0370abb108bdb77fde9e61c2",
+      "bytes": 10880
+    },
+    {
+      "path": "python/synth/tests/test_generate.py",
+      "sha256": "2b056aa55ada0f417a63c7e33c2f023d4cf4bf4be50c9c074c12fe74b04ad5d0",
+      "bytes": 14718
+    },
+    {
+      "path": "scripts/delivery/REPLAY.md",
+      "sha256": "42217d06fe15699e41b9a71e3167e0119350c90527837f22e7e688184da2864c",
+      "bytes": 4394
+    },
+    {
+      "path": "scripts/delivery/prepare_replay.py",
+      "sha256": "ebb27d0558c0c6fced4dbe14b5258ef7abe2a392ffd3e9ec73436cdc98def5b5",
+      "bytes": 11779
+    },
+    {
+      "path": "scripts/delivery/requirements.txt",
+      "sha256": "56338ed1b4ebd217a9d38d769431ee131b91e5aae3feb5194689cf3ee8be8e31",
+      "bytes": 144
+    },
+    {
+      "path": "scripts/delivery/verify_delivery.py",
+      "sha256": "b2f9851a9b1630ea0ba8660e702f5f8206337944ee9655b0e2b9774a94b73fd1",
+      "bytes": 4588
+    },
+    {
+      "path": "scripts/wo0015/fixtures/.gitattributes",
+      "sha256": "3fefb8b6b36d185faec8fc6815ed4b75b2a8040755011ffb161adc83da167ba2",
+      "bytes": 66
+    },
+    {
+      "path": "scripts/wo0015/fixtures/README.md",
+      "sha256": "a932b08447f97c1c99f9fb482890e4acd1fc96cf077f3e66db20e26b95e4dbbd",
+      "bytes": 954
+    },
+    {
+      "path": "scripts/wo0015/fixtures/wo0014-h3-source-manifest.json",
+      "sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+      "bytes": 192452
+    },
+    {
+      "path": "scripts/wo0015/test_vectors.py",
+      "sha256": "cab98d76a01e5e0f1d71fe8d278d05f082195a1a3c19e4b73d57198422eed5aa",
+      "bytes": 4093
     }
   ]
 }

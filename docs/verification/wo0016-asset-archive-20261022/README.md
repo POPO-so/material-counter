@@ -27,7 +27,7 @@
 
 WO-0015 验收报告的 helper 源码哈希修正完整迁入；两个 helper 在 main、收口工作树及祖先 `b1cf74a` 中的 SHA-256 已复核一致。10 月 15 日的历史标注及 10 月 18 日状态报告已迁入，两份报告增补当前状态提示，正文当时的 NOT RUN、旧测试和清单失配陈述仍作为历史记录保留。README 保持 `6a845a0` 字节；PROJECT_INDEX 保留 Stage B-2 最新状态并添加本记录入口。原 README/索引字节保存在归档提交中。
 
-详见 [文档迁移映射](document-migration.json)。`support-files.json` 的 17 条旧记录中 5 条同步为当前哈希，并加入验收报告和 10 月 18 日状态报告，共 19 条；[清单修订记录](support-reconciliation.json) 保留原值和历史 Git 引用。`verify_delivery.py` 的 319 项、5 批次核验 PASS，另行复核 19 条支持文件 PASS。原始实测 CSV、JSON、图像及二进制产物没有被改写。
+详见 [文档迁移映射](document-migration.json)。`support-files.json` 在本轮归档时由 17 条旧记录校准为 19 条。找回原始 WO-0014 manifest 后又增加 5 条夹具/测试/来源记录并更新交付校验器哈希，共 24 条；[清单修订记录](support-reconciliation.json) 保留各阶段记录和历史 Git 引用。`verify_delivery.py` 的 319 项、5 批次核验 PASS，另行复核 24 条支持文件。原始实测 CSV、JSON、图像及二进制产物没有被改写。
 
 ## 83 个准备文件的重复性
 
@@ -45,7 +45,7 @@ WO-0015 验收报告的 helper 源码哈希修正完整迁入；两个 helper �
 
 stash 第三父中的历史材料代表包括 `scripts/wo0014_hw/diagnostic50_implicit_audit/` 下的源码与测试、`docs/verification/wo-0013-phase-a-report.md`、`data/results/wo0014-diagnostic50-hardening-20261014/` 的原始诊断输出。它们具有来源追溯价值；本轮没有运行这些历史脚本，也没有重新认定历史实验有效性。
 
-本次新增发现：stash 第三父中找回了原始 `data/results/wo0014-offline-20261014/vectors/manifest.json`（192,452 字节），SHA-256 为 `8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d`，与历史声明完全相符。已保存[原件逐字节副本](recovered-wo0014-original-manifest.json)及[来源复核](recovered-manifest-provenance.json)，外部备份另有同样副本。该发现补充此前“原件未找到”的检索结论；本轮未替换既有回归夹具或改动运行代码，也不改变任何实验验收结论。
+本次新增发现：stash 第三父中找回了原始 `data/results/wo0014-offline-20261014/vectors/manifest.json`（192,452 字节），SHA-256 为 `8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d`，与历史声明完全相符。已保存[原件逐字节副本](recovered-wo0014-original-manifest.json)及[来源复核](recovered-manifest-provenance.json)，并将同一原件用作 `scripts/wo0015/fixtures/wo0014-h3-source-manifest.json`。`test_vectors.py` 直接校验原件大小、SHA-256 并验证 487 帧 PNG 索引；`verify_delivery.py` 也绑定该夹具的哈希与字节数。
 
 三者完整可达对象图已从共享对象库只读复制到仓库外 `dangling-history/complete-reachable-history.pack` 与 `.idx`，共 11,700 个不同对象；严格 index-pack 与 verify-pack 均通过。没有创建救援 refs，也没有导入、重写或清理共享对象。[外部包校验记录](dangling-pack-verification.json) 记录 SHA-256；完整树清单留在外部备份中，路径和哈希载于机器报告。
 

@@ -26,14 +26,15 @@ class VectorContractTests(unittest.TestCase):
         h3_root, manifest_path = resolve_inputs(REPO_ROOT, None, None)
         fixture_path = REPO_ROOT / "scripts/wo0015/fixtures/wo0014-h3-source-manifest.json"
         self.assertEqual(manifest_path, fixture_path.resolve())
-        fixture = json.loads(manifest_path.read_text(encoding="utf-8"))
-        provenance = fixture["fixture_provenance"]
-        self.assertEqual(provenance["kind"], "reconstructed_offline_test_fixture")
+        raw_manifest = manifest_path.read_bytes()
+        self.assertEqual(len(raw_manifest), 192452)
         self.assertEqual(
-            provenance["original_manifest_sha256_reference"],
+            hashlib.sha256(raw_manifest).hexdigest(),
             "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
         )
-        self.assertIn("not the original manifest bytes", provenance["claim_limit"])
+        fixture = json.loads(raw_manifest)
+        self.assertEqual(fixture["threshold"], 128)
+        self.assertEqual(fixture["h3"]["frames"], 487)
         self.assertEqual(
             fixture["h3"]["input_sha256"],
             "ad5a5e5ca5bd95c41df900cc72ef0e1096dffa255d5e698ff904018e5fab1391",

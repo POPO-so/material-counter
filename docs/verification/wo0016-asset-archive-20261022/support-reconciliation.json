@@ -82,5 +82,43 @@
     }
   ],
   "current_record_count": 19,
-  "current_manifest_sha256": "65787627cfc8b77d33107a2675c858861d3e41ae3b31db3229f037ec7de55585"
+  "current_manifest_sha256": "65787627cfc8b77d33107a2675c858861d3e41ae3b31db3229f037ec7de55585",
+  "subsequent_recovery_update": {
+    "date": "2026-10-22",
+    "reason": "Recovered original WO-0014 manifest promoted to canonical offline fixture with direct regression and delivery hash checks.",
+    "added_records": [
+      {
+        "path": "scripts/wo0015/test_vectors.py",
+        "sha256": "cab98d76a01e5e0f1d71fe8d278d05f082195a1a3c19e4b73d57198422eed5aa",
+        "bytes": 4093
+      },
+      {
+        "path": "scripts/wo0015/fixtures/.gitattributes",
+        "sha256": "3fefb8b6b36d185faec8fc6815ed4b75b2a8040755011ffb161adc83da167ba2",
+        "bytes": 66
+      },
+      {
+        "path": "scripts/wo0015/fixtures/README.md",
+        "sha256": "a932b08447f97c1c99f9fb482890e4acd1fc96cf077f3e66db20e26b95e4dbbd",
+        "bytes": 954
+      },
+      {
+        "path": "scripts/wo0015/fixtures/wo0014-h3-source-manifest.json",
+        "sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+        "bytes": 192452
+      },
+      {
+        "path": "docs/verification/wo0016-asset-archive-20261022/recovered-manifest-provenance.json",
+        "sha256": "ec86b4133fdd972a148ad7298f344246c687ed894b9a53c9a4874a9c83d4a86c",
+        "bytes": 1328
+      }
+    ],
+    "current_record_count": 24,
+    "current_manifest_sha256": "0eca9b2196dce0c1cf44c7e77b421b3e6bb1b1fb4590da0fca94371c4f88da9c",
+    "updated_existing_record": {
+      "path": "scripts/delivery/verify_delivery.py",
+      "sha256": "b2f9851a9b1630ea0ba8660e702f5f8206337944ee9655b0e2b9774a94b73fd1",
+      "bytes": 4588
+    }
+  }
 }

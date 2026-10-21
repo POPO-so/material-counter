@@ -10,6 +10,10 @@
   "external_exact_copy": "C:\\fpga\\material-counter-asset-archive-20261022\\dangling-history\\recovered-wo0014-original-manifest.json",
   "tracked_archival_copy": "recovered-wo0014-original-manifest.json",
   "original_object_store_read_only": true,
-  "current_canonical_fixture_or_runtime_code_changed": false,
-  "interpretation": "Recovered original source manifest; documentary provenance only. Does not change any hardware or acceptance result."
+  "current_canonical_fixture_or_runtime_code_changed": true,
+  "interpretation": "Recovered original source manifest is now the canonical offline fixture. This does not change any hardware or acceptance result.",
+  "canonical_fixture_path": "scripts/wo0015/fixtures/wo0014-h3-source-manifest.json",
+  "direct_regression": "scripts/wo0015/test_vectors.py::test_default_offline_manifest_is_a_traceable_canonical_fixture; pins exact bytes/SHA-256 and validates 487 PNG records",
+  "delivery_integrity": "scripts/delivery/verify_delivery.py checks exact fixture SHA-256 and byte count",
+  "runtime_code_changed": false
 }

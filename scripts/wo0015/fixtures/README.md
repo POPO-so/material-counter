@@ -1,15 +1,5 @@
-# WO-0014 H3 source inventory fixture
+# WO-0014 H3 source manifest fixture
 
-`wo0014-h3-source-manifest.json` is a reconstructed offline test fixture. The original
-ignored file at `data/results/wo0014-offline-20261014/vectors/manifest.json` was not
-present in the main checkout, Git history, or any inspected archive. The tracked
-WO-0015 generated vector manifest records the original source-manifest SHA-256 as
-`8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d`.
+`wo0014-h3-source-manifest.json` is the original WO-0014 source manifest recovered byte for byte from the third parent of dangling stash commit `71c3917dc2db8b5724c5cb6cff639912edff569f` (third parent `04b3b8ee481c5bf332b5c864c5c36729bfdcc99b`). Its original repository path was `data/results/wo0014-offline-20261014/vectors/manifest.json`, Git blob `64fe82a671cb885046d4b0f6e845a4be68aa676b`, size 192452 bytes, SHA-256 `8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d`. The same bytes and source proof are archived under `docs/verification/wo0016-asset-archive-20261022/`.
 
-The fixture inventory was rebuilt from the 487 existing H3 Gray8 PNGs. Each record
-contains the path, SHA-256 of the actual PNG bytes, and verified 320x240 `L` image
-metadata. Offline vector tests re-read and hash all 487 files. The fixture file
-SHA-256 is `63b307d5e6bd811e08a2f2558a30cbae7acf5bd513f3683f0abf74d2abc1dc86`.
-
-This is not the original manifest's bytes and is not experimental evidence. It is
-only a hash-checked input inventory for deterministic offline vector regression.
+The offline WO-0015 vector test pins the fixture byte count and SHA-256, then validates all 487 referenced H3 PNG paths, image metadata, and file hashes against the local dataset. This is a canonical source input for offline regression; it does not change or supplement any Stage B-2 physical-material acceptance evidence.

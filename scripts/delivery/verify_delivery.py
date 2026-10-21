@@ -28,6 +28,12 @@ def check(path, expected, expected_bytes=None):
 
 
 def main():
+    # Keep the recovered original WO-0014 source manifest bound into offline delivery checks.
+    check(
+        "scripts/wo0015/fixtures/wo0014-h3-source-manifest.json",
+        "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+        192452,
+    )
     batches = sorted(RESULT.glob("batch-*.json"))
     require(len(batches) == 5, "Expected all five delivery inventories")
     count = 0
