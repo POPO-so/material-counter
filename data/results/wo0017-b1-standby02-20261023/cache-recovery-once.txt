@@ -1,0 +1,8 @@
+BEFORE {"MemFree": 42716, "MemAvailable": 430192, "Cached": 330272, "CmaTotal": 131072, "CmaFree": 21404}
+FUSER_BEFORE 1 
+DEVICE_EXISTS /dev/video0 True
+DEVICE_EXISTS /dev/fpga0 True
+DROP_CACHES_ONCE sync then write 3
+AFTER {"MemFree": 375144, "MemAvailable": 430604, "Cached": 59204, "CmaTotal": 131072, "CmaFree": 121556}
+DMA_STATUS {"MM2S": "0x00000001", "S2MM": "0x00000001"}
+CACHE_RECOVERY_PASS 35983d66-bb1d-4a8a-85e5-802170825515

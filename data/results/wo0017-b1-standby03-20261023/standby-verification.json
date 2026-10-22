@@ -1,0 +1,34 @@
+{
+  "status": "READY_PREFLIGHT_STANDBY_NO_CAMERA_NO_DMA",
+  "pid": 27585,
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "memory_kib": {
+    "MemFree": 216924,
+    "MemAvailable": 396700,
+    "Cached": 177856,
+    "CmaTotal": 131072,
+    "CmaFree": 108504
+  },
+  "dma_status": {
+    "MM2S": "0x00000001",
+    "S2MM": "0x00000001"
+  },
+  "gate_state": {
+    "phase": "READY",
+    "seconds_remaining": null,
+    "feed_number": null,
+    "sampling_elapsed_s": null,
+    "permit_sha256": "c229a1ef7926828c06744e93959c60daedb09393e5a23123662506d3a5ee8405",
+    "permit_binding_required": true,
+    "result": null
+  },
+  "import_trace_pynq_xrt_modules": [],
+  "hardware_fds": [],
+  "permit_consumed": false,
+  "capture_exists": false,
+  "old01_old02_hashes_preserved": true,
+  "ready_path": "/var/lib/wo0017/35983d66-bb1d-4a8a-85e5-802170825515/b1/ready.json",
+  "ready_sha256": "387f2baf4542711c4459d60d7977a103e65ef7bd79293378fc1f50eff18fedff",
+  "permit_path": "/var/lib/wo0017/35983d66-bb1d-4a8a-85e5-802170825515/b1/attempts/b1-empty-03/attempt-permit.json",
+  "permit_sha256": "c229a1ef7926828c06744e93959c60daedb09393e5a23123662506d3a5ee8405"
+}

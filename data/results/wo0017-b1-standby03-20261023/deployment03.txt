@@ -1,0 +1,1 @@
+{"status": "NEW03_DEPLOYED_HASH_PASS", "runtime_files": 12, "receipt_snapshot_byte_identical": true, "old_attempts_preserved": ["formal-b1-20261022-01", "formal-b1-20261023-02"]}

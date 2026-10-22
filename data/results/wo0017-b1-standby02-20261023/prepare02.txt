@@ -1,0 +1,12 @@
+{"checkpoint": "before_runner_import", "memory_kib": {"MemFree": 365972, "MemAvailable": 430364, "Cached": 65672, "CmaTotal": 131072, "CmaFree": 122984}, "pynq_xrt_modules": [], "hardware_fds": []}
+{"checkpoint": "after_runner_import", "memory_kib": {"MemFree": 239628, "MemAvailable": 401720, "Cached": 160960, "CmaTotal": 131072, "CmaFree": 119864}, "pynq_xrt_modules": [], "hardware_fds": []}
+Traceback (most recent call last):
+  File "/home/xilinx/wo0017/formal-b1-20261023-02/prepare_b1.py", line 88, in <module>
+    formal = runner.formal_capture_context(args, plan)
+  File "/home/xilinx/wo0017/formal-b1-20261023-02/app/run_stream_counter.py", line 826, in formal_capture_context
+    receipt = validate_stage1_receipt(args.stage1_receipt, args.stage1_receipt_sha256, plan)
+  File "/home/xilinx/wo0017/formal-b1-20261023-02/app/wo0017_capture_profile.py", line 230, in validate_stage1_receipt
+    raw = _read_stage1_receipt(path, expected_uid=expected_uid)
+  File "/home/xilinx/wo0017/formal-b1-20261023-02/app/wo0017_capture_profile.py", line 122, in _read_stage1_receipt
+    raise RuntimeError("Stage 1 receipt and parent must have the expected owner")
+RuntimeError: Stage 1 receipt and parent must have the expected owner

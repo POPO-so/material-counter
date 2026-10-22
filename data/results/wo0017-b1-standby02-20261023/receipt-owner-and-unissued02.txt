@@ -1,0 +1,4 @@
+STAT /home/xilinx/wo0017/stage1-attempt-root-02-35983d66-bb1d-4a8a-85e5-802170825515 uid 1000 gid 1000 mode 0o700
+STAT /home/xilinx/wo0017/stage1-attempt-root-02-35983d66-bb1d-4a8a-85e5-802170825515/receipt.json uid 0 gid 0 mode 0o600
+ORIGINAL_RECEIPT_SHA256 b3dfa4788dac8ac3b1b867846fe7f654cc41ef1e49de29f5facd161994fa7d74
+{"root02_current_manifest": true, "ready_exists": false, "permit_exists": false, "consumed_exists": false, "launch_claimed": false}
