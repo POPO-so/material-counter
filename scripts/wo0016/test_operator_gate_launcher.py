@@ -158,6 +158,53 @@ def test_control_page_does_not_disclose_passcode_and_click_starts_once(monkeypat
         stop_server(server, thread)
 
 
+def test_dashboard_binds_permit_hash_without_disclosing_passcode(monkeypatch):
+    digest = "a" * 64
+    gate, server, thread, url = start_server(monkeypatch, "out-of-band-secret")
+    try:
+        gate.bind_permit_sha256(digest)
+        page = urllib.request.urlopen(url).read().decode()
+        status = json.load(urllib.request.urlopen(url + "/status"))
+
+        assert "out-of-band-secret" not in page
+        assert "out-of-band-secret" not in json.dumps(status)
+        assert "s.permit_sha256" in page
+        assert status["permit_sha256"] == digest
+        assert digest not in page
+    finally:
+        stop_server(server, thread)
+
+
+def test_permit_hash_binding_rejects_non_sha256_values():
+    gate = OperatorGate()
+    for value in ("", "not-a-digest", "A" * 64, "a" * 63):
+        try:
+            gate.bind_permit_sha256(value)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("only a lowercase SHA-256 digest may be bound")
+
+
+def test_stageb2_gate_cannot_enter_ready_before_permit_hash_is_bound():
+    gate = OperatorGate(require_permit_sha256=True)
+    try:
+        gate.mark_ready()
+    except RuntimeError as error:
+        assert "permit SHA-256" in str(error)
+    else:
+        raise AssertionError("a Stage B-2 gate must fail closed without permit binding")
+    gate.bind_permit_sha256("b" * 64)
+    gate.mark_ready()
+    assert gate.snapshot()["phase"] == "READY"
+    try:
+        gate.bind_permit_sha256("c" * 64)
+    except RuntimeError as error:
+        assert "already bound" in str(error)
+    else:
+        raise AssertionError("permit identity must not be rebound during the run")
+
+
 def test_start_rejects_missing_and_wrong_passcodes_without_starting_gate(monkeypatch):
     gate, server, thread, url = start_server(monkeypatch, "correct-passcode")
     gate.mark_ready()

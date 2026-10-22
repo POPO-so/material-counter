@@ -935,6 +935,7 @@ def test_capture_mode_preserves_gray_mask_pairing_across_ping_pong_reuse(tmp_pat
     writer = CaptureWriter(tmp_path / "capture", expected_frames=5,
                            config={"line_y": 120, "min_area": 12},
                            max_bytes=2_000_000, queue_depth=5)
+    copy_events = []
 
     async def source():
         for frame_id, gray in enumerate(grays):
@@ -953,10 +954,19 @@ def test_capture_mode_preserves_gray_mask_pairing_across_ping_pong_reuse(tmp_pat
             "packer_status": {"frame_id": result.frame_id, "validation": "PASS"},
         })
 
+    def after_transfer(frame_id, _slot):
+        copy_events.append(("dma-complete", frame_id))
+
+    def capture_raw_frame(frame_id, gray, mask):
+        copy_events.append(("raw-copy", frame_id))
+        writer.record_raw_frame(frame_id, gray, mask)
+
     stream = DoubleBufferStream(
         recv_channel=dma.recvchannel, send_channel=dma.sendchannel,
         tx_buffers=tx_buffers, rx_buffers=rx_buffers, counter=MaskCounter(),
         packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        after_transfer=after_transfer,
+        raw_capture_callback=capture_raw_frame,
         capture_callback=capture,
         on_frame=lambda result, mask: (dma.release_frame1.set() if result.frame_id == 0 else None,
                                        mask.fill(0)),
@@ -965,6 +975,10 @@ def test_capture_mode_preserves_gray_mask_pairing_across_ping_pong_reuse(tmp_pat
     results = asyncio.run(stream.run(source()))
     manifest = writer.close()
     assert manifest["status"] == "COMPLETE"
+    assert copy_events == [event for frame_id in range(5)
+                           for event in (("dma-complete", frame_id), ("raw-copy", frame_id))]
+    np.testing.assert_array_equal(writer.raw_gray8, np.stack(grays))
+    np.testing.assert_array_equal(writer.raw_binary8, np.stack(masks))
     assert [result.frame_id for result in results] == list(range(5))
     reference = MaskCounter()
     expected_results = [reference.update(frame_id, mask)
@@ -996,4 +1010,162 @@ def test_capture_disabled_allocates_no_gray_snapshots():
     asyncio.run(stream.run(_frames(1)))
 
     assert all(slot.capture_gray is None and slot.capture_mask is None
+               and slot.preview_gray is None
                for slot in stream.slots)
+
+
+def test_bbox_gap_union_find_merges_split_components_with_area_weighted_centroid():
+    counter = MaskCounter(count_axis="x", component_cluster_gap=16)
+    components = [
+        Detection(100, 103, 108, 117, 40, 101.5, 112.5),
+        Detection(118, 121, 108, 122, 60, 119.5, 115.0),
+    ]
+
+    result = counter.update_detections(0, components)
+
+    assert len(result.raw_detections) == 2
+    assert len(result.detections) == 1
+    merged = result.detections[0]
+    assert (merged.x_min, merged.x_max, merged.y_min, merged.y_max) == (100, 121, 108, 122)
+    assert merged.area == 100
+    assert merged.centroid_x == pytest.approx((40 * 101.5 + 60 * 119.5) / 100)
+
+
+def test_bbox_gap_union_find_uses_transitive_component_links():
+    counter = MaskCounter(count_axis="x", component_cluster_gap=16)
+    components = [
+        Detection(x, x + 3, 110, 119, 40, x + 1.5, 114.5)
+        for x in (100, 118, 136)
+    ]
+
+    result = counter.update_detections(0, components)
+
+    assert len(result.detections) == 1
+    assert result.detections[0].x_min == 100
+    assert result.detections[0].x_max == 139
+    assert result.detections[0].area == 120
+
+
+def test_short_gap_prediction_counts_only_an_observed_crossing():
+    counter = MaskCounter(count_axis="x", line_x=160, max_step=60,
+                          max_lateral_step=10, max_missing=1,
+                          prediction_max_missing=2)
+
+    def nut(x):
+        return Detection(x - 5, x + 5, 110, 120, 121, float(x), 115.0)
+
+    counter.update_detections(0, [nut(130)])
+    counter.update_detections(1, [nut(142)])
+    counter.update_detections(2, [])
+    counter.update_detections(3, [])
+    assert counter.total_count == 0
+    result = counter.update_detections(4, [nut(174)])
+    assert counter.total_count == 1
+    assert len(result.events) == 1
+    assert result.events[0].frame_id == 4
+    assert result.events[0].inferred_gap is True
+
+
+def test_hysteresis_band_requires_observation_beyond_positive_boundary():
+    counter = MaskCounter(count_axis="x", line_x=160, hysteresis=2,
+                          confirm_hits=2, max_step=10)
+
+    def nut(x):
+        return Detection(x - 5, x + 5, 110, 120, 121, float(x), 115.0)
+
+    for frame_id, x in enumerate((157, 160, 161)):
+        result = counter.update_detections(frame_id, [nut(x)])
+        assert result.total_count == 0
+        assert not result.events
+    result = counter.update_detections(3, [nut(162)])
+    assert result.total_count == 1
+    assert len(result.events) == 1
+
+
+def test_empty_binary_masks_have_zero_components_and_events_for_115_frames():
+    counter = MaskCounter(count_axis="x", line_x=160, component_cluster_gap=16)
+
+    results = [counter.update(frame_id, np.zeros((240, 320), dtype=np.uint8))
+               for frame_id in range(115)]
+
+    assert len(results) == 115
+    assert counter.total_count == 0
+    assert all(result.roi_foreground_pixels == 0 for result in results)
+    assert all(not result.raw_detections and not result.detections and not result.events
+               for result in results)
+
+
+def test_preview_callback_receives_gray_and_mask_from_the_same_dma_slot():
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    dma = MockDma([_mask(116), _mask(120)])
+    observed = []
+
+    async def source_frames():
+        for frame_id in range(2):
+            gray = np.full((240, 320), 30 + frame_id, dtype=np.uint8)
+            yield FrameInput(gray, frame_id, frame_id + 1, frame_id + 2, 0.1)
+
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=MaskCounter(line_y=120),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        on_frame=lambda result, mask: (dma.release_frame1.set()
+                                       if result.frame_id == 0 else None),
+        preview_callback=lambda result, mask, gray: observed.append(
+            (result.frame_id, int(gray[0, 0]), int(np.count_nonzero(mask)))
+        ),
+        transfer_timeout_s=1.0,
+    )
+
+    results = asyncio.run(stream.run(source_frames()))
+
+    assert len(results) == len(observed) == 2
+    assert observed == [(0, 30, 25), (1, 31, 25)]
+
+
+def test_blocked_jpeg_encoder_does_not_block_dma_counter_pipeline(monkeypatch):
+    import mjpeg_preview
+
+    encode_started = threading.Event()
+    release_encode = threading.Event()
+
+    def slow_render(mask, **_kwargs):
+        encode_started.set()
+        assert release_encode.wait(2.0)
+        return b"jpeg"
+
+    monkeypatch.setattr(mjpeg_preview, "render_preview_jpeg", slow_render)
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    ys = (108, 112, 116, 120, 124)
+    dma = MockDma([_mask(y) for y in ys])
+    hub = MjpegFrameHub()
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120, interval=1)
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=MaskCounter(line_y=120, confirm_hits=2, max_step=12),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        on_frame=lambda result, mask: (dma.release_frame1.set()
+                                       if result.frame_id == 0 else None),
+        preview_callback=publisher,
+        transfer_timeout_s=1.0,
+    )
+
+    try:
+        with hub.streaming_client():
+            results = asyncio.run(stream.run(_frames(len(ys))))
+        assert encode_started.wait(0.5)
+        assert len(results) == len(ys)
+        assert results[-1].total_count == 1
+        assert all(slot.state is BufferState.FREE for slot in stream.slots)
+    finally:
+        release_encode.set()
+        publisher.close()
+        hub.close()

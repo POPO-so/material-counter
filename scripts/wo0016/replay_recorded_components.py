@@ -53,10 +53,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--component-cluster-gap", type=float, default=None,
+                        help="override bbox edge-gap union-find threshold in pixels")
+    parser.add_argument("--prediction-max-missing", type=int, default=None,
+                        help="override bounded prediction association gap")
     args = parser.parse_args()
     raw = args.source.read_bytes()
     frames = json.loads(raw)
     config = dict(DEFAULT_COUNTING_CONFIG)
+    if args.component_cluster_gap is not None:
+        config["component_cluster_gap"] = args.component_cluster_gap
+    if args.prediction_max_missing is not None:
+        config["prediction_max_missing"] = args.prediction_max_missing
     result = replay(frames, config)
     result.update(source_sha256=hashlib.sha256(raw).hexdigest(), board_accessed=False,
                   evidence_scope="Recorded qualified CCL only; no masks, no physical object labels")

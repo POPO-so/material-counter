@@ -56,6 +56,7 @@ class DmaBufferSlot:
     frame_id: int | None = None
     capture_gray: np.ndarray | None = None
     capture_mask: np.ndarray | None = None
+    preview_gray: np.ndarray | None = None
     capture_metadata: dict[str, Any] | None = None
     dma_complete_monotonic_ns: int | None = None
 
@@ -95,6 +96,7 @@ class FrameResult:
     roi_subtimings_ms: dict[str, float] = field(default_factory=dict, compare=False)
     raw_detections: tuple[Detection, ...] = ()
     suppressed_events: tuple[CountEvent, ...] = ()
+    tracks: tuple[dict[str, Any], ...] = ()
 
 
 @dataclass
@@ -128,8 +130,9 @@ class MaskCounter:
                  max_lateral_step: float | None = None,
                  max_area: int | None = None,
                  component_cluster_dx: float = 0.0, component_cluster_dy: float = 12.0,
+                 component_cluster_gap: float = 0.0,
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
-                 edge_max_missing: int = 0):
+                 edge_max_missing: int = 0, prediction_max_missing: int = 0):
         self.width = _integer(width, "width", minimum=1)
         self.height = _integer(height, "height", minimum=1)
         self.line_y = _integer(line_y, "line_y", minimum=0)
@@ -157,9 +160,15 @@ class MaskCounter:
         self.backward_tolerance = _nonnegative_float(backward_tolerance, "backward_tolerance")
         self.component_cluster_dx = _nonnegative_float(component_cluster_dx, "component_cluster_dx")
         self.component_cluster_dy = _nonnegative_float(component_cluster_dy, "component_cluster_dy")
+        self.component_cluster_gap = _nonnegative_float(
+            component_cluster_gap, "component_cluster_gap"
+        )
         self.cooldown_frames = _integer(cooldown_frames, "cooldown_frames", minimum=0)
         self.cooldown_lateral = _nonnegative_float(cooldown_lateral, "cooldown_lateral")
         self.edge_max_missing = _integer(edge_max_missing, "edge_max_missing", minimum=0)
+        self.prediction_max_missing = _integer(
+            prediction_max_missing, "prediction_max_missing", minimum=0
+        )
         self._recent_events: list[CountEvent] = []
         self.last_suppressed_events: list[CountEvent] = []
         self.total_count = 0
@@ -196,7 +205,8 @@ class MaskCounter:
         top, bottom = self._roi_bounds()
         return FrameResult(frame_id, self.total_count, tuple(accepted), tuple(events),
                            top, bottom, (), (), raw_detections=raw_detections,
-                           suppressed_events=tuple(self.last_suppressed_events))
+                           suppressed_events=tuple(self.last_suppressed_events),
+                           tracks=self.tracking_snapshot())
 
     def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
         """Return serializable track state without mutating tracker behavior."""
@@ -271,6 +281,7 @@ class MaskCounter:
                 "ccl_ms": ccl_ms,
                 "track_ms": track_ms,
             },
+            tracks=self.tracking_snapshot(),
         )
 
     def _roi_bounds(self) -> tuple[int, int]:
@@ -280,9 +291,17 @@ class MaskCounter:
 
     @staticmethod
     def _project_roi(roi: np.ndarray) -> tuple[tuple[int, ...], tuple[int, ...], int]:
-        row_projection = tuple(int(value) for value in np.count_nonzero(roi, axis=1))
-        column_projection = tuple(int(value) for value in np.count_nonzero(roi, axis=0))
-        foreground_pixels = int(cv2.countNonZero(roi))
+        # This method is called only after Binary8 validation. OpenCV's native
+        # reductions avoid NumPy's per-axis Python dispatch on the PYNQ CPU.
+        row_sums = cv2.reduce(roi, 1, cv2.REDUCE_SUM, dtype=cv2.CV_32S).reshape(-1)
+        column_sums = cv2.reduce(roi, 0, cv2.REDUCE_SUM, dtype=cv2.CV_32S).reshape(-1)
+        row_counts = row_sums // 0xFF
+        column_counts = column_sums // 0xFF
+        row_projection = tuple(row_counts.tolist())
+        column_projection = tuple(column_counts.tolist())
+        # Every nonzero Binary8 pixel is 0xFF; reuse the row reduction for an
+        # exact total rather than making another full-frame pass.
+        foreground_pixels = int(np.sum(row_counts, dtype=np.int64))
         return row_projection, column_projection, foreground_pixels
 
     def _roi_components(self, roi: np.ndarray, top: int,
@@ -338,18 +357,54 @@ class MaskCounter:
         Inputs have already passed CCL area filtering. Keep the original CCL
         records separately for audit; observations use area-weighted centroids.
         """
-        if self.component_cluster_dx == 0:
+        if self.component_cluster_gap > 0:
+            count = len(detections)
+            parent = list(range(count))
+            rank = [0] * count
+
+            def find(index: int) -> int:
+                while parent[index] != index:
+                    parent[index] = parent[parent[index]]
+                    index = parent[index]
+                return index
+
+            def union(left: int, right: int) -> None:
+                left_root, right_root = find(left), find(right)
+                if left_root == right_root:
+                    return
+                if rank[left_root] < rank[right_root]:
+                    left_root, right_root = right_root, left_root
+                parent[right_root] = left_root
+                if rank[left_root] == rank[right_root]:
+                    rank[left_root] += 1
+
+            for left_index, left in enumerate(detections):
+                for right_index in range(left_index + 1, count):
+                    right = detections[right_index]
+                    gap_x = max(0, left.x_min - right.x_max - 1,
+                                right.x_min - left.x_max - 1)
+                    gap_y = max(0, left.y_min - right.y_max - 1,
+                                right.y_min - left.y_max - 1)
+                    if math.hypot(gap_x, gap_y) <= self.component_cluster_gap:
+                        union(left_index, right_index)
+
+            grouped: dict[int, list[Detection]] = {}
+            for index, detection in enumerate(detections):
+                grouped.setdefault(find(index), []).append(detection)
+            groups = list(grouped.values())
+        elif self.component_cluster_dx == 0:
             return detections
-        groups: list[list[Detection]] = []
-        for detection in detections:
-            for group in groups:
-                if all(abs(detection.centroid_x-other.centroid_x) <= self.component_cluster_dx
-                       and abs(detection.centroid_y-other.centroid_y) <= self.component_cluster_dy
-                       for other in group):
-                    group.append(detection)
-                    break
-            else:
-                groups.append([detection])
+        else:
+            groups = []
+            for detection in detections:
+                for group in groups:
+                    if all(abs(detection.centroid_x-other.centroid_x) <= self.component_cluster_dx
+                           and abs(detection.centroid_y-other.centroid_y) <= self.component_cluster_dy
+                           for other in group):
+                        group.append(detection)
+                        break
+                else:
+                    groups.append([detection])
         merged = []
         for group in groups:
             area = sum(d.area for d in group)
@@ -371,12 +426,14 @@ class MaskCounter:
         return 0
 
     def _missing_budget(self, track: _Track) -> int:
-        # Only an established, uncounted X-motion target at a clipped lane edge
-        # can survive the extra gap. Normal tracks retain their old lifetime.
+        prediction_budget = 0
+        if (self.count_axis == "x" and track.confirmed and track.armed
+                and not track.counted):
+            prediction_budget = self.prediction_max_missing
         if (self.count_axis == "x" and track.confirmed and track.armed
                 and not track.counted and self._edge(track.detection)):
-            return max(self.max_missing, self.edge_max_missing)
-        return self.max_missing
+            prediction_budget = max(prediction_budget, self.edge_max_missing)
+        return max(self.max_missing, prediction_budget)
 
     def _side(self, detection: Detection) -> float:
         position = (detection.centroid_x - self.line_x if self.count_axis == "x"
@@ -421,19 +478,42 @@ class MaskCounter:
                     old_box = (old.x_max-old.x_min+1)*(old.y_max-old.y_min+1)
                     new_box = (detection.x_max-detection.x_min+1)*(detection.y_max-detection.y_min+1)
                     area_ratio *= old_box/new_box
-                gap = dt > self.max_missing + 1
-                if gap:
-                    if (not self._edge(old) or self._edge(old) != self._edge(detection)
-                            or lateral > self.max_lateral_step
-                            or track.forward_velocity is None or track.forward_velocity <= 0
-                            or abs(forward-track.forward_velocity*dt) > self.max_step
-                            or max(detection.x_max-detection.x_min+1,
-                                   detection.y_max-detection.y_min+1) > size_limit):
+                missing_frames = max(0, dt - 1)
+                gap = missing_frames > 0
+                if missing_frames > self.max_missing:
+                    velocity_ok = (
+                        track.confirmed and track.armed and not track.counted
+                        and track.forward_velocity is not None
+                        and track.forward_velocity > 0
+                        and abs(forward - track.forward_velocity * dt) <= self.max_step
+                    )
+                    edge_recovery = (
+                        self._edge(old) != 0
+                        and self._edge(old) == self._edge(detection)
+                        and missing_frames <= self.edge_max_missing
+                        and lateral <= self.max_lateral_step
+                        and velocity_ok
+                        and max(detection.x_max-detection.x_min+1,
+                               detection.y_max-detection.y_min+1) <= size_limit
+                    )
+                    predicted_recovery = (
+                        missing_frames <= self.prediction_max_missing and velocity_ok
+                    )
+                    if not (edge_recovery or predicted_recovery):
                         continue
                 if (lateral <= self.max_lateral_step * dt
                         and -self.backward_tolerance <= forward <= self.max_step * dt
                         and 0.25 <= area_ratio <= 4.0):
-                    edges.append((dx * dx + dy * dy, track.track_id, index, gap))
+                    predicted_x, predicted_y = old.centroid_x, old.centroid_y
+                    if missing_frames and track.forward_velocity is not None:
+                        longitudinal_prediction = self.direction * track.forward_velocity * dt
+                        if self.count_axis == "x":
+                            predicted_x += longitudinal_prediction
+                        else:
+                            predicted_y += longitudinal_prediction
+                    prediction_distance = ((detection.centroid_x-predicted_x) ** 2
+                                           + (detection.centroid_y-predicted_y) ** 2)
+                    edges.append((prediction_distance, track.track_id, index, gap))
 
         # An inferred gap must have a unique candidate in both directions.
         # Refuse nearest-neighbour guessing when more than one object fits.
@@ -455,7 +535,9 @@ class MaskCounter:
             dt = frame_id - track.last_frame
             self.last_associations.append({"track_id": track_id, "detection_index": index,
                                            "previous_frame": track.last_frame,
-                                           "kind": "edge_gap_inferred" if gap else "matched",
+                                           "kind": ("edge_gap_inferred" if gap and self._edge(track.detection)
+                                                    else "predicted_gap_inferred" if gap
+                                                    else "matched"),
                                            "dx": detection.centroid_x-track.detection.centroid_x,
                                            "dy": detection.centroid_y-track.detection.centroid_y})
             track.streak = track.streak + 1 if dt == 1 else 1
@@ -625,6 +707,8 @@ class DoubleBufferStream:
                  before_rx_copy: Callable[[int, DmaBufferSlot], Any] | None = None,
                  after_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
                  on_frame: Callable[[FrameResult, np.ndarray], Any] | None = None,
+                 preview_callback: Callable[[FrameResult, np.ndarray, np.ndarray], Any] | None = None,
+                 raw_capture_callback: Callable[[int, np.ndarray, np.ndarray], None] | None = None,
                  capture_callback: Callable[[FrameResult, DmaBufferSlot], Any] | None = None,
                  stage_timings_ms: dict[str, list[float]] | None = None,
                  transfer_timeout_s: float = 5.0):
@@ -643,6 +727,8 @@ class DoubleBufferStream:
         self.before_rx_copy = before_rx_copy
         self.after_transfer = after_transfer
         self.on_frame = on_frame
+        self.preview_callback = preview_callback
+        self.raw_capture_callback = raw_capture_callback
         self.capture_callback = capture_callback
         self.stage_timings_ms = stage_timings_ms
         self._postprocess_ms: dict[int, float] = {}
@@ -651,9 +737,14 @@ class DoubleBufferStream:
             DmaBufferSlot(i, tx_buffers[i], rx_buffers[i],
                           cached_mask=np.empty((HEIGHT, WIDTH), dtype=np.uint8),
                           capture_gray=(np.empty((HEIGHT, WIDTH), dtype=np.uint8)
-                                        if capture_callback is not None else None),
+                                        if capture_callback is not None
+                                        or raw_capture_callback is not None else None),
                           capture_mask=(np.empty((HEIGHT, WIDTH), dtype=np.uint8)
-                                        if capture_callback is not None else None))
+                                        if capture_callback is not None
+                                        or raw_capture_callback is not None else None),
+                          preview_gray=(np.empty((HEIGHT, WIDTH), dtype=np.uint8)
+                                        if preview_callback is not None
+                                        and capture_callback is None else None))
             for i in range(2)
         ]
         self._free_slots: asyncio.Queue[DmaBufferSlot] = asyncio.Queue(maxsize=2)
@@ -715,7 +806,7 @@ class DoubleBufferStream:
                 slot.dma_complete_monotonic_ns = None
                 if frame_input is not None and frame_input.source_sequence != frame_id:
                     raise ValueError("camera source sequence does not match DMA frame ID")
-                if self.capture_callback is not None:
+                if self.capture_callback is not None or self.raw_capture_callback is not None:
                     if slot.capture_gray is None:
                         raise RuntimeError("capture-enabled slot has no Gray8 snapshot storage")
                     np.copyto(slot.capture_gray, gray, casting="no")
@@ -735,6 +826,12 @@ class DoubleBufferStream:
                             "camera_read_ms": frame_input.camera_read_ms,
                             "capture_timestamp_kind": "host time after VideoCapture.read",
                         }
+                if self.preview_callback is not None:
+                    preview_gray = (slot.capture_gray if slot.capture_gray is not None
+                                    else slot.preview_gray)
+                    if preview_gray is None:
+                        raise RuntimeError("preview callback has no per-slot Gray8 snapshot")
+                    np.copyto(preview_gray, gray, casting="no")
                 encode_started = time.perf_counter()
                 if self.packet_encoder_into is not None:
                     self.packet_encoder_into(gray, slot.tx_buffer, frame_id=frame_id)
@@ -784,7 +881,7 @@ class DoubleBufferStream:
                 copy_started = time.perf_counter()
                 rx_view = np.asarray(slot.rx_buffer)
                 np.copyto(slot.cached_mask.reshape(-1), rx_view, casting="no")
-                if self.capture_callback is not None:
+                if self.capture_callback is not None or self.raw_capture_callback is not None:
                     if slot.capture_mask is None:
                         raise RuntimeError("capture-enabled slot has no raw mask snapshot storage")
                     np.copyto(slot.capture_mask, slot.cached_mask, casting="no")
@@ -798,6 +895,12 @@ class DoubleBufferStream:
                     packer_check_seconds = time.perf_counter() - postprocess_started
                     postprocess_ms += packer_check_seconds * 1000.0
                     self._record_timing("packer_check", packer_check_seconds)
+                if self.raw_capture_callback is not None:
+                    if slot.capture_gray is None or slot.capture_mask is None:
+                        raise RuntimeError("raw capture callback has no Gray8/Binary8 slot snapshots")
+                    raw_copy_started = time.perf_counter()
+                    self.raw_capture_callback(frame_id, slot.capture_gray, slot.capture_mask)
+                    self._record_timing("raw_capture_copy", time.perf_counter() - raw_copy_started)
                 self._postprocess_ms[frame_id] = postprocess_ms
 
                 if consumer.done():
@@ -889,6 +992,19 @@ class DoubleBufferStream:
                     await self.on_frame(result, mask)
                 else:
                     callback_result = await asyncio.to_thread(self.on_frame, result, mask)
+                    if inspect.isawaitable(callback_result):
+                        await callback_result
+            if self.preview_callback is not None:
+                preview_gray = (slot.capture_gray if slot.capture_gray is not None
+                                else slot.preview_gray)
+                if preview_gray is None:
+                    raise RuntimeError("completed DMA slot has no preview Gray8 snapshot")
+                if inspect.iscoroutinefunction(self.preview_callback):
+                    await self.preview_callback(result, mask, preview_gray)
+                else:
+                    callback_result = await asyncio.to_thread(
+                        self.preview_callback, result, mask, preview_gray
+                    )
                     if inspect.isawaitable(callback_result):
                         await callback_result
             if self.capture_callback is not None:

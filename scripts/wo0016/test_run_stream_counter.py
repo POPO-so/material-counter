@@ -1310,14 +1310,18 @@ def test_edge_gap_recovery_rejects_unproved_or_ambiguous_candidates(case):
 
 def test_attempt5_options_are_validated_and_bound_in_permit():
     flags=['--component-cluster-dx','24','--component-cluster-dy','12',
+           '--component-cluster-gap','16','--prediction-max-missing','2',
            '--cooldown-frames','3','--cooldown-lateral','15','--edge-max-missing','4',
            '--max-lateral-step','18','--count-axis','x']
     config=runner.counting_configuration(runner._parser().parse_args(flags))
     assert {k:config[k] for k in ('component_cluster_dx','component_cluster_dy',
-        'cooldown_frames','cooldown_lateral','edge_max_missing')} == dict(
+        'component_cluster_gap','prediction_max_missing','cooldown_frames',
+        'cooldown_lateral','edge_max_missing')} == dict(
         component_cluster_dx=24,component_cluster_dy=12,cooldown_frames=3,
-        cooldown_lateral=15,edge_max_missing=4)
-    for kw in ({'component_cluster_dx':-1},{'cooldown_frames':-1},{'edge_max_missing':-1}):
+        component_cluster_gap=16,prediction_max_missing=2,cooldown_lateral=15,
+        edge_max_missing=4)
+    for kw in ({'component_cluster_dx':-1},{'component_cluster_gap':-1},
+               {'prediction_max_missing':-1},{'cooldown_frames':-1},{'edge_max_missing':-1}):
         with pytest.raises(ValueError): MaskCounter(**kw)
 
 
@@ -1415,7 +1419,7 @@ def test_optional_camera_capture_metadata_identifies_sequence_and_host_timestamp
 def test_capture_cli_is_disabled_by_default():
     args = runner._parser().parse_args(["--mode", "mock"])
     assert args.capture_dir is None
-    assert args.capture_max_bytes == 64 * 1024 * 1024
+    assert args.capture_max_bytes == 96 * 1024 * 1024
 
 
 def test_stageb2_attempt_permit_binds_optional_capture_destination_and_limits(tmp_path):

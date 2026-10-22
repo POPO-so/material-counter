@@ -5,6 +5,7 @@ import os
 import socket
 import threading
 import time
+from collections import defaultdict
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Iterator
@@ -17,12 +18,22 @@ PREVIEW_FRAME_INTERVAL = 4
 PREVIEW_JPEG_QUALITY = 70
 
 
-_HTML_PAGE = b"""<!doctype html>
-<html><head><meta charset=\"utf-8\"><title>Material Counter</title></head>
-<body style=\"margin:0;background:#111;color:#eee;font:16px sans-serif\">
-<main style=\"max-width:960px;margin:1rem auto;text-align:center\">
-<h1>Material Counter</h1><img src=\"/stream.mjpg\" alt=\"Live Binary8 mask\" style=\"width:100%;height:auto\">
-</main></body></html>"""
+_HTML_PAGE = """<!doctype html>
+<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">
+<title>WO-0017 · Industrial HUD Preview</title><style>
+:root{color-scheme:dark;--bg:#07111b;--panel:#101d29;--line:#213747;--cyan:#2ce0d0;--muted:#8fa4b7;--text:#e7f0f7}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0,#173044 0,transparent 42%),var(--bg);color:var(--text);font:15px system-ui,sans-serif}
+main{max-width:1240px;margin:30px auto;padding:0 20px}.top{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px;gap:18px}
+.eyebrow{color:var(--cyan);font:700 11px ui-monospace,monospace;letter-spacing:.16em}h1{margin:6px 0 0;font-size:25px;letter-spacing:.02em}
+.badge{border:1px solid #305267;border-radius:99px;padding:8px 12px;color:#a8c2d2;font:12px ui-monospace,monospace}
+.frame{background:#050a0e;border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 22px 70px #0008}.frame img{display:block;width:100%;height:auto;border-radius:9px}
+.footer{display:flex;justify-content:space-between;color:var(--muted);font:12px ui-monospace,monospace;margin:12px 4px 0;gap:12px}
+@media(max-width:650px){main{margin:16px auto;padding:0 10px}.top{align-items:start;flex-direction:column}h1{font-size:20px}}
+</style></head><body><main>
+<header class=\"top\"><div><div class=\"eyebrow\">POPO-SO / MATERIAL COUNTER / WO-0017</div><h1>Industrial HUD Preview</h1></div><span class=\"badge\">LIVE · MJPEG</span></header>
+<section class=\"frame\"><img src=\"/stream.mjpg\" alt=\"Camera image with labeled binary mask PIP\"></section>
+<footer class=\"footer\"><span>Read-only preview stream · no formal sampling</span><span>The frame HUD identifies the PIP source</span></footer>
+</main></body></html>""".encode("utf-8")
 
 
 class MjpegFrameHub:
@@ -105,9 +116,14 @@ class MjpegFrameHub:
 
 
 def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
-                         label: str = "Total Count", count_axis: str = "y",
-                         line_x: int = 160) -> np.ndarray:
-    """Render the Binary8 mask with a red line and a readable live count."""
+                         label: str = "TOTAL COUNT", count_axis: str = "y",
+                         line_x: int = 160, source_gray: np.ndarray | None = None,
+                         hysteresis: float = 2.0,
+                         pip_label: str = "PL DMA MASK",
+                         tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
+                         track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None
+                         ) -> np.ndarray:
+    """Render the Gray8 camera frame with tracking HUD and Binary8 DMA-mask PIP."""
     image = np.asarray(mask)
     if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (240, 320):
         raise ValueError("mask must be a uint8 array with shape (240, 320)")
@@ -119,27 +135,95 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
         raise ValueError("line_y must be an integer inside the mask")
     if not isinstance(label, str) or not label.strip():
         raise ValueError("label must be non-empty text")
+    if not isinstance(pip_label, str) or not pip_label.strip():
+        raise ValueError("pip_label must be non-empty text")
+    if (isinstance(hysteresis, bool) or not isinstance(hysteresis, (int, float))
+            or not np.isfinite(hysteresis) or hysteresis < 0):
+        raise ValueError("hysteresis must be a finite nonnegative number")
 
-    frame = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    if source_gray is None:
+        background = image
+    else:
+        background = np.asarray(source_gray)
+        if background.dtype != np.uint8 or background.ndim != 2 or background.shape != image.shape:
+            raise ValueError("source_gray must be a uint8 Gray8 frame with shape (240, 320)")
+    frame = cv2.cvtColor(background, cv2.COLOR_GRAY2BGR)
     if count_axis not in ("x", "y") or not isinstance(line_x, int) or not 0 <= line_x < image.shape[1]:
         raise ValueError("invalid count axis or line_x")
     start, end = (((line_x, 0), (line_x, image.shape[0]-1)) if count_axis == "x"
                   else ((0, int(line_y)), (image.shape[1]-1, int(line_y))))
     cv2.line(frame, start, end,
              (0, 0, 255), 2, lineType=cv2.LINE_8)
-    text = f"{label}: {int(total_count)}"
-    cv2.rectangle(frame, (4, 6), (min(frame.shape[1] - 1, 244), 34), (24, 24, 24), -1)
-    cv2.putText(frame, text, (8, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.58,
-                (255, 255, 255), 2, lineType=cv2.LINE_AA)
+    boundary_values = (line_x - hysteresis, line_x + hysteresis) if count_axis == "x" else (
+        line_y - hysteresis, line_y + hysteresis
+    )
+    for boundary in boundary_values:
+        boundary = int(round(boundary))
+        if count_axis == "x" and 0 <= boundary < image.shape[1]:
+            for y in range(0, image.shape[0], 10):
+                cv2.line(frame, (boundary, y), (boundary, min(y + 4, image.shape[0] - 1)),
+                         (0, 210, 255), 1, lineType=cv2.LINE_8)
+        elif count_axis == "y" and 0 <= boundary < image.shape[0]:
+            for x in range(0, image.shape[1], 10):
+                cv2.line(frame, (x, boundary), (min(x + 4, image.shape[1] - 1), boundary),
+                         (0, 210, 255), 1, lineType=cv2.LINE_8)
+
+    for track in tracks:
+        if track.get("finished") or track.get("missed", 0):
+            continue
+        detection = track.get("detection", {})
+        if not all(key in detection for key in ("x_min", "x_max", "y_min", "y_max")):
+            continue
+        box = (int(detection["x_min"]), int(detection["y_min"]),
+               int(detection["x_max"]), int(detection["y_max"]))
+        color = (50, 220, 130) if track.get("counted") else (255, 180, 0)
+        cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), color, 1, lineType=cv2.LINE_8)
+        cv2.putText(frame, f"T{int(track.get('track_id', 0))}",
+                    (box[0], max(10, box[1] - 3)), cv2.FONT_HERSHEY_SIMPLEX, 0.32,
+                    color, 1, lineType=cv2.LINE_AA)
+
+    for points in (track_trails or {}).values():
+        if len(points) >= 2:
+            polyline = np.asarray([(int(round(x)), int(round(y))) for x, y in points],
+                                  dtype=np.int32).reshape((-1, 1, 2))
+            cv2.polylines(frame, [polyline], False, (255, 255, 0), 1, lineType=cv2.LINE_AA)
+            cv2.circle(frame, tuple(polyline[-1, 0]), 2, (255, 255, 0), -1)
+
+    cv2.rectangle(frame, (5, 6), (min(frame.shape[1] - 1, 210), 32), (12, 25, 35), -1)
+    cv2.putText(frame, f"{label}  {int(total_count):03d}", (10, 24),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.48, (255, 255, 255), 1, lineType=cv2.LINE_AA)
+
+    pip_x, pip_y, pip_width, pip_height = 220, 8, 92, 70
+    cv2.rectangle(frame, (pip_x - 2, pip_y - 2),
+                  (pip_x + pip_width + 2, pip_y + pip_height + 17), (12, 25, 35), -1)
+    cv2.putText(frame, pip_label, (pip_x + 2, pip_y + 11),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.31, (44, 224, 208), 1, lineType=cv2.LINE_AA)
+    pip = cv2.resize(image, (pip_width, pip_height), interpolation=cv2.INTER_NEAREST)
+    pip = cv2.cvtColor(pip, cv2.COLOR_GRAY2BGR)
+    frame[pip_y + 15:pip_y + 15 + pip_height,
+          pip_x:pip_x + pip_width] = pip
+    cv2.rectangle(frame, (pip_x, pip_y + 15),
+                  (pip_x + pip_width - 1, pip_y + 15 + pip_height - 1),
+                  (44, 224, 208), 1, lineType=cv2.LINE_8)
     return frame
 
 
 def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
-                        quality: int = 85, count_axis: str = "y", line_x: int = 160) -> bytes:
+                        quality: int = 85, count_label: str = "TOTAL COUNT",
+                        count_axis: str = "y", line_x: int = 160,
+                        source_gray: np.ndarray | None = None, hysteresis: float = 2.0,
+                        pip_label: str = "PL DMA MASK",
+                        tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
+                        track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None
+                        ) -> bytes:
     if isinstance(quality, bool) or not isinstance(quality, (int, np.integer)) or not 1 <= quality <= 100:
         raise ValueError("JPEG quality must be an integer in 1..100")
     frame = render_preview_frame(mask, total_count=total_count, line_y=line_y,
-                                 count_axis=count_axis, line_x=line_x)
+                                 label=count_label,
+                                 count_axis=count_axis, line_x=line_x,
+                                 source_gray=source_gray, hysteresis=hysteresis,
+                                 pip_label=pip_label,
+                                 tracks=tracks, track_trails=track_trails)
     encoded, payload = cv2.imencode(".jpg", frame,
                                     [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
     if not encoded:
@@ -152,15 +236,24 @@ class PeriodicMjpegPublisher:
 
     def __init__(self, *, hub: MjpegFrameHub, line_y: int,
                  interval: int = PREVIEW_FRAME_INTERVAL,
-                 quality: int = PREVIEW_JPEG_QUALITY, count_axis: str = "y", line_x: int = 160):
+                 quality: int = PREVIEW_JPEG_QUALITY, count_label: str = "TOTAL COUNT",
+                 count_axis: str = "y", line_x: int = 160,
+                 hysteresis: float = 2.0, pip_label: str = "PL DMA MASK"):
         if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
             raise ValueError("preview interval must be a positive integer")
         if isinstance(quality, bool) or not isinstance(quality, int) or not 1 <= quality <= 100:
             raise ValueError("JPEG quality must be an integer in 1..100")
         self.hub = hub
         self.line_y = line_y
+        if not isinstance(count_label, str) or not count_label.strip():
+            raise ValueError("count_label must be non-empty text")
+        self.count_label = count_label
         self.count_axis = count_axis
         self.line_x = line_x
+        self.hysteresis = float(hysteresis)
+        if not isinstance(pip_label, str) or not pip_label.strip():
+            raise ValueError("pip_label must be non-empty text")
+        self.pip_label = pip_label
         self.interval = interval
         self.quality = quality
         self.encoded_frames = 0
@@ -170,6 +263,10 @@ class PeriodicMjpegPublisher:
         self._condition = threading.Condition()
         self._latest_mask = np.empty((240, 320), dtype=np.uint8)
         self._encode_mask = np.empty((240, 320), dtype=np.uint8)
+        self._latest_gray = np.empty((240, 320), dtype=np.uint8)
+        self._encode_gray = np.empty((240, 320), dtype=np.uint8)
+        self._latest_tracks: tuple[dict[str, Any], ...] = ()
+        self._track_trails: dict[int, list[tuple[float, float]]] = defaultdict(list)
         self._latest_metadata: tuple[int, int, int] | None = None
         self._snapshot_sequence = 0
         self._encoded_sequence = 0
@@ -182,7 +279,8 @@ class PeriodicMjpegPublisher:
         )
         self._worker.start()
 
-    def __call__(self, result: Any, mask: np.ndarray) -> None:
+    def __call__(self, result: Any, mask: np.ndarray,
+                 source_gray: np.ndarray | None = None) -> None:
         started = time.perf_counter()
         try:
             frame_id = int(result.frame_id)
@@ -191,10 +289,25 @@ class PeriodicMjpegPublisher:
             image = np.asarray(mask)
             if image.dtype != np.uint8 or image.shape != (240, 320):
                 raise ValueError("preview snapshot must be a uint8 array with shape (240, 320)")
+            gray = image if source_gray is None else np.asarray(source_gray)
+            if gray.dtype != np.uint8 or gray.shape != (240, 320):
+                raise ValueError("preview Gray8 snapshot must have shape (240, 320)")
             with self._condition:
                 if self._closing or self._closed:
                     return
                 np.copyto(self._latest_mask, image, casting="no")
+                np.copyto(self._latest_gray, gray, casting="no")
+                self._latest_tracks = tuple(getattr(result, "tracks", ()))
+                for track in self._latest_tracks:
+                    if track.get("finished") or track.get("missed", 0):
+                        continue
+                    detection = track.get("detection", {})
+                    track_id = int(track.get("track_id", 0))
+                    if "centroid_x" in detection and "centroid_y" in detection:
+                        trail = self._track_trails[track_id]
+                        trail.append((float(detection["centroid_x"]),
+                                      float(detection["centroid_y"])))
+                        del trail[:-8]
                 self._latest_metadata = (frame_id, int(result.total_count), self.line_y)
                 self._snapshot_sequence += 1
                 self._condition.notify_all()
@@ -230,6 +343,10 @@ class PeriodicMjpegPublisher:
                 sequence = self._snapshot_sequence
                 frame_id, total_count, line_y = self._latest_metadata
                 np.copyto(self._encode_mask, self._latest_mask, casting="no")
+                np.copyto(self._encode_gray, self._latest_gray, casting="no")
+                tracks = self._latest_tracks
+                trails = {track_id: tuple(points)
+                          for track_id, points in self._track_trails.items()}
                 self._encoded_sequence = sequence
 
             started = time.perf_counter()
@@ -239,7 +356,11 @@ class PeriodicMjpegPublisher:
                     total_count=total_count,
                     line_y=line_y,
                     quality=self.quality,
+                    count_label=self.count_label,
                     count_axis=self.count_axis, line_x=self.line_x,
+                    source_gray=self._encode_gray, hysteresis=self.hysteresis,
+                    pip_label=self.pip_label,
+                    tracks=tracks, track_trails=trails,
                 )
                 self.hub.publish(jpeg)
                 self.encoded_frames += 1

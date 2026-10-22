@@ -40,19 +40,69 @@ def test_preview_jpeg_is_valid_and_invalid_binary_masks_are_rejected():
         render_preview_jpeg(np.ones((240, 320), dtype=np.uint8), total_count=0, line_y=120)
 
 
+def test_industrial_hud_uses_gray_camera_background_mask_pip_and_tracking_overlay():
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    mask[100:108, 40:48] = 0xFF
+    gray = np.full((240, 320), 72, dtype=np.uint8)
+    tracks = ({
+        "track_id": 7,
+        "detection": {"x_min": 128, "x_max": 140, "y_min": 110, "y_max": 120,
+                      "centroid_x": 134.0, "centroid_y": 115.0, "area": 80},
+        "missed": 0,
+        "finished": False,
+        "armed": True,
+        "counted": False,
+    },)
+
+    frame = render_preview_frame(mask, total_count=3, line_y=120, count_axis="x",
+                                 line_x=160, source_gray=gray, hysteresis=2.0,
+                                 tracks=tracks, track_trails={7: ((120, 115), (128, 115))})
+
+    assert frame.shape == (240, 320, 3)
+    assert tuple(frame[80, 20]) == (72, 72, 72)
+    # The top-right inset is rendered from this frame's DMA Binary8 mask.
+    assert np.any(np.all(frame[34:82, 224:318] == (255, 255, 255), axis=2))
+    # The line and hysteresis band have distinct colors around the count axis.
+    assert tuple(frame[100, 160]) == (0, 0, 255)
+    assert np.any(np.all(frame[:, 158:159] == (0, 210, 255), axis=2))
+    # A track box and trail are visible without changing the underlying DMA mask.
+    assert np.any(np.all(frame[108:123, 126:143] == (255, 180, 0), axis=2))
+    assert np.any(np.all(frame[112:119, 118:131] == (255, 255, 0), axis=2))
+
+
+def test_preview_hud_labels_a_software_threshold_pip(monkeypatch):
+    labels = []
+    original_put_text = preview_module.cv2.putText
+
+    def capture_label(image, text, *args, **kwargs):
+        labels.append(text)
+        return original_put_text(image, text, *args, **kwargs)
+
+    monkeypatch.setattr(preview_module.cv2, "putText", capture_label)
+    render_preview_frame(np.zeros((240, 320), dtype=np.uint8), total_count=0,
+                         line_y=120, source_gray=np.full((240, 320), 96, np.uint8),
+                         pip_label="SIM TH=128")
+
+    assert "SIM TH=128" in labels
+
+
 def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkeypatch):
     import mjpeg_preview
 
     encoded = []
     caller_thread = threading.get_ident()
 
-    def fake_render(mask, *, total_count, line_y, quality, count_axis, line_x):
-        encoded.append((total_count, line_y, quality, threading.get_ident()))
+    def fake_render(mask, *, total_count, line_y, quality, count_label, count_axis, line_x,
+                    source_gray, hysteresis, pip_label, tracks, track_trails):
+        encoded.append((total_count, line_y, quality, threading.get_ident(),
+                        int(source_gray[0, 0]), hysteresis, count_label, pip_label,
+                        len(tracks), len(track_trails)))
         return b"jpeg"
 
     monkeypatch.setattr(mjpeg_preview, "render_preview_jpeg", fake_render)
     hub = MjpegFrameHub()
-    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120)
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120,
+                                      count_label="SIM COUNT", pip_label="SIM TH=128")
     mask = np.zeros((240, 320), dtype=np.uint8)
 
     try:
@@ -76,6 +126,10 @@ def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkey
         assert publisher.quality == 70
         assert publisher.encoded_frames == 2
         assert [row[:3] for row in encoded] == [(0, 120, 70), (1, 120, 70)]
+        assert [row[4:] for row in encoded] == [
+            (0, 2.0, "SIM COUNT", "SIM TH=128", 0, 0),
+            (0, 2.0, "SIM COUNT", "SIM TH=128", 0, 0),
+        ]
         assert all(thread_id != caller_thread for *_, thread_id in encoded)
         assert hub.sequence == 2
         assert len(publisher.handoff_timings_ms) == 8
@@ -94,7 +148,8 @@ def test_preview_callback_returns_while_background_jpeg_encode_is_blocked(monkey
     release_encode = threading.Event()
     callback_returned = threading.Event()
 
-    def slow_render(mask, *, total_count, line_y, quality, count_axis, line_x):
+    def slow_render(mask, *, total_count, line_y, quality, count_label, count_axis,
+                    line_x, source_gray, hysteresis, pip_label, tracks, track_trails):
         encode_started.set()
         assert release_encode.wait(2.0)
         return b"slow-jpeg"

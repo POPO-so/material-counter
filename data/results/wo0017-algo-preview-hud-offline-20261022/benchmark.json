@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-22",
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.5.3",
+  "opencv": "5.0.0",
+  "board_accessed": false,
+  "roi_projection": {
+    "input": "synthetic Binary8 ROI 49x320, foreground density 4.5%",
+    "iterations_per_trial": 1500,
+    "trials": 7,
+    "legacy_median_ms": 77.338,
+    "optimized_median_ms": 36.913,
+    "legacy_us_per_call": 51.559,
+    "optimized_us_per_call": 24.609,
+    "speedup": 2.095,
+    "outputs_identical": true
+  },
+  "preview_pipeline": {
+    "input": "165 synthetic Gray8/Binary8 pairs at 320x240",
+    "trials": 3,
+    "preview_interval_frames": 4,
+    "jpeg_quality": 70,
+    "synchronous_main_loop_median_ms": 40.245,
+    "asynchronous_producer_loop_median_ms": 26.562,
+    "asynchronous_encode_drain_median_ms": 127.453,
+    "synchronous_loop_fps": 4099.888,
+    "asynchronous_producer_fps": 6211.811,
+    "producer_loop_speedup": 1.515,
+    "async_jpeg_frames_encoded_by_trial": [
+      7,
+      5,
+      4
+    ],
+    "jpeg_encode_mean_ms": 4.925,
+    "jpeg_encode_p95_ms": 21.31,
+    "publisher_handoff_mean_ms": 0.0057,
+    "publisher_handoff_p95_ms": 0.0208,
+    "scope": "Host-only synthetic throughput microbenchmark; no camera, PYNQ, DMA, or board FPS claim"
+  }
+}

@@ -20,7 +20,8 @@ HEIGHT = 240
 FRAME_SHAPE = (HEIGHT, WIDTH)
 FRAME_BYTES = WIDTH * HEIGHT
 SCHEMA_VERSION = 1
-DEFAULT_MAX_BYTES = 64 * 1024 * 1024
+DEFAULT_MAX_BYTES = 96 * 1024 * 1024
+RAW_FRAME_ARCHIVE_NAME = "frames_gray8_binary8.npz"
 
 
 class CaptureError(RuntimeError):
@@ -116,10 +117,18 @@ def _validate_frame_metadata(frame_id: int, metadata: Mapping[str, Any]) -> dict
 
 
 def estimated_capture_bytes(expected_frames: int) -> int:
-    """Conservative cap estimate including NPY headers and per-frame metadata."""
+    """Conservative cap for per-frame records plus the combined raw-frame NPZ."""
     if isinstance(expected_frames, bool) or not isinstance(expected_frames, int) or expected_frames < 1:
         raise ValueError("expected_frames must be a positive integer")
-    return expected_frames * (2 * FRAME_BYTES + 4096) + 32768
+    return expected_frames * (4 * FRAME_BYTES + 4096) + 32768
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        while chunk := stream.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def preflight_capture_target(output_dir: str | Path, *, expected_frames: int,
@@ -173,6 +182,12 @@ class CaptureWriter:
         self.config = _json_safe(config)
         self.metadata = _json_safe(metadata or {})
         self.source_type = source_type
+        # These NumPy arrays live in ordinary process RAM. Only the four DMA
+        # ping-pong buffers in the board runner use PYNQ/CMA allocation.
+        self.raw_gray8 = np.empty((expected_frames, *FRAME_SHAPE), dtype=np.uint8)
+        self.raw_binary8 = np.empty((expected_frames, *FRAME_SHAPE), dtype=np.uint8)
+        self._raw_frames_recorded = 0
+        self._raw_record_lock = threading.Lock()
         self._queue: queue.Queue[Any] = queue.Queue(maxsize=queue_depth)
         self._thread = threading.Thread(target=self._writer_main,
                                         name="wo0017-capture-writer", daemon=True)
@@ -203,6 +218,7 @@ class CaptureWriter:
             "capacity": self.preflight,
             "estimated_total_bytes": estimated_capture_bytes(expected_frames),
             "max_bytes": max_bytes,
+            "raw_frame_archive": None,
         }
         try:
             self.output_dir.mkdir(mode=0o700)
@@ -247,6 +263,8 @@ class CaptureWriter:
         mask_array = self._validate_image(mask, "mask")
         if np.any((mask_array != 0) & (mask_array != 0xFF)):
             raise CaptureError("raw mask contains values other than Binary8 0x00/0xFF")
+        if frame_id >= self._raw_frames_recorded:
+            self.record_raw_frame(frame_id, gray_array, mask_array)
         item = (frame_id, np.array(gray_array, copy=True, order="C"),
                 np.array(mask_array, copy=True, order="C"), safe_metadata)
         self._submitted += 1
@@ -258,6 +276,31 @@ class CaptureWriter:
             self._error = f"bounded capture queue overflow at frame {frame_id}"
             raise CaptureError(self._error) from exc
         self._accepted += 1
+
+    def record_raw_frame(self, frame_id: int, gray: np.ndarray, mask: np.ndarray) -> None:
+        """Copy one completed DMA pair into preallocated ordinary-RAM arrays."""
+        if self._closed:
+            raise CaptureError("capture writer is already closed")
+        if self._error is not None:
+            raise CaptureError(f"capture writer failed: {self._error}")
+        if isinstance(frame_id, bool) or not isinstance(frame_id, int):
+            raise CaptureError("raw frame ID must be an integer")
+        if frame_id < 0:
+            raise CaptureError("raw frame ID must be nonnegative")
+        if frame_id >= self.expected_frames:
+            raise CaptureError("raw capture received more frames than requested")
+        gray_array = self._validate_image(gray, "gray")
+        mask_array = self._validate_image(mask, "mask")
+        with self._raw_record_lock:
+            if frame_id < self._raw_frames_recorded:
+                return
+            if frame_id != self._raw_frames_recorded:
+                raise CaptureError(
+                    f"raw frame IDs must be contiguous from zero; got {frame_id}"
+                )
+            np.copyto(self.raw_gray8[frame_id], gray_array, casting="no")
+            np.copyto(self.raw_binary8[frame_id], mask_array, casting="no")
+            self._raw_frames_recorded += 1
 
     @staticmethod
     def _validate_image(image: np.ndarray, label: str) -> np.ndarray:
@@ -368,7 +411,18 @@ class CaptureWriter:
                 stream.flush()
                 os.fsync(stream.fileno())
         complete = (self._error is None and self._written == self.expected_frames
-                    and self._accepted == self.expected_frames and self._dropped == 0)
+                    and self._accepted == self.expected_frames and self._dropped == 0
+                    and self._raw_frames_recorded == self.expected_frames)
+        if self._error is None and self._raw_frames_recorded != self.expected_frames:
+            self._error = (f"raw frame capture is incomplete: {self._raw_frames_recorded}/"
+                           f"{self.expected_frames}")
+        raw_frame_archive = None
+        if complete:
+            try:
+                raw_frame_archive = self._write_raw_frame_archive()
+            except Exception as exc:
+                self._error = f"{type(exc).__name__}: {exc}"
+                complete = False
         self._manifest.update({
             "status": "COMPLETE" if complete else "INCOMPLETE",
             "writer_active": False,
@@ -381,10 +435,66 @@ class CaptureWriter:
             "bytes_written": self._bytes_written,
             "frame_records_sha256": (hashlib.sha256(self._records_path.read_bytes()).hexdigest()
                                       if self._records_path.exists() else None),
+            "raw_frame_archive": raw_frame_archive,
             "error": self._error,
         })
         self._write_manifest()
         return dict(self._manifest)
+
+    def _write_raw_frame_archive(self) -> dict[str, Any]:
+        archive_path = self.output_dir / RAW_FRAME_ARCHIVE_NAME
+        archive_tmp = archive_path.with_suffix(archive_path.suffix + ".tmp")
+        sidecar_path = archive_path.with_suffix(archive_path.suffix + ".sha256")
+        sidecar_tmp = sidecar_path.with_suffix(sidecar_path.suffix + ".tmp")
+        gray = self.raw_gray8[:self.expected_frames]
+        mask = self.raw_binary8[:self.expected_frames]
+        gray_sha256 = hashlib.sha256(memoryview(gray)).hexdigest()
+        mask_sha256 = hashlib.sha256(memoryview(mask)).hexdigest()
+        embedded_metadata = {
+            "schema_version": 1,
+            "captured_frames": self.expected_frames,
+            "frame_shape": list(FRAME_SHAPE),
+            "array_shape": [self.expected_frames, *FRAME_SHAPE],
+            "dtype": "uint8",
+            "raw_gray8_sha256": gray_sha256,
+            "raw_binary8_sha256": mask_sha256,
+        }
+        try:
+            with archive_tmp.open("xb") as stream:
+                np.savez(stream, raw_gray8=gray, raw_binary8=mask,
+                         archive_metadata_json=np.asarray(
+                             _json_bytes(embedded_metadata).decode("utf-8")))
+                stream.flush()
+                os.fsync(stream.fileno())
+            archive_sha256 = _sha256_file(archive_tmp)
+            os.replace(archive_tmp, archive_path)
+            sidecar_text = f"{archive_sha256}  {archive_path.name}\n"
+            with sidecar_tmp.open("x", encoding="ascii", newline="\n") as stream:
+                stream.write(sidecar_text)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(sidecar_tmp, sidecar_path)
+            committed_bytes = (self._bytes_written + archive_path.stat().st_size
+                               + sidecar_path.stat().st_size)
+            if committed_bytes > self.max_bytes - 8192:
+                raise CaptureError("capture files exceed configured capacity limit")
+            return {
+                "filename": archive_path.name,
+                "sha256_sidecar": sidecar_path.name,
+                "sha256": archive_sha256,
+                "size_bytes": archive_path.stat().st_size,
+                "captured_frames": self.expected_frames,
+                "shape": [self.expected_frames, *FRAME_SHAPE],
+                "dtype": "uint8",
+                "raw_gray8_sha256": gray_sha256,
+                "raw_binary8_sha256": mask_sha256,
+            }
+        finally:
+            for temporary in (archive_tmp, sidecar_tmp):
+                try:
+                    temporary.unlink(missing_ok=True)
+                except OSError:
+                    pass
 
     def _write_manifest(self) -> None:
         target = self.output_dir / "manifest.json"
@@ -442,6 +552,55 @@ def load_dataset(output_dir: str | Path, *, require_complete: bool = True
                             if key not in reserved_config_keys}
     if not isinstance(effective_config, dict):
         raise ValueError("dataset effective counter config is malformed")
+    raw_gray_archive = None
+    raw_mask_archive = None
+    archive_info = manifest.get("raw_frame_archive")
+    if archive_info is not None:
+        if not isinstance(archive_info, dict):
+            raise ValueError("raw frame archive metadata is malformed")
+        if (archive_info.get("filename") != RAW_FRAME_ARCHIVE_NAME
+                or archive_info.get("sha256_sidecar") != f"{RAW_FRAME_ARCHIVE_NAME}.sha256"):
+            raise ValueError("raw frame archive path metadata is invalid")
+        archive_path = root / RAW_FRAME_ARCHIVE_NAME
+        sidecar_path = root / f"{RAW_FRAME_ARCHIVE_NAME}.sha256"
+        if not archive_path.is_file() or not sidecar_path.is_file():
+            raise ValueError("raw frame NPZ or its SHA-256 sidecar is missing")
+        archive_sha256 = archive_info.get("sha256")
+        if (not isinstance(archive_sha256, str)
+                or _sha256_file(archive_path) != archive_sha256):
+            raise ValueError("raw frame NPZ full-file SHA-256 mismatch")
+        expected_sidecar = f"{archive_sha256}  {RAW_FRAME_ARCHIVE_NAME}"
+        if sidecar_path.read_text(encoding="ascii").strip() != expected_sidecar:
+            raise ValueError("raw frame NPZ SHA-256 sidecar mismatch")
+        if archive_info.get("size_bytes") != archive_path.stat().st_size:
+            raise ValueError("raw frame NPZ size does not match its manifest")
+        with np.load(archive_path, allow_pickle=False) as stored:
+            try:
+                raw_gray_archive = stored["raw_gray8"]
+                raw_mask_archive = stored["raw_binary8"]
+                embedded_metadata = json.loads(str(stored["archive_metadata_json"].item()))
+            except (KeyError, ValueError, json.JSONDecodeError) as exc:
+                raise ValueError("raw frame NPZ members or metadata are invalid") from exc
+        expected_shape = (expected, *FRAME_SHAPE)
+        for label, array in (("raw_gray8", raw_gray_archive),
+                             ("raw_binary8", raw_mask_archive)):
+            if array.dtype != np.uint8 or array.shape != expected_shape or not array.flags.c_contiguous:
+                raise ValueError(f"raw frame NPZ {label} geometry or dtype mismatch")
+        gray_digest = hashlib.sha256(memoryview(raw_gray_archive)).hexdigest()
+        mask_digest = hashlib.sha256(memoryview(raw_mask_archive)).hexdigest()
+        if (archive_info.get("captured_frames") != expected
+                or archive_info.get("shape") != list(expected_shape)
+                or archive_info.get("dtype") != "uint8"
+                or archive_info.get("raw_gray8_sha256") != gray_digest
+                or archive_info.get("raw_binary8_sha256") != mask_digest
+                or embedded_metadata.get("captured_frames") != expected
+                or embedded_metadata.get("schema_version") != 1
+                or embedded_metadata.get("array_shape") != list(expected_shape)
+                or embedded_metadata.get("frame_shape") != list(FRAME_SHAPE)
+                or embedded_metadata.get("dtype") != "uint8"
+                or embedded_metadata.get("raw_gray8_sha256") != gray_digest
+                or embedded_metadata.get("raw_binary8_sha256") != mask_digest):
+            raise ValueError("raw frame NPZ array SHA-256 or embedded metadata mismatch")
     frames = []
     for expected_id, record in enumerate(raw_records):
         if record.get("frame_id") != expected_id:
@@ -478,6 +637,12 @@ def load_dataset(output_dir: str | Path, *, require_complete: bool = True
             arrays[label] = array
         if np.any((arrays["mask"] != 0) & (arrays["mask"] != 0xFF)):
             raise ValueError(f"frame {expected_id} mask is not raw Binary8")
+        if raw_gray_archive is not None and not np.array_equal(
+                arrays["gray"], raw_gray_archive[expected_id]):
+            raise ValueError(f"frame {expected_id} Gray8 differs from the combined NPZ")
+        if raw_mask_archive is not None and not np.array_equal(
+                arrays["mask"], raw_mask_archive[expected_id]):
+            raise ValueError(f"frame {expected_id} Binary8 differs from the combined NPZ")
         frames.append(CapturedFrame(expected_id, arrays["gray"], arrays["mask"], metadata))
     return manifest, tuple(frames)
 

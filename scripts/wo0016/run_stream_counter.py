@@ -284,9 +284,11 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
               "hysteresis": args.hysteresis, "confirm_hits": args.confirm_hits,
               "component_cluster_dx": args.component_cluster_dx,
               "component_cluster_dy": args.component_cluster_dy,
+              "component_cluster_gap": args.component_cluster_gap,
               "cooldown_frames": args.cooldown_frames,
               "cooldown_lateral": args.cooldown_lateral,
-              "edge_max_missing": args.edge_max_missing}
+              "edge_max_missing": args.edge_max_missing,
+              "prediction_max_missing": args.prediction_max_missing}
     MaskCounter(**config)  # Validate before consuming the one-shot attempt.
     return config
 
@@ -880,6 +882,8 @@ def execute_board_stream(args: argparse.Namespace, *,
         stageb2_attempt_permit = validate_stageb2_attempt_permit(
             permit_path, attempt_identity
         )
+        if operator_gate is not None:
+            operator_gate.bind_permit_sha256(stageb2_attempt_permit["sha256"])
         attempt_path = attempt_directory / "consumed.json"
         guard = claim_once_guard(attempt_path, {
             "schema": 1,
@@ -1055,6 +1059,15 @@ def execute_board_stream(args: argparse.Namespace, *,
             )
             evidence["capture_directory"] = capture_preflight["path"]
             evidence["capture_status"] = "IN_PROGRESS"
+            evidence["raw_capture_storage"] = {
+                "memory_kind": "ordinary NumPy process RAM; not PYNQ/CMA allocation",
+                "array_shape": list(capture_writer.raw_gray8.shape),
+                "dtype": "uint8",
+                "gray_bytes": int(capture_writer.raw_gray8.nbytes),
+                "binary_bytes": int(capture_writer.raw_binary8.nbytes),
+                "recording": "np.copyto after S2MM completion and frame-status validation",
+                "archive_written_after_sampling": True,
+            }
 
         # Accessing the PYNQ DMA driver starts its channels; this is after all static,
         # process, Overlay identity, CMA and physical-span gates have passed.
@@ -1106,10 +1119,12 @@ def execute_board_stream(args: argparse.Namespace, *,
         preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
             "capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
-            "mjpeg_encode", "mjpeg_handoff", "mjpeg_background_encode", "postprocess")}
+            "raw_capture_copy", "mjpeg_encode", "mjpeg_handoff",
+            "mjpeg_background_encode", "postprocess")}
         preview_publisher = PeriodicMjpegPublisher(
             hub=hub, line_y=args.line_y, count_axis=args.count_axis, line_x=args.line_x,
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
+            hysteresis=args.hysteresis,
         )
         stage_timings_ms["mjpeg_encode"] = preview_publisher.background_encode_timings_ms
         stage_timings_ms["mjpeg_background_encode"] = (
@@ -1170,7 +1185,9 @@ def execute_board_stream(args: argparse.Namespace, *,
             before_transfer=arm_frame,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
-            on_frame=preview_publisher,
+            preview_callback=preview_publisher,
+            raw_capture_callback=(capture_writer.record_raw_frame
+                                  if capture_writer is not None else None),
             capture_callback=(capture_frame if capture_writer is not None else None),
             stage_timings_ms=stage_timings_ms,
             transfer_timeout_s=args.timeout_s,
@@ -1463,11 +1480,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--component-cluster-dx", type=float, default=0.0,
                         help="maximum pairwise centroid X spread; zero disables clustering")
     parser.add_argument("--component-cluster-dy", type=float, default=12.0)
+    parser.add_argument("--component-cluster-gap", type=float, default=16.0,
+                        help="maximum Euclidean edge gap between bounding boxes for union-find clustering")
     parser.add_argument("--cooldown-frames", type=int, default=0,
                         help="inclusive same-corridor count suppression window; zero disables")
     parser.add_argument("--cooldown-lateral", type=float, default=15.0)
     parser.add_argument("--edge-max-missing", type=int, default=0,
                         help="extra missing-frame budget for confirmed clipped X tracks only")
+    parser.add_argument("--prediction-max-missing", type=int, default=2,
+                        help="bounded missed-frame association budget for confirmed armed X tracks")
     parser.add_argument("--ground-truth-count", "--expected-count", dest="ground_truth_count",
                         type=_nonnegative_count_argument)
     parser.add_argument("--material-label")

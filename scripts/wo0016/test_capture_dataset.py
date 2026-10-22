@@ -1,4 +1,5 @@
 import json
+import hashlib
 import sys
 import threading
 from pathlib import Path
@@ -11,6 +12,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from capture_dataset import (  # noqa: E402
     CaptureError,
     CaptureWriter,
+    DEFAULT_MAX_BYTES,
+    estimated_capture_bytes,
     evaluate_entities,
     load_dataset,
 )
@@ -52,6 +55,10 @@ def _session(tmp_path, *, frames=2, max_bytes=2_000_000, queue_depth=2):
     )
 
 
+def test_default_capture_capacity_accounts_for_220_frame_npz():
+    assert estimated_capture_bytes(220) < DEFAULT_MAX_BYTES
+
+
 def test_lossless_gray_and_raw_mask_round_trip(tmp_path):
     writer = _session(tmp_path)
     gray0 = np.arange(240 * 320, dtype=np.uint32).reshape(240, 320).astype(np.uint8)
@@ -72,6 +79,61 @@ def test_lossless_gray_and_raw_mask_round_trip(tmp_path):
     np.testing.assert_array_equal(frames[1].gray, gray1)
     np.testing.assert_array_equal(frames[0].mask, mask0)
     np.testing.assert_array_equal(frames[1].mask, mask1)
+
+
+def test_writer_preallocates_and_seals_combined_raw_frame_archive(tmp_path):
+    writer = _session(tmp_path, frames=2)
+    assert writer.raw_gray8.shape == (2, 240, 320)
+    assert writer.raw_binary8.shape == (2, 240, 320)
+    assert writer.raw_gray8.dtype == writer.raw_binary8.dtype == np.uint8
+    assert writer.raw_gray8.flags.c_contiguous and writer.raw_binary8.flags.c_contiguous
+    assert not hasattr(writer.raw_gray8, "physical_address")
+    assert not hasattr(writer.raw_binary8, "physical_address")
+
+    gray = np.arange(240 * 320, dtype=np.uint32).reshape(240, 320).astype(np.uint8)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    mask[100:108, 120:129] = 0xFF
+    for frame_id in range(2):
+        frame_gray = np.roll(gray, frame_id, axis=0)
+        frame_mask = np.roll(mask, frame_id, axis=1)
+        writer.record_raw_frame(frame_id, frame_gray, frame_mask)
+        writer.submit(frame_id, frame_gray, frame_mask, _frame_metadata(frame_id))
+    archive_path = tmp_path / "capture" / "frames_gray8_binary8.npz"
+    assert not archive_path.exists(), "the archive must be written after sampling closes"
+
+    manifest = writer.close()
+
+    assert manifest["status"] == "COMPLETE"
+    archive_info = manifest["raw_frame_archive"]
+    archive_bytes = archive_path.read_bytes()
+    assert hashlib.sha256(archive_bytes).hexdigest() == archive_info["sha256"]
+    assert archive_info["raw_gray8_sha256"]
+    assert archive_info["raw_binary8_sha256"]
+    sidecar = archive_path.with_suffix(".npz.sha256").read_text(encoding="ascii").strip()
+    assert sidecar == f"{archive_info['sha256']}  {archive_path.name}"
+    with np.load(archive_path, allow_pickle=False) as stored:
+        assert stored["raw_gray8"].shape == (2, 240, 320)
+        assert stored["raw_binary8"].shape == (2, 240, 320)
+        assert stored["raw_gray8"].dtype == stored["raw_binary8"].dtype == np.uint8
+        for frame_id in range(2):
+            np.testing.assert_array_equal(stored["raw_gray8"][frame_id], writer.raw_gray8[frame_id])
+            np.testing.assert_array_equal(stored["raw_binary8"][frame_id], writer.raw_binary8[frame_id])
+    loaded_manifest, _ = load_dataset(tmp_path / "capture")
+    assert loaded_manifest["raw_frame_archive"] == archive_info
+
+
+def test_dataset_loader_rejects_tampered_combined_raw_frame_archive(tmp_path):
+    writer = _session(tmp_path, frames=1)
+    gray = np.full((240, 320), 37, dtype=np.uint8)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    writer.record_raw_frame(0, gray, mask)
+    writer.submit(0, gray, mask, _frame_metadata(0))
+    assert writer.close()["status"] == "COMPLETE"
+
+    archive_path = tmp_path / "capture" / "frames_gray8_binary8.npz"
+    archive_path.write_bytes(archive_path.read_bytes() + b"tamper")
+    with pytest.raises(ValueError, match="full-file SHA-256"):
+        load_dataset(tmp_path / "capture")
 
 
 def test_dataset_validator_rejects_missing_or_mismatched_frame_metadata(tmp_path):
