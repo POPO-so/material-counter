@@ -1,0 +1,23 @@
+{
+  "platform": "Windows-11-10.0.26200-SP0",
+  "opencv": "5.0.0",
+  "iterations": 500,
+  "source_shape": [
+    400,
+    640,
+    3
+  ],
+  "kind": "offline synthetic repeated-monochrome channels; no camera capture",
+  "interpolation": "new path uses formal counter INTER_NEAREST; not pixel-equivalent to old AREA",
+  "timings_ms": {
+    "attempt03_cvtColor_area": {
+      "median": 0.23545001749880612,
+      "p95": 0.29148000758141274
+    },
+    "first_channel_nearest_reused": {
+      "median": 0.02609999501146376,
+      "p95": 0.03890000516548753
+    }
+  },
+  "speedup": 9.021075191600254
+}

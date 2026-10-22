@@ -1,0 +1,5 @@
+dropped_uid=1000 groups=[] readback_rc=0
+brightness: 0
+auto_exposure: 1 (Manual Mode)
+exposure_time_absolute: 50
+

@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "work_order": "WO-0017",
+  "attempt": "camera-preview-06",
+  "calibration_mode": true,
+  "calibration_control_access": "loopback-only JSON POST /api/calibration",
+  "memory_policy": {
+    "before_camera_cma_strictly_above_kib": 32768,
+    "after_camera_minimum_cma_kib": 16384,
+    "runtime_cma_32768_warning_only": true,
+    "calibration_cma_emergency_floor_kib": 16384,
+    "min_mem_available_kib": 65536,
+    "max_process_rss_kib": 196608,
+    "formal_sampling_requires_preview_stopped_and_fresh_preflight": true
+  },
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "status": "READY_WAITING_FOR_OPERATOR_OBSERVATION",
+  "camera": "/dev/video0",
+  "expected_profile": {
+    "backend": "CAP_V4L2",
+    "pixelformat": "MJPG",
+    "width": 640,
+    "height": 400,
+    "fps": 60,
+    "auto_exposure": 1,
+    "exposure_time_absolute": 50,
+    "brightness": 0
+  },
+  "hud": {
+    "line_x": 160,
+    "hysteresis_band_x": [
+      145,
+      175
+    ],
+    "pip_label": "SIM TH=128",
+    "pip_source": "software threshold of resized camera Gray8; no PL DMA data",
+    "software_tracker_enabled": true
+  },
+  "board_counter_enabled": false,
+  "dma_enabled": false,
+  "overlay_reload": false,
+  "formal_sampling": false,
+  "frame_files_written": false,
+  "preview_port": 8080,
+  "pid": 7009,
+  "started_utc": "2025-05-07T17:39:18.783420+00:00",
+  "camera_controls": {
+    "exposure_time_absolute": 50,
+    "brightness": 0
+  },
+  "opencv_threads": 1,
+  "dma_status_read_only_before_preview": {
+    "MM2S": 1,
+    "S2MM": 1
+  },
+  "v4l2_before_open": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "memory_health": {
+    "cma_free_kib": 24676,
+    "mem_available_kib": 390924,
+    "process_rss_kib": 104296
+  },
+  "memory_minimum_kib": {
+    "cma_free_kib": 21644,
+    "mem_available_kib": 383512,
+    "process_rss_kib": 89324
+  },
+  "process_rss_peak_kib": 104420,
+  "memory_health_status": "CMA_LOW: STOP CALIBRATION BEFORE DMA",
+  "cma_before_camera_kib": 36948,
+  "opencv_set_results": {
+    "fourcc_mjpg": true,
+    "width_640": true,
+    "height_400": true,
+    "fps_60": true,
+    "buffer_size_1": true
+  },
+  "opencv_properties_after_set": {
+    "fourcc": 1196444237,
+    "width": 640,
+    "height": 400,
+    "fps": 60.0
+  },
+  "v4l2_before_first_frame": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "first_frame_shape": [
+    400,
+    640,
+    3
+  ],
+  "first_frame_dtype": "uint8",
+  "v4l2_after_first_frame": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "cma_after_first_frame_kib": 32320,
+  "cma_warning_samples": 1532,
+  "component_limits": {
+    "max_area": 900,
+    "max_bbox_width": 85,
+    "max_bbox_height": 85
+  },
+  "calibration": {
+    "roi_bounds_xyxy": [
+      0,
+      96,
+      320,
+      145
+    ],
+    "bg_mean": 34.41549744897959,
+    "bg_mean_method": "ROI pixels <=128 (bright objects excluded)",
+    "roi_mean": 34.41549744897959,
+    "over_128_ratio": 0.0,
+    "over_128_area_px": 0,
+    "glare_area_px": 0,
+    "glare_rejected_count": 0,
+    "glare_contours": [],
+    "candidate_nut_blobs": 0,
+    "candidate_areas_px": [],
+    "fps": 29.597369559596014,
+    "fps_kind": "rolling 60-frame camera/processing loop",
+    "status": "OPTICS READY (TH=128 OK)"
+  },
+  "live_fps": 29.597369559596014,
+  "preview_frames_measured": 180,
+  "preview_fps": 8.414924772216466,
+  "preview_measurement_seconds": 21.271729082000093,
+  "pipeline_fps": 9.75468481025455,
+  "stage_median_ms": {
+    "camera_read_ms": 109.21857799985446,
+    "gray_resize_threshold_ms": 3.363341500516981,
+    "software_track_ms": 2.4931904990808107,
+    "hud_handoff_ms": 0.9166889994958183
+  },
+  "hud_encode_median_ms": 28.198070500366157,
+  "v4l2_at_ready": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "cma_at_ready_kib": 30404,
+  "service_uid": 1000,
+  "service_gid": 1000,
+  "preview_url": "http://192.168.2.99:8080/",
+  "ready_utc": "2025-05-07T17:39:41.346532+00:00",
+  "preview_frames_published": 43677,
+  "preview_source": "software threshold preview; no DMA, no formal sampling",
+  "last_frame_utc": "2025-05-07T18:06:28.663172+00:00",
+  "last_control_utc": "2025-05-07T17:41:22.211362+00:00"
+}

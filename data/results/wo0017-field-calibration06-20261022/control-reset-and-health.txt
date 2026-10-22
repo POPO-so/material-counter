@@ -1,0 +1,7 @@
+{"exposure_time_absolute": 50, "brightness": 0}
+xilinx xilinx 600 2483 /home/xilinx/wo0017/camera-preview-35983d66-bb1d-4a8a-85e5-802170825515-06/memory-health.jsonl
+{"elapsed_seconds": 107.19052272099725, "cma_free_kib": 29796, "mem_available_kib": 392456, "process_rss_kib": 103996}
+{"elapsed_seconds": 112.40159699599826, "cma_free_kib": 29796, "mem_available_kib": 392480, "process_rss_kib": 103996}
+{"elapsed_seconds": 117.60803247699732, "cma_free_kib": 29796, "mem_available_kib": 392504, "process_rss_kib": 104000}
+{"elapsed_seconds": 122.79801768199832, "cma_free_kib": 29068, "mem_available_kib": 391184, "process_rss_kib": 104000}
+CAMERA_HUD_PREVIEW_READY url=http://192.168.2.99:8080/ fps=8.415 frames=180 pipeline_fps=9.755 cma_free_kib=30404 boot=35983d66-bb1d-4a8a-85e5-802170825515

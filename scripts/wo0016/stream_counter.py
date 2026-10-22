@@ -97,6 +97,8 @@ class FrameResult:
     raw_detections: tuple[Detection, ...] = ()
     suppressed_events: tuple[CountEvent, ...] = ()
     tracks: tuple[dict[str, Any], ...] = ()
+    glare_rejected_count: int = 0
+    glare_area_px: int = 0
 
 
 @dataclass
@@ -128,11 +130,13 @@ class MaskCounter:
                  max_x_step: float = 20.0, backward_tolerance: float = 2.0,
                  count_axis: str = "y", line_x: int = 160,
                  max_lateral_step: float | None = None,
-                 max_area: int | None = None,
+                 max_area: int | None = 900,
+                 max_bbox_width: int = 85, max_bbox_height: int = 85,
                  component_cluster_dx: float = 0.0, component_cluster_dy: float = 12.0,
                  component_cluster_gap: float = 0.0,
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
-                 edge_max_missing: int = 0, prediction_max_missing: int = 0):
+                 edge_max_missing: int = 0, prediction_max_missing: int = 0,
+                 discard_finished_tracks: bool = False):
         self.width = _integer(width, "width", minimum=1)
         self.height = _integer(height, "height", minimum=1)
         self.line_y = _integer(line_y, "line_y", minimum=0)
@@ -141,6 +145,8 @@ class MaskCounter:
         self.roi_half_height = _integer(roi_half_height, "roi_half_height", minimum=1)
         self.min_area = _integer(min_area, "min_area", minimum=1)
         self.max_area = None if max_area is None else _integer(max_area, "max_area", minimum=self.min_area)
+        self.max_bbox_width = _integer(max_bbox_width, "max_bbox_width", minimum=1)
+        self.max_bbox_height = _integer(max_bbox_height, "max_bbox_height", minimum=1)
         if count_axis not in ("x", "y"):
             raise ValueError("count_axis must be x or y")
         self.count_axis = count_axis
@@ -169,6 +175,9 @@ class MaskCounter:
         self.prediction_max_missing = _integer(
             prediction_max_missing, "prediction_max_missing", minimum=0
         )
+        if not isinstance(discard_finished_tracks, bool):
+            raise ValueError("discard_finished_tracks must be a bool")
+        self.discard_finished_tracks = discard_finished_tracks
         self._recent_events: list[CountEvent] = []
         self.last_suppressed_events: list[CountEvent] = []
         self.total_count = 0
@@ -176,6 +185,10 @@ class MaskCounter:
         self._tracks: dict[int, _Track] = {}
         self._next_track_id = 1
         self.last_associations: list[dict[str, Any]] = []
+        self.glare_rejected_count = 0
+        self.glare_area_px = 0
+        self.rejected_detections: tuple[Detection, ...] = ()
+        self.rejected_contours: tuple[np.ndarray, ...] = ()
 
     def update_detections(self, frame_id: int, detections: Any) -> FrameResult:
         """Replay recorded qualified CCL detections through the live tracker.
@@ -187,6 +200,7 @@ class MaskCounter:
         if self.last_frame_id is not None and frame_id <= self.last_frame_id:
             raise ValueError("frame IDs must strictly increase")
         accepted = []
+        rejected = []
         for detection in detections:
             if not isinstance(detection, Detection):
                 raise ValueError("replay requires Detection records")
@@ -195,8 +209,17 @@ class MaskCounter:
                     or detection.area < 1
                     or detection.area > (detection.x_max-detection.x_min+1)*(detection.y_max-detection.y_min+1)):
                 raise ValueError("invalid recorded component geometry")
-            if self._area_allowed(detection.area):
+            if detection.area < self.min_area:
+                continue
+            if self._component_exceeds_limits(
+                detection.area,
+                detection.x_max - detection.x_min + 1,
+                detection.y_max - detection.y_min + 1,
+            ):
+                rejected.append(detection)
+            else:
                 accepted.append(detection)
+        self._set_rejected_components(rejected)
         accepted.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
         raw_detections = tuple(accepted)
         accepted = self._cluster_components(accepted)
@@ -206,7 +229,9 @@ class MaskCounter:
         return FrameResult(frame_id, self.total_count, tuple(accepted), tuple(events),
                            top, bottom, (), (), raw_detections=raw_detections,
                            suppressed_events=tuple(self.last_suppressed_events),
-                           tracks=self.tracking_snapshot())
+                           tracks=self.tracking_snapshot(),
+                           glare_rejected_count=self.glare_rejected_count,
+                           glare_area_px=self.glare_area_px)
 
     def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
         """Return serializable track state without mutating tracker behavior."""
@@ -233,6 +258,23 @@ class MaskCounter:
 
     def _area_allowed(self, area: int) -> bool:
         return area >= self.min_area and (self.max_area is None or area <= self.max_area)
+
+    def _component_exceeds_limits(self, area: int, box_width: int, box_height: int) -> bool:
+        return (
+            (self.max_area is not None and area > self.max_area)
+            or box_width > self.max_bbox_width
+            or box_height > self.max_bbox_height
+        )
+
+    def _set_rejected_components(
+        self,
+        detections: list[Detection],
+        contours: list[np.ndarray] | None = None,
+    ) -> None:
+        self.rejected_detections = tuple(detections)
+        self.glare_rejected_count = len(detections)
+        self.glare_area_px = sum(detection.area for detection in detections)
+        self.rejected_contours = tuple(contours or ())
 
     def update(self, frame_id: int, mask: np.ndarray) -> FrameResult:
         frame_id = _integer(frame_id, "frame_id", minimum=0)
@@ -282,6 +324,8 @@ class MaskCounter:
                 "track_ms": track_ms,
             },
             tracks=self.tracking_snapshot(),
+            glare_rejected_count=self.glare_rejected_count,
+            glare_area_px=self.glare_area_px,
         )
 
     def _roi_bounds(self) -> tuple[int, int]:
@@ -306,6 +350,7 @@ class MaskCounter:
 
     def _roi_components(self, roi: np.ndarray, top: int,
                         foreground_pixels: int) -> list[Detection]:
+        self._set_rejected_components([])
         if foreground_pixels < self.min_area:
             return []
         if not roi.flags.c_contiguous:
@@ -313,24 +358,24 @@ class MaskCounter:
         fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
         fast_algorithm = getattr(cv2, "CCL_GRANA", None)
         if callable(fast_ccl) and fast_algorithm is not None:
-            count, _, stats, centroids = fast_ccl(
+            count, labels, stats, centroids = fast_ccl(
                 roi, 8, cv2.CV_16U, fast_algorithm
             )
         else:
-            count, _, stats, centroids = cv2.connectedComponentsWithStats(
+            count, labels, stats, centroids = cv2.connectedComponentsWithStats(
                 roi, connectivity=8, ltype=cv2.CV_16U
             )
         qualified_labels = np.flatnonzero(
             stats[1:count, cv2.CC_STAT_AREA] >= self.min_area
         ) + 1
         detections = []
+        rejected = []
+        rejected_contours = []
         for label in qualified_labels:
             x, y, box_width, box_height, area = (
                 int(value) for value in stats[label]
             )
-            if not self._area_allowed(area):
-                continue
-            detections.append(Detection(
+            detection = Detection(
                 x_min=x,
                 x_max=x + box_width - 1,
                 y_min=y + top,
@@ -338,7 +383,20 @@ class MaskCounter:
                 area=area,
                 centroid_x=float(centroids[label, 0]),
                 centroid_y=float(centroids[label, 1] + top),
-            ))
+            )
+            if self._component_exceeds_limits(area, box_width, box_height):
+                rejected.append(detection)
+                component_mask = cv2.compare(labels, int(label), cv2.CMP_EQ)
+                contours, _ = cv2.findContours(
+                    component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+                )
+                for contour in contours:
+                    full_frame_contour = contour.copy()
+                    full_frame_contour[:, 0, 1] += top
+                    rejected_contours.append(full_frame_contour)
+                continue
+            detections.append(detection)
+        self._set_rejected_components(rejected, rejected_contours)
         detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
         return detections
 
@@ -592,6 +650,10 @@ class MaskCounter:
             self.last_associations.append({"track_id": track.track_id, "detection_index": index,
                                            "previous_frame": None, "kind": "new", "dx": None, "dy": None})
             self._next_track_id += 1
+        if self.discard_finished_tracks:
+            for track_id in [track_id for track_id, track in self._tracks.items()
+                             if track.finished]:
+                del self._tracks[track_id]
         return sorted(events, key=lambda event: event.track_id)
 
 

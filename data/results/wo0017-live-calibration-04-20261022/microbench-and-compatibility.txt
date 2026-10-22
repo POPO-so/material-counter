@@ -1,0 +1,15 @@
+{
+  "copy3": {
+    "median_ms": 2.3438309999619378,
+    "p95_ms": 2.434311200704542
+  },
+  "gather": {
+    "median_ms": 3.2803389985929243,
+    "p95_ms": 3.3911816997715505
+  },
+  "advanced": {
+    "median_ms": 8.376581001357408,
+    "p95_ms": 8.41765500153997
+  }
+}
+{"status": "PASS", "kind": "board offline synthetic, no camera/MMIO/DMA", "opencv": "4.5.4", "glare_area_px": 1500, "jpeg_bytes": 19036}

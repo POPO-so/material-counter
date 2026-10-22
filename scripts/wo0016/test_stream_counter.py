@@ -53,6 +53,109 @@ def test_area_filter_and_roi_keep_only_qualified_line_band_components():
     assert result.ccl_executed is True
 
 
+def test_glare_component_limits_are_configurable_and_validate_boundaries():
+    defaults = MaskCounter()
+    assert defaults.max_area == 900
+    assert defaults.max_bbox_width == 85
+    assert defaults.max_bbox_height == 85
+
+    configured = MaskCounter(
+        min_area=5, max_area=1200, max_bbox_width=90, max_bbox_height=70
+    )
+    assert configured.max_area == 1200
+    assert configured.max_bbox_width == 90
+    assert configured.max_bbox_height == 70
+    assert MaskCounter(max_area=None).max_area is None
+
+    for options in (
+        {"max_area": 11},
+        {"max_area": 0},
+        {"max_bbox_width": 0},
+        {"max_bbox_height": -1},
+        {"max_bbox_width": 12.5},
+        {"max_bbox_height": True},
+    ):
+        with pytest.raises(ValueError):
+            MaskCounter(**options)
+
+
+def test_component_limit_boundaries_include_exact_maximum_area_and_bbox_sizes():
+    counter = MaskCounter(line_y=120, roi_half_height=60)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    mask[70:100, 10:40] = 0xFF          # area 900, exact max_area
+    mask[110:120, 60:145] = 0xFF        # width 85, exact max_bbox_width
+    mask[70:155, 160:170] = 0xFF        # height 85, exact max_bbox_height
+    mask[112:119, 200:207] = 0xFF       # normal nut
+
+    result = counter.update(0, mask)
+
+    assert sorted(d.area for d in result.raw_detections) == [49, 850, 850, 900]
+    assert counter.glare_rejected_count == 0
+    assert counter.glare_area_px == 0
+    assert counter.rejected_detections == ()
+    assert counter.rejected_contours == ()
+
+
+def test_oversized_blobs_are_removed_before_tracking_and_exposed_for_hud():
+    counter = MaskCounter(
+        line_y=120,
+        roi_half_height=60,
+        max_area=900,
+        max_bbox_width=85,
+        max_bbox_height=85,
+        component_cluster_gap=12,
+    )
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    mask[70:100, 40:71] = 0xFF          # area 930, over max_area
+    mask[112:119, 40:47] = 0xFF         # normal nut, close to the glare blob
+    mask[110:120, 200:286] = 0xFF       # width 86, over max_bbox_width
+    mask[70:156, 290:300] = 0xFF        # height 86, over max_bbox_height
+
+    result = counter.update(0, mask)
+
+    # The close nut stays separate because the oversized neighbor is removed
+    # before component clustering and tracking.
+    assert [d.area for d in result.raw_detections] == [49]
+    assert [d.area for d in result.detections] == [49]
+    assert len(result.tracks) == 1
+    assert counter.glare_rejected_count == 3
+    assert counter.glare_area_px == 930 + 860 + 860
+    assert [d.area for d in counter.rejected_detections] == [930, 860, 860]
+    assert len(counter.rejected_contours) == counter.glare_rejected_count
+    assert all(contour.ndim == 3 and contour.shape[1:] == (1, 2)
+               for contour in counter.rejected_contours)
+    assert all(int(contour[:, 0, 1].min()) >= result.roi_top
+               for contour in counter.rejected_contours)
+    for detection, contour in zip(counter.rejected_detections, counter.rejected_contours):
+        assert int(contour[:, 0, 0].min()) == detection.x_min
+        assert int(contour[:, 0, 0].max()) == detection.x_max
+        assert int(contour[:, 0, 1].min()) == detection.y_min
+        assert int(contour[:, 0, 1].max()) == detection.y_max
+
+    # Diagnostics are per-frame, including frames with no rejected components.
+    empty = counter.update(1, np.zeros_like(mask))
+    assert not empty.raw_detections
+    assert counter.glare_rejected_count == 0
+    assert counter.glare_area_px == 0
+    assert counter.rejected_detections == ()
+    assert counter.rejected_contours == ()
+
+
+def test_recorded_detections_apply_the_same_component_limits():
+    counter = MaskCounter(max_area=900, max_bbox_width=85, max_bbox_height=85)
+    normal = Detection(10, 16, 110, 116, 49, 13.0, 113.0)
+    oversized = Detection(100, 130, 100, 129, 901, 115.0, 114.0)
+
+    result = counter.update_detections(0, [normal, oversized])
+
+    assert result.raw_detections == (normal,)
+    assert result.detections == (normal,)
+    assert counter.glare_rejected_count == 1
+    assert counter.glare_area_px == 901
+    assert counter.rejected_detections == (oversized,)
+    assert counter.rejected_contours == ()
+
+
 def _legacy_roi_signature(mask, counter):
     top = max(0, counter.line_y - counter.roi_half_height)
     bottom = min(counter.height, counter.line_y + counter.roi_half_height + 1)
@@ -117,7 +220,10 @@ def test_cached_roi_outputs_match_legacy_results_on_synthetic_and_board_mask_sam
     assert set(np.unique(real_sample)) <= {0, 0xFF}
 
     for sample in (synthetic, real_sample):
-        counter = MaskCounter(line_y=120, roi_half_height=24, min_area=12)
+        counter = MaskCounter(
+            line_y=120, roi_half_height=24, min_area=12,
+            max_area=None, max_bbox_width=320, max_bbox_height=240,
+        )
         expected = _legacy_roi_signature(sample, counter)
         actual = counter._extract_roi_detections(np.array(sample, copy=True))
         actual_signature = (
@@ -1064,6 +1170,39 @@ def test_short_gap_prediction_counts_only_an_observed_crossing():
     assert len(result.events) == 1
     assert result.events[0].frame_id == 4
     assert result.events[0].inferred_gap is True
+
+
+def test_discard_finished_tracks_bounds_long_run_history_without_changing_counts():
+    def make_counter(**kwargs):
+        return MaskCounter(count_axis="x", line_x=160, max_step=40,
+                           max_missing=1, confirm_hits=2, **kwargs)
+
+    default_counter = make_counter()
+    preview_counter = make_counter(discard_finished_tracks=True)
+
+    def nut(x):
+        return Detection(x - 5, x + 5, 110, 120, 121, float(x), 115.0)
+
+    for cycle in range(30):
+        first_frame = cycle * 7
+        for offset, x in ((0, 130), (1, 142), (2, 174)):
+            frame_id = first_frame + offset
+            default_result = default_counter.update_detections(frame_id, [nut(x)])
+            preview_result = preview_counter.update_detections(frame_id, [nut(x)])
+            assert preview_result.total_count == default_result.total_count
+        for offset in (3, 4, 5, 6):
+            frame_id = first_frame + offset
+            default_result = default_counter.update_detections(frame_id, [])
+            preview_result = preview_counter.update_detections(frame_id, [])
+            assert preview_result.total_count == default_result.total_count
+            if offset == 4:
+                assert preview_result.tracks == ()
+                assert default_result.tracks[-1]["finished"] is True
+
+    assert default_counter.total_count == preview_counter.total_count == 30
+    assert preview_counter.tracking_snapshot() == ()
+    assert len(default_counter.tracking_snapshot()) == 30
+    assert all(track["finished"] for track in default_counter.tracking_snapshot())
 
 
 def test_hysteresis_band_requires_observation_beyond_positive_boundary():

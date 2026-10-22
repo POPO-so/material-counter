@@ -1,0 +1,13 @@
+{
+  "frames": 180,
+  "seconds": 6.197413499990944,
+  "delivered_fps": 28.883017084508168,
+  "source": "Windows client consuming 180 HTTP multipart JPEG frames",
+  "pipeline_fps": 29.597369559596014,
+  "preprocessing_ms": {
+    "camera_read_ms": 109.21857799985446,
+    "gray_resize_threshold_ms": 3.363341500516981,
+    "software_track_ms": 2.4931904990808107,
+    "hud_handoff_ms": 0.9166889994958183
+  }
+}

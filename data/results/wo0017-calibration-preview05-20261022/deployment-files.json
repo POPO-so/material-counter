@@ -1,0 +1,67 @@
+[
+  {
+    "source": "scripts/wo0016/camera_only_preview.py",
+    "remote_path": "/home/xilinx/wo0017/app/camera_only_preview.py",
+    "sha256": "03269d7e54b09e87fac639bc8b38f13ba7b2d8acdcb87ece1a0d4b06aa4741a0"
+  },
+  {
+    "source": "scripts/wo0016/capture_dataset.py",
+    "remote_path": "/home/xilinx/wo0017/app/capture_dataset.py",
+    "sha256": "e279b450cbcbb0f5a616f973a7ec903cef7c95b184f7656ee25b5292b608f622"
+  },
+  {
+    "source": "scripts/wo0016/mjpeg_preview.py",
+    "remote_path": "/home/xilinx/wo0017/app/mjpeg_preview.py",
+    "sha256": "ca0ef2956b844f2235d9ce9a2b9b2cf4732ad3f27264dcf88e37708297c8cbba"
+  },
+  {
+    "source": "scripts/wo0016/operator_gate_launcher.py",
+    "remote_path": "/home/xilinx/wo0017/app/operator_gate_launcher.py",
+    "sha256": "ce59e64d688f3441899faa8476f7335367234946bdebe800da4d085c5494df5c"
+  },
+  {
+    "source": "scripts/wo0016/packet_encoder.py",
+    "remote_path": "/home/xilinx/wo0017/app/packet_encoder.py",
+    "sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8"
+  },
+  {
+    "source": "scripts/wo0016/replay_capture_dataset.py",
+    "remote_path": "/home/xilinx/wo0017/app/replay_capture_dataset.py",
+    "sha256": "a2ab6074826994f7d799456ed205e0324c8419025adfff0cd5bc3697eee790a6"
+  },
+  {
+    "source": "scripts/wo0016/run_stream_counter.py",
+    "remote_path": "/home/xilinx/wo0017/app/run_stream_counter.py",
+    "sha256": "5d18436ec1ea7d4a3b788873833969f613e37bd0aae0ffe7e935003d0a03a50f"
+  },
+  {
+    "source": "scripts/wo0016/stream_counter.py",
+    "remote_path": "/home/xilinx/wo0017/app/stream_counter.py",
+    "sha256": "c25b1279c3bc80c2896628674872bac5a4235f0a49e0658cadbba54a2ee225e3"
+  },
+  {
+    "source": "scripts/wo0015/board_once.py",
+    "remote_path": "/home/xilinx/wo0017/app/board_once.py",
+    "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525"
+  },
+  {
+    "source": "scripts/wo0015/board_preflight.py",
+    "remote_path": "/home/xilinx/wo0017/app/board_preflight.py",
+    "sha256": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6"
+  },
+  {
+    "source": "scripts/wo0015/camera_adapter.py",
+    "remote_path": "/home/xilinx/wo0017/app/camera_adapter.py",
+    "sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba"
+  },
+  {
+    "source": "scripts/wo0016/live_calibration.py",
+    "remote_path": "/home/xilinx/wo0017/app/live_calibration.py",
+    "sha256": "30d2a1013baf4615ea698380a96fe880a7a6e53dd0a9b07af2e104abc0a5b3ec"
+  },
+  {
+    "source": "scripts/wo0016/benchmark_monochrome.py",
+    "remote_path": "/home/xilinx/wo0017/app/benchmark_monochrome.py",
+    "sha256": "debe167836d193043194dd93939602490700049edf6267333caa9c4a750e7edf"
+  }
+]

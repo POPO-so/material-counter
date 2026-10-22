@@ -1,0 +1,1 @@
+{"before": {"cma_free_kib": 36368, "mem_available_kib": 404496, "process_rss_kib": 89404}, "after": {"cma_free_kib": 36368, "mem_available_kib": 404496, "process_rss_kib": 88156}, "gc_collected": 0, "malloc_trim_result": 1, "camera_opened": false}

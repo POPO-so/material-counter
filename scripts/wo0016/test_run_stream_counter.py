@@ -365,6 +365,7 @@ def test_public_camera_stream_rejects_missing_operator_gate_before_opening_devic
 
 
 def test_camera_stream_waits_for_operator_gate_before_first_sample(monkeypatch):
+    monkeypatch.setattr(runner, "require_standard_camera_controls", lambda device: None)
     from operator_gate_launcher import OperatorGate, make_server
 
     monkeypatch.setattr("operator_gate_launcher.secrets.token_urlsafe", lambda _n: "test-token")

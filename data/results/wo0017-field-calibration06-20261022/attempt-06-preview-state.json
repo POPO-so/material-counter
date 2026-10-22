@@ -1,0 +1,663 @@
+{
+  "schema": 1,
+  "work_order": "WO-0017",
+  "attempt": "camera-preview-06",
+  "calibration_mode": true,
+  "calibration_control_access": "loopback-only JSON POST /api/calibration",
+  "memory_policy": {
+    "before_camera_cma_strictly_above_kib": 32768,
+    "after_camera_minimum_cma_kib": 16384,
+    "runtime_cma_32768_warning_only": true,
+    "calibration_cma_emergency_floor_kib": 16384,
+    "min_mem_available_kib": 65536,
+    "max_process_rss_kib": 196608,
+    "formal_sampling_requires_preview_stopped_and_fresh_preflight": true
+  },
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "status": "READY_WAITING_FOR_OPERATOR_OBSERVATION",
+  "camera": "/dev/video0",
+  "expected_profile": {
+    "backend": "CAP_V4L2",
+    "pixelformat": "MJPG",
+    "width": 640,
+    "height": 400,
+    "fps": 60,
+    "auto_exposure": 1,
+    "exposure_time_absolute": 50,
+    "brightness": 0
+  },
+  "hud": {
+    "line_x": 160,
+    "hysteresis_band_x": [
+      145,
+      175
+    ],
+    "pip_label": "SIM TH=128",
+    "pip_source": "software threshold of resized camera Gray8; no PL DMA data",
+    "software_tracker_enabled": true
+  },
+  "board_counter_enabled": false,
+  "dma_enabled": false,
+  "overlay_reload": false,
+  "formal_sampling": false,
+  "frame_files_written": false,
+  "preview_port": 8080,
+  "pid": 7009,
+  "started_utc": "2025-05-07T17:39:18.783420+00:00",
+  "camera_controls": {
+    "exposure_time_absolute": 50,
+    "brightness": 0
+  },
+  "opencv_threads": 1,
+  "dma_status_read_only_before_preview": {
+    "MM2S": 1,
+    "S2MM": 1
+  },
+  "v4l2_before_open": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "memory_health": {
+    "cma_free_kib": 29780,
+    "mem_available_kib": 392092,
+    "process_rss_kib": 103900
+  },
+  "memory_minimum_kib": {
+    "cma_free_kib": 29780,
+    "mem_available_kib": 391728,
+    "process_rss_kib": 89324
+  },
+  "process_rss_peak_kib": 103900,
+  "memory_health_status": "CMA_LOW: STOP CALIBRATION BEFORE DMA",
+  "cma_before_camera_kib": 36948,
+  "opencv_set_results": {
+    "fourcc_mjpg": true,
+    "width_640": true,
+    "height_400": true,
+    "fps_60": true,
+    "buffer_size_1": true
+  },
+  "opencv_properties_after_set": {
+    "fourcc": 1196444237,
+    "width": 640,
+    "height": 400,
+    "fps": 60.0
+  },
+  "v4l2_before_first_frame": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "first_frame_shape": [
+    400,
+    640,
+    3
+  ],
+  "first_frame_dtype": "uint8",
+  "v4l2_after_first_frame": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "cma_after_first_frame_kib": 32320,
+  "cma_warning_samples": 27,
+  "component_limits": {
+    "max_area": 900,
+    "max_bbox_width": 85,
+    "max_bbox_height": 85
+  },
+  "calibration": {
+    "roi_bounds_xyxy": [
+      0,
+      96,
+      320,
+      145
+    ],
+    "bg_mean": 66.39438239159001,
+    "bg_mean_method": "ROI pixels <=128 (bright objects excluded)",
+    "roi_mean": 134.1262755102041,
+    "over_128_ratio": 0.611734693877551,
+    "over_128_area_px": 9592,
+    "glare_area_px": 9559,
+    "glare_rejected_count": 1,
+    "glare_contours": [
+      [
+        [
+          65,
+          96
+        ],
+        [
+          65,
+          97
+        ],
+        [
+          64,
+          98
+        ],
+        [
+          66,
+          100
+        ],
+        [
+          64,
+          102
+        ],
+        [
+          63,
+          101
+        ],
+        [
+          63,
+          103
+        ],
+        [
+          66,
+          106
+        ],
+        [
+          66,
+          107
+        ],
+        [
+          65,
+          108
+        ],
+        [
+          65,
+          109
+        ],
+        [
+          64,
+          110
+        ],
+        [
+          62,
+          110
+        ],
+        [
+          64,
+          110
+        ],
+        [
+          65,
+          111
+        ],
+        [
+          65,
+          113
+        ],
+        [
+          64,
+          114
+        ],
+        [
+          63,
+          113
+        ],
+        [
+          63,
+          115
+        ],
+        [
+          62,
+          116
+        ],
+        [
+          61,
+          115
+        ],
+        [
+          61,
+          113
+        ],
+        [
+          61,
+          115
+        ],
+        [
+          62,
+          116
+        ],
+        [
+          62,
+          117
+        ],
+        [
+          63,
+          116
+        ],
+        [
+          64,
+          116
+        ],
+        [
+          65,
+          117
+        ],
+        [
+          63,
+          119
+        ],
+        [
+          62,
+          119
+        ],
+        [
+          62,
+          120
+        ],
+        [
+          63,
+          119
+        ],
+        [
+          65,
+          121
+        ],
+        [
+          64,
+          122
+        ],
+        [
+          63,
+          122
+        ],
+        [
+          62,
+          123
+        ],
+        [
+          62,
+          124
+        ],
+        [
+          63,
+          125
+        ],
+        [
+          63,
+          126
+        ],
+        [
+          64,
+          125
+        ],
+        [
+          65,
+          126
+        ],
+        [
+          65,
+          127
+        ],
+        [
+          64,
+          128
+        ],
+        [
+          64,
+          129
+        ],
+        [
+          63,
+          130
+        ],
+        [
+          62,
+          130
+        ],
+        [
+          61,
+          129
+        ],
+        [
+          61,
+          130
+        ],
+        [
+          62,
+          130
+        ],
+        [
+          63,
+          131
+        ],
+        [
+          62,
+          132
+        ],
+        [
+          61,
+          132
+        ],
+        [
+          61,
+          133
+        ],
+        [
+          62,
+          133
+        ],
+        [
+          63,
+          134
+        ],
+        [
+          63,
+          137
+        ],
+        [
+          64,
+          136
+        ],
+        [
+          65,
+          137
+        ],
+        [
+          65,
+          139
+        ],
+        [
+          64,
+          140
+        ],
+        [
+          63,
+          140
+        ],
+        [
+          63,
+          142
+        ],
+        [
+          64,
+          141
+        ],
+        [
+          65,
+          142
+        ],
+        [
+          65,
+          144
+        ],
+        [
+          256,
+          144
+        ],
+        [
+          257,
+          143
+        ],
+        [
+          257,
+          142
+        ],
+        [
+          258,
+          141
+        ],
+        [
+          257,
+          140
+        ],
+        [
+          258,
+          139
+        ],
+        [
+          259,
+          139
+        ],
+        [
+          259,
+          138
+        ],
+        [
+          257,
+          138
+        ],
+        [
+          256,
+          137
+        ],
+        [
+          257,
+          136
+        ],
+        [
+          259,
+          136
+        ],
+        [
+          260,
+          135
+        ],
+        [
+          260,
+          134
+        ],
+        [
+          259,
+          134
+        ],
+        [
+          257,
+          136
+        ],
+        [
+          256,
+          135
+        ],
+        [
+          255,
+          135
+        ],
+        [
+          254,
+          134
+        ],
+        [
+          255,
+          133
+        ],
+        [
+          257,
+          133
+        ],
+        [
+          257,
+          130
+        ],
+        [
+          256,
+          129
+        ],
+        [
+          256,
+          128
+        ],
+        [
+          257,
+          127
+        ],
+        [
+          258,
+          128
+        ],
+        [
+          257,
+          127
+        ],
+        [
+          257,
+          123
+        ],
+        [
+          258,
+          122
+        ],
+        [
+          259,
+          123
+        ],
+        [
+          260,
+          122
+        ],
+        [
+          260,
+          118
+        ],
+        [
+          259,
+          117
+        ],
+        [
+          260,
+          116
+        ],
+        [
+          261,
+          116
+        ],
+        [
+          262,
+          117
+        ],
+        [
+          261,
+          116
+        ],
+        [
+          263,
+          114
+        ],
+        [
+          263,
+          113
+        ],
+        [
+          261,
+          113
+        ],
+        [
+          259,
+          111
+        ],
+        [
+          259,
+          110
+        ],
+        [
+          260,
+          109
+        ],
+        [
+          259,
+          108
+        ],
+        [
+          259,
+          107
+        ],
+        [
+          258,
+          106
+        ],
+        [
+          258,
+          105
+        ],
+        [
+          259,
+          104
+        ],
+        [
+          260,
+          105
+        ],
+        [
+          261,
+          104
+        ],
+        [
+          261,
+          102
+        ],
+        [
+          262,
+          101
+        ],
+        [
+          261,
+          102
+        ],
+        [
+          260,
+          101
+        ],
+        [
+          260,
+          99
+        ],
+        [
+          258,
+          97
+        ],
+        [
+          258,
+          96
+        ],
+        [
+          253,
+          96
+        ],
+        [
+          253,
+          97
+        ],
+        [
+          252,
+          98
+        ],
+        [
+          251,
+          97
+        ],
+        [
+          251,
+          96
+        ],
+        [
+          69,
+          96
+        ],
+        [
+          68,
+          97
+        ],
+        [
+          67,
+          96
+        ]
+      ]
+    ],
+    "candidate_nut_blobs": 0,
+    "candidate_areas_px": [],
+    "fps": 8.772242234287344,
+    "fps_kind": "rolling 60-frame camera/processing loop",
+    "status": "GLARE >128: ADJUST LIGHT/EXPOSURE"
+  },
+  "live_fps": 8.772242234287344,
+  "preview_frames_measured": 180,
+  "preview_fps": 8.414924772216466,
+  "preview_measurement_seconds": 21.271729082000093,
+  "pipeline_fps": 9.75468481025455,
+  "stage_median_ms": {
+    "camera_read_ms": 109.21857799985446,
+    "gray_resize_threshold_ms": 3.265633500632248,
+    "software_track_ms": 5.550501500692917,
+    "hud_handoff_ms": 0.8484614991175476
+  },
+  "hud_encode_median_ms": 109.5637934977276,
+  "v4l2_at_ready": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "cma_at_ready_kib": 30404,
+  "service_uid": 1000,
+  "service_gid": 1000,
+  "preview_url": "http://192.168.2.99:8080/",
+  "ready_utc": "2025-05-07T17:39:41.346532+00:00",
+  "preview_frames_published": 589,
+  "preview_source": "software threshold preview; no DMA, no formal sampling",
+  "last_frame_utc": "2025-05-07T17:40:08.561003+00:00"
+}

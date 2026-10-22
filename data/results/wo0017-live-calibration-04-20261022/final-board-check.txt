@@ -1,0 +1,19 @@
+/home/xilinx/wo0017/app-before-calibration04/board_preflight.py: OK
+/home/xilinx/wo0017/app-before-calibration04/camera_adapter.py: OK
+/home/xilinx/wo0017/app-before-calibration04/operator_gate_launcher.py: OK
+/home/xilinx/wo0017/app-before-calibration04/__pycache__/mjpeg_preview.cpython-310.pyc: OK
+/home/xilinx/wo0017/app-before-calibration04/__pycache__/stream_counter.cpython-310.pyc: OK
+/home/xilinx/wo0017/app-before-calibration04/packet_encoder.py: OK
+/home/xilinx/wo0017/app-before-calibration04/replay_capture_dataset.py: OK
+/home/xilinx/wo0017/app-before-calibration04/mjpeg_preview.py: OK
+/home/xilinx/wo0017/app-before-calibration04/run_stream_counter.py: OK
+/home/xilinx/wo0017/app-before-calibration04/capture_dataset.py: OK
+/home/xilinx/wo0017/app-before-calibration04/board_once.py: OK
+/home/xilinx/wo0017/app-before-calibration04/stream_counter.py: OK
+/home/xilinx/wo0017/app-before-calibration04/camera_only_preview.py: OK
+35983d66-bb1d-4a8a-85e5-802170825515
+CmaTotal:         131072 kB
+CmaFree:           34356 kB
+  PID   UID COMMAND
+  432  1000 /usr/local/share/pynq-venv/bin/python3 -u /home/xilinx/wo0017/app/camera_only_preview.py --calibration-mode --expected-boot-id 35983d66-bb1d-4a8a-85e5-802170825515 --output-dir /home/xilinx/wo0017/camera-preview-35983d66-bb1d-4a8a-85e5-802170825515-04
+SINGLE_LAUNCH_MARKER_PRESENT

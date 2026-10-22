@@ -25,6 +25,7 @@ from typing import Any, AsyncIterator, Callable, Mapping
 
 import cv2
 import numpy as np
+from live_calibration import require_standard_camera_controls
 
 def resolve_wo15_dependency_dir(script_dir: Path) -> Path:
     """Prefer the isolated dependency bundle deployed alongside this runner."""
@@ -280,6 +281,7 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
     config = {"count_axis": args.count_axis, "line_x": args.line_x,
               "line_y": args.line_y, "direction": args.direction,
               "min_area": args.min_area, "max_area": args.max_area,
+              "max_bbox_width": args.max_bbox_width, "max_bbox_height": args.max_bbox_height,
               "max_step": args.max_step, "max_lateral_step": args.max_lateral_step,
               "hysteresis": args.hysteresis, "confirm_hits": args.confirm_hits,
               "component_cluster_dx": args.component_cluster_dx,
@@ -764,6 +766,8 @@ async def camera_gray_frames(device: str, *, max_frames: int,
     if (not isinstance(operator_gate, operator_gate_launcher.OperatorGate)
             or not operator_gate_launcher.is_registered_operator_gate_session(operator_gate)):
         raise ValueError("camera capture requires a live operator control server session")
+    require_standard_camera_controls(device)
+    first_frame = True
     async for frame in _camera_gray_frames_impl(
             device, max_frames=max_frames, cv2_module=cv2_module,
             read_timeout_s=read_timeout_s,
@@ -774,6 +778,9 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             steady_start_time=steady_start_time,
             capture_metadata=capture_metadata,
             include_capture_metadata=include_capture_metadata):
+        if first_frame:
+            require_standard_camera_controls(device)
+            first_frame = False
         yield frame
 
 
@@ -1169,6 +1176,8 @@ def execute_board_stream(args: argparse.Namespace, *,
                 "total_count": result.total_count,
                 "frame_result": {
                     "roi_foreground_pixels": result.roi_foreground_pixels,
+                    "glare_rejected_count": result.glare_rejected_count,
+                    "glare_area_px": result.glare_area_px,
                     "ccl_executed": result.ccl_executed,
                 },
             }
@@ -1471,7 +1480,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--count-axis", choices=("x", "y"), default="y")
     parser.add_argument("--line-x", type=int, default=160)
     parser.add_argument("--max-lateral-step", type=float, default=20.0)
-    parser.add_argument("--max-area", type=int)
+    parser.add_argument("--max-area", type=int, default=900)
+    parser.add_argument("--max-bbox-width", type=int, default=85)
+    parser.add_argument("--max-bbox-height", type=int, default=85)
     parser.add_argument("--direction", type=int, choices=(-1, 1), default=1)
     parser.add_argument("--min-area", type=int, default=12)
     parser.add_argument("--hysteresis", type=float, default=2.0)

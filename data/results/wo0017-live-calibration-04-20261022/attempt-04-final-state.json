@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "work_order": "WO-0017",
+  "attempt": "camera-preview-04",
+  "calibration_mode": true,
+  "calibration_control_access": "loopback-only JSON POST /api/calibration",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "status": "READY_WAITING_FOR_OPERATOR_OBSERVATION",
+  "camera": "/dev/video0",
+  "expected_profile": {
+    "backend": "CAP_V4L2",
+    "pixelformat": "MJPG",
+    "width": 640,
+    "height": 400,
+    "fps": 60,
+    "auto_exposure": 1,
+    "exposure_time_absolute": 50,
+    "brightness": 0
+  },
+  "hud": {
+    "line_x": 160,
+    "hysteresis_band_x": [
+      145,
+      175
+    ],
+    "pip_label": "SIM TH=128",
+    "pip_source": "software threshold of resized camera Gray8; no PL DMA data",
+    "software_tracker_enabled": true
+  },
+  "board_counter_enabled": false,
+  "dma_enabled": false,
+  "overlay_reload": false,
+  "formal_sampling": false,
+  "frame_files_written": false,
+  "preview_port": 8080,
+  "pid": 432,
+  "started_utc": "2025-05-07T16:32:12.832940+00:00",
+  "camera_controls": {
+    "exposure_time_absolute": 50,
+    "brightness": 0
+  },
+  "dma_status_read_only_before_preview": {
+    "MM2S": 1,
+    "S2MM": 1
+  },
+  "v4l2_before_open": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "cma_before_camera_kib": 41892,
+  "opencv_set_results": {
+    "fourcc_mjpg": true,
+    "width_640": true,
+    "height_400": true,
+    "fps_60": true,
+    "buffer_size_1": true
+  },
+  "opencv_properties_after_set": {
+    "fourcc": 1196444237,
+    "width": 640,
+    "height": 400,
+    "fps": 60.0
+  },
+  "v4l2_before_first_frame": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "first_frame_shape": [
+    400,
+    640,
+    3
+  ],
+  "first_frame_dtype": "uint8",
+  "v4l2_after_first_frame": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "cma_after_first_frame_kib": 38096,
+  "component_limits": {
+    "max_area": 900,
+    "max_bbox_width": 85,
+    "max_bbox_height": 85
+  },
+  "calibration": {
+    "roi_bounds_xyxy": [
+      0,
+      96,
+      320,
+      145
+    ],
+    "bg_mean": 11.269260204081633,
+    "bg_mean_method": "ROI pixels <=128 (bright objects excluded)",
+    "roi_mean": 11.269260204081633,
+    "over_128_ratio": 0.0,
+    "over_128_area_px": 0,
+    "glare_area_px": 0,
+    "glare_rejected_count": 0,
+    "glare_contours": [],
+    "candidate_nut_blobs": 0,
+    "candidate_areas_px": [],
+    "fps": 32.59642602228308,
+    "fps_kind": "rolling 60-frame camera/processing loop",
+    "status": "ADJUST BACKGROUND: TARGET BG 20-45"
+  },
+  "live_fps": 32.59642602228308,
+  "preview_frames_measured": 180,
+  "preview_fps": 27.3922073162751,
+  "preview_measurement_seconds": 6.534705214999121,
+  "pipeline_fps": 29.405449830091467,
+  "stage_median_ms": {
+    "camera_read_ms": 32.94293599901721,
+    "gray_resize_threshold_ms": 2.555999999458436,
+    "software_track_ms": 2.5875045012071496,
+    "hud_handoff_ms": 0.7475109996448737
+  },
+  "hud_encode_median_ms": 27.527009498953703,
+  "v4l2_at_ready": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\nFormat Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+  "cma_at_ready_kib": 36012,
+  "service_uid": 1000,
+  "service_gid": 1000,
+  "preview_url": "http://192.168.2.99:8080/",
+  "ready_utc": "2025-05-07T16:32:20.454946+00:00",
+  "preview_frames_published": 3628,
+  "preview_source": "software threshold preview; no DMA, no formal sampling",
+  "last_frame_utc": "2025-05-07T16:34:05.519874+00:00",
+  "last_control_utc": "2025-05-07T16:33:24.463544+00:00"
+}

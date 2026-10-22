@@ -1,0 +1,1 @@
+{"status": "PASS", "kind": "board offline synthetic, no camera/MMIO/DMA", "opencv": "4.5.4", "glare_area_px": 1500, "jpeg_bytes": 19036}

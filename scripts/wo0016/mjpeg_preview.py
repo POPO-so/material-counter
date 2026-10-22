@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+import json
+import ipaddress
 import socket
 import threading
 import time
@@ -10,6 +12,7 @@ from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Iterator
 from urllib.request import urlopen
+from urllib.parse import urlsplit
 
 import cv2
 import numpy as np
@@ -34,6 +37,24 @@ main{max-width:1240px;margin:30px auto;padding:0 20px}.top{display:flex;justify-
 <section class=\"frame\"><img src=\"/stream.mjpg\" alt=\"Camera image with labeled binary mask PIP\"></section>
 <footer class=\"footer\"><span>Read-only preview stream · no formal sampling</span><span>The frame HUD identifies the PIP source</span></footer>
 </main></body></html>""".encode("utf-8")
+
+_CALIBRATION_PANEL = b'''<section style="margin-top:18px"><h2>Live Calibration</h2>
+<pre id="metrics">Connecting...</pre>
+<label>Exposure <input id="exposure" type="number" min="50" max="10000" value="50"></label>
+<label>Brightness <input id="brightness" type="number" min="-64" max="64" value="0"></label>
+<button onclick="adjust(false)">Apply</button>
+<button onclick="adjust(true)">Restore exposure=50, brightness=0</button>
+<p id="control">Controls require calibration mode and a local SSH tunnel.</p></section>
+<script>
+async function refresh(){try{let s=await(await fetch('/state.json')).json();
+document.getElementById('metrics').textContent=JSON.stringify(s.calibration?{...s.calibration,memory_health:s.memory_health,memory_status:s.memory_health_status}:s,null,2);
+}catch(e){} } setInterval(refresh,1000);refresh();
+async function adjust(reset){try{let values=reset?{reset:true}:{exposure_time_absolute:Number(document.getElementById('exposure').value),brightness:Number(document.getElementById('brightness').value)};
+let r=await fetch('/api/calibration',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(values)});
+let result=await r.json();document.getElementById('control').textContent=JSON.stringify(result);
+if(r.ok){document.getElementById('exposure').value=result.exposure_time_absolute;document.getElementById('brightness').value=result.brightness;}
+}catch(e){document.getElementById('control').textContent=String(e);}}
+</script>'''
 
 
 class MjpegFrameHub:
@@ -121,7 +142,8 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                          hysteresis: float = 2.0,
                          pip_label: str = "PL DMA MASK",
                          tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
-                         track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None
+                         track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None,
+                         calibration: dict | None = None
                          ) -> np.ndarray:
     """Render the Gray8 camera frame with tracking HUD and Binary8 DMA-mask PIP."""
     image = np.asarray(mask)
@@ -205,6 +227,34 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
     cv2.rectangle(frame, (pip_x, pip_y + 15),
                   (pip_x + pip_width - 1, pip_y + 15 + pip_height - 1),
                   (44, 224, 208), 1, lineType=cv2.LINE_8)
+    if calibration is not None:
+        for contour in calibration.get("glare_contours", ()):
+            points = np.asarray(contour, dtype=np.float64).reshape(-1, 2)
+            for start, end in zip(points, np.roll(points, -1, axis=0)):
+                distance = float(np.linalg.norm(end - start))
+                for offset in range(0, int(distance) + 1, 9):
+                    a = start + (end-start) * min(offset / max(distance, 1), 1)
+                    b = start + (end-start) * min((offset+4) / max(distance, 1), 1)
+                    cv2.line(frame, tuple(np.rint(a).astype(int)), tuple(np.rint(b).astype(int)),
+                             (0, 0, 255), 1)
+        # Add a full-width footer to keep optical diagnostics clear of the image/PIP.
+        frame = cv2.copyMakeBorder(frame, 0, 85, 0, 0, cv2.BORDER_CONSTANT, value=(12,25,35))
+        bg = calibration.get("bg_mean")
+        bg_text = "N/A" if bg is None else f"{bg:.1f}"
+        lines = [
+            f"BG Mean {bg_text} [20-45]  Pipeline FPS {calibration['fps']:.1f}",
+            f"Over-128 Ratio {100*calibration['over_128_ratio']:.2f}% / Glare Area {calibration['glare_area_px']}px",
+            f"Candidate Nut Blobs {calibration['candidate_nut_blobs']}  Areas {calibration['candidate_areas_px']}",
+            calibration["status"],
+        ]
+        color = (0, 210, 255) if calibration.get("glare_area_px") else (
+            (50, 220, 130) if calibration["status"].startswith("OPTICS READY") else (0, 210, 255))
+        for index, text in enumerate(lines):
+            scale = 0.35 if index < 3 else 0.36
+            text_width = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, 1)[0][0]
+            scale *= min(1.0, 310 / max(1, text_width))
+            cv2.putText(frame, text, (5, 256 + 19*index), cv2.FONT_HERSHEY_SIMPLEX,
+                        scale, color, 1, lineType=cv2.LINE_AA)
     return frame
 
 
@@ -214,7 +264,8 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
                         source_gray: np.ndarray | None = None, hysteresis: float = 2.0,
                         pip_label: str = "PL DMA MASK",
                         tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
-                        track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None
+                        track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None,
+                        calibration: dict | None = None
                         ) -> bytes:
     if isinstance(quality, bool) or not isinstance(quality, (int, np.integer)) or not 1 <= quality <= 100:
         raise ValueError("JPEG quality must be an integer in 1..100")
@@ -223,7 +274,8 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
                                  count_axis=count_axis, line_x=line_x,
                                  source_gray=source_gray, hysteresis=hysteresis,
                                  pip_label=pip_label,
-                                 tracks=tracks, track_trails=track_trails)
+                                 tracks=tracks, track_trails=track_trails,
+                                 **({"calibration": calibration} if calibration is not None else {}))
     encoded, payload = cv2.imencode(".jpg", frame,
                                     [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
     if not encoded:
@@ -266,6 +318,7 @@ class PeriodicMjpegPublisher:
         self._latest_gray = np.empty((240, 320), dtype=np.uint8)
         self._encode_gray = np.empty((240, 320), dtype=np.uint8)
         self._latest_tracks: tuple[dict[str, Any], ...] = ()
+        self._latest_calibration: dict | None = None
         self._track_trails: dict[int, list[tuple[float, float]]] = defaultdict(list)
         self._latest_metadata: tuple[int, int, int] | None = None
         self._snapshot_sequence = 0
@@ -298,6 +351,12 @@ class PeriodicMjpegPublisher:
                 np.copyto(self._latest_mask, image, casting="no")
                 np.copyto(self._latest_gray, gray, casting="no")
                 self._latest_tracks = tuple(getattr(result, "tracks", ()))
+                self._latest_calibration = getattr(result, "calibration", None)
+                visible_ids = {int(track.get("track_id", 0)) for track in self._latest_tracks
+                               if not track.get("finished") and not track.get("missed", 0)}
+                self._track_trails = defaultdict(list, {
+                    track_id: points for track_id, points in self._track_trails.items()
+                    if track_id in visible_ids})
                 for track in self._latest_tracks:
                     if track.get("finished") or track.get("missed", 0):
                         continue
@@ -345,6 +404,7 @@ class PeriodicMjpegPublisher:
                 np.copyto(self._encode_mask, self._latest_mask, casting="no")
                 np.copyto(self._encode_gray, self._latest_gray, casting="no")
                 tracks = self._latest_tracks
+                calibration = self._latest_calibration
                 trails = {track_id: tuple(points)
                           for track_id, points in self._track_trails.items()}
                 self._encoded_sequence = sequence
@@ -361,6 +421,7 @@ class PeriodicMjpegPublisher:
                     source_gray=self._encode_gray, hysteresis=self.hysteresis,
                     pip_label=self.pip_label,
                     tracks=tracks, track_trails=trails,
+                    **({"calibration": calibration} if calibration is not None else {}),
                 )
                 self.hub.publish(jpeg)
                 self.encoded_frames += 1
@@ -502,7 +563,8 @@ class MjpegPreviewServer:
     """Serve an HTML page and multipart MJPEG at the requested host and port."""
 
     def __init__(self, *, hub: MjpegFrameHub | None = None,
-                 host: str = "0.0.0.0", port: int = 8080):
+                 host: str = "0.0.0.0", port: int = 8080,
+                 state_provider=None, control_callback=None):
         if not isinstance(host, str) or not host:
             raise ValueError("host must be non-empty text")
         if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
@@ -510,6 +572,8 @@ class MjpegPreviewServer:
         self.hub = hub or MjpegFrameHub()
         self.host = host
         self.requested_port = port
+        self.state_provider = state_provider
+        self.control_callback = control_callback
         self._server: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
 
@@ -523,6 +587,8 @@ class MjpegPreviewServer:
         if self._server is not None:
             raise RuntimeError("preview server is already started")
         hub = self.hub
+        state_provider = self.state_provider
+        control_callback = self.control_callback
 
         class Handler(BaseHTTPRequestHandler):
             protocol_version = "HTTP/1.1"
@@ -530,14 +596,60 @@ class MjpegPreviewServer:
             def log_message(self, format: str, *args: Any) -> None:
                 return
 
+            def _json(self, code: int, payload: Any) -> None:
+                body = json.dumps(payload, allow_nan=False).encode("utf-8")
+                self.send_response(code)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_POST(self) -> None:
+                self.close_connection = True
+                if self.path != "/api/calibration" or control_callback is None:
+                    self._json(403, {"error": "calibration controls disabled"})
+                    return
+                if not ipaddress.ip_address(self.client_address[0]).is_loopback:
+                    self._json(403, {"error": "local API only: use an SSH tunnel"})
+                    return
+                origin = self.headers.get("Origin")
+                expected_origin = "http://" + self.headers.get("Host", "")
+                host = urlsplit(expected_origin).hostname
+                if host not in ("127.0.0.1", "localhost", "::1") or (origin and origin != expected_origin):
+                    self._json(403, {"error": "local same-origin access required"})
+                    return
+                if self.headers.get_content_type() != "application/json":
+                    self._json(415, {"error": "application/json required"})
+                    return
+                try:
+                    length = int(self.headers.get("Content-Length", "0"))
+                    if not 0 < length <= 512:
+                        raise ValueError("JSON body must be 1..512 bytes")
+                    self.connection.settimeout(2.0)
+                    payload = json.loads(self.rfile.read(length))
+                    self._json(200, control_callback(payload))
+                except PermissionError as exc:
+                    self._json(403, {"error": str(exc)})
+                except (ValueError, TypeError) as exc:
+                    self._json(400, {"error": str(exc)})
+                except Exception as exc:
+                    self._json(503, {"error": str(exc)})
+
             def do_GET(self) -> None:
+                if self.path == "/state.json" and state_provider is not None:
+                    self._json(200, state_provider())
+                    return
                 if self.path in ("/", "/index.html"):
+                    page = _HTML_PAGE
+                    if state_provider is not None:
+                        page = page.replace(b"</main>", _CALIBRATION_PANEL + b"</main>")
                     self.send_response(200)
                     self.send_header("Content-Type", "text/html; charset=utf-8")
-                    self.send_header("Content-Length", str(len(_HTML_PAGE)))
+                    self.send_header("Content-Length", str(len(page)))
                     self.send_header("Cache-Control", "no-store")
                     self.end_headers()
-                    self.wfile.write(_HTML_PAGE)
+                    self.wfile.write(page)
                     return
                 if self.path != "/stream.mjpg":
                     self.send_error(404)

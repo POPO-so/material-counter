@@ -1,0 +1,8 @@
+{
+  "lan_control_status": 403,
+  "response": {
+    "error": "local API only: use an SSH tunnel"
+  },
+  "service_running": true,
+  "pid": 432
+}

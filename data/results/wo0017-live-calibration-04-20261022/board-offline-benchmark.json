@@ -1,0 +1,24 @@
+{
+  "platform": "Linux-6.6.10-xilinx-v2024.1-g3c0eca68c652-armv7l-with-glibc2.35",
+  "opencv": "4.5.4",
+  "iterations": 500,
+  "source_shape": [
+    400,
+    640,
+    3
+  ],
+  "kind": "offline synthetic repeated-monochrome channels; no camera capture",
+  "interpolation": "new path uses formal counter INTER_NEAREST; not pixel-equivalent to old AREA",
+  "timings_ms": {
+    "attempt03_cvtColor_area": {
+      "median": 18.94838400039589,
+      "p95": 19.358405252023655
+    },
+    "first_channel_nearest_reused": {
+      "median": 2.5764155016076984,
+      "p95": 2.774252347626315
+    }
+  },
+  "speedup": 7.354552861746091
+}
+
