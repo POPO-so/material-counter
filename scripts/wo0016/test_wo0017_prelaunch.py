@@ -71,6 +71,7 @@ def _write_permit(path: Path, identity: dict) -> None:
 
 
 def _make_case(tmp_path, monkeypatch, profile, ready_id=None):
+    monkeypatch.setenv("XILINX_XRT", "/usr")
     frames, count, label = (115, 0, "empty_belt") if profile == "b1" else (
         220, 5, "M6_nut_no_washer"
     )
@@ -249,6 +250,33 @@ def test_formal_prelaunch_binds_explicit_ready_id_and_rejects_drift(tmp_path, mo
     args.wo0017_ready_id = "b1-empty-05"
     with pytest.raises(RuntimeError, match="READY guard.*does not match"):
         runner.validate_formal_prelaunch(args, LAUNCHER_SHA256)
+
+
+def test_formal_prelaunch_rejects_missing_xrt_environment_before_manifest_or_consumption(tmp_path, monkeypatch):
+    args, context, _, permit, capture, attempts = _make_case(tmp_path, monkeypatch, "b1")
+    monkeypatch.delenv("XILINX_XRT", raising=False)
+    monkeypatch.setattr(runner.preflight, "validate_manifest", lambda *a, **k: pytest.fail("manifest read before XRT environment gate"))
+    ready_before, permit_before = context["ready_path"].read_bytes(), permit.read_bytes()
+    with pytest.raises(ValueError, match="XILINX_XRT=/usr"):
+        runner.validate_formal_prelaunch(args, LAUNCHER_SHA256)
+    assert not (attempts / args.attempt_id / "consumed.json").exists() and not capture.exists()
+    assert context["ready_path"].read_bytes() == ready_before and permit.read_bytes() == permit_before
+
+
+def test_formal_execution_rechecks_xrt_environment_before_manifest_or_consumption(tmp_path, monkeypatch):
+    from operator_gate_launcher import OperatorGate, make_server
+    args, _, _, _, capture, attempts = _make_case(tmp_path, monkeypatch, "b1")
+    monkeypatch.delenv("XILINX_XRT", raising=False)
+    monkeypatch.setattr(runner.preflight, "validate_manifest", lambda *a, **k: pytest.fail("manifest read before XRT environment gate"))
+    gate = OperatorGate()
+    server = make_server(gate, port=0)
+    try:
+        digest = hashlib.sha256((runner.SCRIPT_DIR / "operator_gate_launcher.py").read_bytes()).hexdigest()
+        with pytest.raises(ValueError, match="XILINX_XRT=/usr"):
+            runner.execute_board_stream(args, operator_gate_sha256=digest, operator_gate=gate)
+    finally:
+        server.server_close()
+    assert not (attempts / args.attempt_id / "consumed.json").exists() and not capture.exists()
 
 
 def test_formal_prelaunch_rejects_runtime_hash_drift(tmp_path, monkeypatch):

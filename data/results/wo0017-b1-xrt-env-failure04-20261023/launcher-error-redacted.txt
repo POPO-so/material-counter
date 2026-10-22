@@ -1,0 +1,10 @@
+[OPERATOR_GATE] STANDBY_NO_CAMERA_NO_DMA_UNCONSUMED
+[MILESTONE] PROCESS_START monotonic=39822.105152
+/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/device.py:56: UserWarning: No devices found, is the XRT environment sourced?
+  warnings.warn(
+{
+  "board_accessed": false,
+  "error": "RuntimeError: No Devices Found",
+  "pynq_imported": false,
+  "status": "BOARD_STREAM_REJECTED"
+}

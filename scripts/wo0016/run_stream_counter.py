@@ -855,6 +855,11 @@ def formal_capture_context(args: argparse.Namespace, plan: Any) -> dict[str, Any
             "runtime_sha256": runtime}
 
 
+def require_formal_xrt_environment(args: argparse.Namespace) -> None:
+    if getattr(args, "wo0017_profile", None) and os.environ.get("XILINX_XRT") != "/usr":
+        raise ValueError("WO-0017 requires XILINX_XRT=/usr in the launch process before READY or Permit consumption")
+
+
 def validate_formal_prelaunch(args: argparse.Namespace, launcher_sha256: str) -> dict[str, Any]:
     """Read-only admission to the browser standby; never import PYNQ or claim an attempt."""
     if not args.wo0017_profile:
@@ -863,6 +868,7 @@ def validate_formal_prelaunch(args: argparse.Namespace, launcher_sha256: str) ->
                         approve_once=args.approve_once, manifest=args.manifest,
                         manifest_sha256=args.manifest_sha256, max_frames=args.max_frames,
                         evidence_json=args.evidence_json)
+    require_formal_xrt_environment(args)
     plan = preflight.validate_manifest(args.manifest, args.manifest_sha256,
                                        approved_boot_id=args.expected_boot_id)
     formal = formal_capture_context(args, plan)
@@ -905,6 +911,7 @@ def execute_board_stream(args: argparse.Namespace, *,
         max_frames=args.max_frames,
         evidence_json=args.evidence_json,
     )
+    require_formal_xrt_environment(args)
     capture_dir = getattr(args, "capture_dir", None)
     capture_max_bytes = getattr(args, "capture_max_bytes", DEFAULT_MAX_BYTES)
     capture_preflight = (preflight_capture_target(
