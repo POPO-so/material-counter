@@ -38,6 +38,13 @@ Stage B-1 的历史报告记载 115 帧空带、0 次计数，但原始逐帧 JS
 
 新配置的 Attempt #5 回放产物位于 [attempt5-ccl-bbox16-prediction2](attempt5-ccl-bbox16-prediction2/)。历史回放摘要仍保存在 `data/results/wo0017-phase1a-audit-20261022/baseline-replay.json`；该目录未改写。
 
+## 板端 `-03` 预览尝试（未启动）
+
+- 当前 Boot ID 与目标一致：`35983d66-bb1d-4a8a-85e5-802170825515`。停止旧预览前的只读门禁记录为 `CmaFree=47,200 KiB`、MM2S/S2MM `DMASR=0x00000001`（错误位均为 0）；同一 Boot ID 下的 `stage1-attempt-root-02` 收据为 `OVERLAY_STAGE1_PASS`，Manifest SHA-256 为 `4493e4dab601e0560002ec089fb43c2f333a5ed18897b25500e7b0b1d1890a1c`。该 stage1 guard 已标记 consumed，本次没有尝试重新消费。
+- 核验旧 PID 7297 的命令行为目标 Boot ID 下 `-02/camera_only_preview.py` 后发送 TERM。进程退出后，`fuser /dev/video0` 与 8080 监听查询均为空，表明旧预览和相机占用已释放。
+- 停止后再次确认 Boot ID 未变，`CmaFree=68,816 KiB`。随后的只读寄存器命令在 `sudo -n` 下触发 `Bus error`：命令把 S2MM 映射为 `0x40410000`，而本项目驱动定义使用 DMA 基址 `0x40400000` 加 S2MM 状态偏移 `0x34`。因此停止后的 MM2S/S2MM 门禁读数不完整；遵循一次异常即停止规则，没有重试或继续板端操作。
+- 结果：没有部署文件、没有创建或启动 `-03`、没有打开新版 HUD；未启动 DMA、未重载 Overlay、未开始正式采样。故没有新版 HUD FPS 或画面状态可报告。需在新的获准操作中用正确的 DMASR 地址重新完成门禁后再部署和启动。
+
 ## 验证和边界
 
 `C:\fpga\material-counter\.venv\Scripts\python.exe -m pytest scripts\wo0016 -q`：**159 passed**（2026-10-22，本地完整测试）。包括 N 帧预分配、采样后 NPZ 写出、完整/逐数组 SHA-256 校验、篡改拒绝、软件阈值 PIP 标记及 220 帧容量预检。
