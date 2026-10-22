@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/xilinx/wo0017/formal-b1-20261022-01/prepare_b1.py", line 32, in <module>
+    raise RuntimeError('PREPARATION_BLOCKED_CMA: no manifest/READY/permit written; '
+RuntimeError: PREPARATION_BLOCKED_CMA: no manifest/READY/permit written; {"CmaFree": 436, "CmaTotal": 131072}

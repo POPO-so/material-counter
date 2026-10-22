@@ -13,6 +13,20 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import run_stream_counter as runner  # noqa: E402
+
+
+def test_wo0017_profile_requires_capture_and_independent_one_shot_mode_before_board_access():
+    args = runner._parser().parse_args(["--wo0017-profile", "b1"])
+    with pytest.raises(ValueError, match="capture.*one-shot"):
+        runner.formal_capture_context(args, None)
+
+
+def test_wo0017_runtime_binding_covers_raw_writer_and_camera_controls():
+    sources = runner.formal_runtime_sha256()
+    assert {"capture_dataset.py", "live_calibration.py", "run_stream_counter.py",
+            "operator_gate_launcher.py", "wo0017_capture_profile.py",
+            "wo0015/board_preflight.py", "wo0015/board_once.py"} <= set(sources)
+    assert all(len(value) == 64 for value in sources.values())
 from run_stream_counter import (  # noqa: E402
     build_synthetic_masks,
     claim_once_guard,

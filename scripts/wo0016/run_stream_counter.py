@@ -800,6 +800,82 @@ def validate_operator_gate_launcher_sha256(value: str | None,
     return actual
 
 
+def formal_runtime_sha256() -> dict[str, str]:
+    names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
+             "capture_dataset.py", "live_calibration.py",
+             "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py")
+    paths = {name: SCRIPT_DIR / name for name in names}
+    paths.update({"wo0015/" + name: WO15_DIR / name
+                  for name in ("board_once.py", "board_preflight.py", "camera_adapter.py",
+                               "prepare_vectors.py")})
+    return {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in paths.items()}
+
+
+def formal_capture_context(args: argparse.Namespace, plan: Any) -> dict[str, Any] | None:
+    profile = getattr(args, "wo0017_profile", None)
+    if profile is None:
+        return None
+    if (not args.capture_dir or not args.no_consume_guard or not args.attempt_id
+            or args.mode != "board"):
+        raise ValueError("WO-0017 requires raw capture and independent one-shot mode")
+    if not args.expected_boot_id or not args.stage1_receipt or not args.stage1_receipt_sha256:
+        raise ValueError("WO-0017 requires explicit Boot and hash-pinned Stage 1 receipt")
+    if plan.boot_id != args.expected_boot_id:
+        raise ValueError("WO-0017 approved Boot does not match manifest")
+    from wo0017_capture_profile import profile_identity, validate_stage1_receipt
+    receipt = validate_stage1_receipt(args.stage1_receipt, args.stage1_receipt_sha256, plan)
+    identity = profile_identity(
+        profile, boot_id=plan.boot_id, manifest_sha256=plan.manifest_sha256,
+        bit_sha256=plan.bit_sha256, hwh_sha256=plan.hwh_sha256,
+        max_frames=args.max_frames, expected_count=args.ground_truth_count,
+        material_label=args.material_label, stabilization_delay_s=args.stabilization_delay_s,
+        stage1_receipt_sha256=args.stage1_receipt_sha256)
+    runtime = formal_runtime_sha256()
+    identity.update({"runtime_sha256": runtime,
+                     "counting_config": counting_configuration(args),
+                     "capture_config": {"enabled": True,
+                         "output_directory": str(Path(args.capture_dir).expanduser().resolve(strict=False)),
+                         "max_bytes": args.capture_max_bytes, "queue_depth": 2, "schema_version": 1}})
+    base = Path("/var/lib/wo0017") / plan.boot_id / profile
+    return {"identity": identity, "receipt": receipt,
+            "ready_path": base / "ready.json", "attempt_root": base / "attempts",
+            "runtime_sha256": runtime}
+
+
+def validate_formal_prelaunch(args: argparse.Namespace, launcher_sha256: str) -> dict[str, Any]:
+    """Read-only admission to the browser standby; never import PYNQ or claim an attempt."""
+    if not args.wo0017_profile:
+        raise ValueError("formal prelaunch requires WO-0017 profile")
+    require_board_opt_in(execute=args.execute, authorize_stage=args.authorize_stage,
+                        approve_once=args.approve_once, manifest=args.manifest,
+                        manifest_sha256=args.manifest_sha256, max_frames=args.max_frames,
+                        evidence_json=args.evidence_json)
+    plan = preflight.validate_manifest(args.manifest, args.manifest_sha256,
+                                       approved_boot_id=args.expected_boot_id)
+    formal = formal_capture_context(args, plan)
+    if preflight.read_boot_id() != plan.boot_id:
+        raise ValueError("formal prelaunch current Boot mismatch")
+    if preflight.read_cma_meminfo()["CmaFree"] <= CMA_WATERMARK_KIB:
+        raise ValueError("formal prelaunch CMA is not above watermark")
+    capture = preflight_capture_target(args.capture_dir, expected_frames=args.max_frames,
+                                       max_bytes=args.capture_max_bytes)
+    ready = validate_non_consuming_guard(formal["ready_path"], formal["identity"])
+    identity = stageb2_attempt_permit_identity(
+        ready_identity=formal["identity"], ready_guard_sha256=ready["sha256"],
+        attempt_id=args.attempt_id, operator_prearm_delay_s=args.operator_prearm_delay_s,
+        runner_sha256=formal["runtime_sha256"]["run_stream_counter.py"],
+        gate_launcher_sha256=launcher_sha256, counting_config=counting_configuration(args),
+        counter_sha256=formal["runtime_sha256"]["stream_counter.py"],
+        capture_config={"enabled": True, "output_directory": capture["path"],
+                        "max_bytes": args.capture_max_bytes, "queue_depth": 2, "schema_version": 1})
+    identity.update({"stage": f"wo0017-{args.wo0017_profile}-attempt",
+                     "runtime_sha256": formal["runtime_sha256"]})
+    attempt = formal["attempt_root"] / args.attempt_id
+    if (attempt / "consumed.json").exists():
+        raise ValueError("formal attempt is already consumed")
+    return validate_stageb2_attempt_permit(attempt / "attempt-permit.json", identity)
+
+
 def execute_board_stream(args: argparse.Namespace, *,
                          operator_gate_sha256: str | None = None,
                          operator_gate: Any | None = None) -> dict[str, Any]:
@@ -825,14 +901,16 @@ def execute_board_stream(args: argparse.Namespace, *,
     milestone_path = Path(args.evidence_json).with_suffix(".milestones.jsonl")
     if milestone_path.exists():
         raise FileExistsError("milestone log path already exists; choose a new attempt result path")
-    plan = preflight.validate_manifest(args.manifest, args.manifest_sha256)
+    manifest_options = ({"approved_boot_id": args.expected_boot_id}
+                        if getattr(args, "wo0017_profile", None) else {})
+    plan = preflight.validate_manifest(args.manifest, args.manifest_sha256, **manifest_options)
     if not plan.ready_for_board:
         raise preflight.PreflightError("manifest is not marked ready_for_board")
     if plan.manifest.get("clock_mhz") != 50:
         raise preflight.PreflightError("WO-0016 is locked to the WO-0015 50 MHz image")
-    stage1_receipt = board_once.require_overlay_pass_receipt(
-        board_once.OVERLAY_PASS_RECEIPT, plan
-    )
+    formal = formal_capture_context(args, plan)
+    stage1_receipt = (formal["receipt"] if formal else board_once.require_overlay_pass_receipt(
+        board_once.OVERLAY_PASS_RECEIPT, plan))
     live_boot = preflight.read_boot_id()
     if live_boot != plan.boot_id:
         raise preflight.PreflightError("live boot_id does not match the pinned WO-0015 manifest")
@@ -842,7 +920,7 @@ def execute_board_stream(args: argparse.Namespace, *,
     admission = preflight.read_cma_admission(meminfo=meminfo)
     ownership = preflight.audit_process_ownership()
     manager = preflight.read_fpga_manager()
-    guard_dir = WO16_GUARD.parent
+    guard_dir = formal["ready_path"].parent if formal else WO16_GUARD.parent
     if guard_dir.is_symlink():
         raise preflight.PreflightError("WO-0016 guard directory must not be a symlink")
     guard_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -855,7 +933,7 @@ def execute_board_stream(args: argparse.Namespace, *,
     if args.no_consume_guard:
         if not getattr(args, "attempt_id", None):
             raise ValueError("--no-consume-guard requires a unique --attempt-id")
-        identity = stageb2_guard_identity(
+        identity = formal["identity"] if formal else stageb2_guard_identity(
             boot_id=plan.boot_id,
             manifest_sha256=plan.manifest_sha256,
             bit_sha256=plan.bit_sha256,
@@ -865,7 +943,8 @@ def execute_board_stream(args: argparse.Namespace, *,
             material_label=args.material_label,
             stabilization_delay_s=args.stabilization_delay_s,
         )
-        ready_path = STAGEB2_READY_GUARD_DIR / f"stageb2-ready-{plan.boot_id}.json"
+        ready_path = (formal["ready_path"] if formal else
+                      STAGEB2_READY_GUARD_DIR / f"stageb2-ready-{plan.boot_id}.json")
         stageb2_ready_guard = validate_non_consuming_guard(ready_path, identity)
         attempt_identity = stageb2_attempt_permit_identity(
             ready_identity=identity,
@@ -884,7 +963,11 @@ def execute_board_stream(args: argparse.Namespace, *,
                 "schema_version": 1,
             } if capture_preflight is not None else None),
         )
-        attempt_directory = STAGEB2_ATTEMPT_DIR / plan.boot_id / args.attempt_id
+        if formal:
+            attempt_identity.update({"stage": f"wo0017-{args.wo0017_profile}-attempt",
+                                     "runtime_sha256": formal["runtime_sha256"]})
+        attempt_directory = (formal["attempt_root"] / args.attempt_id if formal else
+                             STAGEB2_ATTEMPT_DIR / plan.boot_id / args.attempt_id)
         permit_path = attempt_directory / "attempt-permit.json"
         stageb2_attempt_permit = validate_stageb2_attempt_permit(
             permit_path, attempt_identity
@@ -894,8 +977,8 @@ def execute_board_stream(args: argparse.Namespace, *,
         attempt_path = attempt_directory / "consumed.json"
         guard = claim_once_guard(attempt_path, {
             "schema": 1,
-            "work_order": "WO-0016",
-            "stage": STAGEB2_ATTEMPT_STAGE,
+            "work_order": "WO-0017" if formal else "WO-0016",
+            "stage": attempt_identity["stage"],
             "boot_id": plan.boot_id,
             "attempt_id": args.attempt_id,
             "manifest_sha256": plan.manifest_sha256,
@@ -934,7 +1017,7 @@ def execute_board_stream(args: argparse.Namespace, *,
     released_buffer_ids: set[int] = set()
     evidence: dict[str, Any] = {
         "schema": 1,
-        "work_order": "WO-0016",
+        "work_order": "WO-0017" if formal else "WO-0016",
         "status": "WO0016_RUNNING",
         "board_accessed": False,
         "boot_id": plan.boot_id,
@@ -1472,6 +1555,10 @@ def _nonnegative_count_argument(value: str) -> int:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0016 asynchronous double-buffer Binary8 counter")
     parser.add_argument("--mode", choices=("mock", "board"), default="mock")
+    parser.add_argument("--wo0017-profile", choices=("b1", "b2"))
+    parser.add_argument("--expected-boot-id")
+    parser.add_argument("--stage1-receipt")
+    parser.add_argument("--stage1-receipt-sha256")
     parser.add_argument("--mock-frames", type=int, default=8)
     parser.add_argument("--camera", default="/dev/video0")
     parser.add_argument("--max-frames", type=int, default=0)

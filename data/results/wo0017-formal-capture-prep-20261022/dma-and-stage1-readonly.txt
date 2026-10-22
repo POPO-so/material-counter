@@ -1,0 +1,71 @@
+{"MM2S_DMASR": "0x00000001", "S2MM_DMASR": "0x00000001"}
+FILE /home/xilinx/wo0017/stage1-overlay-35983d66-bb1d-4a8a-85e5-802170825515-receipt.json
+{
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "clock_mhz": 50,
+  "cma_before_kib": {
+    "CmaFree": 120548,
+    "CmaTotal": 131072
+  },
+  "dma_register_write_performed": false,
+  "dma_registers": {},
+  "dma_transfer_started": false,
+  "failure": "RuntimeError: Could not open device with index '0'",
+  "fpga_manager_before": {
+    "flags": "0",
+    "state": "operating"
+  },
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "manifest_sha256": "afe52997a27694b810fd9761aca485c0ce4d699896a8083767ad089f869da8ff",
+  "monotonic_end_ns": 2447036591703,
+  "monotonic_start_ns": 2438417556725,
+  "new_kernel_log_lines": [],
+  "overlay_download_returned": false,
+  "schema": 1,
+  "stage": "phase1b-stage1-overlay",
+  "status": "OVERLAY_STAGE1_FAIL",
+  "work_order": "WO-0017"
+}
+
+FILE /home/xilinx/wo0017/stage1-overlay-35983d66-bb1d-4a8a-85e5-802170825515-manifest.json
+{
+  "bit_path": "/home/xilinx/wo0015/wo15.bit",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "clock_mhz": 50,
+  "cma_before_kib": {
+    "CmaFree": 120548,
+    "CmaTotal": 131072
+  },
+  "dma_base": "0x40400000",
+  "dma_register_reads_only": true,
+  "dma_transfer_authorized": false,
+  "fpga_manager_before": {
+    "flags": "0",
+    "state": "operating"
+  },
+  "hwh_path": "/home/xilinx/wo0015/wo15.hwh",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "monotonic_ns": 2438341788165,
+  "part": "xc7z020clg400-1",
+  "schema": 1,
+  "stage": "phase1b-stage1-overlay",
+  "work_order": "WO-0017"
+}
+
+FILE /home/xilinx/wo0017/stage1-overlay-35983d66-bb1d-4a8a-85e5-802170825515-consumed.json
+{
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "clock_mhz": 50,
+  "consumed": true,
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "manifest_sha256": "afe52997a27694b810fd9761aca485c0ce4d699896a8083767ad089f869da8ff",
+  "monotonic_ns": 2438410818798,
+  "schema": 1,
+  "stage": "phase1b-stage1-overlay",
+  "work_order": "WO-0017"
+}
+
+guards [PosixPath('/var/lib/wo0016/stageb2-ready-6f13f0f0-4433-445f-a023-fa403685aeee.json'), PosixPath('/var/lib/wo0016/attempt-7'), PosixPath('/var/lib/wo0016/attempt-8'), PosixPath('/var/lib/wo0016/phase110-prehardware-sw-abort-20261019'), PosixPath('/var/lib/wo0016/attempt-1'), PosixPath('/var/lib/wo0016/attempt-2'), PosixPath('/var/lib/wo0016/attempts'), PosixPath('/var/lib/wo0016/stageb2-ready-d9f65950-d59b-4ea4-bee4-b28656cb176f.json'), PosixPath('/var/lib/wo0016/attempt-4'), PosixPath('/var/lib/wo0016/history'), PosixPath('/var/lib/wo0016/stageb2-6f13f0f0-4433-445f-a023-fa403685aeee-20250506T150858.log'), PosixPath('/var/lib/wo0016/stageb2-6f13f0f0-4433-445f-a023-fa403685aeee.pid'), PosixPath('/var/lib/wo0016/attempt-5'), PosixPath('/var/lib/wo0016/attempt-3'), PosixPath('/var/lib/wo0016/attempt-6')]

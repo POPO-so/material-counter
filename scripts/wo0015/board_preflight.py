@@ -377,7 +377,8 @@ def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tu
 
 
 def validate_manifest(path: str | Path,
-                      expected_manifest_sha256: str | None = None) -> ValidatedRun:
+                      expected_manifest_sha256: str | None = None, *,
+                      approved_boot_id: str | None = None) -> ValidatedRun:
     """Validate one or three fixed RGB→Binary8 frames and all bound artifacts."""
     manifest_path = Path(path).expanduser().resolve()
     try:
@@ -402,7 +403,9 @@ def validate_manifest(path: str | Path,
         raise PreflightError("manifest is not the WO-0015 S2MM Binary8 frame-return stage")
     if not isinstance(manifest["build_id"], str) or not manifest["build_id"].strip():
         raise PreflightError("manifest build_id must be non-empty")
-    if manifest["boot_id"] != AUTHORIZED_BOOT_ID:
+    if approved_boot_id is not None and expected_manifest_sha256 is None:
+        raise PreflightError("explicit approved boot requires a pinned manifest SHA-256")
+    if manifest["boot_id"] != (AUTHORIZED_BOOT_ID if approved_boot_id is None else approved_boot_id):
         raise PreflightError("manifest boot_id differs from the approved boot")
     if manifest["part"] != EXPECTED_PART or type(manifest["clock_mhz"]) is not int \
             or manifest["clock_mhz"] != 50:

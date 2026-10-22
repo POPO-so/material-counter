@@ -1,0 +1,332 @@
+boot 35983d66-bb1d-4a8a-85e5-802170825515
+MemTotal:         503464 kB
+MemFree:           36224 kB
+MemAvailable:     430372 kB
+Buffers:           59232 kB
+Cached:           336736 kB
+SwapCached:            0 kB
+Active:           190628 kB
+Inactive:         242448 kB
+Active(anon):        216 kB
+Inactive(anon):    38324 kB
+Active(file):     190412 kB
+Inactive(file):   204124 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+HighTotal:             0 kB
+HighFree:              0 kB
+LowTotal:         503464 kB
+LowFree:           36224 kB
+SwapTotal:        524284 kB
+SwapFree:         524284 kB
+Dirty:              1312 kB
+Writeback:             0 kB
+AnonPages:         37180 kB
+Mapped:            58368 kB
+Shmem:              1432 kB
+KReclaimable:      11452 kB
+Slab:              25748 kB
+SReclaimable:      11452 kB
+SUnreclaim:        14296 kB
+KernelStack:         728 kB
+PageTables:         1444 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:      776016 kB
+Committed_AS:     169332 kB
+VmallocTotal:     507904 kB
+VmallocUsed:        2116 kB
+VmallocChunk:          0 kB
+Percpu:              368 kB
+CmaTotal:         131072 kB
+CmaFree:           18124 kB
+
+COMMAND ['ps', '-eo', 'pid,ppid,user,etimes,rss,args', '--sort=-rss'] RC 0
+  PID  PPID USER     ELAPSED   RSS COMMAND
+   81     1 root       37210 37608 /lib/systemd/systemd-journald
+  598     1 root       37174 17408 /usr/sbin/smbd --foreground --no-process-group
+  633   598 root       37168 14592 /usr/lib/arm-linux-gnueabihf/samba/samba-bgqd --ready-signal-fd=46 --parent-watch-fd=-1 --debuglevel=0 -F
+  526     1 root       37185 14464 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+  176     1 root       37203 12288 /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers
+  523     1 root       37185 10624 /usr/sbin/nmbd --foreground --no-process-group
+  627   598 root       37170 10028 /usr/sbin/smbd --foreground --no-process-group
+  137     1 systemd+   37206  9300 /lib/systemd/systemd-resolved
+    1     0 root       37264  7516 /sbin/init earlyprintk
+25771 25766 root           0  7168 python3 -
+25748   544 root           1  7040 sshd: xilinx [priv]
+  562     1 xilinx     37180  6400 /lib/systemd/systemd --user
+  544     1 root       37182  6272 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+  628   598 root       37170  5548 /usr/sbin/smbd --foreground --no-process-group
+  192     1 root       37203  4992 /lib/systemd/systemd-logind
+25764 25748 xilinx         0  4960 sshd: xilinx@notty
+  138     1 systemd+   37206  4736 /lib/systemd/systemd-timesyncd
+  323     1 root       37200  4416 /sbin/dhclient -1 -4 -v -i -pf /run/dhclient.eth0.pid -lf /var/lib/dhcp/dhclient.eth0.leases -I -df /var/lib/dhcp/dhclient6.eth0.leases eth0
+25766 25764 root           0  3840 sudo -n python3 -
+  130     1 root       37207  3712 /lib/systemd/systemd-udevd
+  567   562 xilinx     37180  3676 (sd-pam)
+  181     1 syslog     37203  3328 /usr/sbin/rsyslogd -n -iNONE
+  530     1 root       37184  3200 /bin/login -f
+  584   530 xilinx     37176  3200 -bash
+  161     1 message+   37204  3072 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+25772 25771 root           0  2176 ps -eo pid,ppid,user,etimes,rss,args --sort=-rss
+  160     1 root       37204  1792 /usr/sbin/cron -f -P
+  539     1 root       37184  1280 /sbin/agetty -o -p -- \u --noclear tty1 linux
+    2     0 root       37264     0 [kthreadd]
+    3     2 root       37264     0 [pool_workqueue_release]
+    4     2 root       37264     0 [kworker/R-rcu_g]
+    5     2 root       37264     0 [kworker/R-rcu_p]
+    6     2 root       37264     0 [kworker/R-slub_]
+    7     2 root       37264     0 [kworker/R-netns]
+   12     2 root       37264     0 [kworker/R-mm_pe]
+   13     2 root       37264     0 [rcu_tasks_kthread]
+   14     2 root       37264     0 [rcu_tasks_trace_kthread]
+   15     2 root       37264     0 [ksoftirqd/0]
+   16     2 root       37264     0 [rcu_preempt]
+   17     2 root       37264     0 [migration/0]
+   18     2 root       37264     0 [cpuhp/0]
+   19     2 root       37264     0 [cpuhp/1]
+   20     2 root       37264     0 [migration/1]
+   21     2 root       37264     0 [ksoftirqd/1]
+   24     2 root       37264     0 [kdevtmpfs]
+   25     2 root       37264     0 [kworker/R-inet_]
+   27     2 root       37264     0 [oom_reaper]
+   28     2 root       37264     0 [kworker/R-write]
+   29     2 root       37264     0 [kworker/R-kbloc]
+   30     2 root       37264     0 [kworker/R-blkcg]
+   32     2 root       37263     0 [kworker/R-edac-]
+   33     2 root       37263     0 [watchdogd]
+   35     2 root       37263     0 [kworker/R-rpcio]
+   36     2 root       37263     0 [kworker/R-xprti]
+   37     2 root       37263     0 [kworker/R-cfg80]
+   38     2 root       37263     0 [kswapd0]
+   39     2 root       37263     0 [kworker/R-nfsio]
+   40     2 root       37263     0 [kworker/R-kthro]
+   44     2 root       37224     0 [kworker/R-ci_ot]
+   45     2 root       37224     0 [kworker/R-dm_bu]
+   47     2 root       37224     0 [kworker/R-sdhci]
+   48     2 root       37224     0 [irq/45-mmc0]
+   51     2 root       37224     0 [kworker/R-mld]
+   52     2 root       37224     0 [kworker/R-ipv6_]
+   53     2 root       37224     0 [kworker/R-mmc_c]
+   58     2 root       37224     0 [jbd2/mmcblk0p2-8]
+   59     2 root       37224     0 [kworker/R-ext4-]
+   61     2 root       37223     0 [kworker/1:2H-kblockd]
+  883     2 root       16677     0 [kworker/1:2-events]
+ 7680     2 root       12475     0 [kworker/u5:1-uvcvideo]
+ 9557     2 root       11175     0 [kworker/u4:0-flush-179:0]
+ 9908     2 root       10934     0 [kworker/u5:2-uvcvideo]
+10386     2 root       10614     0 [kworker/0:2H-mmc_complete]
+10935     2 root       10359     0 [kworker/u4:3-flush-179:0]
+11982     2 root        9724     0 [kworker/1:3]
+18059     2 root        5408     0 [kworker/u4:1-writeback]
+22670     2 root        2162     0 [kworker/0:1-events_power_efficient]
+23050     2 root        1897     0 [kworker/1:0H]
+24658     2 root         737     0 [kworker/0:1H]
+24795     2 root         642     0 [kworker/0:2-events]
+25309     2 root         279     0 [kworker/0:0H]
+25652     2 root          37     0 [kworker/0:0-mm_percpu_wq]
+25671     2 root          25     0 [kworker/1:1H]
+
+COMMAND ['sudo', '-n', 'fuser', '-v', '/dev/video0', '/dev/video1', '/dev/dri/renderD128', '/dev/xlnk'] RC 1
+Specified filename /dev/xlnk does not exist.
+
+COMMAND ['sudo', '-n', 'dmesg', '--color=never'] RC 0
+rnet eth0: Link is Up - 10Mbps/Full - flow control tx
+[11522.409515] macb e000b000.ethernet eth0: Link is Down
+[11524.489955] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[11702.329525] macb e000b000.ethernet eth0: Link is Down
+[11704.410258] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[11852.089509] macb e000b000.ethernet eth0: Link is Down
+[11854.169876] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[11861.449533] macb e000b000.ethernet eth0: Link is Down
+[11862.490029] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[11863.529513] macb e000b000.ethernet eth0: Link is Down
+[11865.609852] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[11872.889519] macb e000b000.ethernet eth0: Link is Down
+[11873.930032] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[11874.969517] macb e000b000.ethernet eth0: Link is Down
+[11877.049930] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[11882.249579] macb e000b000.ethernet eth0: Link is Down
+[11884.329929] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12058.009524] macb e000b000.ethernet eth0: Link is Down
+[12060.089988] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12062.169508] macb e000b000.ethernet eth0: Link is Down
+[12064.249922] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12237.929537] macb e000b000.ethernet eth0: Link is Down
+[12240.009973] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12242.089519] macb e000b000.ethernet eth0: Link is Down
+[12244.169966] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12257.689509] macb e000b000.ethernet eth0: Link is Down
+[12261.849975] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12315.929524] macb e000b000.ethernet eth0: Link is Down
+[12318.009974] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12422.009538] macb e000b000.ethernet eth0: Link is Down
+[12424.089936] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12598.809528] macb e000b000.ethernet eth0: Link is Down
+[12599.849970] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12601.929538] macb e000b000.ethernet eth0: Link is Down
+[12604.009999] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12782.889540] macb e000b000.ethernet eth0: Link is Down
+[12783.929988] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12958.649531] macb e000b000.ethernet eth0: Link is Down
+[12960.729953] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[12962.809541] macb e000b000.ethernet eth0: Link is Down
+[12963.860028] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[13142.729545] macb e000b000.ethernet eth0: Link is Down
+[13144.809978] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[13318.489560] macb e000b000.ethernet eth0: Link is Down
+[13320.569964] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[13322.649553] macb e000b000.ethernet eth0: Link is Down
+[13324.729966] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[13502.569561] macb e000b000.ethernet eth0: Link is Down
+[13504.649979] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[13678.329562] macb e000b000.ethernet eth0: Link is Down
+[13680.409973] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[13682.489569] macb e000b000.ethernet eth0: Link is Down
+[13684.569996] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[13858.249548] macb e000b000.ethernet eth0: Link is Down
+[13860.329986] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[13862.409574] macb e000b000.ethernet eth0: Link is Down
+[13864.489987] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14038.169565] macb e000b000.ethernet eth0: Link is Down
+[14040.250005] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14042.329568] macb e000b000.ethernet eth0: Link is Down
+[14044.409873] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[14051.689561] macb e000b000.ethernet eth0: Link is Down
+[14052.730158] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14053.769563] macb e000b000.ethernet eth0: Link is Down
+[14054.810003] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14057.929560] macb e000b000.ethernet eth0: Link is Down
+[14060.009927] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[14067.289555] macb e000b000.ethernet eth0: Link is Down
+[14068.330098] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14069.369558] macb e000b000.ethernet eth0: Link is Down
+[14070.410049] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14097.449572] macb e000b000.ethernet eth0: Link is Down
+[14098.489992] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14156.729568] macb e000b000.ethernet eth0: Link is Down
+[14158.809977] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14222.249577] macb e000b000.ethernet eth0: Link is Down
+[14224.329994] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14399.049582] macb e000b000.ethernet eth0: Link is Down
+[14400.089998] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14402.169574] macb e000b000.ethernet eth0: Link is Down
+[14404.250004] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14491.609575] macb e000b000.ethernet eth0: Link is Down
+[14494.729940] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[14502.009605] macb e000b000.ethernet eth0: Link is Down
+[14503.050144] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14504.089591] macb e000b000.ethernet eth0: Link is Down
+[14506.169934] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[14513.449598] macb e000b000.ethernet eth0: Link is Down
+[14514.490131] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14515.529565] macb e000b000.ethernet eth0: Link is Down
+[14516.570025] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14582.089564] macb e000b000.ethernet eth0: Link is Down
+[14584.169991] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14758.889586] macb e000b000.ethernet eth0: Link is Down
+[14759.930000] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14763.049570] macb e000b000.ethernet eth0: Link is Down
+[14764.089999] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14937.769572] macb e000b000.ethernet eth0: Link is Down
+[14939.850010] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[14942.969584] macb e000b000.ethernet eth0: Link is Down
+[14944.010177] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15118.729580] macb e000b000.ethernet eth0: Link is Down
+[15119.770027] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15122.889588] macb e000b000.ethernet eth0: Link is Down
+[15123.930009] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15298.649579] macb e000b000.ethernet eth0: Link is Down
+[15299.690024] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15302.809582] macb e000b000.ethernet eth0: Link is Down
+[15303.850019] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15478.569595] macb e000b000.ethernet eth0: Link is Down
+[15479.609994] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15482.729565] macb e000b000.ethernet eth0: Link is Down
+[15484.810023] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15662.649605] macb e000b000.ethernet eth0: Link is Down
+[15664.730018] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15838.409607] macb e000b000.ethernet eth0: Link is Down
+[15840.490022] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15842.569609] macb e000b000.ethernet eth0: Link is Down
+[15844.650026] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15858.169635] macb e000b000.ethernet eth0: Link is Down
+[15860.250075] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15876.889612] macb e000b000.ethernet eth0: Link is Down
+[15878.969997] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[15966.329612] macb e000b000.ethernet eth0: Link is Down
+[15968.420067] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[15975.689598] macb e000b000.ethernet eth0: Link is Down
+[15979.849965] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[15987.129594] macb e000b000.ethernet eth0: Link is Down
+[15991.290127] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16022.489597] macb e000b000.ethernet eth0: Link is Down
+[16024.570002] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16198.249580] macb e000b000.ethernet eth0: Link is Down
+[16201.370055] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16202.409619] macb e000b000.ethernet eth0: Link is Down
+[16204.490005] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16378.169618] macb e000b000.ethernet eth0: Link is Down
+[16381.290035] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16382.329753] macb e000b000.ethernet eth0: Link is Down
+[16384.410072] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16558.089615] macb e000b000.ethernet eth0: Link is Down
+[16560.170058] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16562.249617] macb e000b000.ethernet eth0: Link is Down
+[16564.330947] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16738.009610] macb e000b000.ethernet eth0: Link is Down
+[16741.130029] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16742.169753] macb e000b000.ethernet eth0: Link is Down
+[16744.250012] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16917.929614] macb e000b000.ethernet eth0: Link is Down
+[16920.020046] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[16923.129600] macb e000b000.ethernet eth0: Link is Down
+[16924.170090] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[17103.049655] macb e000b000.ethernet eth0: Link is Down
+[17105.130060] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[17278.809632] macb e000b000.ethernet eth0: Link is Down
+[17279.850061] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[17282.969613] macb e000b000.ethernet eth0: Link is Down
+[17284.010063] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[17462.889620] macb e000b000.ethernet eth0: Link is Down
+[17464.970052] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[17638.649640] macb e000b000.ethernet eth0: Link is Down
+[17640.730052] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[17642.809619] macb e000b000.ethernet eth0: Link is Down
+[17643.850068] macb e000b000.ethernet eth0: Link is Up - 10Mbps/Full - flow control tx
+[17656.329645] macb e000b000.ethernet eth0: Link is Down
+[17659.449977] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[19345.289664] macb e000b000.ethernet eth0: Link is Down
+[19351.530020] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[19354.649654] macb e000b000.ethernet eth0: Link is Down
+[19357.770028] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[19366.089677] macb e000b000.ethernet eth0: Link is Down
+[19369.210032] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[19833.049654] macb e000b000.ethernet eth0: Link is Down
+[19835.130033] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[19839.289745] macb e000b000.ethernet eth0: Link is Down
+[19842.410044] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[19874.649684] macb e000b000.ethernet eth0: Link is Down
+[19877.770030] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[19913.129657] macb e000b000.ethernet eth0: Link is Down
+[19916.250039] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[20227.219756] macb e000b000.ethernet eth0: Link is Down
+[20233.450039] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[20236.569675] macb e000b000.ethernet eth0: Link is Down
+[20239.690034] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[20248.009664] macb e000b000.ethernet eth0: Link is Down
+[20250.090008] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[20251.129678] macb e000b000.ethernet eth0: Link is Down
+[20256.330008] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[20279.209682] macb e000b000.ethernet eth0: Link is Down
+[20282.330025] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[20287.529681] macb e000b000.ethernet eth0: Link is Down
+[20289.610439] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[20290.649712] macb e000b000.ethernet eth0: Link is Down
+[20293.770034] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[37235.370027] macb e000b000.ethernet eth0: Link is Down
+[37247.850406] macb e000b000.ethernet eth0: Link is Up - 100Mbps/Full - flow control tx
+
+DMA_STATUS [('0x4', '0x1'), ('0x34', '0x1')]

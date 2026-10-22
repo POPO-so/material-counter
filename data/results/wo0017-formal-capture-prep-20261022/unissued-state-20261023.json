@@ -1,0 +1,9 @@
+{
+  "currentboot_manifest_exists": false,
+  "preparation_receipt_exists": false,
+  "standby_launch_claimed": false,
+  "ready_exists": false,
+  "attempt_permit_exists": false,
+  "attempt_consumed": false,
+  "capture_exists": false
+}

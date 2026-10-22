@@ -81,6 +81,18 @@ class OperatorGate:
             self.audit_callback("BROWSER_OPERATOR_CLICK_ACCEPTED")
         self.begin_countdown(countdown)
 
+    def wait_for_preflight_start(self):
+        """Authenticate before calling the runner: no camera, DMA or permit consumption."""
+        self.mark_ready()
+        if not self._start_event.wait(self.handoff_timeout_s):
+            with self.lock:
+                self.phase = "TIMED_OUT"
+            raise RuntimeError("operator start was not received before standby timeout")
+        with self.lock:
+            if not self._operator_authenticated:
+                raise RuntimeError("standby start was not authenticated")
+            self.phase = "PREFLIGHT"
+
     def begin_countdown(self, seconds):
         with self.lock:
             self.phase = "COUNTDOWN"
@@ -154,7 +166,25 @@ else if(s.phase==='COMPLETE'){big.textContent='采样结束';big.style.color='va
 }catch(e){}setTimeout(poll,150);}poll();</script></body></html>'''
 
 
-def make_server(gate, *, port, host="127.0.0.1"):
+def make_server(gate, *, port, host="127.0.0.1", profile=None, standby=False):
+    page = PAGE
+    if profile is not None:
+        if profile not in {"b1", "b2"}:
+            raise ValueError("unknown WO-0017 profile")
+        page = page.replace("WO-0016", "WO-0017 " + profile.upper())
+        page = page.replace("Stage B-2 · M6 Material Run",
+                            "B1 · Empty Belt" if profile == "b1" else "B2 · Five M6 Nuts")
+        page = page.replace("165", "115" if profile == "b1" else "220")
+        if profile == "b1":
+            page = page.replace("立即投料", "保持空带")
+            page = page.replace("进入检测窗口的实际实体数需独立记录。", "B1 全程空带，禁止投料。")
+            page = page.replace("FRAME_0 后 0~3.5 秒内投完 5 颗；约 0.75 秒/颗。放在皮带纵向正中央，远离 ROI 上下边缘。", "B1 全程保持空带，不投放任何螺母。")
+            page = page.replace("'第 '+s.feed_number+' / 5 颗 · 约 0.75 秒/颗'", "'B1 空带采样中；禁止投料'")
+        if standby:
+            page = page.replace("开始 18 秒倒计时", "确认启动单次采样")
+            page = page.replace("等待相机就绪", "等待许可核验")
+            page = page.replace("点击后：15 秒准备 + 3 秒稳姿", "点击后先复核资源并打开相机，再进行15秒准备 + 3秒稳姿")
+            page = page.replace("等待操作员确认；请按独立观察计划准备物料", "待命：相机未打开、DMA未启动、许可未消费；点击后进入正式门禁")
     operator_passcode = secrets.token_urlsafe(32)
     with _ACTIVE_CONTROL_GATES_LOCK:
         if gate in _ACTIVE_CONTROL_GATES:
@@ -185,7 +215,7 @@ def make_server(gate, *, port, host="127.0.0.1"):
 
         def do_GET(self):
             if self.path == "/":
-                self.respond(200, PAGE.encode(), "text/html; charset=utf-8")
+                self.respond(200, page.encode(), "text/html; charset=utf-8")
             elif self.path == "/status":
                 self.respond(200, json.dumps(gate.snapshot()).encode(), "application/json")
             else:
@@ -243,6 +273,7 @@ def _parser():
     parser.add_argument("--host", default="127.0.0.1",
                         help="control listener address (default: loopback)")
     parser.add_argument("--handoff-timeout-s", type=float, default=300)
+    parser.add_argument("--standby-before-preflight", action="store_true")
     parser.add_argument("runner_args", nargs=argparse.REMAINDER)
     return parser
 
@@ -266,7 +297,11 @@ def main(argv=None):
               "the one-time passcode is exposed to network interception. Prefer a "
               "loopback listener with SSH forwarding; forwarding does not protect "
               "a non-loopback listener.", flush=True)
-    server = make_server(gate, host=args.host, port=args.control_port)
+    if args.standby_before_preflight and not run_options.wo0017_profile:
+        raise ValueError("preflight standby requires an explicit WO-0017 profile")
+    server = make_server(gate, host=args.host, port=args.control_port,
+                         profile=run_options.wo0017_profile,
+                         standby=args.standby_before_preflight)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     original_emit = runner._emit_milestone
@@ -294,6 +329,11 @@ def main(argv=None):
     runner.DoubleBufferStream.run = observe
     code = 2
     try:
+        if args.standby_before_preflight:
+            permit = runner.validate_formal_prelaunch(run_options, gate_launcher_sha256)
+            gate.bind_permit_sha256(permit["sha256"])
+            print("[OPERATOR_GATE] STANDBY_NO_CAMERA_NO_DMA_UNCONSUMED", flush=True)
+            gate.wait_for_preflight_start()
         code = runner.main(runner_args, operator_gate_sha256=gate_launcher_sha256,
                            operator_gate=gate)
     finally:

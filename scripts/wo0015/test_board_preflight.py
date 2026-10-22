@@ -218,6 +218,22 @@ def test_manifest_digest_mismatch_is_rejected(tmp_path):
         preflight.validate_manifest(manifest_path, expected_manifest_sha256="0" * 64)
 
 
+def test_new_boot_requires_explicit_approved_boot_and_pinned_manifest(tmp_path):
+    path, manifest = make_manifest(tmp_path)
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    manifest["boot_id"] = boot
+    _write_manifest(path, manifest)
+    with pytest.raises(preflight.PreflightError, match="approved boot"):
+        preflight.validate_manifest(path)
+    with pytest.raises(preflight.PreflightError, match="SHA-256"):
+        preflight.validate_manifest(path, approved_boot_id=boot)
+    plan = preflight.validate_manifest(path, file_sha256(path), approved_boot_id=boot)
+    assert plan.boot_id == boot
+    with pytest.raises(preflight.PreflightError, match="approved boot"):
+        preflight.validate_manifest(path, file_sha256(path),
+                                    approved_boot_id="00000000-0000-0000-0000-000000000000")
+
+
 def test_s2mm_disabled_in_hwh_is_rejected_even_when_hwh_hash_matches(tmp_path):
     manifest_path, manifest = make_manifest(tmp_path, frame_count=1)
     hwh_path = tmp_path / manifest["hwh_path"]

@@ -7,6 +7,44 @@ import urllib.request
 from operator_gate_launcher import OperatorGate, make_server
 
 
+def test_preflight_standby_waits_for_authenticated_click_without_countdown(monkeypatch):
+    gate, server, thread, url = start_server(monkeypatch, require_permit_sha256=True)
+    gate.bind_permit_sha256("a" * 64)
+    finished = threading.Event()
+    waiter = threading.Thread(target=lambda: (gate.wait_for_preflight_start(), finished.set()), daemon=True)
+    waiter.start()
+    try:
+        for _ in range(100):
+            if gate.snapshot()["phase"] == "READY":
+                break
+            time.sleep(.005)
+        assert not finished.is_set()
+        assert gate.deadline is None
+        assert post_start(url, "secret") == 200
+        assert finished.wait(1)
+        assert gate.snapshot()["phase"] == "PREFLIGHT"
+        assert gate.deadline is None
+    finally:
+        stop_server(server, thread)
+
+
+def test_b1_standby_page_instructs_empty_belt_instead_of_material_feeding():
+    gate = OperatorGate()
+    server = make_server(gate, port=0, profile="b1", standby=True)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        page = urllib.request.urlopen(f"http://127.0.0.1:{server.server_port}/").read().decode()
+        assert "B1 · Empty Belt" in page
+        assert "115 FRAMES" in page
+        assert "B1 全程保持空带" in page
+        assert "M6 Material Run" not in page
+        assert "立即投料" not in page
+        assert "第 '+s.feed_number" not in page
+    finally:
+        stop_server(server, thread)
+
+
 def start_server(monkeypatch, passcode="secret", **gate_kwargs):
     monkeypatch.setattr("operator_gate_launcher.secrets.token_urlsafe", lambda _n: passcode)
     gate = OperatorGate(**gate_kwargs)
