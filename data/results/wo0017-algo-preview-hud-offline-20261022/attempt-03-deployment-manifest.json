@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "source_commit": "3b78052eaf613eea25d9e4395e33ed53cc4ea260",
+  "branch": "codex/wo0017-algo-accuracy",
+  "worktree_head": "e44e0eac4907c7522d41473754032f51232ec2eb",
+  "main": "1d32593610c2643b3f022ce048d31f70fd7a4417",
+  "board": "xilinx@192.168.2.99",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "remote_wo_root_mode": "0700",
+  "remote_app_mode": "0700",
+  "attempt": "camera-preview-35983d66-bb1d-4a8a-85e5-802170825515-03",
+  "runtime_files": [
+    {
+      "source": "scripts/wo0016/camera_only_preview.py",
+      "remote_path": "/home/xilinx/wo0017/app/camera_only_preview.py",
+      "sha256": "fbe91949f730eac8e38e84017b9ba77c683895f8a12d79da2c1fd2fc691a3b38",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0016/capture_dataset.py",
+      "remote_path": "/home/xilinx/wo0017/app/capture_dataset.py",
+      "sha256": "e279b450cbcbb0f5a616f973a7ec903cef7c95b184f7656ee25b5292b608f622",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0016/mjpeg_preview.py",
+      "remote_path": "/home/xilinx/wo0017/app/mjpeg_preview.py",
+      "sha256": "1db8daf0854e114cc5c062eb7ae276f77c26a290fc48af6451fe40d6ad7bc4d5",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0016/operator_gate_launcher.py",
+      "remote_path": "/home/xilinx/wo0017/app/operator_gate_launcher.py",
+      "sha256": "ce59e64d688f3441899faa8476f7335367234946bdebe800da4d085c5494df5c",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0016/packet_encoder.py",
+      "remote_path": "/home/xilinx/wo0017/app/packet_encoder.py",
+      "sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0016/replay_capture_dataset.py",
+      "remote_path": "/home/xilinx/wo0017/app/replay_capture_dataset.py",
+      "sha256": "a2ab6074826994f7d799456ed205e0324c8419025adfff0cd5bc3697eee790a6",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0016/run_stream_counter.py",
+      "remote_path": "/home/xilinx/wo0017/app/run_stream_counter.py",
+      "sha256": "580473bd3fad4db42ea481e0ee7f83b56a13e361083ec1d59e538fff616dba31",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0016/stream_counter.py",
+      "remote_path": "/home/xilinx/wo0017/app/stream_counter.py",
+      "sha256": "04035341819a4e5584943f68989d0ae7db840a5a32bd103d5c3416b83426a804",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0015/board_once.py",
+      "remote_path": "/home/xilinx/wo0017/app/board_once.py",
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0015/board_preflight.py",
+      "remote_path": "/home/xilinx/wo0017/app/board_preflight.py",
+      "sha256": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6",
+      "remote_sha256_matched": true
+    },
+    {
+      "source": "scripts/wo0015/camera_adapter.py",
+      "remote_path": "/home/xilinx/wo0017/app/camera_adapter.py",
+      "sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+      "remote_sha256_matched": true
+    }
+  ],
+  "local_evidence": [
+    {
+      "path": "attempt-03-preview-state.json",
+      "sha256": "14514c278e27822c2dc61f4bc9e9bf58e406407bfef91df39ada40828c0e8f85"
+    },
+    {
+      "path": "attempt-03-launch.log",
+      "sha256": "19b6fe1f25cc1dc287fca4bdf51d2532510ad53c72f2a8d87a560aa608bb966e"
+    },
+    {
+      "path": "attempt-03-screen.jpg",
+      "sha256": "76f9ada70396fef767672c2fa8f2620c7ee86ee2692fa44662b6f56d9b1ffbf0"
+    }
+  ]
+}

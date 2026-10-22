@@ -52,6 +52,15 @@ Stage B-1 的历史报告记载 115 帧空带、0 次计数，但原始逐帧 JS
 - 本地 `camera_only_preview.py` 与 `run_stream_counter.py` 定义的是同一 DMA 基址 `0x40400000`，S2MM 状态寄存器偏移 `0x34`。WO-0015 已归档 HWH 将单个 `axi_dma_0` 的寄存器窗口定义为 `0x40400000–0x4040FFFF`；`0x40410000` 落在该窗口之外。这与本次指定的独立 S2MM 基址映射不一致，也与板端 Bus error 相符。当前启动仍未取得板端 HWH/寄存器读回的独立确认；在 S2MM 状态无法读取前，不部署、不启动预览。
 - 本次仍未部署文件、创建尝试目录或启动相机；未启动 DMA、未重载 Overlay、未消费 Guard。
 
+## 最终门禁通过后的板端部署与 `-03` 预览
+
+- 在 Boot ID `35983d66-bb1d-4a8a-85e5-802170825515` 下，以 root 只读同一 DMA 基址 `0x40400000` 的 MM2S/S2MM `DMASR` 偏移 `0x04/0x34`：两者均为 `0x00000001`，Err mask `0x770` 均为 0。启动前 `CmaFree=68,152 KiB`，高于 32,768 KiB 水位。预览期间第二次只读读数仍为 `0x00000001/0x00000001`、Err 均为 0，`CmaFree=43,652 KiB`。
+- `/home/xilinx/wo0017` 与 `/home/xilinx/wo0017/app` 均为 `0700 xilinx:xilinx`。从代码提交 `3b78052eaf613eea25d9e4395e33ed53cc4ea260` 部署 11 个运行依赖，涵盖 `camera_only_preview.py`、`stream_counter.py`、`mjpeg_preview.py`、`operator_gate_launcher.py`、`run_stream_counter.py`、`capture_dataset.py` 与 packet/board helpers。每个远端 SHA-256 均与本地一致，清单见 [attempt-03-deployment-manifest.json](attempt-03-deployment-manifest.json)。
+- 一次启动创建 `/home/xilinx/wo0017/camera-preview-35983d66-bb1d-4a8a-85e5-802170825515-03`。V4L2 回读确认 `CAP_V4L2`、MJPG、640×400、60 FPS、手动曝光 50、亮度 0。迟滞带为 X=135–165，中心线 X=150；预览画面包含活动轨迹框/尾迹及右上软件阈值 PIP `SIM TH=128`。抽取的 HTTP JPEG 截图可见 HUD 叠加，见 [attempt-03-screen.jpg](attempt-03-screen.jpg)。
+- 启动内置 MJPEG 客户端测得 180 帧 / 10.4496 秒 = **17.130 FPS**，计数/发布流水线为 **18.533 FPS**。额外 8080 HTTP 窗口返回 81 个 JPEG 结束帧 / 5.037 秒 = **16.083 FPS**；两次交付速率相差约 6.1%，窗口内无停流。页面 GET 为 HTTP 200，持续 MJPEG 帧可解码。进程日志只有 READY 行，无 traceback、Bus error 或 FAILED。
+- 按要求对进程 PID 12406 发送 TERM 并等待自然退出。最终状态为 `STOPPED`，8080 监听与 `/dev/video0` 占用均为空。预览期间和最终状态均记录 `dma_enabled=false`、`formal_sampling=false`、`frame_files_written=false`；未启动 DMA 传输、未重载 Overlay，也未复用/消费 Guard。PIP 是软件模拟，不代表 PL DMA 二值化结果。
+- 板端状态 JSON 中的 UTC 字段显示 `2025-05-07`，与本次 2026-10-22 操作日期不一致，属于板端时钟不准；因此本报告按会话日期记录，不能用这些板端时间字段推断真实操作时刻。最终板端状态、启动日志与截图的本地证据文件均列在部署清单中。
+
 ## 验证和边界
 
 `C:\fpga\material-counter\.venv\Scripts\python.exe -m pytest scripts\wo0016 -q`：**159 passed**（2026-10-22，本地完整测试）。包括 N 帧预分配、采样后 NPZ 写出、完整/逐数组 SHA-256 校验、篡改拒绝、软件阈值 PIP 标记及 220 帧容量预检。
