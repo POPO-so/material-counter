@@ -1,10 +1,49 @@
 import json
+from pathlib import Path
+import subprocess
+import sys
 import threading
 import time
 import urllib.error
 import urllib.request
 
 from operator_gate_launcher import OperatorGate, make_server
+
+
+def test_script_entry_uses_the_same_registered_gate_module_as_runner(tmp_path):
+    launcher = Path(__file__).with_name("operator_gate_launcher.py")
+    program = r'''
+import runpy, sys
+sys.path.insert(0, sys.argv[1])
+import run_stream_counter as runner
+def check_gate(argv, *, operator_gate_sha256, operator_gate):
+    runner.validate_operator_gate_launcher_sha256(operator_gate_sha256, operator_gate)
+    print("SCRIPT_GATE_IDENTITY_PASS")
+    return 0
+runner.main = check_gate
+launcher, attempt = sys.argv[2:4]
+sys.argv = [launcher, "--attempt-dir", attempt, "--control-port", "0", "--",
+            "--mode", "mock", "--evidence-json", attempt + "/result.json"]
+runpy.run_path(launcher, run_name="__main__")
+'''
+    completed = subprocess.run(
+        [sys.executable, "-c", program, str(launcher.parent), str(launcher), str(tmp_path)],
+        capture_output=True, text=True, timeout=20)
+    assert completed.returncode == 0, completed.stderr
+    assert "SCRIPT_GATE_IDENTITY_PASS" in completed.stdout
+
+
+def test_failed_executor_is_reported_as_failed_instead_of_sampling_complete():
+    gate = OperatorGate()
+    gate.finish({"status": "FAILED", "frames_processed": 0})
+    assert gate.snapshot()["phase"] == "FAILED"
+
+
+def test_executor_without_explicit_success_status_is_failed():
+    for result in ({}, {"status": None}, {"status": "UNKNOWN"}):
+        gate = OperatorGate()
+        gate.finish(result)
+        assert gate.snapshot()["phase"] == "FAILED"
 
 
 def test_preflight_standby_waits_for_authenticated_click_without_countdown(monkeypatch):
@@ -128,7 +167,7 @@ def test_browser_countdown_and_feed_ticks_use_board_monotonic_time(monkeypatch):
         gate.milestone("FRAME_0_CAPTURE_START_FEED_NOW", 118.0)
         current[0] = 120.1
         assert gate.snapshot()["feed_number"] == 3
-        gate.finish({"total_count": 5, "frames_processed": 165})
+        gate.finish({"status": "BOARD_STREAM_COMPLETE", "total_count": 5, "frames_processed": 165})
         assert gate.snapshot()["phase"] == "COMPLETE"
         assert gate.snapshot()["result"]["total_count"] == 5
     finally:

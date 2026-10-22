@@ -1,0 +1,7 @@
+[OPERATOR_GATE] STANDBY_NO_CAMERA_NO_DMA_UNCONSUMED
+{
+  "board_accessed": false,
+  "error": "ValueError: Stage B-2 board mode requires a live operator control server session",
+  "pynq_imported": false,
+  "status": "BOARD_STREAM_REJECTED"
+}

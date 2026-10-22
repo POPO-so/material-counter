@@ -109,7 +109,9 @@ class OperatorGate:
 
     def finish(self, result):
         with self.lock:
-            self.phase = "COMPLETE"
+            status = result.get("status")
+            self.phase = ("COMPLETE" if status in {"BOARD_STREAM_COMPLETE", "MOCK_PASS"}
+                          else "FAILED")
             self.result = result
 
     def snapshot(self):
@@ -163,6 +165,7 @@ if(s.phase==='READY'){big.textContent='已就绪';msg.textContent='等待操作�
 else if(s.phase==='COUNTDOWN'||s.phase==='STABILIZING'){big.textContent=s.seconds_remaining;msg.textContent=(s.phase==='STABILIZING'?'稳姿中':'准备中')+'，现在不要投料';btn.textContent='倒计时进行中';}
 else if(s.phase==='SAMPLING'){big.textContent='立即投料';big.style.color='var(--green)';msg.textContent='第 '+s.feed_number+' / 5 颗 · 约 0.75 秒/颗';btn.textContent='正在采样';}
 else if(s.phase==='COMPLETE'){big.textContent='采样结束';big.style.color='var(--text)';msg.textContent='请停止投料。计数 '+(s.result?.total_count??'?')+'，完成 '+(s.result?.frames_processed??0)+' 帧';btn.textContent='本次许可已使用';}
+else if(s.phase==='FAILED'){big.textContent='执行失败';big.style.color='var(--amber)';msg.textContent='启动被拒绝或采样异常，请保留本次退出证据。完成 '+(s.result?.frames_processed??0)+' 帧';btn.textContent='已停止，请勿重试';}
 }catch(e){}setTimeout(poll,150);}poll();</script></body></html>'''
 
 
@@ -357,4 +360,7 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    # The runner imports this canonical module to validate gate type/registration.
+    # Execute its main so script invocation does not create a second gate registry.
+    from operator_gate_launcher import main as canonical_main
+    raise SystemExit(canonical_main())
