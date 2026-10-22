@@ -15,6 +15,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_stream_counter as runner  # noqa: E402
 
 
+def test_formal_ready_id_selects_a_new_file_without_replacing_legacy_ready():
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    base = Path("/var/lib/wo0017") / boot / "b1"
+    assert runner.formal_ready_path(boot, "b1") == base / "ready.json"
+    assert runner.formal_ready_path(boot, "b1", "b1-empty-04") == base / "ready-b1-empty-04.json"
+    for unsafe in ("", "../ready", "a/b", "a\\b", ".", "x" * 33):
+        with pytest.raises(ValueError, match="READY id"):
+            runner.formal_ready_path(boot, "b1", unsafe)
+
+
 def test_wo0017_profile_requires_capture_and_independent_one_shot_mode_before_board_access():
     args = runner._parser().parse_args(["--wo0017-profile", "b1"])
     with pytest.raises(ValueError, match="capture.*one-shot"):

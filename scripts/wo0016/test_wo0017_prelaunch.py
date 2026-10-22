@@ -70,7 +70,7 @@ def _write_permit(path: Path, identity: dict) -> None:
     _write_json(path, identity | {"permit_status": "AUTHORIZED", "consumed": False})
 
 
-def _make_case(tmp_path, monkeypatch, profile):
+def _make_case(tmp_path, monkeypatch, profile, ready_id=None):
     frames, count, label = (115, 0, "empty_belt") if profile == "b1" else (
         220, 5, "M6_nut_no_washer"
     )
@@ -127,7 +127,7 @@ def _make_case(tmp_path, monkeypatch, profile):
         "--manifest", str(tmp_path / "reviewed-manifest.json"),
         "--manifest-sha256", MANIFEST_SHA256,
         "--evidence-json", str(receipt_hash_path),
-    ])
+    ] + ([] if ready_id is None else ["--wo0017-ready-id", ready_id]))
 
     # formal_capture_context deliberately uses the board's fixed /var/lib path.
     # Redirect just the returned guard/attempt locations into this test's private
@@ -240,6 +240,15 @@ def test_formal_prelaunch_accepts_exact_b1_b2_permits_without_board_side_effects
     assert not capture_path.exists()
     assert context["ready_path"].read_bytes() == ready_before
     assert permit_path.read_bytes() == permit_before
+
+
+def test_formal_prelaunch_binds_explicit_ready_id_and_rejects_drift(tmp_path, monkeypatch):
+    args, context, _, _, _, _ = _make_case(tmp_path, monkeypatch, "b1", "b1-empty-04")
+    assert context["identity"]["ready_id"] == "b1-empty-04"
+    assert runner.validate_formal_prelaunch(args, LAUNCHER_SHA256)["permit"]["ready_id"] == "b1-empty-04"
+    args.wo0017_ready_id = "b1-empty-05"
+    with pytest.raises(RuntimeError, match="READY guard.*does not match"):
+        runner.validate_formal_prelaunch(args, LAUNCHER_SHA256)
 
 
 def test_formal_prelaunch_rejects_runtime_hash_drift(tmp_path, monkeypatch):

@@ -811,6 +811,15 @@ def formal_runtime_sha256() -> dict[str, str]:
     return {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in paths.items()}
 
 
+def formal_ready_path(boot_id: str, profile: str, ready_id: str | None = None) -> Path:
+    base = Path("/var/lib/wo0017") / boot_id / profile
+    if ready_id is None:
+        return base / "ready.json"
+    if not isinstance(ready_id, str) or re.fullmatch(r"[A-Za-z0-9_-]{1,32}", ready_id, re.ASCII) is None:
+        raise ValueError("WO-0017 READY id requires 1-32 ASCII letters, digits, '_' or '-'")
+    return base / f"ready-{ready_id}.json"
+
+
 def formal_capture_context(args: argparse.Namespace, plan: Any) -> dict[str, Any] | None:
     profile = getattr(args, "wo0017_profile", None)
     if profile is None:
@@ -836,9 +845,13 @@ def formal_capture_context(args: argparse.Namespace, plan: Any) -> dict[str, Any
                      "capture_config": {"enabled": True,
                          "output_directory": str(Path(args.capture_dir).expanduser().resolve(strict=False)),
                          "max_bytes": args.capture_max_bytes, "queue_depth": 2, "schema_version": 1}})
+    ready_id = getattr(args, "wo0017_ready_id", None)
+    ready_path = formal_ready_path(plan.boot_id, profile, ready_id)
+    if ready_id is not None:
+        identity["ready_id"] = ready_id
     base = Path("/var/lib/wo0017") / plan.boot_id / profile
     return {"identity": identity, "receipt": receipt,
-            "ready_path": base / "ready.json", "attempt_root": base / "attempts",
+            "ready_path": ready_path, "attempt_root": base / "attempts",
             "runtime_sha256": runtime}
 
 
@@ -1556,6 +1569,8 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0016 asynchronous double-buffer Binary8 counter")
     parser.add_argument("--mode", choices=("mock", "board"), default="mock")
     parser.add_argument("--wo0017-profile", choices=("b1", "b2"))
+    parser.add_argument("--wo0017-ready-id",
+                        help="new immutable READY record ID; omitting it retains the original ready.json")
     parser.add_argument("--expected-boot-id")
     parser.add_argument("--stage1-receipt")
     parser.add_argument("--stage1-receipt-sha256")

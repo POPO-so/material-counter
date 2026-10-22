@@ -1,0 +1,17 @@
+{
+  "status": "PREDEPLOY_READONLY_PASS",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "memory_kib": {
+    "MemAvailable": 428816,
+    "CmaTotal": 131072,
+    "CmaFree": 112080
+  },
+  "dmasr": {
+    "MM2S": "0x00000001",
+    "S2MM": "0x00000001"
+  },
+  "fuser_rc": 1,
+  "fuser_output": "",
+  "v4l2": "brightness: 0\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\n",
+  "listeners": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                   \nLISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*    users:((\"systemd-resolve\",pid=137,fd=14))\nLISTEN 0      50           0.0.0.0:445       0.0.0.0:*    users:((\"smbd\",pid=598,fd=47))           \nLISTEN 0      128          0.0.0.0:22        0.0.0.0:*    users:((\"sshd\",pid=544,fd=3))            \nLISTEN 0      50           0.0.0.0:139       0.0.0.0:*    users:((\"smbd\",pid=598,fd=48))           \nLISTEN 0      50              [::]:445          [::]:*    users:((\"smbd\",pid=598,fd=45))           \nLISTEN 0      128             [::]:22           [::]:*    users:((\"sshd\",pid=544,fd=4))            \nLISTEN 0      50              [::]:139          [::]:*    users:((\"smbd\",pid=598,fd=46))           \n"
+}

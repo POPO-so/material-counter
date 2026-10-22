@@ -1,0 +1,14 @@
+{
+  "run_stream_counter.py": "e2d0f3dd2a48a99f8eab89f81ada2c979e2107e47924a7245962102dad5e0ced",
+  "operator_gate_launcher.py": "4c14388ff9f2d1bd95e955777884af925d7acecbebb1f38f9ec575b9d3082235",
+  "stream_counter.py": "c25b1279c3bc80c2896628674872bac5a4235f0a49e0658cadbba54a2ee225e3",
+  "capture_dataset.py": "e279b450cbcbb0f5a616f973a7ec903cef7c95b184f7656ee25b5292b608f622",
+  "live_calibration.py": "30d2a1013baf4615ea698380a96fe880a7a6e53dd0a9b07af2e104abc0a5b3ec",
+  "packet_encoder.py": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+  "mjpeg_preview.py": "ca0ef2956b844f2235d9ce9a2b9b2cf4732ad3f27264dcf88e37708297c8cbba",
+  "wo0017_capture_profile.py": "cefd8601b90cefa20cbe20ed830d05e8d99dc4524fccf72aabed4ed3650bdbef",
+  "wo0015/board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+  "wo0015/board_preflight.py": "1e4be8cd1257eca4041a89a683c3d6582cbb28a1b37fa70cc942ac3041c36ef4",
+  "wo0015/camera_adapter.py": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+  "wo0015/prepare_vectors.py": "242a2ac8db69a3b8c2f89f94774146f61fcc22193bcab6ada8d6bb5e247784e6"
+}
