@@ -118,12 +118,13 @@ class _Track:
 class MaskCounter:
     """Count confirmed components across a configurable X or Y line.
 
-    The horizontal ROI remains a conveyor lane even when counting across X.
-    max_step is longitudinal; max_lateral_step is perpendicular to motion.
+    The ROI can cover one conveyor lane or the full frame. max_step is
+    longitudinal; max_lateral_step is perpendicular to motion.
     """
 
     def __init__(self, *, width: int = WIDTH, height: int = HEIGHT,
                  line_y: int = 120, roi_half_height: int = 24,
+                 roi_mode: str = "lane",
                  min_area: int = 12, direction: int = 1,
                  hysteresis: float = 2.0, confirm_hits: int = 2,
                  max_missing: int = 1, max_step: float = 24.0,
@@ -134,6 +135,9 @@ class MaskCounter:
                  max_bbox_width: int = 85, max_bbox_height: int = 85,
                  component_cluster_dx: float = 0.0, component_cluster_dy: float = 12.0,
                  component_cluster_gap: float = 0.0,
+                 guarded_merge: bool = False, single_intact_area: int = 95,
+                 max_merge_area: int = 260, max_merged_span: int = 24,
+                 strict_lateral_gate: bool = False,
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
                  discard_finished_tracks: bool = False):
@@ -143,6 +147,9 @@ class MaskCounter:
         if self.line_y >= self.height:
             raise ValueError("line_y must be inside the frame")
         self.roi_half_height = _integer(roi_half_height, "roi_half_height", minimum=1)
+        if not isinstance(roi_mode, str) or roi_mode not in ("lane", "full"):
+            raise ValueError("roi_mode must be lane or full")
+        self.roi_mode = roi_mode
         self.min_area = _integer(min_area, "min_area", minimum=1)
         self.max_area = None if max_area is None else _integer(max_area, "max_area", minimum=self.min_area)
         self.max_bbox_width = _integer(max_bbox_width, "max_bbox_width", minimum=1)
@@ -163,12 +170,23 @@ class MaskCounter:
         self.max_x_step = _positive_float(max_x_step, "max_x_step")
         self.max_lateral_step = (self.max_x_step if max_lateral_step is None else
                                  _positive_float(max_lateral_step, "max_lateral_step"))
+        if not isinstance(strict_lateral_gate, bool):
+            raise ValueError("strict_lateral_gate must be a bool")
+        self.strict_lateral_gate = strict_lateral_gate
         self.backward_tolerance = _nonnegative_float(backward_tolerance, "backward_tolerance")
         self.component_cluster_dx = _nonnegative_float(component_cluster_dx, "component_cluster_dx")
         self.component_cluster_dy = _nonnegative_float(component_cluster_dy, "component_cluster_dy")
         self.component_cluster_gap = _nonnegative_float(
             component_cluster_gap, "component_cluster_gap"
         )
+        if not isinstance(guarded_merge, bool):
+            raise ValueError("guarded_merge must be a bool")
+        self.guarded_merge = guarded_merge
+        self.single_intact_area = _integer(
+            single_intact_area, "single_intact_area", minimum=1
+        )
+        self.max_merge_area = _integer(max_merge_area, "max_merge_area", minimum=1)
+        self.max_merged_span = _integer(max_merged_span, "max_merged_span", minimum=1)
         self.cooldown_frames = _integer(cooldown_frames, "cooldown_frames", minimum=0)
         self.cooldown_lateral = _nonnegative_float(cooldown_lateral, "cooldown_lateral")
         self.edge_max_missing = _integer(edge_max_missing, "edge_max_missing", minimum=0)
@@ -329,6 +347,8 @@ class MaskCounter:
         )
 
     def _roi_bounds(self) -> tuple[int, int]:
+        if self.roi_mode == "full":
+            return 0, self.height
         top = max(0, self.line_y - self.roi_half_height)
         bottom = min(self.height, self.line_y + self.roi_half_height + 1)
         return top, bottom
@@ -410,11 +430,91 @@ class MaskCounter:
         return detections, top, bottom, row_projection, column_projection
 
     def _cluster_components(self, detections: list[Detection]) -> list[Detection]:
-        """Complete-link clusters bound every pair; no transitive nut chains.
+        """Apply the configured legacy or area/span-guarded cluster policy.
 
-        Inputs have already passed CCL area filtering. Keep the original CCL
-        records separately for audit; observations use area-weighted centroids.
+        Inputs have passed CCL area filtering. Keep original CCL records for
+        audit; returned observations use area-weighted centroids.
         """
+        if self.guarded_merge:
+            ordered = sorted(
+                detections,
+                key=lambda d: (d.area, d.x_min, d.x_max, d.y_min, d.y_max,
+                               d.centroid_x, d.centroid_y),
+            )
+            count = len(ordered)
+            parent = list(range(count))
+            group_area = [d.area for d in ordered]
+            group_bbox = [
+                (d.x_min, d.x_max, d.y_min, d.y_max) for d in ordered
+            ]
+            group_wx = [d.area * d.centroid_x for d in ordered]
+            group_wy = [d.area * d.centroid_y for d in ordered]
+
+            def find(index: int) -> int:
+                while parent[index] != index:
+                    parent[index] = parent[parent[index]]
+                    index = parent[index]
+                return index
+
+            for left_index in range(count):
+                for right_index in range(left_index + 1, count):
+                    left_root = find(left_index)
+                    right_root = find(right_index)
+                    if left_root == right_root:
+                        continue
+
+                    left_box = group_bbox[left_root]
+                    right_box = group_bbox[right_root]
+                    gap_x = max(0, left_box[0] - right_box[1] - 1,
+                                right_box[0] - left_box[1] - 1)
+                    gap_y = max(0, left_box[2] - right_box[3] - 1,
+                                right_box[2] - left_box[3] - 1)
+                    if math.hypot(gap_x, gap_y) > self.component_cluster_gap:
+                        continue
+                    if (group_area[left_root] >= self.single_intact_area
+                            and group_area[right_root] >= self.single_intact_area):
+                        continue
+
+                    combined_area = group_area[left_root] + group_area[right_root]
+                    if combined_area > self.max_merge_area:
+                        continue
+                    merged_box = (
+                        min(left_box[0], right_box[0]),
+                        max(left_box[1], right_box[1]),
+                        min(left_box[2], right_box[2]),
+                        max(left_box[3], right_box[3]),
+                    )
+                    merged_width = merged_box[1] - merged_box[0] + 1
+                    merged_height = merged_box[3] - merged_box[2] + 1
+                    if (merged_width > self.max_merged_span
+                            or merged_height > self.max_merged_span):
+                        continue
+
+                    # Keep the earliest (small-fragment-first) root stable.
+                    if right_root < left_root:
+                        left_root, right_root = right_root, left_root
+                    parent[right_root] = left_root
+                    group_area[left_root] = combined_area
+                    group_bbox[left_root] = merged_box
+                    group_wx[left_root] += group_wx[right_root]
+                    group_wy[left_root] += group_wy[right_root]
+
+            merged = []
+            for index in range(count):
+                if find(index) != index:
+                    continue
+                area = group_area[index]
+                if not self._area_allowed(area):
+                    continue
+                x_min, x_max, y_min, y_max = group_bbox[index]
+                merged.append(Detection(
+                    x_min, x_max, y_min, y_max, area,
+                    group_wx[index] / area, group_wy[index] / area,
+                ))
+            return sorted(merged, key=lambda d: (
+                d.centroid_x, d.centroid_y, d.y_min, d.x_min
+            ))
+
         if self.component_cluster_gap > 0:
             count = len(detections)
             parent = list(range(count))
@@ -559,7 +659,9 @@ class MaskCounter:
                     )
                     if not (edge_recovery or predicted_recovery):
                         continue
-                if (lateral <= self.max_lateral_step * dt
+                lateral_limit = (self.max_lateral_step if self.strict_lateral_gate
+                                 else self.max_lateral_step * dt)
+                if (lateral <= lateral_limit
                         and -self.backward_tolerance <= forward <= self.max_step * dt
                         and 0.25 <= area_ratio <= 4.0):
                     predicted_x, predicted_y = old.centroid_x, old.centroid_y

@@ -25,7 +25,7 @@ from typing import Any, AsyncIterator, Callable, Mapping
 
 import cv2
 import numpy as np
-from live_calibration import require_standard_camera_controls
+from live_calibration import require_standard_camera_controls, frame_geometry, resize_monochrome_into
 
 def resolve_wo15_dependency_dir(script_dir: Path) -> Path:
     """Prefer the isolated dependency bundle deployed alongside this runner."""
@@ -112,10 +112,22 @@ def build_synthetic_masks(*, frame_count: int = 8, line_y: int = 120,
 def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
                         direction: int = 1, min_area: int = 12,
                         expected_count: int | None = None,
-                        material_label: str | None = None) -> dict[str, Any]:
+                        material_label: str | None = None,
+                        counter_config: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """Run synthetic Binary8 masks through the actual counter and JPEG renderer."""
-    counter = MaskCounter(line_y=line_y, direction=direction,
-                          min_area=min_area, max_step=24.0)
+    counter = (MaskCounter(**dict(counter_config)) if counter_config is not None else
+               MaskCounter(line_y=line_y, direction=direction, min_area=min_area, max_step=24.0))
+    masks = build_synthetic_masks(frame_count=frame_count, line_y=line_y, direction=direction)
+    if counter_config is not None:
+        masks = []
+        positions = np.rint(np.linspace(96, 224, frame_count)).astype(int)
+        if counter.direction < 0:
+            positions = positions[::-1]
+        for x in positions:
+            mask = np.zeros((HEIGHT, WIDTH), np.uint8)
+            for y in (25, 65, 105, 155, 214):
+                mask[y-5:y+6, x-5:x+6] = 255
+            masks.append(mask)
     hub = MjpegFrameHub()
     preview = MjpegPreviewServer(hub=hub, host="127.0.0.1", port=0)
     results = []
@@ -123,12 +135,11 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
     preview.start()
     try:
         last_jpeg = None
-        for frame_id, mask in enumerate(build_synthetic_masks(frame_count=frame_count,
-                                                               line_y=line_y,
-                                                               direction=direction)):
+        for frame_id, mask in enumerate(masks):
             result = counter.update(frame_id, mask)
             last_jpeg = render_preview_jpeg(mask, total_count=result.total_count,
-                                            line_y=line_y)
+                                            line_y=counter.line_y, count_axis=counter.count_axis,
+                                            line_x=counter.line_x, hysteresis=counter.hysteresis)
             hub.publish(last_jpeg)
             results.append(result)
     finally:
@@ -136,8 +147,9 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
     elapsed = max(time.perf_counter() - start, 1e-9)
     predicted = results[-1].total_count if results else 0
     # Synthetic ground truth is kept outside MaskCounter and is used only for scoring.
-    ground_truth = (2 if frame_count >= 2 else 0) if expected_count is None else expected_count
-    return {
+    ground_truth = ((5 if counter_config is not None else 2)
+                    if expected_count is None else expected_count)
+    summary = {
         "schema": 1,
         "work_order": "WO-0016",
         "status": "MOCK_PASS" if predicted == ground_truth else "MOCK_COUNT_MISMATCH",
@@ -163,6 +175,11 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
         "hardware_fps": None,
         "note": "Synthetic Offline evidence only; it is not PYNQ, camera, conveyor, or board acceptance.",
     }
+    if counter_config is not None:
+        summary.update({"counting_profile": "full-width-mixed",
+                        "counting_config": dict(counter_config),
+                        "preprocessing_config": frame_geometry("letterbox")})
+    return summary
 
 
 def claim_once_guard(path: str | Path, identity: Mapping[str, Any]) -> dict[str, Any]:
@@ -291,8 +308,28 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
               "cooldown_lateral": args.cooldown_lateral,
               "edge_max_missing": args.edge_max_missing,
               "prediction_max_missing": args.prediction_max_missing}
+    if getattr(args, "counting_profile", "legacy") == "full-width-mixed":
+        config.update({"roi_mode": "full", "guarded_merge": True,
+                       "single_intact_area": 95, "max_merge_area": 260, "max_merged_span": 24,
+                       "strict_lateral_gate": True, "count_axis": "x", "line_x": 160,
+                       "line_y": 120, "min_area": 12, "max_missing": 3,
+                       "max_step": 48.0, "max_lateral_step": 10.0, "backward_tolerance": 4.0,
+                       "component_cluster_gap": 14.0, "component_cluster_dx": 0.0,
+                       "confirm_hits": 2, "prediction_max_missing": 3,
+                       "edge_max_missing": 0, "cooldown_frames": 0})
     MaskCounter(**config)  # Validate before consuming the one-shot attempt.
     return config
+
+
+def preprocessing_configuration(args: argparse.Namespace) -> dict[str, Any]:
+    return frame_geometry("letterbox" if getattr(args, "counting_profile", "legacy")
+                          == "full-width-mixed" else "stretch")
+
+
+def counting_roi_metadata(result: Any, counter: MaskCounter) -> dict[str, Any]:
+    return {"top": result.roi_top, "bottom_exclusive": result.roi_bottom,
+            "line_y": counter.line_y, "line_x": counter.line_x,
+            "count_axis": counter.count_axis}
 
 
 def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
@@ -474,9 +511,11 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                                    capture_timings_ms: list[float] | None = None,
                                    steady_start_time: list[float] | None = None,
                                    capture_metadata: dict[str, Any] | None = None,
-                                   include_capture_metadata: bool = False
+                                   include_capture_metadata: bool = False,
+                                   frame_mapping: str = "stretch"
                                    ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Internal capture loop; board callers must use camera_gray_frames()."""
+    geometry = frame_geometry(frame_mapping)
     if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
         raise ValueError("max_frames must be a positive integer")
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
@@ -576,9 +615,13 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                 image = image[:, :, 0]
             if image.dtype != np.uint8 or image.shape != (400, 640):
                 raise RuntimeError(f"camera frame geometry is {image.shape}; expected (400, 640)")
-            gray = cv2_module.resize(
-                image, (WIDTH, HEIGHT), interpolation=cv2_module.INTER_NEAREST
-            )
+            if frame_mapping == "letterbox":
+                # A fresh buffer is required: the next read is prefetched before yield.
+                gray = np.empty((HEIGHT, WIDTH), np.uint8)
+                resize_monochrome_into(image, gray, mapping=frame_mapping)
+            else:
+                gray = cv2_module.resize(
+                    image, (WIDTH, HEIGHT), interpolation=cv2_module.INTER_NEAREST)
             gray = np.asarray(gray)
             if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
                 raise RuntimeError(
@@ -661,6 +704,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                 "camera_output_width": WIDTH,
                 "camera_output_height": HEIGHT,
             })
+            if frame_mapping == "letterbox":
+                capture_metadata["frame_geometry"] = geometry
         emit_milestone("CAMERA_OPEN_READY_FOR_OPERATOR")
         if operator_gate is not None:
             operator_gate.wait_for_operator()
@@ -759,7 +804,8 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                              capture_timings_ms: list[float] | None = None,
                              steady_start_time: list[float] | None = None,
                              capture_metadata: dict[str, Any] | None = None,
-                             include_capture_metadata: bool = False
+                             include_capture_metadata: bool = False,
+                             frame_mapping: str = "stretch"
                              ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Yield camera frames only through a live, authenticated operator session."""
     import operator_gate_launcher
@@ -777,7 +823,7 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             capture_timings_ms=capture_timings_ms,
             steady_start_time=steady_start_time,
             capture_metadata=capture_metadata,
-            include_capture_metadata=include_capture_metadata):
+            include_capture_metadata=include_capture_metadata, frame_mapping=frame_mapping):
         if first_frame:
             require_standard_camera_controls(device)
             first_frame = False
@@ -849,6 +895,8 @@ def formal_capture_context(args: argparse.Namespace, plan: Any) -> dict[str, Any
     ready_path = formal_ready_path(plan.boot_id, profile, ready_id)
     if ready_id is not None:
         identity["ready_id"] = ready_id
+    if getattr(args, "counting_profile", "legacy") == "full-width-mixed":
+        identity["preprocessing_config"] = preprocessing_configuration(args)
     base = Path("/var/lib/wo0017") / plan.boot_id / profile
     return {"identity": identity, "receipt": receipt,
             "ready_path": ready_path, "attempt_root": base / "attempts",
@@ -1060,12 +1108,13 @@ def execute_board_stream(args: argparse.Namespace, *,
         "cma_watermark_kib": CMA_WATERMARK_KIB,
         "max_frames": args.max_frames,
         "camera_device": args.camera,
-        "camera_mode": "MJPG 640x400 resized to Gray8 320x240",
+        "camera_mode": "MJPG 640x400 mapped to Gray8 320x240",
         "xilinx_xrt": os.environ.get("XILINX_XRT"),
-        "line_y": args.line_y,
+        "line_y": counting_configuration(args)["line_y"],
         "counting_config": counting_configuration(args),
+        "frame_geometry": preprocessing_configuration(args),
         "direction": args.direction,
-        "min_area": args.min_area,
+        "min_area": counting_configuration(args)["min_area"],
         "ground_truth_count": args.ground_truth_count,
         "expected_count": args.ground_truth_count,
         "material_label": args.material_label,
@@ -1155,12 +1204,13 @@ def execute_board_stream(args: argparse.Namespace, *,
                     "input_resolution": [WIDTH, HEIGHT],
                     "mask_resolution": [WIDTH, HEIGHT],
                     "roi_bounds_convention": "[top,bottom), clipped to image",
+                    "frame_geometry": preprocessing_configuration(args),
                 },
                 max_bytes=capture_max_bytes,
                 queue_depth=2,
                 metadata={
                     "work_order": "WO-0017 Phase 1B",
-                    "input_stage": "decoded camera frame first channel, nearest resize to FPGA Gray8 input",
+                    "input_stage": "decoded first camera channel mapped to FPGA Gray8 input; geometry recorded in config",
                     "camera_requested_mode": "MJPG 640x400 60 FPS; actual negotiated mode recorded in runner evidence",
                     "mask_source": "same S2MM RX DMA slot and software Frame ID as MM2S input",
                     "mask_frame_id_echoed_by_hardware": False,
@@ -1232,7 +1282,9 @@ def execute_board_stream(args: argparse.Namespace, *,
             "raw_capture_copy", "mjpeg_encode", "mjpeg_handoff",
             "mjpeg_background_encode", "postprocess")}
         preview_publisher = PeriodicMjpegPublisher(
-            hub=hub, line_y=args.line_y, count_axis=args.count_axis, line_x=args.line_x,
+            hub=hub, line_y=counting_configuration(args)["line_y"],
+            count_axis=counting_configuration(args)["count_axis"],
+            line_x=counting_configuration(args)["line_x"],
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
             hysteresis=args.hysteresis,
         )
@@ -1267,9 +1319,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                                "dtype": "uint8", "input": "Gray8", "mask": "Binary8"},
                 "threshold": STAGEB2_THRESHOLD,
                 "algorithm_config": counting_configuration(args),
-                "roi": {"top": result.roi_top, "bottom_exclusive": result.roi_bottom,
-                        "line_y": args.line_y, "line_x": args.line_x,
-                        "count_axis": args.count_axis},
+                "roi": counting_roi_metadata(result, counter),
                 "raw_detections": [asdict(item) for item in result.raw_detections],
                 "detections": [asdict(item) for item in result.detections],
                 "associations": list(counter.last_associations),
@@ -1327,7 +1377,8 @@ def execute_board_stream(args: argparse.Namespace, *,
             capture_timings_ms=stage_timings_ms["capture"],
             steady_start_time=steady_start_time,
             capture_metadata=capture_metadata,
-            include_capture_metadata=(capture_writer is not None))))
+            include_capture_metadata=(capture_writer is not None),
+            frame_mapping=preprocessing_configuration(args)["mapping"])))
         if not steady_start_time:
             raise RuntimeError("camera did not establish a steady-stream timing boundary")
         # Confirm the final hardware state before any potentially blocking writer drain.
@@ -1575,6 +1626,8 @@ def _nonnegative_count_argument(value: str) -> int:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0016 asynchronous double-buffer Binary8 counter")
     parser.add_argument("--mode", choices=("mock", "board"), default="mock")
+    parser.add_argument("--counting-profile", choices=("legacy", "full-width-mixed"), default="legacy",
+                        help="full-width-mixed selects full-height ROI, letterbox mapping and guarded merge/tracking defaults")
     parser.add_argument("--wo0017-profile", choices=("b1", "b2"))
     parser.add_argument("--wo0017-ready-id",
                         help="new immutable READY record ID; omitting it retains the original ready.json")
@@ -1660,7 +1713,9 @@ def main(argv: list[str] | None = None, *,
                                          line_y=args.line_y,
                                          min_area=args.min_area,
                                          expected_count=args.ground_truth_count,
-                                         material_label=args.material_label)
+                                         material_label=args.material_label,
+                                         counter_config=(counting_configuration(args)
+                                             if args.counting_profile == "full-width-mixed" else None))
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 0 if result["status"] == "MOCK_PASS" else 1
         result = execute_board_stream(args, operator_gate_sha256=operator_gate_sha256,

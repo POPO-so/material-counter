@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "evidence_scope": "OFFLINE_ONLY",
+  "board_accessed": false,
+  "physical_calibration_status": "NOT_MEASURED",
+  "branch": "codex/wo0017-algo-accuracy",
+  "base_commit": "56f1b603eafe62119550d9010176fe82342d665c",
+  "main": "1d32593610c2643b3f022ce048d31f70fd7a4417",
+  "origin_main": "1d32593610c2643b3f022ce048d31f70fd7a4417",
+  "tests": {
+    "command": "python -m pytest python scripts -q --junitxml=data/results/wo0017-full-width-mixed-20261023/pytest-full.xml",
+    "errors": 0,
+    "failures": 0,
+    "passed": 736,
+    "skipped": 4,
+    "subtests_passed": 5,
+    "duration_seconds": 84.88
+  },
+  "independent_review": {
+    "resolved": 1,
+    "actionable_findings": 1,
+    "remaining": 0,
+    "reviewer": "full_width_review",
+    "fix": "Per-frame ROI and top-level line_y/min_area now use resolved profile instead of raw CLI values; conflicting-CLI regression passes."
+  },
+  "synthetic_mocks": {
+    "scope": "Five synthetic rows, no physical accuracy acceptance",
+    "positive_direction_total": 5,
+    "frames_each": 8,
+    "expected_each": 5,
+    "negative_direction_total": 5
+  },
+  "ignored_h3_assets": 487,
+  "source_sha256": {
+    "scripts/wo0016/live_calibration.py": "492b64e6565cbda24f51d64d825b5592b42777f63fb03dd13feef4e9e8df42de",
+    "scripts/wo0016/run_stream_counter.py": "506361518d4ae5603988f89e2d093be64107000421b2ebda319ca1c454499121",
+    "scripts/wo0016/stream_counter.py": "04b9b10f4efcfdd31359aeb1ba871f1f9ef92e6fa7b4f780a4dcb3e72b5659f1",
+    "scripts/wo0016/test_full_width_profile.py": "071f6d2f3bdf2f88fb1a84f4f171e70189dda1d17bcf540ea0e668c4d2f70bc8",
+    "scripts/wo0016/test_guarded_multiline_counter.py": "08759cb0e1fca377e394d0cd3b894d1d6bf6af503c92b7110c2120c4c619535a"
+  },
+  "reference_sha256": "5623f98753fdafd14efef7aa541cb12d72df79f6e7e9fd82ff9a9890cfd9b331",
+  "limitations": [
+    "180mm boundaries and physical scale unmeasured",
+    "Pixel thresholds require real-material validation",
+    "Touching single blobs are not split or automatically counted as two",
+    "Board throughput and full-height CCL timing unmeasured",
+    "No deployment or permit issuance in this change"
+  ]
+}

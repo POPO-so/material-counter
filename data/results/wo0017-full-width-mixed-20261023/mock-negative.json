@@ -1,0 +1,96 @@
+{
+  "accuracy": 1.0,
+  "accuracy_percent": 100.0,
+  "board_accessed": false,
+  "count_error": 0,
+  "counting_config": {
+    "backward_tolerance": 4.0,
+    "component_cluster_dx": 0.0,
+    "component_cluster_dy": 12.0,
+    "component_cluster_gap": 14.0,
+    "confirm_hits": 2,
+    "cooldown_frames": 0,
+    "cooldown_lateral": 15.0,
+    "count_axis": "x",
+    "direction": -1,
+    "edge_max_missing": 0,
+    "guarded_merge": true,
+    "hysteresis": 2.0,
+    "line_x": 160,
+    "line_y": 120,
+    "max_area": 900,
+    "max_bbox_height": 85,
+    "max_bbox_width": 85,
+    "max_lateral_step": 10.0,
+    "max_merge_area": 260,
+    "max_merged_span": 24,
+    "max_missing": 3,
+    "max_step": 48.0,
+    "min_area": 12,
+    "prediction_max_missing": 3,
+    "roi_mode": "full",
+    "single_intact_area": 95,
+    "strict_lateral_gate": true
+  },
+  "counting_profile": "full-width-mixed",
+  "elapsed_seconds": 0.5188459999626502,
+  "expected_count": 5,
+  "frame_geometry": [
+    240,
+    320
+  ],
+  "frames_processed": 8,
+  "ground_truth_count": 5,
+  "hardware_fps": null,
+  "line_y": 120,
+  "material_label": null,
+  "min_area": 12,
+  "mode": "offline-synthetic",
+  "note": "Synthetic Offline evidence only; it is not PYNQ, camera, conveyor, or board acceptance.",
+  "preprocessing_config": {
+    "active_output_roi_xyxy": [
+      0,
+      20,
+      320,
+      220
+    ],
+    "belt_width_mm_nominal": 180.0,
+    "mapping": "letterbox",
+    "output_resolution": [
+      320,
+      240
+    ],
+    "physical_calibration_status": "NOT_MEASURED",
+    "pixels_per_mm_y": null,
+    "source_resolution": [
+      640,
+      400
+    ],
+    "source_roi_xyxy": [
+      0,
+      0,
+      640,
+      400
+    ]
+  },
+  "preview_jpeg_sha256": "a969c4758f35f95d687ee59ea3f678e1fdfd8ef35480d03bd2fa478a74faa0d9",
+  "pynq_imported": false,
+  "roi_subtimings_ms": {
+    "ccl_avg_ms_when_invoked": 0.309,
+    "ccl_invocations": 8,
+    "ccl_ms": 0.309,
+    "ccl_timing_samples": 8,
+    "projection_ms": 0.455,
+    "projection_timing_samples": 8,
+    "roi_foreground_pixels_max": 605,
+    "track_ms": 0.052,
+    "track_timing_samples": 8,
+    "validate_ms": 0.039,
+    "validate_timing_samples": 8
+  },
+  "schema": 1,
+  "status": "MOCK_PASS",
+  "throughput_fps": 15.418833335085727,
+  "total_count": 5,
+  "work_order": "WO-0016"
+}

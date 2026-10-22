@@ -37,21 +37,48 @@ def monochrome_view(frame: np.ndarray) -> np.ndarray:
     raise ValueError("camera frame must have shape (400,640), (400,640,1) or (400,640,3)")
 
 
+def frame_geometry(mapping: str = "stretch") -> dict[str, Any]:
+    if mapping not in ("stretch", "letterbox"):
+        raise ValueError("frame mapping must be stretch or letterbox")
+    return {"mapping": mapping, "source_resolution": [640, 400],
+            "output_resolution": [320, 240], "source_roi_xyxy": [0, 0, 640, 400],
+            "active_output_roi_xyxy": ([0, 20, 320, 220] if mapping == "letterbox"
+                                       else [0, 0, 320, 240]),
+            "belt_width_mm_nominal": 180.0, "physical_calibration_status": "NOT_MEASURED",
+            "pixels_per_mm_y": None}
+
+
+def resize_monochrome_into(frame: np.ndarray, output: np.ndarray, *, mapping: str) -> None:
+    """Preserve the source view extent; output ownership remains with the caller."""
+    if mapping not in ("stretch", "letterbox"):
+        raise ValueError("frame mapping must be stretch or letterbox")
+    source = monochrome_view(frame)
+    if (output.dtype != np.uint8 or output.shape != (240, 320)
+            or not output.flags.c_contiguous or not output.flags.writeable
+            or np.shares_memory(source, output)):
+        raise ValueError("output must be independent writable contiguous uint8 (240,320)")
+    if mapping == "letterbox":
+        output[:20].fill(0)
+        output[220:].fill(0)
+        np.copyto(output[20:220], source[::2, ::2])
+    else:
+        np.copyto(output[0::3], source[0::5, ::2])
+        np.copyto(output[1::3], source[1::5, ::2])
+        np.copyto(output[2::3], source[3::5, ::2])
+
+
 class MonochromePreprocessor:
     """Reusable outputs; caller must snapshot them before processing another frame."""
 
-    def __init__(self):
+    def __init__(self, *, mapping: str = "stretch"):
+        frame_geometry(mapping)
+        self.mapping = mapping
         self.gray = np.empty((240, 320), np.uint8)
         self.binary = np.empty_like(self.gray)
 
     def __call__(self, frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        gray_full = monochrome_view(frame)
-        # Exact INTER_NEAREST map for 640x400 -> 320x240: x=2*j,
-        # y=floor(5*i/3). Three strided copies avoid OpenCV first packing
-        # the entire 640x400 channel view on the Zynq CPU.
-        np.copyto(self.gray[0::3], gray_full[0::5, ::2])
-        np.copyto(self.gray[1::3], gray_full[1::5, ::2])
-        np.copyto(self.gray[2::3], gray_full[3::5, ::2])
+        # Strided copies avoid packing the full camera channel on the Zynq CPU.
+        resize_monochrome_into(frame, self.gray, mapping=self.mapping)
         cv2.threshold(self.gray, 128, 255, cv2.THRESH_BINARY, dst=self.binary)
         return self.gray, self.binary
 
