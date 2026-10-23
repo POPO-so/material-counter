@@ -47,6 +47,7 @@ def test_wo0017_profile_requires_capture_and_independent_one_shot_mode_before_bo
 def test_wo0017_runtime_binding_covers_raw_writer_and_camera_controls():
     sources = runner.formal_runtime_sha256()
     assert {"capture_dataset.py", "live_calibration.py", "run_stream_counter.py",
+            "dashboard_state.py", "dashboard.html",
             "operator_gate_launcher.py", "wo0017_capture_profile.py",
             "calibration_runtime_gate.py", "start_physical_calibration_standby.py",
             "wo0015/board_preflight.py", "wo0015/board_once.py"} <= set(sources)

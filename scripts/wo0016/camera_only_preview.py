@@ -26,6 +26,7 @@ import cv2
 import numpy as np
 
 import mjpeg_preview
+from dashboard_state import DashboardState
 from stream_counter import MaskCounter
 from live_calibration import (MonochromePreprocessor, monochrome_view,
                               optical_metrics, CalibrationControls)
@@ -294,6 +295,7 @@ def main(argv: list[str] | None = None) -> int:
     server = None
     publisher = None
     loopback = None
+    dashboard = DashboardState(source="software")
     controls = CalibrationControls(enabled=args.calibration_mode, apply=apply_v4l2_controls)
     def control_update(payload: dict) -> dict:
         try:
@@ -404,6 +406,7 @@ def main(argv: list[str] | None = None) -> int:
                 (time.perf_counter() - started) * 1000.0)
             started = time.perf_counter()
             result = counter.update(frame_number, mask)
+            dashboard.on_frame(result)
             timing["software_track_ms"].append((time.perf_counter() - started) * 1000.0)
             frame_times.append(time.monotonic())
             fps = ((len(frame_times)-1) / (frame_times[-1]-frame_times[0])
@@ -429,7 +432,7 @@ def main(argv: list[str] | None = None) -> int:
         signal.signal(signal.SIGINT, stop)
         server = mjpeg_preview.MjpegPreviewServer(
             hub=hub, host="0.0.0.0", port=PREVIEW_PORT,
-            state_provider=lambda: dict(state),
+            state_provider=lambda: {**state, "dashboard": dashboard.snapshot()},
             control_callback=control_update if args.calibration_mode else None).start()
         loopback = mjpeg_preview.MjpegLoopbackClient(
             f"http://127.0.0.1:{server.port}/stream.mjpg", timeout_s=1.0).start()
@@ -507,11 +510,13 @@ def main(argv: list[str] | None = None) -> int:
         if state.get("control_failure"):
             raise RuntimeError("calibration control failed: " + state["control_failure"])
         state["status"] = "STOPPED"
+        dashboard.set_phase("stopped", "相机软件预览已停止")
         state["stopped_utc"] = datetime.now(timezone.utc).isoformat()
         state["preview_frames_published"] = frame_number
         write_state(state_path, state)
         return 0
     except BaseException as exc:
+        dashboard.set_phase("failed", f"预览失败：{type(exc).__name__}: {exc}")
         state.update({"status": "FAILED", "failure": f"{type(exc).__name__}: {exc}",
                       "failed_utc": datetime.now(timezone.utc).isoformat()})
         try:

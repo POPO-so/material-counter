@@ -27,7 +27,10 @@ def test_preview_draws_red_virtual_line_and_count_text_on_binary_mask():
 
     assert preview.shape == (240, 320, 3)
     assert tuple(int(value) for value in preview[120, 10]) == (0, 0, 255)
-    assert np.any(np.all(preview[18:30, 8:230] == (255, 255, 255), axis=2))
+    # LINE_AA glyph coverage varies across OpenCV builds (peak can be 251).
+    text_pixels = preview[18:30, 8:210].astype(np.int16)
+    assert np.any((text_pixels.min(axis=2) >= 230)
+                  & (np.ptp(text_pixels, axis=2) <= 4))
 
 
 def test_preview_jpeg_is_valid_and_invalid_binary_masks_are_rejected():
