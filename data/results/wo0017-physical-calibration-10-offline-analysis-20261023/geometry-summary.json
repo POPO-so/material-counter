@@ -1,0 +1,262 @@
+{
+  "status": "IMAGE_GEOMETRY_VERIFIED_PHYSICAL_SCALE_UNRESOLVED",
+  "analysis_status": "IMAGE_GEOMETRY_VERIFIED_PHYSICAL_SCALE_UNRESOLVED",
+  "physical_calibration_status": "NOT_MEASURED",
+  "pixels_per_mm_y": null,
+  "source_resolution": [
+    640,
+    400
+  ],
+  "mapped_resolution": [
+    320,
+    240
+  ],
+  "source_frame_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    10,
+    20,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    299
+  ],
+  "source_frame_count": 18,
+  "mapped_frames_profiled": 300,
+  "active_output_roi_xyxy": [
+    0,
+    20,
+    320,
+    220
+  ],
+  "mapping_validation": {
+    "sampled_source_frames_compared": 18,
+    "source_to_mapped_rule": "source_gray8[::2,::2] == raw_gray8[frame_id,20:220,:]",
+    "mismatch_count": 0,
+    "mismatches": [],
+    "exact_sample_mapping": true,
+    "padding": {
+      "top_gray8_nonzero_pixels": 0,
+      "bottom_gray8_nonzero_pixels": 0,
+      "top_binary8_nonzero_pixels": 0,
+      "bottom_binary8_nonzero_pixels": 0,
+      "all_300_gray8_and_binary8_padding_zero": true
+    }
+  },
+  "known_mapping": "letterbox maps source[::2,::2] to mapped rows [20,220); padding rows are not physical belt edges",
+  "nominal_belt_width_mm": 180.0,
+  "source_edge_candidates_top": [
+    {
+      "row": 15,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 23,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 31,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 39,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 47,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 55,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 63,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 71,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 79,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 87,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 95,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 103,
+      "median_abs_vertical_gradient": 1.0
+    }
+  ],
+  "source_edge_candidates_bottom": [
+    {
+      "row": 207,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 215,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 223,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 231,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 239,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 247,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 255,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 263,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 271,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 279,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 287,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 295,
+      "median_abs_vertical_gradient": 1.0
+    }
+  ],
+  "mapped_edge_candidates_top_inside_active_roi": [
+    {
+      "row": 23,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 27,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 31,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 35,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 39,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 43,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 47,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 51,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 55,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 59,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 63,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 67,
+      "median_abs_vertical_gradient": 1.0
+    }
+  ],
+  "mapped_edge_candidates_bottom_inside_active_roi": [
+    {
+      "row": 123,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 127,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 131,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 135,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 139,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 143,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 147,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 151,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 155,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 159,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 163,
+      "median_abs_vertical_gradient": 1.0
+    },
+    {
+      "row": 167,
+      "median_abs_vertical_gradient": 1.0
+    }
+  ],
+  "source_pixels_per_mm_y": null,
+  "mapped_pixels_per_mm_y": null,
+  "edge_adjudication": null,
+  "limitation": "Image geometry and letterbox padding are verified; the visible belt endpoints/180 mm marks are not identifiable in this sampled set. The 200 active mapped rows are not a physical ruler. Physical pixels/mm remains unresolved."
+}

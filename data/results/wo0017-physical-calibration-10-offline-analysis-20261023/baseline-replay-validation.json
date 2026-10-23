@@ -1,0 +1,63 @@
+{
+  "frames_compared": 300,
+  "frames_match": true,
+  "mismatch_count": 0,
+  "first_mismatches": [],
+  "comparison_fields": [
+    "frame_id",
+    "total_count",
+    "detections",
+    "events",
+    "roi_top",
+    "roi_bottom",
+    "ccl_executed",
+    "raw_detections",
+    "suppressed_events",
+    "tracks",
+    "glare_rejected_count",
+    "glare_area_px"
+  ],
+  "association_frames_match": true,
+  "association_mismatch_frames": [],
+  "algorithm_config_provenance": {
+    "source": "capture/frame-records.jsonl metadata.algorithm_config",
+    "all_300_frames_match": true,
+    "recorded_counter_config": {
+      "backward_tolerance": 4.0,
+      "component_cluster_dx": 0.0,
+      "component_cluster_dy": 12.0,
+      "component_cluster_gap": 14.0,
+      "confirm_hits": 2,
+      "cooldown_frames": 0,
+      "cooldown_lateral": 15.0,
+      "count_axis": "x",
+      "direction": 1,
+      "edge_max_missing": 0,
+      "guarded_merge": true,
+      "hysteresis": 2.0,
+      "line_x": 160,
+      "line_y": 120,
+      "max_area": 900,
+      "max_bbox_height": 85,
+      "max_bbox_width": 85,
+      "max_lateral_step": 10.0,
+      "max_merge_area": 260,
+      "max_merged_span": 24,
+      "max_missing": 3,
+      "max_step": 48.0,
+      "min_area": 12,
+      "prediction_max_missing": 3,
+      "roi_mode": "full",
+      "single_intact_area": 95,
+      "strict_lateral_gate": true
+    },
+    "replay_dimensions_from_npz": {
+      "width": 320,
+      "height": 240
+    }
+  },
+  "actual_count_events": 12,
+  "replay_count_events": 12,
+  "event_rows_match": true,
+  "count_total": 12
+}

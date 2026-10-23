@@ -122,11 +122,14 @@ class MaskCounter:
 
     The ROI can cover one conveyor lane or the full frame. max_step is
     longitudinal; max_lateral_step is perpendicular to motion.
+    active_rows skips verified zero padding in full mode while keeping
+    projections, detections and tracking in the original frame coordinates.
     """
 
     def __init__(self, *, width: int = WIDTH, height: int = HEIGHT,
                  line_y: int = 120, roi_half_height: int = 24,
                  roi_mode: str = "lane",
+                 active_rows: tuple[int, int] | list[int] | None = None,
                  min_area: int = 12, direction: int = 1,
                  hysteresis: float = 2.0, confirm_hits: int = 2,
                  max_missing: int = 1, max_step: float = 24.0,
@@ -152,6 +155,16 @@ class MaskCounter:
         if not isinstance(roi_mode, str) or roi_mode not in ("lane", "full"):
             raise ValueError("roi_mode must be lane or full")
         self.roi_mode = roi_mode
+        self.active_rows = None
+        if active_rows is not None:
+            if (roi_mode != "full" or not isinstance(active_rows, (tuple, list))
+                    or len(active_rows) != 2):
+                raise ValueError("active_rows requires full ROI and two row bounds")
+            start = _integer(active_rows[0], "active_rows start", minimum=0)
+            stop = _integer(active_rows[1], "active_rows stop", minimum=1)
+            if not start < stop <= self.height:
+                raise ValueError("active_rows must lie inside the frame")
+            self.active_rows = (start, stop)
         self.min_area = _integer(min_area, "min_area", minimum=1)
         self.max_area = None if max_area is None else _integer(max_area, "max_area", minimum=self.min_area)
         self.max_bbox_width = _integer(max_bbox_width, "max_bbox_width", minimum=1)
@@ -306,17 +319,20 @@ class MaskCounter:
         if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (self.height, self.width):
             raise ValueError(f"mask must be a uint8 array with shape {(self.height, self.width)}")
         roi_top, roi_bottom = self._roi_bounds()
-        roi = image[roi_top:roi_bottom, :]
+        scan_top, scan_bottom = self._scan_bounds(image)
+        roi = image[scan_top:scan_bottom, :]
         if np.any((roi != 0) & (roi != 0xFF)):
             raise ValueError("mask values must be Binary8 0x00 or 0xFF")
         validate_ms = (time.perf_counter() - validate_started) * 1000.0
 
         projection_started = time.perf_counter()
         row_projection, column_projection, foreground_pixels = self._project_roi(roi)
+        row_projection = ((0,) * (scan_top - roi_top) + row_projection
+                          + (0,) * (roi_bottom - scan_bottom))
         projection_ms = (time.perf_counter() - projection_started) * 1000.0
 
         ccl_started = time.perf_counter()
-        raw_detections = self._roi_components(roi, roi_top, foreground_pixels)
+        raw_detections = self._roi_components(roi, scan_top, foreground_pixels)
         detections = self._cluster_components(raw_detections)
         ccl_ms = (time.perf_counter() - ccl_started) * 1000.0
 
@@ -354,6 +370,15 @@ class MaskCounter:
         top = max(0, self.line_y - self.roi_half_height)
         bottom = min(self.height, self.line_y + self.roi_half_height + 1)
         return top, bottom
+
+    def _scan_bounds(self, image: np.ndarray) -> tuple[int, int]:
+        """Skip verified zero padding; retain full semantics if padding changes."""
+        if self.active_rows is not None:
+            top, bottom = self.active_rows
+            if ((top == 0 or cv2.countNonZero(image[:top]) == 0)
+                    and (bottom == self.height or cv2.countNonZero(image[bottom:]) == 0)):
+                return top, bottom
+        return self._roi_bounds()
 
     @staticmethod
     def _project_roi(roi: np.ndarray) -> tuple[tuple[int, ...], tuple[int, ...], int]:
@@ -404,7 +429,12 @@ class MaskCounter:
                 y_max=y + top + box_height - 1,
                 area=area,
                 centroid_x=float(centroids[label, 0]),
-                centroid_y=float(centroids[label, 1] + top),
+                # Recover the integer moment before translating: adding a
+                # float offset can differ by one ULP from full-frame CCL.
+                centroid_y=(float((round(float(centroids[label, 1]) * area)
+                                   + top * area) / area)
+                            if self.active_rows is not None and top != 0
+                            else float(centroids[label, 1] + top)),
             )
             if self._component_exceeds_limits(area, box_width, box_height):
                 rejected.append(detection)
@@ -426,9 +456,12 @@ class MaskCounter:
         self, mask: np.ndarray
     ) -> tuple[list[Detection], int, int, tuple[int, ...], tuple[int, ...]]:
         top, bottom = self._roi_bounds()
-        roi = mask[top:bottom, :]
+        scan_top, scan_bottom = self._scan_bounds(mask)
+        roi = mask[scan_top:scan_bottom, :]
         row_projection, column_projection, foreground_pixels = self._project_roi(roi)
-        detections = self._roi_components(roi, top, foreground_pixels)
+        row_projection = ((0,) * (scan_top - top) + row_projection
+                          + (0,) * (bottom - scan_bottom))
+        detections = self._roi_components(roi, scan_top, foreground_pixels)
         return detections, top, bottom, row_projection, column_projection
 
     def _cluster_components(self, detections: list[Detection]) -> list[Detection]:

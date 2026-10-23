@@ -1,0 +1,55 @@
+{
+  "bundle_root": "C:\\wt\\wo0017-physical-calibration-20261023\\data\\results\\wo0017-physical-calibration-20261023\\physical-calibration-20261023-10",
+  "capture_manifest_sha256": "1eab3ebb7775cd4cdacc6a3b41213c1ce394c9c12636c1088f70b5676cfb66df",
+  "evidence_sha256": "e706b2e1b6ae87ca89f7cb5740bf09425029a79a6948a06aca981330e8fc0fe7",
+  "frame_results_sha256": "14a8f840928a677c3ee6df6b1b0e730caadd7429c95b4cb247848acdd7472431",
+  "frame_records_sha256": "6a05a9d595cc8c1c4f2899ad43986688021f7f47920a756d582b334082869827",
+  "raw_npz_sha256": "1cac1bdfe0c85677cb4f723757cd1609093dd93e00697c41f31b08d013e432aa",
+  "source_npz_sha256": "8affe8bb8ecbb81b7bcb1013b56df55814e688cadbdbf022da16072f767c146a",
+  "sync_verification": {
+    "manifest": "C:\\wt\\wo0017-physical-calibration-20261023\\data\\results\\wo0017-physical-calibration-20261023\\physical-calibration-20261023-10\\_local_sync\\sha256-manifest.json",
+    "files_verified": 638,
+    "expected_bytes": 100731478,
+    "downloaded_bytes": 100731478,
+    "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515"
+  },
+  "algorithm_config_provenance": {
+    "source": "capture/frame-records.jsonl metadata.algorithm_config",
+    "all_300_frames_match": true,
+    "recorded_counter_config": {
+      "backward_tolerance": 4.0,
+      "component_cluster_dx": 0.0,
+      "component_cluster_dy": 12.0,
+      "component_cluster_gap": 14.0,
+      "confirm_hits": 2,
+      "cooldown_frames": 0,
+      "cooldown_lateral": 15.0,
+      "count_axis": "x",
+      "direction": 1,
+      "edge_max_missing": 0,
+      "guarded_merge": true,
+      "hysteresis": 2.0,
+      "line_x": 160,
+      "line_y": 120,
+      "max_area": 900,
+      "max_bbox_height": 85,
+      "max_bbox_width": 85,
+      "max_lateral_step": 10.0,
+      "max_merge_area": 260,
+      "max_merged_span": 24,
+      "max_missing": 3,
+      "max_step": 48.0,
+      "min_area": 12,
+      "prediction_max_missing": 3,
+      "roi_mode": "full",
+      "single_intact_area": 95,
+      "strict_lateral_gate": true
+    },
+    "replay_dimensions_from_npz": {
+      "width": 320,
+      "height": 240
+    }
+  },
+  "analysis_script": "C:\\wt\\wo0017-physical-calibration-20261023\\scripts\\wo0016\\analyze_physical_calibration10.py",
+  "analysis_script_sha256": "bce053d524506535e4a0568449418db3fb6c0030cc1b55a58024461305876708"
+}

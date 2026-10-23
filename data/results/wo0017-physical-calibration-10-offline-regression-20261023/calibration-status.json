@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "scope": "LOCAL_OFFLINE_DERIVED_RECORD",
+  "physical_calibration_status": "NOT_MEASURED",
+  "pixels_per_mm_y": null,
+  "source_resolution": [
+    640,
+    400
+  ],
+  "mapped_resolution": [
+    320,
+    240
+  ],
+  "effective_rows_half_open": [
+    20,
+    220
+  ],
+  "mapped_to_source_y": "y_source = 2 * (y_mapped - 20)",
+  "reason": "Operator confirmed no external bright marks and 180 mm belt fills or exceeds vertical field of view; neither physical endpoint can be measured from this capture.",
+  "standard_part_estimates": "Conditional reference only; not assigned to pixels_per_mm_y.",
+  "source_evidence_unchanged": true,
+  "board_access_scope": "Read-only download of evidence only; no sampling, DMA, Overlay or lock changes."
+}
