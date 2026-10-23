@@ -13,6 +13,8 @@ from typing import Any, AsyncIterable, Callable, Protocol
 import cv2
 import numpy as np
 
+from split_touching import split_touching_component
+
 WIDTH = 320
 HEIGHT = 240
 PIXELS = WIDTH * HEIGHT
@@ -209,6 +211,7 @@ class MaskCounter:
         self.glare_area_px = 0
         self.rejected_detections: tuple[Detection, ...] = ()
         self.rejected_contours: tuple[np.ndarray, ...] = ()
+        self._split_origins: dict[Detection, int] = {}
 
     def update_detections(self, frame_id: int, detections: Any) -> FrameResult:
         """Replay recorded qualified CCL detections through the live tracker.
@@ -217,6 +220,7 @@ class MaskCounter:
         Area filtering is identical to the live CCL path.
         """
         frame_id = _integer(frame_id, "frame_id", minimum=0)
+        self._split_origins = {}
         if self.last_frame_id is not None and frame_id <= self.last_frame_id:
             raise ValueError("frame IDs must strictly increase")
         accepted = []
@@ -373,6 +377,7 @@ class MaskCounter:
     def _roi_components(self, roi: np.ndarray, top: int,
                         foreground_pixels: int) -> list[Detection]:
         self._set_rejected_components([])
+        self._split_origins = {}
         if foreground_pixels < self.min_area:
             return []
         if not roi.flags.c_contiguous:
@@ -417,6 +422,23 @@ class MaskCounter:
                     full_frame_contour[:, 0, 1] += top
                     rejected_contours.append(full_frame_contour)
                 continue
+            if (self.guarded_merge and self.single_intact_area < area <= self.max_merge_area):
+                cropped = labels[y:y + box_height, x:x + box_width] == label
+                pieces = split_touching_component(cropped, min_child_area=self.min_area)
+                if len(pieces) == 2:
+                    for piece in pieces:
+                        ys, xs = np.nonzero(piece)
+                        piece_area = len(xs)
+                        child = Detection(
+                            x_min=x + int(xs.min()), x_max=x + int(xs.max()),
+                            y_min=top + y + int(ys.min()),
+                            y_max=top + y + int(ys.max()), area=piece_area,
+                            centroid_x=x + float(np.mean(xs)),
+                            centroid_y=top + y + float(np.mean(ys)),
+                        )
+                        detections.append(child)
+                        self._split_origins[child] = int(label)
+                    continue
             detections.append(detection)
         self._set_rejected_components(rejected, rejected_contours)
         detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
@@ -451,6 +473,10 @@ class MaskCounter:
             ]
             group_wx = [d.area * d.centroid_x for d in ordered]
             group_wy = [d.area * d.centroid_y for d in ordered]
+            group_split_origins = [
+                {self._split_origins[d]} if d in self._split_origins else set()
+                for d in ordered
+            ]
 
             def find(index: int) -> int:
                 while parent[index] != index:
@@ -463,6 +489,8 @@ class MaskCounter:
                     left_root = find(left_index)
                     right_root = find(right_index)
                     if left_root == right_root:
+                        continue
+                    if group_split_origins[left_root] & group_split_origins[right_root]:
                         continue
 
                     left_box = group_bbox[left_root]
@@ -500,6 +528,7 @@ class MaskCounter:
                     group_bbox[left_root] = merged_box
                     group_wx[left_root] += group_wx[right_root]
                     group_wy[left_root] += group_wy[right_root]
+                    group_split_origins[left_root].update(group_split_origins[right_root])
 
             merged = []
             for index in range(count):

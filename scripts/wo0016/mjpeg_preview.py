@@ -143,7 +143,8 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                          pip_label: str = "PL DMA MASK",
                          tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
                          track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None,
-                         calibration: dict | None = None
+                         calibration: dict | None = None,
+                         roi_top: int = 0, roi_bottom: int = 240
                          ) -> np.ndarray:
     """Render the Gray8 camera frame with tracking HUD and Binary8 DMA-mask PIP."""
     image = np.asarray(mask)
@@ -172,10 +173,18 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
     frame = cv2.cvtColor(background, cv2.COLOR_GRAY2BGR)
     if count_axis not in ("x", "y") or not isinstance(line_x, int) or not 0 <= line_x < image.shape[1]:
         raise ValueError("invalid count axis or line_x")
+    if not 0 <= roi_top < roi_bottom <= image.shape[0]:
+        raise ValueError("invalid effective ROI bounds")
+    cv2.rectangle(frame, (0, roi_top), (image.shape[1] - 1, roi_bottom - 1),
+                  (50, 220, 130), 1, lineType=cv2.LINE_8)
     start, end = (((line_x, 0), (line_x, image.shape[0]-1)) if count_axis == "x"
                   else ((0, int(line_y)), (image.shape[1]-1, int(line_y))))
     cv2.line(frame, start, end,
              (0, 0, 255), 2, lineType=cv2.LINE_8)
+    if count_axis == "x":
+        cv2.putText(frame, f"X={line_x}", (min(line_x + 4, 270), 100),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1,
+                    lineType=cv2.LINE_AA)
     boundary_values = (line_x - hysteresis, line_x + hysteresis) if count_axis == "x" else (
         line_y - hysteresis, line_y + hysteresis
     )
@@ -265,7 +274,8 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
                         pip_label: str = "PL DMA MASK",
                         tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
                         track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None,
-                        calibration: dict | None = None
+                        calibration: dict | None = None,
+                        roi_top: int = 0, roi_bottom: int = 240
                         ) -> bytes:
     if isinstance(quality, bool) or not isinstance(quality, (int, np.integer)) or not 1 <= quality <= 100:
         raise ValueError("JPEG quality must be an integer in 1..100")
@@ -275,7 +285,8 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
                                  source_gray=source_gray, hysteresis=hysteresis,
                                  pip_label=pip_label,
                                  tracks=tracks, track_trails=track_trails,
-                                 **({"calibration": calibration} if calibration is not None else {}))
+                                 **({"calibration": calibration} if calibration is not None else {}),
+                                 roi_top=roi_top, roi_bottom=roi_bottom)
     encoded, payload = cv2.imencode(".jpg", frame,
                                     [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
     if not encoded:
@@ -319,6 +330,7 @@ class PeriodicMjpegPublisher:
         self._encode_gray = np.empty((240, 320), dtype=np.uint8)
         self._latest_tracks: tuple[dict[str, Any], ...] = ()
         self._latest_calibration: dict | None = None
+        self._latest_roi = (0, 240)
         self._track_trails: dict[int, list[tuple[float, float]]] = defaultdict(list)
         self._latest_metadata: tuple[int, int, int] | None = None
         self._snapshot_sequence = 0
@@ -352,6 +364,8 @@ class PeriodicMjpegPublisher:
                 np.copyto(self._latest_gray, gray, casting="no")
                 self._latest_tracks = tuple(getattr(result, "tracks", ()))
                 self._latest_calibration = getattr(result, "calibration", None)
+                self._latest_roi = (int(getattr(result, "roi_top", 0)),
+                                    int(getattr(result, "roi_bottom", 240)))
                 visible_ids = {int(track.get("track_id", 0)) for track in self._latest_tracks
                                if not track.get("finished") and not track.get("missed", 0)}
                 self._track_trails = defaultdict(list, {
@@ -405,6 +419,7 @@ class PeriodicMjpegPublisher:
                 np.copyto(self._encode_gray, self._latest_gray, casting="no")
                 tracks = self._latest_tracks
                 calibration = self._latest_calibration
+                roi_top, roi_bottom = self._latest_roi
                 trails = {track_id: tuple(points)
                           for track_id, points in self._track_trails.items()}
                 self._encoded_sequence = sequence
@@ -422,6 +437,8 @@ class PeriodicMjpegPublisher:
                     pip_label=self.pip_label,
                     tracks=tracks, track_trails=trails,
                     **({"calibration": calibration} if calibration is not None else {}),
+                    **({"roi_top": roi_top, "roi_bottom": roi_bottom}
+                       if (roi_top, roi_bottom) != (0, 240) else {}),
                 )
                 self.hub.publish(jpeg)
                 self.encoded_frames += 1
