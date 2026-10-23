@@ -1,0 +1,38 @@
+{
+  "schema": "wo0016-phase16-smoke3-disposition-v1",
+  "created_local": "2026-10-19T13:37:14+08:00",
+  "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "status": "BLOCKED_PYNQ_ENUMERATION_TIMEOUT",
+  "precheck": {
+    "cma_free_kib": 127492,
+    "cma_minimum_kib": 32768,
+    "cma_gate": "PASS",
+    "kernel_cache_drop_attempted": false,
+    "process_ownership_findings": [],
+    "fpga_manager_state": "operating",
+    "camera_gate": "PASS"
+  },
+  "pynq_device_enumeration": {
+    "status": "TIMEOUT",
+    "timeout_seconds": 12,
+    "exit_code": 124
+  },
+  "stageb_runner_started": false,
+  "stageb_guard_consumed": false,
+  "dma_started": false,
+  "frames_completed": 0,
+  "dma_addresses": null,
+  "dmasr": null,
+  "smoke_result": "NOT_RUN_BLOCKED_BEFORE_RUNNER",
+  "preview_8080_started": false,
+  "physical_light_and_conveyor": "KEEP_OFF",
+  "evidence": {
+    "pre_smoke_readonly": "pre-smoke-readonly.txt",
+    "bounded_smoke_output": "board-smoke3-output.txt",
+    "final_guard_and_port_state": "board-final-state.txt",
+    "post_timeout_readonly_diagnostic": "post-timeout-readonly-diagnostic.txt",
+    "package_transfer_hash_verification": "board-package-sha256-verify.txt",
+    "stage1_overlay_receipt": "../wo0016-stageB-20261019-130149/board-evidence/overlay-only-pass.json",
+    "stage1_overlay_identity": "../wo0016-stageB-20261019-130149/board-evidence/overlay-evidence.json"
+  }
+}

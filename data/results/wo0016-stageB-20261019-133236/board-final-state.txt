@@ -1,0 +1,20 @@
+boot_id=58e6af6c-6660-4d44-b0c5-e18f4a564202
+PRESENT=/var/lib/wo0015-s2mm/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/overlay-only-consumed.json
+owner=0 mode=600 size=237
+PRESENT=/var/lib/wo0015-s2mm/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/overlay-only-pass.json
+owner=0 mode=600 size=635
+ABSENT=/var/lib/wo0015-s2mm/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/terminal-failure.json
+ABSENT=/var/lib/wo0016/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/smoke3-consumed.json
+ABSENT=/var/lib/wo0016/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/stageb-batch-consumed.json
+ABSENT=/tmp/wo0016-phase16-20261019-130723/smoke3-analysis.json
+ABSENT=/tmp/wo0016-phase16-20261019-130723/smoke3-evidence.json
+ABSENT=/tmp/wo0016-phase16-20261019-133236/smoke3-analysis.json
+ABSENT=/tmp/wo0016-phase16-20261019-133236/smoke3-evidence.json
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+LISTEN 0      50           0.0.0.0:445       0.0.0.0:*          
+LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+LISTEN 0      50           0.0.0.0:139       0.0.0.0:*          
+LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+LISTEN 0      50              [::]:445          [::]:*          
+LISTEN 0      50              [::]:139          [::]:*          
+LISTEN 0      128             [::]:22           [::]:*          

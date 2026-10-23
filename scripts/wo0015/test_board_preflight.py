@@ -24,6 +24,87 @@ def file_sha256(path: Path) -> str:
     return sha256(path.read_bytes())
 
 
+def test_current_wo0016_boot_identity_uses_a_fresh_namespaced_guard_directory():
+    assert preflight.AUTHORIZED_BOOT_ID == "58e6af6c-6660-4d44-b0c5-e18f4a564202"
+    assert preflight.DEFAULT_GUARD_DIR.name == f"boot-{preflight.AUTHORIZED_BOOT_ID}"
+    assert preflight.DEFAULT_GUARD_DIR.parent == Path("/var/lib/wo0015-s2mm")
+
+
+def test_ov9281_camera_gate_accepts_matching_readback_with_successful_oneshot_service():
+    result = preflight.validate_ov9281_gate(
+        format_output=("Format Video Capture:\n"
+                       "    Width/Height      : 640/400\n"
+                       "    Pixel Format      : 'MJPG' (Motion-JPEG)\n"),
+        controls_output=("exposure_time_absolute: 50\n"
+                         "power_line_frequency: 1 (50 Hz)\n"
+                         "gamma: 100\n"),
+        service_output="ExecMainStatus=0\n",
+        active_state="inactive",
+    )
+
+    assert result == {
+        "status": "PASS",
+        "device": "/dev/video0",
+        "format": "MJPG",
+        "width": 640,
+        "height": 400,
+        "exposure_time_absolute": 50,
+        "power_line_frequency": 1,
+        "gamma": 100,
+        "service_exec_main_status": 0,
+        "service_active_state": "inactive",
+    }
+
+
+@pytest.mark.parametrize("service_output", ["ExecMainStatus=1\n", "", "ExecMainStatus=0\nExecMainStatus=1\n"])
+def test_ov9281_camera_gate_rejects_invalid_oneshot_exit_status(service_output):
+    with pytest.raises(preflight.PreflightError, match="ExecMainStatus=0"):
+        preflight.validate_ov9281_gate(
+            format_output="Width/Height : 640/400\nPixel Format : 'MJPG'\n",
+            controls_output=("exposure_time_absolute: 50\n"
+                             "power_line_frequency: 1\ngamma: 100\n"),
+            service_output=service_output,
+            active_state="inactive",
+        )
+
+
+def test_read_ov9281_gate_queries_readbacks_and_execmainstatus_without_is_active(monkeypatch):
+    outputs = [
+        "Width/Height : 640/400\nPixel Format : 'MJPG' (Motion-JPEG)\n",
+        "exposure_time_absolute: 50\npower_line_frequency: 1\ngamma: 100\n",
+        "ExecMainStatus=0\nActiveState=inactive\n",
+    ]
+    calls = []
+
+    class Result:
+        returncode = 0
+
+        def __init__(self, stdout):
+            self.stdout = stdout
+
+    def fake_run(argv, **kwargs):
+        calls.append((argv, kwargs))
+        return Result(outputs[len(calls) - 1])
+
+    monkeypatch.setattr(preflight.subprocess, "run", fake_run)
+    result = preflight.read_ov9281_gate()
+
+    assert result["status"] == "PASS"
+    assert result["service_exec_main_status"] == 0
+    assert result["service_active_state"] == "inactive"
+    assert calls[0][0] == ["v4l2-ctl", "-d", "/dev/video0", "--get-fmt-video"]
+    assert calls[1][0] == [
+        "v4l2-ctl", "-d", "/dev/video0",
+        "--get-ctrl=exposure_time_absolute,power_line_frequency,gamma",
+    ]
+    assert calls[2][0] == [
+        "systemctl", "show", "ov9281-init.service", "-p", "ExecMainStatus",
+        "-p", "ActiveState",
+    ]
+    assert all(kwargs["timeout"] == 3 and kwargs["check"]
+               for _, kwargs in calls)
+
+
 def _module(root: ET.Element, name: str, params: dict[str, str] | None = None,
             interfaces: dict[str, str] | None = None) -> None:
     module = ET.SubElement(root, "MODULE", {"INSTANCE": name})

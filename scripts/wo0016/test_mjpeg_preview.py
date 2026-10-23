@@ -16,6 +16,7 @@ from mjpeg_preview import (  # noqa: E402
     PeriodicMjpegPublisher,
     render_preview_frame,
     render_preview_jpeg,
+    render_calibration_jpeg,
 )
 
 
@@ -38,6 +39,16 @@ def test_preview_jpeg_is_valid_and_invalid_binary_masks_are_rejected():
     assert jpeg[:2] == b"\xff\xd8"
     with pytest.raises(ValueError, match="Binary8"):
         render_preview_jpeg(np.ones((240, 320), dtype=np.uint8), total_count=0, line_y=120)
+
+
+def test_calibration_jpeg_encodes_a_bgr_hud_frame_and_rejects_wrong_geometry():
+    frame = np.zeros((240, 320, 3), dtype=np.uint8)
+
+    jpeg = render_calibration_jpeg(frame)
+
+    assert jpeg[:2] == b"\xff\xd8"
+    with pytest.raises(ValueError, match="uint8 BGR"):
+        render_calibration_jpeg(frame[:, :, 0])
 
 
 def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkeypatch):
@@ -87,6 +98,31 @@ def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkey
         hub.close()
 
 
+def test_periodic_publisher_serves_live_calibration_hud_frames(monkeypatch):
+    encoded = []
+
+    def fake_render(frame, *, quality):
+        encoded.append((frame.copy(), quality, threading.get_ident()))
+        return b"calibration-jpeg"
+
+    monkeypatch.setattr(preview_module, "render_calibration_jpeg", fake_render)
+    hub = MjpegFrameHub()
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120)
+    caller_thread = threading.get_ident()
+    frame = np.full((240, 320, 3), 17, dtype=np.uint8)
+    try:
+        with hub.streaming_client():
+            publisher.publish_calibration(0, frame)
+            assert hub.wait_for_next(after_sequence=0, timeout_s=2.0) == (1, b"calibration-jpeg")
+        assert len(encoded) == 1
+        assert encoded[0][1] == 70
+        assert encoded[0][2] != caller_thread
+        np.testing.assert_array_equal(encoded[0][0], frame)
+    finally:
+        publisher.close()
+        hub.close()
+
+
 def test_preview_callback_returns_while_background_jpeg_encode_is_blocked(monkeypatch):
     import mjpeg_preview
 
@@ -123,6 +159,37 @@ def test_preview_callback_returns_while_background_jpeg_encode_is_blocked(monkey
         if callable(close):
             close()
         hub.close()
+
+
+def test_publisher_close_is_bounded_when_encoder_is_stuck(monkeypatch):
+    import mjpeg_preview
+
+    encode_started = threading.Event()
+    release_encode = threading.Event()
+
+    def stuck_render(mask, *, total_count, line_y, quality):
+        encode_started.set()
+        release_encode.wait(timeout=1.0)
+        return b"slow-jpeg"
+
+    monkeypatch.setattr(mjpeg_preview, "render_preview_jpeg", stuck_render)
+    hub = MjpegFrameHub()
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    result = type("Frame", (), {"frame_id": 0, "total_count": 1})()
+    with hub.streaming_client():
+        publisher(result, mask)
+        assert encode_started.wait(0.5)
+        started = time.perf_counter()
+        stopped = publisher.close()
+        elapsed = time.perf_counter() - started
+    release_encode.set()
+    publisher._worker.join(timeout=0.5)
+    hub.close()
+
+    assert stopped is False
+    assert elapsed < 0.5
+    assert not publisher._worker.is_alive()
 
 
 def test_frame_hub_returns_latest_frame_without_a_backlog():

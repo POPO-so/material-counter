@@ -1,0 +1,46 @@
+boot_id=58e6af6c-6660-4d44-b0c5-e18f4a564202
+CmaFree=15112 KiB
+  PID  PPID STAT COMMAND
+  812     1 S    python3
+{
+  "board_accessed": false,
+  "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "camera_gate": {
+    "evidence": {
+      "device": "/dev/video0",
+      "exposure_time_absolute": 50,
+      "format": "MJPG",
+      "gamma": 100,
+      "height": 400,
+      "power_line_frequency": 1,
+      "service_active_state": "inactive",
+      "service_exec_main_status": 0,
+      "status": "PASS",
+      "width": 640
+    },
+    "status": "PASS"
+  },
+  "cma_gate": {
+    "free_kib": 15168,
+    "minimum_kib": 32768,
+    "status": "BLOCKED",
+    "total_kib": 131072
+  },
+  "fpga_manager": {
+    "evidence": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "status": "PASS"
+  },
+  "process_ownership": {
+    "evidence": {
+      "denied": [],
+      "findings": [],
+      "scanned_proc": "/proc"
+    },
+    "status": "PASS"
+  },
+  "pynq_enumeration": "NOT_RUN_BY_DIAGNOSTIC",
+  "status": "READ_ONLY_DIAGNOSTICS_COMPLETE"
+}

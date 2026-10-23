@@ -33,7 +33,7 @@ TRAILER_MAGIC = 0x454E4434
 TRAILER_END = 0xC0DEC014
 PACKER_SIGNATURE = 0x574F3135
 EXPECTED_PART = "xc7z020clg400-1"
-AUTHORIZED_BOOT_ID = "f8b24aee-ed7e-430a-b3f3-d26056746bfd"
+AUTHORIZED_BOOT_ID = "58e6af6c-6660-4d44-b0c5-e18f4a564202"
 BOARD_STAGES = ("overlay-only", "dma-single", "dma-three")
 RUN_AUTHORIZATION = "dma-three"
 DMA_BASE = 0x40400000
@@ -42,7 +42,7 @@ EXPECTED_DDR_RANGE = (0, 0x20000000)
 PAGE_BYTES = 4096
 MIN_CMA_KIB = ((TX_BYTES + PAGE_BYTES - 1) // PAGE_BYTES +
                (RX_BYTES + PAGE_BYTES - 1) // PAGE_BYTES) * PAGE_BYTES // 1024
-DEFAULT_GUARD_DIR = Path("/var/lib/wo0015-s2mm")
+DEFAULT_GUARD_DIR = Path("/var/lib/wo0015-s2mm") / f"boot-{AUTHORIZED_BOOT_ID}"
 
 _MANIFEST_KEYS = {
     "schema", "work_order", "stage", "build_id", "boot_id", "part",
@@ -623,6 +623,92 @@ def read_fpga_manager(state_path: str | Path = "/sys/class/fpga_manager/fpga0/st
     if state != "operating" or flags != "0":
         raise PreflightError(f"FPGA manager must be operating with flags=0 (state={state!r}, flags={flags!r})")
     return {"state": state, "flags": flags}
+
+
+def validate_ov9281_gate(*, format_output: str, controls_output: str,
+                         service_output: str, active_state: str = "unknown",
+                         device: str = "/dev/video0") -> dict[str, Any]:
+    """Require measured camera settings and a successful oneshot init exit."""
+    if not all(isinstance(value, str) for value in
+               (format_output, controls_output, service_output, active_state, device)):
+        raise PreflightError("OV9281 gate evidence must be text")
+
+    width_height = re.findall(
+        r"(?m)^\s*Width/Height\s*:\s*(\d+)\s*/\s*(\d+)\s*$", format_output
+    )
+    pixel_formats = re.findall(
+        r"(?m)^\s*Pixel Format\s*:\s*'([^']+)'", format_output
+    )
+    if width_height != [("640", "400")] or pixel_formats != ["MJPG"]:
+        raise PreflightError("OV9281 V4L2 readback must be MJPG 640x400")
+
+    controls: dict[str, int] = {}
+    expected_controls = {
+        "exposure_time_absolute": 50,
+        "power_line_frequency": 1,
+        "gamma": 100,
+    }
+    for name in expected_controls:
+        matches = re.findall(rf"(?m)^\s*{re.escape(name)}\s*:\s*(-?\d+)", controls_output)
+        if len(matches) != 1:
+            raise PreflightError(f"OV9281 readback is missing a unique {name} value")
+        controls[name] = int(matches[0])
+        if controls[name] != expected_controls[name]:
+            raise PreflightError(
+                f"OV9281 {name} is {controls[name]}; expected {expected_controls[name]}"
+            )
+
+    statuses = re.findall(r"(?m)^\s*ExecMainStatus\s*=\s*(\d+)\s*$", service_output)
+    if statuses != ["0"]:
+        raise PreflightError("ov9281-init.service must report ExecMainStatus=0")
+    states = re.findall(r"(?m)^\s*ActiveState\s*=\s*(\S+)\s*$", service_output)
+    if len(states) > 1:
+        raise PreflightError("ov9281-init.service ActiveState readback is ambiguous")
+    observed_state = states[0] if states else active_state
+    return {
+        "status": "PASS",
+        "device": device,
+        "format": "MJPG",
+        "width": 640,
+        "height": 400,
+        **controls,
+        "service_exec_main_status": 0,
+        "service_active_state": observed_state,
+    }
+
+
+def read_ov9281_gate(device: str = "/dev/video0") -> dict[str, Any]:
+    """Read the camera mode, controls, and oneshot exit code without mutation."""
+    if not isinstance(device, str) or not device.startswith("/dev/video"):
+        raise PreflightError("OV9281 gate requires an explicit /dev/videoN device")
+
+    def run(argv: list[str], label: str) -> str:
+        try:
+            result = subprocess.run(argv, capture_output=True, text=True,
+                                    timeout=3, check=True)
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise PreflightError(f"cannot read {label}: {exc}") from exc
+        return result.stdout
+
+    format_output = run(
+        ["v4l2-ctl", "-d", device, "--get-fmt-video"], "OV9281 format"
+    )
+    controls_output = run(
+        ["v4l2-ctl", "-d", device,
+         "--get-ctrl=exposure_time_absolute,power_line_frequency,gamma"],
+        "OV9281 controls",
+    )
+    service_output = run(
+        ["systemctl", "show", "ov9281-init.service", "-p", "ExecMainStatus",
+         "-p", "ActiveState"],
+        "ov9281-init.service ExecMainStatus",
+    )
+    return validate_ov9281_gate(
+        format_output=format_output,
+        controls_output=controls_output,
+        service_output=service_output,
+        device=device,
+    )
 
 
 def inspect_pynq_global_state(pynq_module_file: str | Path, *,

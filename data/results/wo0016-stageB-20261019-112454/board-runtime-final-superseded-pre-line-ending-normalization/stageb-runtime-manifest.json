@@ -1,0 +1,19 @@
+{
+  "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "executor_sha256": {
+    "camera_adapter.py": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+    "mjpeg_preview.py": "0cf0613690d5571e0d26f7c7fb5adda8aab769f4b4b4db0b406770fc5cefd34e",
+    "packet_encoder.py": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+    "run_stream_counter.py": "42575a65f9a85c33a53b1d8eb99fa3404408f7e0c678061dac47b5f94541daee",
+    "stageb_analysis.py": "91b2012ed6efbf2a5f4b95f323f54e870a55a54f07e2367be302b682361bdc77",
+    "stream_counter.py": "f9d340ca6c74e438ddd12b1ede842516b042b780bdad4477b4bd1d2f4d681698"
+  },
+  "schema": 1,
+  "stage": "calibration-batch-preview",
+  "tier2_dma_addresses": {
+    "mm2s": 361234432,
+    "s2mm": 361103360
+  },
+  "wo15_manifest_sha256": "14d0f681adb5b77e15e90741765aaf5a3713a28dfca49cca4ca48cd72644392f",
+  "work_order": "WO-0016"
+}

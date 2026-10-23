@@ -1,0 +1,22 @@
+{
+  "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0016-stageb-phase15\\material-counter\\data\\results\\wo0016-stageB-20261019-133236\\board-runtime-final.zip",
+  "archive_sha256": "73b3cb2bbdafdede374f8e9333ac8f872382cc8bbc6b45d7187285c57ed564af",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": false,
+  "directory": "C:\\Users\\POP\\.codex\\worktrees\\wo0016-stageb-phase15\\material-counter\\data\\results\\wo0016-stageB-20261019-133236\\board-runtime-final",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "package_manifest_sha256": "3e81159e44ba0e5512d59dea19e481b777d09c742db27347f61752cce9b8de19",
+  "stageb_manifest_sha256": "4e53ce43f4cc75b4972b8d91bc7c658f071d9fe718eca57289124ea6ce784a43",
+  "status": "STAGEB_BOARD_PACKAGE_READY",
+  "wo15_bundle": {
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "board_accessed": false,
+    "frames": 3,
+    "historical_replay_logs": "not present in checkout/archive; not used by the strict manifest validator",
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "input_vectors": "WO-0015 XSim Case B, three-frame packet/golden outputs",
+    "manifest_sha256": "e07316b9398166c6fc7a459faaca271eaf32170c18b4deaa4c16208bcaa933f2",
+    "status": "WO0015_PACKAGE_VALIDATED_OFFLINE"
+  },
+  "wo15_manifest_sha256": "e07316b9398166c6fc7a459faaca271eaf32170c18b4deaa4c16208bcaa933f2"
+}

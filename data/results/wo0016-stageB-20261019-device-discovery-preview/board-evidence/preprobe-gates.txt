@@ -1,0 +1,4 @@
+CmaFree:          127492 kB
+PREPROBE_GATES_PASS
+a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420  /tmp/wo0016-phase16-20261019-device-discovery-preview/wo0015/wo15.bit
+bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6  /tmp/wo0016-phase16-20261019-device-discovery-preview/wo0015/wo15.hwh

@@ -1,0 +1,47 @@
+{
+  "schema": "wo0016-phase16-smoke3-disposition-v1",
+  "created_local": "2026-10-19",
+  "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "status": "BLOCKED_PYNQ_NATIVE_INIT_TIMEOUT",
+  "pynq_device_discovery": {
+    "global_Device_devices_scan": "SKIPPED",
+    "fpga_manager_sysfs": {
+      "state": "operating",
+      "flags": "0"
+    },
+    "explicit_EmbeddedDevice_setup": "TIMEOUT",
+    "python_alarm_seconds": 10.5,
+    "outer_timeout_seconds": 12,
+    "outer_exit_code": 124,
+    "load_elapsed_ms": null,
+    "python_timeout_caught": false
+  },
+  "precheck": {
+    "boot_id_match": true,
+    "cma_free_final_kib": 45192,
+    "cma_minimum_kib": 32768,
+    "cma_gate": "PASS",
+    "fpga_manager_gate": "PASS",
+    "stage1_overlay_receipt": "PRESENT",
+    "wo15_terminal_failure": "ABSENT",
+    "stageb_smoke_guard": "ABSENT",
+    "stageb_batch_guard": "ABSENT",
+    "camera_owner": "NONE",
+    "port_8080_listener": "NONE"
+  },
+  "stageb_runner_started": false,
+  "stageb_guard_consumed": false,
+  "dma_started": false,
+  "frames_completed": 0,
+  "dma_addresses": null,
+  "dmasr": null,
+  "smoke_result": "NOT_RUN_BLOCKED_BEFORE_RUNNER",
+  "preview_8080_started": false,
+  "physical_light_and_conveyor": "KEEP_OFF",
+  "evidence": {
+    "final_readonly_state": "board-evidence/final-state.txt",
+    "package_transfer_and_hashes": "board-evidence/package-deploy-verify.txt",
+    "predeploy_gates": "board-evidence/predeploy-gates.txt",
+    "python_probe_output": "board-evidence/pynq-device-probe.txt"
+  }
+}

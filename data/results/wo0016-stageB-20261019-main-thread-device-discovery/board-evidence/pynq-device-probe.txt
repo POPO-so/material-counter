@@ -1,0 +1,5 @@
+{
+  "board_accessed": false,
+  "error": "PreflightError: PYNQ load timed out: PYNQ import/device setup exceeded 8.00 seconds",
+  "status": "READ_ONLY_PRECHECK_FAIL"
+}

@@ -1,0 +1,17 @@
+BOOT_ID
+58e6af6c-6660-4d44-b0c5-e18f4a564202
+CMA
+CmaTotal:         131072 kB
+CmaFree:           45192 kB
+FPGA_MANAGER
+operating
+0
+RELEVANT_PROCESSES
+GUARDS
+PRESENT=/var/lib/wo0015-s2mm/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/overlay-only-pass.json
+ABSENT=/var/lib/wo0015-s2mm/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/terminal-failure.json
+ABSENT=/var/lib/wo0016/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/smoke3-consumed.json
+ABSENT=/var/lib/wo0016/boot-58e6af6c-6660-4d44-b0c5-e18f4a564202/stageb-batch-consumed.json
+PORT_8080
+ABSENT
+VIDEO_OWNER

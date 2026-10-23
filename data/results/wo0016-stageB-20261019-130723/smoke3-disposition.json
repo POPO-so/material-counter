@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "work_order": "WO-0016",
+  "phase": "1.6",
+  "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "status": "BLOCKED_PRECHECK_CMA",
+  "smoke_frames_requested": 3,
+  "smoke_frames_completed": 0,
+  "dma_started": false,
+  "guard_consumed": false,
+  "cma_minimum_kib": 32768,
+  "wrapper_cma_free_kib": 12976,
+  "later_readonly_diagnostic_cma_free_kib": 15168,
+  "dmasr": null,
+  "mm2s_physical_address": null,
+  "s2mm_physical_address": null,
+  "reason": "Board entry precheck failed closed because CmaFree was below the required watermark before the one-shot smoke guard and DMA stage.",
+  "overlay_reload_performed": false,
+  "recovery_or_retry_performed": false,
+  "physical_light_or_conveyor_started": false,
+  "preview_port_8080_started": false,
+  "evidence": [
+    "board-final-state.txt",
+    "post-stage1-readonly-diagnostic.txt",
+    "board-evidence/overlay-evidence.json",
+    "board-evidence/overlay-only-consumed.json",
+    "board-evidence/overlay-only-pass.json"
+  ]
+}

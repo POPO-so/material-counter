@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import sys
 import threading
+import time
 
 import cv2
 import numpy as np
@@ -24,6 +25,7 @@ from stream_counter import (
     allocate_ping_pong_buffers,
     transfer_async,
 )
+import stream_counter as stream_counter_module
 
 
 def _mask(center_y, *, center_x=80, size=5):
@@ -315,6 +317,38 @@ def test_ping_pong_allocates_two_aligned_tx_rx_pairs_once():
                for buffer in tx_buffers + rx_buffers)
 
 
+def test_ping_pong_runs_garbage_collection_before_each_allocation(monkeypatch):
+    events = []
+    allocator = MockAllocator()
+    monkeypatch.setattr(stream_counter_module.gc, "collect", lambda: events.append("gc") or 0)
+
+    def allocate(*, shape, dtype):
+        events.append("allocate")
+        return allocator(shape=shape, dtype=dtype)
+
+    allocate_ping_pong_buffers(allocate)
+
+    assert events == ["gc", "allocate"] * 4
+
+
+def test_partial_ping_pong_allocation_explicitly_releases_allocated_buffers():
+    allocated = []
+    released = []
+
+    def allocate(*, shape, dtype):
+        size = int(np.prod(shape))
+        buffer = MockCmaBuffer(size, 0x10000000 + len(allocated) * 0x100000)
+        allocated.append(buffer)
+        if len(allocated) == 2:
+            buffer.data = np.zeros((7,), dtype=np.uint8)
+        return buffer
+
+    with pytest.raises(ValueError, match="CMA buffer must be exactly"):
+        allocate_ping_pong_buffers(allocate, release=lambda buffer: released.append(buffer))
+
+    assert released == list(reversed(allocated))
+
+
 def test_s2mm_mask_is_copied_before_pack_check_and_roi_uses_cached_storage():
     allocator = MockAllocator()
 
@@ -540,6 +574,44 @@ def test_async_dma_pipeline_alternates_slots_and_overlaps_processing():
     assert all(slot.state is BufferState.FREE for slot in stream.slots)
 
 
+def test_observed_frame_callback_pairs_camera_gray_with_s2mm_mask_and_dma_status():
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    masks = [_mask(108), _mask(116), _mask(124)]
+    dma = MockDma(masks)
+    dma.release_frame1.set()
+    observed = []
+
+    async def gray_frames():
+        for frame_id in range(3):
+            gray = np.full((240, 320), frame_id + 21, dtype=np.uint8)
+            await asyncio.sleep(0)
+            yield gray
+
+    def on_observed(result, gray, mask, metadata):
+        observed.append((result.frame_id, gray.copy(), mask.copy(), metadata))
+
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=MaskCounter(line_y=120, confirm_hits=2, max_step=12),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        after_transfer=lambda frame_id, slot: {"mm2s": 0x1002, "s2mm": 0x1002},
+        on_frame_observed=on_observed,
+        transfer_timeout_s=1.0,
+    )
+
+    asyncio.run(stream.run(gray_frames()))
+
+    assert [frame[0] for frame in observed] == [0, 1, 2]
+    for frame_id, gray, mask, metadata in observed:
+        assert np.all(gray == frame_id + 21)
+        np.testing.assert_array_equal(mask, masks[frame_id])
+        assert metadata == {"mm2s": 0x1002, "s2mm": 0x1002}
+
+
 def test_consumer_failure_unblocks_slot_wait_and_closes_frame_source():
     counter_entered = threading.Event()
     release_counter = threading.Event()
@@ -684,7 +756,6 @@ def test_transfer_async_uses_nonblocking_start_and_async_wait_when_available():
 
     async def exercise():
         pending = transfer_async(dma.recvchannel, rx_buffers[0], RX_BYTES)
-        assert dma.recvchannel.active
         await pending
         assert not dma.recvchannel.active
 
@@ -721,8 +792,8 @@ def test_pynq_none_transfer_uses_channel_wait_when_interrupt_is_unconfigured():
 
     async def exercise():
         pending = transfer_async(channel, rx_buffers[0], RX_BYTES)
-        assert channel.transfer_return is None
         await pending
+        assert channel.transfer_return is None
 
     asyncio.run(exercise())
 
@@ -804,6 +875,53 @@ def test_transfer_async_falls_back_to_channel_wait_in_a_worker_thread():
 
     assert channel.wait_thread != channel.main_thread
     assert not channel.started
+
+
+def test_blocked_dma_transfer_start_is_bounded_and_holds_owned_slot():
+    started = threading.Event()
+    release_start = threading.Event()
+    start_finished = threading.Event()
+    tx_started = threading.Event()
+
+    class BlockingRxChannel:
+        def transfer(self, buffer, *, nbytes):
+            started.set()
+            release_start.wait(timeout=1.0)
+            start_finished.set()
+
+        def wait(self):
+            return None
+
+    class TxChannel:
+        def transfer(self, buffer, *, nbytes):
+            tx_started.set()
+
+        def wait(self):
+            return None
+
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    stream = DoubleBufferStream(
+        recv_channel=BlockingRxChannel(),
+        send_channel=TxChannel(),
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=MaskCounter(),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        transfer_timeout_s=0.02,
+    )
+
+    started_at = time.perf_counter()
+    with pytest.raises(TimeoutError):
+        asyncio.run(stream.run(_frames(1)))
+    elapsed = time.perf_counter() - started_at
+    assert started.is_set()
+    assert elapsed < 0.2
+    assert stream.dma_may_be_active
+    assert stream.held_slots
+    assert not tx_started.is_set()
+    release_start.set()
+    assert start_finished.wait(0.2)
 
 
 def test_dma_start_failure_holds_owned_slot_and_does_not_retry():

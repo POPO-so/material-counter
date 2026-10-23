@@ -1,0 +1,6 @@
+boot_id=58e6af6c-6660-4d44-b0c5-e18f4a564202
+CmaFree=127492 KiB
+  PID  PPID STAT COMMAND
+fpga_manager_state=operating flags=0
+python3=/usr/local/share/pynq-venv/bin/python3
+CmaFree_ready=127492 KiB cache_drop_attempted=0

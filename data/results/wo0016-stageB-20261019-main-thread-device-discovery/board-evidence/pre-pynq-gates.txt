@@ -1,0 +1,2 @@
+CmaFree:           51740 kB
+PRE-PYNQ-GATES-PASS

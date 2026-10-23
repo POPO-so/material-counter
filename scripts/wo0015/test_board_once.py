@@ -269,6 +269,57 @@ def test_pynq_sync_methods_fail_closed_when_no_supported_cache_operation_exists(
         api.sync_from_device(buffer_without_sync)
 
 
+def test_pynq_environment_audit_rejects_empty_device_list_before_overlay(tmp_path, monkeypatch):
+    plan, _ = _plan(tmp_path, 3)
+    fake_pynq = types.SimpleNamespace(
+        __file__="/fake/pynq/__init__.py",
+        Device=types.SimpleNamespace(devices=[]),
+    )
+    monkeypatch.setattr(runner.PynqBoardAPI, "_load_pynq", lambda _self: fake_pynq)
+    monkeypatch.setattr(preflight, "audit_process_ownership",
+                        lambda: {"findings": [], "denied": []})
+    monkeypatch.setattr(preflight, "read_fpga_manager",
+                        lambda: {"state": "operating", "flags": "0"})
+    monkeypatch.setattr(preflight, "inspect_pynq_global_state",
+                        lambda *_args, **_kwargs: {"shutdown_ips": {}})
+    monkeypatch.setattr(preflight, "read_kernel_log", lambda: [])
+    monkeypatch.setattr(preflight, "read_boot_id", lambda: plan.boot_id)
+
+    with pytest.raises(preflight.PreflightError, match="No PYNQ devices found"):
+        runner.PynqBoardAPI(plan, stage="overlay-only").audit_environment(
+            require_empty_shutdown=True, require_loaded_bit=False)
+
+
+def test_pynq_environment_audit_records_root_visible_device_count(tmp_path, monkeypatch):
+    plan, _ = _plan(tmp_path, 3)
+    fake_pynq = types.SimpleNamespace(
+        __file__="/fake/pynq/__init__.py",
+        Device=types.SimpleNamespace(devices=[types.SimpleNamespace(name="PYNQ-Z2")]),
+    )
+    monkeypatch.setattr(runner.PynqBoardAPI, "_load_pynq", lambda _self: fake_pynq)
+    monkeypatch.setattr(preflight, "audit_process_ownership",
+                        lambda: {"findings": [], "denied": []})
+    monkeypatch.setattr(preflight, "read_fpga_manager",
+                        lambda: {"state": "operating", "flags": "0"})
+    monkeypatch.setattr(preflight, "inspect_pynq_global_state",
+                        lambda *_args, **_kwargs: {"shutdown_ips": {}})
+    monkeypatch.setattr(preflight, "read_kernel_log", lambda: [])
+    monkeypatch.setattr(preflight, "read_boot_id", lambda: plan.boot_id)
+
+    result = runner.PynqBoardAPI(plan, stage="overlay-only").audit_environment(
+        require_empty_shutdown=True, require_loaded_bit=False)
+
+    assert result["pynq_devices"] == {"count": 1, "names": ["PYNQ-Z2"]}
+    assert result["fpga_manager"] == {"state": "operating", "flags": "0"}
+
+
+def test_stage1_overlay_requires_32768_kib_cma_watermark():
+    assert runner.require_stage_cma_watermark(
+        {"CmaFree": 32768}, "overlay-only") == 32768
+    with pytest.raises(preflight.PreflightError, match="below the 32768 KiB"):
+        runner.require_stage_cma_watermark({"CmaFree": 32767}, "overlay-only")
+
+
 def test_overlay_stage_opens_only_checker_mmio_while_dma_stages_open_both(
     tmp_path, monkeypatch
 ):

@@ -21,7 +21,7 @@ _HTML_PAGE = b"""<!doctype html>
 <html><head><meta charset=\"utf-8\"><title>Material Counter</title></head>
 <body style=\"margin:0;background:#111;color:#eee;font:16px sans-serif\">
 <main style=\"max-width:960px;margin:1rem auto;text-align:center\">
-<h1>Material Counter</h1><img src=\"/stream.mjpg\" alt=\"Live Binary8 mask\" style=\"width:100%;height:auto\">
+<h1>Material Counter Preview</h1><img src=\"/stream.mjpg\" alt=\"Live frame preview\" style=\"width:100%;height:auto\">
 </main></body></html>"""
 
 
@@ -141,6 +141,19 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
     return payload.tobytes()
 
 
+def render_calibration_jpeg(frame_bgr: np.ndarray, *, quality: int = PREVIEW_JPEG_QUALITY) -> bytes:
+    frame = np.asarray(frame_bgr)
+    if frame.dtype != np.uint8 or frame.shape != (240, 320, 3):
+        raise ValueError("calibration preview must be uint8 BGR with shape (240, 320, 3)")
+    if isinstance(quality, bool) or not isinstance(quality, (int, np.integer)) or not 1 <= quality <= 100:
+        raise ValueError("JPEG quality must be an integer in 1..100")
+    encoded, payload = cv2.imencode(".jpg", frame,
+                                    [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
+    if not encoded:
+        raise RuntimeError("OpenCV failed to encode the calibration JPEG")
+    return payload.tobytes()
+
+
 class PeriodicMjpegPublisher:
     """Copy preview snapshots quickly and encode them off the counting path."""
 
@@ -162,7 +175,10 @@ class PeriodicMjpegPublisher:
         self._condition = threading.Condition()
         self._latest_mask = np.empty((240, 320), dtype=np.uint8)
         self._encode_mask = np.empty((240, 320), dtype=np.uint8)
+        self._latest_calibration = np.empty((240, 320, 3), dtype=np.uint8)
+        self._encode_calibration = np.empty((240, 320, 3), dtype=np.uint8)
         self._latest_metadata: tuple[int, int, int] | None = None
+        self._latest_mode = "mask"
         self._snapshot_sequence = 0
         self._encoded_sequence = 0
         self._closing = False
@@ -188,6 +204,28 @@ class PeriodicMjpegPublisher:
                     return
                 np.copyto(self._latest_mask, image, casting="no")
                 self._latest_metadata = (frame_id, int(result.total_count), self.line_y)
+                self._latest_mode = "mask"
+                self._snapshot_sequence += 1
+                self._condition.notify_all()
+        finally:
+            self.handoff_timings_ms.append((time.perf_counter() - started) * 1000.0)
+
+    def publish_calibration(self, frame_id: int, frame_bgr: np.ndarray) -> None:
+        started = time.perf_counter()
+        try:
+            if isinstance(frame_id, bool) or not isinstance(frame_id, int) or frame_id < 0:
+                raise ValueError("calibration frame_id must be a nonnegative integer")
+            if frame_id % self.interval:
+                return
+            image = np.asarray(frame_bgr)
+            if image.dtype != np.uint8 or image.shape != (240, 320, 3):
+                raise ValueError("calibration snapshot must be uint8 BGR with shape (240, 320, 3)")
+            with self._condition:
+                if self._closing or self._closed:
+                    return
+                np.copyto(self._latest_calibration, image, casting="no")
+                self._latest_metadata = (frame_id, 0, self.line_y)
+                self._latest_mode = "calibration"
                 self._snapshot_sequence += 1
                 self._condition.notify_all()
         finally:
@@ -221,17 +259,24 @@ class PeriodicMjpegPublisher:
                     continue
                 sequence = self._snapshot_sequence
                 frame_id, total_count, line_y = self._latest_metadata
-                np.copyto(self._encode_mask, self._latest_mask, casting="no")
+                mode = self._latest_mode
+                if mode == "calibration":
+                    np.copyto(self._encode_calibration, self._latest_calibration, casting="no")
+                else:
+                    np.copyto(self._encode_mask, self._latest_mask, casting="no")
                 self._encoded_sequence = sequence
 
             started = time.perf_counter()
             try:
-                jpeg = render_preview_jpeg(
-                    self._encode_mask,
-                    total_count=total_count,
-                    line_y=line_y,
-                    quality=self.quality,
-                )
+                if mode == "calibration":
+                    jpeg = render_calibration_jpeg(self._encode_calibration, quality=self.quality)
+                else:
+                    jpeg = render_preview_jpeg(
+                        self._encode_mask,
+                        total_count=total_count,
+                        line_y=line_y,
+                        quality=self.quality,
+                    )
                 self.hub.publish(jpeg)
                 self.encoded_frames += 1
             except RuntimeError as exc:
@@ -246,15 +291,19 @@ class PeriodicMjpegPublisher:
                     (time.perf_counter() - started) * 1000.0
                 )
 
-    def close(self) -> None:
+    def close(self, *, timeout_s: float = 0.25) -> bool:
+        if (isinstance(timeout_s, bool) or not isinstance(timeout_s, (int, float))
+                or not np.isfinite(timeout_s) or timeout_s <= 0):
+            raise ValueError("timeout_s must be finite and positive")
         with self._condition:
             if self._closed:
-                return
+                return not self._worker.is_alive()
             self._closing = True
             self._condition.notify_all()
-        self._worker.join()
+        self._worker.join(timeout=float(timeout_s))
         with self._condition:
             self._closed = True
+        return not self._worker.is_alive()
 
 
 class MjpegLoopbackClient:

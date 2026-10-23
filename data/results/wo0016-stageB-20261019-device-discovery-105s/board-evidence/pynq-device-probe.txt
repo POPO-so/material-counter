@@ -1,0 +1,3 @@
+ssh_exit_code=124
+outer_timeout_seconds=12
+probe_stdout_stderr=empty; the shell timeout terminated the process before JSON output

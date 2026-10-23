@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 import asyncio
+import gc
 import inspect
 import math
 import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, AsyncIterable, Callable, Protocol
+from typing import Any, AsyncIterable, Callable, Mapping, Protocol
 
 import cv2
 import numpy as np
@@ -42,6 +43,8 @@ class DmaBufferSlot:
     tx_buffer: Any
     rx_buffer: Any
     cached_mask: np.ndarray | None = None
+    source_gray: np.ndarray | None = None
+    frame_metadata: dict[str, Any] = field(default_factory=dict)
     state: BufferState = BufferState.FREE
     frame_id: int | None = None
 
@@ -302,6 +305,52 @@ class MaskCounter:
         return sorted(events, key=lambda event: event.track_id)
 
 
+async def _daemon_call_with_timeout(function: Callable[[], Any], *,
+                                    timeout_s: float, thread_name: str) -> Any:
+    """Run a possibly blocking device call on a daemon worker with an async deadline."""
+    timeout_s = _positive_float(timeout_s, "timeout_s")
+    loop = asyncio.get_running_loop()
+    completed = loop.create_future()
+
+    def finish(value: Any = None, error: BaseException | None = None) -> None:
+        if completed.done():
+            return
+        if error is None:
+            completed.set_result(value)
+        else:
+            completed.set_exception(error)
+
+    def invoke() -> None:
+        try:
+            value = function()
+        except BaseException as exc:
+            try:
+                loop.call_soon_threadsafe(finish, None, exc)
+            except RuntimeError:
+                pass
+        else:
+            try:
+                loop.call_soon_threadsafe(finish, value, None)
+            except RuntimeError:
+                pass
+
+    threading.Thread(target=invoke, name=thread_name, daemon=True).start()
+    return await asyncio.wait_for(completed, timeout=timeout_s)
+
+
+async def start_transfer_async(channel: Any, buffer: Any, nbytes: int, *,
+                               timeout_s: float = 5.0) -> asyncio.Task:
+    """Bound the blocking PYNQ transfer start and return its completion waiter."""
+    nbytes = _integer(nbytes, "nbytes", minimum=1)
+    timeout_s = _positive_float(timeout_s, "timeout_s")
+    await _daemon_call_with_timeout(
+        lambda: channel.transfer(buffer, nbytes=nbytes),
+        timeout_s=timeout_s,
+        thread_name="wo0016-dma-transfer-start",
+    )
+    return asyncio.create_task(_wait_channel(channel))
+
+
 async def _wait_channel(channel: Any) -> None:
     wait = getattr(channel, "wait", None)
     if callable(wait):
@@ -341,19 +390,23 @@ async def _wait_channel(channel: Any) -> None:
     await result
 
 
-def transfer_async(channel: Any, buffer: Any, nbytes: int) -> asyncio.Task:
-    """Start PYNQ's non-blocking transfer and return an async completion task.
-
-    PYNQ's ``transfer`` starts the operation and returns ``None``; completion
-    methods belong to the channel. Prefer its blocking ``wait`` in a worker
-    thread because PYNQ's ``wait_async`` requires a configured interrupt.
-    """
+def transfer_async(channel: Any, buffer: Any, nbytes: int, *,
+                   timeout_s: float = 5.0) -> asyncio.Task:
+    """Bound PYNQ transfer start and channel completion with daemon workers."""
     nbytes = _integer(nbytes, "nbytes", minimum=1)
-    channel.transfer(buffer, nbytes=nbytes)
-    return asyncio.create_task(_wait_channel(channel))
+    timeout_s = _positive_float(timeout_s, "timeout_s")
+
+    async def start_and_wait() -> None:
+        pending = await start_transfer_async(
+            channel, buffer, nbytes, timeout_s=timeout_s,
+        )
+        await pending
+
+    return asyncio.create_task(start_and_wait())
 
 
-def allocate_ping_pong_buffers(allocate: Callable[..., Any]
+def allocate_ping_pong_buffers(allocate: Callable[..., Any], *,
+                               release: Callable[[Any], None] | None = None
                                ) -> tuple[tuple[Any, Any], tuple[Any, Any]]:
     """Allocate and validate two paired PYNQ CMA TX/RX slots exactly once."""
     allocated = []
@@ -361,8 +414,10 @@ def allocate_ping_pong_buffers(allocate: Callable[..., Any]
     rx_buffers = []
     try:
         for _ in range(2):
+            gc.collect()
             tx = allocate(shape=(TX_BYTES,), dtype=np.uint8)
             allocated.append(tx)
+            gc.collect()
             rx = allocate(shape=(RX_BYTES,), dtype=np.uint8)
             allocated.append(rx)
             _validate_buffer(tx, TX_BYTES, 8, "TX")
@@ -379,12 +434,21 @@ def allocate_ping_pong_buffers(allocate: Callable[..., Any]
         for left, right in zip(spans, spans[1:]):
             if left[1] > right[0]:
                 raise ValueError("allocated DMA buffers overlap")
-    except BaseException:
+    except BaseException as allocation_error:
         # No DMA has started here, so partially allocated objects can be released.
-        for buffer in allocated:
-            close = getattr(buffer, "close", None)
-            if callable(close):
-                close()
+        try:
+            for buffer in reversed(allocated):
+                if release is not None:
+                    release(buffer)
+                    continue
+                freebuffer = getattr(buffer, "freebuffer", None)
+                close = getattr(buffer, "close", None)
+                cleanup = freebuffer if callable(freebuffer) else close
+                if callable(cleanup):
+                    cleanup()
+        except BaseException as release_error:
+            raise release_error from allocation_error
+        gc.collect()
         raise
     return tuple(tx_buffers), tuple(rx_buffers)
 
@@ -414,6 +478,8 @@ class DoubleBufferStream:
                  before_rx_copy: Callable[[int, DmaBufferSlot], Any] | None = None,
                  after_transfer: Callable[[int, DmaBufferSlot], Any] | None = None,
                  on_frame: Callable[[FrameResult, np.ndarray], Any] | None = None,
+                 on_frame_observed: Callable[[FrameResult, np.ndarray, np.ndarray,
+                                              Mapping[str, Any]], Any] | None = None,
                  stage_timings_ms: dict[str, list[float]] | None = None,
                  transfer_timeout_s: float = 5.0):
         if len(tx_buffers) != 2 or len(rx_buffers) != 2:
@@ -431,12 +497,14 @@ class DoubleBufferStream:
         self.before_rx_copy = before_rx_copy
         self.after_transfer = after_transfer
         self.on_frame = on_frame
+        self.on_frame_observed = on_frame_observed
         self.stage_timings_ms = stage_timings_ms
         self._postprocess_ms: dict[int, float] = {}
         self.transfer_timeout_s = _positive_float(transfer_timeout_s, "transfer_timeout_s")
         self.slots = [
             DmaBufferSlot(i, tx_buffers[i], rx_buffers[i],
-                          cached_mask=np.empty((HEIGHT, WIDTH), dtype=np.uint8))
+                          cached_mask=np.empty((HEIGHT, WIDTH), dtype=np.uint8),
+                          source_gray=np.empty((HEIGHT, WIDTH), dtype=np.uint8))
             for i in range(2)
         ]
         self._free_slots: asyncio.Queue[DmaBufferSlot] = asyncio.Queue(maxsize=2)
@@ -494,6 +562,10 @@ class DoubleBufferStream:
                     raise RuntimeError("buffer pool returned a slot that is not free")
                 slot.state = BufferState.CPU_OWNED
                 slot.frame_id = frame_id
+                if slot.source_gray is None:
+                    raise RuntimeError("DMA slot has no source Gray8 snapshot")
+                np.copyto(slot.source_gray, gray, casting="no")
+                slot.frame_metadata = {}
                 encode_started = time.perf_counter()
                 if self.packet_encoder_into is not None:
                     self.packet_encoder_into(gray, slot.tx_buffer, frame_id=frame_id)
@@ -511,10 +583,16 @@ class DoubleBufferStream:
 
                 self.dma_may_be_active = True
                 slot.state = BufferState.DMA_OWNED
-                rx_wait = transfer_async(self.recv_channel, slot.rx_buffer, RX_BYTES)
+                rx_wait = await start_transfer_async(
+                    self.recv_channel, slot.rx_buffer, RX_BYTES,
+                    timeout_s=self.transfer_timeout_s,
+                )
                 self._pending_waits.append(rx_wait)
                 try:
-                    tx_wait = transfer_async(self.send_channel, slot.tx_buffer, TX_BYTES)
+                    tx_wait = await start_transfer_async(
+                        self.send_channel, slot.tx_buffer, TX_BYTES,
+                        timeout_s=self.transfer_timeout_s,
+                    )
                 except BaseException:
                     self._hold_nonfree_slots()
                     raise
@@ -546,9 +624,11 @@ class DoubleBufferStream:
                 postprocess_ms = 0.0
                 if self.after_transfer is not None:
                     postprocess_started = time.perf_counter()
-                    validated = self.after_transfer(frame_id, slot)
-                    if inspect.isawaitable(validated):
-                        await validated
+                    validation_result = self.after_transfer(frame_id, slot)
+                    if inspect.isawaitable(validation_result):
+                        validation_result = await validation_result
+                    if isinstance(validation_result, Mapping):
+                        slot.frame_metadata = dict(validation_result)
                     packer_check_seconds = time.perf_counter() - postprocess_started
                     postprocess_ms += packer_check_seconds * 1000.0
                     self._record_timing("packer_check", packer_check_seconds)
@@ -645,12 +725,26 @@ class DoubleBufferStream:
                     callback_result = await asyncio.to_thread(self.on_frame, result, mask)
                     if inspect.isawaitable(callback_result):
                         await callback_result
+            if self.on_frame_observed is not None:
+                if slot.source_gray is None:
+                    raise RuntimeError("completed DMA slot has no source Gray8 snapshot")
+                if inspect.iscoroutinefunction(self.on_frame_observed):
+                    await self.on_frame_observed(result, slot.source_gray, mask,
+                                                 dict(slot.frame_metadata))
+                else:
+                    callback_result = await asyncio.to_thread(
+                        self.on_frame_observed, result, slot.source_gray, mask,
+                        dict(slot.frame_metadata)
+                    )
+                    if inspect.isawaitable(callback_result):
+                        await callback_result
             postprocess_ms = self._postprocess_ms.pop(frame_id, 0.0)
             postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
             self._record_timing("postprocess", postprocess_ms / 1000.0)
             self._results.append(result)
             slot.state = BufferState.FREE
             slot.frame_id = None
+            slot.frame_metadata = {}
             self._free_slots.put_nowait(slot)
 
     def _record_timing(self, stage: str, elapsed_seconds: float) -> None:

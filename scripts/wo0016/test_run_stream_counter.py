@@ -1,7 +1,10 @@
 import asyncio
+import hashlib
+import json
 import sys
 import threading
 import time
+import types
 from pathlib import Path
 
 import numpy as np
@@ -13,7 +16,10 @@ import run_stream_counter as runner  # noqa: E402
 from run_stream_counter import (  # noqa: E402
     build_synthetic_masks,
     claim_once_guard,
+    _bounded_board_operation,
     _dma_buffers_safe_to_release,
+    _release_buffers,
+    BufferReleaseUncertain,
     camera_gray_frames,
     resolve_wo15_dependency_dir,
     run_mock_simulation,
@@ -40,6 +46,139 @@ def test_wo15_dependency_path_falls_back_to_repository_sibling(tmp_path):
     sibling.mkdir()
 
     assert resolve_wo15_dependency_dir(script_dir) == sibling
+
+
+def test_stageb_pynq_adapter_uses_explicit_embedded_device_without_enumeration(monkeypatch):
+    class NoEnumerationMeta(type):
+        @property
+        def devices(cls):
+            pytest.fail("Stage B must not trigger PYNQ global device enumeration")
+
+    class FakeDevice(metaclass=NoEnumerationMeta):
+        pass
+
+    mmio_calls = []
+    allocation_calls = []
+    overlay_calls = []
+    pynq = types.SimpleNamespace(__file__="/fake/pynq/__init__.py", Device=FakeDevice)
+
+    def mmio(base, size, *, device):
+        mmio_calls.append((base, size, device))
+        return object()
+
+    def overlay(bitfile, *, download, device):
+        overlay_calls.append((bitfile, download, device))
+        return object()
+
+    pynq.MMIO = mmio
+    pynq.Overlay = overlay
+    device = types.SimpleNamespace(
+        name="embedded_xrt0",
+        allocate=lambda **kwargs: allocation_calls.append(kwargs) or "buffer",
+    )
+    plan = types.SimpleNamespace(bit_path="/fake/wo15.bit", bit_sha256="a" * 64)
+    api = runner.PynqStageBBoardAPI(
+        plan, stage=runner.WO16_STAGE, cma_ranges=(), pynq_module=pynq, device=device,
+        pynq_load_elapsed_ms=4.25,
+    )
+    monkeypatch.setattr(runner.preflight, "audit_process_ownership",
+                        lambda: {"findings": [], "denied": []})
+    monkeypatch.setattr(runner.preflight, "read_fpga_manager",
+                        lambda: {"state": "operating", "flags": "0"})
+    monkeypatch.setattr(runner.preflight, "read_boot_id",
+                        lambda: runner.preflight.AUTHORIZED_BOOT_ID)
+    monkeypatch.setattr(runner.preflight, "inspect_pynq_global_state",
+                        lambda *args, **kwargs: {"status": "PASS"})
+    monkeypatch.setattr(runner.preflight, "read_kernel_log", lambda: [])
+
+    audit = api.audit_environment(require_empty_shutdown=False, require_loaded_bit=True)
+    api.open_mmio()
+    assert api.allocate(17) == "buffer"
+    api.create_overlay("/fake/wo15.bit")
+
+    assert audit["pynq_context"] == {
+        "backend": "embedded_xrt0", "device_enumeration": "SKIPPED",
+        "load_elapsed_ms": 4.25,
+    }
+    assert len(mmio_calls) == 2
+    assert all(call[2] is device for call in mmio_calls)
+    assert allocation_calls == [{"shape": (17,), "dtype": "u1"}]
+    assert overlay_calls == [("/fake/wo15.bit", False, device)]
+
+
+def test_tier2_physical_address_gate_requires_the_authorized_pair():
+    assert runner.validate_tier2_physical_addresses(0x15880000, 0x15860000) == {
+        "mm2s": "0x15880000", "s2mm": "0x15860000",
+    }
+    with pytest.raises(RuntimeError, match="Tier 2 physical DMA address gate failed"):
+        runner.validate_tier2_physical_addresses(0x15890000, 0x15860000)
+
+
+def test_board_run_guards_are_profile_scoped_and_boot_namespaced():
+    smoke = runner.guard_path_for_run(3, "smoke3")
+    batch_a = runner.guard_path_for_run(30, "stageb-batch")
+    batch_b = runner.guard_path_for_run(1800, "stageb-batch")
+
+    assert smoke.name == "smoke3-consumed.json"
+    assert f"boot-{runner.preflight.AUTHORIZED_BOOT_ID}" in str(smoke)
+    assert batch_a.name == "stageb-batch-consumed.json"
+    assert batch_b == batch_a
+    assert batch_a.parent == smoke.parent
+    with pytest.raises(ValueError, match="exactly three frames"):
+        runner.guard_path_for_run(30, "smoke3")
+    with pytest.raises(ValueError, match="unknown board run profile"):
+        runner.guard_path_for_run(3, "arbitrary")
+
+
+def test_board_run_profiles_bound_frames_and_runtime():
+    assert runner.validate_board_run_limits("smoke3", 3, 30.0).name == "smoke3-consumed.json"
+    assert runner.validate_board_run_limits("stageb-batch", 1800, 30.0).name == "stageb-batch-consumed.json"
+    for profile, frames, runtime in (
+        ("smoke3", 4, 30.0),
+        ("stageb-batch", 1801, 30.0),
+        ("stageb-batch", 30, 30.1),
+    ):
+        with pytest.raises(ValueError):
+            runner.validate_board_run_limits(profile, frames, runtime)
+    with pytest.raises(ValueError, match="timeout_s"):
+        runner.validate_board_run_limits("stageb-batch", 30, 30.0, timeout_s=5.1)
+
+
+def test_fps_uses_elapsed_intervals_between_observed_frames():
+    assert runner.average_observed_fps(frame_count=1, elapsed_s=0.1) is None
+    assert runner.average_observed_fps(frame_count=2, elapsed_s=0.1) == pytest.approx(10.0)
+
+
+def test_stageb_manifest_pins_current_boot_wo15_manifest_gate_and_executor_hashes(tmp_path):
+    executor_hashes = {
+        name: runner.preflight.sha256_file(runner.STAGEB_EXECUTOR_PATHS[name])
+        for name in runner.STAGEB_EXECUTOR_FILES
+    }
+    payload = {
+        "schema": 1,
+        "work_order": "WO-0016",
+        "stage": "calibration-batch-preview",
+        "boot_id": runner.preflight.AUTHORIZED_BOOT_ID,
+        "wo15_manifest_sha256": "a" * 64,
+        "tier2_dma_addresses": {"mm2s": 0x15880000, "s2mm": 0x15860000},
+        "executor_sha256": executor_hashes,
+    }
+    path = tmp_path / "stageb-runtime-manifest.json"
+    raw = json.dumps(payload, sort_keys=True, indent=2).encode() + b"\n"
+    path.write_bytes(raw)
+
+    result = runner.validate_stageb_manifest(
+        path, hashlib.sha256(raw).hexdigest(),
+        wo15_manifest_sha256="a" * 64,
+        boot_id=runner.preflight.AUTHORIZED_BOOT_ID,
+    )
+
+    assert result["manifest_sha256"] == hashlib.sha256(raw).hexdigest()
+    with pytest.raises(RuntimeError, match="boot_id"):
+        runner.validate_stageb_manifest(
+            path, hashlib.sha256(raw).hexdigest(),
+            wo15_manifest_sha256="a" * 64, boot_id="stale-boot",
+        )
 
 
 def test_offline_simulation_counts_two_crossings_and_marks_no_board_access():
@@ -147,6 +286,20 @@ def test_board_mode_without_one_shot_flags_rejects_before_pynq_import(capsys, tm
     assert board_once._PYNQ_IMPORTED is False
 
 
+def test_board_smoke_profile_rejects_any_frame_count_other_than_three(tmp_path):
+    with pytest.raises(ValueError, match="exactly three frames"):
+        runner.require_board_opt_in(
+            execute=True, authorize_stage=runner.WO16_STAGE, approve_once=True,
+            manifest="run-manifest.json", manifest_sha256="a" * 64, max_frames=4,
+            run_profile="smoke3", max_runtime_s=30.0,
+            timeout_s=5.0,
+            evidence_json=str(tmp_path / "evidence.json"),
+            stageb_manifest="stageb-runtime-manifest.json",
+            stageb_manifest_sha256="b" * 64,
+            analysis_json=str(tmp_path / "analysis.json"),
+        )
+
+
 def test_stage1_afi1_gate_requires_the_exact_readback_values():
     snapshot = {
         "afi1_status": "READ",
@@ -190,12 +343,169 @@ def test_dma_buffers_release_requires_both_channels_idle_and_error_free():
     )
 
 
+def test_dma_safety_read_times_out_when_mmio_call_is_stuck(monkeypatch):
+    started = threading.Event()
+    release = threading.Event()
+    monkeypatch.setattr(runner, "MAX_IO_TIMEOUT_S", 0.02)
+
+    class StuckStatusAPI:
+        def read32(self, base, offset):
+            started.set()
+            release.wait(timeout=1.0)
+            return 0x1002
+
+    started_at = time.perf_counter()
+    assert not _dma_buffers_safe_to_release(StuckStatusAPI(), object(), None)
+    assert started.is_set()
+    assert time.perf_counter() - started_at < 0.2
+    release.set()
+
+
+def test_timed_out_board_operation_marks_dma_ownership_uncertain():
+    from types import SimpleNamespace
+
+    started = threading.Event()
+    release = threading.Event()
+    stream = SimpleNamespace(dma_may_be_active=False)
+
+    async def exercise():
+        with pytest.raises(TimeoutError):
+            await _bounded_board_operation(
+                lambda: (started.set(), release.wait(timeout=1.0)),
+                timeout_s=0.02,
+                thread_name="test-stuck-mmio",
+                stream=stream,
+            )
+
+    started_at = time.perf_counter()
+    asyncio.run(exercise())
+    assert started.is_set()
+    assert time.perf_counter() - started_at < 0.2
+    assert stream.dma_may_be_active
+    release.set()
+
+
 def test_dma_buffers_stay_held_when_stream_may_still_be_active():
     from types import SimpleNamespace
 
     assert not _dma_buffers_safe_to_release(
         object(), object(), SimpleNamespace(dma_may_be_active=True)
     )
+
+
+def test_cma_buffer_release_is_bounded_and_keeps_uncertain_release_unmarked(monkeypatch):
+    started = threading.Event()
+    release = threading.Event()
+    monkeypatch.setattr(runner, "MAX_IO_TIMEOUT_S", 0.02)
+
+    class StuckFreeAPI:
+        def __init__(self):
+            self.calls = 0
+
+        def free(self, _buffer):
+            self.calls += 1
+            started.set()
+            release.wait(timeout=1.0)
+
+    api = StuckFreeAPI()
+    buffer = object()
+    released_ids = set()
+    started_at = time.perf_counter()
+    with pytest.raises(BufferReleaseUncertain, match="did not complete cleanly"):
+        _release_buffers(api, (buffer,), released_ids)
+
+    assert started.is_set()
+    assert api.calls == 1
+    assert id(buffer) not in released_ids
+    assert time.perf_counter() - started_at < 0.2
+    release.set()
+
+
+def test_successful_buffer_release_collects_garbage_after_explicit_free(monkeypatch):
+    events = []
+    monkeypatch.setattr(runner.gc, "collect", lambda: events.append("gc") or 4)
+
+    class ReleaseAPI:
+        def free(self, buffer):
+            events.append(("free", buffer))
+
+    first = object()
+    second = object()
+    _release_buffers(ReleaseAPI(), (first, second))
+
+    assert events == [("free", first), ("free", second), "gc"]
+
+
+@pytest.mark.parametrize("blocked_operation", ["open", "is_opened", "set", "get"])
+def test_camera_initialization_calls_do_not_block_async_camera_stream(blocked_operation):
+    call_started = threading.Event()
+    finish_call = threading.Event()
+    camera_released = threading.Event()
+
+    def wait_if_blocked(operation):
+        if blocked_operation == operation:
+            call_started.set()
+            finish_call.wait(timeout=1.0)
+
+    class LateCapture:
+        def isOpened(self):
+            wait_if_blocked("is_opened")
+            return True
+
+        def set(self, prop, value):
+            wait_if_blocked("set")
+            return True
+
+        def get(self, prop):
+            wait_if_blocked("get")
+            if prop == FakeCv2.CAP_PROP_FOURCC:
+                return FakeCv2.VideoWriter_fourcc(*"MJPG")
+            return {
+                FakeCv2.CAP_PROP_FRAME_WIDTH: 640,
+                FakeCv2.CAP_PROP_FRAME_HEIGHT: 400,
+                FakeCv2.CAP_PROP_FPS: 60,
+            }[prop]
+
+        def release(self):
+            camera_released.set()
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        CAP_PROP_BUFFERSIZE = 6
+        INTER_NEAREST = 0
+
+        @staticmethod
+        def VideoCapture(device, backend):
+            wait_if_blocked("open")
+            return LateCapture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        @staticmethod
+        def resize(image, size, interpolation):
+            return image
+
+    async def consume_one():
+        async for _ in camera_gray_frames(
+            "/dev/video-test", max_frames=1, cv2_module=FakeCv2, read_timeout_s=0.02
+        ):
+            pytest.fail("camera initialization exceeding its deadline must not yield")
+
+    started = time.perf_counter()
+    with pytest.raises(TimeoutError):
+        asyncio.run(consume_one())
+    elapsed = time.perf_counter() - started
+
+    assert call_started.is_set()
+    assert elapsed < 0.2
+    finish_call.set()
+    assert camera_released.wait(0.3)
 
 
 def test_camera_read_timeout_returns_without_waiting_for_a_stuck_v4l2_thread():

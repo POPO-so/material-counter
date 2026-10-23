@@ -1,0 +1,2 @@
+CmaFree:           49692 kB
+DEPLOY_AND_STAGEB_GATES_PASS

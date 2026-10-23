@@ -98,7 +98,7 @@ CHECKER_OUTPUT_COMPLETE = 1 << 3
 
 POLL_INTERVAL_S = 0.001
 DEFAULT_TIMEOUT_S = 5.0
-DEFAULT_GUARD_DIR = Path("/var/lib/wo0015-s2mm")
+DEFAULT_GUARD_DIR = preflight.DEFAULT_GUARD_DIR
 OVERLAY_GUARD = DEFAULT_GUARD_DIR / "overlay-only-consumed.json"
 DMA_SINGLE_GUARD = DEFAULT_GUARD_DIR / "dma-single-consumed.json"
 DMA_THREE_GUARD = DEFAULT_GUARD_DIR / "dma-three-consumed.json"
@@ -1047,6 +1047,7 @@ class MockBoardAPI:
             "boot_id": self.plan.boot_id,
             "process_ownership": {"findings": [], "denied": []},
             "fpga_manager": {"state": "operating", "flags": "0"},
+            "pynq_devices": {"count": 1, "names": ["MockBoardAPI"]},
             "pynq_state": {
                 "shutdown_ips_empty": True,
                 "loaded_bit_sha256": self.plan.bit_sha256 if self._overlay_loaded else None,
@@ -1265,6 +1266,23 @@ class PynqBoardAPI:
             raise preflight.PreflightError("PYNQ package path is unavailable for global-state audit")
         process_ownership = preflight.audit_process_ownership()
         fpga_manager = preflight.read_fpga_manager()
+        try:
+            Device = pynq.Device
+            devices = Device.devices
+            device_count = len(devices)
+        except Exception as exc:
+            raise preflight.PreflightError(
+                f"cannot enumerate root-visible PYNQ Device.devices: {exc}"
+            ) from exc
+        if device_count <= 0:
+            raise preflight.PreflightError(
+                "No PYNQ devices found: len(Device.devices) must be greater than zero"
+            )
+        pynq_devices = {
+            "count": device_count,
+            "names": [str(getattr(device, "name", type(device).__name__))
+                      for device in devices],
+        }
         pynq_state = preflight.inspect_pynq_global_state(
             module_file,
             require_empty_shutdown=require_empty_shutdown,
@@ -1276,6 +1294,7 @@ class PynqBoardAPI:
             "boot_id": preflight.read_boot_id(),
             "process_ownership": process_ownership,
             "fpga_manager": fpga_manager,
+            "pynq_devices": pynq_devices,
             "pynq_state": pynq_state,
             "kernel_log": preflight.read_kernel_log(),
         }
@@ -1645,6 +1664,19 @@ def _runtime_preflight(plan: preflight.ValidatedRun, *, boot_id_path: str,
     return live_boot_id, meminfo, cma_ranges, runtime_audit
 
 
+def require_stage_cma_watermark(meminfo: Mapping[str, int], stage: str) -> int:
+    """Enforce the 32 MiB admission watermark before the authorized Overlay stage."""
+    threshold = 32768 if stage == "overlay-only" else preflight.MIN_CMA_KIB
+    free_kib = meminfo.get("CmaFree")
+    if isinstance(free_kib, bool) or not isinstance(free_kib, int):
+        raise preflight.PreflightError("CmaFree readback is not an integer")
+    if free_kib < threshold:
+        raise preflight.PreflightError(
+            f"CmaFree={free_kib} KiB is below the {threshold} KiB {stage} watermark"
+        )
+    return threshold
+
+
 def _guard_path(stage: str) -> Path:
     if stage == "overlay-only":
         return OVERLAY_GUARD
@@ -1887,10 +1919,7 @@ def main(argv: list[str] | None = None) -> int:
             reserved_memory_path="/proc/device-tree/reserved-memory",
             stage=args.mode,
         )
-        if meminfo["CmaFree"] < preflight.MIN_CMA_KIB:
-            raise preflight.PreflightError(
-                "CmaFree is below the static two-buffer CMA minimum before this stage"
-            )
+        require_stage_cma_watermark(meminfo, args.mode)
         if args.mode == "overlay-only":
             _overlay_stage(plan, live_boot_id, args.evidence_json, runtime_snapshot)
             return 0

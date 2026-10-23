@@ -1,0 +1,23 @@
+{
+  "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "executor_sha256": {
+    "camera_adapter.py": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+    "camera_preview_server.py": "2e2e0d2725b40d027ac06df89b04883b778b57f07c41b48c0c757f386cee5967",
+    "mjpeg_preview.py": "1006e30500ef29b30c200b8882c7db90173e7e819c020fe85b928b5369561474",
+    "packet_encoder.py": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+    "phase16_board_entry.sh": "597c4675c8936d0e2097f3d55b5106c5381ce3f005d807bd25c332e63ddbd392",
+    "prepare_vectors.py": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+    "pynq_device_probe.py": "9a7a18cb55fb9b8b2deb5669a0cb06f767a3e285ba90e651b38c81be2c37adbb",
+    "run_stream_counter.py": "8aa078d54a32767c25840cc4ecc7f814affb5216f6f6c43ec9e56c09e55fcc0c",
+    "stageb_analysis.py": "91b2012ed6efbf2a5f4b95f323f54e870a55a54f07e2367be302b682361bdc77",
+    "stream_counter.py": "1a764a2d933cfcdbf323b04113314267033c0d5b1576bf71cf2e8b107e05cde6"
+  },
+  "schema": 1,
+  "stage": "calibration-batch-preview",
+  "tier2_dma_addresses": {
+    "mm2s": 361234432,
+    "s2mm": 361103360
+  },
+  "wo15_manifest_sha256": "e07316b9398166c6fc7a459faaca271eaf32170c18b4deaa4c16208bcaa933f2",
+  "work_order": "WO-0016"
+}

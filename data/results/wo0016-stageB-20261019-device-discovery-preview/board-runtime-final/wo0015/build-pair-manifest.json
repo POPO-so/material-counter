@@ -1,0 +1,229 @@
+{
+  "schema": 1,
+  "build_id": "wo0015-hw-50mhz-20261015",
+  "implementation_status": "implemented_offline",
+  "board_tested": false,
+  "part": "xc7z020clg400-1",
+  "clock_mhz": 50,
+  "contract": {
+    "format": "Binary8",
+    "width": 320,
+    "height": 240,
+    "bytes_per_frame": 76800,
+    "stream_width_bits": 32,
+    "beats_per_frame": 19200,
+    "eof_tlast": "only on beat 19200"
+  },
+  "dma": {
+    "parameters": {
+      "c_include_sg": "0",
+      "c_include_mm2s": "1",
+      "c_include_s2mm": "1",
+      "c_micro_dma": "0",
+      "c_sg_length_width": "18",
+      "c_addr_width": "32",
+      "c_m_axi_mm2s_data_width": "64",
+      "c_m_axis_mm2s_tdata_width": "32",
+      "c_include_mm2s_dre": "0",
+      "c_include_s2mm_dre": "0",
+      "c_mm2s_burst_size": "16",
+      "c_m_axi_s2mm_data_width": "32",
+      "c_s_axis_s2mm_tdata_width": "32",
+      "c_s2mm_burst_size": "16"
+    },
+    "mm2s_memory_width_bits": 64,
+    "mm2s_stream_width_bits": 32,
+    "s2mm_memory_width_bits": 32,
+    "s2mm_stream_width_bits": 32,
+    "length_register_bits": 18,
+    "address_width_bits": 32,
+    "scatter_gather": false,
+    "micro_dma": false
+  },
+  "ps_hp": {
+    "parameters": {
+      "pcw_use_s_axi_hp0": "1",
+      "pcw_s_axi_hp0_data_width": "64",
+      "pcw_use_s_axi_hp1": "1",
+      "pcw_s_axi_hp1_data_width": "32",
+      "pcw_fpga0_peripheral_freqmhz": "50"
+    },
+    "hp0_data_width_bits": 64,
+    "hp1_data_width_bits": 32,
+    "ddr_address_window": {
+      "base": "0x00000000",
+      "size_bytes": 536870912
+    },
+    "memory_master_interfaces": {
+      "hp0": "M_AXI_MM2S",
+      "hp1": "M_AXI_S2MM"
+    }
+  },
+  "hp1_fabric_parameters": {
+    "num_si": "1",
+    "num_mi": "1"
+  },
+  "ip_config_readback": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\reports\\parameter-readback.tcldict",
+    "bytes": 1225,
+    "sha256": "7892915f5c81cc8358c243b63d62242ab34b9a02993778e47074522bfd7eed5c",
+    "hp1_auto_pc_interfaces": {
+      "s_axi": {
+        "data_width_bits": "32",
+        "protocol": "AXI4"
+      },
+      "m_axi": {
+        "data_width_bits": "32",
+        "protocol": "AXI3"
+      }
+    }
+  },
+  "hwh_axi_interfaces": {
+    "dma_mm2s": {
+      "data_width_bits": "64",
+      "protocol": "AXI4"
+    },
+    "hp0_converter_si": {
+      "data_width_bits": "64",
+      "protocol": "AXI4"
+    },
+    "hp0_converter_mi": {
+      "data_width_bits": "64",
+      "protocol": "AXI3"
+    },
+    "ps_hp0": {
+      "data_width_bits": "64",
+      "protocol": "AXI3"
+    },
+    "dma_s2mm": {
+      "data_width_bits": "32",
+      "protocol": "AXI4"
+    },
+    "hp1_fabric_si": {
+      "data_width_bits": "32",
+      "protocol": null
+    },
+    "hp1_fabric_mi": {
+      "data_width_bits": "32",
+      "protocol": null
+    },
+    "ps_hp1": {
+      "data_width_bits": "32",
+      "protocol": "AXI3"
+    }
+  },
+  "hwh_hp1_external_busnames": {
+    "dma_m_axi_s2mm": "axi_dma_0_M_AXI_S2MM",
+    "ps_s_axi_hp1": "hp1_fabric_M00_AXI"
+  },
+  "hwh_bus_links": {
+    "mm2s_dma_to_hp0_converter": "axi_dma_0_M_AXI_MM2S",
+    "mm2s_hp0_converter_to_ps": "hp0_protocol_M_AXI",
+    "s2mm_dma_to_hp1_fabric": "axi_dma_0_M_AXI_S2MM",
+    "s2mm_hp1_fabric_to_ps": "hp1_fabric_M00_AXI",
+    "mm2s_stream_to_wrapper": "axi_dma_0_M_AXIS_MM2S",
+    "wrapper_to_s2mm_stream": "image_pipeline_m_axis"
+  },
+  "hwh_clock_connections": {
+    "ps7/S_AXI_HP1_ACLK": "ps7/FCLK_CLK0",
+    "axi_dma_0/s_axi_lite_aclk": "ps7/FCLK_CLK0",
+    "axi_dma_0/m_axi_mm2s_aclk": "ps7/FCLK_CLK0",
+    "axi_dma_0/m_axi_s2mm_aclk": "ps7/FCLK_CLK0",
+    "image_pipeline/aclk": "ps7/FCLK_CLK0",
+    "reset_pl/slowest_sync_clk": "ps7/FCLK_CLK0",
+    "hp1_fabric/ACLK": "ps7/FCLK_CLK0",
+    "hp1_fabric/S00_ACLK": "ps7/FCLK_CLK0",
+    "hp1_fabric/M00_ACLK": "ps7/FCLK_CLK0"
+  },
+  "hwh_reset_connections": {
+    "axi_dma_0/axi_resetn": "reset_pl/peripheral_aresetn",
+    "image_pipeline/aresetn": "reset_pl/peripheral_aresetn",
+    "hp1_fabric/ARESETN": "reset_pl/peripheral_aresetn",
+    "hp1_fabric/S00_ARESETN": "reset_pl/peripheral_aresetn",
+    "hp1_fabric/M00_ARESETN": "reset_pl/peripheral_aresetn"
+  },
+  "hwh_axis_interfaces": {
+    "dma_mm2s": {
+      "TDATA_NUM_BYTES": "4",
+      "HAS_TKEEP": "1",
+      "HAS_TLAST": "1",
+      "HAS_TREADY": "1"
+    },
+    "wrapper_input": {
+      "TDATA_NUM_BYTES": "4",
+      "HAS_TKEEP": "1",
+      "HAS_TLAST": "1",
+      "HAS_TREADY": "1"
+    },
+    "wrapper_s2mm_output": {
+      "TDATA_NUM_BYTES": "4",
+      "HAS_TKEEP": "1",
+      "HAS_TLAST": "1",
+      "HAS_TREADY": "1"
+    },
+    "dma_s2mm": {
+      "TDATA_NUM_BYTES": "4",
+      "HAS_TKEEP": "1",
+      "HAS_TLAST": "1",
+      "HAS_TREADY": "1"
+    }
+  },
+  "bit": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\export\\wo15.bit",
+    "bytes": 4045767,
+    "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+  },
+  "hwh": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\export\\wo15.hwh",
+    "bytes": 315912,
+    "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+  },
+  "vivado_native_log": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\.vivado-ai\\vivado_32602235_34b98de5.log",
+    "bytes": 205710,
+    "sha256": "f854e894ed5e62ef9d82eac4bdfd4c9cabb79d8a187fb4cfecce65e91a45c904"
+  },
+  "implemented_timing": {
+    "wns_ns": 9.009,
+    "tns_ns": 0.0,
+    "setup_failing_endpoints": 0,
+    "setup_total_endpoints": 10250,
+    "whs_ns": 0.028,
+    "ths_ns": 0.0,
+    "hold_failing_endpoints": 0,
+    "hold_total_endpoints": 10250,
+    "wpws_ns": 8.75,
+    "tpws_ns": 0.0,
+    "pulse_width_failing_endpoints": 0,
+    "pulse_width_total_endpoints": 3763
+  },
+  "drc_severity_counts": {
+    "Error": 0,
+    "Critical Warning": 0,
+    "Warning": 4,
+    "Advisory": 2
+  },
+  "methodology_severity_counts": {
+    "Error": 0,
+    "Critical Warning": 0,
+    "Warning": 1,
+    "Advisory": 0
+  },
+  "source_commit": "b7d8be05caff7da3ad2235617b43b591daa5e5fc",
+  "rtl_sha256": {
+    "fpga/rtl/axis_rgb2gray.v": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+    "fpga/rtl/axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+    "fpga/experimental/wo0014/axis_dma_rgb_adapter.v": "c3b8b682dd34540973595a810f6e90ffd21e87ea47dc39090830b4f128debfd3",
+    "fpga/experimental/wo0014/axis_binary_output_checker.v": "8a6f46c6add51a29c801499ddbf63c52d65f5a1e91dab4b60316aecbddf54a75",
+    "fpga/experimental/wo0014/axis_dma_image_pipeline.v": "b94fa662b8cc08de6863d98c9e9a75294e3ffb90798c77711e3d3d0860e0e9ad",
+    "fpga/experimental/wo0015/axis_s2mm_frame_packer.v": "59c40c423742fab09233a0758795c1c1279ce8036b51d57d265f3b989f08b695",
+    "fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v": "8ea5d7e85845f5ecdb591c60294cb44105550991cbd43d2e6a22126cc706b4fa"
+  },
+  "build_script_sha256": {
+    "create_s2mm_bd.tcl": "b66cbcc843a9ebd4255e80aa6b655552a1d9a54e4e04b871a2e581c44b4a7f24",
+    "build.tcl": "b74b50aae3bcf4bd1fe1a7d16298111f65ab0dc6199b1d15c26842b55e31b9e4",
+    "export.tcl": "40e8c3f98b48c9086622cd83d438e8a54bf8788da9cf4818a8e9596a8280d405",
+    "finalize_build.py": "89446a62a081dfab5e1a0d439678487022a2824347c3354b9fb1ae2d5b294ed2",
+    "README-build.md": "6787a57885509b2926253d29aaea0b4c426b2ce3f2154a21f0d7a84035c92f66"
+  }
+}
