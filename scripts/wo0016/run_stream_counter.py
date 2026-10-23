@@ -46,6 +46,7 @@ import board_once
 import board_preflight as preflight
 from camera_adapter import gray320x240_to_rgb_packet
 from packet_encoder import gray320x240_to_rgb_packet_into
+from dashboard_state import DashboardState
 from mjpeg_preview import (
     PREVIEW_FRAME_INTERVAL,
     PREVIEW_JPEG_QUALITY,
@@ -883,7 +884,8 @@ def validate_operator_gate_launcher_sha256(value: str | None,
 def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
              "capture_dataset.py", "live_calibration.py",
-             "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py",
+             "packet_encoder.py", "mjpeg_preview.py", "dashboard_state.py", "dashboard.html",
+             "wo0017_capture_profile.py",
              "physical_calibration_lock.py", "prepare_physical_calibration.py",
              "calibration_runtime_gate.py", "start_physical_calibration_standby.py")
     paths = {name: SCRIPT_DIR / name for name in names}
@@ -1396,6 +1398,7 @@ def execute_board_stream(args: argparse.Namespace, *,
     preview: MjpegPreviewServer | None = None
     preview_publisher: PeriodicMjpegPublisher | None = None
     loopback_client: MjpegLoopbackClient | None = None
+    dashboard = DashboardState(source="pl_dma")
     dma = None
     released_buffer_ids: set[int] = set()
     evidence: dict[str, Any] = {
@@ -1615,7 +1618,9 @@ def execute_board_stream(args: argparse.Namespace, *,
                 slot.capture_metadata["packer_status"] = dict(packer_record)
 
         hub = MjpegFrameHub()
-        preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
+        preview = MjpegPreviewServer(
+            hub=hub, host=args.host, port=args.port,
+            state_provider=lambda: {"dashboard": dashboard.snapshot()}).start()
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
             "capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
             "raw_capture_copy", "mjpeg_encode", "mjpeg_handoff",
@@ -1627,6 +1632,12 @@ def execute_board_stream(args: argparse.Namespace, *,
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
             hysteresis=args.hysteresis,
         )
+        def publish_frame(result: Any, mask: Any, source_gray: Any) -> None:
+            # Reuse the existing preview callback thread handoff; avoid adding
+            # another asyncio.to_thread operation to every counting frame.
+            dashboard.on_frame(result)
+            preview_publisher(result, mask, source_gray)
+
         stage_timings_ms["mjpeg_encode"] = preview_publisher.background_encode_timings_ms
         stage_timings_ms["mjpeg_background_encode"] = (
             preview_publisher.background_encode_timings_ms
@@ -1686,7 +1697,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             before_transfer=arm_frame,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
-            preview_callback=preview_publisher,
+            preview_callback=publish_frame,
             raw_capture_callback=(capture_writer.record_raw_frame
                                   if capture_writer is not None else None),
             source_capture_callback=(capture_writer.record_source_frame
@@ -1733,6 +1744,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 raise RuntimeError(f"{label} is not error-free and idle at normal shutdown")
         elapsed = max(time.perf_counter() - steady_start_time[0], 1e-9)
         total_count = results[-1].total_count if results else 0
+        dashboard.set_phase("complete", "本次有界采集已完成；不代表物料准确率验收通过")
         accuracy = _count_accuracy(total_count, args.ground_truth_count)
         accuracy_fraction = _count_accuracy_fraction(total_count, args.ground_truth_count)
         preview_publisher.close()
@@ -1799,6 +1811,7 @@ def execute_board_stream(args: argparse.Namespace, *,
         _write_json_exclusive(Path(args.evidence_json), evidence)
         return evidence
     except BaseException as exc:
+        dashboard.set_phase("failed", f"采集失败：{type(exc).__name__}: {exc}")
         dma_safe_to_release = _dma_buffers_safe_to_release(api, dma, stream)
         hold = not dma_safe_to_release
         evidence.update({

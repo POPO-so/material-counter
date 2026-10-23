@@ -5,9 +5,11 @@ import os
 import json
 import ipaddress
 import socket
+import select
 import threading
 import time
-from collections import defaultdict
+from collections import defaultdict, deque
+from pathlib import Path
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Iterator
@@ -21,42 +23,6 @@ PREVIEW_FRAME_INTERVAL = 4
 PREVIEW_JPEG_QUALITY = 70
 
 
-_HTML_PAGE = """<!doctype html>
-<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">
-<title>WO-0017 · Industrial HUD Preview</title><style>
-:root{color-scheme:dark;--bg:#07111b;--panel:#101d29;--line:#213747;--cyan:#2ce0d0;--muted:#8fa4b7;--text:#e7f0f7}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0,#173044 0,transparent 42%),var(--bg);color:var(--text);font:15px system-ui,sans-serif}
-main{max-width:1240px;margin:30px auto;padding:0 20px}.top{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px;gap:18px}
-.eyebrow{color:var(--cyan);font:700 11px ui-monospace,monospace;letter-spacing:.16em}h1{margin:6px 0 0;font-size:25px;letter-spacing:.02em}
-.badge{border:1px solid #305267;border-radius:99px;padding:8px 12px;color:#a8c2d2;font:12px ui-monospace,monospace}
-.frame{background:#050a0e;border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 22px 70px #0008}.frame img{display:block;width:100%;height:auto;border-radius:9px}
-.footer{display:flex;justify-content:space-between;color:var(--muted);font:12px ui-monospace,monospace;margin:12px 4px 0;gap:12px}
-@media(max-width:650px){main{margin:16px auto;padding:0 10px}.top{align-items:start;flex-direction:column}h1{font-size:20px}}
-</style></head><body><main>
-<header class=\"top\"><div><div class=\"eyebrow\">POPO-SO / MATERIAL COUNTER / WO-0017</div><h1>Industrial HUD Preview</h1></div><span class=\"badge\">LIVE · MJPEG</span></header>
-<section class=\"frame\"><img src=\"/stream.mjpg\" alt=\"Camera image with labeled binary mask PIP\"></section>
-<footer class=\"footer\"><span>Read-only preview stream · no formal sampling</span><span>The frame HUD identifies the PIP source</span></footer>
-</main></body></html>""".encode("utf-8")
-
-_CALIBRATION_PANEL = b'''<section style="margin-top:18px"><h2>Live Calibration</h2>
-<pre id="metrics">Connecting...</pre>
-<label>Exposure <input id="exposure" type="number" min="50" max="10000" value="50"></label>
-<label>Brightness <input id="brightness" type="number" min="-64" max="64" value="0"></label>
-<button onclick="adjust(false)">Apply</button>
-<button onclick="adjust(true)">Restore exposure=50, brightness=0</button>
-<p id="control">Controls require calibration mode and a local SSH tunnel.</p></section>
-<script>
-async function refresh(){try{let s=await(await fetch('/state.json')).json();
-document.getElementById('metrics').textContent=JSON.stringify(s.calibration?{...s.calibration,memory_health:s.memory_health,memory_status:s.memory_health_status}:s,null,2);
-}catch(e){} } setInterval(refresh,1000);refresh();
-async function adjust(reset){try{let values=reset?{reset:true}:{exposure_time_absolute:Number(document.getElementById('exposure').value),brightness:Number(document.getElementById('brightness').value)};
-let r=await fetch('/api/calibration',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(values)});
-let result=await r.json();document.getElementById('control').textContent=JSON.stringify(result);
-if(r.ok){document.getElementById('exposure').value=result.exposure_time_absolute;document.getElementById('brightness').value=result.brightness;}
-}catch(e){document.getElementById('control').textContent=String(e);}}
-</script>'''
-
-
 class MjpegFrameHub:
     """Keep only the newest frame so a slow browser never queues stale video."""
 
@@ -66,6 +32,20 @@ class MjpegFrameHub:
         self._jpeg: bytes | None = None
         self._stream_clients = 0
         self._closed = False
+        self._published_times: deque[float] = deque(maxlen=60)
+        self._dimensions: tuple[int, int] | None = None
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._condition:
+            times = self._published_times
+            age = None if not times else max(0.0, time.monotonic() - times[-1])
+            span = times[-1] - times[0] if len(times) > 1 else 0
+            return {"sequence": self._sequence, "clients": self._stream_clients,
+                    "closed": self._closed, "age_seconds": age,
+                    "width": None if self._dimensions is None else self._dimensions[0],
+                    "height": None if self._dimensions is None else self._dimensions[1],
+                    "fps": ((len(times) - 1) / span
+                            if span > 0 and age <= 5 and not self._closed else None)}
 
     @property
     def closed(self) -> bool:
@@ -106,13 +86,16 @@ class MjpegFrameHub:
             )
             return self._stream_clients > 0
 
-    def publish(self, jpeg: bytes | bytearray | memoryview) -> int:
+    def publish(self, jpeg: bytes | bytearray | memoryview, *,
+                dimensions: tuple[int, int] | None = None) -> int:
         if not isinstance(jpeg, (bytes, bytearray, memoryview)) or not jpeg:
             raise ValueError("published JPEG must be non-empty bytes")
         with self._condition:
             if self._closed:
                 raise RuntimeError("frame hub is closed")
             self._jpeg = bytes(jpeg)
+            self._published_times.append(time.monotonic())
+            self._dimensions = dimensions
             self._sequence += 1
             self._condition.notify_all()
             return self._sequence
@@ -423,7 +406,8 @@ class PeriodicMjpegPublisher:
                     tracks=tracks, track_trails=trails,
                     **({"calibration": calibration} if calibration is not None else {}),
                 )
-                self.hub.publish(jpeg)
+                self.hub.publish(jpeg, dimensions=(self._encode_mask.shape[1],
+                                 self._encode_mask.shape[0] + (85 if calibration is not None else 0)))
                 self.encoded_frames += 1
             except RuntimeError as exc:
                 if not self.hub.closed:
@@ -589,6 +573,7 @@ class MjpegPreviewServer:
         hub = self.hub
         state_provider = self.state_provider
         control_callback = self.control_callback
+        page = Path(__file__).with_name("dashboard.html").read_bytes()
 
         class Handler(BaseHTTPRequestHandler):
             protocol_version = "HTTP/1.1"
@@ -637,13 +622,33 @@ class MjpegPreviewServer:
                     self._json(503, {"error": str(exc)})
 
             def do_GET(self) -> None:
+                if self.path == "/status.json":
+                    try:
+                        raw = state_provider() if state_provider is not None else {}
+                        if not isinstance(raw, dict):
+                            raise TypeError("state provider must return a dictionary")
+                        self._json(200, {
+                            "schema": 1,
+                            "telemetry": raw.get("dashboard"),
+                            "preview": hub.snapshot(),
+                            "runtime_status": raw.get("status"),
+                            "camera_controls": raw.get("camera_controls"),
+                            "capabilities": {
+                                "start": False, "stop": False, "reset": False,
+                                "calibration": (control_callback is not None
+                                                and raw.get("calibration_mode") is True),
+                            },
+                        })
+                    except Exception:
+                        self._json(503, {"error": "status unavailable"})
+                    return
                 if self.path == "/state.json" and state_provider is not None:
-                    self._json(200, state_provider())
+                    try:
+                        self._json(200, state_provider())
+                    except Exception:
+                        self._json(503, {"error": "state unavailable"})
                     return
                 if self.path in ("/", "/index.html"):
-                    page = _HTML_PAGE
-                    if state_provider is not None:
-                        page = page.replace(b"</main>", _CALIBRATION_PANEL + b"</main>")
                     self.send_response(200)
                     self.send_header("Content-Type", "text/html; charset=utf-8")
                     self.send_header("Content-Length", str(len(page)))
@@ -661,11 +666,17 @@ class MjpegPreviewServer:
                 self.send_header("Connection", "close")
                 self.end_headers()
                 sequence = 0
+                self.connection.settimeout(2.0)
                 try:
                     with hub.streaming_client():
                         while not hub.closed:
                             item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0)
                             if item is None:
+                                # Detect a disconnected/hidden browser even when
+                                # the producer is idle; release its client lease.
+                                if select.select([self.connection], [], [], 0)[0]:
+                                    if not self.connection.recv(1, socket.MSG_PEEK):
+                                        return
                                 continue
                             sequence, jpeg = item
                             header = (b"--frame\r\nContent-Type: image/jpeg\r\n"
