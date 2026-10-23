@@ -10,6 +10,26 @@ import prepare_physical_calibration as prepare
 from start_physical_calibration_standby import build_operator_gate_command
 
 
+@pytest.mark.parametrize("frame_args", [[], ["--max-frames", "30"],
+    ["--max-frames", "300", "--max-frames", "30"], ["--max-frames=300"]])
+def test_standby_rejects_missing_short_or_ambiguous_frame_budget(frame_args, tmp_path):
+    with pytest.raises(ValueError, match="300"):
+        build_operator_gate_command(
+            worker_python="/venv/bin/python3", launcher="/app/operator_gate_launcher.py",
+            attempt_dir=tmp_path, control_port=8081, handoff_timeout_s=3600,
+            runner_args=["--physical-calibration", *frame_args])
+
+
+def test_calibration_dma_baseline_is_explicit_and_strict():
+    import run_stream_counter as runner
+    assert runner.calibration_initial_dmasr(SimpleNamespace()) == 1
+    args = runner._parser().parse_args(["--calibration-initial-dmasr", "0x1002"])
+    assert runner.calibration_initial_dmasr(args) == 0x1002
+    for value in (True, 0, 2, 0x5002, 0x1003):
+        with pytest.raises(ValueError):
+            runner.calibration_initial_dmasr(SimpleNamespace(calibration_initial_dmasr=value))
+
+
 def _runner_args(tmp_path: Path, lock_path: Path) -> list[str]:
     return [
         "--mode", "board",
@@ -157,7 +177,7 @@ def test_standby_command_starts_operator_gate_with_same_pynq_worker(tmp_path):
         attempt_dir=tmp_path,
         control_port=8081,
         handoff_timeout_s=3600,
-        runner_args=["--mode", "board", "--physical-calibration"],
+        runner_args=["--mode", "board", "--physical-calibration", "--max-frames", "300"],
     )
     assert command[0] == worker_python
     assert command[command.index("--host") + 1] == "127.0.0.1"
@@ -172,5 +192,6 @@ def test_standby_command_starts_operator_gate_with_same_pynq_worker(tmp_path):
             control_port=8081,
             handoff_timeout_s=3600,
             runner_args=["--mode", "board", "--physical-calibration",
+                         "--max-frames", "300",
                          "--worker-python", "/usr/bin/python3"],
         )

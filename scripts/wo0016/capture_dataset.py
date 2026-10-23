@@ -180,7 +180,12 @@ class CaptureWriter:
                  config: Mapping[str, Any], max_bytes: int = DEFAULT_MAX_BYTES,
                  queue_depth: int = 2, metadata: Mapping[str, Any] | None = None,
                  source_type: str = "camera_capture",
-                 source_frame_ids: tuple[int, ...] = ()):
+                 source_frame_ids: tuple[int, ...] = (),
+                 defer_writes_until_close: bool = False):
+        if type(defer_writes_until_close) is not bool:
+            raise ValueError("defer_writes_until_close must be a boolean")
+        self.defer_writes_until_close = defer_writes_until_close
+        self._deferred_metadata: list[dict[str, Any]] = []
         if isinstance(queue_depth, bool) or not isinstance(queue_depth, int) or queue_depth < 1:
             raise ValueError("queue_depth must be a positive integer")
         if not isinstance(source_frame_ids, tuple):
@@ -229,6 +234,7 @@ class CaptureWriter:
         self._manifest: dict[str, Any] = {
             "schema_version": SCHEMA_VERSION,
             "status": "IN_PROGRESS",
+            "write_mode": ("deferred_memory" if defer_writes_until_close else "streaming_queue"),
             "source_type": source_type,
             "created_utc": datetime.now(timezone.utc).isoformat(),
             "expected_frames": expected_frames,
@@ -263,7 +269,8 @@ class CaptureWriter:
                 stream.write("\n")
                 stream.flush()
                 os.fsync(stream.fileno())
-            self._thread.start()
+            if not self.defer_writes_until_close:
+                self._thread.start()
         except BaseException as exc:
             self._error = f"{type(exc).__name__}: {exc}"
             self._manifest.update({"status": "INCOMPLETE", "error": self._error,
@@ -294,6 +301,14 @@ class CaptureWriter:
             raise CaptureError("raw mask contains values other than Binary8 0x00/0xFF")
         if frame_id >= self._raw_frames_recorded:
             self.record_raw_frame(frame_id, gray_array, mask_array)
+        if self.defer_writes_until_close:
+            # The existing full-run arrays own the DMA snapshots. Retain only
+            # metadata here: no queue, duplicate image buffers, or disk I/O.
+            self._deferred_metadata.append(safe_metadata)
+            self._submitted += 1
+            self._accepted += 1
+            self._next_frame_id += 1
+            return
         item = (frame_id, np.array(gray_array, copy=True, order="C"),
                 np.array(mask_array, copy=True, order="C"), safe_metadata)
         self._submitted += 1
@@ -409,6 +424,21 @@ class CaptureWriter:
                     pass
 
     def _writer_main(self) -> None:
+        if self.defer_writes_until_close:
+            # close() starts this thread only after the runner has checked that
+            # both DMA channels are idle. Slow storage cannot back up sampling.
+            for frame_id, metadata in enumerate(self._deferred_metadata):
+                try:
+                    if self._error is not None:
+                        self._dropped += 1
+                        continue
+                    self._write_frame((frame_id, self.raw_gray8[frame_id],
+                                       self.raw_binary8[frame_id], metadata))
+                except BaseException as exc:
+                    self._dropped += 1
+                    if self._error is None:
+                        self._error = f"{type(exc).__name__}: {exc}"
+            return
         while True:
             item = self._queue.get()
             try:
@@ -429,9 +459,13 @@ class CaptureWriter:
         if self._closed:
             return dict(self._manifest)
         self._closed = True
-        deadline = time.monotonic() + 35.0
+        flush_timeout_s = 300.0 if self.defer_writes_until_close else 35.0
+        deadline = time.monotonic() + flush_timeout_s
+        if self.defer_writes_until_close:
+            self._thread.start()
         stop_sent = False
-        while self._thread.is_alive() and time.monotonic() < deadline and not stop_sent:
+        while (not self.defer_writes_until_close and self._thread.is_alive()
+               and time.monotonic() < deadline and not stop_sent):
             try:
                 self._queue.put(None, timeout=min(1.0, max(0.01, deadline - time.monotonic())))
                 stop_sent = True
@@ -441,7 +475,10 @@ class CaptureWriter:
         self._thread.join(timeout=remaining)
         writer_active = self._thread.is_alive()
         if writer_active:
-            self._error = self._error or "writer thread did not stop within thirty-five seconds"
+            self._error = self._error or (
+                "deferred writer did not stop within 300 seconds"
+                if self.defer_writes_until_close else
+                "writer thread did not stop within thirty-five seconds")
             self._manifest.update({
                 "status": "INCOMPLETE",
                 "writer_active": True,

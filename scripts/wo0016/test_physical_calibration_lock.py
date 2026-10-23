@@ -134,6 +134,17 @@ def test_runner_calibration_mode_is_fixed_to_300_full_width_raw_capture(tmp_path
         runner.validate_calibration_options(args)
 
 
+def test_calibration_lock_binds_deferred_memory_capture_and_idle_baseline(monkeypatch, tmp_path):
+    args, plan, _ = _prepare_mock_board(monkeypatch, tmp_path, with_lock=False)
+    args.calibration_initial_dmasr = 0x1002
+    identity = runner.physical_calibration_context(args, plan)["identity"]
+    assert identity["max_frames"] == 300
+    assert identity["initial_dmasr"] == "0x00001002"
+    assert identity["capture_config"]["write_mode"] == "deferred_memory"
+    assert identity["capture_config"]["queue_depth"] == 0
+    assert identity["capture_config"]["flush_timeout_s"] == 300.0
+
+
 def test_standby_admission_is_read_only_and_binds_only_the_calibration_lock(
         monkeypatch, tmp_path):
     monkeypatch.setenv("XILINX_XRT", "/usr")

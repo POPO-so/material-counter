@@ -35,6 +35,12 @@ def build_operator_gate_command(*, worker_python: str, launcher: str | Path,
         raise ValueError("control port must be in 1..65535")
     if not runner_args or "--physical-calibration" not in runner_args:
         raise ValueError("standby worker requires physical-calibration runner arguments")
+    if (runner_args.count("--max-frames") != 1
+            or any(item.startswith("--max-frames=") for item in runner_args)):
+        raise ValueError("physical calibration requires one explicit --max-frames 300")
+    frame_index = runner_args.index("--max-frames")
+    if frame_index + 1 >= len(runner_args) or runner_args[frame_index + 1] != "300":
+        raise ValueError("physical calibration requires explicit --max-frames 300")
     if "--worker-python" in runner_args:
         index = runner_args.index("--worker-python")
         if index + 1 >= len(runner_args) or runner_args[index + 1] != worker_python:

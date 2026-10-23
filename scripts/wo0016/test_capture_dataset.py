@@ -55,6 +55,72 @@ def _session(tmp_path, *, frames=2, max_bytes=2_000_000, queue_depth=2):
     )
 
 
+def test_deferred_300_frames_do_not_touch_storage_or_queue_until_close(tmp_path, monkeypatch):
+    writer = CaptureWriter(tmp_path / "capture", expected_frames=300, config={},
+                           defer_writes_until_close=True, source_frame_ids=(0, 30, 299))
+    started, release = threading.Event(), threading.Event()
+    original = writer._write_frame
+
+    def stalled_disk(item):
+        started.set()
+        assert release.wait(10), "test must release simulated stalled SD card"
+        original(item)
+
+    def unexpected_io(*args, **kwargs):
+        raise AssertionError("sampling must not enqueue or fsync")
+
+    monkeypatch.setattr(writer, "_write_frame", stalled_disk)
+    with monkeypatch.context() as sampling:
+        sampling.setattr(writer._queue, "put_nowait", unexpected_io)
+        sampling.setattr("capture_dataset.os.fsync", unexpected_io)
+        for frame_id in range(300):
+            gray = np.full((240, 320), frame_id % 256, dtype=np.uint8)
+            mask = np.full((240, 320), 255 if frame_id % 2 else 0, dtype=np.uint8)
+            if frame_id in writer.source_frame_ids:
+                writer.record_source_frame(frame_id, np.full((400, 640), frame_id % 256, dtype=np.uint8))
+            writer.submit(frame_id, gray, mask, _frame_metadata(frame_id))
+            gray.fill(99)
+        assert not started.is_set()
+        assert not list((tmp_path / "capture" / "frames").iterdir())
+        assert not (tmp_path / "capture" / "frame-records.jsonl").exists()
+        assert writer._raw_frames_recorded == writer._accepted == 300
+    result = {}
+    closer = threading.Thread(target=lambda: result.update(writer.close()))
+    closer.start()
+    try:
+        assert started.wait(5)
+        assert closer.is_alive(), "flush must wait for the slow disk after sampling"
+    finally:
+        release.set()
+        closer.join(30)
+    assert not closer.is_alive()
+    assert result["status"] == "COMPLETE"
+    assert result["captured_frames"] == 300 and result["dropped_frames"] == 0
+    with np.load(tmp_path / "capture" / "frames_gray8_binary8.npz") as data:
+        for frame_id in (0, 35, 299):
+            assert np.all(data["raw_gray8"][frame_id] == frame_id % 256)
+            assert np.all(data["raw_binary8"][frame_id] == (255 if frame_id % 2 else 0))
+    assert result["source_frame_archive"]["frame_ids"] == [0, 30, 299]
+
+
+@pytest.mark.parametrize("disk_failure", [False, True])
+def test_deferred_flush_partial_or_failed_disk_never_claims_complete(tmp_path, monkeypatch, disk_failure):
+    writer = CaptureWriter(tmp_path / "capture", expected_frames=2, config={},
+                           defer_writes_until_close=True)
+    image = np.zeros((240, 320), dtype=np.uint8)
+    writer.submit(0, image, image, _frame_metadata(0))
+    if disk_failure:
+        writer.submit(1, image, image, _frame_metadata(1))
+        def fail(item):
+            raise OSError("simulated SD write failure")
+        monkeypatch.setattr(writer, "_write_frame", fail)
+    result = writer.close()
+    assert result["status"] == "INCOMPLETE"
+    assert result["raw_frame_archive"] is None
+    assert result["writer_active"] is False
+    assert writer.close() == result
+
+
 def test_default_capture_capacity_accounts_for_220_frame_npz():
     assert estimated_capture_bytes(220) < DEFAULT_MAX_BYTES
 

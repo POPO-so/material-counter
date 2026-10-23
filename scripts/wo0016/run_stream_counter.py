@@ -944,6 +944,14 @@ def require_formal_xrt_environment(args: argparse.Namespace) -> None:
         raise ValueError("WO-0017 requires XILINX_XRT=/usr in the launch process before READY or Permit consumption")
 
 
+def calibration_initial_dmasr(args: argparse.Namespace) -> int:
+    """Pin the explicitly selected, error-free initial DMA baseline."""
+    value = getattr(args, "calibration_initial_dmasr", 0x00000001)
+    if type(value) is not int or value not in (0x00000001, 0x00001002):
+        raise ValueError("calibration initial DMASR must be 0x1 or 0x1002")
+    return value
+
+
 def validate_calibration_options(args: argparse.Namespace) -> None:
     """Constrain the non-formal calibration mode to its fixed one-shot contract."""
     if getattr(args, "physical_calibration", False) is not True:
@@ -963,6 +971,7 @@ def validate_calibration_options(args: argparse.Namespace) -> None:
         raise ValueError("physical calibration requires --counting-profile full-width-mixed")
     if args.max_frames != 300:
         raise ValueError("physical calibration requires exactly 300 frames")
+    calibration_initial_dmasr(args)
     if args.stabilization_delay_s != 3.0 or args.operator_prearm_delay_s != 0.0:
         raise ValueError("physical calibration requires a 3-second stabilization and no extra pre-arm")
     if args.camera != "/dev/video0":
@@ -1060,7 +1069,8 @@ def physical_calibration_context(args: argparse.Namespace, plan: Any) -> dict[st
         "capture_config": {"enabled": True, "dual_arrays": ["gray8", "binary8"],
                             "output_directory": capture["path"],
                             "max_bytes": args.capture_max_bytes,
-                            "queue_depth": 2, "schema_version": 1,
+                            "queue_depth": 0, "schema_version": 1,
+                            "write_mode": "deferred_memory", "flush_timeout_s": 300.0,
                             "source_resolution": [640, 400],
                             "source_frame_ids": list(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS),
                             "source_archive": "frames_source640x400.npz"},
@@ -1068,6 +1078,8 @@ def physical_calibration_context(args: argparse.Namespace, plan: Any) -> dict[st
         "worker_python": args.worker_python,
         "runtime_sha256": runtime,
     }
+    if calibration_initial_dmasr(args) != 0x00000001:
+        identity["initial_dmasr"] = f"0x{calibration_initial_dmasr(args):08x}"
     return {"identity": identity, "receipt": receipt, "runtime_sha256": runtime,
             "lock_path": lock_path, "consumed_path": lock_path.parent / "consumed.json",
             "capture_preflight": capture}
@@ -1101,9 +1113,10 @@ def validate_calibration_board_state(args: argparse.Namespace, *,
     camera_profile = _read_standard_camera_profile(args.camera)
     mm2s_status = board_once.read_phys32_readonly(preflight.DMA_BASE + 0x04)
     s2mm_status = board_once.read_phys32_readonly(preflight.DMA_BASE + 0x34)
-    if mm2s_status != 0x00000001 or s2mm_status != 0x00000001:
+    expected_dmasr = calibration_initial_dmasr(args)
+    if mm2s_status != expected_dmasr or s2mm_status != expected_dmasr:
         raise preflight.PreflightError(
-            f"calibration requires idle initial DMASR=0x00000001; "
+            f"calibration requires pinned initial DMASR=0x{expected_dmasr:08x}; "
             f"MM2S=0x{mm2s_status:08x}, S2MM=0x{s2mm_status:08x}"
         )
     calibration = physical_calibration_context(args, plan)
@@ -1274,9 +1287,9 @@ def execute_board_stream(args: argparse.Namespace, *,
             "mm2s": board_once.read_phys32_readonly(preflight.DMA_BASE + 0x04),
             "s2mm": board_once.read_phys32_readonly(preflight.DMA_BASE + 0x34),
         }
-        if any(status != 0x00000001 for status in calibration_dma_status.values()):
+        if any(status != calibration_initial_dmasr(args) for status in calibration_dma_status.values()):
             raise preflight.PreflightError(
-                "calibration initial DMASR must remain exactly 0x00000001 after operator click"
+                f"calibration initial DMASR must remain exactly 0x{calibration_initial_dmasr(args):08x} after operator click"
             )
     guard_dir = (formal["ready_path"].parent if formal else
                  calibration["lock_path"].parent if calibration else WO16_GUARD.parent)
@@ -1471,9 +1484,9 @@ def execute_board_stream(args: argparse.Namespace, *,
         evidence["afi1_snapshot"] = afi
         for offset, label in ((0x04, "MM2S"), (0x34, "S2MM")):
             status = api.read32(preflight.DMA_BASE, offset)
-            if calibration_mode and status != 0x00000001:
+            if calibration_mode and status != calibration_initial_dmasr(args):
                 raise preflight.PreflightError(
-                    f"{label} initial DMASR changed from calibration baseline 0x00000001: "
+                    f"{label} initial DMASR changed from pinned calibration baseline 0x{calibration_initial_dmasr(args):08x}: "
                     f"0x{status:08x}"
                 )
             if status & board_once.DMA_ERROR_MASK:
@@ -1529,6 +1542,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 },
                 max_bytes=capture_max_bytes,
                 queue_depth=2,
+                defer_writes_until_close=calibration_mode,
                 source_frame_ids=(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS
                                   if calibration_mode else ()),
                 metadata={
@@ -1550,6 +1564,8 @@ def execute_board_stream(args: argparse.Namespace, *,
                 "binary_bytes": int(capture_writer.raw_binary8.nbytes),
                 "recording": "np.copyto after S2MM completion and frame-status validation",
                 "archive_written_after_sampling": True,
+                "write_mode": ("deferred_memory" if calibration_mode else "streaming_queue"),
+                "per_frame_files_written_during_sampling": not calibration_mode,
             }
 
         # Accessing the PYNQ DMA driver starts its channels; this is after all static,
@@ -1973,6 +1989,9 @@ def _parser() -> argparse.ArgumentParser:
                         help="use the independent one-shot calibration lock; no formal Permit is read or consumed")
     parser.add_argument("--calibration-id",
                         help="unique calibration identity scoped below the current Boot ID")
+    parser.add_argument("--calibration-initial-dmasr", type=lambda value: int(value, 0),
+                        choices=(0x00000001, 0x00001002), default=0x00000001,
+                        help="exact initial DMA status bound into the calibration lock")
     parser.add_argument("--calibration-lock",
                         help="absolute path to the private Boot-ID-scoped calibration lock")
     parser.add_argument("--worker-python", default=DEFAULT_WORKER_PYTHON,
