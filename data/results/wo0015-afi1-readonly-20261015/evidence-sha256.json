@@ -1,0 +1,23 @@
+{
+  "afi1_readonly_candidate.py": "520a662b1dd5b4dec72af1100f8d5b5a28355e0a022b42dd75eaa530840dad29",
+  "amd-rd-address-search.json": "dae58238fe4db2b92cde6c16a9b7b65c36afe40d59eecae903be32caac1caa52",
+  "amd-rd-control-search.json": "554e0d3c2ea934ac909789cea90a944ed91b942de0ddfcd5681e1c1fbc8c8a0e",
+  "amd-reset-fields-search.json": "9fdef05ad20b90a47a38b03275e43097eddeac1a0cb21b5a63031f0e7a2eb61e",
+  "amd-reset-search.json": "446c1419ca6a47bdadc55a75e99bcfea05275b2a6e34548fa386d43762a5c9df",
+  "amd-wr-control-search.json": "c91d58cd53cb2529fcd64127c2aae9e5fc79d8c9764fa1c60df66b63ae251a22",
+  "candidate-default-result.json": "247bd7d8d45da5ccb3bf769336f8406ea6f64c1f8321814d463764f80cd0423f",
+  "collect_local_evidence.py": "a987e1787909097f7666d5eb115ea558a84ec88dfbf3fc76dc0d134dbab25b9e",
+  "finalize_evidence.py": "a89e676452564fc6e9df0c9994b40c6b9ae31e699c64856b5e85d1268ec25d61",
+  "local-evidence.json": "10885cbc9c78cc4b26d29633566b35fd4b9dfd89a94684ac636f94e9e4f06f7b",
+  "main-git-status.txt": "c05a02aee0833d05f5550c604a436e539a2558c78598c215e59106ac80b4a5dc",
+  "main-head.txt": "8fba719c6de65b5434862a6cc4afe2d1910fd2df3265b9cbd7d64d73b5787ad6",
+  "offline-tests.txt": "03fa49c699513ba2286c3d239fa2dc5f60b614606b80cc25e4043ccee3d04fa1",
+  "offline-tests.xml": "3fd7dfaa5c3a207eba2c535e90a32943255667d703ab9b33465217008eb00f39",
+  "review-notes.md": "2cdd9a43ab040d430349ce4f02ec40f4ace977b601bcb6ced2e7f36b10aa0dc2",
+  "source-and-script-audit.json": "930b0ee3b3f97335d5245783c19b2b6b561e85c2157c1c1b949d4d94b4ed9668",
+  "summary.json": "bda7c62a3965a93b40d4a31ddea448444cdc60dd3c27cd952d1fa6d98dedab22",
+  "test_afi1_readonly_candidate.py": "16df601b29673942999f3bf7753a3b546d30b0fb29801a966fccf666173ea645",
+  "verification-report.md": "403436b9577f590f475fd42542ad68dacf9f42b0baeb9e5cc658bfc1f55e04f4",
+  "worktree-git-status.txt": "0f75dc3f22807e5f9d9eeb5394da38f167f5d246df41e04fc5cc3190d75b72de",
+  "worktree-head.txt": "ca9f75a3cfe039bb0758ce8d17f8857211be7a5ec14109e25faf0d733c999f5e"
+}

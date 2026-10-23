@@ -1,0 +1,16 @@
+........................................................................ [ 16%]
+.................................................................F...... [ 33%]
+...................................................................... [ 49%]
+........................................................................ [ 66%]
+..................................................................... [ 82%]
+........................................................................ [ 99%]
+....                                                                     [100%]
+================================== FAILURES ===================================
+_ CloseoutWorkerTests.test_idle_with_sticky_status9_and_no_new_packet_times_out_without_release _
+scripts\wo0014_hw\closeout\test_closeout.py:313: in test_idle_with_sticky_status9_and_no_new_packet_times_out_without_release
+    self.assertTrue(api.buffers[0].freed is False)
+                    ^^^^^^^^^^^^^^
+E   IndexError: list index out of range
+=========================== short test summary info ===========================
+FAILED scripts/wo0014_hw/closeout/test_closeout.py::CloseoutWorkerTests::test_idle_with_sticky_status9_and_no_new_packet_times_out_without_release
+1 failed, 430 passed, 5 subtests passed in 76.80s (0:01:16)

@@ -1,0 +1,53 @@
+{
+  "candidates": [
+    {
+      "path": "D:\\Downloads\\Pynq-Z2-XDC-and-Board-File-main.zip",
+      "nbytes": 173914,
+      "creation_utc": "2026-09-18T15:23:23.036505+00:00",
+      "mtime_utc": "2026-09-18T15:23:24.437238+00:00",
+      "content_read": false,
+      "timestamp_role": "Auxiliary only"
+    },
+    {
+      "path": "D:\\Downloads\\pynq-z2 (1).zip",
+      "nbytes": 165993,
+      "creation_utc": "2026-09-18T15:22:27.118879+00:00",
+      "mtime_utc": "2026-09-18T15:22:27.736059+00:00",
+      "content_read": false,
+      "timestamp_role": "Auxiliary only"
+    },
+    {
+      "path": "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+      "nbytes": 8337309696,
+      "creation_utc": "2025-09-24T02:57:36+00:00",
+      "mtime_utc": "2026-10-08T07:54:00.267157+00:00",
+      "content_read": false,
+      "timestamp_role": "Auxiliary only"
+    },
+    {
+      "path": "F:\\FPGA\\backups\\pynq_counter_lab.xpr.zip",
+      "nbytes": 13921750,
+      "creation_utc": "2026-10-10T15:20:40.023236+00:00",
+      "mtime_utc": "2026-10-10T15:20:40.029744+00:00",
+      "content_read": false,
+      "timestamp_role": "Auxiliary only"
+    }
+  ],
+  "image_hash": {
+    "path": "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+    "sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+    "method": "Worker complete read-only SHA-256 pass, once; no vendor checksum/flash receipt available"
+  },
+  "archive": {
+    "path": "F:\\FPGA\\backups\\pynq_counter_lab.xpr.zip",
+    "role": "Project archive, not established boot image",
+    "members": 472,
+    "selected_names": [
+      "pynq_counter_lab/pynq_counter_lab.gen/sources_1/bd/design_1/ip/design_1_processing_system7_0_0/ps7_init.c",
+      "pynq_counter_lab/pynq_counter_lab.gen/sources_1/bd/design_1/ip/design_1_processing_system7_0_0/ps7_init.html",
+      "pynq_counter_lab/pynq_counter_lab.gen/sources_1/bd/design_1/ip/design_1_processing_system7_0_0/ps7_init.tcl"
+    ],
+    "contents_extracted": false,
+    "sha256": "9a03b1a60867ef076a1ff4ded238869209d3f15400c064b579c039ec7a7afab9"
+  }
+}

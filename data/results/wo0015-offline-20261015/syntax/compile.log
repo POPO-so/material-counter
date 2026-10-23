@@ -1,0 +1,14 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/rtl/axis_rgb2gray.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_rgb2gray
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/rtl/axis_gray2binary.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_gray2binary
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/experimental/wo0014/axis_dma_rgb_adapter.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_rgb_adapter
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/experimental/wo0014/axis_binary_output_checker.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_binary_output_checker
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/experimental/wo0014/axis_dma_image_pipeline.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_image_pipeline
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/experimental/wo0015/axis_s2mm_frame_packer.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_s2mm_frame_packer
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_s2mm_pipeline_bd

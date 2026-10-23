@@ -1,0 +1,148 @@
+{
+  "report": "findings.md",
+  "date": "2026-10-15",
+  "scope": "Offline research of AMD primary documentation only. No board access, register access, Vivado execution, or historical-result modification.",
+  "version_assessment": {
+    "latest_verifiable_in_amd_portal": "UG585 v1.15 English",
+    "release_date": "2026-02-06",
+    "actual_latest_outside_portal": "unknown",
+    "basis": "Official UG585 Revision History page lists v1.15. Current AMD register-fragment search results for FPGA_RST_CTRL report version=All, so exact fragment revision metadata is not independently pinned by that endpoint."
+  },
+  "online_capture_file": "amd-online-captures.json",
+  "online_capture_file_sha256": "73D3B90BABBF69ECEBEDBF97ACFFD160D9011BEC3E85F17DB295D5177C43B3F8",
+  "capture_boundary": "The file records AMD source metadata, exact version labels, line positions, and short citation excerpts. It does not archive full copyrighted web pages or tool response text.",
+  "local_official_document": {
+    "title": "Zynq-7000 SoC Technical Reference Manual (UG585), v1.10 Japanese",
+    "version": "1.10",
+    "release_date": "2015-02-23",
+    "official_download_url": "https://docs.amd.com/api/khub/documents/wkAwefW0cDJrTXuZKWYZTA/content",
+    "local_pdf": "ug585-amd-official-v1.10-ja.pdf",
+    "pdf_sha256": "CD50BFF23C5F538AB8BB1286153C2FA1617A0E6A53BA0B6A1E18E4A860360EAA",
+    "local_text_extract": "ug585-v1.10-extract.txt",
+    "extract_method": "pdftotext -layout",
+    "extract_sha256": "4EAC64773080226F72E80DEBD141A25BAEC7A7FBEDBCEAAB8CBD9E2FE3293492",
+    "completeness": "Full PDF downloaded; complete text extraction retained."
+  },
+  "sources": [
+    {
+      "name": "UG585 FPGA_RST_CTRL register fields",
+      "url": "https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Register-FPGA_RST_CTRL-Details",
+      "version": "AMD search fragment says version=All; attribution to current v1.15 portal context is inferred",
+      "location": "Appendix B, Register FPGA_RST_CTRL Details; online page has no printed page in retrieved fragment",
+      "retrieval": "AMD official documentation search result; direct web open unavailable",
+      "completeness": "Relevant field row excerpt only; see amd-online-captures.json. No full UG585 PDF for v1.15",
+      "citation_location": "Bit 21 row in the field table",
+      "finding": "Bit 21 is reserved and is not named FPGA_AXDS1_RST in the online table."
+    },
+    {
+      "name": "UG585 AFI_RDCHAN_CTRL register fields",
+      "url": "https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Register-AFI_RDCHAN_CTRL-Details",
+      "version": "1.15 English; release date 2026-02-06",
+      "location": "Appendix B, AXI_HP Interface (AFI), Register AFI_RDCHAN_CTRL Details",
+      "retrieval": "AMD official docs page opened and find result; AMD doc search corroborated",
+      "completeness": "Full register-detail page content accessible; no full manual PDF",
+      "citation_location": "Prerequisite sentence and 32BitEn bit 0 row",
+      "finding": "The RD control page names FPGA_AXDSN_RST as a precondition and says bit0 32BitEn=1 selects 32-bit, 0 selects 64-bit."
+    },
+    {
+      "name": "UG585 AFI_WRCHAN_CTRL register fields",
+      "url": "https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Register-AFI_WRCHAN_CTRL-Details",
+      "version": "1.15 English portal collection; AMD search fragment says version=All",
+      "location": "Appendix B, AXI_HP Interface (AFI), Register AFI_WRCHAN_CTRL Details",
+      "retrieval": "AMD official docs search result; direct web open unavailable",
+      "completeness": "Register-detail excerpt, not full manual PDF",
+      "citation_location": "Prerequisite sentence and 32BitEn bit 0 row",
+      "finding": "The WR control page has the same precondition and bit0 width encoding."
+    },
+    {
+      "name": "UG585 SLCR_LOCKSTA register fields",
+      "url": "https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Register-SLCR_LOCKSTA-Details",
+      "version": "1.15 portal context; AMD search fragment says version=All",
+      "location": "Appendix B, Register SLCR_LOCKSTA Details",
+      "retrieval": "AMD official documentation search result; direct web open unavailable",
+      "completeness": "Register-field excerpt, not full manual PDF",
+      "citation_location": "LOCK_STATUS bit 0 description",
+      "finding": "SLCR lock suppresses writes but does not make reads invalid."
+    },
+    {
+      "name": "UG585 Revision History",
+      "url": "https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Revision-History",
+      "version": "1.15 English",
+      "location": "Revision History, 02/06/2026 Version 1.15 and preceding versions",
+      "retrieval": "Official AMD web search and page open",
+      "completeness": "Full page response retrieved; relevant excerpt and page line positions saved in amd-online-captures.json, not full page text",
+      "citation_location": "Entry dated 02/06/2026, Version 1.15",
+      "finding": "No FPGA_RST_CTRL-specific change is listed in the 1.15 revision summary."
+    },
+    {
+      "name": "AMD Answer Record 56642",
+      "url": "https://adaptivesupport.amd.com/s/article/56642?language=en_US",
+      "version": "Answer Record, original version context 14.6 / 2013.2 in AMD index",
+      "location": "Question and Answer about UG585 v1.5 FPGA_RST_CTRL bits 24, 17, and 16",
+      "retrieval": "AMD official support knowledge-base search result",
+      "completeness": "Question/answer excerpt, not full page verification",
+      "citation_location": "Answer body listing the corrected bit numbers",
+      "finding": "Does not resolve bit21 semantics or current AFI precondition conflict."
+    },
+    {
+      "name": "UG585 v1.10 AFI_RDCHAN_CTRL",
+      "url": "https://docs.amd.com/api/khub/documents/wkAwefW0cDJrTXuZKWYZTA/content",
+      "version": "1.10 Japanese, 2015-02-23",
+      "location": "Appendix B, AXI_HP Interface (AFI), p.745, Register AFI_RDCHAN_CTRL Details; extracted lines 43631-43687",
+      "retrieval": "Full official AMD PDF downloaded and locally extracted",
+      "completeness": "Full PDF and full text extraction",
+      "citation_location": "p.745, extracted lines 43644-43647",
+      "finding": "RD access prerequisite appears in the same historical version where FPGA_RST_CTRL bit21 is reserved."
+    },
+    {
+      "name": "UG585 v1.10 AFI_WRCHAN_CTRL",
+      "url": "https://docs.amd.com/api/khub/documents/wkAwefW0cDJrTXuZKWYZTA/content",
+      "version": "1.10 Japanese, 2015-02-23",
+      "location": "Appendix B, AXI_HP Interface (AFI), p.748-749, Register AFI_WRCHAN_CTRL Details; extracted lines 43822-43909",
+      "retrieval": "Full official AMD PDF downloaded and locally extracted",
+      "completeness": "Full PDF and full text extraction",
+      "citation_location": "p.748-749, extracted lines 43846-43848",
+      "finding": "WR access prerequisite appears in the same historical version where FPGA_RST_CTRL bit21 is reserved."
+    },
+    {
+      "name": "UG585 v1.10 FPGA_RST_CTRL",
+      "url": "https://docs.amd.com/api/khub/documents/wkAwefW0cDJrTXuZKWYZTA/content",
+      "version": "1.10 Japanese, 2015-02-23",
+      "location": "Appendix B, System Level Control Registers (slcr), p.1555-1556; extracted lines 85037-85079; bit21 at line 85065",
+      "retrieval": "Full official AMD PDF downloaded and locally extracted",
+      "completeness": "Full PDF and full text extraction",
+      "citation_location": "p.1555-1556, extracted line 85065",
+      "finding": "Historical official table gives bit21 no named reset status field."
+    },
+    {
+      "name": "UG585 v1.10 SLCR_LOCKSTA",
+      "url": "https://docs.amd.com/api/khub/documents/wkAwefW0cDJrTXuZKWYZTA/content",
+      "version": "1.10 Japanese, 2015-02-23",
+      "location": "Appendix B, Register SLCR_LOCKSTA Details; extracted lines 82937-82956",
+      "retrieval": "Full official AMD PDF downloaded and locally extracted",
+      "completeness": "Full PDF and full text extraction",
+      "citation_location": "LOCK_STATUS description, extracted lines 82949-82955",
+      "finding": "A read does not require unlocking SLCR."
+    }
+  ],
+  "classification": {
+    "VERIFIED": [
+      "UG585 v1.10 and the current AMD online FPGA_RST_CTRL field fragment classify bit21 as reserved, reset value 1, write 0.",
+      "Both historical and current AFI RD/WR pages state the FPGA_AXDSN_RST write-zero prerequisite.",
+      "SLCR_LOCKSTA states that locked writes are ignored and reads remain valid."
+    ],
+    "INFERRED": [
+      "The current FPGA_RST_CTRL fragment belongs to the portal's latest v1.15 collection; the fragment itself is not version-pinned.",
+      "A reserved bit without a documented status meaning cannot be used as an authoritative live reset-deasserted gate."
+    ],
+    "UNKNOWN": [
+      "Actual board bit21 value and implementation alias.",
+      "Exact FPGA_AXDSN_RST bit-to-HP mapping.",
+      "Whether the AFI prerequisite is stale documentation or references an undocumented implementation detail.",
+      "Any UG585 release later than v1.15 outside the portal snapshot searched."
+    ],
+    "CONFLICT": [
+      "AFI control pages require a named FPGA_AXDSN_RST field to be written zero, while the same manual's FPGA_RST_CTRL field table omits that field and marks bits20-24 reserved."
+    ]
+  }
+}

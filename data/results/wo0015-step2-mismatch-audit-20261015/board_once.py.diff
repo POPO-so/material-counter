@@ -1,0 +1,204 @@
+--- before/board_once.py
++++ diagnostics/board_once.py
+@@ -33,6 +33,7 @@
+ 
+ DMA_RUN = 1 << 0
+ CMA_WATERMARK_KIB = 16384
++RX_POISON_BYTE = 0xA5
+ DMA_HALTED = 1 << 0
+ DMA_IDLE = 1 << 1
+ DMA_INTERNAL_ERROR = 1 << 4
+@@ -328,10 +329,84 @@
+             )
+ 
+ 
++def analyze_rx_mismatch(rx: bytes, golden: bytes, *, poison_byte: int = RX_POISON_BYTE) -> dict[str, Any]:
++    """Analyze completed RX bytes; parity means alternating 32-bit words."""
++    if not rx or len(rx) != len(golden) or len(rx) % 4:
++        raise ValueError("RX/Golden must have equal nonempty whole-word byte lengths")
++    if type(poison_byte) is not int or not 0 <= poison_byte <= 255:
++        raise ValueError("Poison must be one byte")
++    parity = {name: {"word_count": 0, "mismatch_bytes": 0, "zero_words": 0,
++                     "poison_words": 0} for name in ("even", "odd")}
++    prefix = []
++    first = []
++    mismatch_bytes = 0
++    for offset in range(0, len(rx), 4):
++        actual, expected = rx[offset:offset + 4], golden[offset:offset + 4]
++        word_index = offset // 4
++        name = "odd" if word_index % 2 else "even"
++        row = parity[name]
++        row["word_count"] += 1
++        row["zero_words"] += int(actual == b"\x00" * 4)
++        row["poison_words"] += int(actual == bytes([poison_byte]) * 4)
++        count = sum(a != b for a, b in zip(actual, expected))
++        row["mismatch_bytes"] += count
++        mismatch_bytes += count
++        for byte_index, (a, b) in enumerate(zip(actual, expected)):
++            if a != b and len(first) < 32:
++                first.append({"offset": offset + byte_index, "expected": b, "actual": a})
++        if offset < 64:
++            prefix.append({"word_index": word_index, "offset": offset, "parity": name,
++                           "rx_hex": actual.hex(), "golden_hex": expected.hex(),
++                           "rx_u32_le": int.from_bytes(actual, "little"),
++                           "golden_u32_le": int.from_bytes(expected, "little"),
++                           "mismatch_bytes": count})
++    return {"schema": 1, "byte_count": len(rx), "word_bytes": 4,
++            "poison_byte": poison_byte, "poison_u32": poison_byte * 0x01010101,
++            "rx_sha256": preflight.sha256_bytes(rx),
++            "golden_sha256": preflight.sha256_bytes(golden),
++            "mismatch_bytes": mismatch_bytes, "first_mismatch": first[0]["offset"] if first else None,
++            "first_mismatches": first, "first_64_bytes_words": prefix, "parity": parity}
++
++
++def persist_rx_diagnostics(directory: str | Path, stem: str, rx: bytes, golden: bytes,
++                           *, context: Mapping[str, Any]) -> dict[str, Any]:
++    """Durably save complete RX first, then Golden and diagnostics; never overwrite."""
++    if not stem or stem in (".", "..") or "/" in stem or "\\" in stem:
++        raise ValueError("diagnostic stem must be one filename component")
++    target = Path(directory).expanduser().resolve()
++    target.mkdir(parents=True, exist_ok=True)
++    result = analyze_rx_mismatch(rx, golden)
++    result.update(capture_status="SAVED", captured_before_release=True, context=dict(context))
++    paths = {"rx_path": target / f"{stem}_rx_raw.bin",
++             "golden_path": target / f"{stem}_golden.bin",
++             "diagnostics_path": target / f"{stem}_diagnostics.json"}
++    result.update({k: str(v) for k, v in paths.items()})
++
++    def save(path: Path, raw: bytes) -> None:
++        with path.open("xb") as stream:
++            stream.write(raw)
++            stream.flush()
++            os.fsync(stream.fileno())
++        if preflight.sha256_bytes(path.read_bytes()) != preflight.sha256_bytes(raw):
++            raise OSError("diagnostic file readback hash differs")
++
++    save(paths["rx_path"], rx)
++    save(paths["golden_path"], golden)
++    save(paths["diagnostics_path"], (json.dumps(result, indent=2, sort_keys=True) + "\n").encode("utf-8"))
++    if os.name != "nt":
++        fd = os.open(str(target), os.O_RDONLY | os.O_DIRECTORY)
++        try:
++            os.fsync(fd)
++        finally:
++            os.close(fd)
++    return result
++
++
+ def run_frames(plan: preflight.ValidatedRun, api: Any, *,
+                timeout_s: float = DEFAULT_TIMEOUT_S,
+                frame_limit: int | None = None,
+-               expected_prior_frames: int = 0) -> dict[str, Any]:
++               expected_prior_frames: int = 0,
++               diagnostic_dir: str | Path | None = None) -> dict[str, Any]:
+     """Run one or three frames through an injected low-level Board API.
+ 
+     The API contract is intentionally small: allocate, free, buffer sync, MMIO,
+@@ -355,6 +430,7 @@
+     dma_start_attempted = False
+     transfer_started = False
+     released = False
++    retain_for_evidence = False
+     evidence: dict[str, Any] = {
+         "task": "WO-0015",
+         "status": "RUNNING",
+@@ -443,7 +519,7 @@
+ 
+             api.write_buffer(mm2s_buffer, frame.packet)
+             api.sync_to_device(mm2s_buffer)
+-            api.write_buffer(s2mm_buffer, b"\xA5" * preflight.RX_BYTES)
++            api.write_buffer(s2mm_buffer, bytes([RX_POISON_BYTE]) * preflight.RX_BYTES)
+             api.sync_to_device(s2mm_buffer)
+             packer_status = api.read32(preflight.CHECKER_BASE, PACKER_STATUS)
+             if packer_status & (PACKER_BUSY | PACKER_FAULT):
+@@ -516,6 +592,34 @@
+                 mismatches = sum(left != right for left, right in zip(returned, frame.binary))
+                 first = next((offset for offset, pair in enumerate(zip(returned, frame.binary))
+                               if pair[0] != pair[1]), None)
++                completion = {"frame_id": frame.frame_id, "frame_index": index,
++                              "s2mm_dmasr": s2mm_status, "mm2s_dmasr": mm2s_status,
++                              "s2mm_actual_length": actual_s2mm_length,
++                              "packer_status": packer_status, "accepted_pixels": pixels,
++                              "sent_beats": beats, "packer_error": packer_error,
++                              "checker_before": dict(previous_checker), "checker_after": dict(after_checker)}
++                evidence["failed_frame_completion"] = completion
++                evidence.update(byte_mismatches=mismatches, first_mismatch=first,
++                                s2mm_actual_length=actual_s2mm_length)
++                directory = (Path(diagnostic_dir) if diagnostic_dir is not None else
++                             plan.manifest_path.parent / "mismatch-diagnostics")
++                stage = "step2" if frame_limit == 1 else "step3"
++                stem = f"{stage}_frame{index:02d}_id{frame.frame_id:010d}"
++                try:
++                    evidence["rx_diagnostics"] = persist_rx_diagnostics(
++                        directory, stem,
++                        returned, frame.binary,
++                        context={**completion, "physical_gate": evidence["post_alloc_physical_gate"],
++                                 "boot_id": plan.boot_id, "manifest_sha256": plan.manifest_sha256})
++                except BaseException as save_exc:
++                    retain_for_evidence = True
++                    evidence["buffers_retained_for_evidence"] = True
++                    evidence["rx_diagnostics"] = {"capture_status": "FAILED",
++                        "save_error": f"{type(save_exc).__name__}: {save_exc}", "directory": str(directory),
++                        "stem": stem, "partial_files_may_exist": True,
++                        "planned_paths": {"rx_path": str(directory / f"{stem}_rx_raw.bin"),
++                                          "golden_path": str(directory / f"{stem}_golden.bin"),
++                                          "diagnostics_path": str(directory / f"{stem}_diagnostics.json")}}
+                 raise ExecutionFailure(
+                     f"S2MM Binary8 differs from golden for frame {frame.frame_id}: "
+                     f"{mismatches} mismatches, first offset={first}",
+@@ -559,9 +663,9 @@
+                          "dma_may_be_active": False})
+         return evidence
+     except ExecutionFailure as exc:
+-        if may_be_in_flight and not released and mm2s_buffer is not None and s2mm_buffer is not None:
++        if (may_be_in_flight or retain_for_evidence) and not released and mm2s_buffer is not None and s2mm_buffer is not None:
+             QUARANTINED_BUFFERS.append((api, mm2s_buffer, s2mm_buffer, str(exc)))
+-            exc.dma_may_be_active = True
++            exc.dma_may_be_active = may_be_in_flight
+         elif not released:
+             if s2mm_buffer is not None:
+                 api.free(s2mm_buffer)
+@@ -992,8 +1096,10 @@
+ 
+     def fail_hold(self, evidence_path: str | None, evidence: Mapping[str, Any]) -> None:
+         _install_hold_signals()
+-        payload = {**evidence, "status": "FAIL_HOLD", "buffers_released": False,
+-                   "hold_reason": "DMA may own CMA buffers; no reset/retry/free is permitted"}
++        stage_status = str(evidence.get("status", ""))
++        payload = {**evidence, "status": stage_status if stage_status.endswith("_FAIL_HOLD") else "FAIL_HOLD",
++                   "hardware_stage": self.stage, "buffers_released": False,
++                   "hold_reason": evidence.get("hold_reason", "DMA may own CMA buffers; no reset/retry/free is permitted")}
+         try:
+             _emit(payload, evidence_path)
+         except BaseException:
+@@ -1352,14 +1458,16 @@
+         api.open_mmio()  # Attach to the already loaded BIT; never construct/download Overlay here.
+         result = run_frames(plan, api, timeout_s=timeout_s,
+                             frame_limit=frame_limit,
+-                            expected_prior_frames=expected_prior_frames)
++                            expected_prior_frames=expected_prior_frames,
++                            diagnostic_dir=(Path(evidence_path).parent / f"{stage}-diagnostics"
++                                            if evidence_path else plan.manifest_path.parent / f"{stage}-diagnostics"))
+         post_audit = _post_stage_audit(api, plan, before)
+         result["runtime_preflight"] = before
+         result["post_stage_audit"] = post_audit
+         result["board_accessed"] = bool(getattr(api, "board_accessed", False))
+         result["pynq_imported"] = _PYNQ_IMPORTED
+     except ExecutionFailure as exc:
+-        if exc.dma_may_be_active:
++        if exc.dma_may_be_active or exc.evidence.get("buffers_retained_for_evidence"):
+             # Once a DMA length write may have started a transfer, no
+             # diagnostic operation may let this process unwind and release
+             # the retained PYNQ buffers. All persistence is best effort.
+@@ -1372,7 +1480,10 @@
+                     "board_accessed": bool(getattr(api, "board_accessed", False)),
+                     "dma_start_attempted": exc.dma_start_attempted,
+                     "transfer_started": exc.transfer_started,
+-                    "dma_may_be_active": True,
++                    "dma_may_be_active": exc.dma_may_be_active,
++                    "hold_reason": ("RX evidence persistence failed; retain completed buffers without retry/free"
++                                    if exc.evidence.get("buffers_retained_for_evidence") else
++                                    "DMA may own CMA buffers; no reset/retry/free is permitted"),
+                     "error": f"{type(exc).__name__}: {exc}",
+                 }
+                 try:

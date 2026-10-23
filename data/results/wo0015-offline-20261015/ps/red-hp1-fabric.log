@@ -1,0 +1,417 @@
+F..FFFFFFFFFFF                                                           [100%]
+================================== FAILURES ===================================
+_ test_valid_manifest_checks_bit_hwh_packet_golden_and_1_or_3_frame_contract __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_valid_manifest_checks_bit0')
+
+    def test_valid_manifest_checks_bit_hwh_packet_golden_and_1_or_3_frame_contract(tmp_path):
+        manifest_path, _ = make_manifest(tmp_path)
+    
+>       plan = preflight.validate_manifest(
+            manifest_path,
+            expected_manifest_sha256=file_sha256(manifest_path),
+        )
+
+scripts\wo0015\test_board_preflight.py:185: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:393: in validate_manifest
+    validate_hwh(hwh_path)
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F2296ED0>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+__________ test_binary_golden_must_match_independent_rgb_conversion ___________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_binary_golden_must_match_0')
+
+    def test_binary_golden_must_match_independent_rgb_conversion(tmp_path):
+        manifest_path, manifest = make_manifest(tmp_path, frame_count=1)
+        binary_path = tmp_path / manifest["frames"][0]["binary_path"]
+        corrupted = bytearray(binary_path.read_bytes())
+        corrupted[17] ^= 0xFF
+        binary_path.write_bytes(corrupted)
+        manifest["frames"][0]["binary_sha256"] = file_sha256(binary_path)
+        _write_manifest(manifest_path, manifest)
+    
+>       with pytest.raises(preflight.PreflightError, match="independent Binary8 golden"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'independent Binary8 golden'
+E         Actual message: "HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0"
+
+scripts\wo0015\test_board_preflight.py:225: AssertionError
+_______ test_only_one_or_three_strictly_increasing_frames_are_accepted ________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_only_one_or_three_strictl0')
+
+    def test_only_one_or_three_strictly_increasing_frames_are_accepted(tmp_path):
+        manifest_path, manifest = make_manifest(tmp_path, frame_count=2)
+>       with pytest.raises(preflight.PreflightError, match="one or three frames"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'one or three frames'
+E         Actual message: "HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0"
+
+scripts\wo0015\test_board_preflight.py:231: AssertionError
+_ test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs0---execute] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_board_execution_gate_requ0')
+kwargs = {'execute': False}, match = '--execute'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False}, "--execute"),
+            ({"authorize_stage": None}, "matching --authorize-stage"),
+            ({"authorize_stage": "dma-three"}, "matching --authorize-stage"),
+            ({"approve_once": False}, "--approve-once"),
+            ({"manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:393: in validate_manifest
+    validate_hwh(hwh_path)
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F391F1F0>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+_ test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs1-matching --authorize-stage] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_board_execution_gate_requ1')
+kwargs = {'authorize_stage': None}, match = 'matching --authorize-stage'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False}, "--execute"),
+            ({"authorize_stage": None}, "matching --authorize-stage"),
+            ({"authorize_stage": "dma-three"}, "matching --authorize-stage"),
+            ({"approve_once": False}, "--approve-once"),
+            ({"manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:393: in validate_manifest
+    validate_hwh(hwh_path)
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F22A0C70>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+_ test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs2-matching --authorize-stage] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_board_execution_gate_requ2')
+kwargs = {'authorize_stage': 'dma-three'}, match = 'matching --authorize-stage'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False}, "--execute"),
+            ({"authorize_stage": None}, "matching --authorize-stage"),
+            ({"authorize_stage": "dma-three"}, "matching --authorize-stage"),
+            ({"approve_once": False}, "--approve-once"),
+            ({"manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:393: in validate_manifest
+    validate_hwh(hwh_path)
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F22A19E0>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+_ test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs3---approve-once] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_board_execution_gate_requ3')
+kwargs = {'approve_once': False}, match = '--approve-once'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False}, "--execute"),
+            ({"authorize_stage": None}, "matching --authorize-stage"),
+            ({"authorize_stage": "dma-three"}, "matching --authorize-stage"),
+            ({"approve_once": False}, "--approve-once"),
+            ({"manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:393: in validate_manifest
+    validate_hwh(hwh_path)
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F22A0E00>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+_ test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs4-manifest SHA-256] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_board_execution_gate_requ4')
+kwargs = {'manifest_sha256': '1111111111111111111111111111111111111111111111111111111111111111'}
+match = 'manifest SHA-256'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False}, "--execute"),
+            ({"authorize_stage": None}, "matching --authorize-stage"),
+            ({"authorize_stage": "dma-three"}, "matching --authorize-stage"),
+            ({"approve_once": False}, "--approve-once"),
+            ({"manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:393: in validate_manifest
+    validate_hwh(hwh_path)
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F22A04A0>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+_ test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs5-boot_id] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_board_execution_gate_requ5')
+kwargs = {'boot_id': 'other-boot'}, match = 'boot_id'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False}, "--execute"),
+            ({"authorize_stage": None}, "matching --authorize-stage"),
+            ({"authorize_stage": "dma-three"}, "matching --authorize-stage"),
+            ({"approve_once": False}, "--approve-once"),
+            ({"manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:393: in validate_manifest
+    validate_hwh(hwh_path)
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F391D8A0>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+________________ test_matching_board_authorization_is_accepted ________________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_matching_board_authorizat0')
+
+    def test_matching_board_authorization_is_accepted(tmp_path):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:274: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:393: in validate_manifest
+    validate_hwh(hwh_path)
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F391DA30>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+______________ test_hwh_requires_32_bit_s2mm_memory_and_hp1_path ______________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_hwh_requires_32_bit_s2mm_0')
+
+    def test_hwh_requires_32_bit_s2mm_memory_and_hp1_path(tmp_path):
+        path = tmp_path / "valid.hwh"
+        path.write_bytes(_hwh_bytes())
+>       preflight.validate_hwh(path)
+
+scripts\wo0015\test_board_preflight.py:290: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_preflight.py:258: in validate_hwh
+    hp1 = _find_module(root, "hp1_protocol")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = <Element 'SYSTEM' at 0x000001B0F2296AC0>, instance = 'hp1_protocol'
+
+    def _find_module(root: ET.Element, instance: str) -> ET.Element:
+        found = [node for node in root.iter()
+                 if _local_tag(node) == "MODULE" and node.attrib.get("INSTANCE") == instance]
+        if len(found) != 1:
+>           raise PreflightError(f"HWH must contain one MODULE INSTANCE={instance!r}; found {len(found)}")
+E           board_preflight.PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0
+
+scripts\wo0015\board_preflight.py:166: PreflightError
+________ test_board_preflight_cli_is_offline_and_does_not_import_pynq _________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-135/test_board_preflight_cli_is_of0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001B0F229B470>
+
+    def test_board_preflight_cli_is_offline_and_does_not_import_pynq(tmp_path, monkeypatch):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+        real_import = __import__
+    
+        def no_pynq_import(name, *args, **kwargs):
+            if name == "pynq" or name.startswith("pynq."):
+                raise AssertionError("offline preflight tried to import PYNQ")
+            return real_import(name, *args, **kwargs)
+    
+        monkeypatch.setattr("builtins.__import__", no_pynq_import)
+    
+>       assert preflight.main(["--manifest", str(manifest_path)]) == 0
+E       AssertionError: assert 2 == 0
+E        +  where 2 = <function main at 0x000001B0F2265C60>(['--manifest', 'C:\\Users\\POP\\AppData\\Local\\Temp\\pytest-of-POP\\pytest-135\\test_board_preflight_cli_is_of0\\wo0015-manifest.json'])
+E        +    where <function main at 0x000001B0F2265C60> = preflight.main
+
+scripts\wo0015\test_board_preflight.py:314: AssertionError
+---------------------------- Captured stdout call -----------------------------
+{
+  "board_accessed": false,
+  "error": "PreflightError: HWH must contain one MODULE INSTANCE='hp1_protocol'; found 0",
+  "pynq_imported": false,
+  "status": "OFFLINE_PREFLIGHT_FAIL",
+  "task": "WO-0015"
+}
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_board_preflight.py::test_valid_manifest_checks_bit_hwh_packet_golden_and_1_or_3_frame_contract
+FAILED scripts/wo0015/test_board_preflight.py::test_binary_golden_must_match_independent_rgb_conversion
+FAILED scripts/wo0015/test_board_preflight.py::test_only_one_or_three_strictly_increasing_frames_are_accepted
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs0---execute]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs1-matching --authorize-stage]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs2-matching --authorize-stage]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs3---approve-once]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs4-manifest SHA-256]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_stage_once_manifest_and_fixed_boot[kwargs5-boot_id]
+FAILED scripts/wo0015/test_board_preflight.py::test_matching_board_authorization_is_accepted
+FAILED scripts/wo0015/test_board_preflight.py::test_hwh_requires_32_bit_s2mm_memory_and_hp1_path
+FAILED scripts/wo0015/test_board_preflight.py::test_board_preflight_cli_is_offline_and_does_not_import_pynq
+12 failed, 2 passed in 1.53s

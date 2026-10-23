@@ -1,0 +1,22 @@
+{
+  "source": "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+  "size": 8337309696,
+  "mbr_partitions": [
+    {
+      "index": 1,
+      "type_hex": "0x0C",
+      "start_lba": 8,
+      "sectors": 266240,
+      "offset": 4096,
+      "nbytes": 136314880
+    },
+    {
+      "index": 2,
+      "type_hex": "0x83",
+      "start_lba": 268288,
+      "sectors": 16015520,
+      "offset": 137363456,
+      "nbytes": 8199946240
+    }
+  ]
+}

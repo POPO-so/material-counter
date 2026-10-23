@@ -1,0 +1,11 @@
+{
+  "status": "OFFLINE_BUNDLE_VALIDATED",
+  "board_accessed": false,
+  "ready_for_board_means": "offline eligibility only; requires separate human authorization",
+  "directory": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-first-board-retry3-20261015\\packager-output-historical-boot",
+  "manifest_sha256": "d697efda06b57ce4be82334645aa7fed9f5cc05913418551f376b3937b21f930",
+  "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-first-board-retry3-20261015\\packager-output-historical-boot.zip",
+  "archive_sha256": "959a79348615ff8ef96380cfce1e74298533d7e9f6f32aaa1f7f523b6a0be318",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+}

@@ -1,0 +1,51 @@
+{
+  "filesystem": {
+    "uuid": "63b8b04d-af08-419a-a9dc-16f374e283dc",
+    "partition_index": 2,
+    "partition_start_lba": 268288,
+    "partition_offset_bytes": 137363456,
+    "partition_size_bytes": 8199946240,
+    "block_size_bytes": 4096,
+    "blocks_count": 2001940,
+    "inodes_count": 1001920,
+    "inode_size_bytes": 256,
+    "group_descriptor_size_bytes": 64,
+    "group_count": 62,
+    "feature_incompat_hex": "0x2c2",
+    "superblock_state_raw": 1,
+    "superblock_state_clean_bit": true,
+    "superblock_state_error_bit": false,
+    "needs_recovery_feature_bit": false,
+    "journal_replayed": false,
+    "filesystem_view": "on-disk static metadata/data view; no journal replay and no mount"
+  },
+  "file_count": 264,
+  "extracted_root": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted",
+  "manifest": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\source-manifest.json",
+  "base_bit": {
+    "image_path": "/home/xilinx/pynq/overlays/base/base.bit",
+    "canonical_image_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/overlays/base/base.bit",
+    "inode": 133635,
+    "size_bytes": 4045672,
+    "sha256": "3239e9cc37ee4993c25f02ae6c97da0b3372f0e722e267d10073e20adc5d6717",
+    "kind": "base_overlay_artifact",
+    "extracted_path": "extracted/pynq/overlays/base/base.bit"
+  },
+  "base_hwh": {
+    "image_path": "/home/xilinx/pynq/overlays/base/base.hwh",
+    "canonical_image_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/overlays/base/base.hwh",
+    "inode": 133636,
+    "size_bytes": 4529854,
+    "sha256": "222898ef2c0ccc4a0c47608e99d8dc7c9c6cdfed5130964884ff35005827ef3a",
+    "kind": "base_overlay_artifact",
+    "extracted_path": "extracted/pynq/overlays/base/base.hwh"
+  },
+  "boot_py": {
+    "image_path": "/BOOT.PY",
+    "partition": "MBR partition 1, FAT16 boot partition",
+    "size_bytes": 991,
+    "sha256": "b2653ef809c3271231c78772342c2be728d39686a877d3c6fe8cdabfd4ac1d42",
+    "kind": "boot_script_from_prior_read_only_extraction",
+    "extracted_path": "extracted/boot/BOOT.PY"
+  }
+}

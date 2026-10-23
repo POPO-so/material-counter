@@ -1,0 +1,25 @@
+{
+  "status": "STOPPED_PRECONDITION_UNVERIFIED",
+  "recorded_utc": "2026-10-15T15:32:53.451121+00:00",
+  "phase1": "OFFLINE_REVIEW_COMPLETED_WITH_BLOCKERS",
+  "phase2": "NOT_STARTED",
+  "board_connections": 0,
+  "register_reads": 0,
+  "register_writes": 0,
+  "afi1_wr_raw": null,
+  "afi1_rd_raw": null,
+  "static_32_consistent": null,
+  "configuration_anomaly_confirmed": false,
+  "root_cause_confirmed": false,
+  "offline_candidate_tests_passed": 14,
+  "candidate_is_live_executor": false,
+  "production_logic_changed": false,
+  "historical_files_verified": 150,
+  "script_sha256": "520a662b1dd5b4dec72af1100f8d5b5a28355e0a022b42dd75eaa530840dad29",
+  "blockers": [
+    "No trusted current AXDS reset-state evidence",
+    "AXDS field applicability unresolved against generated reserved field",
+    "No audited live precondition verifier"
+  ],
+  "report": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-readonly-20261015\\verification-report.md"
+}

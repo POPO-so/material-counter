@@ -1,0 +1,18 @@
+{
+  "short_name": "REVISION",
+  "attribute": 32,
+  "first_cluster": 287,
+  "nbytes": 197,
+  "fat_date_raw": 23352,
+  "fat_time_raw": 36631,
+  "clusters_read": 1,
+  "sha256": "7988c8799349762dae727464388ad952f42a3bdc74e3897b50f57bf35809ce25",
+  "kind": "LOCAL_IMAGE_CURRENT_FILE_NOT_HISTORICAL_BOOT_PROOF",
+  "first16_hex": "52656c6561736520332e312028436172",
+  "selected_strings": [
+    {
+      "offset": 42,
+      "ascii": "Board 2025_09_24 1d2ac96 https://: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@github.com/Xilinx/PYNQ.git"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+--- approved-original/board_once.py
++++ cma-compat/board_once.py
+@@ -370,44 +370,42 @@
+         "tx_bytes_each": preflight.TX_BYTES,
+         "rx_bytes_each": preflight.RX_BYTES,
+         "cma_free_before_kib": initial_cma_free,
++        "cma_allocation_samples": [{"stage": "before", "cma_free_kib": initial_cma_free}],
+         "frames": [],
+         "hardware_stage": getattr(api, "stage", "mock"),
+     }
++    def record_release_cma() -> int:
++        value = api.cma_free_kib()
++        evidence["cma_free_after_kib"] = value
++        evidence["cma_free_delta_kib"] = value - initial_cma_free
++        evidence["cma_allocation_samples"].append({"stage": "after_release", "cma_free_kib": value})
++        return value
++
+     try:
+         baseline_checker = _require_clean_start(api, plan, expected_prior_frames)
+         mm2s_buffer = api.allocate(preflight.TX_BYTES)
++        evidence["cma_allocation_samples"].append(
++            {"stage": "after_mm2s", "cma_free_kib": api.cma_free_kib()})
+         s2mm_buffer = api.allocate(preflight.RX_BYTES)
++        during_cma_free = api.cma_free_kib()
++        evidence["cma_free_during_kib"] = during_cma_free
++        evidence["cma_allocation_samples"].append(
++            {"stage": "after_s2mm", "cma_free_kib": during_cma_free})
++        expected_kib = sum((n + preflight.PAGE_BYTES - 1) // preflight.PAGE_BYTES
++                           for n in (preflight.TX_BYTES, preflight.RX_BYTES)) * preflight.PAGE_BYTES // 1024
++        evidence["allocation_accounting"] = {
++            "page_rounded_bytes_kib": expected_kib,
++            "observed_cma_decrease_kib": initial_cma_free - during_cma_free}
++        if initial_cma_free - during_cma_free < expected_kib:
++            raise ExecutionFailure("CmaFree did not show the required allocated-page decrease before DMA",
++                                   transfer_started=False, evidence=evidence)
+         mm2s_address = int(api.device_address(mm2s_buffer))
+         s2mm_address = int(api.device_address(s2mm_buffer))
+-        for label, address, size, alignment, visible_range in (
+-                ("MM2S", mm2s_address, preflight.TX_BYTES, 8, plan.hp0_range),
+-                ("S2MM", s2mm_address, preflight.RX_BYTES, 4, plan.hp1_range)):
+-            if address < 0 or address > 0xFFFFFFFF or address % alignment:
+-                raise ExecutionFailure(
+-                    f"{label} CMA address is not 32-bit/{alignment}-byte aligned: 0x{address:x}",
+-                                       transfer_started=False)
+-            if address + size > 0x100000000:
+-                raise ExecutionFailure(f"{label} CMA buffer exceeds 32-bit DMA address space",
+-                                       transfer_started=False)
+-            cma_ranges = getattr(api, "cma_ranges", None)
+-            if cma_ranges is not None and not any(
+-                    start <= address and address + size <= end for start, end in cma_ranges):
+-                raise ExecutionFailure(f"{label} CMA buffer falls outside the live CMA range",
+-                                       transfer_started=False,
+-                                       evidence={"buffer_address": address, "buffer_bytes": size})
+-            if address < visible_range[0] or address + size > visible_range[1]:
+-                raise ExecutionFailure(f"{label} CMA buffer is outside its HP-visible DDR range",
+-                                       transfer_started=False,
+-                                       evidence={"buffer_address": address, "buffer_bytes": size,
+-                                                 "hp_range": list(visible_range)})
+-        if (mm2s_address < s2mm_address + preflight.RX_BYTES and
+-                s2mm_address < mm2s_address + preflight.TX_BYTES):
+-            raise ExecutionFailure(
+-                "MM2S and S2MM CMA buffer physical ranges overlap",
+-                transfer_started=False,
+-                evidence={"mm2s_range": [mm2s_address, mm2s_address + preflight.TX_BYTES],
+-                          "s2mm_range": [s2mm_address, s2mm_address + preflight.RX_BYTES]},
+-            )
++        evidence["post_alloc_physical_gate"] = preflight.validate_dma_buffer_pair(
++            tx_address=mm2s_address, tx_size=memoryview(mm2s_buffer).nbytes,
++            rx_address=s2mm_address, rx_size=memoryview(s2mm_buffer).nbytes,
++            cma_ranges=getattr(api, "cma_ranges", None),
++            hp0_range=plan.hp0_range, hp1_range=plan.hp1_range)
+         previous_checker = baseline_checker
+ 
+         for index, frame in enumerate(frames_to_run):
+@@ -540,9 +538,7 @@
+         api.free(s2mm_buffer)
+         api.free(mm2s_buffer)
+         released = True
+-        final_cma_free = api.cma_free_kib()
+-        evidence["cma_free_after_kib"] = final_cma_free
+-        evidence["cma_free_delta_kib"] = final_cma_free - initial_cma_free
++        final_cma_free = record_release_cma()
+         if final_cma_free != initial_cma_free:
+             raise ExecutionFailure(
+                 f"CmaFree did not return to its starting value ({initial_cma_free} -> {final_cma_free} KiB)",
+@@ -563,6 +559,7 @@
+             if mm2s_buffer is not None:
+                 api.free(mm2s_buffer)
+             released = True
++            record_release_cma()
+         exc.dma_start_attempted = exc.dma_start_attempted or dma_start_attempted
+         exc.transfer_started = exc.transfer_started or transfer_started
+         exc.dma_may_be_active = may_be_in_flight
+@@ -584,6 +581,7 @@
+                 api.free(s2mm_buffer)
+             if mm2s_buffer is not None:
+                 api.free(mm2s_buffer)
++            record_release_cma()
+         evidence.update({"dma_start_attempted": dma_start_attempted,
+                          "transfer_started": transfer_started,
+                          "dma_may_be_active": False})
+@@ -923,7 +921,15 @@
+         return self._allocate(shape=(size,), dtype="u1")
+ 
+     def device_address(self, buffer: Any) -> int:
+-        return int(buffer.device_address)
++        # Simple AXI HP DMA consumes CPU physical DDR addresses, not an IOVA.
++        try:
++            physical = int(buffer.physical_address)
++            device = int(buffer.device_address)
++        except (AttributeError, TypeError, ValueError) as exc:
++            raise preflight.PreflightError("PYNQ buffer physical_address is unavailable") from exc
++        if physical != device:
++            raise preflight.PreflightError("PYNQ device_address differs from physical_address")
++        return physical
+ 
+     def write_buffer(self, buffer: Any, data: bytes) -> None:
+         memoryview(buffer).cast("B")[:len(data)] = data
+@@ -1220,14 +1226,16 @@
+     if live_boot_id != plan.boot_id or live_boot_id != preflight.AUTHORIZED_BOOT_ID:
+         raise preflight.PreflightError("live boot_id differs from the manifest and approved WO-0015 boot")
+     meminfo = preflight.read_cma_meminfo(meminfo_path)
+-    cma_ranges = preflight.read_cma_ranges(reserved_memory_path)
++    cma_admission = preflight.read_cma_admission(reserved_memory_path, meminfo=meminfo)
++    cma_ranges = cma_admission.ranges
+     preflight.validate_runtime_cma(meminfo, cma_ranges, (plan.hp0_range, plan.hp1_range))
+     if stage not in preflight.BOARD_STAGES:
+         raise preflight.PreflightError(f"unsupported runtime audit stage {stage!r}")
+     api = PynqBoardAPI(plan, stage=stage, cma_ranges=cma_ranges)
+-    runtime_audit = api.audit_environment(
++    runtime_audit = dict(api.audit_environment(
+         require_empty_shutdown=stage == "overlay-only",
+-        require_loaded_bit=stage != "overlay-only")
++        require_loaded_bit=stage != "overlay-only"))
++    runtime_audit["cma_admission"] = cma_admission.as_evidence()
+     if runtime_audit.get("boot_id") != live_boot_id:
+         raise preflight.PreflightError("boot_id changed while runtime preflight was being collected")
+     return live_boot_id, meminfo, cma_ranges, runtime_audit

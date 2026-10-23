@@ -1,0 +1,10 @@
+test_ee_len_0x8000_is_initialized_32768_blocks (test_ext4_ro.Ext4ReadOnlyTests.test_ee_len_0x8000_is_initialized_32768_blocks) ... ok
+test_finds_requested_uuid_without_mounting (test_ext4_ro.Ext4ReadOnlyTests.test_finds_requested_uuid_without_mounting) ... ok
+test_reads_file_by_inode_extent_and_directory_path (test_ext4_ro.Ext4ReadOnlyTests.test_reads_file_by_inode_extent_and_directory_path) ... ok
+test_rejects_extent_outside_partition (test_ext4_ro.Ext4ReadOnlyTests.test_rejects_extent_outside_partition) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.065s
+
+OK
+GREEN_EXIT_CODE=0

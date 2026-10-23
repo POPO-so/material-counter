@@ -1,0 +1,21 @@
+
+=================================== ERRORS ====================================
+_____ ERROR collecting python/boardtests/wo0013/test_dma_replay_verify.py _____
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\python\boardtests\wo0013\test_dma_replay_verify.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+python\boardtests\wo0013\test_dma_replay_verify.py:4: in <module>
+    from dma_replay_verify import (
+E   ModuleNotFoundError: No module named 'dma_replay_verify'
+__ ERROR collecting python/refmodel/experiments/wo0014/test_image_vectors.py __
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\python\refmodel\experiments\wo0014\test_image_vectors.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+python\refmodel\experiments\wo0014\test_image_vectors.py:6: in <module>
+    from image_vectors import (
+E   ModuleNotFoundError: No module named 'image_vectors'
+=========================== short test summary info ===========================
+ERROR python/boardtests/wo0013/test_dma_replay_verify.py
+ERROR python/refmodel/experiments/wo0014/test_image_vectors.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!
+2 errors in 0.88s

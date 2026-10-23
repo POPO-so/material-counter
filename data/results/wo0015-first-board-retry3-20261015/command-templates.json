@@ -1,0 +1,48 @@
+{
+  "upload": {
+    "op": "upload",
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-two-tier-bundle-20261015.zip",
+    "sha256": "d990f2fcbd3d735cb00d01793b2b488acb60555e19ec5a6ffc7a1ef644a36002"
+  },
+  "offline": {
+    "op": "command",
+    "command": "sudo -S -p \"\" env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python -u /home/xilinx/wo0015_first_board_retry3_20261015/board_once.py --mode offline --manifest /home/xilinx/wo0015_first_board_retry3_20261015/run-manifest.json --manifest-sha256 84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312 --evidence-json /home/xilinx/wo0015_first_board_retry3_20261015/offline-result.json",
+    "timeout": 60
+  },
+  "overlay-only": {
+    "op": "command",
+    "command": "sudo -S -p \"\" env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python -u /home/xilinx/wo0015_first_board_retry3_20261015/board_once.py --mode overlay-only --manifest /home/xilinx/wo0015_first_board_retry3_20261015/run-manifest.json --manifest-sha256 84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312 --execute --authorize-stage overlay-only --approve-once --timeout-s 5 --evidence-json /home/xilinx/wo0015_first_board_retry3_20261015/overlay-only-result.json",
+    "timeout": 60
+  },
+  "dma-single": {
+    "op": "command",
+    "command": "sudo -S -p \"\" env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python -u /home/xilinx/wo0015_first_board_retry3_20261015/board_once.py --mode dma-single --manifest /home/xilinx/wo0015_first_board_retry3_20261015/run-manifest.json --manifest-sha256 84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312 --execute --authorize-stage dma-single --approve-once --timeout-s 5 --evidence-json /home/xilinx/wo0015_first_board_retry3_20261015/dma-single-result.json",
+    "timeout": 60
+  },
+  "dma-three": {
+    "op": "command",
+    "command": "sudo -S -p \"\" env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python -u /home/xilinx/wo0015_first_board_retry3_20261015/board_once.py --mode dma-three --manifest /home/xilinx/wo0015_first_board_retry3_20261015/run-manifest.json --manifest-sha256 84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312 --execute --authorize-stage dma-three --approve-once --timeout-s 5 --evidence-json /home/xilinx/wo0015_first_board_retry3_20261015/dma-three-result.json",
+    "timeout": 60
+  },
+  "initial-state": {
+    "op": "command",
+    "command": "sudo -S -p \"\" env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python -u -c 'import base64;exec(compile(base64.b64decode('\"'\"'IiIiU3VwcGxlbWVudGFsIHJlYWQtb25seSByZWdpc3RlciBzbmFwc2hvdCBleHBsaWNpdGx5IHJlcXVlc3RlZCBieSB0aGUgY2FwdGFpbi4iIiIKaW1wb3J0IGpzb24sc3lzCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aApXTz1QYXRoKCcvaG9tZS94aWxpbngvd28wMDE1X2ZpcnN0X2JvYXJkX3JldHJ5M18yMDI2MTAxNScpCnN5cy5wYXRoLmluc2VydCgwLHN0cihXTykpCmltcG9ydCBib2FyZF9vbmNlIGFzIHJ1bgppbXBvcnQgYm9hcmRfcHJlZmxpZ2h0IGFzIHByZQpNQU5JRkVTVF9TSEE9Jzg0YzI3MDEyZWMwMzhkNDgyNjcxMjhhZjA4ZGViOTY4NWViMWJiOWE1ZmRiMWE3OWU1ZGEwNjQwODM3ODgzMTInCnBsYW49cHJlLnZhbGlkYXRlX21hbmlmZXN0KFdPLydydW4tbWFuaWZlc3QuanNvbicsTUFOSUZFU1RfU0hBKQphc3NlcnQgcHJlLnJlYWRfYm9vdF9pZCgpPT1wbGFuLmJvb3RfaWQKYXBpPXJ1bi5QeW5xQm9hcmRBUEkocGxhbixzdGFnZT0nZG1hLXNpbmdsZScpCmVudmlyb25tZW50PWFwaS5hdWRpdF9lbnZpcm9ubWVudChyZXF1aXJlX2VtcHR5X3NodXRkb3duPUZhbHNlLHJlcXVpcmVfbG9hZGVkX2JpdD1UcnVlKQphcGkub3Blbl9tbWlvKCkKY2hlY2tlcj17ZicweHtvOjAyeH0nOmFwaS5yZWFkMzIocHJlLkNIRUNLRVJfQkFTRSxvKSBmb3IgbyBpbiByYW5nZSgwLDB4NjQsNCl9CmRtYT17ZicweHtvOjAyeH0nOmFwaS5yZWFkMzIocHJlLkRNQV9CQVNFLG8pIGZvciBvIGluICgwLDQsMHgxOCwweDI4LDB4MzAsMHgzNCwweDQ4LDB4NTgpfQplcnJvcnM9W10KaWYgY2hlY2tlclsnMHgwNCddIT1wcmUuUEFDS0VUX01BR0lDOmVycm9ycy5hcHBlbmQoJ0NoZWNrZXIgc2lnbmF0dXJlIG1pc21hdGNoJykKaWYgY2hlY2tlclsnMHg2MCddIT1wcmUuUEFDS0VSX1NJR05BVFVSRTplcnJvcnMuYXBwZW5kKCdQYWNrZXIgc2lnbmF0dXJlIG1pc21hdGNoJykKZm9yIGNoYW5uZWwsb2Zmc2V0IGluIFsoJ01NMlMnLCcweDA0JyksKCdTMk1NJywnMHgzNCcpXToKICAgIHNyPWRtYVtvZmZzZXRdCiAgICBpZiBzciAmIHJ1bi5ETUFfRVJST1JfTUFTSzplcnJvcnMuYXBwZW5kKGNoYW5uZWwrJyBFcnIgIT0gMCcpCiAgICBpZiBzciAmIHJ1bi5ETUFfSEFMVEVEOmVycm9ycy5hcHBlbmQoY2hhbm5lbCsnIEhhbHRlZCAhPSAwJykKcmVzdWx0PXsnc3RhdHVzJzonSU5JVElBTF9TVEFURV9QQVNTJyBpZiBub3QgZXJyb3JzIGVsc2UgJ0lOSVRJQUxfU1RBVEVfRkFJTF9TVE9QUEVEJywKJ2Jvb3RfaWQnOnByZS5yZWFkX2Jvb3RfaWQoKSwnY2hlY2tlcic6Y2hlY2tlciwnZG1hJzpkbWEsJ2Vycm9ycyc6ZXJyb3JzLAonZW52aXJvbm1lbnQnOmVudmlyb25tZW50LCdjbWEnOnByZS5yZWFkX2NtYV9tZW1pbmZvKCksCidtbWlvX3dyaXRlcyc6MCwnZG1hX3N0YXJ0ZWQnOkZhbHNlLAondmVyc2lvbl9ub3RlJzonVGhlIFJUTCBleHBvc2VzIENoZWNrZXIgV08xNCBhbmQgUGFja2VyIFdPMTUgc2lnbmF0dXJlczsgbm8gc2VwYXJhdGUgdmVyc2lvbiByZWdpc3RlciBleGlzdHMuJ30KYXNzZXJ0IHJlc3VsdFsnYm9vdF9pZCddPT1wbGFuLmJvb3RfaWQKKFdPLydpbml0aWFsLXN0YXRlLXJlc3VsdC5qc29uJykud3JpdGVfdGV4dChqc29uLmR1bXBzKHJlc3VsdCxpbmRlbnQ9MikpCnByaW50KGpzb24uZHVtcHMocmVzdWx0LGluZGVudD0yKSxmbHVzaD1UcnVlKQppZiBlcnJvcnM6CiAgICBydW4uX3JlY29yZF90ZXJtaW5hbF9mYWlsdXJlKCdpbml0aWFsLXN0YXRlJyxwbGFuLCc7ICcuam9pbihlcnJvcnMpKQpzeXMuZXhpdCgwIGlmIG5vdCBlcnJvcnMgZWxzZSAyKQo='\"'\"'),\"retry3-controlled-audit\",\"exec\"))'",
+    "timeout": 45
+  },
+  "exit-os": {
+    "op": "command",
+    "command": "sudo -S -p \"\" /usr/local/share/pynq-venv/bin/python -I -S -B -c 'import base64;exec(compile(base64.b64decode('\"'\"'IiIiUmVhZC1vbmx5IGV4aXQgZXZpZGVuY2U6IG5vIE1NSU8sIE92ZXJsYXkgY29uc3RydWN0aW9uLCBETUEsIG9yIGJ1ZmZlciBhbGxvY2F0aW9uLiIiIgppbXBvcnQganNvbixzeXMsc3VicHJvY2Vzcwpmcm9tIHBhdGhsaWIgaW1wb3J0IFBhdGgKV089UGF0aCgnL2hvbWUveGlsaW54L3dvMDAxNV9maXJzdF9ib2FyZF9yZXRyeTNfMjAyNjEwMTUnKQpzeXMucGF0aC5pbnNlcnQoMCxzdHIoV08pKQppbXBvcnQgYm9hcmRfcHJlZmxpZ2h0IGFzIHByZQpkZWYgYXR0ZW1wdChmbik6CiAgICB0cnk6cmV0dXJuIGZuKCkKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZTpyZXR1cm4geydlcnJvcic6dHlwZShlKS5fX25hbWVfXysnOiAnK3N0cihlKX0Kcj17J2Jvb3RfaWQnOnByZS5yZWFkX2Jvb3RfaWQoKSwnY21hJzpwcmUucmVhZF9jbWFfbWVtaW5mbygpLAonb3duZXJzaGlwJzphdHRlbXB0KHByZS5hdWRpdF9wcm9jZXNzX293bmVyc2hpcCksJ2ZwZ2FfbWFuYWdlcic6YXR0ZW1wdChwcmUucmVhZF9mcGdhX21hbmFnZXIpLAona2VybmVsX2xvZyc6YXR0ZW1wdChwcmUucmVhZF9rZXJuZWxfbG9nKSwKJ2d1YXJkcyc6e3N0cihwKTpwLnJlYWRfdGV4dCgpIGZvciBwIGluIFBhdGgoJy92YXIvbGliL3dvMDAxNS1zMm1tJykuZ2xvYignKicpIGlmIHAuaXNfZmlsZSgpfSwKJ3BzJzpzdWJwcm9jZXNzLnJ1bihbJ3BzJywnLWVvJywncGlkLHBwaWQsc3RhdCxjb21tLGFyZ3MnXSxjYXB0dXJlX291dHB1dD1UcnVlLHRleHQ9VHJ1ZSkuc3Rkb3V0fQoKaW1wb3J0IGhhc2hsaWIKclsnZGVwbG95ZWRfc2hhMjU2J109e246aGFzaGxpYi5zaGEyNTYoKFdPL24pLnJlYWRfYnl0ZXMoKSkuaGV4ZGlnZXN0KCkgZm9yIG4gaW4gKCd3bzE1LmJpdCcsJ3dvMTUuaHdoJywnYm9hcmRfb25jZS5weScsJ2JvYXJkX3ByZWZsaWdodC5weScsJ3J1bi1tYW5pZmVzdC5qc29uJywnU0hBMjU2U1VNUy5qc29uJyl9CnJbJ3N0YWdlX3Jlc3VsdHMnXT17bjpqc29uLmxvYWRzKChXTy9uKS5yZWFkX3RleHQoKSkgZm9yIG4gaW4gKCdvZmZsaW5lLXJlc3VsdC5qc29uJywnb3ZlcmxheS1vbmx5LXJlc3VsdC5qc29uJywnaW5pdGlhbC1zdGF0ZS1yZXN1bHQuanNvbicsJ2RtYS1zaW5nbGUtcmVzdWx0Lmpzb24nLCdkbWEtdGhyZWUtcmVzdWx0Lmpzb24nKSBpZiAoV08vbikuZXhpc3RzKCl9CgooV08vJ2V4aXQtb3MtcmVzdWx0Lmpzb24nKS53cml0ZV90ZXh0KGpzb24uZHVtcHMocixpbmRlbnQ9MikpCnByaW50KGpzb24uZHVtcHMocixpbmRlbnQ9MiksZmx1c2g9VHJ1ZSkK'\"'\"'),\"retry3-controlled-audit\",\"exec\"))'",
+    "timeout": 45
+  },
+  "static": {
+    "op": "command",
+    "command": "sudo -S -p \"\" /usr/local/share/pynq-venv/bin/python -I -S -B -c 'import base64;exec(compile(base64.b64decode('\"'\"'aW1wb3J0IHN5cyxqc29uLGhhc2hsaWIKZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgnL2hvbWUveGlsaW54L3dvMDAxNV9maXJzdF9ib2FyZF9yZXRyeTNfMjAyNjEwMTUnKQpzeXMucGF0aC5pbnNlcnQoMCxzdHIocCkpCmltcG9ydCBib2FyZF9wcmVmbGlnaHQgYXMgcHJlCnBsYW49cHJlLnZhbGlkYXRlX21hbmlmZXN0KHAvJ3J1bi1tYW5pZmVzdC5qc29uJywnODRjMjcwMTJlYzAzOGQ0ODI2NzEyOGFmMDhkZWI5Njg1ZWIxYmI5YTVmZGIxYTc5ZTVkYTA2NDA4Mzc4ODMxMicpCmFzc2VydCBwcmUuQVVUSE9SSVpFRF9CT09UX0lEPT1wbGFuLmJvb3RfaWQ9PXByZS5yZWFkX2Jvb3RfaWQoKT09JzgyMmE5YzI5LTM3YzAtNDM4Yy04MWM0LWRhOTk4ZDU3MDczYicKc3Vtcz1qc29uLmxvYWRzKChwLydTSEEyNTZTVU1TLmpzb24nKS5yZWFkX3RleHQoKSkKYXNzZXJ0IGFsbChoYXNobGliLnNoYTI1NigocC9uKS5yZWFkX2J5dGVzKCkpLmhleGRpZ2VzdCgpPT1oIGZvciBuLGggaW4gc3Vtcy5pdGVtcygpKQptZW09cHJlLnJlYWRfY21hX21lbWluZm8oKQphZG1pc3Npb249cHJlLnJlYWRfY21hX2FkbWlzc2lvbihtZW1pbmZvPW1lbSkKcHJlLnZhbGlkYXRlX3J1bnRpbWVfY21hKG1lbSxhZG1pc3Npb24ucmFuZ2VzLChwbGFuLmhwMF9yYW5nZSxwbGFuLmhwMV9yYW5nZSkpCm93bmVycz1wcmUuYXVkaXRfcHJvY2Vzc19vd25lcnNoaXAoKQpyPXsnc3RhdHVzJzonU1RBVElDX1RJRVIxX1BBU1MnLCdib290X2lkJzpwcmUucmVhZF9ib290X2lkKCksJ21lbWluZm8nOm1lbSwnY21hX2FkbWlzc2lvbic6YWRtaXNzaW9uLmFzX2V2aWRlbmNlKCksJ293bmVyc2hpcCc6b3duZXJzLCdtYW5hZ2VyJzpwcmUucmVhZF9mcGdhX21hbmFnZXIoKSwnc2hhMjU2Jzp7bjpoYXNobGliLnNoYTI1NigocC9uKS5yZWFkX2J5dGVzKCkpLmhleGRpZ2VzdCgpIGZvciBuIGluICgnd28xNS5iaXQnLCd3bzE1Lmh3aCcsJ3J1bi1tYW5pZmVzdC5qc29uJywnYm9hcmRfb25jZS5weScsJ2JvYXJkX3ByZWZsaWdodC5weScpfSwnZmlsZV9vd25lcl91aWRzJzp7bjoocC9uKS5zdGF0KCkuc3RfdWlkIGZvciBuIGluICgnYm9hcmRfb25jZS5weScsJ2JvYXJkX3ByZWZsaWdodC5weScsJ3J1bi1tYW5pZmVzdC5qc29uJyl9fQphc3NlcnQgYWxsKHVpZD09MTAwMCBmb3IgdWlkIGluIHJbJ2ZpbGVfb3duZXJfdWlkcyddLnZhbHVlcygpKQpwcmludChqc29uLmR1bXBzKHIsaW5kZW50PTIpLGZsdXNoPVRydWUpCg=='\"'\"'),\"retry3-controlled-audit\",\"exec\"))'",
+    "timeout": 45
+  },
+  "download-exit": {
+    "op": "download",
+    "files": {
+      "/home/xilinx/wo0015_first_board_retry3_20261015/exit-os-result.json": "exit-os-result.json"
+    }
+  }
+}

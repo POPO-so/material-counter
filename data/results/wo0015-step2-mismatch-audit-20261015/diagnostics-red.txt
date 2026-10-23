@@ -1,0 +1,112 @@
+FFFFFFFF                                                                 [100%]
+================================== FAILURES ===================================
+__________ test_parity_analysis_distinguishes_zero_and_poison_words ___________
+
+    def test_parity_analysis_distinguishes_zero_and_poison_words():
+        golden=bytes([0,0,0,0,255,0,0,0,255,255,0,0,0,0,0,0])*4
+        rx=(b'\0'*4+b'\xa5'*4)*8
+>       d=run.analyze_rx_mismatch(rx,golden)
+          ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'board_once' has no attribute 'analyze_rx_mismatch'
+
+scripts\wo0015\test_rx_diagnostics.py:16: AttributeError
+_______ test_analysis_rejects_empty_inexact_or_partial_words[lengths0] ________
+
+lengths = (0, 0)
+
+    @pytest.mark.parametrize('lengths',[(0,0),(8,4),(3,3)])
+    def test_analysis_rejects_empty_inexact_or_partial_words(lengths):
+>       with pytest.raises(ValueError):run.analyze_rx_mismatch(bytes(lengths[0]),bytes(lengths[1]))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'board_once' has no attribute 'analyze_rx_mismatch'
+
+scripts\wo0015\test_rx_diagnostics.py:27: AttributeError
+_______ test_analysis_rejects_empty_inexact_or_partial_words[lengths1] ________
+
+lengths = (8, 4)
+
+    @pytest.mark.parametrize('lengths',[(0,0),(8,4),(3,3)])
+    def test_analysis_rejects_empty_inexact_or_partial_words(lengths):
+>       with pytest.raises(ValueError):run.analyze_rx_mismatch(bytes(lengths[0]),bytes(lengths[1]))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'board_once' has no attribute 'analyze_rx_mismatch'
+
+scripts\wo0015\test_rx_diagnostics.py:27: AttributeError
+_______ test_analysis_rejects_empty_inexact_or_partial_words[lengths2] ________
+
+lengths = (3, 3)
+
+    @pytest.mark.parametrize('lengths',[(0,0),(8,4),(3,3)])
+    def test_analysis_rejects_empty_inexact_or_partial_words(lengths):
+>       with pytest.raises(ValueError):run.analyze_rx_mismatch(bytes(lengths[0]),bytes(lengths[1]))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'board_once' has no attribute 'analyze_rx_mismatch'
+
+scripts\wo0015\test_rx_diagnostics.py:27: AttributeError
+_________ test_single_capture_is_durable_and_exact_before_either_free _________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-172/test_single_capture_is_durable0')
+
+    def test_single_capture_is_durable_and_exact_before_either_free(tmp_path):
+        manifest,_=make_manifest(tmp_path,frame_count=1);plan=pre.validate_manifest(manifest)
+        directory=tmp_path/'rx-capture';observed=[]
+        class CheckedFree(run.MockBoardAPI):
+            def free(self,b):
+                raw=next(directory.glob('*_rx_raw.bin')).read_bytes()
+                record=json.loads(next(directory.glob('*_diagnostics.json')).read_bytes())
+                assert len(raw)==76800 and record['rx_sha256']==hashlib.sha256(raw).hexdigest()
+                assert record['captured_before_release'] is True
+                observed.append(raw)
+                super().free(b)
+        api=CheckedFree(plan,corrupt_s2mm_frame=1)
+        with pytest.raises(run.ExecutionFailure,match='differs from golden') as failure:
+>           run.run_frames(plan,api,diagnostic_dir=directory)
+E           TypeError: run_frames() got an unexpected keyword argument 'diagnostic_dir'
+
+scripts\wo0015\test_rx_diagnostics.py:42: TypeError
+___ test_three_frame_failure_preserves_only_failed_frame_with_distinct_name ___
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-172/test_three_frame_failure_prese0')
+
+    def test_three_frame_failure_preserves_only_failed_frame_with_distinct_name(tmp_path):
+        manifest,_=make_manifest(tmp_path,frame_count=3);plan=pre.validate_manifest(manifest)
+        api=run.MockBoardAPI(plan,corrupt_s2mm_frame=2)
+        with pytest.raises(run.ExecutionFailure) as failure:
+>           run.run_frames(plan,api,diagnostic_dir=tmp_path/'diag')
+E           TypeError: run_frames() got an unexpected keyword argument 'diagnostic_dir'
+
+scripts\wo0015\test_rx_diagnostics.py:53: TypeError
+_ test_capture_failure_retains_completed_buffers_without_claiming_active_dma __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-172/test_capture_failure_retains_c0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001BB5B37E780>
+
+    def test_capture_failure_retains_completed_buffers_without_claiming_active_dma(tmp_path,monkeypatch):
+        manifest,_=make_manifest(tmp_path,frame_count=1);plan=pre.validate_manifest(manifest)
+        api=run.MockBoardAPI(plan,corrupt_s2mm_frame=1)
+        def fail(*a,**kw):raise OSError('disk full')
+>       monkeypatch.setattr(run,'persist_rx_diagnostics',fail)
+E       AttributeError: <module 'board_once' from 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\scripts\\wo0015\\board_once.py'> has no attribute 'persist_rx_diagnostics'
+
+scripts\wo0015\test_rx_diagnostics.py:63: AttributeError
+________________ test_capture_never_overwrites_prior_raw_bytes ________________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-172/test_capture_never_overwrites_0')
+
+    def test_capture_never_overwrites_prior_raw_bytes(tmp_path):
+        raw=b'\xa5'*64;golden=bytes(64)
+>       d=run.persist_rx_diagnostics(tmp_path,'fixed',raw,golden,context={})
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'board_once' has no attribute 'persist_rx_diagnostics'
+
+scripts\wo0015\test_rx_diagnostics.py:73: AttributeError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_parity_analysis_distinguishes_zero_and_poison_words
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_analysis_rejects_empty_inexact_or_partial_words[lengths0]
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_analysis_rejects_empty_inexact_or_partial_words[lengths1]
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_analysis_rejects_empty_inexact_or_partial_words[lengths2]
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_single_capture_is_durable_and_exact_before_either_free
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_three_frame_failure_preserves_only_failed_frame_with_distinct_name
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_capture_failure_retains_completed_buffers_without_claiming_active_dma
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_capture_never_overwrites_prior_raw_bytes
+8 failed in 1.60s

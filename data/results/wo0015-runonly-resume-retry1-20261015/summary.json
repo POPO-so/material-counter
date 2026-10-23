@@ -1,0 +1,61 @@
+{
+  "status": "FAIL_STOPPED",
+  "stopped_at": "Step 2 / pre-DMA CmaFree allocation-accounting gate",
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "step1": "PASS (Resumed via Run-only)",
+  "run_only": "PASS",
+  "historical_guard_archive": "PASS",
+  "step2": "DMA_SINGLE_FAIL_PRE_TRANSFER",
+  "step3": "NOT_EXECUTED",
+  "run_only_cr_writes": 2,
+  "dma_frames_started": 0,
+  "allocated_buffers": 2,
+  "free_calls_returned": 2,
+  "physical_addresses_read": false,
+  "tier2_address_gate_executed": false,
+  "Golden_comparison": "NOT_EXECUTED",
+  "CmaTotal_kib": 131072,
+  "CmaFree_initial_kib": 57000,
+  "CmaFree_frame_before_kib": 37884,
+  "CmaFree_after_release_kib": 38612,
+  "CmaFree_exit_kib": 54448,
+  "CmaFree_exact_restoration_proven": false,
+  "hardware_ownership_exit": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "terminal_guard": {
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "build_id": "wo0015-hw-50mhz-20261015",
+    "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+    "reason": "ExecutionFailure: CmaFree did not show the required allocated-page decrease before DMA",
+    "schema": 1,
+    "stage": "dma-single",
+    "status": "TERMINAL_FAILURE",
+    "work_order": "WO-0015"
+  },
+  "deployed_sha256": {
+    "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "board_once.py": "921ee6aae276b53f68c359decdfadf188e67667514edfecac3e6f84c09bb0422",
+    "board_preflight.py": "4c62fd37e5b6fa6c349a58ad7c2dc49b49e0f890b77b07400d304616c7a005d0",
+    "run-manifest.json": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+    "SHA256SUMS.json": "0909b8fbce87704c7ec70665f16830303a5c1408f62ed05fc70ae56681fa1fd2"
+  },
+  "offline_tests": 63,
+  "history_index_files_unchanged": {
+    "wo0015-first-board-retry3-20261015": 114,
+    "wo0015-runonly-proposal-20261015": 16,
+    "wo0015-runonly-resume-20261015": 34
+  },
+  "post_ping_exit_code": 0,
+  "cleanup": {
+    "exists_after": false,
+    "remote_command_exited": true,
+    "controller_state": "FAIL_STOPPED_EVIDENCE_SAVED",
+    "pid": 49264,
+    "hardware_owner_process_terminated": false
+  }
+}

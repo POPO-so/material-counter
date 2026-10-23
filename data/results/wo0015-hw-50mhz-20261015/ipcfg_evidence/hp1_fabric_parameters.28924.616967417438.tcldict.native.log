@@ -1,0 +1,3 @@
+ATTEMPT:/hp1_fabric count=2/10 operation=configure
+CRITICAL WARNING: [BD 41-737] Cannot set the parameter HAS_ARESETN on /hp1_fabric. It is read-only.
+CRITICAL WARNING: [BD 41-737] Cannot set the parameter NUM_CLKS on /hp1_fabric. It is read-only.

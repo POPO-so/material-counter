@@ -1,0 +1,20 @@
+--- original/board_preflight.py
++++ authorized/board_preflight.py
+@@ -32,7 +32,7 @@
+ TRAILER_END = 0xC0DEC014
+ PACKER_SIGNATURE = 0x574F3135
+ EXPECTED_PART = "xc7z020clg400-1"
+-AUTHORIZED_BOOT_ID = "cb087bbb-932d-4a6e-9600-98dd1c7e5f8d"
++AUTHORIZED_BOOT_ID = "822a9c29-37c0-438c-81c4-da998d57073b"
+ BOARD_STAGES = ("overlay-only", "dma-single", "dma-three")
+ RUN_AUTHORIZATION = "dma-three"
+ DMA_BASE = 0x40400000
+@@ -377,7 +377,7 @@
+ 
+ def validate_manifest(path: str | Path,
+                       expected_manifest_sha256: str | None = None) -> ValidatedRun:
+-    """Validate one or three fixed RGB→Binary8 frames and all bound artifacts."""
++    """Validate one or three fixed RGB鈫払inary8 frames and all bound artifacts."""
+     manifest_path = Path(path).expanduser().resolve()
+     try:
+         raw = manifest_path.read_bytes()

@@ -1,0 +1,11 @@
+{
+  "local_image": "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+  "superblock_offset": 137364480,
+  "raw_sha256": "0499dfa766d5f32c191bc3b12b532b8316f14a28ee8c79113971b59b15350143",
+  "uuid_offset_in_superblock": "0x68",
+  "local_uuid": "63b8b04d-af08-419a-a9dc-16f374e283dc",
+  "historical_root_uuid": "63b8b04d-af08-419a-a9dc-16f374e283dc",
+  "equal": true,
+  "classification": "INFERRED common filesystem lineage; matching clone UUID is not unique device, complete image, BOOT.BIN or execution identity",
+  "format_source": "https://www.kernel.org/doc/html/latest/filesystems/ext4/super.html"
+}

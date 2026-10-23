@@ -1,0 +1,22 @@
+[
+  {
+    "title": "PG021 Direct Register Mode (Simple DMA)",
+    "url": "https://docs.amd.com/r/en-US/pg021_axi_dma/Direct-Register-Mode-Simple-DMA",
+    "used_for": "RS starts the channel; address/length programming is separate and LENGTH is programmed last."
+  },
+  {
+    "title": "PG021 S2MM_DMACR",
+    "url": "https://docs.amd.com/r/en-US/pg021_axi_dma/S2MM_DMACR-S2MM-DMA-Control-Register-Offset-30h",
+    "used_for": "RS bit0, reserved read-only bit1, Reset bit2; preserve other bits."
+  },
+  {
+    "title": "PG021 MM2S_DMACR",
+    "url": "https://docs.amd.com/r/en-US/pg021_axi_dma/MM2S_DMACR-MM2S-DMA-Control-Register-Offset-00h",
+    "used_for": "MM2S RS/Reset controls and channel halt/run relation."
+  },
+  {
+    "title": "PG021 S2MM_DMASR",
+    "url": "https://docs.amd.com/r/en-US/pg021_axi_dma/S2MM_DMASR-S2MM-DMA-Status-Register-Offset-34h",
+    "used_for": "Halted meaning and Idle=0 before the initial Direct Register transfer."
+  }
+]

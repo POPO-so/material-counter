@@ -1,0 +1,6 @@
+{
+  "stage1_gate_passed": true,
+  "result_sha256": "a549e5152487b94635b6216a348866f555449480947ab917ffda7207f1a76a7a",
+  "post_overlay_rd": "0x00000001",
+  "post_overlay_wr": "0x00000f01"
+}

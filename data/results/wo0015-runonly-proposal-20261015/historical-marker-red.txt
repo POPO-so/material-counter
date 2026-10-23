@@ -1,0 +1,14 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+___ test_historical_terminal_uses_manifest_binding_when_hwh_field_is_absent ___
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:99: in test_historical_terminal_uses_manifest_binding_when_hwh_field_is_absent
+    assert model.terminal_archive_plan(raw, hashlib.sha256(raw).hexdigest(), result)['status'] == 'ARCHIVE_PROPOSED_NOT_EXECUTED'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-runonly-proposal-20261015\run_only_model.py:95: in terminal_archive_plan
+    require_identity(marker)
+data\results\wo0015-runonly-proposal-20261015\run_only_model.py:20: in require_identity
+    raise ProposalRejected('boot or locked artifact identity differs')
+E   run_only_model.ProposalRejected: boot or locked artifact identity differs
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_historical_terminal_uses_manifest_binding_when_hwh_field_is_absent
+1 failed, 29 deselected in 0.13s

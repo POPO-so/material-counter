@@ -1,0 +1,12 @@
+{"status": "AWAITING_NATIVE_HIDDEN_CREDENTIALS", "time_ns": 1792055451227613500}
+{"status": "CONNECT_BEGIN", "time_ns": 1792055556759157900}
+{"status": "STRICT_SSH_AUTHENTICATED", "time_ns": 1792055558631402500, "fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o"}
+{"status": "DISPATCH", "time_ns": 1792055558632413700, "name": "initial-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792055560774378100, "name": "initial-readonly", "exit_code": 0, "elapsed_s": 1.8280000000086147}
+{"status": "READONLY_BOOT_GATE_PASS_AWAITING_MANAGER", "time_ns": 1792055560774378100}
+{"status": "DISPATCH", "time_ns": 1792055588981331400, "name": "request-001"}
+{"status": "COMMAND_EXIT", "time_ns": 1792055591227410500, "name": "request-001", "exit_code": 0, "elapsed_s": 2.187999999994645}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792055591227410500, "name": "request-001"}
+{"status": "FAIL_STOPPED", "time_ns": 1792055607189669900, "error": "PermissionError: [Errno 13] Permission denied"}
+{"status": "DISPATCH", "time_ns": 1792055758376547400, "name": "postflight-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792055760846253900, "name": "postflight-readonly", "exit_code": 0, "elapsed_s": 2.1560000000026776}

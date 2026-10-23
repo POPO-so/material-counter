@@ -1,0 +1,28 @@
+Commit: 743f87c4a48944aab657c0fc9e5d8d2ef8fe3971
+Local/board camera script SHA-256: 3df97de838b922316e8bbfdb416f6e2df2e090f3b033b52c2d62bb917b152162
+Command: prepare mode, MJPG camera capture, 30 second timeout
+SSH exit code: 0
+Output:
+{
+  "camera_run_dir": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b",
+  "camera_run_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-run.json",
+  "frame_id_to_send": 3,
+  "golden_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.binary.bin",
+  "golden_sha256": "eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350",
+  "manifest_frames": 3,
+  "manifest_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/wo0015-camera-manifest.json",
+  "manifest_sha256": "bdb30097ba54b93acd518027632fd6d7d96111f0f5f6d24ea6620880b153ae66",
+  "packet_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.rgb.bin",
+  "packet_sha256": "a83fb2e350fcad33af62a80c6746d3e35821339b9a73a02db030123466a82f67",
+  "reserved_unrun_frame_ids": [
+    4,
+    5
+  ],
+  "resized_gray_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-gray-320x240.pgm",
+  "rx_bytes": 76800,
+  "source_gray_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-source-gray.pgm",
+  "status": "CAMERA_BUNDLE_PREPARED",
+  "tx_bytes": 230432
+}
+prepare_exit_code=0
+boot_id_after=2cc2ab91-2e3f-450e-b9e7-361ec38e2815

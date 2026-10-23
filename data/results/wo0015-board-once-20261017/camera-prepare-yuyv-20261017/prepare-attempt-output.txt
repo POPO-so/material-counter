@@ -1,0 +1,15 @@
+WO-0015 OV9281 camera prepare attempt
+Commit: 2bcb595da08ebeafee4ce43522a59c3c2aea17fe
+Board boot_id checked in command: 2cc2ab91-2e3f-450e-b9e7-361ec38e2815
+Template manifest SHA-256: e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935
+camera_dma_oneshot.py SHA-256: 30c39bb55fe02bb4d4371c8c11b8dae57891a759f47b19278eab667c0b21e2ac
+SSH command exit code: 1
+
+Captured command output:
+[ WARN:0] global ./modules/videoio/src/cap_v4l.cpp (1001) tryIoctl VIDEOIO(V4L2:/dev/video0): select() timeout.
+{
+  "board_accessed": false,
+  "error": "RuntimeError: V4L2 returned no frame on its single capture attempt",
+  "pynq_imported": false,
+  "status": "PREPARE_REJECTED"
+}

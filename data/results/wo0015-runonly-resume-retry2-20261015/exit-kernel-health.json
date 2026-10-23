@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "new_lines": [
+    "[24014.111619] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(2493), ret: 0",
+    "[24014.111733] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(2493)",
+    "[24014.112341] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(2493), ret: 0",
+    "[24014.115453] [drm] bitstream 444d4c49-7c99-ec8f-b75a-33d7ed50b28d locked, ref=1",
+    "[24014.115545] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(2493) add context Domain(65535) CU(0xffff) shared(true)",
+    "[24014.116503] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(2493) del context Domain(65535) CU(0xffff)",
+    "[24014.116565] [drm] bitstream 444d4c49-7c99-ec8f-b75a-33d7ed50b28d unlocked, ref=0",
+    "[24015.243999] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(2493)",
+    "[24082.696973] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(2591), ret: 0",
+    "[24082.697086] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(2591)",
+    "[24082.697693] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(2591), ret: 0",
+    "[24082.700900] [drm] bitstream 444d4c49-7c99-ec8f-b75a-33d7ed50b28d locked, ref=1",
+    "[24082.701012] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(2591) add context Domain(65535) CU(0xffff) shared(true)",
+    "[24082.702079] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(2591) del context Domain(65535) CU(0xffff)",
+    "[24082.702146] [drm] bitstream 444d4c49-7c99-ec8f-b75a-33d7ed50b28d unlocked, ref=0",
+    "[24085.935976] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(2591)"
+  ]
+}

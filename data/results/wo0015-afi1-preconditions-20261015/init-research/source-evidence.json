@@ -1,0 +1,242 @@
+{
+  "audit": {
+    "date": "2026-10-15",
+    "mode": "offline_read_only",
+    "vivado_process_started": false,
+    "board_accessed": false,
+    "register_io": false,
+    "production_files_modified": false,
+    "report": "data/results/wo0015-afi1-preconditions-20261015/init-research/findings.md"
+  },
+  "sources": [
+    {
+      "path": "data/results/wo0015-hw-50mhz-20261015/project/wo15_50m.runs/impl_1/runme.log",
+      "lines": [
+        31,
+        39,
+        44,
+        60
+      ],
+      "fact": "Saved implementation log identifies Vivado v2026.1."
+    },
+    {
+      "path": "data/results/wo0015-hw-50mhz-20261015/project/wo15_50m.gen/sources_1/bd/wo15/ip/wo15_ps7_0/ps7_init.c",
+      "sha256": "7dc2df18d874d2fa56fa4c4ca28a85730ffbbd54b567e56fd2a741ad7fb9eab8",
+      "lines": [
+        {
+          "range": "2042-2147",
+          "fact": "Revision 3.0 post-config table writes FPGA_RST_CTRL full mask to 0 and AFI1 RD/WR bit0 to 1; bit21 comment is reserved, mask 0x00200000."
+        },
+        {
+          "range": "4382-4481",
+          "fact": "Revision 2.0 table writes same reset and AFI settings; bit21 comment uses FPGA_AXDS1_RST."
+        },
+        {
+          "range": "6647-6746",
+          "fact": "Revision 1.0 table writes same reset and AFI settings; bit21 comment uses FPGA_AXDS1_RST."
+        },
+        {
+          "range": "6944-6960",
+          "fact": "ps7_post_config() dispatches post-config table by silicon revision."
+        },
+        {
+          "range": "6983-7038",
+          "fact": "ps7_init() runs MIO/PLL/clock/DDR/peripheral tables and returns; no ps7_post_config() call."
+        }
+      ]
+    },
+    {
+      "path": "data/results/wo0015-hw-50mhz-20261015/project/wo15_50m.gen/sources_1/bd/wo15/ip/wo15_ps7_0/ps7_init.tcl",
+      "sha256": "ac0bed12175d1767213dcb99e2f37c774cebc409659763b40f9e7d748aceb8a5",
+      "lines": [
+        {
+          "range": "150-156",
+          "fact": "Revision 3.0 post-config emits reset write then AFI1 RD/WR bit0=1."
+        },
+        {
+          "range": "313-318",
+          "fact": "Revision 2.0 post-config emits equivalent writes."
+        },
+        {
+          "range": "474-479",
+          "fact": "Revision 1.0 post-config emits equivalent writes."
+        },
+        {
+          "range": "529-545",
+          "fact": "ps7_post_config is a separate silicon-revision dispatcher."
+        },
+        {
+          "range": "562-589",
+          "fact": "ps7_init invokes MIO/PLL/clock/DDR/peripheral init only, not ps7_post_config."
+        }
+      ]
+    },
+    {
+      "path": "data/results/wo0015-hw-50mhz-20261015/project/wo15_50m.gen/sources_1/bd/wo15/ip/wo15_ps7_0/ps7_init.h",
+      "sha256": "e73fb7a1300f5a1f35d33141e80225342d2c43c961d0103cf5d82ed4484fae28",
+      "lines": [
+        68,
+        69,
+        103,
+        106
+      ],
+      "fact": "PS7_POST_CONFIG is described as an FSBL detection flag; prototypes exist, but no external caller is included."
+    },
+    {
+      "path": "data/results/wo0015-hw-50mhz-20261015/project/wo15_50m.gen/sources_1/bd/wo15/ip/wo15_ps7_0/ps7_init.html",
+      "sha256": "bf47ba7e5734e8ba114bbdc2a6ced9df094ddffc3f000370d56f944b5b44695e",
+      "lines": [
+        {
+          "range": "27667,28122-28284",
+          "fact": "Verified revision-specific difference: ps7_post_config_3_0 labels bit21/mask 0x00200000 reserved; ps7_post_config_2_0 and _1_0 label it AXDS1 soft reset. Current silicon branch is unknown."
+        },
+        {
+          "range": "56357,56919-56934",
+          "fact": "post_config_2_0 documentation labels the same bit as AXDS1 AXI soft reset."
+        },
+        {
+          "range": "84368,84930-84945",
+          "fact": "post_config_1_0 documentation labels the same bit as AXDS1 AXI soft reset."
+        }
+      ]
+    },
+    {
+      "path": "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh",
+      "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "lines": [
+        {
+          "range": "998-1012",
+          "fact": "S2MM memory and stream widths are both 32 bits."
+        },
+        {
+          "range": "4110-4115",
+          "fact": "HP0 is 64-bit; HP1 is 32-bit and 50 MHz."
+        },
+        {
+          "range": "5107-5110",
+          "fact": "PS S_AXI_HP1 interface is DATAWIDTH=32."
+        }
+      ]
+    },
+    {
+      "path": "scripts/wo0015/create_s2mm_bd.tcl",
+      "sha256": "b66cbcc843a9ebd4255e80aa6b655552a1d9a54e4e04b871a2e581c44b4a7f24",
+      "lines": [
+        {
+          "range": "153-171",
+          "fact": "S2MM 32/32, HP1 fabric configuration and AXI4-to-AXI3 conversion intent."
+        },
+        {
+          "range": "191-194",
+          "fact": "S2MM connects through hp1_fabric to PS S_AXI_HP1."
+        },
+        {
+          "range": "245-253",
+          "fact": "interface readback specifies 32-bit S2MM, auto_pc, and HP1."
+        },
+        {
+          "range": "284-289",
+          "fact": "HP1=32 and FCLK_CLK0=50 MHz requirements."
+        }
+      ]
+    },
+    {
+      "path": "data/results/wo0015-retry3-two-tier-bundle-20261015/board_once.py",
+      "sha256": "921ee6aae276b53f68c359decdfadf188e67667514edfecac3e6f84c09bb0422",
+      "lines": [
+        {
+          "range": "900-905",
+          "fact": "PynqBoardAPI.load_overlay instantiates pynq.Overlay(download=False), then invokes download()."
+        },
+        {
+          "range": "1270-1285",
+          "fact": "_overlay_stage calls api.load_overlay; source has no explicit PS init call."
+        }
+      ]
+    },
+    {
+      "path": "data/results/wo0015-runonly-resume-retry2-20261015/verification-report.md",
+      "lines": [
+        17,
+        27
+      ],
+      "fact": "Historical retry2 record says no new Overlay/Reset/Run-only action and reports cached loaded BIT path/hash; this is software snapshot evidence only."
+    },
+    {
+      "path": "data/results/wo0015-afi1-readonly-20261015/verification-report.md",
+      "lines": [
+        9,
+        17,
+        37
+      ],
+      "fact": "Prior offline AFI report explicitly records no current AFI/reset register read and cannot establish that post-config ran."
+    },
+    {
+      "path": "data/results/wo0015-afi1-readonly-20261015/amd-rd-control-search.json",
+      "sha256": "554e0d3c2ea934ac909789cea90a944ed91b942de0ddfcd5681e1c1fbc8c8a0e",
+      "lines": [
+        5
+      ],
+      "fact": "Saved UG585 AFI RD control details state associated FPGA_RST_CTRL.FPGA_AXDSN_RST must be written 0 before access; this excerpt does not settle how the generic prerequisite maps to the generated 3_0 reserved bit."
+    },
+    {
+      "path": "data/results/wo0015-afi1-readonly-20261015/amd-wr-control-search.json",
+      "sha256": "c91d58cd53cb2529fcd64127c2aae9e5fc79d8c9764fa1c60df66b63ae251a22",
+      "lines": [
+        5
+      ],
+      "fact": "Saved UG585 AFI WR control details state associated FPGA_RST_CTRL.FPGA_AXDSN_RST must be written 0 before access; field-to-branch mapping remains unresolved."
+    }
+  ],
+  "call_chain": {
+    "generated_c": "ps7_post_config() -> ps7_config(selected ps7_post_config_{1,2,3}_0 table); ps7_init() is a separate routine and has no call to ps7_post_config().",
+    "generated_tcl": "ps7_post_config proc selects per revision; ps7_init proc invokes only MIO/PLL/clock/DDR/peripheral procedures.",
+    "visible_wo0015_python": "_overlay_stage -> PynqBoardAPI.load_overlay -> pynq.Overlay(bit_path, download=False) -> download(); no explicit generated PS7 init call found.",
+    "external_fsbl_caller": "UNKNOWN; no FSBL source/image/call site found in WO-0015 saved result trees."
+  },
+  "startup_evidence": {
+    "searched_roots": [
+      "data/results/wo0015-*"
+    ],
+    "searched_names": [
+      "BOOT.BIN",
+      "fsbl*",
+      "*.elf",
+      "u-boot*",
+      "image.ub",
+      "boot.scr"
+    ],
+    "matches": [],
+    "runtime_boot_source": "UNKNOWN"
+  },
+  "collector_review": {
+    "path": "data/results/wo0015-afi1-preconditions-20261015/readonly_admission_collector.py",
+    "sha256": "a31c0c6c0aac1fed5f8ac0f41f8f7450c1833f7df70ae7c6e3ef22b1dc960483",
+    "lines": [
+      {
+        "range": "52-66",
+        "fact": "No live verifier; injected data untrusted; top-level state STOPPED, AFI unauthorized, reset UNKNOWN/CONFLICT."
+      },
+      {
+        "range": "80-140",
+        "fact": "Checks OS snapshot, hashes and cache; os_precheck may be VERIFIED without authorizing AFI."
+      },
+      {
+        "range": "190-218",
+        "fact": "Read-only OS backend; fixed path allowlist, O_NOFOLLOW, regular-file test, bounded reads, close in finally; documented trusted-parent/mount limitation at 193-196."
+      },
+      {
+        "range": "233-239",
+        "fact": "CLI refuses collection with return code 2."
+      }
+    ],
+    "sha256_tests": "8030a9f5d7c7d93d81e8e55d2bd797cf7ceff4fea535fc6bade4dec02f70eb23",
+    "recorded_test_result": "collector-green.txt currently records 44 fake tests passed; not rerun by this auditor.",
+    "unresolved_boundaries": [
+      "challenge checks format but freshness/replay protection is external and absent",
+      "evidence_kind is backend self-report; no authenticated transport or live verifier",
+      "trusted parent paths/mounts and race assumptions are deployment prerequisites",
+      "OS snapshot does not prove current PL bits, reset state, or FSBL post-config execution"
+    ]
+  }
+}

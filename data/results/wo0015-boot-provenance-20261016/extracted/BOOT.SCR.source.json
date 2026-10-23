@@ -1,0 +1,10 @@
+{
+  "short_name": "BOOT.SCR",
+  "attribute": 32,
+  "first_cluster": 289,
+  "nbytes": 3473,
+  "fat_date_raw": 23352,
+  "fat_time_raw": 36631,
+  "clusters_read": 1,
+  "sha256": "3b9b939dfab95e26e69855ab23fc84e6e2ab9431ab71998aece3db7f2a8c37cd"
+}

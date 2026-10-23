@@ -1,0 +1,4 @@
+{
+  "command": "sudo -S -p \"\" env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python -u /home/xilinx/wo0015_first_board_retry1_20261015/board_once.py --mode offline --manifest /home/xilinx/wo0015_first_board_retry1_20261015/run-manifest.json --manifest-sha256 ceac16e28b968bc28d3e4f30828402447c9dbe8c566f9800a789478a435a3d8b --evidence-json /home/xilinx/wo0015_first_board_retry1_20261015/retry2-offline-result.json",
+  "single_attempt": true
+}

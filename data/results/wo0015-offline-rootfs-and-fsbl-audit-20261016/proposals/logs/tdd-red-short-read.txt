@@ -1,0 +1,22 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_ B2TemplateTests.test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes>
+
+    def test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes(self):
+        payload = b"short fixture"
+        fields = dict(zip(template.STAT_FIELDS, (1, 2, len(payload) + 1, 4)))
+        os_api = fakes.OfflineOSMock(payload=payload, stat_before=fields, stat_after=fields)
+    
+        result = _b2(os_api)
+    
+>       self.assertEqual(result.status, "CONTENT_SIZE_MISMATCH")
+E       AssertionError: 'OFFLINE_MODEL_PASS' != 'CONTENT_SIZE_MISMATCH'
+E       - OFFLINE_MODEL_PASS
+E       + CONTENT_SIZE_MISMATCH
+
+proposals\test_proposal_contract_v2.py:144: AssertionError
+=========================== short test summary info ===========================
+FAILED proposals/test_proposal_contract_v2.py::B2TemplateTests::test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes
+1 failed in 0.23s

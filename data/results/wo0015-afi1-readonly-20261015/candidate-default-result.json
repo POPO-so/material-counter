@@ -1,0 +1,8 @@
+{
+  "version": "wo0015-afi1-readonly-candidate-v1",
+  "status": "STOPPED_PRECONDITION_UNVERIFIED",
+  "started_utc": "2026-10-15T15:30:29.088182+00:00",
+  "registers": [],
+  "hardware_access_started": false,
+  "reason": "No audited live precondition verifier supplied"
+}

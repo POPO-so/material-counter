@@ -1,0 +1,7 @@
+{
+  "status": "COMMAND_EXIT",
+  "time_ns": 1792054760150458900,
+  "name": "postflight-readonly",
+  "exit_code": 0,
+  "elapsed_s": 1.9680000000080327
+}

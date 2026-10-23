@@ -1,0 +1,172 @@
+FFFF                                                                     [100%]
+================================== FAILURES ===================================
+__ test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[1] __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-143/test_mock_dma_runs_fixed_frame0')
+frame_count = 1
+
+    @pytest.mark.parametrize("frame_count", [1, 3])
+    def test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first(tmp_path, frame_count):
+        plan, _ = _plan(tmp_path, frame_count)
+        api = runner.MockBoardAPI(plan, initial_idle=False)
+    
+        result = runner.run_frames(plan, api, timeout_s=2.0)
+    
+        assert result["status"] == "DMA_ONCE_PASS"
+        assert result["frame_count"] == frame_count
+        assert [frame["frame_id"] for frame in result["frames"]] == [
+            frame.frame_id for frame in plan.frames
+        ]
+        assert api.allocations == [preflight.TX_BYTES, preflight.RX_BYTES]
+        assert api.free_count == 2
+        assert api.cma_free_kib() == result["cma_free_before_kib"]
+        assert result["dma_start_attempted"] is True
+        assert result["transfer_started"] is True
+        assert result["dma_may_be_active"] is False
+        assert len(api.sync_to_device_trace) == frame_count * 2
+        for index in range(frame_count):
+            tx_sync, rx_sync = api.sync_to_device_trace[index * 2:index * 2 + 2]
+            assert tx_sync[0] is api._mm2s_buffer
+            assert tx_sync[1] == plan.frames[index].packet
+            assert rx_sync[0] is api._s2mm_buffer
+            assert rx_sync[1] == b"\xA5" * preflight.RX_BYTES
+    
+        starts = [item for item in api.write_trace
+                  if item[0] == preflight.DMA_BASE and item[1] in (0x00, 0x18, 0x28, 0x30, 0x48, 0x58)]
+        per_frame = [
+            (0x30, 1), (0x48, api.last_s2mm_address), (0x58, preflight.RX_BYTES),
+            (0x00, 1), (0x18, api.last_mm2s_address), (0x28, preflight.TX_BYTES),
+        ]
+        # Addresses are fixed for the reusable buffers, so each start sequence is
+        # compared after projecting away values that are the same for every frame.
+        projected = [(offset, value if offset not in (0x18, 0x48) else offset)
+                     for _, offset, value in starts]
+        expected = [(offset, value if offset not in (0x18, 0x48) else offset)
+                    for _ in range(frame_count) for offset, value in per_frame]
+        assert projected == expected
+        arm_writes = [item for item in api.write_trace
+                      if item[0] == preflight.CHECKER_BASE and item[1] == 0x5C]
+        assert len(arm_writes) == frame_count
+        assert all(value == 1 for _, _, value in arm_writes)
+        assert all(not (value & 0x4) for _, offset, value in api.write_trace
+                   if offset in (0x00, 0x30))
+        assert [frame["checker"]["pixels"] for frame in result["frames"]] == [76800] * frame_count
+        assert [frame["checker"]["sofs"] for frame in result["frames"]] == [1] * frame_count
+        assert [frame["checker"]["eols"] for frame in result["frames"]] == [240] * frame_count
+>       assert [frame["checker"]["foreground_pixels"] for frame in result["frames"]] == [38400] * frame_count
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'foreground_pixels'
+
+scripts\wo0015\test_board_once.py:72: KeyError
+__ test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[3] __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-143/test_mock_dma_runs_fixed_frame1')
+frame_count = 3
+
+    @pytest.mark.parametrize("frame_count", [1, 3])
+    def test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first(tmp_path, frame_count):
+        plan, _ = _plan(tmp_path, frame_count)
+        api = runner.MockBoardAPI(plan, initial_idle=False)
+    
+        result = runner.run_frames(plan, api, timeout_s=2.0)
+    
+        assert result["status"] == "DMA_ONCE_PASS"
+        assert result["frame_count"] == frame_count
+        assert [frame["frame_id"] for frame in result["frames"]] == [
+            frame.frame_id for frame in plan.frames
+        ]
+        assert api.allocations == [preflight.TX_BYTES, preflight.RX_BYTES]
+        assert api.free_count == 2
+        assert api.cma_free_kib() == result["cma_free_before_kib"]
+        assert result["dma_start_attempted"] is True
+        assert result["transfer_started"] is True
+        assert result["dma_may_be_active"] is False
+        assert len(api.sync_to_device_trace) == frame_count * 2
+        for index in range(frame_count):
+            tx_sync, rx_sync = api.sync_to_device_trace[index * 2:index * 2 + 2]
+            assert tx_sync[0] is api._mm2s_buffer
+            assert tx_sync[1] == plan.frames[index].packet
+            assert rx_sync[0] is api._s2mm_buffer
+            assert rx_sync[1] == b"\xA5" * preflight.RX_BYTES
+    
+        starts = [item for item in api.write_trace
+                  if item[0] == preflight.DMA_BASE and item[1] in (0x00, 0x18, 0x28, 0x30, 0x48, 0x58)]
+        per_frame = [
+            (0x30, 1), (0x48, api.last_s2mm_address), (0x58, preflight.RX_BYTES),
+            (0x00, 1), (0x18, api.last_mm2s_address), (0x28, preflight.TX_BYTES),
+        ]
+        # Addresses are fixed for the reusable buffers, so each start sequence is
+        # compared after projecting away values that are the same for every frame.
+        projected = [(offset, value if offset not in (0x18, 0x48) else offset)
+                     for _, offset, value in starts]
+        expected = [(offset, value if offset not in (0x18, 0x48) else offset)
+                    for _ in range(frame_count) for offset, value in per_frame]
+        assert projected == expected
+        arm_writes = [item for item in api.write_trace
+                      if item[0] == preflight.CHECKER_BASE and item[1] == 0x5C]
+        assert len(arm_writes) == frame_count
+        assert all(value == 1 for _, _, value in arm_writes)
+        assert all(not (value & 0x4) for _, offset, value in api.write_trace
+                   if offset in (0x00, 0x30))
+        assert [frame["checker"]["pixels"] for frame in result["frames"]] == [76800] * frame_count
+        assert [frame["checker"]["sofs"] for frame in result["frames"]] == [1] * frame_count
+        assert [frame["checker"]["eols"] for frame in result["frames"]] == [240] * frame_count
+>       assert [frame["checker"]["foreground_pixels"] for frame in result["frames"]] == [38400] * frame_count
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'foreground_pixels'
+
+scripts\wo0015\test_board_once.py:72: KeyError
+_____ test_uncertain_dma_always_holds_even_if_terminal_marker_write_fails _____
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-143/test_uncertain_dma_always_hold0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000212F59AADE0>
+
+    def test_uncertain_dma_always_holds_even_if_terminal_marker_write_fails(tmp_path, monkeypatch):
+        plan, _ = _plan(tmp_path, 3)
+        overlay_receipt = tmp_path / "overlay-pass.json"
+        runner.write_overlay_pass_receipt(overlay_receipt, plan)
+        api = runner.MockBoardAPI(plan, s2mm_error_frame=1)
+        api._overlay_loaded = True
+        api.board_accessed = True
+        hold_calls = []
+    
+        class HoldReached(BaseException):
+            pass
+    
+        def fake_hold(_path, payload):
+            hold_calls.append(payload)
+    
+        monkeypatch.setattr(runner, "OVERLAY_PASS_RECEIPT", overlay_receipt)
+        monkeypatch.setattr(runner, "_guard_path", lambda _stage: tmp_path / "single-consumed.json")
+        monkeypatch.setattr(runner, "PynqBoardAPI",
+                            lambda _plan, stage, cma_ranges=None: api)
+        monkeypatch.setattr(runner, "_record_terminal_failure",
+                            lambda *_args: (_ for _ in ()).throw(OSError("marker disk full")))
+>       monkeypatch.setattr(runner, "_hold_forever", lambda: (_ for _ in ()).throw(HoldReached()))
+E       AttributeError: <module 'board_once' from 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\scripts\\wo0015\\board_once.py'> has no attribute '_hold_forever'
+
+scripts\wo0015\test_board_once.py:263: AttributeError
+_________ test_fail_hold_does_not_exit_when_evidence_json_write_fails _________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-143/test_fail_hold_does_not_exit_w0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000212F59ABAA0>
+
+    def test_fail_hold_does_not_exit_when_evidence_json_write_fails(tmp_path, monkeypatch):
+        plan, _ = _plan(tmp_path, 1)
+        api = runner.PynqBoardAPI(plan, stage="dma-single")
+    
+        class HoldReached(BaseException):
+            pass
+    
+        monkeypatch.setattr(runner, "_emit",
+                            lambda *_args: (_ for _ in ()).throw(OSError("evidence disk full")))
+>       monkeypatch.setattr(runner, "_hold_forever", lambda: (_ for _ in ()).throw(HoldReached()))
+E       AttributeError: <module 'board_once' from 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\scripts\\wo0015\\board_once.py'> has no attribute '_hold_forever'
+
+scripts\wo0015\test_board_once.py:284: AttributeError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_board_once.py::test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[1]
+FAILED scripts/wo0015/test_board_once.py::test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[3]
+FAILED scripts/wo0015/test_board_once.py::test_uncertain_dma_always_holds_even_if_terminal_marker_write_fails
+FAILED scripts/wo0015/test_board_once.py::test_fail_hold_does_not_exit_when_evidence_json_write_fails
+4 failed in 0.89s

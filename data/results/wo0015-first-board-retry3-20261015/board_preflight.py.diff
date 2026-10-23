@@ -1,0 +1,224 @@
+--- approved-original/board_preflight.py
++++ cma-compat/board_preflight.py
+@@ -10,6 +10,7 @@
+ import hashlib
+ import json
+ import os
++import re
+ import struct
+ import subprocess
+ import sys
+@@ -377,7 +378,7 @@
+ 
+ def validate_manifest(path: str | Path,
+                       expected_manifest_sha256: str | None = None) -> ValidatedRun:
+-    """Validate one or three fixed RGB→Binary8 frames and all bound artifacts."""
++    """Validate one or three fixed RGB鈫払inary8 frames and all bound artifacts."""
+     manifest_path = Path(path).expanduser().resolve()
+     try:
+         raw = manifest_path.read_bytes()
+@@ -780,6 +781,204 @@
+             raise PreflightError("runtime CMA range is outside the reviewed DMA-visible DDR windows")
+ 
+ 
++@dataclass(frozen=True)
++class CmaAdmission:
++    ranges: tuple[tuple[int, int], ...]
++    source: str
++    exact: bool
++    evidence: Mapping[str, Any]
++
++    def as_evidence(self) -> dict[str, Any]:
++        return {"source": self.source, "physical_cma_range_known": self.exact,
++                "permitted_buffer_ranges": [list(r) for r in self.ranges],
++                "limitation": ("exact CMA metadata; post-allocation checks still required"
++                               if self.exact else
++                               "kernel CMA accounting and verified DDR safety envelope only; "
++                               "not a measured CMA interval or static CMA subregion; authoritative PYNQ physical-address, "
++                               "size, overlap and allocation accounting checks remain mandatory"),
++                **dict(self.evidence)}
++
++
++def _checked_cma_intervals(ranges: Any) -> tuple[tuple[int, int], ...]:
++    result = tuple(sorted(set(tuple(pair) for pair in ranges)))
++    if not result:
++        raise PreflightError("no runtime CMA ranges were supplied")
++    previous_end = -1
++    for start, end in result:
++        if (start < 0 or end <= start or start % PAGE_BYTES or end % PAGE_BYTES or
++                end > EXPECTED_DDR_RANGE[1] or start < previous_end):
++            raise PreflightError("CMA intervals are invalid, overlapping, unaligned or outside DDR")
++        previous_end = end
++    return result
++
++
++def _system_ram_intervals(iomem_text: str) -> tuple[tuple[int, int], ...]:
++    spans = re.findall(r"^\s*([0-9a-fA-F]+)-([0-9a-fA-F]+)\s*:\s*System RAM\s*$",
++                       iomem_text, re.MULTILINE)
++    result = tuple(sorted((int(a, 16), int(b, 16) + 1) for a, b in spans))
++    if result != (EXPECTED_DDR_RANGE,):
++        raise PreflightError("System RAM must establish the exact PYNQ-Z2 512 MiB DDR boundary")
++    return result
++
++
++def _reject_iomem_conflicts(ranges: tuple[tuple[int, int], ...], iomem_text: str) -> None:
++    for start, end, label in re.findall(r"^\s*([0-9a-fA-F]+)-([0-9a-fA-F]+)\s*:\s*(.+)$",
++                                      iomem_text, re.MULTILINE):
++        a, b = int(start, 16), int(end, 16) + 1
++        if label.strip() != "System RAM" and any(a < stop and base < b for base, stop in ranges):
++            raise PreflightError("admitted range conflicts with a kernel/reserved/peripheral iomem region")
++
++
++def read_debugfs_cma_ranges(root_path: str | Path = "/sys/kernel/debug/cma", *,
++                           page_size: int = PAGE_BYTES) -> tuple[tuple[int, int], ...]:
++    """Read only base/count/accounting; never open alloc/free control nodes."""
++    root = Path(root_path)
++    if not root.is_dir():
++        return ()
++    if page_size != PAGE_BYTES:
++        raise PreflightError("CMA PFN conversion requires the reviewed 4096-byte page size")
++    ranges = []
++    for area in sorted(root.iterdir()):
++        if not area.is_dir():
++            continue
++        base, count = area / "base_pfn", area / "count"
++        if not base.exists() and not count.exists():
++            continue
++        try:
++            pfn = int(base.read_text().strip(), 0)
++            pages = int(count.read_text().strip(), 0)
++            used_path = area / "used"
++            used = int(used_path.read_text().strip(), 0) if used_path.exists() else 0
++        except (OSError, ValueError) as exc:
++            raise PreflightError(f"invalid CMA debugfs metadata at {area}: {exc}") from exc
++        if pfn < 0 or pages <= 0 or used < 0 or used > pages:
++            raise PreflightError(f"invalid CMA debugfs page accounting at {area}")
++        ranges.append((pfn * page_size, (pfn + pages) * page_size))
++    return _checked_cma_intervals(ranges) if ranges else ()
++
++
++def resolve_cma_sources(*, dt_ranges: Any = (), dmesg_text: str = "",
++                        debugfs_ranges: Any = (), meminfo: Mapping[str, int],
++                        cmdline: str = "", bootargs: str = "",
++                        iomem_text: str) -> CmaAdmission:
++    """Resolve exact CMA metadata, or an explicitly conditional RAM candidate."""
++    total = meminfo.get("CmaTotal", 0)
++    free = meminfo.get("CmaFree", 0)
++    if total < MIN_CMA_KIB or free < MIN_CMA_KIB or free > total:
++        raise PreflightError("CMA accounting is invalid or below the two-buffer minimum")
++    ram = _system_ram_intervals(iomem_text)
++    candidates: dict[str, tuple[tuple[int, int], ...]] = {}
++    if dt_ranges:
++        candidates["device_tree"] = _checked_cma_intervals(dt_ranges)
++    log_ranges = []
++    units = {"kib": 1024, "mib": 1024**2, "gib": 1024**3}
++    for line in dmesg_text.splitlines():
++        if not re.search(r"\bcma:\s*Reserved\b", line, re.IGNORECASE):
++            continue
++        match = re.search(r"\bcma:\s*Reserved\s+(\d+)\s+(KiB|MiB|GiB)\s+at\s+"
++                          r"(0x[0-9a-fA-F]+)(?=\s|$)", line, re.IGNORECASE)
++        if not match:
++            raise PreflightError("malformed kernel CMA reservation log; refusing fallback")
++        size = int(match[1]) * units[match[2].lower()]
++        start = int(match[3], 16)
++        log_ranges.append((start, start + size))
++    if log_ranges:
++        candidates["dmesg"] = _checked_cma_intervals(log_ranges)
++    if debugfs_ranges:
++        candidates["debugfs"] = _checked_cma_intervals(debugfs_ranges)
++    for source, ranges in candidates.items():
++        if sum(end - start for start, end in ranges) != total * 1024:
++            raise PreflightError(f"{source} CMA interval size differs from CmaTotal")
++        _reject_iomem_conflicts(ranges, iomem_text)
++    if candidates:
++        if len(set(candidates.values())) != 1:
++            raise PreflightError("conflicting precise CMA metadata sources")
++        source = next(s for s in ("device_tree", "dmesg", "debugfs") if s in candidates)
++        return CmaAdmission(candidates[source], source, True,
++                            {"corroborating_sources": list(candidates),
++                             "system_ram_ranges": [list(r) for r in ram],
++                             "CmaTotal_kib": total, "CmaFree_kib": free})
++
++    # The captain's Two-Tier decision admits the DDR safety envelope from
++    # kernel accounting. It does not infer where the CMA pool was placed.
++    tokens = set(re.findall(r"(?:^|\s)cma=([^\s\x00]+)", cmdline + " " + bootargs))
++    if len(tokens) > 1:
++        raise PreflightError("conflicting cma= boot evidence")
++    if tokens:
++        token = next(iter(tokens))
++        match = re.fullmatch(r"(\d+)([KMG])?", token)
++        if not match:
++            raise PreflightError("unsupported cma= syntax; explicit placement needs precise metadata")
++        size = int(match[1]) * {None: 1, "K": 1024, "M": 1024**2, "G": 1024**3}[match[2]]
++        if size != total * 1024:
++            raise PreflightError("cma= size does not match CmaTotal")
++    if total != 131072 or free < 32768:
++        raise PreflightError("MEMINFO_IOMEM_VERIFIED requires CmaTotal=131072 KiB and CmaFree>=32768 KiB")
++    allowed = ((0x00100000, 0x20000000),)
++    return CmaAdmission(allowed, "MEMINFO_IOMEM_VERIFIED", False,
++                        {"CmaTotal_kib": total, "CmaFree_kib": free,
++                         "system_ram_ranges": [list(r) for r in ram],
++                         "requires_authoritative_post_alloc_gate": True})
++
++
++def read_cma_admission(root_path: str | Path = "/proc/device-tree/reserved-memory", *,
++                       meminfo: Mapping[str, int] | None = None,
++                       dmesg_text: str | None = None,
++                       debugfs_root: str | Path = "/sys/kernel/debug/cma",
++                       cmdline_path: str | Path = "/proc/cmdline",
++                       bootargs_path: str | Path = "/proc/device-tree/chosen/bootargs",
++                       iomem_path: str | Path = "/proc/iomem") -> CmaAdmission:
++    dt = ()
++    if Path(root_path).is_dir():
++        try:
++            dt = read_cma_ranges(root_path)
++        except PreflightError as exc:
++            if str(exc) != "device tree contains no verifiable CMA range":
++                raise
++    def optional_text(path: str | Path) -> str:
++        try:
++            return Path(path).read_bytes().replace(b"\x00", b" ").decode("ascii")
++        except FileNotFoundError:
++            return ""
++        except (OSError, UnicodeError) as exc:
++            raise PreflightError(f"cannot read CMA evidence {path}: {exc}") from exc
++    # dmesg is already mandatory for the stage's independent health audit.
++    log = "\n".join(read_kernel_log()) if dmesg_text is None else dmesg_text
++    page_size = os.sysconf("SC_PAGE_SIZE") if hasattr(os, "sysconf") else PAGE_BYTES
++    debug = read_debugfs_cma_ranges(debugfs_root, page_size=page_size)
++    return resolve_cma_sources(dt_ranges=dt, dmesg_text=log, debugfs_ranges=debug,
++                               meminfo=read_cma_meminfo() if meminfo is None else meminfo,
++                               cmdline=optional_text(cmdline_path), bootargs=optional_text(bootargs_path),
++                               iomem_text=optional_text(iomem_path))
++
++
++def validate_dma_buffer_pair(*, tx_address: int, tx_size: int,
++                             rx_address: int, rx_size: int, cma_ranges: Any,
++                             hp0_range: tuple[int, int],
++                             hp1_range: tuple[int, int]) -> dict[str, Any]:
++    """Validate actual allocated bytes/physical spans before any register write."""
++    ranges = _checked_cma_intervals(cma_ranges or ())
++    for label, address, size, expected_size, alignment, hp in (
++            ("MM2S", tx_address, tx_size, TX_BYTES, 8, hp0_range),
++            ("S2MM", rx_address, rx_size, RX_BYTES, 4, hp1_range)):
++        if size != expected_size:
++            raise PreflightError(f"{label} actual allocated length differs from its exact transfer size")
++        end = address + size
++        if address < 0x00100000 or address % alignment or end > EXPECTED_DDR_RANGE[1]:
++            raise PreflightError(f"{label} physical address is below 1 MiB, unaligned or outside 512 MiB DDR")
++        if not any(start <= address and end <= stop for start, stop in ranges):
++            raise PreflightError(f"{label} CMA buffer falls outside the live CMA range or RAM candidate")
++        if address < hp[0] or end > hp[1]:
++            raise PreflightError(f"{label} CMA buffer is outside its HP-visible DDR range")
++    if tx_address < rx_address + rx_size and rx_address < tx_address + tx_size:
++        raise PreflightError("MM2S and S2MM CMA buffer physical ranges overlap")
++    return {"status": "POST_ALLOC_PHYSICAL_GATE_PASS",
++            "mm2s_physical_range": [tx_address, tx_address + tx_size],
++            "s2mm_physical_range": [rx_address, rx_address + rx_size],
++            "tx_actual_bytes": tx_size, "rx_actual_bytes": rx_size,
++            "permitted_buffer_ranges": [list(r) for r in ranges]}
++
++
+ def claim_once_guard(path: str | Path, *, boot_id: str,
+                      manifest_sha256: str, stage: str,
+                      clock_mhz: int = 50) -> dict[str, Any]:

@@ -1,0 +1,7 @@
+{
+  "exists_after": false,
+  "remote_command_exited": true,
+  "controller_state": "FAIL_STOPPED_EVIDENCE_SAVED",
+  "pid": 49264,
+  "hardware_owner_process_terminated": false
+}

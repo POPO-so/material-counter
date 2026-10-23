@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "case": "C",
+  "kind": "random",
+  "status": "PASS",
+  "frames_expected": 3,
+  "frames_eof": 3,
+  "eof_beat_numbers": [
+    19200,
+    38400,
+    57600
+  ],
+  "eof_positions_zero_based": [
+    19199,
+    38399,
+    57599
+  ],
+  "output_beats": 57600,
+  "output_bytes": 230400,
+  "golden_bytes": 230400,
+  "mismatch_bytes": 0,
+  "actual_binary_sha256": "995a78c9558ca515034959b2e061da2d31f121a8a7a83c216963110b5507ef1f",
+  "actual_trace_sha256": "a50c62d8a7ea58ee369c6cd446509e2c9943e5b9fcf406337f22f423620be9c5",
+  "golden_sha256": "995a78c9558ca515034959b2e061da2d31f121a8a7a83c216963110b5507ef1f",
+  "source_manifest_sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+  "seed": 42
+}
+

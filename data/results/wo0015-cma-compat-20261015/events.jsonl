@@ -1,0 +1,5 @@
+{"status": "AWAITING_NATIVE_HIDDEN_CREDENTIALS_METADATA_ONLY", "time_ns": 1792056535482770600}
+{"status": "STRICT_SSH_AUTHENTICATED", "time_ns": 1792056640796012600, "fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o"}
+{"status": "DISPATCH", "time_ns": 1792056640797903000, "name": "cma-readonly-probe"}
+{"status": "COMMAND_EXIT", "time_ns": 1792056642897782300, "name": "cma-readonly-probe", "exit_code": 0, "elapsed_s": 1.7970000000059372}
+{"status": "READONLY_PROBE_COMPLETE_SSH_CLOSED", "time_ns": 1792056642947648000}

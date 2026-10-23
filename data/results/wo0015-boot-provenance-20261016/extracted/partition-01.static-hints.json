@@ -1,0 +1,335 @@
+{
+  "image_name_from_header": "u-boot.elf",
+  "strings": [
+    {
+      "offset": 755892,
+      "ascii": "xilinx_info"
+    },
+    {
+      "offset": 755927,
+      "ascii": "xilinx_dump"
+    },
+    {
+      "offset": 755939,
+      "ascii": "xilinx_load"
+    },
+    {
+      "offset": 756000,
+      "ascii": "board_late_init_xilinx"
+    },
+    {
+      "offset": 757000,
+      "ascii": "xilinx_dump"
+    },
+    {
+      "offset": 757957,
+      "ascii": "xilinx_loadfs"
+    },
+    {
+      "offset": 758255,
+      "ascii": "xilinx_load"
+    },
+    {
+      "offset": 761158,
+      "ascii": "** Invalid partition type \"%.32s\" (expect \"U-Boot\")"
+    },
+    {
+      "offset": 765417,
+      "ascii": "version-offset"
+    },
+    {
+      "offset": 765432,
+      "ascii": "version-size"
+    },
+    {
+      "offset": 767696,
+      "ascii": "vendor=xilinx"
+    },
+    {
+      "offset": 769889,
+      "ascii": "scan_dev_for_scripts=for script in ${boot_scripts}; do if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${script}; then echo Found U-Boot script ${prefix}${script}; run boot_a_script; echo SCRIPT FAILED: continuing...; fi; done"
+    },
+    {
+      "offset": 775495,
+      "ascii": "U-Boot.armv7"
+    },
+    {
+      "offset": 776004,
+      "ascii": "Warning: Device tree includes old 'u-boot,dm-' tags: please fix by 2023.07!"
+    },
+    {
+      "offset": 780203,
+      "ascii": "ESRT: fw_resource_version=%lld"
+    },
+    {
+      "offset": 780316,
+      "ascii": "ESRT: fw_version=%d"
+    },
+    {
+      "offset": 780337,
+      "ascii": "ESRT: lowest_supported_fw_version=%d"
+    },
+    {
+      "offset": 780399,
+      "ascii": "ESRT: last_attempt_version=%d"
+    },
+    {
+      "offset": 782799,
+      "ascii": "version:"
+    },
+    {
+      "offset": 782813,
+      "ascii": "last_comp_version:"
+    },
+    {
+      "offset": 794695,
+      "ascii": "arm-xilinx-linux-gnueabi-gcc (GCC) 12.2.0"
+    },
+    {
+      "offset": 796269,
+      "ascii": "firmware-version"
+    },
+    {
+      "offset": 796341,
+      "ascii": "lowest-supported-version"
+    },
+    {
+      "offset": 796366,
+      "ascii": "Firmware version %u too low. Expecting >= %u. Aborting update"
+    },
+    {
+      "offset": 804465,
+      "ascii": "u-boot,version"
+    },
+    {
+      "offset": 804480,
+      "ascii": "WARNING: could not set u-boot,version %s."
+    },
+    {
+      "offset": 811684,
+      "ascii": "Xilinx Device"
+    },
+    {
+      "offset": 812013,
+      "ascii": "%s: Please fill correct device ID to xilinx_desc"
+    },
+    {
+      "offset": 812569,
+      "ascii": "Version:%d"
+    },
+    {
+      "offset": 812999,
+      "ascii": "U-Boot generator"
+    },
+    {
+      "offset": 815121,
+      "ascii": "u-boot,i2c-offset-len"
+    },
+    {
+      "offset": 816240,
+      "ascii": "u-boot,i2c-transaction-bytes"
+    },
+    {
+      "offset": 817212,
+      "ascii": "u-boot,bootconf"
+    },
+    {
+      "offset": 824092,
+      "ascii": "'mtdids' - linux kernel mtd device id <-> u-boot device id mapping"
+    },
+    {
+      "offset": 829480,
+      "ascii": "u-boot,dm-pre-reloc"
+    },
+    {
+      "offset": 829500,
+      "ascii": "u-boot,dm-pre-proper"
+    },
+    {
+      "offset": 829521,
+      "ascii": "u-boot,dm-spl"
+    },
+    {
+      "offset": 829535,
+      "ascii": "u-boot,dm-tpl"
+    },
+    {
+      "offset": 829549,
+      "ascii": "u-boot,dm-vpl"
+    },
+    {
+      "offset": 829563,
+      "ascii": "/options/u-boot"
+    },
+    {
+      "offset": 832487,
+      "ascii": "%s version %d.%d"
+    },
+    {
+      "offset": 832869,
+      "ascii": "U-Boot 2024.01"
+    },
+    {
+      "offset": 834243,
+      "ascii": "*** ERROR: NFS version not supported"
+    },
+    {
+      "offset": 836150,
+      "ascii": "u-boot.img"
+    },
+    {
+      "offset": 837838,
+      "ascii": "01/01/2024"
+    },
+    {
+      "offset": 840736,
+      "ascii": "U-Boot phase"
+    },
+    {
+      "offset": 841679,
+      "ascii": "Xilinx Zynq Boot Image"
+    },
+    {
+      "offset": 841714,
+      "ascii": "Xilinx ZynqMP Boot Image"
+    },
+    {
+      "offset": 841749,
+      "ascii": "Xilinx ZynqMP Boot Image (bif)"
+    },
+    {
+      "offset": 842735,
+      "ascii": "u-boot,boot-std"
+    },
+    {
+      "offset": 842769,
+      "ascii": "u-boot,extlinux"
+    },
+    {
+      "offset": 842798,
+      "ascii": "u-boot,extlinux-pxe"
+    },
+    {
+      "offset": 842849,
+      "ascii": "u-boot,distro-efi"
+    },
+    {
+      "offset": 843890,
+      "ascii": "print monitor, compiler and linker version"
+    },
+    {
+      "offset": 845041,
+      "ascii": "incorrect version"
+    },
+    {
+      "offset": 847886,
+      "ascii": "last_comp_version"
+    },
+    {
+      "offset": 850444,
+      "ascii": "Load device from bitstream buffer (Xilinx only)"
+    },
+    {
+      "offset": 850524,
+      "ascii": "Load device from bitstream buffer with partial bitstream(Xilinx only)"
+    },
+    {
+      "offset": 850594,
+      "ascii": "Load device from filesystem (FAT by default) (Xilinx only)"
+    },
+    {
+      "offset": 866098,
+      "ascii": "xlnx,ps7-clkc"
+    },
+    {
+      "offset": 867406,
+      "ascii": "u-boot,bootdev-mmc"
+    },
+    {
+      "offset": 872116,
+      "ascii": "Xilinx PCS/PMA PHY"
+    },
+    {
+      "offset": 872679,
+      "ascii": "u-boot,bootdev-usb"
+    },
+    {
+      "offset": 873388,
+      "ascii": "FDT_ERR_BADVERSION"
+    },
+    {
+      "offset": 874916,
+      "ascii": "u-boot,bootdev-eth"
+    },
+    {
+      "offset": 876054,
+      "ascii": "HUSH_VERSION"
+    },
+    {
+      "offset": 876196,
+      "ascii": "ubi%d error: %s: this UBI version is %d, image version is %d"
+    },
+    {
+      "offset": 880776,
+      "ascii": "version        %d"
+    },
+    {
+      "offset": 881037,
+      "ascii": "version   %d"
+    },
+    {
+      "offset": 886623,
+      "ascii": "fmt_version    %u"
+    },
+    {
+      "offset": 889983,
+      "ascii": "UBIFS: only ro mode in U-Boot allowed."
+    },
+    {
+      "offset": 891747,
+      "ascii": "UBIFS error (ubi%d:%d pid %d): %s: on-flash format version is w%d/r%d, but software only supports up to version w%d/r%d"
+    },
+    {
+      "offset": 891868,
+      "ascii": "UBIFS error (ubi%d:%d pid %d): %s: on-flash format version %d is not supported"
+    },
+    {
+      "offset": 896230,
+      "ascii": " - Vendor: 0x%04x  Product 0x%04x Version %d.%d"
+    },
+    {
+      "offset": 898229,
+      "ascii": "ubi%d error: %s: node with incompatible UBI version found: this UBI version is %d, image version is %d"
+    },
+    {
+      "offset": 899063,
+      "ascii": "cur-version"
+    },
+    {
+      "offset": 899094,
+      "ascii": "bootloader-version"
+    },
+    {
+      "offset": 899113,
+      "ascii": "Version: %s"
+    },
+    {
+      "offset": 899171,
+      "ascii": "U-Boot 2024.01 (May 14 2024 - 03:31:48 +0000)"
+    },
+    {
+      "offset": 900526,
+      "ascii": "Xilinx I2C FRU format at %s:"
+    },
+    {
+      "offset": 900585,
+      "ascii": "Xilinx I2C Legacy format at %s:"
+    }
+  ],
+  "address_literal_offsets": {
+    "0xF8000240": [],
+    "0xF8009000": [],
+    "0xF8009014": []
+  },
+  "interpretation": "Strings/literals do not prove source code identity, instruction stores, reachability or execution"
+}

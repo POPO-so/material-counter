@@ -1,0 +1,22 @@
+{"status": "AWAITING_NATIVE_HIDDEN_CREDENTIALS", "time_ns": 1792055956049789000}
+{"status": "CONNECT_BEGIN", "time_ns": 1792056004262078900}
+{"status": "STRICT_SSH_AUTHENTICATED", "time_ns": 1792056006134373800, "fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o"}
+{"status": "DISPATCH", "time_ns": 1792056006134373800, "name": "initial-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792056008252514100, "name": "initial-readonly", "exit_code": 0, "elapsed_s": 1.812000000005355}
+{"status": "READONLY_BOOT_GATE_PASS_AWAITING_MANAGER", "time_ns": 1792056008252514100}
+{"status": "DISPATCH", "time_ns": 1792056023519912700, "name": "request-001"}
+{"status": "COMMAND_EXIT", "time_ns": 1792056025751719600, "name": "request-001", "exit_code": 0, "elapsed_s": 2.2189999999973224}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792056025752763900, "name": "request-001"}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792056043287282900, "name": "request-002"}
+{"status": "DISPATCH", "time_ns": 1792056059561009900, "name": "request-003"}
+{"status": "COMMAND_EXIT", "time_ns": 1792056064739637000, "name": "request-003", "exit_code": 0, "elapsed_s": 5.172000000005937}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792056064739637000, "name": "request-003"}
+{"status": "DISPATCH", "time_ns": 1792056084430610600, "name": "request-004"}
+{"status": "COMMAND_EXIT", "time_ns": 1792056089364217100, "name": "request-004", "exit_code": 0, "elapsed_s": 4.922000000005937}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792056089365271900, "name": "request-004"}
+{"status": "DISPATCH", "time_ns": 1792056101022199300, "name": "request-005"}
+{"status": "COMMAND_EXIT", "time_ns": 1792056105877915300, "name": "request-005", "exit_code": 2, "elapsed_s": 4.8439999999973224}
+{"status": "FAIL_STOPPED_NO_MORE_STAGE_COMMANDS", "time_ns": 1792056105879503600, "name": "request-005"}
+{"status": "DISPATCH", "time_ns": 1792056150635199900, "name": "failure-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792056153204347400, "name": "failure-readonly", "exit_code": 0, "elapsed_s": 2.5469999999913853}
+{"status": "FAIL_STOPPED_EVIDENCE_SAVED", "time_ns": 1792056153319337400}

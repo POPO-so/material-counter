@@ -1,0 +1,21 @@
+﻿total 40
+drwx------  2 root root 4096 May  5 13:16 .
+drwxr-xr-x 10 root root 4096 May  5 13:16 ..
+-rw-------  1 root root 1863 May  5 13:16 archive-index.json
+-rw-------  1 root root  256 May  5 12:51 camera-dma-single-consumed.json
+-rw-------  1 root root  235 May  5 09:55 dma-single-consumed.json
+-rw-------  1 root root  620 May  5 09:55 dma-single-pass.json
+-rw-------  1 root root  234 May  5 10:28 dma-three-consumed.json
+-rw-------  1 root root  237 May  5 09:54 overlay-only-consumed.json
+-rw-------  1 root root  635 May  5 09:54 overlay-only-pass.json
+-rw-------  1 root root  429 May  5 12:51 terminal-failure.json
+6004ca788f4345fd5d3865aa75e14ee104e9a54fa76391a7b7d625d8f20fbde4  /var/lib/wo0015-s2mm/archive-camera-recovery-f8b24aee-ed7e-430a-b3f3-d26056746bfd/archive-index.json
+39cd37ae2c78f839433417e2bdb60e5b24810f717c0a3e6652eadd52732bdbbd  /var/lib/wo0015-s2mm/archive-camera-recovery-f8b24aee-ed7e-430a-b3f3-d26056746bfd/overlay-only-consumed.json
+8a8db5c8733ecfd1d2e8bb664d0d81385aa20e9d1a7c98f421837056018e78b8  /var/lib/wo0015-s2mm/archive-camera-recovery-f8b24aee-ed7e-430a-b3f3-d26056746bfd/overlay-only-pass.json
+8275a969d0eed17ee49c74f85d96ff330c71191509fa1ec001f56f29013e5b48  /var/lib/wo0015-s2mm/archive-camera-recovery-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-consumed.json
+f8048be12c3b456f065bbab3bb3d036842377b06446f9c4531514eb7ee4495a3  /var/lib/wo0015-s2mm/archive-camera-recovery-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-pass.json
+6a0e76747fab6d9c549fa8f31ad5452af547a5e347f8f521c852db9a39bc7b3d  /var/lib/wo0015-s2mm/archive-camera-recovery-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-three-consumed.json
+24dff966fe52a16b0bf6e05e2e95ae67af063a0192da03c8d3186c3e01784b08  /var/lib/wo0015-s2mm/archive-camera-recovery-f8b24aee-ed7e-430a-b3f3-d26056746bfd/camera-dma-single-consumed.json
+ccd489c3b3d92bbbd47db4341705a834630110b76a60569814f2952b54da2015  /var/lib/wo0015-s2mm/archive-camera-recovery-f8b24aee-ed7e-430a-b3f3-d26056746bfd/terminal-failure.json
+BOOT=f8b24aee-ed7e-430a-b3f3-d26056746bfd
+ACTIVE=

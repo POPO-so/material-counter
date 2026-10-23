@@ -1,0 +1,181 @@
+{
+  "status": "FAIL_STOPPED",
+  "stopped_at": "STEP_1_INITIAL_DMA_HALTED_GATE_AFTER_OVERLAY_PASS",
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "tier1": "PASS",
+  "tier1_source": "MEMINFO_IOMEM_VERIFIED",
+  "safety_envelope": [
+    1048576,
+    536870912
+  ],
+  "exact_cma_subregion_known": false,
+  "overlay_load": "PASS",
+  "initial_dma_state": "FAIL_HALTED",
+  "overlay_download_count": 1,
+  "stage_invocations": {
+    "overlay-only": 1,
+    "initial-state-readonly": 1,
+    "dma-single": 0,
+    "dma-three": 0
+  },
+  "dma_start_attempted": false,
+  "transfer_started": false,
+  "tx_rx_allocate_calls": 0,
+  "tx_rx_physical_addresses": null,
+  "tier2_board_result": "NOT_RUN",
+  "golden_comparison": "NOT_RUN",
+  "cma_initial_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 72612
+  },
+  "cma_static_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 66200
+  },
+  "cma_overlay_preflight_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 65476
+  },
+  "cma_initial_mmio_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 55832
+  },
+  "cma_exit_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 72772
+  },
+  "dma_registers": {
+    "0x00": 65538,
+    "0x04": 1,
+    "0x18": 0,
+    "0x28": 0,
+    "0x30": 65538,
+    "0x34": 1,
+    "0x48": 0,
+    "0x58": 0
+  },
+  "checker_registers": {
+    "0x00": 1,
+    "0x04": 1464807732,
+    "0x08": 0,
+    "0x0c": 0,
+    "0x10": 0,
+    "0x14": 0,
+    "0x18": 0,
+    "0x1c": 0,
+    "0x20": 0,
+    "0x24": 0,
+    "0x28": 0,
+    "0x2c": 0,
+    "0x30": 0,
+    "0x34": 0,
+    "0x38": 0,
+    "0x3c": 0,
+    "0x40": 0,
+    "0x44": 0,
+    "0x48": 0,
+    "0x4c": 0,
+    "0x50": 0,
+    "0x54": 0,
+    "0x58": 0,
+    "0x5c": 0,
+    "0x60": 1464807733
+  },
+  "board_sha256": {
+    "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "board_once.py": "921ee6aae276b53f68c359decdfadf188e67667514edfecac3e6f84c09bb0422",
+    "board_preflight.py": "4c62fd37e5b6fa6c349a58ad7c2dc49b49e0f890b77b07400d304616c7a005d0",
+    "run-manifest.json": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+    "SHA256SUMS.json": "0909b8fbce87704c7ec70665f16830303a5c1408f62ed05fc70ae56681fa1fd2"
+  },
+  "full_offline_tests_passed": 431,
+  "additional_subtests_passed": 5,
+  "wo0015_tests_passed": 127,
+  "new_two_tier_tests": 12,
+  "post_ping_exit_code": 0,
+  "post_ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "guards": {
+    "overlay-only-pass.json": {
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+      "build_id": "wo0015-hw-50mhz-20261015",
+      "checker_signature": 1464807732,
+      "clock_mhz": 50,
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "load_performed": true,
+      "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+      "packer_signature": 1464807733,
+      "runtime_audit_sha256": "3ffbf25bdf76597e375cbf2212675fdaa9bb272aa611a71e65e0e48162db9a36",
+      "schema": 1,
+      "stage": "overlay-only",
+      "status": "OVERLAY_LOAD_PASS",
+      "work_order": "WO-0015"
+    },
+    "terminal-failure.json": {
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+      "build_id": "wo0015-hw-50mhz-20261015",
+      "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+      "reason": "MM2S Halted != 0; S2MM Halted != 0",
+      "schema": 1,
+      "stage": "initial-state",
+      "status": "TERMINAL_FAILURE",
+      "work_order": "WO-0015"
+    },
+    "overlay-only-consumed.json": {
+      "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+      "clock_mhz": 50,
+      "consumed": true,
+      "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+      "schema": 1,
+      "stage": "overlay-only",
+      "work_order": "WO-0015"
+    }
+  },
+  "package": {
+    "status": "OFFLINE_PACKAGE_PASS_AUTHORIZED_RETRY3",
+    "board_accessed": false,
+    "retry3_executed": false,
+    "bundle": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-two-tier-bundle-20261015",
+    "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-two-tier-bundle-20261015.zip",
+    "archive_sha256": "d990f2fcbd3d735cb00d01793b2b488acb60555e19ec5a6ffc7a1ef644a36002",
+    "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+    "packaged_boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "board_once_sha256": "921ee6aae276b53f68c359decdfadf188e67667514edfecac3e6f84c09bb0422",
+    "board_preflight_sha256": "4c62fd37e5b6fa6c349a58ad7c2dc49b49e0f890b77b07400d304616c7a005d0",
+    "source_board_preflight_sha256": "5372e322aa44ed5ed5ee3aeb8985efdcf4da85e76225e637a2219c7729f4b366",
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "runtime_admission_approved": true,
+    "limitation": "Captain authorizes MEMINFO_IOMEM_VERIFIED and one ordered Retry3 sequence; fresh board admission and post-allocation gates remain mandatory."
+  },
+  "history": {
+    "wo0015-first-board-20261015": {
+      "unchanged": true,
+      "files_checked": 32
+    },
+    "wo0015-first-board-retry1-20261015": {
+      "unchanged": true,
+      "files_checked": 65
+    },
+    "wo0015-first-board-retry2-20261015": {
+      "unchanged": true,
+      "files_checked": 68
+    },
+    "wo0015-cma-compat-20261015": {
+      "unchanged": true,
+      "files_checked": 74
+    }
+  },
+  "git_heads": {
+    "main": "7a868c070024bdc29cdeb057fbec9ccaf94ef160",
+    "worktree": "b7d8be05caff7da3ad2235617b43b591daa5e5fc"
+  },
+  "committed": false,
+  "merged": false
+}

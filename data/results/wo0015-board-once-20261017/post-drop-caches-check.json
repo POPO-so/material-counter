@@ -1,0 +1,13 @@
+{
+  "timestamp_local": "2026-10-17T17:48:54.902671+08:00",
+  "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "meminfo": {
+    "CmaTotal": 131072,
+    "CmaFree": 114624
+  },
+  "branch": "A",
+  "returncode": 0,
+  "stderr": "",
+  "full_meminfo_file": "post-drop-caches-meminfo.txt",
+  "password_prompted_or_supplied": false
+}

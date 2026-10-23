@@ -1,0 +1,17 @@
+# Independent reviewer findings
+
+## Disposition
+
+No outstanding P1 or P2 findings. The reviewed artifacts preserve the offline-only boundary and distinguish directly observed static facts, inferences, hypotheses, and unknown runtime state. No edits to the reviewed implementation or reports were required.
+
+## Review notes and disposition
+
+- **SSH transport and interpreter wording — corrected before final review.** The earlier proposal wording risked attributing agent/X11 forwarding prevention to `ClearAllForwardings` and did not rule out a configured control socket. The current whitelist accurately limits `ClearAllForwardings=yes` to port-forwarding requests, separately requires `ForwardAgent=no`, `ForwardX11=no`, and `ControlPath=none`, and fixes the remote interpreter candidate to `/usr/bin/python3 -I -S -B`. Target interpreter availability and host-key pin identity remain explicitly unverified blockers; the proposal provides no runnable transport command (`command-audit-and-whitelist-v2.md:46-67`; `proposals/remote_template_v2.py:31-45`).
+- **B1 baseline and fail-fast behavior — no change required.** The expected boot ID `822a9c29-37c0-438c-81c4-da998d57073b` is the authorized historical baseline. The implementation checks it before other B1 reads and treats mismatches and `EACCES` as terminal; this is consistent with the documented contract (`proposals/remote_template_v2.py:14-15, 65-66, 109-143`; `verification-report.md:67-71`).
+- **B2 read-only file transaction — supported by source and targeted tests.** The implementation pins `/boot` with `O_DIRECTORY|O_NOFOLLOW`, opens `BOOT.BIN` relative to that descriptor, checks `ST_RDONLY` around the read, compares the required stat tuple, verifies full length, and closes descriptors. The report correctly limits this to the opened target filesystem at the check points, not whole-card zero writes (`proposals/remote_template_v2.py:151-216`; `command-audit-and-whitelist-v2.md:29-44`).
+- **Rootfs and FSBL evidence — boundaries are appropriately stated.** The ext4 parser bounds partition/file reads, extent depth and physical ranges, and implements the `ee_len=0x8000` initialized-extent boundary covered by a focused test (`rootfs/ext4_ro.py:83-117, 216-284`; `rootfs/test_ext4_ro.py:86-99`). Its report limits claims to the selected unmounted image and supported incompat-feature subset (`rootfs/findings.md:64-78`). FSBL table candidates are not presented as all-executed paths; the normal no-PL handoff conclusion is labeled inferred, with the separate JTAG/PCFG_DONE path and runtime state left open (`fsbl/findings.md:25, 47-53`; `verification-report.md:36-53, 73-86`). The report also correctly treats `FPGA_RST_CTRL[21]` as reserved and does not infer HP1/AFI1 reset state (`verification-report.md:86`).
+- **Golden/cache analysis — no unsupported runtime attribution found.** Synthetic buffers are explicitly distinguished from the missing historical RX, and the report does not identify a last writer, hardware lane, cache cause, runtime AFI width, or root cause (`manager/task-c-findings.md:11-13, 34-38`; `verification-report.md:55-63, 77-86`).
+
+## Verification
+
+Ran only the four authorized new host test files with the specified Python executable and flags: **44 passed**. The final report records 11 additional subtest results in the 55-entry JUnit output; those are not counted as independent pytest methods (`verification-report.md:96-100`). No network, SSH, board, target binary, mount, Overlay, MMIO, or DMA operation was performed during this review.

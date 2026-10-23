@@ -1,0 +1,6 @@
+{
+  "pid": 24300,
+  "process_exists": false,
+  "hardware_dispatched": false,
+  "note": "No process returned by Get-CimInstance/Get-Process; no live hardware-holding operation was dispatched."
+}

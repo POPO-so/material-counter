@@ -1,0 +1,306 @@
+{
+  "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-runonly-resume-retry2-20261015\\remote-evidence\\board_once_watermark.py",
+  "sha256": "6be386b2140d8a373677eb337e6a3028464c0c720a75bd6c14ea03046cec7ec1",
+  "excerpts": [
+    {
+      "line": 430,
+      "text": "            prepare_frame = getattr(api, \"before_frame\", None)"
+    },
+    {
+      "line": 431,
+      "text": "            if callable(prepare_frame):"
+    },
+    {
+      "line": 432,
+      "text": "                prepare_frame(frame, index)"
+    },
+    {
+      "line": 433,
+      "text": "                s2mm_before = api.read32(preflight.DMA_BASE, DMA_S2MM_DMASR)"
+    },
+    {
+      "line": 434,
+      "text": "                mm2s_before = api.read32(preflight.DMA_BASE, DMA_MM2S_DMASR)"
+    },
+    {
+      "line": 435,
+      "text": "            _require_dma_clean(s2mm_before, \"S2MM\")"
+    },
+    {
+      "line": 436,
+      "text": "            _require_dma_clean(mm2s_before, \"MM2S\")"
+    },
+    {
+      "line": 437,
+      "text": "            if index and (not (s2mm_before & DMA_IDLE) or not (mm2s_before & DMA_IDLE)):"
+    },
+    {
+      "line": 438,
+      "text": "                raise ExecutionFailure("
+    },
+    {
+      "line": 439,
+      "text": "                    f\"frame {frame.frame_id} pre-length DMA state is not Idle\","
+    },
+    {
+      "line": 440,
+      "text": "                    transfer_started=False,"
+    },
+    {
+      "line": 441,
+      "text": "                    evidence={\"s2mm_dmasr\": s2mm_before, \"mm2s_dmasr\": mm2s_before},"
+    },
+    {
+      "line": 442,
+      "text": "                )"
+    },
+    {
+      "line": 443,
+      "text": ""
+    },
+    {
+      "line": 444,
+      "text": "            api.write_buffer(mm2s_buffer, frame.packet)"
+    },
+    {
+      "line": 445,
+      "text": "            api.sync_to_device(mm2s_buffer)"
+    },
+    {
+      "line": 446,
+      "text": "            api.write_buffer(s2mm_buffer, b\"\\xA5\" * preflight.RX_BYTES)"
+    },
+    {
+      "line": 447,
+      "text": "            api.sync_to_device(s2mm_buffer)"
+    },
+    {
+      "line": 448,
+      "text": "            packer_status = api.read32(preflight.CHECKER_BASE, PACKER_STATUS)"
+    },
+    {
+      "line": 449,
+      "text": "            if packer_status & (PACKER_BUSY | PACKER_FAULT):"
+    },
+    {
+      "line": 450,
+      "text": "                raise ExecutionFailure(f\"Packer is busy/faulted before frame {frame.frame_id}\","
+    },
+    {
+      "line": 451,
+      "text": "                                       transfer_started=False,"
+    },
+    {
+      "line": 507,
+      "text": "                    transfer_started=False,"
+    },
+    {
+      "line": 508,
+      "text": "                    evidence={\"packer_status\": packer_status, \"accepted_pixels\": pixels,"
+    },
+    {
+      "line": 509,
+      "text": "                              \"sent_beats\": beats, \"packer_error\": packer_error},"
+    },
+    {
+      "line": 510,
+      "text": "                )"
+    },
+    {
+      "line": 511,
+      "text": "            after_checker = _checker_snapshot(api)"
+    },
+    {
+      "line": 512,
+      "text": "            _check_checker_frame(previous_checker, after_checker, frame)"
+    },
+    {
+      "line": 513,
+      "text": "            api.sync_from_device(s2mm_buffer)"
+    },
+    {
+      "line": 514,
+      "text": "            returned = bytes(memoryview(s2mm_buffer).cast(\"B\")[:preflight.RX_BYTES])"
+    },
+    {
+      "line": 515,
+      "text": "            if returned != frame.binary:"
+    },
+    {
+      "line": 516,
+      "text": "                mismatches = sum(left != right for left, right in zip(returned, frame.binary))"
+    },
+    {
+      "line": 517,
+      "text": "                first = next((offset for offset, pair in enumerate(zip(returned, frame.binary))"
+    },
+    {
+      "line": 518,
+      "text": "                              if pair[0] != pair[1]), None)"
+    },
+    {
+      "line": 519,
+      "text": "                raise ExecutionFailure("
+    },
+    {
+      "line": 520,
+      "text": "                    f\"S2MM Binary8 differs from golden for frame {frame.frame_id}: \""
+    },
+    {
+      "line": 521,
+      "text": "                    f\"{mismatches} mismatches, first offset={first}\","
+    },
+    {
+      "line": 522,
+      "text": "                    transfer_started=False,"
+    },
+    {
+      "line": 919,
+      "text": "        self._allocate = pynq.allocate"
+    },
+    {
+      "line": 920,
+      "text": "        _mark_board_accessed()"
+    },
+    {
+      "line": 921,
+      "text": "        self.board_accessed = True"
+    },
+    {
+      "line": 922,
+      "text": "        regions = {preflight.CHECKER_BASE: pynq.MMIO(preflight.CHECKER_BASE, 0x10000)}"
+    },
+    {
+      "line": 923,
+      "text": "        if self.stage != \"overlay-only\":"
+    },
+    {
+      "line": 924,
+      "text": "            regions[preflight.DMA_BASE] = pynq.MMIO(preflight.DMA_BASE, 0x10000)"
+    },
+    {
+      "line": 925,
+      "text": "        self._mmio = regions"
+    },
+    {
+      "line": 926,
+      "text": ""
+    },
+    {
+      "line": 927,
+      "text": "    def allocate(self, size: int) -> Any:"
+    },
+    {
+      "line": 944,
+      "text": "            raise preflight.PreflightError(\"PYNQ physical_address must be a nonzero integer\")"
+    },
+    {
+      "line": 945,
+      "text": "        return physical"
+    },
+    {
+      "line": 946,
+      "text": ""
+    },
+    {
+      "line": 947,
+      "text": "    def write_buffer(self, buffer: Any, data: bytes) -> None:"
+    },
+    {
+      "line": 948,
+      "text": "        memoryview(buffer).cast(\"B\")[:len(data)] = data"
+    },
+    {
+      "line": 949,
+      "text": ""
+    },
+    {
+      "line": 950,
+      "text": "    def sync_to_device(self, buffer: Any) -> None:"
+    },
+    {
+      "line": 951,
+      "text": "        method = getattr(buffer, \"sync_to_device\", None)"
+    },
+    {
+      "line": 952,
+      "text": "        if callable(method):"
+    },
+    {
+      "line": 953,
+      "text": "            method()"
+    },
+    {
+      "line": 954,
+      "text": "        else:"
+    },
+    {
+      "line": 955,
+      "text": "            flush = getattr(buffer, \"flush\", None)"
+    },
+    {
+      "line": 956,
+      "text": "            if callable(flush):"
+    },
+    {
+      "line": 957,
+      "text": "                flush()"
+    },
+    {
+      "line": 958,
+      "text": "            else:"
+    },
+    {
+      "line": 959,
+      "text": "                raise RuntimeError(\"buffer has neither sync_to_device nor flush cache operation\")"
+    },
+    {
+      "line": 960,
+      "text": ""
+    },
+    {
+      "line": 961,
+      "text": "    def sync_from_device(self, buffer: Any) -> None:"
+    },
+    {
+      "line": 962,
+      "text": "        method = getattr(buffer, \"sync_from_device\", None)"
+    },
+    {
+      "line": 963,
+      "text": "        if callable(method):"
+    },
+    {
+      "line": 964,
+      "text": "            method()"
+    },
+    {
+      "line": 965,
+      "text": "        else:"
+    },
+    {
+      "line": 966,
+      "text": "            invalidate = getattr(buffer, \"invalidate\", None)"
+    },
+    {
+      "line": 967,
+      "text": "            if callable(invalidate):"
+    },
+    {
+      "line": 968,
+      "text": "                invalidate()"
+    },
+    {
+      "line": 969,
+      "text": "            else:"
+    },
+    {
+      "line": 970,
+      "text": "                raise RuntimeError(\"buffer has neither sync_from_device nor invalidate cache operation\")"
+    },
+    {
+      "line": 971,
+      "text": ""
+    }
+  ]
+}

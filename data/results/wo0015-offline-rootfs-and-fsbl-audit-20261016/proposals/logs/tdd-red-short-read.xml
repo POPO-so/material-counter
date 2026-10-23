@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.104" timestamp="2026-10-16T03:45:19.635369+08:00" hostname="BWIN"><testcase classname="proposals.test_proposal_contract_v2.B2TemplateTests" name="test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes" time="0.001"><failure message="AssertionError: 'OFFLINE_MODEL_PASS' != 'CONTENT_SIZE_MISMATCH'&#10;- OFFLINE_MODEL_PASS&#10;+ CONTENT_SIZE_MISMATCH">self = &lt;test_proposal_contract_v2.B2TemplateTests testMethod=test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes&gt;
+
+    def test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes(self):
+        payload = b"short fixture"
+        fields = dict(zip(template.STAT_FIELDS, (1, 2, len(payload) + 1, 4)))
+        os_api = fakes.OfflineOSMock(payload=payload, stat_before=fields, stat_after=fields)
+    
+        result = _b2(os_api)
+    
+&gt;       self.assertEqual(result.status, "CONTENT_SIZE_MISMATCH")
+E       AssertionError: 'OFFLINE_MODEL_PASS' != 'CONTENT_SIZE_MISMATCH'
+E       - OFFLINE_MODEL_PASS
+E       + CONTENT_SIZE_MISMATCH
+
+proposals\test_proposal_contract_v2.py:144: AssertionError</failure></testcase></testsuite></testsuites>

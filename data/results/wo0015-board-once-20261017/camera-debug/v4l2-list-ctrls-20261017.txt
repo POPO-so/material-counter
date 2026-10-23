@@ -1,0 +1,23 @@
+Command: sudo -n env XILINX_XRT=/usr v4l2-ctl -d /dev/video0 --list-ctrls
+SSH exit code: 0
+Output:
+
+User Controls
+
+                     brightness 0x00980900 (int)    : min=-64 max=64 step=1 default=0 value=0
+                       contrast 0x00980901 (int)    : min=0 max=100 step=1 default=50 value=50
+                     saturation 0x00980902 (int)    : min=0 max=100 step=1 default=50 value=50
+                            hue 0x00980903 (int)    : min=-180 max=180 step=1 default=0 value=0
+        white_balance_automatic 0x0098090c (bool)   : default=1 value=0
+                          gamma 0x00980910 (int)    : min=100 max=500 step=1 default=300 value=100
+           power_line_frequency 0x00980918 (menu)   : min=0 max=2 default=1 value=1 (50 Hz)
+      white_balance_temperature 0x0098091a (int)    : min=2800 max=6500 step=10 default=4600 value=4600
+                      sharpness 0x0098091b (int)    : min=0 max=100 step=1 default=50 value=50
+         backlight_compensation 0x0098091c (int)    : min=0 max=2 step=1 default=0 value=0
+
+Camera Controls
+
+                  auto_exposure 0x009a0901 (menu)   : min=0 max=3 default=3 value=1 (Manual Mode)
+         exposure_time_absolute 0x009a0902 (int)    : min=50 max=10000 step=1 default=166 value=50
+     exposure_dynamic_framerate 0x009a0903 (bool)   : default=0 value=0
+     focus_automatic_continuous 0x009a090c (bool)   : default=1 value=0

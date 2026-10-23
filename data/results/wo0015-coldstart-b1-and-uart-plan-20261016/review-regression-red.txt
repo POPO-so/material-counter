@@ -1,0 +1,42 @@
+.............................FF....                                      [100%]
+================================== FAILURES ===================================
+________________ test_retired_iterator_cannot_bypass_exclusion ________________
+
+    def test_retired_iterator_cannot_bypass_exclusion():
+        f=FakeOS(first=OLD.encode()+b'\n')
+        r=core().collect_b1_coldstart(f, mode='coldstart_register_candidate', retired_boot_ids=iter((OLD,)))
+>       assert not r['valid'] and f.opens==[BOOT]
+E       assert (not True)
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:123: AssertionError
+_____________________ test_euid_error_invalid_zero_opens ______________________
+
+    def test_euid_error_invalid_zero_opens():
+        f=FakeOS()
+        f.geteuid=lambda: (_ for _ in ()).throw(OSError('euid unavailable'))
+>       r=collect(f)
+          ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\coldstart_b1.py:50: in collect_b1_coldstart
+    if os.geteuid() == 0:
+       ^^^^^^^^^^^^
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:127: in <lambda>
+    f.geteuid=lambda: (_ for _ in ()).throw(OSError('euid unavailable'))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+.0 = <tuple_iterator object at 0x000001F4DEE87FD0>
+
+>   f.geteuid=lambda: (_ for _ in ()).throw(OSError('euid unavailable'))
+E   OSError: euid unavailable
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:127: OSError
+=========================== short test summary info ===========================
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_retired_iterator_cannot_bypass_exclusion
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_euid_error_invalid_zero_opens
+2 failed, 33 passed in 0.19s

@@ -1,0 +1,15 @@
+COVERAGE:FULL
+Applied (exact):
+  - "MM2S channel enabled" (param: CONFIG.c_include_mm2s): applied
+  - "S2MM channel enabled" (param: CONFIG.c_include_s2mm): applied
+  - "simple direct-register mode, SG disabled" (param: CONFIG.c_include_sg): applied
+  - "Micro DMA disabled" (param: CONFIG.c_micro_dma): applied
+  - "18-bit MM2S/S2MM buffer length register" (param: CONFIG.c_sg_length_width): applied
+  - "32-bit DMA address width" (param: CONFIG.c_addr_width): applied
+  - "MM2S memory width 64 bits and stream width 32 bits" (param: CONFIG.c_m_axi_mm2s_data_width): applied
+  - "S2MM memory width 32 bits and stream width 32 bits" (param: CONFIG.c_m_axi_s2mm_data_width): applied
+  - "S2MM DRE disabled" (param: CONFIG.c_include_s2mm_dre): applied
+  - "PS HP0 remains 64-bit for MM2S" (param: CONFIG.PCW_S_AXI_HP0_DATA_WIDTH): applied
+  - "PS HP1 is enabled at 32-bit for S2MM" (param: CONFIG.PCW_S_AXI_HP1_DATA_WIDTH): applied
+  - "HP1 AXI4 SI to AXI3 MI through 1x1 AXI Interconnect" (param: hp1_fabric/S00_AXI->M00_AXI): applied
+  - "FCLK_CLK0 is 50 MHz" (param: CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ): applied

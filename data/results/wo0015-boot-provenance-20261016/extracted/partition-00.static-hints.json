@@ -1,0 +1,31 @@
+{
+  "image_name_from_header": "zynq_fsbl.elf",
+  "strings": [
+    {
+      "offset": 66970,
+      "ascii": "FSBL Warning !!!Bitstream not loaded into PL"
+    },
+    {
+      "offset": 67084,
+      "ascii": "PS7 initialization successful"
+    },
+    {
+      "offset": 67116,
+      "ascii": "PS7 init Data Corrupted"
+    },
+    {
+      "offset": 67140,
+      "ascii": "PS7 init mask poll timeout"
+    }
+  ],
+  "address_literal_offsets": {
+    "0xF8000240": [
+      67480,
+      67540,
+      67600
+    ],
+    "0xF8009000": [],
+    "0xF8009014": []
+  },
+  "interpretation": "Strings/literals do not prove source code identity, instruction stores, reachability or execution"
+}

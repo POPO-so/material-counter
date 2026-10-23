@@ -1,0 +1,19 @@
+{
+  "image_name_from_header": "system.dtb",
+  "strings": [
+    {
+      "offset": 160,
+      "ascii": "u-boot,config"
+    },
+    {
+      "offset": 6740,
+      "ascii": "xlnx,ps7-clkc"
+    }
+  ],
+  "address_literal_offsets": {
+    "0xF8000240": [],
+    "0xF8009000": [],
+    "0xF8009014": []
+  },
+  "interpretation": "Strings/literals do not prove source code identity, instruction stores, reachability or execution"
+}

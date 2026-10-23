@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-first-board-retry1-20261015\controller.py", line 159, in <module>
+    try: main()
+         ^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-first-board-retry1-20261015\controller.py", line 131, in main
+    sftp.put(local,REMOTE+'/'+filename)
+  File "C:\fpga\material-counter\data\results\wo0013-level2-20261014-020118\ssh-runtime\paramiko\sftp_client.py", line 759, in put
+    return self.putfo(fl, remotepath, file_size, callback, confirm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\fpga\material-counter\data\results\wo0013-level2-20261014-020118\ssh-runtime\paramiko\sftp_client.py", line 714, in putfo
+    with self.file(remotepath, "wb") as fr:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\fpga\material-counter\data\results\wo0013-level2-20261014-020118\ssh-runtime\paramiko\sftp_client.py", line 372, in open
+    t, msg = self._request(CMD_OPEN, filename, imode, attrblock)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\fpga\material-counter\data\results\wo0013-level2-20261014-020118\ssh-runtime\paramiko\sftp_client.py", line 857, in _request
+    return self._read_response(num)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\fpga\material-counter\data\results\wo0013-level2-20261014-020118\ssh-runtime\paramiko\sftp_client.py", line 909, in _read_response
+    self._convert_status(msg)
+  File "C:\fpga\material-counter\data\results\wo0013-level2-20261014-020118\ssh-runtime\paramiko\sftp_client.py", line 940, in _convert_status
+    raise IOError(errno.EACCES, text)
+PermissionError: [Errno 13] Permission denied

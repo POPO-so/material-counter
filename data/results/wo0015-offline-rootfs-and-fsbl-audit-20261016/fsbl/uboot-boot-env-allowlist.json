@@ -1,0 +1,91 @@
+{
+  "source_partition_sha256": "0821d755f1941d9603065b1be0f687da69d4d791e50d525bdb20a8cc8fc3fed1",
+  "source_partition_bytes": 1041824,
+  "method": "NUL-delimited printable strings; exact boot/FPGA/AFI key allowlist only; first occurrence per key",
+  "entries": [
+    {
+      "offset": "0xbb65e",
+      "key": "bootcmd",
+      "value": "run distro_bootcmd"
+    },
+    {
+      "offset": "0xbb679",
+      "key": "bootdelay",
+      "value": "2"
+    },
+    {
+      "offset": "0xbb685",
+      "key": "baudrate",
+      "value": "115200"
+    },
+    {
+      "offset": "0xbb695",
+      "key": "loadaddr",
+      "value": "0x0"
+    },
+    {
+      "offset": "0xbb70f",
+      "key": "fdt_addr_r",
+      "value": "0x1f00000"
+    },
+    {
+      "offset": "0xbb73d",
+      "key": "kernel_addr_r",
+      "value": "0x2000000"
+    },
+    {
+      "offset": "0xbb755",
+      "key": "ramdisk_addr_r",
+      "value": "0x3100000"
+    },
+    {
+      "offset": "0xbbcea",
+      "key": "boot_prefixes",
+      "value": "/ /boot/"
+    },
+    {
+      "offset": "0xbbd01",
+      "key": "boot_scripts",
+      "value": "boot.scr.uimg boot.scr"
+    },
+    {
+      "offset": "0xbbd44",
+      "key": "boot_targets",
+      "value": "jtag mmc0 mmc1 qspi nand nor usb0 usb1 pxe dhcp "
+    },
+    {
+      "offset": "0xbc2e8",
+      "key": "bootcmd_mmc0",
+      "value": "devnum=0; run mmc_boot"
+    },
+    {
+      "offset": "0xbc30c",
+      "key": "bootcmd_mmc1",
+      "value": "devnum=1; run mmc_boot"
+    },
+    {
+      "offset": "0xbc330",
+      "key": "bootcmd_qspi",
+      "value": "sf probe 0 0 0 && sf read ${scriptaddr} ${script_offset_f} ${script_size_f} && echo QSPI: Trying to boot script at ${scriptaddr} && source ${scriptaddr}; echo QSPI: SCRIPT FAILED: continuing...;"
+    },
+    {
+      "offset": "0xbc94e",
+      "key": "bootcmd_pxe",
+      "value": "run boot_net_usb_start; dhcp; if pxe get; then pxe boot; fi"
+    },
+    {
+      "offset": "0xbc996",
+      "key": "bootcmd_dhcp",
+      "value": "devtype=dhcp; run boot_net_usb_start; if dhcp ${scriptaddr} ${boot_script_dhcp}; then source ${scriptaddr}; fi;setenv efi_fdtfile ${fdtfile}; if test -z \"${fdtfile}\" -a -n \"${soc}\"; then setenv efi_fdtfile ${soc}-${board}${boardver}.dtb; fi; setenv efi_old_vci ${bootp_vci};setenv efi_old_arch ${bootp_arch};setenv bootp_vci PXEClient:Arch:00010:UNDI:003000;setenv bootp_arch 0xa;if dhcp ${kernel_addr_r}; then tftpboot ${fdt_addr_r} dtb/${efi_fdtfile};if fdt addr -q ${fdt_addr_r}; then bootefi ${kernel_addr_r} ${fdt_addr_r}; else bootefi ${kernel_addr_r} ${fdtcontroladdr};fi;fi;setenv bootp_vci ${efi_old_vci};setenv bootp_arch ${efi_old_arch};setenv efi_fdtfile;setenv efi_old_arch;setenv efi_old_vci;"
+    },
+    {
+      "offset": "0xbcc66",
+      "key": "distro_bootcmd",
+      "value": "for target in ${boot_targets}; do run bootcmd_${target}; done"
+    }
+  ],
+  "limitations": [
+    "Static strings do not establish which environment was selected or whether it was modified at runtime.",
+    "Only the allowlist is reported; this is not a complete U-Boot environment dump."
+  ]
+}

@@ -1,0 +1,9 @@
+Command: read-only hashes, sizes, camera-run.json
+SSH exit code: 1
+Output:
+sha256sum: /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/wo0015-camera-manifest.json: Permission denied
+sha256sum: /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-run.json: Permission denied
+sha256sum: /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-source-gray.pgm: Permission denied
+sha256sum: /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-gray-320x240.pgm: Permission denied
+sha256sum: /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.rgb.bin: Permission denied
+sha256sum: /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.binary.bin: Permission denied

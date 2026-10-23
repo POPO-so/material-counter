@@ -1,0 +1,9 @@
+{
+  "single_connection_attempt": true,
+  "approved_boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "manifest_sha256": "a1fc936597babf959ad3d60fbe597a0e2b0fe492511743ccda3dbc36fab9ca39",
+  "package_sha256": "2eb6c107986297a4e9324c7e0ea12c5b6efc9b9e703733a5cca1243fcb536622",
+  "host": "192.168.2.99",
+  "user": "xilinx",
+  "secret_storage": "none"
+}

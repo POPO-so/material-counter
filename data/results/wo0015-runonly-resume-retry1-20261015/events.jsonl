@@ -1,0 +1,21 @@
+{"status": "AWAITING_NATIVE_HIDDEN_CREDENTIALS", "time_ns": 1792072338291210900}
+{"status": "CONNECT_BEGIN", "time_ns": 1792072346319810400}
+{"status": "STRICT_SSH_AUTHENTICATED", "time_ns": 1792072348185077300, "fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o"}
+{"status": "DISPATCH", "time_ns": 1792072348185077300, "name": "initial-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792072350383901500, "name": "initial-readonly", "exit_code": 0, "elapsed_s": 1.8439999999973224}
+{"status": "READONLY_BOOT_GATE_PASS_AWAITING_MANAGER", "time_ns": 1792072350385936400}
+{"status": "DISPATCH", "time_ns": 1792072387520454100, "name": "request-001"}
+{"status": "COMMAND_EXIT", "time_ns": 1792072389394569900, "name": "request-001", "exit_code": 0, "elapsed_s": 1.8589999999967404}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792072389396595900, "name": "request-001"}
+{"status": "DISPATCH", "time_ns": 1792072408073884400, "name": "request-002"}
+{"status": "COMMAND_EXIT", "time_ns": 1792072424782528300, "name": "request-002", "exit_code": 0, "elapsed_s": 16.703000000008615}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792072424783788300, "name": "request-002"}
+{"status": "DISPATCH", "time_ns": 1792072451689405800, "name": "request-003"}
+{"status": "COMMAND_EXIT", "time_ns": 1792072467718809300, "name": "request-003", "exit_code": 0, "elapsed_s": 16.03200000000652}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792072467719914600, "name": "request-003"}
+{"status": "DISPATCH", "time_ns": 1792072483987231400, "name": "request-004"}
+{"status": "COMMAND_EXIT", "time_ns": 1792072501788681500, "name": "request-004", "exit_code": 3, "elapsed_s": 17.797000000005937}
+{"status": "FAIL_STOPPED_NO_MORE_STAGE_COMMANDS", "time_ns": 1792072501788681500, "name": "request-004"}
+{"status": "DISPATCH", "time_ns": 1792072530275713600, "name": "failure-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792072545623295800, "name": "failure-readonly", "exit_code": 0, "elapsed_s": 15.327999999994063}
+{"status": "FAIL_STOPPED_EVIDENCE_SAVED", "time_ns": 1792072545681691300}

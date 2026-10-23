@@ -1,0 +1,33 @@
+{
+  "status": "FAIL_STOPPED",
+  "stopped_at": "Stage 1 / R0 host initial read-only Guard comparison",
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "CmaTotal_kib": 131072,
+  "CmaFree_initial_kib": 58120,
+  "CmaFree_exit_kib": null,
+  "root_cause": "Host collector read().strip() removed terminal newline before raw-byte SHA comparison.",
+  "actual_board_guard_change_established": false,
+  "raw_board_bytes_reverified": false,
+  "run_only_writes": 0,
+  "adapter_deployed": false,
+  "overlay_loads": 0,
+  "cma_allocations": 0,
+  "dma_frames_started": 0,
+  "archive_executed": false,
+  "step1": "NOT_RESUMED",
+  "step2": "NOT_EXECUTED",
+  "step3": "NOT_EXECUTED",
+  "offline_tests_passed": 59,
+  "historical_retry3_files_unchanged": 114,
+  "corrected_collector_executed": false,
+  "no_automatic_retry": true,
+  "board_connection_attempts": 1,
+  "initial_readonly_exit_code": 0,
+  "post_ping_exit_code": 0,
+  "cleanup": {
+    "pid": 24300,
+    "process_exists": false,
+    "hardware_dispatched": false,
+    "note": "No process returned by Get-CimInstance/Get-Process; no live hardware-holding operation was dispatched."
+  }
+}

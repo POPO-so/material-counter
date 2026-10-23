@@ -1,0 +1,22 @@
+﻿BOOT=f8b24aee-ed7e-430a-b3f3-d26056746bfd
+MANIFEST_SHA256=2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b  wo0015-manifest.json
+PAYLOAD_CHECK
+board_once.py: OK
+board_preflight.py: OK
+build-pair-manifest.json: OK
+camera_adapter.py: OK
+camera_dma_oneshot.py: OK
+frame-0.binary.bin: OK
+frame-0.rgb.bin: OK
+frame-1.binary.bin: OK
+frame-1.rgb.bin: OK
+frame-2.binary.bin: OK
+frame-2.rgb.bin: OK
+prepare_vectors.py: OK
+run-manifest.json: OK
+wo0015-manifest.json: OK
+wo15.bit: OK
+wo15.hwh: OK
+xsim-replay-summary.json: OK
+SHA256SUMS.json: OK
+ACTIVE_GUARDS=

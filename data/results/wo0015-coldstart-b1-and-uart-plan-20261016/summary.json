@@ -1,0 +1,73 @@
+{
+  "status": "STOPPED_PRECONDITION_UNVERIFIED",
+  "execution_status": "NOT_APPROVED_DO_NOT_EXECUTE",
+  "scope": "PURE_OFFLINE_HOST_ONLY",
+  "candidate_success_state": "STOPPED_CANDIDATE_BOOT_UNAPPROVED",
+  "candidate_success_status": "CANDIDATE_BOOT_ID_UNAPPROVED",
+  "approved_boot_id": null,
+  "real_candidate_boot_id": null,
+  "retired_boot_ids": [
+    "822a9c29-37c0-438c-81c4-da998d57073b"
+  ],
+  "board_connections": 0,
+  "ssh_attempts": 0,
+  "serial_enumerations": 0,
+  "serial_opens": 0,
+  "b1_b2_executions": 0,
+  "mmio_afi_reads_or_writes": 0,
+  "reset_operations": 0,
+  "overlay_loads": 0,
+  "dma_runs": 0,
+  "power_operations": 0,
+  "commits_or_merges": 0,
+  "board_accessed": false,
+  "afi_authorized": false,
+  "b2_authorized": false,
+  "tests": {
+    "passed": 77,
+    "by_file": {
+      "test_coldstart": 35,
+      "test_frozen_contract": 4,
+      "test_uart_readonly": 38
+    },
+    "historical_counts_added": false,
+    "scope": "three explicitly named NEW files; in-memory fakes/synthetic bytes/static AST"
+  },
+  "integrity": {
+    "sealed_files_verified": 364,
+    "sealed_manifest_sha256": "26b2a21dcb68dae34164e6f3dcb79d209637ced195ed7de9a56f38635910bf8d",
+    "indexed_files_verified": 320,
+    "protected_files_verified": 389,
+    "hardware_locks": {
+      "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+    },
+    "git": {
+      "main": {
+        "head": "16377a0b3ceb20dfa3253d2a9417fc21c300be5cbadab53ded807d00db829c24",
+        "tracked_diff": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "staged_diff": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "worktree": {
+        "head": "8d19afa50db2ab9bf66326fbb9ceb89d1fb90627209543a3ef05a0cfcfe85847",
+        "tracked_diff": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "staged_diff": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "restricted_raw": "NOT_TRAVERSED_NOT_READ_NOT_COPIED",
+    "revision": "NOT_READ",
+    "large_image_read": false,
+    "fsbl_reparsed": false
+  },
+  "sealed_v2_changed": false,
+  "b2_new_baseline_template": "NOT_CREATED; requires separately approved new ID and separate freeze",
+  "uart_api_zero_tx": "MOCK_VERIFIED",
+  "mock_transport_tx_bytes": 0,
+  "uart_physical_zero_tx": "UNVERIFIED_REQUIRES_PHYSICAL_ISOLATION_REVIEW",
+  "whole_sd_zero_write": "NOT_ESTABLISHED_BY_UART_OR_SSH",
+  "restricted_raw": "NOT_TRAVERSED_NOT_READ_NOT_COPIED",
+  "revision": "NOT_READ_NOT_COPIED",
+  "large_image_read": false,
+  "fsbl_reparsed": false,
+  "manifest_policy": "all new regular files excluding evidence-sha256.json itself; no self hash"
+}

@@ -1,0 +1,52 @@
+{
+  "status": "STOPPED_PRECONDITION_UNVERIFIED",
+  "completed_local": "2026-10-16T02:38:34.799218+08:00",
+  "board_connection": "USER_REPORTED_DISCONNECTED; no connection attempted",
+  "board_connections": 0,
+  "mmio_reads_or_writes": 0,
+  "overlay_loads": 0,
+  "dma_runs": 0,
+  "target_binary_executions": 0,
+  "images_mounted": 0,
+  "sd_writes": 0,
+  "commits_or_merges": 0,
+  "hardware_locks": {
+    "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+  },
+  "local_image_sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+  "boot_bin_sha256": "3bf9c24025a489926fd76872754977c5954e2ab25c91957373386e1f20915af6",
+  "fsbl_raw_sha256": "16081243af5ed1d5b908b0c038c13c3e205c131b31d538690786a530dba82161",
+  "local_boot_partitions": 3,
+  "historical_boot_binding": "UNKNOWN",
+  "rootfs_uuid_equality": "VERIFIED equality; shared lineage INFERRED, unique boot identity UNKNOWN",
+  "ps7_post_config_execution": "UNKNOWN",
+  "afi_read_authorized": false,
+  "tests_passed": 43,
+  "previous_evidence_integrity": {
+    "wo0015-afi1-preconditions-20261015": {
+      "files": 35,
+      "mismatches": []
+    },
+    "wo0015-afi1-readonly-20261015": {
+      "files": 21,
+      "mismatches": []
+    },
+    "wo0015-step2-mismatch-audit-20261015": {
+      "files": 46,
+      "mismatches": []
+    },
+    "wo0015-runonly-resume-retry2-20261015": {
+      "files": 104,
+      "mismatches": []
+    },
+    "wo0015-first-board-retry3-20261015": {
+      "files": 114,
+      "mismatches": []
+    }
+  },
+  "next_minimal_proposal": "B1: six proc files only; no boot files, MMIO or automatic B2",
+  "proposal_source_sha256": "4881c6313bfe9169ef4a44c512a63f0108f83aac428d5fddc71c5d400dca83dc",
+  "sensitive_evidence": "Raw REVISION and its sidecar restricted; report copy redacted; credential never used",
+  "report": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\verification-report.md"
+}

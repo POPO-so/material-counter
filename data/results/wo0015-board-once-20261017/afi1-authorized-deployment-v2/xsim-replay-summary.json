@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "suite": "WO0015_XSIM_SUITE_PASS",
+  "suite_status": "PASS",
+  "evidence_kind": "offline Vivado XSim replay; no board run",
+  "result_root": "data/results/wo0015-xsim-replay-20261015",
+  "vector_source": {
+    "source_manifest": "data/results/wo0014-offline-20261014/vectors/manifest.json",
+    "source_manifest_sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+    "source_png_count": 487,
+    "geometry": "320x240",
+    "threshold": 128,
+    "gray_formula": "(77*R + 150*G + 29*B) >> 8",
+    "binary_rule": "0xff if gray >= 128 else 0x00"
+  },
+  "source_sha256": {
+    "fpga/experimental/wo0015/axis_s2mm_frame_packer.v": "59c40c423742fab09233a0758795c1c1279ce8036b51d57d265f3b989f08b695",
+    "fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v": "8ea5d7e85845f5ecdb591c60294cb44105550991cbd43d2e6a22126cc706b4fa",
+    "fpga/sim/wo0015/tb_axis_s2mm_frame_packer.sv": "6fd6dcfc0cc9ea863cf80fac57d4c1257994b503601045a6c76f26e20ee787f0",
+    "fpga/sim/wo0015/tb_axis_dma_s2mm_pipeline.sv": "7be500bf29aea048295b23c1eb2838c23468f87ed17947a7b3f7e28588536e9e",
+    "fpga/sim/wo0015/tb_axis_s2mm_guards.sv": "71a28446ef8e8c8e33c00e0b9bd86659515abdefd93542f18efc5636da01730c",
+    "scripts/wo0015/prepare_vectors.py": "009abbde7c2616e9cbfc3b12262cd35a64dbbc2b2c0be2cf1515bf4ccc516c9f",
+    "scripts/wo0015/check_sim.py": "e1ac891a5ee6991e22236543dc65fad3615a1e0371f2057008c6f7f2256a8d86",
+    "scripts/wo0015/test_vectors.py": "f2e88817579baae1ab80ed69367f372afec5e9aeffd8e202dd896345cdc11a4b",
+    "scripts/wo0015/run_sim.tcl": "695efd6c833010b677e6f96af7b5c3ccf6ea48dcde4eb81f8ec43a492e920833"
+  },
+  "normal_cases": [
+    {
+      "case": "A",
+      "status": "PASS",
+      "frames": 1,
+      "output_beats": 19200,
+      "output_bytes": 76800,
+      "eof_beat_numbers": [19200],
+      "mismatch_bytes": 0,
+      "actual_binary_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "checker": "xsim/A-result.json"
+    },
+    {
+      "case": "B",
+      "status": "PASS",
+      "frames": 3,
+      "output_beats": 57600,
+      "output_bytes": 230400,
+      "eof_beat_numbers": [19200, 38400, 57600],
+      "mismatch_bytes": 0,
+      "actual_binary_sha256": "d6caa7929ea785e39eb542b4c93a0bd8fe15266fade1d6e74aa981228710127a",
+      "golden_sha256": "d6caa7929ea785e39eb542b4c93a0bd8fe15266fade1d6e74aa981228710127a",
+      "checker": "xsim/B-result.json"
+    },
+    {
+      "case": "C",
+      "status": "PASS",
+      "seeds": [1, 7, 42, 20261015],
+      "frames_per_seed": 3,
+      "output_beats_per_seed": 57600,
+      "output_bytes_per_seed": 230400,
+      "eof_beat_numbers_per_seed": [19200, 38400, 57600],
+      "mismatch_bytes_per_seed": 0,
+      "actual_binary_sha256_per_seed": "995a78c9558ca515034959b2e061da2d31f121a8a7a83c216963110b5507ef1f",
+      "golden_sha256": "995a78c9558ca515034959b2e061da2d31f121a8a7a83c216963110b5507ef1f",
+      "checkers": [
+        "xsim/C-seed1-result.json",
+        "xsim/C-seed7-result.json",
+        "xsim/C-seed42-result.json",
+        "xsim/C-seed20261015-result.json"
+      ]
+    }
+  ],
+  "negative_cases": [
+    {
+      "case": "D_short",
+      "status": "PASS_FAULT_STOP",
+      "fault_code": 2,
+      "accepted_pixels": 38397,
+      "output_beats": 9599,
+      "output_bytes": 38396,
+      "golden_frame_bytes": 76800,
+      "eof_count": 0,
+      "mismatch_bytes_in_emitted_prefix": 0,
+      "checker": "xsim/D_short-result.json"
+    },
+    {
+      "case": "D_long",
+      "status": "PASS_FAULT_STOP",
+      "fault_code": 2,
+      "accepted_pixels": 76798,
+      "output_beats": 19199,
+      "output_bytes": 76796,
+      "golden_frame_bytes": 76800,
+      "eof_count": 0,
+      "mismatch_bytes_in_emitted_prefix": 0,
+      "checker": "xsim/D_long-result.json"
+    },
+    {
+      "case": "D_checksum",
+      "status": "PASS_FAULT_STOP",
+      "fault_code": 2,
+      "accepted_pixels": 76800,
+      "output_beats": 19199,
+      "output_bytes": 76796,
+      "golden_frame_bytes": 76800,
+      "eof_count": 0,
+      "mismatch_bytes_in_emitted_prefix": 0,
+      "checker": "xsim/D_checksum-result.json"
+    },
+    {
+      "case": "D_reset",
+      "status": "PASS_RESET_STOP",
+      "stalled_beats_at_reset": 4,
+      "output_beats": 4,
+      "output_bytes": 16,
+      "golden_frame_bytes": 76800,
+      "eof_count": 0,
+      "state_cleared": true,
+      "mismatch_bytes_in_emitted_prefix": 0,
+      "checker": "xsim/D_reset-result.json"
+    }
+  ],
+  "negative_comparison_scope": "For D_short, D_long, D_checksum, and D_reset, mismatch_bytes is only a byte-for-byte comparison of the emitted output prefix against the same-length golden prefix. These cases intentionally stop before a complete frame and do not establish full-frame equality.",
+  "directed_tests": {
+    "packer": {
+      "status": "PASS",
+      "log": "xsim/packer.log",
+      "width": 8,
+      "height": 2,
+      "frames": 2,
+      "early_packet_done": true,
+      "late_packet_done": true,
+      "stalled_eof_stable": true,
+      "fault_reset": true
+    },
+    "guards": {
+      "status": "PASS",
+      "log": "xsim/guards.log",
+      "bad_sof_fault": true,
+      "bad_eol_fault": true,
+      "bad_value_fault": true,
+      "busy_arm_slverr": true,
+      "active_transfer_preserved": true,
+      "packer_fault_codes": [3, 4, 5]
+    }
+  },
+  "scoreboard_negative_control": {
+    "status": "EXPECTED_FAILURE_DETECTED",
+    "evidence_log": "data/results/wo0015-offline-20261015/eof-negative-control/negative.log",
+    "mutation": "temporary isolated copy changed an ordinary output beat to assert TLAST",
+    "observed": "Fatal: beat 0 TLAST=1 expected=0 at 390 ns",
+    "production_sources_modified": false
+  }
+}

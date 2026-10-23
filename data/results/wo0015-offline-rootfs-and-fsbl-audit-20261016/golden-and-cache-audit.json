@@ -1,0 +1,1158 @@
+{
+  "evidence_type": "LOCAL_GOLDEN_AND_SYNTHETIC_COUNTEREXAMPLES_NOT_BOARD_RX",
+  "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+  "nbytes": 76800,
+  "first_64_bytes_hex": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  "first_word_bytes_hex": "00000000",
+  "first_word_u32_le": 0,
+  "byte_histogram": {
+    "0x00": 74560,
+    "0xff": 2240
+  },
+  "foreground_bytes_by_word_parity": {
+    "even": 1120,
+    "odd": 1120
+  },
+  "word_histogram_by_parity": {
+    "even": {
+      "0x00000000": 9250,
+      "0x0000ffff": 70,
+      "0xffff0000": 70,
+      "0xffffffff": 210
+    },
+    "odd": {
+      "0x00000000": 9250,
+      "0x0000ffff": 70,
+      "0xffff0000": 70,
+      "0xffffffff": 210
+    }
+  },
+  "even_zero_odd_a5": {
+    "sha256": "bbdf2f4838860a933cbe1390aeceaa17ee4928f7f449ba4d87fe790f4542aea7",
+    "mismatch_bytes": 39520,
+    "first_mismatch": 4
+  },
+  "contiguous_xor_counterexample": {
+    "sha256": "f3dcdad3a164349ae183741e808aba51eaefe9a92fc266033df196de3c4e0387",
+    "mismatch_bytes": 39520,
+    "first_mismatch": 4
+  },
+  "distinct_counterexamples": true,
+  "actual_historical_rx_pattern": "UNKNOWN; raw historical RX not persisted",
+  "golden_path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-two-tier-bundle-20261015\\frame-0.binary.bin",
+  "manifest_path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-two-tier-bundle-20261015\\run-manifest.json",
+  "reasoning": {
+    "even_zero_odd_a5": "Even-word forced-zero mismatches 1120 foreground bytes; every odd-word A5 byte differs from Binary8 (38400); total 39520.",
+    "first_difference": "Golden bytes 0..3 are 00. Hypothetical zero even word matches; byte4 Golden00 versus hypothetical A5 is first mismatch.",
+    "poison_only": "An all-A5 untouched RX differs from Binary8 at all 76800 bytes, starting byte0. Offset4 implies bytes0..3 matched Golden00 after synchronization, not that a specific hardware write occurred.",
+    "counterexample": "Golden copied then XOR1 at contiguous offsets4..39523 has same count and first offset, distinct bytes and no odd/even poison pattern.",
+    "limits": "Historical log gives mismatch count/first offset only; actual RX bytes, last writer and cache/coherence state UNKNOWN."
+  },
+  "cache_static_audit": {
+    "classification": "VERIFIED_LOCAL_IMAGE_LOGIC; applicability to historical installed runtime INFERRED/UNKNOWN",
+    "condition": "Historical executor source plus unmodified candidate image package; EmbeddedDevice active; no runtime replacement/monkeypatch",
+    "historical_allocation": "PynqBoardAPI.allocate passes shape=(size,), dtype=u1 only; no cacheable or target keyword",
+    "allocation_chain": [
+      "pynq.allocate -> buffer.allocate(target=None)",
+      "Device.active_device.allocate -> Device.allocate -> self.default_memory.allocate",
+      "EmbeddedDevice.default_memory -> EmbeddedXrtMemory (inherits XrtMemory.allocate)",
+      "XrtMemory.allocate -> _xrt_allocate(cacheable=0)",
+      "device.allocate_bo -> pyxrt.bo.flags.normal -> pyxrt.bo(handle, max(size,8192), flags, idx)",
+      "PynqBuffer(..., coherent=False)"
+    ],
+    "cacheable_parameter_default": 0,
+    "xrt_bo_flags_default": "pyxrt.bo.flags.normal (cacheable flag only when cacheable argument truthy)",
+    "pynqbuffer_coherent_default_on_this_path": false,
+    "pynqbuffer_cacheable_property_on_this_path": true,
+    "cacheable_semantics": "PynqBuffer.cacheable is simply not coherent. Its True value is distinct from the cacheable=0 allocation keyword and does not prove kernel mapping cache attributes.",
+    "cpu_to_device": [
+      "historical api.sync_to_device(buffer)",
+      "callable buffer.sync_to_device exists -> primary branch (adapter flush fallback not selected)",
+      "PynqBuffer.sync_to_device -> self.flush",
+      "coherent=False -> self.device.flush(bo, offset, virtual_address, nbytes)",
+      "XrtDevice.flush -> bo.sync(pyxrt.xclBOSyncDirection.XCL_BO_SYNC_BO_TO_DEVICE)"
+    ],
+    "device_to_cpu": [
+      "historical api.sync_from_device(s2mm_buffer)",
+      "callable buffer.sync_from_device exists -> primary branch (adapter invalidate fallback not selected)",
+      "PynqBuffer.sync_from_device -> self.invalidate",
+      "coherent=False -> self.device.invalidate(bo, offset, virtual_address, nbytes)",
+      "XrtDevice.invalidate -> bo.sync(pyxrt.xclBOSyncDirection.XCL_BO_SYNC_BO_FROM_DEVICE)"
+    ],
+    "sync_for_cpu_sync_for_device": "Not the buffer methods selected by this executor/candidate class; names are not interchangeable with primary sync_to/from methods.",
+    "libcma": "No libcma/xlnk call in the selected buffer.allocate -> EmbeddedDevice/XrtMemory -> pyxrt BO chain; presence of libcma.so does not establish use.",
+    "unknown": [
+      "Historical package hashes, actual class/method resolution and buffer coherent metadata were not captured",
+      "Runtime pyxrt dispatch, kernel BO cache mapping and actual cache-maintenance success were not measured",
+      "Static sync calls neither exclude a cache problem nor prove it caused the mismatch"
+    ],
+    "evidence": [
+      {
+        "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-runonly-resume-retry2-20261015\\remote-evidence\\board_once_watermark.py",
+        "sha256": "6be386b2140d8a373677eb337e6a3028464c0c720a75bd6c14ea03046cec7ec1",
+        "excerpts": [
+          {
+            "line": 440,
+            "text": "                    transfer_started=False,"
+          },
+          {
+            "line": 441,
+            "text": "                    evidence={\"s2mm_dmasr\": s2mm_before, \"mm2s_dmasr\": mm2s_before},"
+          },
+          {
+            "line": 442,
+            "text": "                )"
+          },
+          {
+            "line": 443,
+            "text": ""
+          },
+          {
+            "line": 444,
+            "text": "            api.write_buffer(mm2s_buffer, frame.packet)"
+          },
+          {
+            "line": 445,
+            "text": "            api.sync_to_device(mm2s_buffer)"
+          },
+          {
+            "line": 446,
+            "text": "            api.write_buffer(s2mm_buffer, b\"\\xA5\" * preflight.RX_BYTES)"
+          },
+          {
+            "line": 447,
+            "text": "            api.sync_to_device(s2mm_buffer)"
+          },
+          {
+            "line": 448,
+            "text": "            packer_status = api.read32(preflight.CHECKER_BASE, PACKER_STATUS)"
+          },
+          {
+            "line": 449,
+            "text": "            if packer_status & (PACKER_BUSY | PACKER_FAULT):"
+          },
+          {
+            "line": 450,
+            "text": "                raise ExecutionFailure(f\"Packer is busy/faulted before frame {frame.frame_id}\","
+          },
+          {
+            "line": 508,
+            "text": "                    evidence={\"packer_status\": packer_status, \"accepted_pixels\": pixels,"
+          },
+          {
+            "line": 509,
+            "text": "                              \"sent_beats\": beats, \"packer_error\": packer_error},"
+          },
+          {
+            "line": 510,
+            "text": "                )"
+          },
+          {
+            "line": 511,
+            "text": "            after_checker = _checker_snapshot(api)"
+          },
+          {
+            "line": 512,
+            "text": "            _check_checker_frame(previous_checker, after_checker, frame)"
+          },
+          {
+            "line": 513,
+            "text": "            api.sync_from_device(s2mm_buffer)"
+          },
+          {
+            "line": 514,
+            "text": "            returned = bytes(memoryview(s2mm_buffer).cast(\"B\")[:preflight.RX_BYTES])"
+          },
+          {
+            "line": 515,
+            "text": "            if returned != frame.binary:"
+          },
+          {
+            "line": 516,
+            "text": "                mismatches = sum(left != right for left, right in zip(returned, frame.binary))"
+          },
+          {
+            "line": 517,
+            "text": "                first = next((offset for offset, pair in enumerate(zip(returned, frame.binary))"
+          },
+          {
+            "line": 518,
+            "text": "                              if pair[0] != pair[1]), None)"
+          },
+          {
+            "line": 519,
+            "text": "                raise ExecutionFailure("
+          },
+          {
+            "line": 520,
+            "text": "                    f\"S2MM Binary8 differs from golden for frame {frame.frame_id}: \""
+          },
+          {
+            "line": 521,
+            "text": "                    f\"{mismatches} mismatches, first offset={first}\","
+          },
+          {
+            "line": 522,
+            "text": "                    transfer_started=False,"
+          },
+          {
+            "line": 915,
+            "text": ""
+          },
+          {
+            "line": 916,
+            "text": "    def open_mmio(self) -> None:"
+          },
+          {
+            "line": 917,
+            "text": "        pynq = self._load_pynq()"
+          },
+          {
+            "line": 918,
+            "text": ""
+          },
+          {
+            "line": 919,
+            "text": "        self._allocate = pynq.allocate"
+          },
+          {
+            "line": 920,
+            "text": "        _mark_board_accessed()"
+          },
+          {
+            "line": 921,
+            "text": "        self.board_accessed = True"
+          },
+          {
+            "line": 922,
+            "text": "        regions = {preflight.CHECKER_BASE: pynq.MMIO(preflight.CHECKER_BASE, 0x10000)}"
+          },
+          {
+            "line": 923,
+            "text": "        if self.stage != \"overlay-only\":"
+          },
+          {
+            "line": 924,
+            "text": "            regions[preflight.DMA_BASE] = pynq.MMIO(preflight.DMA_BASE, 0x10000)"
+          },
+          {
+            "line": 925,
+            "text": "        self._mmio = regions"
+          },
+          {
+            "line": 926,
+            "text": ""
+          },
+          {
+            "line": 927,
+            "text": "    def allocate(self, size: int) -> Any:"
+          },
+          {
+            "line": 928,
+            "text": "        if self._allocate is None:"
+          },
+          {
+            "line": 929,
+            "text": "            raise RuntimeError(\"PYNQ MMIO/allocator has not been initialized\")"
+          },
+          {
+            "line": 930,
+            "text": "        return self._allocate(shape=(size,), dtype=\"u1\")"
+          },
+          {
+            "line": 931,
+            "text": ""
+          },
+          {
+            "line": 950,
+            "text": "    def sync_to_device(self, buffer: Any) -> None:"
+          },
+          {
+            "line": 951,
+            "text": "        method = getattr(buffer, \"sync_to_device\", None)"
+          },
+          {
+            "line": 952,
+            "text": "        if callable(method):"
+          },
+          {
+            "line": 953,
+            "text": "            method()"
+          },
+          {
+            "line": 954,
+            "text": "        else:"
+          },
+          {
+            "line": 955,
+            "text": "            flush = getattr(buffer, \"flush\", None)"
+          },
+          {
+            "line": 956,
+            "text": "            if callable(flush):"
+          },
+          {
+            "line": 957,
+            "text": "                flush()"
+          },
+          {
+            "line": 958,
+            "text": "            else:"
+          },
+          {
+            "line": 959,
+            "text": "                raise RuntimeError(\"buffer has neither sync_to_device nor flush cache operation\")"
+          },
+          {
+            "line": 960,
+            "text": ""
+          },
+          {
+            "line": 961,
+            "text": "    def sync_from_device(self, buffer: Any) -> None:"
+          },
+          {
+            "line": 962,
+            "text": "        method = getattr(buffer, \"sync_from_device\", None)"
+          },
+          {
+            "line": 963,
+            "text": "        if callable(method):"
+          },
+          {
+            "line": 964,
+            "text": "            method()"
+          },
+          {
+            "line": 965,
+            "text": "        else:"
+          },
+          {
+            "line": 966,
+            "text": "            invalidate = getattr(buffer, \"invalidate\", None)"
+          },
+          {
+            "line": 967,
+            "text": "            if callable(invalidate):"
+          },
+          {
+            "line": 968,
+            "text": "                invalidate()"
+          },
+          {
+            "line": 969,
+            "text": "            else:"
+          },
+          {
+            "line": 970,
+            "text": "                raise RuntimeError(\"buffer has neither sync_from_device nor invalidate cache operation\")"
+          }
+        ]
+      },
+      {
+        "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq\\buffer.py",
+        "sha256": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463",
+        "excerpts": [
+          {
+            "line": 38,
+            "text": "    def __new__("
+          },
+          {
+            "line": 39,
+            "text": "        cls, *args, device=None, device_address=0, bo=0, coherent=False, **kwargs"
+          },
+          {
+            "line": 40,
+            "text": "    ):"
+          },
+          {
+            "line": 41,
+            "text": "        self = super().__new__(cls, *args, **kwargs)"
+          },
+          {
+            "line": 42,
+            "text": "        self.device_address = device_address"
+          },
+          {
+            "line": 43,
+            "text": "        self.coherent = coherent"
+          },
+          {
+            "line": 44,
+            "text": "        self.bo = bo"
+          },
+          {
+            "line": 45,
+            "text": "        self.device = device"
+          },
+          {
+            "line": 46,
+            "text": "        self.offset = 0"
+          },
+          {
+            "line": 47,
+            "text": "        self.freed = False"
+          },
+          {
+            "line": 85,
+            "text": "    @property"
+          },
+          {
+            "line": 86,
+            "text": "    def cacheable(self):"
+          },
+          {
+            "line": 87,
+            "text": "        return not self.coherent"
+          },
+          {
+            "line": 88,
+            "text": ""
+          },
+          {
+            "line": 89,
+            "text": "    @property"
+          },
+          {
+            "line": 90,
+            "text": "    def physical_address(self):"
+          },
+          {
+            "line": 91,
+            "text": "        return self.device_address"
+          },
+          {
+            "line": 104,
+            "text": "    def flush(self):"
+          },
+          {
+            "line": 105,
+            "text": "        \"\"\"Flush the underlying memory if necessary\"\"\""
+          },
+          {
+            "line": 106,
+            "text": "        if not self.coherent:"
+          },
+          {
+            "line": 107,
+            "text": "            self.device.flush(self.bo, self.offset, self.virtual_address, self.nbytes)"
+          },
+          {
+            "line": 108,
+            "text": ""
+          },
+          {
+            "line": 109,
+            "text": "    def invalidate(self):"
+          },
+          {
+            "line": 110,
+            "text": "        \"\"\"Invalidate the underlying memory if necessary\"\"\""
+          },
+          {
+            "line": 111,
+            "text": "        if not self.coherent:"
+          },
+          {
+            "line": 112,
+            "text": "            self.device.invalidate("
+          },
+          {
+            "line": 113,
+            "text": "                self.bo, self.offset, self.virtual_address, self.nbytes"
+          },
+          {
+            "line": 114,
+            "text": "            )"
+          },
+          {
+            "line": 115,
+            "text": ""
+          },
+          {
+            "line": 116,
+            "text": "    def sync_to_device(self):"
+          },
+          {
+            "line": 117,
+            "text": "        \"\"\"Copy the contents of the host buffer into the mirrored"
+          },
+          {
+            "line": 118,
+            "text": "        device buffer"
+          },
+          {
+            "line": 119,
+            "text": ""
+          },
+          {
+            "line": 120,
+            "text": "        \"\"\""
+          },
+          {
+            "line": 121,
+            "text": "        self.flush()"
+          },
+          {
+            "line": 122,
+            "text": ""
+          },
+          {
+            "line": 123,
+            "text": "    def sync_from_device(self):"
+          },
+          {
+            "line": 124,
+            "text": "        \"\"\"Copy the contents of the device buffer into the mirrored"
+          },
+          {
+            "line": 125,
+            "text": "        host buffer"
+          },
+          {
+            "line": 126,
+            "text": ""
+          },
+          {
+            "line": 127,
+            "text": "        \"\"\""
+          },
+          {
+            "line": 128,
+            "text": "        self.invalidate()"
+          },
+          {
+            "line": 129,
+            "text": ""
+          },
+          {
+            "line": 138,
+            "text": "def allocate(shape, dtype=\"u4\", target=None, **kwargs):"
+          },
+          {
+            "line": 139,
+            "text": "    \"\"\"Allocate a PYNQ buffer"
+          },
+          {
+            "line": 140,
+            "text": ""
+          },
+          {
+            "line": 141,
+            "text": "    This API mimics the numpy ndarray constructor with the following"
+          },
+          {
+            "line": 142,
+            "text": "    differences:"
+          },
+          {
+            "line": 143,
+            "text": ""
+          },
+          {
+            "line": 144,
+            "text": "     * The default dtype is 32-bit unsigned int rather than float"
+          },
+          {
+            "line": 145,
+            "text": "     * A new ``target`` keyword parameter to determine where the"
+          },
+          {
+            "line": 146,
+            "text": "       buffer should be allocated"
+          },
+          {
+            "line": 147,
+            "text": ""
+          },
+          {
+            "line": 148,
+            "text": "    The target determines where the buffer gets allocated"
+          },
+          {
+            "line": 149,
+            "text": ""
+          },
+          {
+            "line": 150,
+            "text": "     * If None then the currently active device is used"
+          },
+          {
+            "line": 151,
+            "text": "     * If a Device is specified then the main memory"
+          },
+          {
+            "line": 152,
+            "text": ""
+          },
+          {
+            "line": 153,
+            "text": "    \"\"\""
+          },
+          {
+            "line": 154,
+            "text": "    from .pl_server import Device"
+          },
+          {
+            "line": 155,
+            "text": ""
+          },
+          {
+            "line": 156,
+            "text": "    if target is None:"
+          },
+          {
+            "line": 157,
+            "text": "        target = Device.active_device"
+          },
+          {
+            "line": 158,
+            "text": "    return target.allocate(shape, dtype, **kwargs)"
+          },
+          {
+            "line": 159,
+            "text": ""
+          },
+          {
+            "line": 160,
+            "text": ""
+          }
+        ]
+      },
+      {
+        "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq\\pl_server\\device.py",
+        "sha256": "2f12c521a9250f594219888417f7b1b6c8a1fceb16afd6890187ad91f4b36426",
+        "excerpts": [
+          {
+            "line": 127,
+            "text": "    def allocate(self, shape, dtype, **kwargs):"
+          },
+          {
+            "line": 128,
+            "text": "        \"\"\"Allocate an array on the device"
+          },
+          {
+            "line": 129,
+            "text": ""
+          },
+          {
+            "line": 130,
+            "text": "        Returns a buffer on memory accessible to the device"
+          },
+          {
+            "line": 131,
+            "text": ""
+          },
+          {
+            "line": 132,
+            "text": "        Parameters"
+          },
+          {
+            "line": 133,
+            "text": "        ----------"
+          },
+          {
+            "line": 134,
+            "text": "        shape : tuple(int)"
+          },
+          {
+            "line": 135,
+            "text": "            The shape of the array"
+          },
+          {
+            "line": 136,
+            "text": "        dtype : np.dtype"
+          },
+          {
+            "line": 137,
+            "text": "            The type of the elements of the array"
+          },
+          {
+            "line": 138,
+            "text": ""
+          },
+          {
+            "line": 139,
+            "text": "        Returns"
+          },
+          {
+            "line": 140,
+            "text": "        ------"
+          },
+          {
+            "line": 141,
+            "text": "        PynqBuffer"
+          },
+          {
+            "line": 142,
+            "text": "            The buffer shared between the host and the device"
+          },
+          {
+            "line": 143,
+            "text": ""
+          },
+          {
+            "line": 144,
+            "text": "        \"\"\""
+          },
+          {
+            "line": 145,
+            "text": "        return self.default_memory.allocate(shape, dtype, **kwargs)"
+          }
+        ]
+      },
+      {
+        "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq\\pl_server\\embedded_device.py",
+        "sha256": "124511991cb3c0d15842344efb8621a5dd15fc0e5d8eb70d29cbfa81f398a12f",
+        "excerpts": [
+          {
+            "line": 493,
+            "text": "class EmbeddedXrtMemory(XrtMemory):"
+          },
+          {
+            "line": 494,
+            "text": "    def __init__(self, device, desc):"
+          },
+          {
+            "line": 495,
+            "text": "        super().__init__(device, desc)"
+          },
+          {
+            "line": 496,
+            "text": "        self._mmio = None"
+          },
+          {
+            "line": 497,
+            "text": ""
+          },
+          {
+            "line": 550,
+            "text": "    @property"
+          },
+          {
+            "line": 551,
+            "text": "    def default_memory(self):"
+          },
+          {
+            "line": 552,
+            "text": "        if not hasattr(self, \"mem_dict\"):"
+          },
+          {
+            "line": 553,
+            "text": "            initial_global_state_file_boot_check()"
+          },
+          {
+            "line": 554,
+            "text": "            if global_state_file_exists(): "
+          },
+          {
+            "line": 555,
+            "text": "                gs = load_global_state()"
+          },
+          {
+            "line": 556,
+            "text": "                return self.get_memory(gs.psddr)"
+          },
+          {
+            "line": 557,
+            "text": "            else:"
+          },
+          {
+            "line": 558,
+            "text": "                raise RuntimeError(\"Overlay is not downloaded\")"
+          },
+          {
+            "line": 559,
+            "text": "        else:"
+          },
+          {
+            "line": 560,
+            "text": "            mem_dict = self.mem_dict"
+          },
+          {
+            "line": 561,
+            "text": ""
+          },
+          {
+            "line": 562,
+            "text": "        for k, v in mem_dict.items():"
+          },
+          {
+            "line": 563,
+            "text": "            if \"base_address\" in v:"
+          },
+          {
+            "line": 564,
+            "text": "                if v[\"base_address\"] == 0:"
+          },
+          {
+            "line": 565,
+            "text": "                    return self.get_memory(v)"
+          },
+          {
+            "line": 566,
+            "text": "        raise RuntimeError(\"XRT design does not contain PS memory\")"
+          },
+          {
+            "line": 567,
+            "text": ""
+          },
+          {
+            "line": 568,
+            "text": "    def __init__(self, index=0, tag=\"embedded_xrt{}\"):"
+          },
+          {
+            "line": 569,
+            "text": "        super().__init__(index, tag.format(index))"
+          },
+          {
+            "line": 570,
+            "text": "        self.capabilities[\"REGISTER_RW\"] = False"
+          },
+          {
+            "line": 571,
+            "text": "        self.capabilities[\"MEMORY_MAPPED\"] = True"
+          },
+          {
+            "line": 572,
+            "text": "        self.capabilities[\"CALLABLE\"] = False"
+          },
+          {
+            "line": 573,
+            "text": "        self.arch = platform.machine()"
+          },
+          {
+            "line": 574,
+            "text": ""
+          },
+          {
+            "line": 575,
+            "text": "    def get_memory(self, description):"
+          },
+          {
+            "line": 576,
+            "text": "        return EmbeddedXrtMemory(self, description)"
+          }
+        ]
+      },
+      {
+        "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq\\pl_server\\xrt_device.py",
+        "sha256": "fb4bdbe4cac759c66feeb0248e13c83592ddfad32b36bc83764484411812556a",
+        "excerpts": [
+          {
+            "line": 59,
+            "text": "def _xrt_allocate(shape, dtype, device, memidx, cacheable=0, pointer=None, cache=None):"
+          },
+          {
+            "line": 60,
+            "text": "    elements = 1"
+          },
+          {
+            "line": 61,
+            "text": "    try:"
+          },
+          {
+            "line": 62,
+            "text": "        for s in shape:"
+          },
+          {
+            "line": 63,
+            "text": "            elements *= s"
+          },
+          {
+            "line": 64,
+            "text": "    except TypeError:"
+          },
+          {
+            "line": 65,
+            "text": "        elements = shape"
+          },
+          {
+            "line": 66,
+            "text": "    dtype = np.dtype(dtype)"
+          },
+          {
+            "line": 67,
+            "text": "    size = elements * dtype.itemsize"
+          },
+          {
+            "line": 68,
+            "text": "    if pointer is not None:"
+          },
+          {
+            "line": 69,
+            "text": "        bo, buf, device_address = pointer"
+          },
+          {
+            "line": 70,
+            "text": "    else:"
+          },
+          {
+            "line": 71,
+            "text": "        bo = device.allocate_bo(size, memidx, cacheable)"
+          },
+          {
+            "line": 72,
+            "text": "        buf = device.map_bo(bo)"
+          },
+          {
+            "line": 73,
+            "text": "        device_address = device.get_device_address(bo)"
+          },
+          {
+            "line": 74,
+            "text": "    ar = PynqBuffer("
+          },
+          {
+            "line": 75,
+            "text": "        shape,"
+          },
+          {
+            "line": 76,
+            "text": "        dtype,"
+          },
+          {
+            "line": 77,
+            "text": "        bo=bo,"
+          },
+          {
+            "line": 78,
+            "text": "        device=device,"
+          },
+          {
+            "line": 79,
+            "text": "        buffer=buf,"
+          },
+          {
+            "line": 80,
+            "text": "        device_address=device_address,"
+          },
+          {
+            "line": 81,
+            "text": "        coherent=False,"
+          },
+          {
+            "line": 82,
+            "text": "    )"
+          },
+          {
+            "line": 83,
+            "text": "    if pointer is not None:"
+          },
+          {
+            "line": 84,
+            "text": "        weakref.finalize(buf, _free_bo, device, bo, ar.virtual_address, ar.nbytes)"
+          },
+          {
+            "line": 85,
+            "text": "    if cache is not None:"
+          },
+          {
+            "line": 86,
+            "text": "        ar.pointer = (bo, buf, device_address)"
+          },
+          {
+            "line": 87,
+            "text": "        ar.return_to = cache"
+          },
+          {
+            "line": 88,
+            "text": "    return ar"
+          },
+          {
+            "line": 113,
+            "text": "    def allocate(self, shape, dtype, **kwargs):"
+          },
+          {
+            "line": 114,
+            "text": "        \"\"\"Create a new  buffer in the memory bank"
+          },
+          {
+            "line": 115,
+            "text": ""
+          },
+          {
+            "line": 116,
+            "text": "        Parameters"
+          },
+          {
+            "line": 117,
+            "text": "        ----------"
+          },
+          {
+            "line": 118,
+            "text": "        shape : tuple(int)"
+          },
+          {
+            "line": 119,
+            "text": "            Shape of the array"
+          },
+          {
+            "line": 120,
+            "text": "        dtype : np.dtype"
+          },
+          {
+            "line": 121,
+            "text": "            Data type of the array"
+          },
+          {
+            "line": 122,
+            "text": ""
+          },
+          {
+            "line": 123,
+            "text": "        \"\"\""
+          },
+          {
+            "line": 124,
+            "text": "        buf = _xrt_allocate(shape, dtype, self.device, self.idx, **kwargs)"
+          },
+          {
+            "line": 125,
+            "text": "        buf.memory = self"
+          },
+          {
+            "line": 126,
+            "text": "        return buf"
+          },
+          {
+            "line": 127,
+            "text": ""
+          },
+          {
+            "line": 128,
+            "text": "    def __hash__(self):"
+          },
+          {
+            "line": 129,
+            "text": "        return hash((self.device, self.idx))"
+          },
+          {
+            "line": 322,
+            "text": "    def flush(self, bo, offset, ptr, size):"
+          },
+          {
+            "line": 323,
+            "text": "        try:"
+          },
+          {
+            "line": 324,
+            "text": "            bo.sync(pyxrt.xclBOSyncDirection.XCL_BO_SYNC_BO_TO_DEVICE)"
+          },
+          {
+            "line": 325,
+            "text": "        except Exception as e:"
+          },
+          {
+            "line": 326,
+            "text": "            raise RuntimeError(f\"Buffer Flush Failed: {str(e)}\")"
+          },
+          {
+            "line": 327,
+            "text": "        "
+          },
+          {
+            "line": 328,
+            "text": "    def invalidate(self, bo, offset, ptr, size):"
+          },
+          {
+            "line": 329,
+            "text": "        try:"
+          },
+          {
+            "line": 330,
+            "text": "            bo.sync(pyxrt.xclBOSyncDirection.XCL_BO_SYNC_BO_FROM_DEVICE)"
+          },
+          {
+            "line": 331,
+            "text": "        except Exception as e:"
+          },
+          {
+            "line": 332,
+            "text": "            raise RuntimeError(f\"Buffer Invalidate Failed: {str(e)}\")"
+          },
+          {
+            "line": 333,
+            "text": "        "
+          },
+          {
+            "line": 334,
+            "text": "    def allocate_bo(self, size, idx, cacheable):"
+          },
+          {
+            "line": 335,
+            "text": "        flags = pyxrt.bo.flags.normal"
+          },
+          {
+            "line": 336,
+            "text": "        if cacheable:"
+          },
+          {
+            "line": 337,
+            "text": "            flags = pyxrt.bo.flags.cacheable"
+          },
+          {
+            "line": 338,
+            "text": "        "
+          },
+          {
+            "line": 339,
+            "text": "        # Workaround for XRT v2.17 4KB threshold issue:"
+          },
+          {
+            "line": 340,
+            "text": "        # Small buffers (<4KB) get 64-bit addresses, large buffers (>=4KB) get 32-bit addresses"
+          },
+          {
+            "line": 341,
+            "text": "        # Force minimum allocation of 8KB to ensure 32-bit addresses for DMA compatibility"
+          },
+          {
+            "line": 342,
+            "text": "        actual_size = max(size, 8192)  # 8KB minimum"
+          },
+          {
+            "line": 343,
+            "text": "        "
+          },
+          {
+            "line": 344,
+            "text": "        try: "
+          },
+          {
+            "line": 345,
+            "text": "            bo = pyxrt.bo(self.handle, actual_size, flags, idx)"
+          },
+          {
+            "line": 346,
+            "text": "        except Exception as e:"
+          },
+          {
+            "line": 347,
+            "text": "            raise RuntimeError(f\"BO allocation failed: {e}\")"
+          },
+          {
+            "line": 348,
+            "text": "        if bo is None:"
+          },
+          {
+            "line": 349,
+            "text": "            raise RuntimeError(\"BO handle is invalid (None)\")"
+          },
+          {
+            "line": 350,
+            "text": "        return bo"
+          },
+          {
+            "line": 351,
+            "text": "   "
+          },
+          {
+            "line": 352,
+            "text": "    def buffer_write(self, bo, bo_offset, buf, buf_offset=0, count=-1):"
+          }
+        ]
+      }
+    ]
+  }
+}

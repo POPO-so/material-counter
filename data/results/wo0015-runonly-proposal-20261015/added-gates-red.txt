@@ -1,0 +1,174 @@
+......................F.......FF...FFFFFF                                [100%]
+================================== FAILURES ===================================
+___ test_historical_terminal_uses_manifest_binding_when_hwh_field_is_absent ___
+
+    def test_historical_terminal_uses_manifest_binding_when_hwh_field_is_absent():
+        marker = json.loads(terminal()); marker.pop('hwh_sha256')
+        raw = json.dumps(marker).encode()
+        result = model.exercise_proposed_sequence(RegisterModel())
+>       assert model.terminal_archive_plan(raw, hashlib.sha256(raw).hexdigest(), result)['status'] == 'ARCHIVE_PROPOSED_NOT_EXECUTED'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:99: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+data\results\wo0015-runonly-proposal-20261015\run_only_model.py:95: in terminal_archive_plan
+    require_identity(marker)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+identity = {'boot_id': '822a9c29-37c0-438c-81c4-da998d57073b', 'manifest_sha256': '84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a...', 'bit_sha256': 'a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420', 'status': 'TERMINAL_FAILURE', ...}
+
+    def require_identity(identity):
+        if any(identity.get(k) != v for k, v in IDENTITY.items()):
+>           raise ProposalRejected('boot or locked artifact identity differs')
+E           run_only_model.ProposalRejected: boot or locked artifact identity differs
+
+data\results\wo0015-runonly-proposal-20261015\run_only_model.py:20: ProposalRejected
+______ test_nonfinite_or_nonpositive_timeout_rejected_before_claim[nan] _______
+
+timeout = nan
+
+    @pytest.mark.parametrize('timeout', [float('nan'), float('inf'), -float('inf'), 0, -1])
+    def test_nonfinite_or_nonpositive_timeout_rejected_before_claim(timeout):
+        api = RegisterModel()
+>       with pytest.raises(model.ProposalRejected):model.exercise_proposed_sequence(api, timeout_s=timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ProposalRejected
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:145: Failed
+______ test_nonfinite_or_nonpositive_timeout_rejected_before_claim[inf] _______
+
+timeout = inf
+
+    @pytest.mark.parametrize('timeout', [float('nan'), float('inf'), -float('inf'), 0, -1])
+    def test_nonfinite_or_nonpositive_timeout_rejected_before_claim(timeout):
+        api = RegisterModel()
+>       with pytest.raises(model.ProposalRejected):model.exercise_proposed_sequence(api, timeout_s=timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ProposalRejected
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:145: Failed
+______ test_archive_rejects_incomplete_or_inconsistent_recovery[minimal] ______
+
+case = 'minimal'
+
+    @pytest.mark.parametrize('case', ['minimal', 'missing_after', 'wrong_writes', 'transfer', 'allocation', 'poststate'])
+    def test_archive_rejects_incomplete_or_inconsistent_recovery(case):
+        result = model.exercise_proposed_sequence(RegisterModel())
+        if case == 'minimal':result = {'status':'RUN_ONLY_PASS','identity':dict(model.IDENTITY)}
+        elif case == 'missing_after':result.pop('after')
+        elif case == 'wrong_writes':result['writes'].reverse()
+        elif case == 'transfer':result['dma_transfer_started'] = True
+        elif case == 'allocation':result['cma_allocations'] = 1
+        else:result['after']['dma'][0x58] = 76800
+        raw = terminal()
+>       with pytest.raises(model.ProposalRejected):model.terminal_archive_plan(raw, hashlib.sha256(raw).hexdigest(), result)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ProposalRejected
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:158: Failed
+___ test_archive_rejects_incomplete_or_inconsistent_recovery[missing_after] ___
+
+case = 'missing_after'
+
+    @pytest.mark.parametrize('case', ['minimal', 'missing_after', 'wrong_writes', 'transfer', 'allocation', 'poststate'])
+    def test_archive_rejects_incomplete_or_inconsistent_recovery(case):
+        result = model.exercise_proposed_sequence(RegisterModel())
+        if case == 'minimal':result = {'status':'RUN_ONLY_PASS','identity':dict(model.IDENTITY)}
+        elif case == 'missing_after':result.pop('after')
+        elif case == 'wrong_writes':result['writes'].reverse()
+        elif case == 'transfer':result['dma_transfer_started'] = True
+        elif case == 'allocation':result['cma_allocations'] = 1
+        else:result['after']['dma'][0x58] = 76800
+        raw = terminal()
+>       with pytest.raises(model.ProposalRejected):model.terminal_archive_plan(raw, hashlib.sha256(raw).hexdigest(), result)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ProposalRejected
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:158: Failed
+___ test_archive_rejects_incomplete_or_inconsistent_recovery[wrong_writes] ____
+
+case = 'wrong_writes'
+
+    @pytest.mark.parametrize('case', ['minimal', 'missing_after', 'wrong_writes', 'transfer', 'allocation', 'poststate'])
+    def test_archive_rejects_incomplete_or_inconsistent_recovery(case):
+        result = model.exercise_proposed_sequence(RegisterModel())
+        if case == 'minimal':result = {'status':'RUN_ONLY_PASS','identity':dict(model.IDENTITY)}
+        elif case == 'missing_after':result.pop('after')
+        elif case == 'wrong_writes':result['writes'].reverse()
+        elif case == 'transfer':result['dma_transfer_started'] = True
+        elif case == 'allocation':result['cma_allocations'] = 1
+        else:result['after']['dma'][0x58] = 76800
+        raw = terminal()
+>       with pytest.raises(model.ProposalRejected):model.terminal_archive_plan(raw, hashlib.sha256(raw).hexdigest(), result)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ProposalRejected
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:158: Failed
+_____ test_archive_rejects_incomplete_or_inconsistent_recovery[transfer] ______
+
+case = 'transfer'
+
+    @pytest.mark.parametrize('case', ['minimal', 'missing_after', 'wrong_writes', 'transfer', 'allocation', 'poststate'])
+    def test_archive_rejects_incomplete_or_inconsistent_recovery(case):
+        result = model.exercise_proposed_sequence(RegisterModel())
+        if case == 'minimal':result = {'status':'RUN_ONLY_PASS','identity':dict(model.IDENTITY)}
+        elif case == 'missing_after':result.pop('after')
+        elif case == 'wrong_writes':result['writes'].reverse()
+        elif case == 'transfer':result['dma_transfer_started'] = True
+        elif case == 'allocation':result['cma_allocations'] = 1
+        else:result['after']['dma'][0x58] = 76800
+        raw = terminal()
+>       with pytest.raises(model.ProposalRejected):model.terminal_archive_plan(raw, hashlib.sha256(raw).hexdigest(), result)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ProposalRejected
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:158: Failed
+____ test_archive_rejects_incomplete_or_inconsistent_recovery[allocation] _____
+
+case = 'allocation'
+
+    @pytest.mark.parametrize('case', ['minimal', 'missing_after', 'wrong_writes', 'transfer', 'allocation', 'poststate'])
+    def test_archive_rejects_incomplete_or_inconsistent_recovery(case):
+        result = model.exercise_proposed_sequence(RegisterModel())
+        if case == 'minimal':result = {'status':'RUN_ONLY_PASS','identity':dict(model.IDENTITY)}
+        elif case == 'missing_after':result.pop('after')
+        elif case == 'wrong_writes':result['writes'].reverse()
+        elif case == 'transfer':result['dma_transfer_started'] = True
+        elif case == 'allocation':result['cma_allocations'] = 1
+        else:result['after']['dma'][0x58] = 76800
+        raw = terminal()
+>       with pytest.raises(model.ProposalRejected):model.terminal_archive_plan(raw, hashlib.sha256(raw).hexdigest(), result)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ProposalRejected
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:158: Failed
+_____ test_archive_rejects_incomplete_or_inconsistent_recovery[poststate] _____
+
+case = 'poststate'
+
+    @pytest.mark.parametrize('case', ['minimal', 'missing_after', 'wrong_writes', 'transfer', 'allocation', 'poststate'])
+    def test_archive_rejects_incomplete_or_inconsistent_recovery(case):
+        result = model.exercise_proposed_sequence(RegisterModel())
+        if case == 'minimal':result = {'status':'RUN_ONLY_PASS','identity':dict(model.IDENTITY)}
+        elif case == 'missing_after':result.pop('after')
+        elif case == 'wrong_writes':result['writes'].reverse()
+        elif case == 'transfer':result['dma_transfer_started'] = True
+        elif case == 'allocation':result['cma_allocations'] = 1
+        else:result['after']['dma'][0x58] = 76800
+        raw = terminal()
+>       with pytest.raises(model.ProposalRejected):model.terminal_archive_plan(raw, hashlib.sha256(raw).hexdigest(), result)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ProposalRejected
+
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:158: Failed
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_historical_terminal_uses_manifest_binding_when_hwh_field_is_absent
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_nonfinite_or_nonpositive_timeout_rejected_before_claim[nan]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_nonfinite_or_nonpositive_timeout_rejected_before_claim[inf]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_archive_rejects_incomplete_or_inconsistent_recovery[minimal]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_archive_rejects_incomplete_or_inconsistent_recovery[missing_after]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_archive_rejects_incomplete_or_inconsistent_recovery[wrong_writes]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_archive_rejects_incomplete_or_inconsistent_recovery[transfer]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_archive_rejects_incomplete_or_inconsistent_recovery[allocation]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_archive_rejects_incomplete_or_inconsistent_recovery[poststate]
+9 failed, 32 passed in 1.21s

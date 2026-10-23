@@ -1,0 +1,5 @@
+C:/fpga/material-counter/.venv/Scripts/python.exe -B -m pytest -q -p no:cacheprovider --confcutdir=C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016 --junitxml=C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016/targeted-tests.xml C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016/test_coldstart.py C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016/test_uart_readonly.py C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016/test_frozen_contract.py
+........................................................................ [ 93%]
+.....                                                                    [100%]
+77 passed in 0.31s
+exit_code=0

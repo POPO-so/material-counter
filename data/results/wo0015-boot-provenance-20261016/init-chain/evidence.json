@@ -1,0 +1,203 @@
+{
+  "source_metadata": [
+    {
+      "path": "F:\\AMDDesignTools\\2026.1\\Vitis\\data\\embeddedsw\\lib\\sw_apps\\zynq_fsbl\\src\\main.c",
+      "nbytes": 37157,
+      "sha256": "caed54c21a843277605f2b916fddd4fd4c5a01e5c7982f613431dce176cdc96a",
+      "creation_utc": "2026-09-18T14:48:38.687970+00:00",
+      "mtime_utc": "2026-03-17T11:10:59+00:00",
+      "timestamp_role": "Auxiliary host metadata, not source generation or target execution proof",
+      "role": "Installed 2026.1 SDK reference template, NOT established source of image FSBL",
+      "excerpts": [
+        {
+          "first": 243,
+          "last": 264,
+          "text": "243: \t\tOutputStatus(PS7_INIT_FAIL);\n244: \t\t/*\n245: \t\t * Calling FsblHookFallback instead of Fallback\n246: \t\t * since, devcfg driver is not yet initialized\n247: \t\t */\n248: \t\tFsblHookFallback();\n249: \t}\n250: \n251: \t/*\n252: \t * Unlock SLCR for SLCR register write\n253: \t */\n254: \tSlcrUnlock();\n255: \n256: \t/* If Performance measurement is required \n257: \t * then read the Global Timer value , Please note that the\n258: \t * time taken for mio, clock and ddr initialisation\n259: \t * done in the ps7_init function is not accounted in the FSBL\n260: \t *\n261: \t */\n262: #ifdef FSBL_PERF\n263: \tXTime tCur = 0;\n264: \tFsblGetGlobalTime(&tCur);"
+        },
+        {
+          "first": 482,
+          "last": 503,
+          "text": "482: \t/*\n483: \t * JTAG  BOOT MODE\n484: \t */\n485: \tif (BootModeRegister == JTAG_MODE) {\n486: \t\tfsbl_printf(DEBUG_GENERAL,\"Boot mode is JTAG\\r\\n\");\n487: \n488: \t\tRegVal = Xil_In32(XPS_DEV_CFG_APB_BASEADDR + XDCFG_INT_STS_OFFSET);\n489: \t\t/** If bitstream was loaded in jtag boot mode prior to running FSBL */\n490: \t\tif(RegVal & XDCFG_IXR_PCFG_DONE_MASK)\n491: \t\t{\n492: #ifdef PS7_POST_CONFIG\n493: \t\tps7_post_config();\n494: \t\t/*\n495: \t\t * Unlock SLCR for SLCR register write\n496: \t\t */\n497: \t\tSlcrUnlock();\n498: #endif\n499: \t\t}\n500: \t\t/*\n501: \t\t * Stop the Watchdog before JTAG handoff\n502: \t\t */\n503: #ifdef\tXPAR_XWDTPS_0_BASEADDR"
+        },
+        {
+          "first": 560,
+          "last": 586,
+          "text": "560: \n561: \t/*\n562: \t * Load boot image\n563: \t */\n564: \tHandoffAddress = LoadBootImage();\n565: \n566: \tfsbl_printf(DEBUG_INFO,\"Handoff Address: 0x%08x\\r\\n\",HandoffAddress);\n567: \n568: \t/*\n569: \t * For Performance measurement\n570: \t */\n571: #ifdef FSBL_PERF\n572: \tXTime tEnd = 0;\n573: \tfsbl_printf(DEBUG_GENERAL,\"Total Execution time is \");\n574: \tFsblMeasurePerfTime(tCur,tEnd);\n575: #endif\n576: \n577: \t/*\n578: \t * FSBL handoff to valid handoff address or\n579: \t * exit in JTAG\n580: \t */\n581: \tFsblHandoff(HandoffAddress);\n582: \n583: #else\n584: \tOutputStatus(NO_DDR);\n585: \tFsblFallback();\n586: #endif"
+        },
+        {
+          "first": 721,
+          "last": 772,
+          "text": "721: ****************************************************************************/\n722: void FsblHandoff(u32 FsblStartAddr)\n723: {\n724: \tu32 Status;\n725: \n726: \t/*\n727: \t * Enable level shifter\n728: \t */\n729: \tif(BitstreamFlag) {\n730: \t\t/*\n731: \t\t * FSBL will not enable the level shifters for a NON PS instantiated\n732: \t\t * Bitstream\n733: \t\t * CR# 671028\n734: \t\t * This flag can be set during compilation for a NON PS instantiated\n735: \t\t * bitstream\n736: \t\t */\n737: #ifndef NON_PS_INSTANTIATED_BITSTREAM\n738: #ifdef PS7_POST_CONFIG\n739: \t\tps7_post_config();\n740: \t\t/*\n741: \t\t * Unlock SLCR for SLCR register write\n742: \t\t */\n743: \t\tSlcrUnlock();\n744: #else\n745: \t/*\n746: \t * Set Level Shifters DT618760\n747: \t */\n748: \tXil_Out32(PS_LVL_SHFTR_EN, LVL_PL_PS);\n749: \tfsbl_printf(DEBUG_INFO,\"Enabling Level Shifters PL to PS \"\n750: \t\t\t\"Address = 0x%x Value = 0x%x \\n\\r\",\n751: \t\t\tPS_LVL_SHFTR_EN, Xil_In32(PS_LVL_SHFTR_EN));\n752: \n753: \t/*\n754: \t * Enable AXI interface\n755: \t */\n756: \tXil_Out32(FPGA_RESET_REG, 0);\n757: \tfsbl_printf(DEBUG_INFO,\"AXI Interface enabled \\n\\r\");\n758: \tfsbl_printf(DEBUG_INFO, \"FPGA Reset Register \"\n759: \t\t\t\"Address = 0x%x , Value = 0x%x \\r\\n\",\n760: \t\t\tFPGA_RESET_REG ,Xil_In32(FPGA_RESET_REG));\n761: #endif\n762: #endif\n763: \t}\n764: \n765: \t/*\n766: \t * FSBL user hook call before handoff to the application\n767: \t */\n768: \tStatus = FsblHookBeforeHandoff();\n769: \tif (Status != XST_SUCCESS) {\n770: \t\tfsbl_printf(DEBUG_GENERAL,\"FSBL_HANDOFF_HOOK_FAIL\\r\\n\");\n771:  \t\tOutputStatus(FSBL_HANDOFF_HOOK_FAIL);\n772: \t\tFsblFallback();"
+        }
+      ]
+    },
+    {
+      "path": "F:\\AMDDesignTools\\2026.1\\Vitis\\data\\embeddedsw\\lib\\sw_apps\\zynq_fsbl\\src\\image_mover.c",
+      "nbytes": 36530,
+      "sha256": "41a592b194c4ee6d6d8f37e1d5c2f0238c73938eb5956a2ac230c703dde2713c",
+      "creation_utc": "2026-09-18T14:45:02.438200+00:00",
+      "mtime_utc": "2026-03-17T11:10:59+00:00",
+      "timestamp_role": "Auxiliary host metadata, not source generation or target execution proof",
+      "role": "Installed 2026.1 SDK reference template, NOT established source of image FSBL",
+      "excerpts": [
+        {
+          "first": 166,
+          "last": 175,
+          "text": "166: #ifndef FORCE_USE_AES_EXCLUDE\n167: \tu32 EncOnly;\n168: #endif\n169: \t/*\n170: \t * Resetting the Flags\n171: \t */\n172: \tBitstreamFlag = 0;\n173: \tApplicationFlag = 0;\n174: \n175: \tRebootStatusRegister = Xil_In32(REBOOT_STATUS_REG);"
+        },
+        {
+          "first": 326,
+          "last": 340,
+          "text": "326: \t\t\t */\n327: \t\t\tPartitionNum++;\n328: \t\t\tcontinue;\n329: \t\t}\n330: \n331: \t\tif (PartitionAttr & ATTRIBUTE_PL_IMAGE_MASK) {\n332: \t\t\tfsbl_printf(DEBUG_INFO, \"Bitstream\\r\\n\");\n333: \t\t\tPLPartitionFlag = 1;\n334: \t\t\tPSPartitionFlag = 0;\n335: \t\t\tBitstreamFlag = 1;\n336: \t\t\tif (ApplicationFlag == 1) {\n337: #ifdef STDOUT_BASEADDRESS\n338: \t\t\t\txil_printf(\"\\r\\nFSBL Warning !!!\"\n339: \t\t\t\t\t\t\"Bitstream not loaded into PL\\r\\n\");\n340:                 xil_printf(\"Partition order invalid\\r\\n\");"
+        },
+        {
+          "first": 424,
+          "last": 441,
+          "text": "424:         \tExecAddrFlag++;\n425:         \tExecAddress = PartitionExecAddr;\n426:         }\n427: \n428: \t\t/*\n429: \t\t * FSBL user hook call before bitstream download\n430: \t\t */\n431: \t\tif (PLPartitionFlag) {\n432: \t\t\tStatus = FsblHookBeforeBitstreamDload();\n433: \t\t\tif (Status != XST_SUCCESS) {\n434: \t\t\t\tfsbl_printf(DEBUG_GENERAL,\"FSBL_BEFORE_BSTREAM_HOOK_FAIL\\r\\n\");\n435: \t\t\t\tOutputStatus(FSBL_BEFORE_BSTREAM_HOOK_FAIL);\n436: \t\t\t\tFsblFallback();\n437: \t\t\t}\n438: \t\t}\n439: \n440: \t\t/*\n441: \t\t * Move partitions from boot device"
+        },
+        {
+          "first": 542,
+          "last": 559,
+          "text": "542: \t\t\t}\n543: \t\t}\n544: \n545: \n546: \t\t/*\n547: \t\t * FSBL user hook call after bitstream download\n548: \t\t */\n549: \t\tif (PLPartitionFlag) {\n550: \t\t\tStatus = FsblHookAfterBitstreamDload();\n551: \t\t\tif (Status != XST_SUCCESS) {\n552: \t\t\t\tfsbl_printf(DEBUG_GENERAL,\"FSBL_AFTER_BSTREAM_HOOK_FAIL\\r\\n\");\n553: \t\t\t\tOutputStatus(FSBL_AFTER_BSTREAM_HOOK_FAIL);\n554: \t\t\t\tFsblFallback();\n555: \t\t\t}\n556: \t\t}\n557: \t\t/*\n558: \t\t * Increment partition number\n559: \t\t */"
+        }
+      ]
+    },
+    {
+      "path": "F:\\AMDDesignTools\\2026.1\\Vitis\\data\\embeddedsw\\lib\\sw_apps\\zynq_fsbl\\src\\image_mover.h",
+      "nbytes": 4861,
+      "sha256": "804dfb5070d4e541cff46929412cab6186d027dfa9443dbafc33ca3effd6c0a1",
+      "creation_utc": "2026-09-18T14:45:01.684794+00:00",
+      "mtime_utc": "2026-03-17T11:10:59+00:00",
+      "timestamp_role": "Auxiliary host metadata, not source generation or target execution proof",
+      "role": "Installed 2026.1 SDK reference template, NOT established source of image FSBL",
+      "excerpts": [
+        {
+          "first": 65,
+          "last": 79,
+          "text": "65: #define PARTITION_HDR_CHECKSUM_WORD_COUNT 0xF\t/* Checksum word count */\n66: #define PARTITION_HDR_WORD_COUNT\t\t0x10\t/* Header word len */\n67: #define PARTITION_HDR_TOTAL_LEN\t\t\t0x40\t/* One partition hdr length*/\n68: \n69: /* Attribute word defines */\n70: #define ATTRIBUTE_IMAGE_TYPE_MASK\t\t0xF0\t/* Destination Device type */\n71: #define ATTRIBUTE_PS_IMAGE_MASK\t\t\t0x10\t/* Code partition */\n72: #define ATTRIBUTE_PL_IMAGE_MASK\t\t\t0x20\t/* Bit stream partition */\n73: #define ATTRIBUTE_CHECKSUM_TYPE_MASK\t0x7000\t/* Checksum Type */\n74: #define ATTRIBUTE_RSA_PRESENT_MASK\t\t0x8000\t/* RSA Signature Present */\n75: #define ATTRIBUTE_PARTITION_OWNER_MASK\t0x30000\t/* Partition Owner */\n76: \n77: #define ATTRIBUTE_PARTITION_OWNER_FSBL\t0x00000\t/* FSBL Partition Owner */\n78: \n79: "
+        }
+      ]
+    },
+    {
+      "path": "F:\\AMDDesignTools\\2026.1\\Vitis\\data\\embeddedsw\\lib\\sw_apps\\zynq_fsbl\\src\\fsbl_hooks.c",
+      "nbytes": 3745,
+      "sha256": "dcaed8fa00fff53e90dd301efe19b053f3b1596c27b45c4ba7182ea76af9b9bf",
+      "creation_utc": "2026-09-18T14:46:03.032674+00:00",
+      "mtime_utc": "2026-03-17T11:10:57+00:00",
+      "timestamp_role": "Auxiliary host metadata, not source generation or target execution proof",
+      "role": "Installed 2026.1 SDK reference template, NOT established source of image FSBL",
+      "excerpts": [
+        {
+          "first": 49,
+          "last": 66,
+          "text": "49: ****************************************************************************/\n50: u32 FsblHookBeforeBitstreamDload(void)\n51: {\n52: \tu32 Status;\n53: \n54: \tStatus = XST_SUCCESS;\n55: \n56: \t/*\n57: \t * User logic to be added here. Errors to be stored in the status variable\n58: \t * and returned\n59: \t */\n60: \tfsbl_printf(DEBUG_INFO,\"In FsblHookBeforeBitstreamDload function \\r\\n\");\n61: \n62: \treturn (Status);\n63: }\n64: \n65: /******************************************************************************\n66: * This function is the hook which will be called  after the bitstream download."
+        },
+        {
+          "first": 78,
+          "last": 96,
+          "text": "78: {\n79: \tu32 Status;\n80: \n81: \tStatus = XST_SUCCESS;\n82: \n83: \t/*\n84: \t * User logic to be added here.\n85: \t * Errors to be stored in the status variable and returned\n86: \t */\n87: \tfsbl_printf(DEBUG_INFO, \"In FsblHookAfterBitstreamDload function \\r\\n\");\n88: \n89: \treturn (Status);\n90: }\n91: \n92: /******************************************************************************\n93: * This function is the hook which will be called  before the FSBL does a handoff\n94: * to the application. The user can add all the customized code required to be\n95: * executed before the handoff to this routine.\n96: *"
+        },
+        {
+          "first": 108,
+          "last": 126,
+          "text": "108: \tStatus = XST_SUCCESS;\n109: \n110: \t/*\n111: \t * User logic to be added here.\n112: \t * Errors to be stored in the status variable and returned\n113: \t */\n114: \tfsbl_printf(DEBUG_INFO,\"In FsblHookBeforeHandoff function \\r\\n\");\n115: \n116: \treturn (Status);\n117: }\n118: \n119: \n120: /******************************************************************************\n121: * This function is the hook which will be called in case FSBL fall back\n122: *\n123: * @param None\n124: *\n125: * @return None\n126: *"
+        }
+      ]
+    },
+    {
+      "path": "F:\\AMDDesignTools\\2026.1\\Vitis\\data\\embeddedsw\\lib\\sw_apps\\zynq_fsbl\\src\\pcap.c",
+      "nbytes": 21508,
+      "sha256": "26fd6a726aef9fc13e4ea5c70d08165e1a2a6e9ff5ae8b6ce1d7d25fb9915c35",
+      "creation_utc": "2026-09-18T14:45:02.491896+00:00",
+      "mtime_utc": "2026-03-17T11:10:59+00:00",
+      "timestamp_role": "Auxiliary host metadata, not source generation or target execution proof",
+      "role": "Installed 2026.1 SDK reference template, NOT established source of image FSBL",
+      "excerpts": [
+        {
+          "first": 402,
+          "last": 435,
+          "text": "402: *\n403: * @param\tNone\n404: *\n405: * @return\n406: *\t\t- XST_SUCCESS if the Fabric  initialization is successful\n407: *\t\t- XST_FAILURE if the Fabric  initialization fails\n408: * @note\t\tNone\n409: *\n410: ****************************************************************************/\n411: u32 FabricInit(void)\n412: {\n413: \tu32 PcapReg; \n414: \tu32 PcapCtrlRegVal;\n415: \tu32 StatusReg;\n416: \tu32 MctrlReg;\n417: \tu32 PcfgInit;\n418: \tu32 TimerExpired=0;\n419: \tXTime tCur=0;\n420: \tXTime tEnd=0;\n421: \n422: \n423: \t/*\n424: \t * Set Level Shifters DT618760 - PS to PL enabling\n425: \t */\n426: \tXil_Out32(PS_LVL_SHFTR_EN, LVL_PS_PL);\n427: \tfsbl_printf(DEBUG_INFO,\"Level Shifter Value = 0x%lx \\r\\n\",\n428: \t\t\t\tXil_In32(PS_LVL_SHFTR_EN));\n429: \n430: \t/*\n431: \t * Get DEVCFG controller settings\n432: \t */\n433: \tPcapReg = XDcfg_ReadReg(DcfgInstPtr->Config.BaseAddr,\n434: \t\t\t\tXDCFG_CTRL_OFFSET);\n435: "
+        }
+      ]
+    },
+    {
+      "path": "F:\\AMDDesignTools\\2026.1\\Vitis\\data\\embeddedsw\\lib\\sw_apps\\zynq_fsbl\\src\\fsbl.h",
+      "nbytes": 22118,
+      "sha256": "6f34da46af1f5c7087c2c17119a10926f80e2859bb49ea3c9ea859a260b11d14",
+      "creation_utc": "2026-09-18T14:47:16.839700+00:00",
+      "mtime_utc": "2026-03-17T11:10:57+00:00",
+      "timestamp_role": "Auxiliary host metadata, not source generation or target execution proof",
+      "role": "Installed 2026.1 SDK reference template, NOT established source of image FSBL",
+      "excerpts": [
+        {
+          "first": 403,
+          "last": 415,
+          "text": "403: \n404: /*\n405:  * SLCR Registers\n406:  */\n407: #define PS_RST_CTRL_REG\t\t\t(XPS_SYS_CTRL_BASEADDR + 0x200)\n408: #define FPGA_RESET_REG\t\t\t(XPS_SYS_CTRL_BASEADDR + 0x240)\n409: #define RESET_REASON_REG\t\t(XPS_SYS_CTRL_BASEADDR + 0x250)\n410: #define RESET_REASON_CLR\t\t(XPS_SYS_CTRL_BASEADDR + 0x254)\n411: #define REBOOT_STATUS_REG\t\t(XPS_SYS_CTRL_BASEADDR + 0x258)\n412: #define BOOT_MODE_REG\t\t\t(XPS_SYS_CTRL_BASEADDR + 0x25C)\n413: #define PS_LVL_SHFTR_EN\t\t\t(XPS_SYS_CTRL_BASEADDR + 0x900)\n414: \n415: /*"
+        }
+      ]
+    }
+  ],
+  "historical_log": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-first-board-retry3-20261015\\postflight-dmesg.txt",
+    "nbytes": 18474,
+    "sha256": "a44210dd08f0ccf5de8ec574e37cf0cd951d1c5ee4a935bf74bebe18cc2405f1",
+    "creation_utc": "2026-10-15T11:00:53.572143+00:00",
+    "mtime_utc": "2026-10-15T11:00:53.572143+00:00",
+    "timestamp_role": "Auxiliary host metadata, not source generation or target execution proof",
+    "selected_lines": [
+      {
+        "line": 103,
+        "text": "[   40.346896]  mmcblk0: p1 p2"
+      },
+      {
+        "line": 115,
+        "text": "[   40.434863] EXT4-fs (mmcblk0p2): mounted filesystem 63b8b04d-af08-419a-a9dc-16f374e283dc r/w with ordered data mode. Quota mode: disabled."
+      },
+      {
+        "line": 183,
+        "text": "[  146.277029] fpga_manager fpga0: writing base.bin to Xilinx Zynq FPGA Manager"
+      },
+      {
+        "line": 229,
+        "text": "[11781.106787] fpga_manager fpga0: writing wo15.bin to Xilinx Zynq FPGA Manager"
+      },
+      {
+        "line": 230,
+        "text": "[11781.187924] [drm] Loading xclbin 444d4c49-7c99-ec8f-b75a-33d7ed50b28d to slot 0"
+      },
+      {
+        "line": 238,
+        "text": "[11781.188264] [drm] zocl_xclbin_read_axlf 444d4c49-7c99-ec8f-b75a-33d7ed50b28d ret: 0"
+      },
+      {
+        "line": 239,
+        "text": "[11781.212914] [drm] bitstream 444d4c49-7c99-ec8f-b75a-33d7ed50b28d locked, ref=1"
+      },
+      {
+        "line": 242,
+        "text": "[11781.213176] [drm] bitstream 444d4c49-7c99-ec8f-b75a-33d7ed50b28d unlocked, ref=0"
+      },
+      {
+        "line": 247,
+        "text": "[11818.936410] [drm] bitstream 444d4c49-7c99-ec8f-b75a-33d7ed50b28d locked, ref=1"
+      },
+      {
+        "line": 250,
+        "text": "[11818.937547] [drm] bitstream 444d4c49-7c99-ec8f-b75a-33d7ed50b28d unlocked, ref=0"
+      }
+    ]
+  },
+  "historical_os_identity": {
+    "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "uname": [
+      "Linux",
+      "pynq",
+      "6.6.10-xilinx-v2024.1-g3c0eca68c652",
+      "#1 SMP PREEMPT Sat Apr 27 05:22:24 UTC 2024",
+      "armv7l"
+    ]
+  },
+  "actual_fsbl_source": "UNKNOWN",
+  "post_config_execution": "UNKNOWN",
+  "real_hardware_state": "UNKNOWN; user reports board disconnected"
+}

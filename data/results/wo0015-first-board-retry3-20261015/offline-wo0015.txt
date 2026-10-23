@@ -1,0 +1,15 @@
+........................................................................ [ 56%]
+......................................FF...............                  [100%]
+================================== FAILURES ===================================
+____ test_meminfo_and_exact_system_ram_admit_reserved_low_candidate[32768] ____
+scripts\wo0015\test_cma_two_tier.py:45: in test_meminfo_and_exact_system_ram_admit_reserved_low_candidate
+    assert "not a measured CMA interval" in evidence["limitation"]
+E   AssertionError: assert 'not a measured CMA interval' in 'kernel CMA accounting and verified DDR safety envelope only; not a static CMA subregion; authoritative PYNQ physical-address, size, overlap and allocation accounting checks remain mandatory'
+____ test_meminfo_and_exact_system_ram_admit_reserved_low_candidate[73944] ____
+scripts\wo0015\test_cma_two_tier.py:45: in test_meminfo_and_exact_system_ram_admit_reserved_low_candidate
+    assert "not a measured CMA interval" in evidence["limitation"]
+E   AssertionError: assert 'not a measured CMA interval' in 'kernel CMA accounting and verified DDR safety envelope only; not a static CMA subregion; authoritative PYNQ physical-address, size, overlap and allocation accounting checks remain mandatory'
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_cma_two_tier.py::test_meminfo_and_exact_system_ram_admit_reserved_low_candidate[32768]
+FAILED scripts/wo0015/test_cma_two_tier.py::test_meminfo_and_exact_system_ram_admit_reserved_low_candidate[73944]
+2 failed, 125 passed in 9.29s

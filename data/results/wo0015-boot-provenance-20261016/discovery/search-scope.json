@@ -1,0 +1,75 @@
+{
+  "host_file_roots_only": [
+    {
+      "root": "C:\\fpga",
+      "exit_code": 0,
+      "files_listed": 24988,
+      "matches": [],
+      "errors": ""
+    },
+    {
+      "root": "D:\\Downloads",
+      "exit_code": 0,
+      "files_listed": 819,
+      "matches": [
+        "D:\\Downloads\\Pynq-Z2-XDC-and-Board-File-main.zip",
+        "D:\\Downloads\\pynq-z2 (1).zip"
+      ],
+      "errors": ""
+    },
+    {
+      "root": "D:\\BaiduNetdiskDownload",
+      "exit_code": 0,
+      "files_listed": 1,
+      "matches": [],
+      "errors": ""
+    },
+    {
+      "root": "D:\\cxdownload",
+      "exit_code": 0,
+      "files_listed": 46,
+      "matches": [],
+      "errors": ""
+    },
+    {
+      "root": "C:\\Users\\POP\\Downloads",
+      "exit_code": 0,
+      "files_listed": 26,
+      "matches": [],
+      "errors": ""
+    },
+    {
+      "root": "C:\\Users\\POP\\Desktop",
+      "exit_code": 0,
+      "files_listed": 6486,
+      "matches": [
+        "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img"
+      ],
+      "errors": ""
+    },
+    {
+      "root": "C:\\Users\\POP\\Documents",
+      "exit_code": 0,
+      "files_listed": 8059,
+      "matches": [],
+      "errors": ""
+    },
+    {
+      "root": "F:\\FPGA",
+      "exit_code": 0,
+      "files_listed": 87819,
+      "matches": [
+        "F:\\FPGA\\backups\\pynq_counter_lab.xpr.zip"
+      ],
+      "errors": ""
+    }
+  ],
+  "exclusions": [
+    "physical/removable devices",
+    "mounted images",
+    "AMD installer payload",
+    "unrelated file contents",
+    "full filesystem search"
+  ],
+  "negative_claim_boundary": "No match within listed, completed filename searches does not prove global absence"
+}

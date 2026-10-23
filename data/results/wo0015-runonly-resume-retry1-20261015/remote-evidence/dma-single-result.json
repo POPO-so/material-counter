@@ -1,0 +1,47 @@
+{
+  "allocation_accounting": {
+    "observed_cma_decrease_kib": -728,
+    "page_rounded_bytes_kib": 304
+  },
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": true,
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "build_id": "wo0015-hw-50mhz-20261015",
+  "clock_mhz": 50,
+  "cma_allocation_samples": [
+    {
+      "cma_free_kib": 37884,
+      "stage": "before"
+    },
+    {
+      "cma_free_kib": 38612,
+      "stage": "after_mm2s"
+    },
+    {
+      "cma_free_kib": 38612,
+      "stage": "after_s2mm"
+    },
+    {
+      "cma_free_kib": 38612,
+      "stage": "after_release"
+    }
+  ],
+  "cma_free_after_kib": 38612,
+  "cma_free_before_kib": 37884,
+  "cma_free_delta_kib": 728,
+  "cma_free_during_kib": 38612,
+  "dma_may_be_active": false,
+  "dma_start_attempted": false,
+  "error": "ExecutionFailure: CmaFree did not show the required allocated-page decrease before DMA",
+  "frame_count": 1,
+  "frames": [],
+  "hardware_stage": "dma-single",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+  "pynq_imported": true,
+  "rx_bytes_each": 76800,
+  "status": "DMA_SINGLE_FAIL",
+  "task": "WO-0015",
+  "transfer_started": false,
+  "tx_bytes_each": 230432
+}

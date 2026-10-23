@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-runonly-resume-20261015\controller.py", line 161, in <module>
+    try: main()
+         ^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-runonly-resume-20261015\controller.py", line 108, in main
+    if actual != expected: raise RuntimeError('guard set/bytes differ; no recovery dispatch')
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: guard set/bytes differ; no recovery dispatch

@@ -1,0 +1,11 @@
+{
+  "status": "OFFLINE_BUNDLE_VALIDATED",
+  "board_accessed": false,
+  "ready_for_board_means": "offline eligibility only; requires separate human authorization",
+  "directory": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-cma-compat-20261015\\packager-output-historical-boot",
+  "manifest_sha256": "92b411cccf3279b99506d6bfa3f8476afeff7d640f292815f6231969b6bc36dd",
+  "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-cma-compat-20261015\\packager-output-historical-boot.zip",
+  "archive_sha256": "c8befe75d00352ce17004dfc446b46f6f81035804b6c87cef28ae53ef6d7d20a",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+}

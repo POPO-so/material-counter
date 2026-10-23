@@ -1,0 +1,46 @@
+WO-0015 underlying v4l2-ctl one-frame test
+Date: 2026-10-17
+Board boot_id guard: 2cc2ab91-2e3f-450e-b9e7-361ec38e2815
+No retry was performed.
+
+1. Current driver format query
+Command: sudo -n env XILINX_XRT=/usr v4l2-ctl -d /dev/video0 --get-fmt-video
+SSH exit code: 0
+Output:
+Format Video Capture:
+	Width/Height      : 640/400
+	Pixel Format      : 'YUYV' (YUYV 4:2:2)
+	Field             : None
+	Bytes per Line    : 1280
+	Size Image        : 512000
+	Colorspace        : sRGB
+	Transfer Function : Rec. 709
+	YCbCr/HSV Encoding: ITU-R 601
+	Quantization      : Default (maps to Limited Range)
+	Flags             : 
+
+
+2. One-frame stream attempt
+Command:
+timeout --signal=TERM 15s sudo -n env XILINX_XRT=/usr v4l2-ctl -d /dev/video0 --stream-mmap=3 --stream-count=1 --stream-to=/tmp/wo0015-v4l2-oneframe-20261017.yuyv
+The SSH command did not return within 30.2 seconds and produced no captured output (exec exit status unavailable). Local SSH client PID 38584 was terminated to stop waiting.
+
+3. Remote process/output inspection after the hang
+Output:
+24860 24858 S    timeout --signal=TERM 15s sudo -n env XILINX_XRT=/usr v4l2-ctl -d /dev/video0 --stream-mmap=3 --stream-count=1 --stream-to=/tmp/wo0015-v4l2-oneframe-20261017.yuyv
+24861 24860 S    sudo -n env XILINX_XRT=/usr v4l2-ctl -d /dev/video0 --stream-mmap=3 --stream-count=1 --stream-to=/tmp/wo0015-v4l2-oneframe-20261017.yuyv
+24866 24861 S    v4l2-ctl -d /dev/video0 --stream-mmap=3 --stream-count=1 --stream-to=/tmp/wo0015-v4l2-oneframe-20261017.yuyv
+raw_size_bytes=0
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /tmp/wo0015-v4l2-oneframe-20261017.yuyv
+
+The remote process list showed timeout PID 24860, sudo PID 24861, and v4l2-ctl PID 24866. The output file was 0 bytes with empty-file SHA-256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.
+
+4. Scoped cleanup
+Command: sudo -n kill -TERM 24866
+SSH exit code: 0
+Post-signal check:
+25037 25035 Ss   bash -c sudo -n kill -TERM 24866; sleep 1; ps -eo pid,ppid,stat,args | grep -E "[v]4l2-ctl.*wo0015-v4l2-oneframe-20261017|[t]imeout.*wo0015-v4l2-oneframe-20261017|[s]udo.*wo0015-v4l2-oneframe-20261017"; if test -e /tmp/wo0015-v4l2-oneframe-20261017.yuyv; then stat -c "raw_size_bytes=%s" /tmp/wo0015-v4l2-oneframe-20261017.yuyv; sha256sum /tmp/wo0015-v4l2-oneframe-20261017.yuyv; fi
+raw_size_bytes=0
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /tmp/wo0015-v4l2-oneframe-20261017.yuyv
+
+No camera retry or additional frame capture was run.

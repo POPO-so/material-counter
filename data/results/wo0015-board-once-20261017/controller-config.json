@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "work_order": "WO-0015",
+  "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "manifest_path": "/home/xilinx/wo0015/wo0015-manifest.json",
+  "manifest_sha256": "2205c49479ffb8dae66aa7e34864aaa6783186c2dd1f96d8da9caeb9a24ecad0",
+  "package_zip_sha256": "7cfc7e7ceb6d6ca9049eefca8723593dfefa08d9555916dd25478f3d22b70e12",
+  "package_tree": "authorized-deployment",
+  "host": "192.168.2.99",
+  "user": "xilinx",
+  "remote_directory": "/home/xilinx/wo0015",
+  "board_once_sha256": "ba0be4e4e9b1614de7d3edc039c59966fd9d1fb6fff3862d466e5f6675bb3f05",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "stages": [
+    {
+      "authorize_stage": "overlay-only",
+      "mode": "overlay-only",
+      "approve_once": true
+    },
+    {
+      "authorize_stage": "dma-single",
+      "mode": "dma-single",
+      "approve_once": true
+    }
+  ],
+  "retry_count": 0,
+  "credentials": "not-stored"
+}

@@ -1,0 +1,90 @@
+FFFF                                                                     [100%]
+================================== FAILURES ===================================
+____ FsblTableDecodeTests.test_decodes_complete_write_and_maskwrite_table _____
+
+self = <test_fsbl_audit.FsblTableDecodeTests testMethod=test_decodes_complete_write_and_maskwrite_table>
+
+    def test_decodes_complete_write_and_maskwrite_table(self):
+        raw = encode_words(
+            0x22, 0xF8000008, 0x0000DF0D,
+            0x33, 0xF8000900, 0x0000000F, 0x0000000F,
+            0x33, 0xF8000240, 0xFFFFFFFF, 0x00000000,
+            0x22, 0xF8000004, 0x0000767B,
+            0x00,
+        )
+>       self.assertEqual(audit.decode_table(raw, 0), [
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+            {'kind': 'WRITE', 'opcode': 2, 'address': 0xF8000008, 'value': 0x0000DF0D},
+            {'kind': 'MASKWRITE', 'opcode': 3, 'address': 0xF8000900, 'mask': 0x0000000F, 'value': 0x0000000F},
+            {'kind': 'MASKWRITE', 'opcode': 3, 'address': 0xF8000240, 'mask': 0xFFFFFFFF, 'value': 0x00000000},
+            {'kind': 'WRITE', 'opcode': 2, 'address': 0xF8000004, 'value': 0x0000767B},
+        ])
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\test_fsbl_audit.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+blob = b'"\x00\x00\x00\x08\x00\x00\xf8\r\xdf\x00\x003\x00\x00\x00\x00\t\x00\xf8\x0f\x00\x00\x00\x0f\x00\x00\x003\x00\x00\x00@\x02\x00\xf8\xff\xff\xff\xff\x00\x00\x00\x00"\x00\x00\x00\x04\x00\x00\xf8{v\x00\x00\x00\x00\x00\x00'
+offset = 0
+
+    def decode_table(blob, offset=0):
+>       raise NotImplementedError('table decoder not implemented')
+E       NotImplementedError: table decoder not implemented
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\audit_fsbl.py:2: NotImplementedError
+_______ FsblTableDecodeTests.test_rejects_truncated_operation_arguments _______
+
+self = <test_fsbl_audit.FsblTableDecodeTests testMethod=test_rejects_truncated_operation_arguments>
+
+    def test_rejects_truncated_operation_arguments(self):
+        raw = encode_words(0x33, 0xF8000900, 0x0000000F)
+        with self.assertRaisesRegex(ValueError, 'truncated'):
+>           audit.decode_table(raw, 0)
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\test_fsbl_audit.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def decode_table(blob, offset=0):
+>       raise NotImplementedError('table decoder not implemented')
+E       NotImplementedError: table decoder not implemented
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\audit_fsbl.py:2: NotImplementedError
+____ FsblTableDecodeTests.test_rejects_unknown_opcode_instead_of_guessing _____
+
+self = <test_fsbl_audit.FsblTableDecodeTests testMethod=test_rejects_unknown_opcode_instead_of_guessing>
+
+    def test_rejects_unknown_opcode_instead_of_guessing(self):
+        raw = encode_words(0x99, 0xF8000000, 0xFFFFFFFF, 0x0)
+        with self.assertRaisesRegex(ValueError, 'opcode'):
+>           audit.decode_table(raw, 0)
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\test_fsbl_audit.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def decode_table(blob, offset=0):
+>       raise NotImplementedError('table decoder not implemented')
+E       NotImplementedError: table decoder not implemented
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\audit_fsbl.py:2: NotImplementedError
+_____________ FsblTableDecodeTests.test_requires_terminating_exit _____________
+
+self = <test_fsbl_audit.FsblTableDecodeTests testMethod=test_requires_terminating_exit>
+
+    def test_requires_terminating_exit(self):
+        raw = encode_words(0x22, 0xF8000008, 0x0000DF0D)
+        with self.assertRaisesRegex(ValueError, 'EXIT'):
+>           audit.decode_table(raw, 0)
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\test_fsbl_audit.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def decode_table(blob, offset=0):
+>       raise NotImplementedError('table decoder not implemented')
+E       NotImplementedError: table decoder not implemented
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\audit_fsbl.py:2: NotImplementedError
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/test_fsbl_audit.py::FsblTableDecodeTests::test_decodes_complete_write_and_maskwrite_table
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/test_fsbl_audit.py::FsblTableDecodeTests::test_rejects_truncated_operation_arguments
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/test_fsbl_audit.py::FsblTableDecodeTests::test_rejects_unknown_opcode_instead_of_guessing
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/test_fsbl_audit.py::FsblTableDecodeTests::test_requires_terminating_exit
+4 failed in 0.11s

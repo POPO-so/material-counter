@@ -1,0 +1,33 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Thu Oct 15 11:02:01 2026
+# Process ID         : 31684
+# Current directory  : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-offline-20261015/syntax
+# Command line       : xsim.exe -log D_long-final.log -mode tcl -source {xsim.dir/wo15_pipeline_d/xsim_script.tcl}
+# Log file           : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-offline-20261015/syntax/D_long-final.log
+# Journal file       : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-offline-20261015/syntax\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 9058 MB
+#-----------------------------------------------------------
+source xsim.dir/wo15_pipeline_d/xsim_script.tcl
+# xsim {wo15_pipeline_d} -testplusarg INPUT=../vectors/D_long/beats.hex -testplusarg GOLDEN=../vectors/D_long/golden.hex -testplusarg ACTUAL=../D_long-actual.hex -testplusarg METRICS=../D_long-metrics.tsv -testplusarg FRAMES=1 -testplusarg MODE=2 -testplusarg CASE=D_long -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+STAGE malformed packet start case=D_long beats=57609
+Fatal: input source changed payload while stalled
+Time: 2304790 ns  Iteration: 0  Process: /tb_axis_dma_s2mm_pipeline/Always295_9  Scope: tb_axis_dma_s2mm_pipeline  File: C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/sim/wo0015/tb_axis_dma_s2mm_pipeline.sv Line: 309
+$finish called at time : 2304790 ns
+exit
+INFO: [Common 17-206] Exiting xsim at Thu Oct 15 11:02:04 2026...

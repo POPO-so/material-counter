@@ -1,0 +1,39 @@
+{
+  "timestamp_local": "2026-10-17T17:51:10.637655+08:00",
+  "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "manifest_sha256": "2205c49479ffb8dae66aa7e34864aaa6783186c2dd1f96d8da9caeb9a24ecad0",
+  "command": "sudo -n env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python3 -u /home/xilinx/wo0015/board_once.py --mode overlay-only --manifest /home/xilinx/wo0015/wo0015-manifest.json --manifest-sha256 2205c49479ffb8dae66aa7e34864aaa6783186c2dd1f96d8da9caeb9a24ecad0 --execute --authorize-stage overlay-only --approve-once --timeout-s 5 --evidence-json /home/xilinx/wo0015/overlay-only-result.json",
+  "steps": [
+    {
+      "step": "execute overlay-only once",
+      "args": [
+        "ssh.exe",
+        "-oBatchMode=yes",
+        "-oConnectionAttempts=1",
+        "-oConnectTimeout=10",
+        "xilinx@192.168.2.99",
+        "sudo -n env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python3 -u /home/xilinx/wo0015/board_once.py --mode overlay-only --manifest /home/xilinx/wo0015/wo0015-manifest.json --manifest-sha256 2205c49479ffb8dae66aa7e34864aaa6783186c2dd1f96d8da9caeb9a24ecad0 --execute --authorize-stage overlay-only --approve-once --timeout-s 5 --evidence-json /home/xilinx/wo0015/overlay-only-result.json"
+      ],
+      "returncode": 0,
+      "stdout_file": "overlay-only-stdout.txt",
+      "stderr_file": "overlay-only-stderr.txt",
+      "password_prompted_or_supplied": false
+    },
+    {
+      "step": "retrieve overlay-only evidence",
+      "args": [
+        "scp.exe",
+        "-q",
+        "-oBatchMode=yes",
+        "-oConnectionAttempts=1",
+        "-oConnectTimeout=10",
+        "xilinx@192.168.2.99:/home/xilinx/wo0015/overlay-only-result.json",
+        "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-board-once-20261017\\overlay-only-result.json"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "evidence_retrieved": true
+}

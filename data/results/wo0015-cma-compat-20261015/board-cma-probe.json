@@ -1,0 +1,57 @@
+{
+  "boot_id_before": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "cmdline": {
+    "stdout": "root=/dev/mmcblk0p2 rw earlyprintk rootfstype=ext4 rootwait devtmpfs.mount=1 uio_pdrv_genirq.of_id=\"generic-uio\" clk_ignore_unused\n",
+    "error": null
+  },
+  "chosen_bootargs": {
+    "stdout": "root=/dev/mmcblk0p2 rw earlyprintk rootfstype=ext4 rootwait devtmpfs.mount=1 uio_pdrv_genirq.of_id=\"generic-uio\" clk_ignore_unused",
+    "error": null
+  },
+  "dmesg_filtered": {
+    "argv": [
+      "sh",
+      "-c",
+      "dmesg | grep -iE \"cma|memory|reserved\""
+    ],
+    "exit_code": 0,
+    "stdout": "[    0.043261] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.\n[   40.238561] IPVS: Connection hash table configured (size=4096, memory=16Kbytes)\n[   40.456512] Freeing unused kernel image (initmem) memory: 1024K\n[  146.377578] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA\n[  146.377655] [drm] Memory 1 is not reserved in device tree. Will allocate memory from CMA\n[  146.377724] [drm] Memory 2 is not reserved in device tree. Will allocate memory from CMA\n[  146.377792] [drm] Memory 3 is not reserved in device tree. Will allocate memory from CMA\n[  146.377856] [drm] Memory 4 is not reserved in device tree. Will allocate memory from CMA\n",
+    "stderr": ""
+  },
+  "iomem": {
+    "stdout": "00000000-1fffffff : System RAM\n  00008000-00efffff : Kernel code\n  01000000-010845cf : Kernel data\ne0000000-e0000fff : xuartps\ne0002000-e0002fff : usb@e0002000\n  e0002000-e0002fff : ci_hdrc.0 usb@e0002000\ne0004000-e0004fff : e0004000.i2c i2c@e0004000\ne0005000-e0005fff : e0005000.i2c i2c@e0005000\ne000a000-e000afff : e000a000.gpio gpio@e000a000\ne000b000-e000bfff : e000b000.ethernet ethernet@e000b000\ne000d000-e000dfff : e000d000.spi spi@e000d000\ne0100000-e0100fff : e0100000.mmc mmc@e0100000\nf8001000-f8001fff : f8001000.timer timer@f8001000\nf8003000-f8003fff : dma-controller@f8003000\n  f8003000-f8003fff : f8003000.dma-controller dma-controller@f8003000\nf8005000-f8005fff : f8005000.watchdog watchdog@f8005000\nf8007000-f80070ff : f8007000.devcfg devcfg@f8007000\nf8007100-f800711f : f8007100.adc adc@f8007100\nf8801000-f8801fff : etb@f8801000\nf8803000-f8803fff : tpiu@f8803000\nf8804000-f8804fff : funnel@f8804000\nf889c000-f889cfff : ptm@f889c000\nf889d000-f889dfff : ptm@f889d000\nfffc0000-fffcffff : fffc0000.sram sram@fffc0000\n",
+    "error": null
+  },
+  "meminfo": {
+    "argv": [
+      "sh",
+      "-c",
+      "grep -E \"^Cma(Total|Free):\" /proc/meminfo"
+    ],
+    "exit_code": 0,
+    "stdout": "CmaTotal:         131072 kB\nCmaFree:           73944 kB\n",
+    "stderr": ""
+  },
+  "page_size": {
+    "argv": [
+      "getconf",
+      "PAGESIZE"
+    ],
+    "exit_code": 0,
+    "stdout": "4096\n",
+    "stderr": ""
+  },
+  "debug_cma": {
+    "path": "/sys/kernel/debug/cma",
+    "exists": false,
+    "areas": {}
+  },
+  "prohibited_operations": {
+    "pynq_import": 0,
+    "overlay_load": 0,
+    "device_open": 0,
+    "cma_allocation": 0,
+    "dma_start": 0
+  },
+  "boot_id_after": "822a9c29-37c0-438c-81c4-da998d57073b"
+}

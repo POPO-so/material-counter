@@ -1,0 +1,6 @@
+{"status": "AWAITING_HIDDEN_SSH_CREDENTIAL", "time_ns": 1792228253923210800}
+{"status": "SSH_CONNECT_BEGIN", "time_ns": 1792228283094595500}
+{"fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o", "status": "STRICT_SSH_AUTHENTICATED", "time_ns": 1792228284965400800}
+{"name": "initial-readonly-snapshot", "status": "REMOTE_COMMAND_BEGIN", "time_ns": 1792228284967621200}
+{"elapsed_s": 2.703, "exit_code": 0, "name": "initial-readonly-snapshot", "status": "REMOTE_COMMAND_EXIT", "time_ns": 1792228287959320600}
+{"approved_boot_id": "822a9c29-37c0-438c-81c4-da998d57073b", "observed_boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815", "status": "STOP_BOOT_ID_MISMATCH", "time_ns": 1792228287961324600}

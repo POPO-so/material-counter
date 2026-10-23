@@ -1,0 +1,82 @@
+[
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\extracted\\BOOT.BIN",
+    "sha256": "3bf9c24025a489926fd76872754977c5954e2ab25c91957373386e1f20915af6",
+    "nbytes": 1165852,
+    "creation_utc": "2026-10-15T18:23:19.411714+00:00",
+    "mtime_utc": "2026-10-15T18:23:19.412231+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\extracted\\partition-00.raw.bin",
+    "sha256": "16081243af5ed1d5b908b0c038c13c3e205c131b31d538690786a530dba82161",
+    "nbytes": 98320,
+    "creation_utc": "2026-10-15T18:23:19.415999+00:00",
+    "mtime_utc": "2026-10-15T18:23:19.415999+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\extracted\\partition-01.raw.bin",
+    "sha256": "0821d755f1941d9603065b1be0f687da69d4d791e50d525bdb20a8cc8fc3fed1",
+    "nbytes": 1041824,
+    "creation_utc": "2026-10-15T18:23:19.419152+00:00",
+    "mtime_utc": "2026-10-15T18:23:19.419672+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\extracted\\partition-02.raw.bin",
+    "sha256": "3f16c67252ed274eaa2bb7ab6500a820a2fe88fd0352e9bba1ab919defac1798",
+    "nbytes": 19740,
+    "creation_utc": "2026-10-15T18:23:19.449836+00:00",
+    "mtime_utc": "2026-10-15T18:23:19.449836+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\extracted\\BOOT.PY",
+    "sha256": "b2653ef809c3271231c78772342c2be728d39686a877d3c6fe8cdabfd4ac1d42",
+    "nbytes": 991,
+    "creation_utc": "2026-10-15T18:24:23.382993+00:00",
+    "mtime_utc": "2026-10-15T18:24:23.382993+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\extracted\\IMAGE.UB",
+    "sha256": "8e380cb96c2803e1d5d1c46b1f2f8e505b4c31dcf24d68da4669be7502c6bbae",
+    "nbytes": 7147780,
+    "creation_utc": "2026-10-15T18:24:23.407236+00:00",
+    "mtime_utc": "2026-10-15T18:24:23.409243+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\extracted\\BOOT.SCR",
+    "sha256": "3b9b939dfab95e26e69855ab23fc84e6e2ab9431ab71998aece3db7f2a8c37cd",
+    "nbytes": 3473,
+    "creation_utc": "2026-10-15T18:23:19.452478+00:00",
+    "mtime_utc": "2026-10-15T18:23:19.453030+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\project\\wo15_50m.gen\\sources_1\\bd\\wo15\\ip\\wo15_ps7_0\\ps7_init.c",
+    "sha256": "7dc2df18d874d2fa56fa4c4ca28a85730ffbbd54b567e56fd2a741ad7fb9eab8",
+    "nbytes": 320689,
+    "creation_utc": "2026-10-15T03:08:14.317610+00:00",
+    "mtime_utc": "2026-10-15T03:08:16.832350+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\project\\wo15_50m.gen\\sources_1\\bd\\wo15\\ip\\wo15_ps7_0\\ps7_init.tcl",
+    "sha256": "ac0bed12175d1767213dcb99e2f37c774cebc409659763b40f9e7d748aceb8a5",
+    "nbytes": 25838,
+    "creation_utc": "2026-10-15T03:08:16.840106+00:00",
+    "mtime_utc": "2026-10-15T03:08:16.840644+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  },
+  {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\project\\wo15_50m.gen\\sources_1\\bd\\wo15\\ip\\wo15_ps7_0\\ps7_init.h",
+    "sha256": "e73fb7a1300f5a1f35d33141e80225342d2c43c961d0103cf5d82ed4484fae28",
+    "nbytes": 3791,
+    "creation_utc": "2026-10-15T03:08:16.834719+00:00",
+    "mtime_utc": "2026-10-15T03:08:16.834719+00:00",
+    "actual_generation_time": "UNKNOWN unless separately represented by an embedded build label; host extraction timestamps are not build times"
+  }
+]

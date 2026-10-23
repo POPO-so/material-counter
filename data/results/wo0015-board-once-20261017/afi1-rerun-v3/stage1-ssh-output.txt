@@ -1,0 +1,7 @@
+{
+  "board_accessed": true,
+  "error": "PreflightError: PYNQ global state loaded BIT path differs from the reviewed artifact",
+  "pynq_imported": true,
+  "status": "OVERLAY_ONLY_FAIL",
+  "task": "WO-0015"
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="2" failures="0" skipped="0" tests="2" time="0.767" timestamp="2026-10-15T17:35:44.756835+08:00" hostname="BWIN"><testcase classname="" name="python.boardtests.wo0013.test_dma_replay_verify" time="0.000"><error message="collection failure">ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\python\boardtests\wo0013\test_dma_replay_verify.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+python\boardtests\wo0013\test_dma_replay_verify.py:4: in &lt;module&gt;
+    from dma_replay_verify import (
+E   ModuleNotFoundError: No module named 'dma_replay_verify'</error></testcase><testcase classname="" name="python.refmodel.experiments.wo0014.test_image_vectors" time="0.000"><error message="collection failure">ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\python\refmodel\experiments\wo0014\test_image_vectors.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+python\refmodel\experiments\wo0014\test_image_vectors.py:6: in &lt;module&gt;
+    from image_vectors import (
+E   ModuleNotFoundError: No module named 'image_vectors'</error></testcase></testsuite></testsuites>

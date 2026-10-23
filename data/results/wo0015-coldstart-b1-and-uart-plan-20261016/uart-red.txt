@@ -1,0 +1,370 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016
+collected 22 items
+
+test_uart_readonly.py FFFFFFFFFFFFFFFF.FFFFF                             [100%]
+
+================================== FAILURES ===================================
+____________ test_capture_reads_only_bytes_from_injected_transport ____________
+
+    def test_capture_reads_only_bytes_from_injected_transport() -> None:
+        transport = MockReceiveOnlyTransport(b"prompt> ")
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:41: TypeError
+_______________ test_capture_rejects_non_bytes_transport_reads ________________
+
+    def test_capture_rejects_non_bytes_transport_reads() -> None:
+        transport = MockReceiveOnlyTransport("not bytes")  # type: ignore[arg-type]
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:51: TypeError
+__________ test_transmit_and_control_methods_are_denied[write-args0] __________
+
+method_name = 'write', args = (b'TX',)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:71: TypeError
+_______ test_transmit_and_control_methods_are_denied[writelines-args1] ________
+
+method_name = 'writelines', args = ([b'TX'],)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:71: TypeError
+_______ test_transmit_and_control_methods_are_denied[send_break-args2] ________
+
+method_name = 'send_break', args = ()
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:71: TypeError
+________ test_transmit_and_control_methods_are_denied[sendBreak-args3] ________
+
+method_name = 'sendBreak', args = ()
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:71: TypeError
+_________ test_transmit_and_control_methods_are_denied[setDTR-args4] __________
+
+method_name = 'setDTR', args = (True,)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:71: TypeError
+_________ test_transmit_and_control_methods_are_denied[setRTS-args5] __________
+
+method_name = 'setRTS', args = (True,)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:71: TypeError
+________ test_transmit_and_control_methods_are_denied[setBreak-args6] _________
+
+method_name = 'setBreak', args = (True,)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:71: TypeError
+_____________ test_settings_and_control_assignment_is_denied[dtr] _____________
+
+name = 'dtr'
+
+    @pytest.mark.parametrize("name", ["dtr", "rts", "baudrate", "rtscts", "xonxoff", "dsrdtr"])
+    def test_settings_and_control_assignment_is_denied(name: str) -> None:
+>       capture = ReadOnlySerialCapture(MockReceiveOnlyTransport())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:84: TypeError
+_____________ test_settings_and_control_assignment_is_denied[rts] _____________
+
+name = 'rts'
+
+    @pytest.mark.parametrize("name", ["dtr", "rts", "baudrate", "rtscts", "xonxoff", "dsrdtr"])
+    def test_settings_and_control_assignment_is_denied(name: str) -> None:
+>       capture = ReadOnlySerialCapture(MockReceiveOnlyTransport())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:84: TypeError
+__________ test_settings_and_control_assignment_is_denied[baudrate] ___________
+
+name = 'baudrate'
+
+    @pytest.mark.parametrize("name", ["dtr", "rts", "baudrate", "rtscts", "xonxoff", "dsrdtr"])
+    def test_settings_and_control_assignment_is_denied(name: str) -> None:
+>       capture = ReadOnlySerialCapture(MockReceiveOnlyTransport())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:84: TypeError
+___________ test_settings_and_control_assignment_is_denied[rtscts] ____________
+
+name = 'rtscts'
+
+    @pytest.mark.parametrize("name", ["dtr", "rts", "baudrate", "rtscts", "xonxoff", "dsrdtr"])
+    def test_settings_and_control_assignment_is_denied(name: str) -> None:
+>       capture = ReadOnlySerialCapture(MockReceiveOnlyTransport())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:84: TypeError
+___________ test_settings_and_control_assignment_is_denied[xonxoff] ___________
+
+name = 'xonxoff'
+
+    @pytest.mark.parametrize("name", ["dtr", "rts", "baudrate", "rtscts", "xonxoff", "dsrdtr"])
+    def test_settings_and_control_assignment_is_denied(name: str) -> None:
+>       capture = ReadOnlySerialCapture(MockReceiveOnlyTransport())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:84: TypeError
+___________ test_settings_and_control_assignment_is_denied[dsrdtr] ____________
+
+name = 'dsrdtr'
+
+    @pytest.mark.parametrize("name", ["dtr", "rts", "baudrate", "rtscts", "xonxoff", "dsrdtr"])
+    def test_settings_and_control_assignment_is_denied(name: str) -> None:
+>       capture = ReadOnlySerialCapture(MockReceiveOnlyTransport())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:84: TypeError
+______ test_facade_is_immutable_and_does_not_expose_or_forward_transport ______
+
+    def test_facade_is_immutable_and_does_not_expose_or_forward_transport() -> None:
+        transport = MockReceiveOnlyTransport()
+>       capture = ReadOnlySerialCapture(transport)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ReadOnlySerialCapture() takes no arguments
+
+test_uart_readonly.py:95: TypeError
+________ test_parser_reports_observed_boot_and_runtime_log_candidates _________
+
+    def test_parser_reports_observed_boot_and_runtime_log_candidates() -> None:
+        raw = (
+            b"Xilinx Zynq MP First Stage Boot Loader\r\n"
+            b"Silicon Revision 1.0\r\n"
+            b"ps7_post_config: done\r\n"
+            b"U-Boot 2024.01 (Jan 01 2024 - 00:00:00)\r\n"
+            b"bootcmd=run distro_bootcmd; run boot_targets\r\n"
+            b"Loading BOOT.SCR from mmc 0:1\r\n"
+            b"load mmc 0:1 0x10000000 image.ub\r\n"
+            b"Linux version 6.6.0-xilinx\r\n"
+            b"Kernel command line: root=UUID="
+            + EXPECTED_ROOT_UUID.encode("ascii")
+            + b" rw rootwait\r\n"
+            b"fpga_manager fpga0: writing base.bit\r\n"
+        )
+    
+        result = parse_uart_log(raw)
+    
+>       assert_observation(result, "fsbl", "OBSERVED_IN_UART_LOG", "Xilinx Zynq MP First Stage Boot Loader")
+
+test_uart_readonly.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+result = {}, name = 'fsbl', status = 'OBSERVED_IN_UART_LOG'
+value = 'Xilinx Zynq MP First Stage Boot Loader'
+
+    def assert_observation(result: dict, name: str, status: str, value: object = None) -> None:
+>       assert result[name] == {"status": status, "value": value}
+               ^^^^^^^^^^^^
+E       KeyError: 'fsbl'
+
+test_uart_readonly.py:36: KeyError
+_ test_parser_keeps_missing_items_unknown_and_records_mismatches_as_observations _
+
+    def test_parser_keeps_missing_items_unknown_and_records_mismatches_as_observations() -> None:
+        result = parse_uart_log(b"U-Boot 2023.10\nKernel: root=UUID=00000000-0000-0000-0000-000000000000\n")
+    
+>       assert_observation(result, "fsbl", "NOT_OBSERVED")
+
+test_uart_readonly.py:173: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+result = {}, name = 'fsbl', status = 'NOT_OBSERVED', value = None
+
+    def assert_observation(result: dict, name: str, status: str, value: object = None) -> None:
+>       assert result[name] == {"status": status, "value": value}
+               ^^^^^^^^^^^^
+E       KeyError: 'fsbl'
+
+test_uart_readonly.py:36: KeyError
+___________________ test_parser_requires_bytes_input[text] ____________________
+
+raw = 'text'
+
+    @pytest.mark.parametrize("raw", ["text", bytearray(b"bytes"), None])
+    def test_parser_requires_bytes_input(raw: object) -> None:
+>       with pytest.raises(TypeError, match="raw UART log must be bytes"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE TypeError
+
+test_uart_readonly.py:187: Failed
+___________________ test_parser_requires_bytes_input[raw1] ____________________
+
+raw = bytearray(b'bytes')
+
+    @pytest.mark.parametrize("raw", ["text", bytearray(b"bytes"), None])
+    def test_parser_requires_bytes_input(raw: object) -> None:
+>       with pytest.raises(TypeError, match="raw UART log must be bytes"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE TypeError
+
+test_uart_readonly.py:187: Failed
+___________________ test_parser_requires_bytes_input[None] ____________________
+
+raw = None
+
+    @pytest.mark.parametrize("raw", ["text", bytearray(b"bytes"), None])
+    def test_parser_requires_bytes_input(raw: object) -> None:
+>       with pytest.raises(TypeError, match="raw UART log must be bytes"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE TypeError
+
+test_uart_readonly.py:187: Failed
+=========================== short test summary info ===========================
+FAILED test_uart_readonly.py::test_capture_reads_only_bytes_from_injected_transport
+FAILED test_uart_readonly.py::test_capture_rejects_non_bytes_transport_reads
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[write-args0]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[writelines-args1]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[send_break-args2]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[sendBreak-args3]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[setDTR-args4]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[setRTS-args5]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[setBreak-args6]
+FAILED test_uart_readonly.py::test_settings_and_control_assignment_is_denied[dtr]
+FAILED test_uart_readonly.py::test_settings_and_control_assignment_is_denied[rts]
+FAILED test_uart_readonly.py::test_settings_and_control_assignment_is_denied[baudrate]
+FAILED test_uart_readonly.py::test_settings_and_control_assignment_is_denied[rtscts]
+FAILED test_uart_readonly.py::test_settings_and_control_assignment_is_denied[xonxoff]
+FAILED test_uart_readonly.py::test_settings_and_control_assignment_is_denied[dsrdtr]
+FAILED test_uart_readonly.py::test_facade_is_immutable_and_does_not_expose_or_forward_transport
+FAILED test_uart_readonly.py::test_parser_reports_observed_boot_and_runtime_log_candidates
+FAILED test_uart_readonly.py::test_parser_keeps_missing_items_unknown_and_records_mismatches_as_observations
+FAILED test_uart_readonly.py::test_parser_requires_bytes_input[text] - Failed...
+FAILED test_uart_readonly.py::test_parser_requires_bytes_input[raw1] - Failed...
+FAILED test_uart_readonly.py::test_parser_requires_bytes_input[None] - Failed...
+======================== 21 failed, 1 passed in 0.27s =========================

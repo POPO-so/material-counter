@@ -1,0 +1,11 @@
+BOOT_ID=2cc2ab91-2e3f-450e-b9e7-361ec38e2815
+bash: line 28: warning: here-document at line 3 delimited by end-of-file (wanted `PY')
+ROOT_FILES=["cma-watermark-recovery-consumed.json", "dma-single-consumed.json", "dma-single-watermark-retry2-consumed.json", "overlay-only-consumed.json", "overlay-only-pass.json", "run-only-init-consumed.json", "terminal-failure.json"]
+ROOT_DIRS=["continuations", "history"]
+Traceback (most recent call last):
+  File "<stdin>", line 15, in <module>
+  File "/usr/lib/python3.10/pathlib.py", line 1132, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+  File "/usr/lib/python3.10/pathlib.py", line 1117, in open
+    return self._accessor.open(self, mode, buffering, encoding, errors,
+PermissionError: [Errno 13] Permission denied: '/var/lib/wo0015-s2mm/cma-watermark-recovery-consumed.json'

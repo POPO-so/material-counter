@@ -1,0 +1,11 @@
+{
+  "status": "OFFLINE_BUNDLE_VALIDATED",
+  "board_accessed": false,
+  "ready_for_board_means": "offline eligibility only; requires separate human authorization",
+  "directory": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-board-once-20261017\\afi1-authorized-deployment-v3",
+  "manifest_sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935",
+  "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-board-once-20261017\\afi1-authorized-deployment-v3.zip",
+  "archive_sha256": "f0fa39edf80b56333ad825423d5b98cb9aad7cb000b28a1e5663a6d3bed3dce3",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+}

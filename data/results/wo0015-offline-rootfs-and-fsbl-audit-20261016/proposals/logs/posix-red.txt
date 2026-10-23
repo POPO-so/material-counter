@@ -1,0 +1,777 @@
+..FF.FFF.FFFF..FFF..FFF..F.                            [100%]
+================================== FAILURES ===================================
+____________ B1TemplateTests.test_boot_change_after_metadata_stops ____________
+
+self = <test_proposal_contract_v2.B1TemplateTests testMethod=test_boot_change_after_metadata_stops>
+
+    def test_boot_change_after_metadata_stops(self):
+        os_api = fakes.OfflineOSMock(
+            boot_ids=[template.EXPECTED_BOOT_ID_BYTES, b"different-boot\n"]
+        )
+    
+>       result = _b1(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133625760>
+
+    def _b1(os_api):
+>       return template.capture_b1(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b1() got an unexpected keyword argument 'os'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:64: TypeError
+____________ B1TemplateTests.test_boot_mismatch_reads_only_boot_id ____________
+
+self = <test_proposal_contract_v2.B1TemplateTests testMethod=test_boot_mismatch_reads_only_boot_id>
+
+    def test_boot_mismatch_reads_only_boot_id(self):
+        os_api = fakes.OfflineOSMock(boot_ids=[b"different-boot\n"])
+    
+>       result = _b1(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133613290>
+
+    def _b1(os_api):
+>       return template.capture_b1(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b1() got an unexpected keyword argument 'os'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:64: TypeError
+_ B1TemplateTests.test_eacces_stops_without_retry_or_later_proc_reads (fail_path='/proc/sys/kernel/random/boot_id') _
+
+self = <test_proposal_contract_v2.B1TemplateTests testMethod=test_eacces_stops_without_retry_or_later_proc_reads>
+
+    def test_eacces_stops_without_retry_or_later_proc_reads(self):
+        for fail_path, expected in (
+            (template.BOOT_ID, [template.BOOT_ID]),
+            (template.B1_OTHER_PATHS[0], [template.BOOT_ID, template.B1_OTHER_PATHS[0]]),
+        ):
+            with self.subTest(fail_path=fail_path):
+                os_api = fakes.OfflineOSMock(fail_proc_path=fail_path)
+>               result = _b1(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:121: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133625610>
+
+    def _b1(os_api):
+>       return template.capture_b1(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b1() got an unexpected keyword argument 'os'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:64: TypeError
+_ B1TemplateTests.test_eacces_stops_without_retry_or_later_proc_reads (fail_path='/proc/sys/kernel/osrelease') _
+
+self = <test_proposal_contract_v2.B1TemplateTests testMethod=test_eacces_stops_without_retry_or_later_proc_reads>
+
+    def test_eacces_stops_without_retry_or_later_proc_reads(self):
+        for fail_path, expected in (
+            (template.BOOT_ID, [template.BOOT_ID]),
+            (template.B1_OTHER_PATHS[0], [template.BOOT_ID, template.B1_OTHER_PATHS[0]]),
+        ):
+            with self.subTest(fail_path=fail_path):
+                os_api = fakes.OfflineOSMock(fail_proc_path=fail_path)
+>               result = _b1(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:121: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x00000171336258E0>
+
+    def _b1(os_api):
+>       return template.capture_b1(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b1() got an unexpected keyword argument 'os'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:64: TypeError
+_ B1TemplateTests.test_matching_boot_reads_other_five_in_fixed_order_then_rechecks _
+
+self = <test_proposal_contract_v2.B1TemplateTests testMethod=test_matching_boot_reads_other_five_in_fixed_order_then_rechecks>
+
+    def test_matching_boot_reads_other_five_in_fixed_order_then_rechecks(self):
+        os_api = fakes.OfflineOSMock()
+    
+>       result = _b1(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x00000171336273B0>
+
+    def _b1(os_api):
+>       return template.capture_b1(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b1() got an unexpected keyword argument 'os'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:64: TypeError
+________ B1TemplateTests.test_root_euid_rejects_before_opening_boot_id ________
+
+self = <test_proposal_contract_v2.B1TemplateTests testMethod=test_root_euid_rejects_before_opening_boot_id>
+
+    def test_root_euid_rejects_before_opening_boot_id(self):
+        os_api = fakes.OfflineOSMock(euid=0)
+    
+>       result = _b1(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133624080>
+
+    def _b1(os_api):
+>       return template.capture_b1(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b1() got an unexpected keyword argument 'os'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:64: TypeError
+_ B1TemplateTests.test_single_proc_file_over_limit_fails_and_closes_without_later_reads _
+
+self = <test_proposal_contract_v2.B1TemplateTests testMethod=test_single_proc_file_over_limit_fails_and_closes_without_later_reads>
+
+    def test_single_proc_file_over_limit_fails_and_closes_without_later_reads(self):
+        os_api = fakes.OfflineOSMock(
+>           proc_payloads={template.BOOT_ID: b"x" * (template.MAX_PROC_READ_BYTES + 1)}
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        )
+E       AttributeError: module 'remote_template_v2' has no attribute 'MAX_PROC_READ_BYTES'. Did you mean: 'MAX_PROC_BYTES'?
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:104: AttributeError
+___________ B2TemplateTests.test_boot_change_after_file_read_stops ____________
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_boot_change_after_file_read_stops>
+
+    def test_boot_change_after_file_read_stops(self):
+        os_api = fakes.OfflineOSMock(
+            boot_ids=[template.EXPECTED_BOOT_ID_BYTES, b"new-boot\n"]
+        )
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:295: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133626B10>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_____ B2TemplateTests.test_boot_mismatch_stops_before_boot_directory_open _____
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_boot_mismatch_stops_before_boot_directory_open>
+
+    def test_boot_mismatch_stops_before_boot_directory_open(self):
+        os_api = fakes.OfflineOSMock(boot_ids=[b"different-boot\n"])
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:285: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133627140>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+___ B2TemplateTests.test_cross_device_boot_file_rejects_before_content_read ___
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_cross_device_boot_file_rejects_before_content_read>
+
+    def test_cross_device_boot_file_rejects_before_content_read(self):
+        os_api = fakes.OfflineOSMock(directory_dev=8, file_dev=9)
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:203: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133627B60>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_directory_symlink_stops_before_file_open_or_content_read _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_directory_symlink_stops_before_file_open_or_content_read>
+
+    def test_directory_symlink_stops_before_file_open_or_content_read(self):
+        os_api = fakes.OfflineOSMock(directory_type="symlink")
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133610200>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry (point='open_dir') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry>
+
+    def test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry(self):
+        for point, expected_open_count in (("open_dir", 1), ("openat", 2), ("read", 2)):
+            with self.subTest(point=point):
+                os_api = fakes.OfflineOSMock(fail_at=point)
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:278: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133627620>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry (point='openat') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry>
+
+    def test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry(self):
+        for point, expected_open_count in (("open_dir", 1), ("openat", 2), ("read", 2)):
+            with self.subTest(point=point):
+                os_api = fakes.OfflineOSMock(fail_at=point)
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:278: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133627CB0>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry (point='read') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry>
+
+    def test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry(self):
+        for point, expected_open_count in (("open_dir", 1), ("openat", 2), ("read", 2)):
+            with self.subTest(point=point):
+                os_api = fakes.OfflineOSMock(fail_at=point)
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:278: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133627170>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+___ B2TemplateTests.test_each_identity_field_change_stops (field='st_dev') ____
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_each_identity_field_change_stops>
+
+    def test_each_identity_field_change_stops(self):
+        for field in template.STAT_FIELDS:
+            with self.subTest(field=field):
+                before = dict(zip(template.STAT_FIELDS, (1, 2, len(b"synthetic BOOT.BIN fixture"), 4)))
+                after = dict(before)
+                after[field] += 1
+                os_api = fakes.OfflineOSMock(stat_before=before, stat_after=after)
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:271: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x00000171336267B0>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+___ B2TemplateTests.test_each_identity_field_change_stops (field='st_ino') ____
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_each_identity_field_change_stops>
+
+    def test_each_identity_field_change_stops(self):
+        for field in template.STAT_FIELDS:
+            with self.subTest(field=field):
+                before = dict(zip(template.STAT_FIELDS, (1, 2, len(b"synthetic BOOT.BIN fixture"), 4)))
+                after = dict(before)
+                after[field] += 1
+                os_api = fakes.OfflineOSMock(stat_before=before, stat_after=after)
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:271: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133625610>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+___ B2TemplateTests.test_each_identity_field_change_stops (field='st_size') ___
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_each_identity_field_change_stops>
+
+    def test_each_identity_field_change_stops(self):
+        for field in template.STAT_FIELDS:
+            with self.subTest(field=field):
+                before = dict(zip(template.STAT_FIELDS, (1, 2, len(b"synthetic BOOT.BIN fixture"), 4)))
+                after = dict(before)
+                after[field] += 1
+                os_api = fakes.OfflineOSMock(stat_before=before, stat_after=after)
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:271: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133624AA0>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_each_identity_field_change_stops (field='st_mtime_ns') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_each_identity_field_change_stops>
+
+    def test_each_identity_field_change_stops(self):
+        for field in template.STAT_FIELDS:
+            with self.subTest(field=field):
+                before = dict(zip(template.STAT_FIELDS, (1, 2, len(b"synthetic BOOT.BIN fixture"), 4)))
+                after = dict(before)
+                after[field] += 1
+                os_api = fakes.OfflineOSMock(stat_before=before, stat_after=after)
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:271: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x000001713363AFF0>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_empty_or_oversized_boot_bin_rejects_before_content_read _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_empty_or_oversized_boot_bin_rejects_before_content_read>
+
+    def test_empty_or_oversized_boot_bin_rejects_before_content_read(self):
+>       for size in (0, template.MAX_BOOT_BIN_BYTES + 1):
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'remote_template_v2' has no attribute 'MAX_BOOT_BIN_BYTES'. Did you mean: 'MAX_BOOT_BYTES'?
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:189: AttributeError
+_________ B2TemplateTests.test_file_symlink_stops_before_content_read _________
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_file_symlink_stops_before_content_read>
+
+    def test_file_symlink_stops_before_content_read(self):
+        os_api = fakes.OfflineOSMock(file_type="symlink")
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x000001713363BB00>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_____ B2TemplateTests.test_filesystem_becoming_writable_after_read_stops ______
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_filesystem_becoming_writable_after_read_stops>
+
+    def test_filesystem_becoming_writable_after_read_stops(self):
+        os_api = fakes.OfflineOSMock(readonly=(True, False))
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:248: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133638E30>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_nonregular_objects_open_nonblocking_then_reject_before_content_read (file_type='fifo') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_nonregular_objects_open_nonblocking_then_reject_before_content_read>
+
+    def test_nonregular_objects_open_nonblocking_then_reject_before_content_read(self):
+        for file_type in ("fifo", "char", "block", "directory", "socket"):
+            with self.subTest(file_type=file_type):
+                os_api = fakes.OfflineOSMock(file_type=file_type)
+    
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x00000171336385F0>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_nonregular_objects_open_nonblocking_then_reject_before_content_read (file_type='char') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_nonregular_objects_open_nonblocking_then_reject_before_content_read>
+
+    def test_nonregular_objects_open_nonblocking_then_reject_before_content_read(self):
+        for file_type in ("fifo", "char", "block", "directory", "socket"):
+            with self.subTest(file_type=file_type):
+                os_api = fakes.OfflineOSMock(file_type=file_type)
+    
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x00000171336272C0>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_nonregular_objects_open_nonblocking_then_reject_before_content_read (file_type='block') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_nonregular_objects_open_nonblocking_then_reject_before_content_read>
+
+    def test_nonregular_objects_open_nonblocking_then_reject_before_content_read(self):
+        for file_type in ("fifo", "char", "block", "directory", "socket"):
+            with self.subTest(file_type=file_type):
+                os_api = fakes.OfflineOSMock(file_type=file_type)
+    
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133626B40>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_nonregular_objects_open_nonblocking_then_reject_before_content_read (file_type='directory') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_nonregular_objects_open_nonblocking_then_reject_before_content_read>
+
+    def test_nonregular_objects_open_nonblocking_then_reject_before_content_read(self):
+        for file_type in ("fifo", "char", "block", "directory", "socket"):
+            with self.subTest(file_type=file_type):
+                os_api = fakes.OfflineOSMock(file_type=file_type)
+    
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133627380>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_nonregular_objects_open_nonblocking_then_reject_before_content_read (file_type='socket') _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_nonregular_objects_open_nonblocking_then_reject_before_content_read>
+
+    def test_nonregular_objects_open_nonblocking_then_reject_before_content_read(self):
+        for file_type in ("fifo", "char", "block", "directory", "socket"):
+            with self.subTest(file_type=file_type):
+                os_api = fakes.OfflineOSMock(file_type=file_type)
+    
+>               result = _b2(os_api)
+                         ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133625D30>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_root_device_metadata_distinguishes_same_and_separate_boot_mount (root_dev=1) _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_root_device_metadata_distinguishes_same_and_separate_boot_mount>
+
+    def test_root_device_metadata_distinguishes_same_and_separate_boot_mount(self):
+        for root_dev, expected in ((1, False), (9, True)):
+            with self.subTest(root_dev=root_dev):
+>               result = _b2(fakes.OfflineOSMock(directory_dev=1, file_dev=1, root_dev=root_dev))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133638860>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_root_device_metadata_distinguishes_same_and_separate_boot_mount (root_dev=9) _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_root_device_metadata_distinguishes_same_and_separate_boot_mount>
+
+    def test_root_device_metadata_distinguishes_same_and_separate_boot_mount(self):
+        for root_dev, expected in ((1, False), (9, True)):
+            with self.subTest(root_dev=root_dev):
+>               result = _b2(fakes.OfflineOSMock(directory_dev=1, file_dev=1, root_dev=root_dev))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x0000017133638F20>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes>
+
+    def test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes(self):
+        payload = b"short fixture"
+        fields = dict(zip(template.STAT_FIELDS, (1, 2, len(payload) + 1, 4)))
+        os_api = fakes.OfflineOSMock(payload=payload, stat_before=fields, stat_after=fields)
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:258: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x000001713363B080>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ B2TemplateTests.test_success_uses_openat_and_fstatvfs_before_and_after_content _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_success_uses_openat_and_fstatvfs_before_and_after_content>
+
+    def test_success_uses_openat_and_fstatvfs_before_and_after_content(self):
+        os_api = fakes.OfflineOSMock()
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x000001713365C0B0>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_____ B2TemplateTests.test_writable_filesystem_stops_before_content_read ______
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_writable_filesystem_stops_before_content_read>
+
+    def test_writable_filesystem_stops_before_content_read(self):
+        os_api = fakes.OfflineOSMock(readonly=(False, True))
+    
+>       result = _b2(os_api)
+                 ^^^^^^^^^^^
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+os_api = <proposal_contract_v2.OfflineOSMock object at 0x000001713365E9F0>
+
+    def _b2(os_api):
+>       return template.capture_b2(os=os_api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: capture_b2() missing 1 required positional argument: 'reader'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:68: TypeError
+_ StaticGuardTests.test_frozen_texts_embed_tested_core_and_fail_closed_entrypoints (filename='frozen-remote-b1.NOT_APPROVED.txt') _
+
+self = <test_proposal_contract_v2.StaticGuardTests testMethod=test_frozen_texts_embed_tested_core_and_fail_closed_entrypoints>
+
+    def test_frozen_texts_embed_tested_core_and_fail_closed_entrypoints(self):
+        source = (PROPOSALS / "remote_template_v2.py").read_text(encoding="utf-8")
+        frozen_expectations = (
+            ("frozen-remote-b1.NOT_APPROVED.txt", FROZEN_B1_WRAPPER),
+            ("frozen-remote-b2.NOT_APPROVED.txt", FROZEN_B2_WRAPPER),
+        )
+        manifest_lines = (PROPOSALS / "remote-frozen-sha256.txt").read_text(encoding="ascii").splitlines()
+        manifest = {line.split("  ", 1)[1]: line.split("  ", 1)[0] for line in manifest_lines}
+        for filename, wrapper in frozen_expectations:
+            with self.subTest(filename=filename):
+                raw = (PROPOSALS / filename).read_bytes()
+                text = raw.decode("utf-8")
+>               self.assertEqual(text, source + wrapper)
+E               AssertionError: '"""W[8878 chars]e_b1(make_b1_reader(_remote_os))\n    if resul[370 chars]()\n' != '"""W[8878 chars]e_b1(os=_remote_os)\n    if result.status != "[357 chars]()\n'
+E               Diff is 9668 characters long. Set self.maxDiff to None to see it.
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:380: AssertionError
+_ StaticGuardTests.test_frozen_texts_embed_tested_core_and_fail_closed_entrypoints (filename='frozen-remote-b2.NOT_APPROVED.txt') _
+
+self = <test_proposal_contract_v2.StaticGuardTests testMethod=test_frozen_texts_embed_tested_core_and_fail_closed_entrypoints>
+
+    def test_frozen_texts_embed_tested_core_and_fail_closed_entrypoints(self):
+        source = (PROPOSALS / "remote_template_v2.py").read_text(encoding="utf-8")
+        frozen_expectations = (
+            ("frozen-remote-b1.NOT_APPROVED.txt", FROZEN_B1_WRAPPER),
+            ("frozen-remote-b2.NOT_APPROVED.txt", FROZEN_B2_WRAPPER),
+        )
+        manifest_lines = (PROPOSALS / "remote-frozen-sha256.txt").read_text(encoding="ascii").splitlines()
+        manifest = {line.split("  ", 1)[1]: line.split("  ", 1)[0] for line in manifest_lines}
+        for filename, wrapper in frozen_expectations:
+            with self.subTest(filename=filename):
+                raw = (PROPOSALS / filename).read_bytes()
+                text = raw.decode("utf-8")
+>               self.assertEqual(text, source + wrapper)
+E               AssertionError: '"""W[8910 chars]e_b2(make_b1_reader(_remote_os), os=_remote_os[448 chars]()\n' != '"""W[8910 chars]e_b2(os=_remote_os)\n    if result.status != "[494 chars]()\n'
+E               Diff is 9772 characters long. Set self.maxDiff to None to see it.
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:380: AssertionError
+_ StaticGuardTests.test_template_contains_syscall_core_but_no_executor_or_entry_point _
+
+self = <test_proposal_contract_v2.StaticGuardTests testMethod=test_template_contains_syscall_core_but_no_executor_or_entry_point>
+
+    def test_template_contains_syscall_core_but_no_executor_or_entry_point(self):
+        source = (PROPOSALS / "remote_template_v2.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        forbidden_imports = {"subprocess", "socket", "paramiko", "fabric", "pexpect", "pathlib"}
+        os_api_calls = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                self.assertFalse({alias.name.split(".")[0] for alias in node.names} & forbidden_imports)
+            elif isinstance(node, ast.ImportFrom):
+                self.assertNotIn((node.module or "").split(".")[0], forbidden_imports)
+            elif isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name) and node.func.value.id == "os":
+                    os_api_calls.add(node.func.attr)
+                if isinstance(node.func, ast.Name):
+                    self.assertNotIn(node.func.id, {"open", "exec", "eval", "compile", "__import__"})
+>       self.assertTrue({"open", "fstatvfs", "fstat", "fstat", "stat", "read", "close", "geteuid"} <= os_api_calls)
+E       AssertionError: False is not true
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:321: AssertionError
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B1TemplateTests::test_boot_change_after_metadata_stops
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B1TemplateTests::test_boot_mismatch_reads_only_boot_id
+SUBFAILED(fail_path='/proc/sys/kernel/random/boot_id') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B1TemplateTests::test_eacces_stops_without_retry_or_later_proc_reads
+SUBFAILED(fail_path='/proc/sys/kernel/osrelease') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B1TemplateTests::test_eacces_stops_without_retry_or_later_proc_reads
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B1TemplateTests::test_matching_boot_reads_other_five_in_fixed_order_then_rechecks
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B1TemplateTests::test_root_euid_rejects_before_opening_boot_id
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B1TemplateTests::test_single_proc_file_over_limit_fails_and_closes_without_later_reads
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_boot_change_after_file_read_stops
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_boot_mismatch_stops_before_boot_directory_open
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_cross_device_boot_file_rejects_before_content_read
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_directory_symlink_stops_before_file_open_or_content_read
+SUBFAILED(point='open_dir') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry
+SUBFAILED(point='openat') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry
+SUBFAILED(point='read') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_eacces_at_directory_open_file_open_or_content_read_stops_without_retry
+SUBFAILED(field='st_dev') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_each_identity_field_change_stops
+SUBFAILED(field='st_ino') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_each_identity_field_change_stops
+SUBFAILED(field='st_size') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_each_identity_field_change_stops
+SUBFAILED(field='st_mtime_ns') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_each_identity_field_change_stops
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_empty_or_oversized_boot_bin_rejects_before_content_read
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_file_symlink_stops_before_content_read
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_filesystem_becoming_writable_after_read_stops
+SUBFAILED(file_type='fifo') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_nonregular_objects_open_nonblocking_then_reject_before_content_read
+SUBFAILED(file_type='char') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_nonregular_objects_open_nonblocking_then_reject_before_content_read
+SUBFAILED(file_type='block') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_nonregular_objects_open_nonblocking_then_reject_before_content_read
+SUBFAILED(file_type='directory') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_nonregular_objects_open_nonblocking_then_reject_before_content_read
+SUBFAILED(file_type='socket') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_nonregular_objects_open_nonblocking_then_reject_before_content_read
+SUBFAILED(root_dev=1) data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_root_device_metadata_distinguishes_same_and_separate_boot_mount
+SUBFAILED(root_dev=9) data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_root_device_metadata_distinguishes_same_and_separate_boot_mount
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_short_read_even_with_unchanged_stat_tuple_stops_and_preserves_bytes
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_success_uses_openat_and_fstatvfs_before_and_after_content
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::B2TemplateTests::test_writable_filesystem_stops_before_content_read
+SUBFAILED(filename='frozen-remote-b1.NOT_APPROVED.txt') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::StaticGuardTests::test_frozen_texts_embed_tested_core_and_fail_closed_entrypoints
+SUBFAILED(filename='frozen-remote-b2.NOT_APPROVED.txt') data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::StaticGuardTests::test_frozen_texts_embed_tested_core_and_fail_closed_entrypoints
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::StaticGuardTests::test_template_contains_syscall_core_but_no_executor_or_entry_point
+34 failed, 11 passed in 0.43s

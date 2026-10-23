@@ -1,0 +1,6 @@
+{
+  "stopped_at": "STEP_1_DEPLOYMENT_CONFIGURATION_BEFORE_OVERLAY",
+  "status": "FAIL_STOPPED",
+  "retry_performed": false,
+  "cleanup": "READONLY_EXIT_AUDIT_COMPLETE"
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "work_order": "WO-0015",
+  "state": "STOPPED_NO_NONINTERACTIVE_SSH_AUTH",
+  "time_local": "2026-10-17",
+  "approved_boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "manifest_sha256": "2205c49479ffb8dae66aa7e34864aaa6783186c2dd1f96d8da9caeb9a24ecad0",
+  "ssh_host": "192.168.2.99",
+  "ssh_user": "xilinx",
+  "key_file_available": false,
+  "ssh_agent_available": false,
+  "password_prompt_seen": true,
+  "interactive_password_entry_used": false,
+  "sftp_session_closed": true,
+  "authenticated": false,
+  "legacy_files_downloaded": false,
+  "legacy_guards_archived": false,
+  "deployment_uploaded": false,
+  "overlay_only_executed": false,
+  "dma_single_executed": false,
+  "board_state_changed": false,
+  "note": "SSH reached the host-key/password prompt; the session was closed before authentication because the user prohibited entering the password in the Codex terminal. No SFTP file commands, board reads, or board writes were performed."
+}

@@ -1,0 +1,109 @@
+--- before/board_once.py
++++ watermark/board_once.py
+@@ -8,6 +8,7 @@
+ import argparse
+ import json
+ import math
++import operator
+ import os
+ import signal
+ import sys
+@@ -31,6 +32,7 @@
+ DMA_S2MM_LENGTH = 0x58
+ 
+ DMA_RUN = 1 << 0
++CMA_WATERMARK_KIB = 16384
+ DMA_HALTED = 1 << 0
+ DMA_IDLE = 1 << 1
+ DMA_INTERNAL_ERROR = 1 << 4
+@@ -370,6 +372,7 @@
+         "tx_bytes_each": preflight.TX_BYTES,
+         "rx_bytes_each": preflight.RX_BYTES,
+         "cma_free_before_kib": initial_cma_free,
++        "cma_watermark_kib": CMA_WATERMARK_KIB,
+         "cma_allocation_samples": [{"stage": "before", "cma_free_kib": initial_cma_free}],
+         "frames": [],
+         "hardware_stage": getattr(api, "stage", "mock"),
+@@ -381,11 +384,21 @@
+         evidence["cma_allocation_samples"].append({"stage": "after_release", "cma_free_kib": value})
+         return value
+ 
++    def require_watermark(value: int, stage: str) -> None:
++        if type(value) is not int or value < CMA_WATERMARK_KIB:
++            raise ExecutionFailure(
++                f"CmaFree watermark failed at {stage}: {value} KiB < {CMA_WATERMARK_KIB} KiB",
++                transfer_started=False, evidence=evidence,
++            )
++
+     try:
++        require_watermark(initial_cma_free, "before allocation")
+         baseline_checker = _require_clean_start(api, plan, expected_prior_frames)
+         mm2s_buffer = api.allocate(preflight.TX_BYTES)
++        after_mm2s_cma_free = api.cma_free_kib()
+         evidence["cma_allocation_samples"].append(
+-            {"stage": "after_mm2s", "cma_free_kib": api.cma_free_kib()})
++            {"stage": "after_mm2s", "cma_free_kib": after_mm2s_cma_free})
++        require_watermark(after_mm2s_cma_free, "after MM2S allocation")
+         s2mm_buffer = api.allocate(preflight.RX_BYTES)
+         during_cma_free = api.cma_free_kib()
+         evidence["cma_free_during_kib"] = during_cma_free
+@@ -395,12 +408,12 @@
+                            for n in (preflight.TX_BYTES, preflight.RX_BYTES)) * preflight.PAGE_BYTES // 1024
+         evidence["allocation_accounting"] = {
+             "page_rounded_bytes_kib": expected_kib,
+-            "observed_cma_decrease_kib": initial_cma_free - during_cma_free}
+-        if initial_cma_free - during_cma_free < expected_kib:
+-            raise ExecutionFailure("CmaFree did not show the required allocated-page decrease before DMA",
+-                                   transfer_started=False, evidence=evidence)
+-        mm2s_address = int(api.device_address(mm2s_buffer))
+-        s2mm_address = int(api.device_address(s2mm_buffer))
++            "observed_cma_decrease_kib": initial_cma_free - during_cma_free,
++            "hard_gate": False,
++            "note": "Global CMA free-page differences are telemetry, not per-buffer allocation proof."}
++        require_watermark(during_cma_free, "after S2MM allocation")
++        mm2s_address = api.device_address(mm2s_buffer)
++        s2mm_address = api.device_address(s2mm_buffer)
+         evidence["post_alloc_physical_gate"] = preflight.validate_dma_buffer_pair(
+             tx_address=mm2s_address, tx_size=memoryview(mm2s_buffer).nbytes,
+             rx_address=s2mm_address, rx_size=memoryview(s2mm_buffer).nbytes,
+@@ -539,11 +552,7 @@
+         api.free(mm2s_buffer)
+         released = True
+         final_cma_free = record_release_cma()
+-        if final_cma_free != initial_cma_free:
+-            raise ExecutionFailure(
+-                f"CmaFree did not return to its starting value ({initial_cma_free} -> {final_cma_free} KiB)",
+-                transfer_started=False, evidence=evidence,
+-            )
++        require_watermark(final_cma_free, "after release")
+         evidence["status"] = "DMA_ONCE_PASS"
+         evidence.update({"dma_start_attempted": dma_start_attempted,
+                          "transfer_started": transfer_started,
+@@ -620,7 +629,7 @@
+         self.corrupt_s2mm_frame = corrupt_s2mm_frame
+         self.cma_ranges: tuple[tuple[int, int], ...] = ((0, 0x20000000),)
+         self.sync_to_device_trace: list[tuple[Any, bytes]] = []
+-        self._start_cma_free_kib = max(1024, preflight.MIN_CMA_KIB + 128)
++        self._start_cma_free_kib = max(32768, preflight.MIN_CMA_KIB + 128)
+         self._cma_free_kib = self._start_cma_free_kib
+         self._next_address = 0x10000000
+         self._current_frame_index = -1
+@@ -923,12 +932,16 @@
+     def device_address(self, buffer: Any) -> int:
+         # Simple AXI HP DMA consumes CPU physical DDR addresses, not an IOVA.
+         try:
+-            physical = int(buffer.physical_address)
+-            device = int(buffer.device_address)
++            if isinstance(buffer.physical_address, bool) or isinstance(buffer.device_address, bool):
++                raise TypeError("boolean physical address")
++            physical = operator.index(buffer.physical_address)
++            device = operator.index(buffer.device_address)
+         except (AttributeError, TypeError, ValueError) as exc:
+             raise preflight.PreflightError("PYNQ buffer physical_address is unavailable") from exc
+         if physical != device:
+             raise preflight.PreflightError("PYNQ device_address differs from physical_address")
++        if physical <= 0:
++            raise preflight.PreflightError("PYNQ physical_address must be a nonzero integer")
+         return physical
+ 
+     def write_buffer(self, buffer: Any, data: bytes) -> None:

@@ -1,0 +1,322 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016
+collected 32 items
+
+test_uart_readonly.py .........FF................F....                   [100%]
+
+================================== FAILURES ===================================
+_________ test_capture_rejects_transport_reads_larger_than_requested __________
+
+    def test_capture_rejects_transport_reads_larger_than_requested() -> None:
+        transport = MockReceiveOnlyTransport(b"longer than requested")
+        capture = ReadOnlySerialCapture(transport)
+    
+>       with pytest.raises(ValueError, match=r"read\(\) returned more bytes than requested"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+test_uart_readonly.py:92: Failed
+__________________ test_private_backend_attribute_is_denied ___________________
+
+    def test_private_backend_attribute_is_denied() -> None:
+        capture = ReadOnlySerialCapture(MockReceiveOnlyTransport())
+    
+>       with pytest.raises(
+            PermissionError,
+            match="^UART TX is strictly prohibited in read-only capture mode$",
+        ):
+E       Failed: DID NOT RAISE PermissionError
+
+test_uart_readonly.py:101: Failed
+________ test_parser_recognizes_extensionless_boot_files_on_load_lines ________
+
+    def test_parser_recognizes_extensionless_boot_files_on_load_lines() -> None:
+        result = parse_uart_log(
+            b"load mmc 0:1 0x01000000 uImage zImage Image initrd\n"
+        )
+    
+>       assert_observation(
+            result,
+            "load_file_names",
+            "OBSERVED_IN_UART_LOG",
+            ["uImage", "zImage", "Image", "initrd"],
+        )
+
+test_uart_readonly.py:226: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+result = {'interpretation': 'UART text observations only; they do not prove live runtime or board identity. NOT_OBSERVED means ...evision': {'status': 'NOT_OBSERVED', 'value': None}, 'ps7_post_config': {'status': 'NOT_OBSERVED', 'value': None}, ...}
+name = 'load_file_names', status = 'OBSERVED_IN_UART_LOG'
+value = ['uImage', 'zImage', 'Image', 'initrd']
+
+    def assert_observation(result: dict, name: str, status: str, value: object = None) -> None:
+>       assert result[name] == {"status": status, "value": value}
+E       AssertionError: assert {'status': 'N...'value': None} == {'status': 'O...e', 'initrd']}
+E         
+E         Differing items:
+E         {'status': 'NOT_OBSERVED'} != {'status': 'OBSERVED_IN_UART_LOG'}
+E         {'value': None} != {'value': ['uImage', 'zImage', 'Image', 'initrd']}
+E         Use -v to get more diff
+
+test_uart_readonly.py:36: AssertionError
+=========================== short test summary info ===========================
+FAILED test_uart_readonly.py::test_capture_rejects_transport_reads_larger_than_requested
+FAILED test_uart_readonly.py::test_private_backend_attribute_is_denied - Fail...
+FAILED test_uart_readonly.py::test_parser_recognizes_extensionless_boot_files_on_load_lines
+======================== 3 failed, 29 passed in 0.17s =========================
+
+=== expanded guard RED run ===
+
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016
+collected 38 items
+
+test_uart_readonly.py .........FF.......FFFFFF..............             [100%]
+
+================================== FAILURES ===================================
+_________ test_capture_rejects_transport_reads_larger_than_requested __________
+
+    def test_capture_rejects_transport_reads_larger_than_requested() -> None:
+        transport = MockReceiveOnlyTransport(b"longer than requested")
+        capture = ReadOnlySerialCapture(transport)
+    
+>       with pytest.raises(ValueError, match=r"read\(\) returned more bytes than requested"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+test_uart_readonly.py:92: Failed
+__________________ test_private_backend_attribute_is_denied ___________________
+
+    def test_private_backend_attribute_is_denied() -> None:
+        capture = ReadOnlySerialCapture(MockReceiveOnlyTransport())
+    
+>       with pytest.raises(
+            PermissionError,
+            match="^UART TX is strictly prohibited in read-only capture mode$",
+        ):
+E       Failed: DID NOT RAISE PermissionError
+
+test_uart_readonly.py:101: Failed
+_ test_transmit_and_control_methods_are_denied[set_input_flow_control-args7] __
+
+method_name = 'set_input_flow_control', args = (True,)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+            ("set_input_flow_control", (True,)),
+            ("set_output_flow_control", (True,)),
+            ("apply_settings", ({"baudrate": 9600},)),
+            ("open", ()),
+            ("close", ()),
+            ("fileno", ()),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+        with pytest.raises(
+            PermissionError,
+            match="^UART TX is strictly prohibited in read-only capture mode$",
+        ):
+>           getattr(capture, method_name)(*args)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ReadOnlySerialCapture' object has no attribute 'set_input_flow_control'
+
+test_uart_readonly.py:133: AttributeError
+_ test_transmit_and_control_methods_are_denied[set_output_flow_control-args8] _
+
+method_name = 'set_output_flow_control', args = (True,)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+            ("set_input_flow_control", (True,)),
+            ("set_output_flow_control", (True,)),
+            ("apply_settings", ({"baudrate": 9600},)),
+            ("open", ()),
+            ("close", ()),
+            ("fileno", ()),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+        with pytest.raises(
+            PermissionError,
+            match="^UART TX is strictly prohibited in read-only capture mode$",
+        ):
+>           getattr(capture, method_name)(*args)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ReadOnlySerialCapture' object has no attribute 'set_output_flow_control'
+
+test_uart_readonly.py:133: AttributeError
+_____ test_transmit_and_control_methods_are_denied[apply_settings-args9] ______
+
+method_name = 'apply_settings', args = ({'baudrate': 9600},)
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+            ("set_input_flow_control", (True,)),
+            ("set_output_flow_control", (True,)),
+            ("apply_settings", ({"baudrate": 9600},)),
+            ("open", ()),
+            ("close", ()),
+            ("fileno", ()),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+        with pytest.raises(
+            PermissionError,
+            match="^UART TX is strictly prohibited in read-only capture mode$",
+        ):
+>           getattr(capture, method_name)(*args)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ReadOnlySerialCapture' object has no attribute 'apply_settings'
+
+test_uart_readonly.py:133: AttributeError
+__________ test_transmit_and_control_methods_are_denied[open-args10] __________
+
+method_name = 'open', args = ()
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+            ("set_input_flow_control", (True,)),
+            ("set_output_flow_control", (True,)),
+            ("apply_settings", ({"baudrate": 9600},)),
+            ("open", ()),
+            ("close", ()),
+            ("fileno", ()),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+        with pytest.raises(
+            PermissionError,
+            match="^UART TX is strictly prohibited in read-only capture mode$",
+        ):
+>           getattr(capture, method_name)(*args)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ReadOnlySerialCapture' object has no attribute 'open'
+
+test_uart_readonly.py:133: AttributeError
+_________ test_transmit_and_control_methods_are_denied[close-args11] __________
+
+method_name = 'close', args = ()
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+            ("set_input_flow_control", (True,)),
+            ("set_output_flow_control", (True,)),
+            ("apply_settings", ({"baudrate": 9600},)),
+            ("open", ()),
+            ("close", ()),
+            ("fileno", ()),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+        with pytest.raises(
+            PermissionError,
+            match="^UART TX is strictly prohibited in read-only capture mode$",
+        ):
+>           getattr(capture, method_name)(*args)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ReadOnlySerialCapture' object has no attribute 'close'
+
+test_uart_readonly.py:133: AttributeError
+_________ test_transmit_and_control_methods_are_denied[fileno-args12] _________
+
+method_name = 'fileno', args = ()
+
+    @pytest.mark.parametrize(
+        ("method_name", "args"),
+        [
+            ("write", (b"TX",)),
+            ("writelines", ([b"TX"],)),
+            ("send_break", ()),
+            ("sendBreak", ()),
+            ("setDTR", (True,)),
+            ("setRTS", (True,)),
+            ("setBreak", (True,)),
+            ("set_input_flow_control", (True,)),
+            ("set_output_flow_control", (True,)),
+            ("apply_settings", ({"baudrate": 9600},)),
+            ("open", ()),
+            ("close", ()),
+            ("fileno", ()),
+        ],
+    )
+    def test_transmit_and_control_methods_are_denied(method_name: str, args: tuple) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+        with pytest.raises(
+            PermissionError,
+            match="^UART TX is strictly prohibited in read-only capture mode$",
+        ):
+>           getattr(capture, method_name)(*args)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ReadOnlySerialCapture' object has no attribute 'fileno'
+
+test_uart_readonly.py:133: AttributeError
+=========================== short test summary info ===========================
+FAILED test_uart_readonly.py::test_capture_rejects_transport_reads_larger_than_requested
+FAILED test_uart_readonly.py::test_private_backend_attribute_is_denied - Fail...
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[set_input_flow_control-args7]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[set_output_flow_control-args8]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[apply_settings-args9]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[open-args10]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[close-args11]
+FAILED test_uart_readonly.py::test_transmit_and_control_methods_are_denied[fileno-args12]
+======================== 8 failed, 30 passed in 0.21s =========================
+

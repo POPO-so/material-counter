@@ -1,0 +1,345 @@
+..................F..F..                                                 [100%]
+================================== FAILURES ===================================
+_ test_single_then_three_stage_uses_same_mocked_boot_manifest_without_overlay_reload _
+
+plan = ValidatedRun(manifest_path=WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-133/test_single_then_thre...checksum=29377861, binary_checksum=9792000)), hp0_range=(0, 536870912), hp1_range=(0, 536870912), ready_for_board=True)
+api = <board_once.MockBoardAPI object at 0x0000028DA999DF10>, timeout_s = 2.0
+frame_limit = 3, expected_prior_frames = 1
+
+    def run_frames(plan: preflight.ValidatedRun, api: Any, *,
+                   timeout_s: float = DEFAULT_TIMEOUT_S,
+                   frame_limit: int | None = None,
+                   expected_prior_frames: int = 0) -> dict[str, Any]:
+        """Run one or three frames through an injected low-level Board API.
+    
+        The API contract is intentionally small: allocate, free, buffer sync, MMIO,
+        monotonic/sleep, and a CmaFree reader. Hardware and Mock use the same path.
+        """
+        if timeout_s <= 0:
+            raise ValueError("timeout_s must be positive")
+        if frame_limit is None:
+            frame_limit = len(plan.frames)
+        if frame_limit not in (1, 3) or frame_limit > len(plan.frames):
+            raise ValueError("frame_limit must select one or three manifest frames")
+        if expected_prior_frames and (expected_prior_frames != 1 or len(plan.frames) != 3):
+            raise ValueError("one prior frame is supported only for a three-frame manifest")
+        frames_to_run = plan.frames[:frame_limit]
+        begin_run = getattr(api, "begin_run", None)
+        if callable(begin_run):
+            begin_run(frame_limit, expected_prior_frames)
+        initial_cma_free = api.cma_free_kib()
+        mm2s_buffer = None
+        s2mm_buffer = None
+        may_be_in_flight = False
+        released = False
+        evidence: dict[str, Any] = {
+            "task": "WO-0015",
+            "status": "RUNNING",
+            "board_accessed": bool(getattr(api, "board_accessed", False)),
+            "boot_id": plan.boot_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "build_id": plan.build_id,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "clock_mhz": 50,
+            "frame_count": frame_limit,
+            "tx_bytes_each": preflight.TX_BYTES,
+            "rx_bytes_each": preflight.RX_BYTES,
+            "cma_free_before_kib": initial_cma_free,
+            "frames": [],
+            "hardware_stage": getattr(api, "stage", "mock"),
+        }
+        try:
+            baseline_checker = _require_clean_start(api, plan, expected_prior_frames)
+>           mm2s_buffer = api.allocate(preflight.TX_BYTES)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\board_once.py:343: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <board_once.MockBoardAPI object at 0x0000028DA999DF10>, size = 230432
+
+    def allocate(self, size: int) -> _MockBuffer:
+        self.allocations.append(size)
+        address = (self._next_address + preflight.PAGE_BYTES - 1) & ~(preflight.PAGE_BYTES - 1)
+        pages = (size + preflight.PAGE_BYTES - 1) // preflight.PAGE_BYTES
+        self._next_address = address + pages * preflight.PAGE_BYTES
+        self._cma_free_kib -= pages * preflight.PAGE_BYTES // 1024
+        buffer = _MockBuffer(size, address)
+        if len(self.allocations) == 1:
+            self._mm2s_buffer = buffer
+        elif len(self.allocations) == 2:
+            self._s2mm_buffer = buffer
+        else:
+>           raise AssertionError("runner allocated a third buffer")
+E           AssertionError: runner allocated a third buffer
+
+scripts\wo0015\board_once.py:602: AssertionError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-133/test_single_then_three_stage_u0')
+
+    def test_single_then_three_stage_uses_same_mocked_boot_manifest_without_overlay_reload(tmp_path):
+        plan, _ = _plan(tmp_path, 3)
+        api = runner.MockBoardAPI(plan)
+    
+        single = runner.run_frames(plan, api, timeout_s=2.0, frame_limit=1)
+>       three = runner.run_frames(plan, api, timeout_s=2.0, frame_limit=3,
+                                  expected_prior_frames=1)
+
+scripts\wo0015\test_board_once.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan = ValidatedRun(manifest_path=WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-133/test_single_then_thre...checksum=29377861, binary_checksum=9792000)), hp0_range=(0, 536870912), hp1_range=(0, 536870912), ready_for_board=True)
+api = <board_once.MockBoardAPI object at 0x0000028DA999DF10>, timeout_s = 2.0
+frame_limit = 3, expected_prior_frames = 1
+
+    def run_frames(plan: preflight.ValidatedRun, api: Any, *,
+                   timeout_s: float = DEFAULT_TIMEOUT_S,
+                   frame_limit: int | None = None,
+                   expected_prior_frames: int = 0) -> dict[str, Any]:
+        """Run one or three frames through an injected low-level Board API.
+    
+        The API contract is intentionally small: allocate, free, buffer sync, MMIO,
+        monotonic/sleep, and a CmaFree reader. Hardware and Mock use the same path.
+        """
+        if timeout_s <= 0:
+            raise ValueError("timeout_s must be positive")
+        if frame_limit is None:
+            frame_limit = len(plan.frames)
+        if frame_limit not in (1, 3) or frame_limit > len(plan.frames):
+            raise ValueError("frame_limit must select one or three manifest frames")
+        if expected_prior_frames and (expected_prior_frames != 1 or len(plan.frames) != 3):
+            raise ValueError("one prior frame is supported only for a three-frame manifest")
+        frames_to_run = plan.frames[:frame_limit]
+        begin_run = getattr(api, "begin_run", None)
+        if callable(begin_run):
+            begin_run(frame_limit, expected_prior_frames)
+        initial_cma_free = api.cma_free_kib()
+        mm2s_buffer = None
+        s2mm_buffer = None
+        may_be_in_flight = False
+        released = False
+        evidence: dict[str, Any] = {
+            "task": "WO-0015",
+            "status": "RUNNING",
+            "board_accessed": bool(getattr(api, "board_accessed", False)),
+            "boot_id": plan.boot_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "build_id": plan.build_id,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "clock_mhz": 50,
+            "frame_count": frame_limit,
+            "tx_bytes_each": preflight.TX_BYTES,
+            "rx_bytes_each": preflight.RX_BYTES,
+            "cma_free_before_kib": initial_cma_free,
+            "frames": [],
+            "hardware_stage": getattr(api, "stage", "mock"),
+        }
+        try:
+            baseline_checker = _require_clean_start(api, plan, expected_prior_frames)
+            mm2s_buffer = api.allocate(preflight.TX_BYTES)
+            s2mm_buffer = api.allocate(preflight.RX_BYTES)
+            mm2s_address = int(api.device_address(mm2s_buffer))
+            s2mm_address = int(api.device_address(s2mm_buffer))
+            for label, address, size in (("MM2S", mm2s_address, preflight.TX_BYTES),
+                                         ("S2MM", s2mm_address, preflight.RX_BYTES)):
+                if address < 0 or address > 0xFFFFFFFF or address % 4:
+                    raise ExecutionFailure(f"{label} CMA address is not 32-bit/word aligned: 0x{address:x}",
+                                           transfer_started=False)
+                if address + size > 0x100000000:
+                    raise ExecutionFailure(f"{label} CMA buffer exceeds 32-bit DMA address space",
+                                           transfer_started=False)
+            previous_checker = baseline_checker
+    
+            for index, frame in enumerate(frames_to_run):
+                # Before the first transfer, some AXI DMA builds report Idle=0
+                # until the first length write. After every completed frame, both
+                # channels must report Idle before the next arm is allowed.
+                s2mm_before = api.read32(preflight.DMA_BASE, DMA_S2MM_DMASR)
+                mm2s_before = api.read32(preflight.DMA_BASE, DMA_MM2S_DMASR)
+                prepare_frame = getattr(api, "before_frame", None)
+                if callable(prepare_frame):
+                    prepare_frame(frame, index)
+                    s2mm_before = api.read32(preflight.DMA_BASE, DMA_S2MM_DMASR)
+                    mm2s_before = api.read32(preflight.DMA_BASE, DMA_MM2S_DMASR)
+                _require_dma_clean(s2mm_before, "S2MM")
+                _require_dma_clean(mm2s_before, "MM2S")
+                if index and (not (s2mm_before & DMA_IDLE) or not (mm2s_before & DMA_IDLE)):
+                    raise ExecutionFailure(
+                        f"frame {frame.frame_id} pre-length DMA state is not Idle",
+                        transfer_started=False,
+                        evidence={"s2mm_dmasr": s2mm_before, "mm2s_dmasr": mm2s_before},
+                    )
+    
+                api.write_buffer(mm2s_buffer, frame.packet)
+                api.sync_to_device(mm2s_buffer)
+                packer_status = api.read32(preflight.CHECKER_BASE, PACKER_STATUS)
+                if packer_status & (PACKER_BUSY | PACKER_FAULT):
+                    raise ExecutionFailure(f"Packer is busy/faulted before frame {frame.frame_id}",
+                                           transfer_started=False,
+                                           evidence={"packer_status": packer_status})
+                if api.read32(preflight.CHECKER_BASE, PACKER_ERROR_CODE):
+                    raise ExecutionFailure(f"Packer has an error before frame {frame.frame_id}",
+                                           transfer_started=False)
+                # Exactly one arm write per accepted frame; no reset or relaunch.
+                api.write32(preflight.CHECKER_BASE, PACKER_ARM, 1)
+    
+                # Clear only stale interrupt indications. Existing error bits are
+                # evidence and are never cleared or retried by this executor.
+                if s2mm_before & (DMA_IOC_IRQ | DMA_DLY_IRQ):
+                    api.write32(preflight.DMA_BASE, DMA_S2MM_DMASR, s2mm_before & (DMA_IOC_IRQ | DMA_DLY_IRQ))
+                if mm2s_before & (DMA_IOC_IRQ | DMA_DLY_IRQ):
+                    api.write32(preflight.DMA_BASE, DMA_MM2S_DMASR, mm2s_before & (DMA_IOC_IRQ | DMA_DLY_IRQ))
+    
+                deadline = api.monotonic() + timeout_s
+                api.write32(preflight.DMA_BASE, DMA_S2MM_DMACR, DMA_RUN)
+                _wait_not_halted(api, DMA_S2MM_DMASR, "S2MM", deadline, False)
+                api.write32(preflight.DMA_BASE, DMA_S2MM_DA, s2mm_address)
+                # From the first attempted S2MM length write onward the buffers
+                # are quarantined on any uncertain outcome.
+                may_be_in_flight = True
+                api.write32(preflight.DMA_BASE, DMA_S2MM_LENGTH, preflight.RX_BYTES)
+    
+                api.write32(preflight.DMA_BASE, DMA_MM2S_DMACR, DMA_RUN)
+                _wait_not_halted(api, DMA_MM2S_DMASR, "MM2S", deadline, True)
+                api.write32(preflight.DMA_BASE, DMA_MM2S_SA, mm2s_address)
+                api.write32(preflight.DMA_BASE, DMA_MM2S_LENGTH, preflight.TX_BYTES)
+    
+                s2mm_status, mm2s_status, packer_status = _wait_frame_complete(
+                    api, deadline, frame_id=frame.frame_id, transfer_started=True,
+                )
+                # Both Idle+IOC plus Packer DONE means neither DMA can still own
+                # either buffer; later data/stat mismatches are safe to release.
+                may_be_in_flight = False
+                actual_s2mm_length = api.read32(preflight.DMA_BASE, DMA_S2MM_LENGTH)
+                if actual_s2mm_length != preflight.RX_BYTES:
+                    raise ExecutionFailure(
+                        f"S2MM actual length for frame {frame.frame_id} is {actual_s2mm_length}, expected {preflight.RX_BYTES}",
+                        transfer_started=False,
+                        evidence={"s2mm_actual_length": actual_s2mm_length,
+                                  "s2mm_dmasr": s2mm_status, "mm2s_dmasr": mm2s_status},
+                    )
+                pixels = api.read32(preflight.CHECKER_BASE, PACKER_ACCEPTED_PIXELS)
+                beats = api.read32(preflight.CHECKER_BASE, PACKER_SENT_BEATS)
+                packer_error = api.read32(preflight.CHECKER_BASE, PACKER_ERROR_CODE)
+                if (packer_status != PACKER_DONE or pixels != preflight.PIXEL_COUNT or
+                        beats != preflight.RX_BEATS or packer_error != 0):
+                    raise ExecutionFailure(
+                        f"Packer completion counters invalid for frame {frame.frame_id}: "
+                        f"status=0x{packer_status:08x} pixels={pixels} beats={beats} error={packer_error}",
+                        transfer_started=False,
+                        evidence={"packer_status": packer_status, "accepted_pixels": pixels,
+                                  "sent_beats": beats, "packer_error": packer_error},
+                    )
+                after_checker = _checker_snapshot(api)
+                _check_checker_frame(previous_checker, after_checker, frame)
+                api.sync_from_device(s2mm_buffer)
+                returned = bytes(memoryview(s2mm_buffer).cast("B")[:preflight.RX_BYTES])
+                if returned != frame.binary:
+                    mismatches = sum(left != right for left, right in zip(returned, frame.binary))
+                    first = next((offset for offset, pair in enumerate(zip(returned, frame.binary))
+                                  if pair[0] != pair[1]), None)
+                    raise ExecutionFailure(
+                        f"S2MM Binary8 differs from golden for frame {frame.frame_id}: "
+                        f"{mismatches} mismatches, first offset={first}",
+                        transfer_started=False,
+                        evidence={"byte_mismatches": mismatches, "first_mismatch": first,
+                                  "s2mm_actual_length": actual_s2mm_length},
+                    )
+    
+                evidence["frames"].append({
+                    "frame_id": frame.frame_id,
+                    "s2mm_dmasr": s2mm_status,
+                    "mm2s_dmasr": mm2s_status,
+                    "packer_status": packer_status,
+                    "accepted_pixels": pixels,
+                    "sent_beats": beats,
+                    "s2mm_actual_length": actual_s2mm_length,
+                    "checker": {
+                        "pixels": after_checker["pixels"],
+                        "sofs": after_checker["sofs"],
+                        "eols": after_checker["eols"],
+                        "checksum": after_checker["output_checksum"],
+                        "input_bytes_delta": _u32_delta(after_checker["input_bytes"], previous_checker["input_bytes"]),
+                        "input_beats_delta": _u32_delta(after_checker["input_beats"], previous_checker["input_beats"]),
+                        "input_tlast_delta": _u32_delta(after_checker["input_tlast"], previous_checker["input_tlast"]),
+                        "packet_done_delta": _u32_delta(after_checker["packet_done_count"], previous_checker["packet_done_count"]),
+                        "output_total_delta": _u32_delta(after_checker["output_total"], previous_checker["output_total"]),
+                    },
+                    "byte_mismatches": 0,
+                })
+                previous_checker = after_checker
+    
+            api.free(s2mm_buffer)
+            api.free(mm2s_buffer)
+            released = True
+            final_cma_free = api.cma_free_kib()
+            evidence["cma_free_after_kib"] = final_cma_free
+            evidence["cma_free_delta_kib"] = final_cma_free - initial_cma_free
+            if final_cma_free != initial_cma_free:
+                raise ExecutionFailure(
+                    f"CmaFree did not return to its starting value ({initial_cma_free} -> {final_cma_free} KiB)",
+                    transfer_started=False, evidence=evidence,
+                )
+            evidence["status"] = "DMA_ONCE_PASS"
+            return evidence
+        except ExecutionFailure as exc:
+            if may_be_in_flight and not released and mm2s_buffer is not None and s2mm_buffer is not None:
+                QUARANTINED_BUFFERS.append((api, mm2s_buffer, s2mm_buffer, str(exc)))
+                exc.transfer_started = True
+            elif not released:
+                if s2mm_buffer is not None:
+                    api.free(s2mm_buffer)
+                if mm2s_buffer is not None:
+                    api.free(mm2s_buffer)
+                released = True
+            exc.evidence = {**evidence, **exc.evidence}
+            raise
+        except Exception as exc:
+            if may_be_in_flight and not released and mm2s_buffer is not None and s2mm_buffer is not None:
+                QUARANTINED_BUFFERS.append((api, mm2s_buffer, s2mm_buffer, str(exc)))
+                raise ExecutionFailure(f"unexpected error with DMA potentially in flight: {exc}",
+                                       transfer_started=True, evidence=evidence) from exc
+            if not released:
+                if s2mm_buffer is not None:
+                    api.free(s2mm_buffer)
+                if mm2s_buffer is not None:
+                    api.free(mm2s_buffer)
+>           raise ExecutionFailure(f"offline executor error: {exc}", transfer_started=False,
+                                   evidence=evidence) from exc
+E           board_once.ExecutionFailure: offline executor error: runner allocated a third buffer
+
+scripts\wo0015\board_once.py:511: ExecutionFailure
+_ test_actual_stage_without_both_explicit_gates_fails_before_pynq_or_runtime_io _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-133/test_actual_stage_without_both0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000028DA9983710>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000028DA99B4320>
+
+    def test_actual_stage_without_both_explicit_gates_fails_before_pynq_or_runtime_io(
+        tmp_path, monkeypatch, capsys
+    ):
+        _, manifest_path = _plan(tmp_path, 1)
+        real_import = __import__
+    
+        def no_pynq(name, *args, **kwargs):
+            if name == "pynq" or name.startswith("pynq."):
+                raise AssertionError("rejected stage imported PYNQ")
+            return real_import(name, *args, **kwargs)
+    
+        monkeypatch.setattr("builtins.__import__", no_pynq)
+        assert runner.main(["--mode", "overlay-only", "--manifest", str(manifest_path),
+                            "--execute"]) == 2
+        result = capsys.readouterr().out
+        assert '"status": "OVERLAY_ONLY_REJECTED"' in result
+>       assert "--authorize-stage" in result
+E       assert '--authorize-stage' in '{\n  "board_accessed": false,\n  "error": "PreflightError: authorized board stages require one fixed three-frame mani... dma-three share its hash",\n  "pynq_imported": false,\n  "status": "OVERLAY_ONLY_REJECTED",\n  "task": "WO-0015"\n}\n'
+
+scripts\wo0015\test_board_once.py:167: AssertionError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_board_once.py::test_single_then_three_stage_uses_same_mocked_boot_manifest_without_overlay_reload
+FAILED scripts/wo0015/test_board_once.py::test_actual_stage_without_both_explicit_gates_fails_before_pynq_or_runtime_io
+2 failed, 22 passed in 3.29s

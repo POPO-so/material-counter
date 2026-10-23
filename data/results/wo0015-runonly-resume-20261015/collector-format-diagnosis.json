@@ -1,0 +1,24 @@
+{
+  "cause": "initial read() used .strip(); not an authoritative board byte mismatch",
+  "raw_board_bytes_reverification_required": true,
+  "rows": {
+    "overlay-only-pass.json": {
+      "stripped_sha256": "8d4983c42e4131d041049e16dc39c5c8fc15993cc4350d12d20828ffa8c7ca98",
+      "with_one_lf_sha256": "ee3d9ba6462962657bbd43807302387af16d4fbec34ee65f909a385886802d96",
+      "locked_raw_sha256": "ee3d9ba6462962657bbd43807302387af16d4fbec34ee65f909a385886802d96",
+      "one_lf_restores_expected": true
+    },
+    "terminal-failure.json": {
+      "stripped_sha256": "d6f756c83d45021bc3bf358d465de58275e9c868f100b7734cea280775142467",
+      "with_one_lf_sha256": "662e03d871f7275ed47bec0c302440a94dbc4e2fa35d499bce49a44d8decdeda",
+      "locked_raw_sha256": "662e03d871f7275ed47bec0c302440a94dbc4e2fa35d499bce49a44d8decdeda",
+      "one_lf_restores_expected": true
+    },
+    "overlay-only-consumed.json": {
+      "stripped_sha256": "3582e6244228c2e5739175c87ac6de7740d5b55fc78dcd7e40ce9855be09fed9",
+      "with_one_lf_sha256": "c333975de186464bc3db9809c7762d7d7115cfc73f8b17f8e8672e3349efa37f",
+      "locked_raw_sha256": "c333975de186464bc3db9809c7762d7d7115cfc73f8b17f8e8672e3349efa37f",
+      "one_lf_restores_expected": true
+    }
+  }
+}

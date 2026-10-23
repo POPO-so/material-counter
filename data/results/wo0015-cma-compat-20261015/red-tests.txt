@@ -1,0 +1,443 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                 [100%]
+================================== FAILURES ===================================
+_____ test_exact_source_returns_half_open_cma_and_provenance[device_tree] _____
+scripts\wo0015\test_cma_compat.py:31: in test_exact_source_returns_half_open_cma_and_provenance
+    result = resolve(**args)
+             ^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+________ test_exact_source_returns_half_open_cma_and_provenance[dmesg] ________
+scripts\wo0015\test_cma_compat.py:31: in test_exact_source_returns_half_open_cma_and_provenance
+    result = resolve(**args)
+             ^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_______ test_exact_source_returns_half_open_cma_and_provenance[debugfs] _______
+scripts\wo0015\test_cma_compat.py:31: in test_exact_source_returns_half_open_cma_and_provenance
+    result = resolve(**args)
+             ^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_______________ test_dt_has_priority_when_precise_sources_agree _______________
+scripts\wo0015\test_cma_compat.py:38: in test_dt_has_priority_when_precise_sources_agree
+    assert resolve(dt_ranges=CMA, dmesg_text=LOG, debugfs_ranges=CMA).source == 'device_tree'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+__________________ test_kernel_reservation_units[KiB-131072] __________________
+scripts\wo0015\test_cma_compat.py:48: in test_kernel_reservation_units
+    assert resolve(dmesg_text=f'cma: Reserved {value} {unit} at 0x18000000', meminfo=mem).ranges == CMA
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+___________________ test_kernel_reservation_units[MiB-128] ____________________
+scripts\wo0015\test_cma_compat.py:48: in test_kernel_reservation_units
+    assert resolve(dmesg_text=f'cma: Reserved {value} {unit} at 0x18000000', meminfo=mem).ranges == CMA
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+____________________ test_kernel_reservation_units[GiB-1] _____________________
+scripts\wo0015\test_cma_compat.py:46: in test_kernel_reservation_units
+    resolve(dmesg_text=f'cma: Reserved {value} {unit} at 0x18000000', meminfo=mem)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_malformed_cma_reservation_never_falls_back[cma: Reserved 0 MiB at 0x18000000] _
+scripts\wo0015\test_cma_compat.py:55: in test_malformed_cma_reservation_never_falls_back
+    resolve(dmesg_text=line, cmdline='cma=128M')
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_malformed_cma_reservation_never_falls_back[cma: Reserved 128 MiB at not_an_address] _
+scripts\wo0015\test_cma_compat.py:55: in test_malformed_cma_reservation_never_falls_back
+    resolve(dmesg_text=line, cmdline='cma=128M')
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+__________ test_invalid_or_mismatched_exact_cma_is_rejected[ranges0] __________
+scripts\wo0015\test_cma_compat.py:64: in test_invalid_or_mismatched_exact_cma_is_rejected
+    resolve(dt_ranges=ranges, cmdline='cma=128M')
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+__________ test_invalid_or_mismatched_exact_cma_is_rejected[ranges1] __________
+scripts\wo0015\test_cma_compat.py:64: in test_invalid_or_mismatched_exact_cma_is_rejected
+    resolve(dt_ranges=ranges, cmdline='cma=128M')
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+__________ test_invalid_or_mismatched_exact_cma_is_rejected[ranges2] __________
+scripts\wo0015\test_cma_compat.py:64: in test_invalid_or_mismatched_exact_cma_is_rejected
+    resolve(dt_ranges=ranges, cmdline='cma=128M')
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+__________ test_invalid_or_mismatched_exact_cma_is_rejected[ranges3] __________
+scripts\wo0015\test_cma_compat.py:64: in test_invalid_or_mismatched_exact_cma_is_rejected
+    resolve(dt_ranges=ranges, cmdline='cma=128M')
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+________________ test_conflicting_precise_sources_are_rejected ________________
+scripts\wo0015\test_cma_compat.py:69: in test_conflicting_precise_sources_are_rejected
+    resolve(dmesg_text=LOG, debugfs_ranges=((0x10000000, 0x18000000),))
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_ram_high_fallback_is_explicitly_not_a_cma_measurement[cmdline] __
+scripts\wo0015\test_cma_compat.py:74: in test_coarse_ram_high_fallback_is_explicitly_not_a_cma_measurement
+    result = resolve(**{location: 'root=/dev/mmcblk0p2 cma=128M'})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_ram_high_fallback_is_explicitly_not_a_cma_measurement[bootargs] _
+scripts\wo0015\test_cma_compat.py:74: in test_coarse_ram_high_fallback_is_explicitly_not_a_cma_measurement
+    result = resolve(**{location: 'root=/dev/mmcblk0p2 cma=128M'})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[] __
+scripts\wo0015\test_cma_compat.py:85: in test_coarse_fallback_requires_unambiguous_matching_size_without_guessing
+    resolve(cmdline=cmdline)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=0] _
+scripts\wo0015\test_cma_compat.py:85: in test_coarse_fallback_requires_unambiguous_matching_size_without_guessing
+    resolve(cmdline=cmdline)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=64M] _
+scripts\wo0015\test_cma_compat.py:85: in test_coarse_fallback_requires_unambiguous_matching_size_without_guessing
+    resolve(cmdline=cmdline)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=129M] _
+scripts\wo0015\test_cma_compat.py:85: in test_coarse_fallback_requires_unambiguous_matching_size_without_guessing
+    resolve(cmdline=cmdline)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=bogus] _
+scripts\wo0015\test_cma_compat.py:85: in test_coarse_fallback_requires_unambiguous_matching_size_without_guessing
+    resolve(cmdline=cmdline)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=128M cma=64M] _
+scripts\wo0015\test_cma_compat.py:85: in test_coarse_fallback_requires_unambiguous_matching_size_without_guessing
+    resolve(cmdline=cmdline)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=128M@0x10000000] _
+scripts\wo0015\test_cma_compat.py:85: in test_coarse_fallback_requires_unambiguous_matching_size_without_guessing
+    resolve(cmdline=cmdline)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+________ test_coarse_fallback_rejects_missing_wrong_or_reserved_ram[] _________
+scripts\wo0015\test_cma_compat.py:93: in test_coarse_fallback_rejects_missing_wrong_or_reserved_ram
+    resolve(cmdline='cma=128M', iomem_text=iomem)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_rejects_missing_wrong_or_reserved_ram[00000000-0fffffff : System RAM\n] _
+scripts\wo0015\test_cma_compat.py:93: in test_coarse_fallback_rejects_missing_wrong_or_reserved_ram
+    resolve(cmdline='cma=128M', iomem_text=iomem)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_rejects_missing_wrong_or_reserved_ram[00000000-3fffffff : System RAM\n] _
+scripts\wo0015\test_cma_compat.py:93: in test_coarse_fallback_rejects_missing_wrong_or_reserved_ram
+    resolve(cmdline='cma=128M', iomem_text=iomem)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_ test_coarse_fallback_rejects_missing_wrong_or_reserved_ram[00000000-1fffffff : System RAM\n  00008000-00efffff : Kernel code\n  01000000-010845cf : Kernel data\n  19000000-19000fff : Reserved\n] _
+scripts\wo0015\test_cma_compat.py:93: in test_coarse_fallback_rejects_missing_wrong_or_reserved_ram
+    resolve(cmdline='cma=128M', iomem_text=iomem)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_____ test_all_sources_require_valid_sufficient_cma_accounting[meminfo0] ______
+scripts\wo0015\test_cma_compat.py:101: in test_all_sources_require_valid_sufficient_cma_accounting
+    resolve(dmesg_text=LOG, meminfo=meminfo)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_____ test_all_sources_require_valid_sufficient_cma_accounting[meminfo1] ______
+scripts\wo0015\test_cma_compat.py:101: in test_all_sources_require_valid_sufficient_cma_accounting
+    resolve(dmesg_text=LOG, meminfo=meminfo)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_____ test_all_sources_require_valid_sufficient_cma_accounting[meminfo2] ______
+scripts\wo0015\test_cma_compat.py:101: in test_all_sources_require_valid_sufficient_cma_accounting
+    resolve(dmesg_text=LOG, meminfo=meminfo)
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+_________ test_debugfs_pfn_count_reader_uses_bytes_not_pfn_as_address _________
+scripts\wo0015\test_cma_compat.py:110: in test_debugfs_pfn_count_reader_uses_bytes_not_pfn_as_address
+    assert pre.read_debugfs_cma_ranges(tmp_path, page_size=4096) == CMA
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'read_debugfs_cma_ranges'
+_____________ test_invalid_debugfs_accounting_is_not_ignored[0-0] _____________
+scripts\wo0015\test_cma_compat.py:120: in test_invalid_debugfs_accounting_is_not_ignored
+    pre.read_debugfs_cma_ranges(tmp_path, page_size=4096)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'read_debugfs_cma_ranges'
+____________ test_invalid_debugfs_accounting_is_not_ignored[-1-0] _____________
+scripts\wo0015\test_cma_compat.py:120: in test_invalid_debugfs_accounting_is_not_ignored
+    pre.read_debugfs_cma_ranges(tmp_path, page_size=4096)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'read_debugfs_cma_ranges'
+_________ test_invalid_debugfs_accounting_is_not_ignored[32768-32769] _________
+scripts\wo0015\test_cma_compat.py:120: in test_invalid_debugfs_accounting_is_not_ignored
+    pre.read_debugfs_cma_ranges(tmp_path, page_size=4096)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'read_debugfs_cma_ranges'
+________________ test_live_reader_falls_back_when_dt_is_absent ________________
+scripts\wo0015\test_cma_compat.py:127: in test_live_reader_falls_back_when_dt_is_absent
+    r = pre.read_cma_admission(tmp_path/'missing-dt', meminfo=MEM, dmesg_text=LOG,
+        ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'read_cma_admission'. Did you mean: 'read_cma_meminfo'?
+_________ test_valid_exact_buffers_are_inside_cma_and_nonoverlapping __________
+scripts\wo0015\test_cma_compat.py:143: in test_valid_exact_buffers_are_inside_cma_and_nonoverlapping
+    assert gate()['status'] == 'POST_ALLOC_PHYSICAL_GATE_PASS'
+           ^^^^^^
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case0] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case1] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case2] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case3] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case4] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case5] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case6] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case7] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case8] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case9] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case10] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case11] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case12] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case13] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case14] _
+scripts\wo0015\test_cma_compat.py:156: in test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment
+    gate(**case)
+scripts\wo0015\test_cma_compat.py:139: in gate
+    return pre.validate_dma_buffer_pair(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'validate_dma_buffer_pair'
+_ test_pynq_device_address_must_match_physical_address_without_importing_pynq _
+scripts\wo0015\test_cma_compat.py:161: in test_pynq_device_address_must_match_physical_address_without_importing_pynq
+    with pytest.raises(pre.PreflightError, match='physical'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE PreflightError
+_ test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers[zero] _
+scripts\wo0015\test_cma_compat.py:179: in test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers
+    with pytest.raises(run.ExecutionFailure):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ExecutionFailure
+_ test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers[short_rx] _
+scripts\wo0015\test_cma_compat.py:179: in test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers
+    with pytest.raises(run.ExecutionFailure):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ExecutionFailure
+_ test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers[missing_ranges] _
+scripts\wo0015\test_cma_compat.py:179: in test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers
+    with pytest.raises(run.ExecutionFailure):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ExecutionFailure
+_____________ test_actual_probe_has_no_basis_for_coarse_admission _____________
+scripts\wo0015\test_cma_compat.py:191: in test_actual_probe_has_no_basis_for_coarse_admission
+    resolve(meminfo=mem, cmdline=r['cmdline']['stdout'], bootargs=r['chosen_bootargs']['stdout'],
+scripts\wo0015\test_cma_compat.py:24: in resolve
+    return pre.resolve_cma_sources(**args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'board_preflight' has no attribute 'resolve_cma_sources'
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_cma_compat.py::test_exact_source_returns_half_open_cma_and_provenance[device_tree]
+FAILED scripts/wo0015/test_cma_compat.py::test_exact_source_returns_half_open_cma_and_provenance[dmesg]
+FAILED scripts/wo0015/test_cma_compat.py::test_exact_source_returns_half_open_cma_and_provenance[debugfs]
+FAILED scripts/wo0015/test_cma_compat.py::test_dt_has_priority_when_precise_sources_agree
+FAILED scripts/wo0015/test_cma_compat.py::test_kernel_reservation_units[KiB-131072]
+FAILED scripts/wo0015/test_cma_compat.py::test_kernel_reservation_units[MiB-128]
+FAILED scripts/wo0015/test_cma_compat.py::test_kernel_reservation_units[GiB-1]
+FAILED scripts/wo0015/test_cma_compat.py::test_malformed_cma_reservation_never_falls_back[cma: Reserved 0 MiB at 0x18000000]
+FAILED scripts/wo0015/test_cma_compat.py::test_malformed_cma_reservation_never_falls_back[cma: Reserved 128 MiB at not_an_address]
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_or_mismatched_exact_cma_is_rejected[ranges0]
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_or_mismatched_exact_cma_is_rejected[ranges1]
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_or_mismatched_exact_cma_is_rejected[ranges2]
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_or_mismatched_exact_cma_is_rejected[ranges3]
+FAILED scripts/wo0015/test_cma_compat.py::test_conflicting_precise_sources_are_rejected
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_ram_high_fallback_is_explicitly_not_a_cma_measurement[cmdline]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_ram_high_fallback_is_explicitly_not_a_cma_measurement[bootargs]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=0]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=64M]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=129M]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=bogus]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=128M cma=64M]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_requires_unambiguous_matching_size_without_guessing[cma=128M@0x10000000]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_rejects_missing_wrong_or_reserved_ram[]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_rejects_missing_wrong_or_reserved_ram[00000000-0fffffff : System RAM\n]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_rejects_missing_wrong_or_reserved_ram[00000000-3fffffff : System RAM\n]
+FAILED scripts/wo0015/test_cma_compat.py::test_coarse_fallback_rejects_missing_wrong_or_reserved_ram[00000000-1fffffff : System RAM\n  00008000-00efffff : Kernel code\n  01000000-010845cf : Kernel data\n  19000000-19000fff : Reserved\n]
+FAILED scripts/wo0015/test_cma_compat.py::test_all_sources_require_valid_sufficient_cma_accounting[meminfo0]
+FAILED scripts/wo0015/test_cma_compat.py::test_all_sources_require_valid_sufficient_cma_accounting[meminfo1]
+FAILED scripts/wo0015/test_cma_compat.py::test_all_sources_require_valid_sufficient_cma_accounting[meminfo2]
+FAILED scripts/wo0015/test_cma_compat.py::test_debugfs_pfn_count_reader_uses_bytes_not_pfn_as_address
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_debugfs_accounting_is_not_ignored[0-0]
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_debugfs_accounting_is_not_ignored[-1-0]
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_debugfs_accounting_is_not_ignored[32768-32769]
+FAILED scripts/wo0015/test_cma_compat.py::test_live_reader_falls_back_when_dt_is_absent
+FAILED scripts/wo0015/test_cma_compat.py::test_valid_exact_buffers_are_inside_cma_and_nonoverlapping
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case0]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case1]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case2]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case3]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case4]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case5]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case6]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case7]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case8]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case9]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case10]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case11]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case12]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case13]
+FAILED scripts/wo0015/test_cma_compat.py::test_buffer_gate_rejects_zero_peripherals_ocm_bad_size_overlap_and_alignment[case14]
+FAILED scripts/wo0015/test_cma_compat.py::test_pynq_device_address_must_match_physical_address_without_importing_pynq
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers[zero]
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers[short_rx]
+FAILED scripts/wo0015/test_cma_compat.py::test_invalid_allocations_fail_before_any_register_write_and_release_mock_buffers[missing_ranges]
+FAILED scripts/wo0015/test_cma_compat.py::test_actual_probe_has_no_basis_for_coarse_admission
+56 failed in 0.85s

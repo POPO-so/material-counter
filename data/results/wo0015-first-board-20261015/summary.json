@@ -1,0 +1,53 @@
+{
+  "status": "FAIL_STOPPED",
+  "stopped_at": "STEP_1_PRE_OVERLAY_BOOT_GATE",
+  "reason": "live boot_id differs from approved request and immutable manifest",
+  "approved_boot_id": "cb087bbb-932d-4a6e-9600-98dd1c7e5f8d",
+  "observed_boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "postflight_boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "cma_before_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 74780
+  },
+  "cma_after_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 74740
+  },
+  "overlay_load_count": 0,
+  "overlay_load_elapsed_s": null,
+  "dma_single_invocations": 0,
+  "dma_three_invocations": 0,
+  "cma_allocations": 0,
+  "bundle_upload_count": 0,
+  "mmio_reads": 0,
+  "mmio_writes": 0,
+  "frames_sent": 0,
+  "frames_received": 0,
+  "board_bit_sha256": null,
+  "board_hwh_sha256": null,
+  "local_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "local_hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "local_zip_sha256": "873d245ad92926b00e9f57b2793220ab14dca0c287f49c213d7af5d36dd14879",
+  "postflight_ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "postflight": {
+    "status": "READONLY_EXIT_AUDIT_COMPLETE",
+    "ping_exit_code": 0,
+    "known_hosts_unchanged": true
+  },
+  "git_heads": {
+    "main": "7a868c070024bdc29cdeb057fbec9ccaf94ef160",
+    "worktree": "b7d8be05caff7da3ad2235617b43b591daa5e5fc"
+  },
+  "source_hashes_unchanged": true,
+  "committed": false,
+  "merged": false,
+  "stages": {
+    "step1": "FAIL_STOPPED_AT_BOOT_GATE",
+    "step2": "NOT_RUN",
+    "step3": "NOT_RUN"
+  }
+}

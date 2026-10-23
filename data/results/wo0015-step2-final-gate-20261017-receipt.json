@@ -1,0 +1,11 @@
+{
+  "status": "OFFLINE_BUNDLE_VALIDATED",
+  "board_accessed": false,
+  "ready_for_board_means": "offline eligibility only; requires separate human authorization",
+  "directory": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-step2-final-gate-20261017",
+  "manifest_sha256": "cf1d26ee5c02115b8647fde465cc8eb2de91b4b8154677fe79b8bd6b31d7ffc0",
+  "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-step2-final-gate-20261017.zip",
+  "archive_sha256": "1dd03dfa88074179d2a9300e4d0041d42a954e1c0c6b4a11a22679fd71358594",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+}

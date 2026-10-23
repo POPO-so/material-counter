@@ -1,0 +1,133 @@
+{
+  "allocation_accounting": {
+    "observed_cma_decrease_kib": 304,
+    "page_rounded_bytes_kib": 304
+  },
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": false,
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "build_id": "wo0015-hw-50mhz-20261015",
+  "clock_mhz": 50,
+  "cma_allocation_samples": [
+    {
+      "cma_free_kib": 1024,
+      "stage": "before"
+    },
+    {
+      "cma_free_kib": 796,
+      "stage": "after_mm2s"
+    },
+    {
+      "cma_free_kib": 720,
+      "stage": "after_s2mm"
+    },
+    {
+      "cma_free_kib": 1024,
+      "stage": "after_release"
+    }
+  ],
+  "cma_free_after_kib": 1024,
+  "cma_free_before_kib": 1024,
+  "cma_free_delta_kib": 0,
+  "cma_free_during_kib": 720,
+  "dma_may_be_active": false,
+  "dma_start_attempted": true,
+  "frame_count": 3,
+  "frames": [
+    {
+      "accepted_pixels": 76800,
+      "byte_mismatches": 0,
+      "checker": {
+        "checksum": 571200,
+        "eols": 240,
+        "foreground_pixels": 2240,
+        "input_beats_delta": 57608,
+        "input_bytes_delta": 230432,
+        "input_tlast_delta": 1,
+        "output_total_delta": 76800,
+        "packet_done_delta": 1,
+        "pixels": 76800,
+        "sofs": 1
+      },
+      "frame_id": 0,
+      "mm2s_dmasr": 4098,
+      "packer_status": 2,
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    },
+    {
+      "accepted_pixels": 76800,
+      "byte_mismatches": 0,
+      "checker": {
+        "checksum": 571200,
+        "eols": 240,
+        "foreground_pixels": 2240,
+        "input_beats_delta": 57608,
+        "input_bytes_delta": 230432,
+        "input_tlast_delta": 1,
+        "output_total_delta": 76800,
+        "packet_done_delta": 1,
+        "pixels": 76800,
+        "sofs": 1
+      },
+      "frame_id": 1,
+      "mm2s_dmasr": 4098,
+      "packer_status": 2,
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    },
+    {
+      "accepted_pixels": 76800,
+      "byte_mismatches": 0,
+      "checker": {
+        "checksum": 571200,
+        "eols": 240,
+        "foreground_pixels": 2240,
+        "input_beats_delta": 57608,
+        "input_bytes_delta": 230432,
+        "input_tlast_delta": 1,
+        "output_total_delta": 76800,
+        "packet_done_delta": 1,
+        "pixels": 76800,
+        "sofs": 1
+      },
+      "frame_id": 2,
+      "mm2s_dmasr": 4098,
+      "packer_status": 2,
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    }
+  ],
+  "hardware_stage": "mock",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+  "post_alloc_physical_gate": {
+    "mm2s_physical_range": [
+      268435456,
+      268665888
+    ],
+    "permitted_buffer_ranges": [
+      [
+        0,
+        536870912
+      ]
+    ],
+    "rx_actual_bytes": 76800,
+    "s2mm_physical_range": [
+      268668928,
+      268745728
+    ],
+    "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+    "tx_actual_bytes": 230432
+  },
+  "pynq_imported": false,
+  "register_protocol_exercised": true,
+  "rx_bytes_each": 76800,
+  "status": "MOCK_DMA_ONCE_PASS",
+  "task": "WO-0015",
+  "transfer_started": true,
+  "tx_bytes_each": 230432
+}

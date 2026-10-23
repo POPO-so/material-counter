@@ -1,0 +1,11 @@
+{
+  "fpga/experimental/wo0014/axis_dma_rgb_adapter.v": "c3b8b682dd34540973595a810f6e90ffd21e87ea47dc39090830b4f128debfd3",
+  "fpga/experimental/wo0014/axis_dma_image_pipeline.v": "b94fa662b8cc08de6863d98c9e9a75294e3ffb90798c77711e3d3d0860e0e9ad",
+  "fpga/experimental/wo0014/axis_dma_image_pipeline_bd.v": "2dec7d70afbf899000ee2bdf60c32cd54e08f0bd0e7d6f08490010672602a46d",
+  "fpga/rtl/axis_rgb2gray.v": "f0d12cd4cae2541b65ecf44e04d419073088d85a1e06f6c7296ff2e4468ad6eb",
+  "fpga/rtl/axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+  "docs/00_scope.md": "1dae77c87f2596734008730e079f5de0f328c282e2bd6eee4b88b825818e4f8d",
+  "docs/02_interfaces.md": "c274422922113520b8d54a4ba05297ad624abdb9893574acac609dc1acc32332",
+  "docs/07_routes.md": "37771a4bed3caa0e7e04ae6005ae7d098f9457154d9e88b599fe75c3fba99ce0",
+  "MASTER_PLAN.md": "8a4d37f90e1817317b808b11cc2d71acc7d772251461fbc6ac34253ae31a94bd"
+}

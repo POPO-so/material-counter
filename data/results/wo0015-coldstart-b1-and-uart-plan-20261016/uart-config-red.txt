@@ -1,0 +1,205 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016
+collected 29 items
+
+test_uart_readonly.py .FFFFFFF...............FFF...                      [100%]
+
+================================== FAILURES ===================================
+____________ test_capture_uses_bounded_positive_default_read_size _____________
+
+    def test_capture_uses_bounded_positive_default_read_size() -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+        assert capture.read() == b"boot\r\n"
+        assert len(transport.read_calls) == 1
+>       assert 1 <= transport.read_calls[0] <= 65536
+E       assert 1 <= -1
+
+test_uart_readonly.py:55: AssertionError
+____ test_capture_rejects_out_of_range_read_sizes_before_transport_call[0] ____
+
+size = 0
+
+    @pytest.mark.parametrize("size", [0, -1, 65537])
+    def test_capture_rejects_out_of_range_read_sizes_before_transport_call(size: int) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+>       with pytest.raises(ValueError, match="read size must be between 1 and 65536 bytes"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+test_uart_readonly.py:63: Failed
+___ test_capture_rejects_out_of_range_read_sizes_before_transport_call[-1] ____
+
+size = -1
+
+    @pytest.mark.parametrize("size", [0, -1, 65537])
+    def test_capture_rejects_out_of_range_read_sizes_before_transport_call(size: int) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+>       with pytest.raises(ValueError, match="read size must be between 1 and 65536 bytes"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+test_uart_readonly.py:63: Failed
+__ test_capture_rejects_out_of_range_read_sizes_before_transport_call[65537] __
+
+size = 65537
+
+    @pytest.mark.parametrize("size", [0, -1, 65537])
+    def test_capture_rejects_out_of_range_read_sizes_before_transport_call(size: int) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+>       with pytest.raises(ValueError, match="read size must be between 1 and 65536 bytes"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+test_uart_readonly.py:63: Failed
+___ test_capture_rejects_non_integer_read_sizes_before_transport_call[True] ___
+
+size = True
+
+    @pytest.mark.parametrize("size", [True, "8", None])
+    def test_capture_rejects_non_integer_read_sizes_before_transport_call(size: object) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+>       with pytest.raises(TypeError, match="read size must be an integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE TypeError
+
+test_uart_readonly.py:74: Failed
+____ test_capture_rejects_non_integer_read_sizes_before_transport_call[8] _____
+
+size = '8'
+
+    @pytest.mark.parametrize("size", [True, "8", None])
+    def test_capture_rejects_non_integer_read_sizes_before_transport_call(size: object) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+>       with pytest.raises(TypeError, match="read size must be an integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE TypeError
+
+test_uart_readonly.py:74: Failed
+___ test_capture_rejects_non_integer_read_sizes_before_transport_call[None] ___
+
+size = None
+
+    @pytest.mark.parametrize("size", [True, "8", None])
+    def test_capture_rejects_non_integer_read_sizes_before_transport_call(size: object) -> None:
+        transport = MockReceiveOnlyTransport()
+        capture = ReadOnlySerialCapture(transport)
+    
+>       with pytest.raises(TypeError, match="read size must be an integer"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE TypeError
+
+test_uart_readonly.py:74: Failed
+____________ test_config_is_fixed_to_read_only_115200_8n1_contract ____________
+
+    def test_config_is_fixed_to_read_only_115200_8n1_contract() -> None:
+        assert CONFIG.baudrate == 115200
+        assert CONFIG.bytesize == 8
+        assert CONFIG.parity == "N"
+        assert CONFIG.stopbits == 1
+>       assert CONFIG.rtscts is False
+E       AssertionError: assert True is False
+E        +  where True = CaptureConfig(baudrate=115200, bytesize=8, parity='N', stopbits=1, rtscts=True, xonxoff=True, dsrdtr=False).rtscts
+
+test_uart_readonly.py:148: AssertionError
+________ test_parser_reports_observed_boot_and_runtime_log_candidates _________
+
+    def test_parser_reports_observed_boot_and_runtime_log_candidates() -> None:
+        raw = (
+            b"Xilinx Zynq MP First Stage Boot Loader\r\n"
+            b"Silicon Revision 1.0\r\n"
+            b"ps7_post_config: done\r\n"
+            b"U-Boot 2024.01 (Jan 01 2024 - 00:00:00)\r\n"
+            b"bootcmd=run distro_bootcmd; run boot_targets\r\n"
+            b"Loading /boot/BOOT.SCR from mmc 0:1\r\n"
+            b"load mmc 0:1 0x10000000 image.ub\r\n"
+            b"Linux version 6.6.0-xilinx\r\n"
+            b"Kernel command line: root=UUID="
+            + EXPECTED_ROOT_UUID.encode("ascii")
+            + b" rw rootwait\r\n"
+            b"fpga_manager fpga0: writing base.bit\r\n"
+        )
+    
+        result = parse_uart_log(raw)
+    
+        assert_observation(result, "fsbl", "OBSERVED_IN_UART_LOG", "Xilinx Zynq MP First Stage Boot Loader")
+        assert_observation(result, "silicon_revision", "OBSERVED_IN_UART_LOG", "1.0")
+        assert_observation(result, "ps7_post_config", "OBSERVED_IN_UART_LOG", "ps7_post_config: done")
+        assert_observation(
+            result,
+            "uboot_version",
+            "OBSERVED_IN_UART_LOG",
+            "2024.01 (Jan 01 2024 - 00:00:00)",
+        )
+        assert_observation(result, "uboot_2024_01_candidate_match", "OBSERVED_IN_UART_LOG", True)
+        assert_observation(
+            result,
+            "bootcmd",
+            "OBSERVED_IN_UART_LOG",
+            "run distro_bootcmd; run boot_targets",
+        )
+        assert_observation(result, "boot_scr_names", "OBSERVED_IN_UART_LOG", ["BOOT.SCR"])
+>       assert_observation(result, "boot_scr_source_lines", "OBSERVED_IN_UART_LOG", ["Loading /boot/BOOT.SCR from mmc 0:1"])
+
+test_uart_readonly.py:188: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+result = {'interpretation': 'UART text observations only; they do not prove live runtime or board identity. NOT_OBSERVED means ...RT_LOG', 'value': '1.0'}, 'ps7_post_config': {'status': 'OBSERVED_IN_UART_LOG', 'value': 'ps7_post_config: done'}, ...}
+name = 'boot_scr_source_lines', status = 'OBSERVED_IN_UART_LOG'
+value = ['Loading /boot/BOOT.SCR from mmc 0:1']
+
+    def assert_observation(result: dict, name: str, status: str, value: object = None) -> None:
+>       assert result[name] == {"status": status, "value": value}
+               ^^^^^^^^^^^^
+E       KeyError: 'boot_scr_source_lines'
+
+test_uart_readonly.py:36: KeyError
+_ test_parser_keeps_missing_items_unknown_and_records_mismatches_as_observations _
+
+    def test_parser_keeps_missing_items_unknown_and_records_mismatches_as_observations() -> None:
+        result = parse_uart_log(b"U-Boot 2023.10\nKernel: root=UUID=00000000-0000-0000-0000-000000000000\n")
+    
+        assert_observation(result, "fsbl", "NOT_OBSERVED")
+        assert_observation(result, "silicon_revision", "NOT_OBSERVED")
+        assert_observation(result, "ps7_post_config", "NOT_OBSERVED")
+        assert_observation(result, "uboot_2024_01_candidate_match", "OBSERVED_IN_UART_LOG", False)
+        assert_observation(result, "bootcmd", "NOT_OBSERVED")
+        assert_observation(result, "boot_scr_names", "NOT_OBSERVED")
+>       assert_observation(result, "boot_scr_source_lines", "NOT_OBSERVED")
+
+test_uart_readonly.py:210: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+result = {'interpretation': 'UART text observations only; they do not prove live runtime or board identity. NOT_OBSERVED means ...evision': {'status': 'NOT_OBSERVED', 'value': None}, 'ps7_post_config': {'status': 'NOT_OBSERVED', 'value': None}, ...}
+name = 'boot_scr_source_lines', status = 'NOT_OBSERVED', value = None
+
+    def assert_observation(result: dict, name: str, status: str, value: object = None) -> None:
+>       assert result[name] == {"status": status, "value": value}
+               ^^^^^^^^^^^^
+E       KeyError: 'boot_scr_source_lines'
+
+test_uart_readonly.py:36: KeyError
+=========================== short test summary info ===========================
+FAILED test_uart_readonly.py::test_capture_uses_bounded_positive_default_read_size
+FAILED test_uart_readonly.py::test_capture_rejects_out_of_range_read_sizes_before_transport_call[0]
+FAILED test_uart_readonly.py::test_capture_rejects_out_of_range_read_sizes_before_transport_call[-1]
+FAILED test_uart_readonly.py::test_capture_rejects_out_of_range_read_sizes_before_transport_call[65537]
+FAILED test_uart_readonly.py::test_capture_rejects_non_integer_read_sizes_before_transport_call[True]
+FAILED test_uart_readonly.py::test_capture_rejects_non_integer_read_sizes_before_transport_call[8]
+FAILED test_uart_readonly.py::test_capture_rejects_non_integer_read_sizes_before_transport_call[None]
+FAILED test_uart_readonly.py::test_config_is_fixed_to_read_only_115200_8n1_contract
+FAILED test_uart_readonly.py::test_parser_reports_observed_boot_and_runtime_log_candidates
+FAILED test_uart_readonly.py::test_parser_keeps_missing_items_unknown_and_records_mismatches_as_observations
+======================== 10 failed, 19 passed in 0.13s ========================

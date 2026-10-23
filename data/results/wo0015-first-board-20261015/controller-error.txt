@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-first-board-20261015\controller.py", line 152, in <module>
+    try: main()
+         ^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-first-board-20261015\controller.py", line 104, in main
+    if initial['boot_id'] != BOOT: raise RuntimeError('boot_id mismatch; no hardware access')
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: boot_id mismatch; no hardware access

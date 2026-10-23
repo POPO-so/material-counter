@@ -1,0 +1,51 @@
+test_finds_requested_uuid_without_mounting (test_ext4_ro.Ext4ReadOnlyTests.test_finds_requested_uuid_without_mounting) ... ERROR
+test_reads_file_by_inode_extent_and_directory_path (test_ext4_ro.Ext4ReadOnlyTests.test_reads_file_by_inode_extent_and_directory_path) ... ERROR
+test_rejects_extent_outside_partition (test_ext4_ro.Ext4ReadOnlyTests.test_rejects_extent_outside_partition) ... ERROR
+
+======================================================================
+ERROR: test_finds_requested_uuid_without_mounting (test_ext4_ro.Ext4ReadOnlyTests.test_finds_requested_uuid_without_mounting)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\test_ext4_ro.py", line 75, in test_finds_requested_uuid_without_mounting
+    with Ext4Image(image, expected_uuid="63b8b04d-af08-419a-a9dc-16f374e283dc") as fs:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\ext4_ro.py", line 65, in __init__
+    self.partitions = self._read_mbr()
+                      ^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\ext4_ro.py", line 112, in _read_mbr
+    raise Ext4Error(f"partition {slot + 1} extends beyond image size")
+ext4_ro.Ext4Error: partition 1 extends beyond image size
+
+======================================================================
+ERROR: test_reads_file_by_inode_extent_and_directory_path (test_ext4_ro.Ext4ReadOnlyTests.test_reads_file_by_inode_extent_and_directory_path)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\test_ext4_ro.py", line 83, in test_reads_file_by_inode_extent_and_directory_path
+    with Ext4Image(image, expected_uuid="63b8b04d-af08-419a-a9dc-16f374e283dc") as fs:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\ext4_ro.py", line 65, in __init__
+    self.partitions = self._read_mbr()
+                      ^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\ext4_ro.py", line 112, in _read_mbr
+    raise Ext4Error(f"partition {slot + 1} extends beyond image size")
+ext4_ro.Ext4Error: partition 1 extends beyond image size
+
+======================================================================
+ERROR: test_rejects_extent_outside_partition (test_ext4_ro.Ext4ReadOnlyTests.test_rejects_extent_outside_partition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\test_ext4_ro.py", line 90, in test_rejects_extent_outside_partition
+    with Ext4Image(image, expected_uuid="63b8b04d-af08-419a-a9dc-16f374e283dc") as fs:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\ext4_ro.py", line 65, in __init__
+    self.partitions = self._read_mbr()
+                      ^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\ext4_ro.py", line 112, in _read_mbr
+    raise Ext4Error(f"partition {slot + 1} extends beyond image size")
+ext4_ro.Ext4Error: partition 1 extends beyond image size
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.113s
+
+FAILED (errors=3)
+GREEN_EXIT_CODE=1

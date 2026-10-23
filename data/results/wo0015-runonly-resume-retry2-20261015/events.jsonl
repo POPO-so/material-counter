@@ -1,0 +1,18 @@
+{"status": "AWAITING_NATIVE_HIDDEN_CREDENTIALS", "time_ns": 1792073622201055900}
+{"status": "CONNECT_BEGIN", "time_ns": 1792073859618003400}
+{"status": "STRICT_SSH_AUTHENTICATED", "time_ns": 1792073861482915600, "fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o"}
+{"status": "DISPATCH", "time_ns": 1792073861482915600, "name": "initial-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792073863678350500, "name": "initial-readonly", "exit_code": 0, "elapsed_s": 1.889999999999418}
+{"status": "READONLY_BOOT_GATE_PASS_AWAITING_MANAGER", "time_ns": 1792073863680798700}
+{"status": "DISPATCH", "time_ns": 1792073962284167200, "name": "request-001"}
+{"status": "COMMAND_EXIT", "time_ns": 1792073964232656300, "name": "request-001", "exit_code": 0, "elapsed_s": 1.889999999999418}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792073964232656300, "name": "request-001"}
+{"status": "DISPATCH", "time_ns": 1792073980906750200, "name": "request-002"}
+{"status": "COMMAND_EXIT", "time_ns": 1792073996858793000, "name": "request-002", "exit_code": 0, "elapsed_s": 15.937000000005355}
+{"status": "REQUEST_DONE_AWAITING_MANAGER", "time_ns": 1792073996859859500, "name": "request-002"}
+{"status": "DISPATCH", "time_ns": 1792074047240192200, "name": "request-003"}
+{"status": "COMMAND_EXIT", "time_ns": 1792074067577578300, "name": "request-003", "exit_code": 3, "elapsed_s": 20.296999999991385}
+{"status": "FAIL_STOPPED_NO_MORE_STAGE_COMMANDS", "time_ns": 1792074067577578300, "name": "request-003"}
+{"status": "DISPATCH", "time_ns": 1792074122324127100, "name": "failure-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792074138191409200, "name": "failure-readonly", "exit_code": 0, "elapsed_s": 15.875}
+{"status": "FAIL_STOPPED_EVIDENCE_SAVED", "time_ns": 1792074138248298400}

@@ -1,0 +1,69 @@
+{
+  "audit_kind": "read-only filename and ZIP central-directory archive search",
+  "created_utc": "2026-10-15T19:54:32.295307+00:00",
+  "scope": {
+    "known_archives": [
+      "F:\\FPGA\\backups\\pynq_counter_lab.xpr.zip",
+      "D:\\Downloads\\Pynq-Z2-XDC-and-Board-File-main.zip",
+      "D:\\Downloads\\pynq-z2 (1).zip"
+    ],
+    "direct_filename_directory": "F:\\FPGA\\backups",
+    "direct_filename_recursive": false,
+    "archive_member_content_read": false,
+    "archive_extracted": false,
+    "archive_hashing": false,
+    "sensitive_name_policy": "Exclude sensitive-looking member/path names (restricted-raw, revision, credentials, password, secret, token); report only excluded counts, never the names."
+  },
+  "archives": [
+    {
+      "path": "F:\\FPGA\\backups\\pynq_counter_lab.xpr.zip",
+      "exists": true,
+      "size_bytes": 13921750,
+      "sha256": null,
+      "member_count": 472,
+      "matched_members": [],
+      "excluded_sensitive_named_member_count": 0,
+      "member_content_read": false,
+      "enumeration": "ZIP central-directory names and metadata only"
+    },
+    {
+      "path": "D:\\Downloads\\Pynq-Z2-XDC-and-Board-File-main.zip",
+      "exists": true,
+      "size_bytes": 173914,
+      "sha256": null,
+      "member_count": 4,
+      "matched_members": [],
+      "excluded_sensitive_named_member_count": 0,
+      "member_content_read": false,
+      "enumeration": "ZIP central-directory names and metadata only"
+    },
+    {
+      "path": "D:\\Downloads\\pynq-z2 (1).zip",
+      "exists": true,
+      "size_bytes": 165993,
+      "sha256": null,
+      "member_count": 6,
+      "matched_members": [],
+      "excluded_sensitive_named_member_count": 0,
+      "member_content_read": false,
+      "enumeration": "ZIP central-directory names and metadata only"
+    }
+  ],
+  "direct_backup_filename_search": {
+    "directory_exists": true,
+    "recursive": false,
+    "matched_files": [
+      {
+        "path": "F:\\FPGA\\backups\\pynq_counter_lab.xpr.zip",
+        "size_bytes": 13921750,
+        "match_categories": [
+          "candidate-archive-filename"
+        ]
+      }
+    ],
+    "excluded_sensitive_named_file_count": 0,
+    "listing_error_type": null,
+    "file_contents_read": false
+  },
+  "negative_claim_boundary": "Results cover only the three explicitly named ZIP archives and direct filenames in F:\\FPGA\\backups. No global absence claim is made."
+}

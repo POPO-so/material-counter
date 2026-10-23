@@ -1,0 +1,42 @@
+{
+  "status": "STOPPED_PRECONDITION_UNVERIFIED",
+  "created_utc": "2026-10-15T16:01:13.594437+00:00",
+  "board_connections": 0,
+  "register_reads": 0,
+  "register_writes": 0,
+  "vivado_executions": 0,
+  "overlay_loads": 0,
+  "dma_runs": 0,
+  "commits_or_merges": 0,
+  "hardware_artifact_changes": false,
+  "collector_new_tests_passed": 62,
+  "prior_reader_regression_passed": 14,
+  "total_targeted_passed": 76,
+  "historical_files_integrity": {
+    "wo0015-afi1-readonly-20261015": {
+      "files": 21,
+      "mismatches": []
+    },
+    "wo0015-step2-mismatch-audit-20261015": {
+      "files": 46,
+      "mismatches": []
+    },
+    "wo0015-runonly-resume-retry2-20261015": {
+      "files": 104,
+      "mismatches": []
+    }
+  },
+  "hardware_locks": {
+    "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+  },
+  "collector_sha256": "a31c0c6c0aac1fed5f8ac0f41f8f7450c1833f7df70ae7c6e3ef22b1dc960483",
+  "current_afi1_raw": null,
+  "current_reset_raw": null,
+  "latest_portal_version_verified": "UG585 v1.15 / 2026-02-06",
+  "current_reset_fragment_exact_version": "UNKNOWN (index says All; v1.15 collection association INFERRED)",
+  "conflict": "Named AXDS reset precondition vs reserved field definition",
+  "current_hardware_access_admission": "UNKNOWN / NOT_GRANTED",
+  "report": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\verification-report.md",
+  "completed_local": "2026-10-16T00:01:13.594437+08:00"
+}

@@ -1,0 +1,43 @@
+{
+  "timestamp_local": "2026-10-17T17:52:35.346926+08:00",
+  "scp_args": [
+    "scp.exe",
+    "-q",
+    "-oBatchMode=yes",
+    "-oConnectionAttempts=1",
+    "-oConnectTimeout=10",
+    "xilinx@192.168.2.99:/home/xilinx/wo0015/dma-single-diagnostics/step2_frame00_id0000000000_rx_raw.bin",
+    "xilinx@192.168.2.99:/home/xilinx/wo0015/dma-single-diagnostics/step2_frame00_id0000000000_tx_raw.bin",
+    "xilinx@192.168.2.99:/home/xilinx/wo0015/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+    "xilinx@192.168.2.99:/home/xilinx/wo0015/dma-single-diagnostics/step2_frame00_id0000000000_diagnostics.json",
+    "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-board-once-20261017\\dma-single-diagnostics"
+  ],
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "",
+  "password_prompted_or_supplied": false,
+  "result": "PASS",
+  "verified": {
+    "step2_frame00_id0000000000_rx_raw.bin": {
+      "size": 76800,
+      "sha256": "7a007545ac170b9fa1a4379f4e10e9cddfcb7bd1f2cfe59bdb4f399c5fb2727e"
+    },
+    "step2_frame00_id0000000000_tx_raw.bin": {
+      "size": 230432,
+      "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae"
+    },
+    "step2_frame00_id0000000000_expected_golden.bin": {
+      "size": 76800,
+      "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e"
+    },
+    "step2_frame00_id0000000000_diagnostics.json": {
+      "size": 11238,
+      "sha256": "d090f60285df6edb9994ced9cbf31e84e26e0712b58ad9bf2e532267923e5eae"
+    }
+  },
+  "local_aliases": [
+    "rx_raw.bin",
+    "tx_raw.bin",
+    "expected_golden.bin"
+  ]
+}

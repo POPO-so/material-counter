@@ -1,0 +1,70 @@
+{
+  "source": "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+  "partition": {
+    "index": 1,
+    "type_hex": "0x0C",
+    "start_lba": 8,
+    "sectors": 266240,
+    "offset": 4096,
+    "nbytes": 136314880
+  },
+  "bpb": {
+    "filesystem_from_bpb": "FAT16",
+    "bytes_per_sector": 512,
+    "sectors_per_cluster": 8,
+    "clusters": 33241,
+    "fat_copies_equal": true,
+    "partition_type_hex": "0x0C",
+    "note": "MBR type is a label; FAT type determined from BPB cluster count. DOS timestamps have unknown timezone and are auxiliary only."
+  },
+  "root_short_entries": [
+    {
+      "short_name": "PYNQ",
+      "attribute": 8,
+      "first_cluster": 0,
+      "nbytes": 0,
+      "fat_date_raw": 23352,
+      "fat_time_raw": 36631
+    },
+    {
+      "short_name": "BOOT.BIN",
+      "attribute": 32,
+      "first_cluster": 2,
+      "nbytes": 1165852,
+      "fat_date_raw": 23352,
+      "fat_time_raw": 36631
+    },
+    {
+      "short_name": "REVISION",
+      "attribute": 32,
+      "first_cluster": 287,
+      "nbytes": 197,
+      "fat_date_raw": 23352,
+      "fat_time_raw": 36631
+    },
+    {
+      "short_name": "BOOT.PY",
+      "attribute": 32,
+      "first_cluster": 288,
+      "nbytes": 991,
+      "fat_date_raw": 23352,
+      "fat_time_raw": 36631
+    },
+    {
+      "short_name": "BOOT.SCR",
+      "attribute": 32,
+      "first_cluster": 289,
+      "nbytes": 3473,
+      "fat_date_raw": 23352,
+      "fat_time_raw": 36631
+    },
+    {
+      "short_name": "IMAGE.UB",
+      "attribute": 32,
+      "first_cluster": 290,
+      "nbytes": 7147780,
+      "fat_date_raw": 23352,
+      "fat_time_raw": 36631
+    }
+  ]
+}

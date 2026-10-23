@@ -1,0 +1,10 @@
+{
+  "scope": "read-only static review; no board access",
+  "write_whitelist": "RX offset0x30 then TX offset0x00; values0x10003; no allocation/load/address/length writes",
+  "archive": "O_EXCL raw copy/fsync/hash before source unlink; no overwrite",
+  "future_execution_blockers": [
+    "Bind recovery_adapter.py and run_only_model.py bytes in independent launch-time digest checks.",
+    "Provide a reviewed root-to-xilinx evidence export path: root 0600 outputs are not readable by xilinx SFTP."
+  ],
+  "adapter_executed": false
+}

@@ -1,0 +1,12 @@
+{
+  "board_connections": 0,
+  "overlay_loads": 0,
+  "hardware_cma_allocations": 0,
+  "dma_starts": 0,
+  "vivado_builds": 0,
+  "rtl_modified": false,
+  "bit_hwh_modified": false,
+  "root_cause_status": "UNCONFIRMED: no historical RX bytes or AFI1 mode readback",
+  "confirmed_defect": "historical Golden mismatch path did not persist RX bytes before free",
+  "new_executor_sha256": "c276840080b8c70bd3294d74ab84061ce3596e087dfb83abfef63690903e58a6"
+}

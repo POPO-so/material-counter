@@ -1,0 +1,18 @@
+﻿BOOT=f8b24aee-ed7e-430a-b3f3-d26056746bfd
+CmaTotal:         131072 kB
+CmaFree:           28892 kB
+ACTIVE_GUARDS_AND_RECEIPTS
+overlay-only-consumed.json 237 bytes
+overlay-only-pass.json 635 bytes
+FILE=/var/lib/wo0015-s2mm/overlay-only-pass.json
+{"bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420", "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd", "build_id": "wo0015-hw-50mhz-20261015", "checker_signature": 1464807732, "clock_mhz": 50, "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6", "load_performed": true, "manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b", "packer_signature": 1464807733, "runtime_audit_sha256": "68e4c7cb21d8c665a41d491a5f2846c36a5ae29d7d84af383f15387b857c0309", "schema": 1, "stage": "overlay-only", "status": "OVERLAY_LOAD_PASS", "work_order": "WO-0015"}
+FILE=/var/lib/wo0015-s2mm/overlay-only-consumed.json
+{"boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd", "clock_mhz": 50, "consumed": true, "manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b", "schema": 1, "stage": "overlay-only", "work_order": "WO-0015"}
+DMA_SINGLE_RESULT
+{
+  "board_accessed": false,
+  "error": "PreflightError: MEMINFO_IOMEM_VERIFIED requires CmaTotal=131072 KiB and CmaFree>=32768 KiB",
+  "pynq_imported": false,
+  "status": "DMA_SINGLE_REJECTED",
+  "task": "WO-0015"
+}

@@ -1,0 +1,22 @@
+test_ext4_ro (unittest.loader._FailedTest.test_ext4_ro) ... ERROR
+
+======================================================================
+ERROR: test_ext4_ro (unittest.loader._FailedTest.test_ext4_ro)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_ext4_ro
+Traceback (most recent call last):
+  File "C:\Users\POP\AppData\Local\Programs\Python\Python312\Lib\unittest\loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\AppData\Local\Programs\Python\Python312\Lib\unittest\loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\test_ext4_ro.py", line 9, in <module>
+    from ext4_ro import Ext4Error, Ext4Image
+ModuleNotFoundError: No module named 'ext4_ro'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
+EXPECTED_RED_EXIT_CODE=1

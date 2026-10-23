@@ -1,0 +1,32 @@
+........................................................................ [ 16%]
+.................................................................F...... [ 32%]
+...................................................................... [ 47%]
+........................................................................ [ 63%]
+..................................................................... [ 79%]
+........................................................................ [ 95%]
+.....................                                                    [100%]
+================================== FAILURES ===================================
+_ CloseoutWorkerTests.test_idle_with_sticky_status9_and_no_new_packet_times_out_without_release _
+
+self = <test_closeout.CloseoutWorkerTests testMethod=test_idle_with_sticky_status9_and_no_new_packet_times_out_without_release>
+
+    def test_idle_with_sticky_status9_and_no_new_packet_times_out_without_release(self):
+      import tempfile
+      from pathlib import Path
+      with tempfile.TemporaryDirectory() as temp:
+        worker, api, _journal, _parent, _env_calls = make_rig(Path(temp), complete_frame=False)
+        report = {"ping": True, "ssh": True, "linux": True,
+                  "boot_id": closeout.BOOT_ID, "new_kernel_warnings": []}
+        for stage in ("ENV", "HEALTH", "MIN_READ", "INIT"):
+          self.assertTrue(worker.command(stage, report if stage == "HEALTH" else None)["ok"])
+        failed = worker.command("SEND", deadline_monotonic_s=time.monotonic() + 0.04)
+        self.assertFalse(failed["ok"])
+        self.assertEqual(worker.state, "FAIL")
+>       self.assertTrue(api.buffers[0].freed is False)
+                        ^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+scripts\wo0014_hw\closeout\test_closeout.py:313: IndexError
+=========================== short test summary info ===========================
+FAILED scripts/wo0014_hw/closeout/test_closeout.py::CloseoutWorkerTests::test_idle_with_sticky_status9_and_no_new_packet_times_out_without_release
+1 failed, 447 passed, 5 subtests passed in 74.46s (0:01:14)

@@ -1,0 +1,64 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_EXECUTED",
+  "created": "2026-10-15T21:28:46.012788+08:00",
+  "identity": {
+    "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+  },
+  "historical_observation": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-first-board-retry3-20261015\\exit-os-result.json",
+  "historical_observation_sha256": "ae9928eb377450a7f084b39df17191c6cf52c5411bae0a1b1563ec7fb128140a",
+  "fresh_board_state_verified": false,
+  "maximum_control_writes": 2,
+  "normal_write_plan": [
+    {
+      "address": 1077936176,
+      "offset": 48,
+      "before": 65538,
+      "value": 65539
+    },
+    {
+      "address": 1077936128,
+      "offset": 0,
+      "before": 65538,
+      "value": 65539
+    }
+  ],
+  "poll_timeout_s_per_channel": 1.0,
+  "initial_register_values_must_match_historical_snapshot": true,
+  "forbidden_writes": [
+    "Reset",
+    "MM2S_SA",
+    "S2MM_DA",
+    "MM2S_LENGTH",
+    "S2MM_LENGTH",
+    "DMASR_W1C",
+    "Packer_ARM"
+  ],
+  "run_only_executed": false,
+  "marker_archive_executed": false,
+  "new_dma_frames_executed": 0,
+  "existing_guard_sha256": {
+    "overlay-only-pass.json": "ee3d9ba6462962657bbd43807302387af16d4fbec34ee65f909a385886802d96",
+    "terminal-failure.json": "662e03d871f7275ed47bec0c302440a94dbc4e2fa35d499bce49a44d8decdeda",
+    "overlay-only-consumed.json": "c333975de186464bc3db9809c7762d7d7115cfc73f8b17f8e8672e3349efa37f"
+  },
+  "terminal_archive_proposal": {
+    "status": "ARCHIVE_PROPOSED_NOT_EXECUTED",
+    "source": "/var/lib/wo0015-s2mm/terminal-failure.json",
+    "destination": "/var/lib/wo0015-s2mm/history/20261015-retry3-initial-state-terminal-failure.json",
+    "preserved_sha256": "662e03d871f7275ed47bec0c302440a94dbc4e2fa35d499bce49a44d8decdeda",
+    "must_not_overwrite_destination": true,
+    "overlay_consumed_guard_unchanged": true,
+    "overlay_pass_receipt_unchanged": true,
+    "fresh_postflight_and_explicit_archive_approval_required": true
+  },
+  "offline_model_tests_passed": 41,
+  "board_adapter_present": false,
+  "approval_required": [
+    "one Run-only initialization with new fixed once guard",
+    "conditional original-byte terminal marker archive; preserve overlay guard and receipt",
+    "reuse loaded Overlay and run Step2 once, then Step3 once only if prior PASS"
+  ]
+}

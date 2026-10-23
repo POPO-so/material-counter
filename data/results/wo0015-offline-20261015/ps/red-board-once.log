@@ -1,0 +1,366 @@
+FFFFFFFF                                                                 [100%]
+================================== FAILURES ===================================
+__ test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[1] __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-132/test_mock_dma_runs_fixed_frame0')
+frame_count = 1
+
+    @pytest.mark.parametrize("frame_count", [1, 3])
+    def test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first(tmp_path, frame_count):
+>       plan, _ = _plan(tmp_path, frame_count)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\test_board_once.py:19: in _plan
+    return preflight.validate_manifest(manifest_path), manifest_path
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:374: in validate_manifest
+    hp0_range, hp1_range = _validate_contract(manifest)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+manifest = {'bit_path': 'wo0015.bit', 'bit_sha256': '4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa', 'boot_id': 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', 'build_id': 'wo0015-fixture-build', ...}
+
+    def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tuple[int, int]]:
+        contract = manifest.get("contract")
+        if not isinstance(contract, dict):
+            raise PreflightError("manifest contract must be an object")
+        if set(contract) != set(_CONTRACT_VALUES):
+            missing = sorted(set(_CONTRACT_VALUES) - set(contract))
+            extra = sorted(set(contract) - set(_CONTRACT_VALUES))
+            raise PreflightError(f"manifest contract fields differ (missing={missing}, extra={extra})")
+        for name, expected in _CONTRACT_VALUES.items():
+            actual = contract[name]
+            if type(expected) is bool:
+                matches = type(actual) is bool and actual is expected
+            elif isinstance(expected, list):
+                matches = actual == expected
+            elif type(expected) is int:
+                matches = type(actual) is int and actual == expected
+            else:
+                matches = actual == expected
+            if not matches:
+>               raise PreflightError(f"manifest contract {name} is {actual!r}; expected {expected!r}")
+E               board_preflight.PreflightError: manifest contract s2mm_memory_width_bits is 32; expected 64
+
+scripts\wo0015\board_preflight.py:335: PreflightError
+__ test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[3] __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-132/test_mock_dma_runs_fixed_frame1')
+frame_count = 3
+
+    @pytest.mark.parametrize("frame_count", [1, 3])
+    def test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first(tmp_path, frame_count):
+>       plan, _ = _plan(tmp_path, frame_count)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\test_board_once.py:19: in _plan
+    return preflight.validate_manifest(manifest_path), manifest_path
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:374: in validate_manifest
+    hp0_range, hp1_range = _validate_contract(manifest)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+manifest = {'bit_path': 'wo0015.bit', 'bit_sha256': '4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa', 'boot_id': 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', 'build_id': 'wo0015-fixture-build', ...}
+
+    def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tuple[int, int]]:
+        contract = manifest.get("contract")
+        if not isinstance(contract, dict):
+            raise PreflightError("manifest contract must be an object")
+        if set(contract) != set(_CONTRACT_VALUES):
+            missing = sorted(set(_CONTRACT_VALUES) - set(contract))
+            extra = sorted(set(contract) - set(_CONTRACT_VALUES))
+            raise PreflightError(f"manifest contract fields differ (missing={missing}, extra={extra})")
+        for name, expected in _CONTRACT_VALUES.items():
+            actual = contract[name]
+            if type(expected) is bool:
+                matches = type(actual) is bool and actual is expected
+            elif isinstance(expected, list):
+                matches = actual == expected
+            elif type(expected) is int:
+                matches = type(actual) is int and actual == expected
+            else:
+                matches = actual == expected
+            if not matches:
+>               raise PreflightError(f"manifest contract {name} is {actual!r}; expected {expected!r}")
+E               board_preflight.PreflightError: manifest contract s2mm_memory_width_bits is 32; expected 64
+
+scripts\wo0015\board_preflight.py:335: PreflightError
+_ test_first_pre_length_idle_zero_is_allowed_but_later_nonidle_stops_without_retry _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-132/test_first_pre_length_idle_zer0')
+
+    def test_first_pre_length_idle_zero_is_allowed_but_later_nonidle_stops_without_retry(tmp_path):
+>       plan, _ = _plan(tmp_path, 3)
+                  ^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\test_board_once.py:19: in _plan
+    return preflight.validate_manifest(manifest_path), manifest_path
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:374: in validate_manifest
+    hp0_range, hp1_range = _validate_contract(manifest)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+manifest = {'bit_path': 'wo0015.bit', 'bit_sha256': '4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa', 'boot_id': 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', 'build_id': 'wo0015-fixture-build', ...}
+
+    def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tuple[int, int]]:
+        contract = manifest.get("contract")
+        if not isinstance(contract, dict):
+            raise PreflightError("manifest contract must be an object")
+        if set(contract) != set(_CONTRACT_VALUES):
+            missing = sorted(set(_CONTRACT_VALUES) - set(contract))
+            extra = sorted(set(contract) - set(_CONTRACT_VALUES))
+            raise PreflightError(f"manifest contract fields differ (missing={missing}, extra={extra})")
+        for name, expected in _CONTRACT_VALUES.items():
+            actual = contract[name]
+            if type(expected) is bool:
+                matches = type(actual) is bool and actual is expected
+            elif isinstance(expected, list):
+                matches = actual == expected
+            elif type(expected) is int:
+                matches = type(actual) is int and actual == expected
+            else:
+                matches = actual == expected
+            if not matches:
+>               raise PreflightError(f"manifest contract {name} is {actual!r}; expected {expected!r}")
+E               board_preflight.PreflightError: manifest contract s2mm_memory_width_bits is 32; expected 64
+
+scripts\wo0015\board_preflight.py:335: PreflightError
+__ test_dma_error_after_length_fail_holds_buffers_and_never_retries_or_frees __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-132/test_dma_error_after_length_fa0')
+
+    def test_dma_error_after_length_fail_holds_buffers_and_never_retries_or_frees(tmp_path):
+>       plan, _ = _plan(tmp_path, 1)
+                  ^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\test_board_once.py:19: in _plan
+    return preflight.validate_manifest(manifest_path), manifest_path
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:374: in validate_manifest
+    hp0_range, hp1_range = _validate_contract(manifest)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+manifest = {'bit_path': 'wo0015.bit', 'bit_sha256': '4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa', 'boot_id': 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', 'build_id': 'wo0015-fixture-build', ...}
+
+    def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tuple[int, int]]:
+        contract = manifest.get("contract")
+        if not isinstance(contract, dict):
+            raise PreflightError("manifest contract must be an object")
+        if set(contract) != set(_CONTRACT_VALUES):
+            missing = sorted(set(_CONTRACT_VALUES) - set(contract))
+            extra = sorted(set(contract) - set(_CONTRACT_VALUES))
+            raise PreflightError(f"manifest contract fields differ (missing={missing}, extra={extra})")
+        for name, expected in _CONTRACT_VALUES.items():
+            actual = contract[name]
+            if type(expected) is bool:
+                matches = type(actual) is bool and actual is expected
+            elif isinstance(expected, list):
+                matches = actual == expected
+            elif type(expected) is int:
+                matches = type(actual) is int and actual == expected
+            else:
+                matches = actual == expected
+            if not matches:
+>               raise PreflightError(f"manifest contract {name} is {actual!r}; expected {expected!r}")
+E               board_preflight.PreflightError: manifest contract s2mm_memory_width_bits is 32; expected 64
+
+scripts\wo0015\board_preflight.py:335: PreflightError
+____ test_offline_cli_never_imports_pynq_and_mock_reports_simulation_only _____
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-132/test_offline_cli_never_imports0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000020A33D72A80>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000020A33D73E60>
+
+    def test_offline_cli_never_imports_pynq_and_mock_reports_simulation_only(tmp_path, monkeypatch, capsys):
+>       plan, manifest_path = _plan(tmp_path, 1)
+                              ^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\test_board_once.py:19: in _plan
+    return preflight.validate_manifest(manifest_path), manifest_path
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:374: in validate_manifest
+    hp0_range, hp1_range = _validate_contract(manifest)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+manifest = {'bit_path': 'wo0015.bit', 'bit_sha256': '4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa', 'boot_id': 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', 'build_id': 'wo0015-fixture-build', ...}
+
+    def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tuple[int, int]]:
+        contract = manifest.get("contract")
+        if not isinstance(contract, dict):
+            raise PreflightError("manifest contract must be an object")
+        if set(contract) != set(_CONTRACT_VALUES):
+            missing = sorted(set(_CONTRACT_VALUES) - set(contract))
+            extra = sorted(set(contract) - set(_CONTRACT_VALUES))
+            raise PreflightError(f"manifest contract fields differ (missing={missing}, extra={extra})")
+        for name, expected in _CONTRACT_VALUES.items():
+            actual = contract[name]
+            if type(expected) is bool:
+                matches = type(actual) is bool and actual is expected
+            elif isinstance(expected, list):
+                matches = actual == expected
+            elif type(expected) is int:
+                matches = type(actual) is int and actual == expected
+            else:
+                matches = actual == expected
+            if not matches:
+>               raise PreflightError(f"manifest contract {name} is {actual!r}; expected {expected!r}")
+E               board_preflight.PreflightError: manifest contract s2mm_memory_width_bits is 32; expected 64
+
+scripts\wo0015\board_preflight.py:335: PreflightError
+_ test_actual_stage_without_both_explicit_gates_fails_before_pynq_or_runtime_io _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-132/test_actual_stage_without_both0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000020A33DCD4C0>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000020A33DCD220>
+
+    def test_actual_stage_without_both_explicit_gates_fails_before_pynq_or_runtime_io(
+        tmp_path, monkeypatch, capsys
+    ):
+>       _, manifest_path = _plan(tmp_path, 1)
+                           ^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\test_board_once.py:19: in _plan
+    return preflight.validate_manifest(manifest_path), manifest_path
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:374: in validate_manifest
+    hp0_range, hp1_range = _validate_contract(manifest)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+manifest = {'bit_path': 'wo0015.bit', 'bit_sha256': '4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa', 'boot_id': 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', 'build_id': 'wo0015-fixture-build', ...}
+
+    def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tuple[int, int]]:
+        contract = manifest.get("contract")
+        if not isinstance(contract, dict):
+            raise PreflightError("manifest contract must be an object")
+        if set(contract) != set(_CONTRACT_VALUES):
+            missing = sorted(set(_CONTRACT_VALUES) - set(contract))
+            extra = sorted(set(contract) - set(_CONTRACT_VALUES))
+            raise PreflightError(f"manifest contract fields differ (missing={missing}, extra={extra})")
+        for name, expected in _CONTRACT_VALUES.items():
+            actual = contract[name]
+            if type(expected) is bool:
+                matches = type(actual) is bool and actual is expected
+            elif isinstance(expected, list):
+                matches = actual == expected
+            elif type(expected) is int:
+                matches = type(actual) is int and actual == expected
+            else:
+                matches = actual == expected
+            if not matches:
+>               raise PreflightError(f"manifest contract {name} is {actual!r}; expected {expected!r}")
+E               board_preflight.PreflightError: manifest contract s2mm_memory_width_bits is 32; expected 64
+
+scripts\wo0015\board_preflight.py:335: PreflightError
+___ test_overlay_pass_receipt_is_bound_to_same_boot_manifest_build_and_bit ____
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-132/test_overlay_pass_receipt_is_b0')
+
+    def test_overlay_pass_receipt_is_bound_to_same_boot_manifest_build_and_bit(tmp_path):
+>       plan, _ = _plan(tmp_path, 1)
+                  ^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:140: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\test_board_once.py:19: in _plan
+    return preflight.validate_manifest(manifest_path), manifest_path
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:374: in validate_manifest
+    hp0_range, hp1_range = _validate_contract(manifest)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+manifest = {'bit_path': 'wo0015.bit', 'bit_sha256': '4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa', 'boot_id': 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', 'build_id': 'wo0015-fixture-build', ...}
+
+    def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tuple[int, int]]:
+        contract = manifest.get("contract")
+        if not isinstance(contract, dict):
+            raise PreflightError("manifest contract must be an object")
+        if set(contract) != set(_CONTRACT_VALUES):
+            missing = sorted(set(_CONTRACT_VALUES) - set(contract))
+            extra = sorted(set(contract) - set(_CONTRACT_VALUES))
+            raise PreflightError(f"manifest contract fields differ (missing={missing}, extra={extra})")
+        for name, expected in _CONTRACT_VALUES.items():
+            actual = contract[name]
+            if type(expected) is bool:
+                matches = type(actual) is bool and actual is expected
+            elif isinstance(expected, list):
+                matches = actual == expected
+            elif type(expected) is int:
+                matches = type(actual) is int and actual == expected
+            else:
+                matches = actual == expected
+            if not matches:
+>               raise PreflightError(f"manifest contract {name} is {actual!r}; expected {expected!r}")
+E               board_preflight.PreflightError: manifest contract s2mm_memory_width_bits is 32; expected 64
+
+scripts\wo0015\board_preflight.py:335: PreflightError
+_________________ test_stage_guard_is_distinct_and_single_use _________________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-132/test_stage_guard_is_distinct_a0')
+
+    def test_stage_guard_is_distinct_and_single_use(tmp_path):
+>       plan, _ = _plan(tmp_path, 1)
+                  ^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:154: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\test_board_once.py:19: in _plan
+    return preflight.validate_manifest(manifest_path), manifest_path
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:374: in validate_manifest
+    hp0_range, hp1_range = _validate_contract(manifest)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+manifest = {'bit_path': 'wo0015.bit', 'bit_sha256': '4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa', 'boot_id': 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', 'build_id': 'wo0015-fixture-build', ...}
+
+    def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tuple[int, int]]:
+        contract = manifest.get("contract")
+        if not isinstance(contract, dict):
+            raise PreflightError("manifest contract must be an object")
+        if set(contract) != set(_CONTRACT_VALUES):
+            missing = sorted(set(_CONTRACT_VALUES) - set(contract))
+            extra = sorted(set(contract) - set(_CONTRACT_VALUES))
+            raise PreflightError(f"manifest contract fields differ (missing={missing}, extra={extra})")
+        for name, expected in _CONTRACT_VALUES.items():
+            actual = contract[name]
+            if type(expected) is bool:
+                matches = type(actual) is bool and actual is expected
+            elif isinstance(expected, list):
+                matches = actual == expected
+            elif type(expected) is int:
+                matches = type(actual) is int and actual == expected
+            else:
+                matches = actual == expected
+            if not matches:
+>               raise PreflightError(f"manifest contract {name} is {actual!r}; expected {expected!r}")
+E               board_preflight.PreflightError: manifest contract s2mm_memory_width_bits is 32; expected 64
+
+scripts\wo0015\board_preflight.py:335: PreflightError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_board_once.py::test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[1]
+FAILED scripts/wo0015/test_board_once.py::test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[3]
+FAILED scripts/wo0015/test_board_once.py::test_first_pre_length_idle_zero_is_allowed_but_later_nonidle_stops_without_retry
+FAILED scripts/wo0015/test_board_once.py::test_dma_error_after_length_fail_holds_buffers_and_never_retries_or_frees
+FAILED scripts/wo0015/test_board_once.py::test_offline_cli_never_imports_pynq_and_mock_reports_simulation_only
+FAILED scripts/wo0015/test_board_once.py::test_actual_stage_without_both_explicit_gates_fails_before_pynq_or_runtime_io
+FAILED scripts/wo0015/test_board_once.py::test_overlay_pass_receipt_is_bound_to_same_boot_manifest_build_and_bit
+FAILED scripts/wo0015/test_board_once.py::test_stage_guard_is_distinct_and_single_use
+8 failed in 1.06s

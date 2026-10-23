@@ -1,0 +1,69 @@
+WO-0015 read-only camera diagnostics
+Local capture stamp: 20261017-203129
+Board boot_id: 2cc2ab91-2e3f-450e-b9e7-361ec38e2815
+No camera capture, code change, or FPGA operation was performed.
+
+1. Device ownership: sudo -n fuser -v /dev/video0
+SSH exit code: 1
+Raw output:
+(empty)
+
+2. Open file handles: sudo -n lsof /dev/video0
+SSH exit code: 1
+Raw output:
+(empty)
+
+3. Matching processes: ps aux | grep -iE "video|mjpeg|camera|python"
+SSH exit code: 0
+Raw output:
+root        46  0.0  0.0      0     0 ?        I<   01:35   0:00 [kworker/u5:0-uvcvideo]
+root       174  0.0  2.4  22176 12288 ?        Ss   01:35   0:00 /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers
+root       524  0.0  2.8  34452 14336 ?        Ssl  01:36   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root       632  0.0 10.7  98948 53900 ?        S    01:36   0:11 /usr/local/share/pynq-venv/bin/python3 /usr/local/share/pynq-venv/bin/jupyter-notebook --no-browser --allow-root
+root       788  0.0  3.2  23876 16256 ?        S    01:37   0:01 python3 /usr/local/bin/redirect_server
+root     16058  0.0  0.0      0     0 ?        I<   10:31   0:02 [kworker/u5:1-uvcvideo]
+root     23761  0.0  0.7  12448  3840 ?        Ss   11:58   0:00 sudo -n fuser -v /dev/video0
+xilinx   23813  0.0  0.4   7244  2176 ?        Ss   11:58   0:00 bash -c ps aux | grep -iE "video|mjpeg|camera|python"
+root     23814  0.0  0.2   6220  1280 ?        R    11:58   0:00 fuser -v /dev/video0
+xilinx   23820  0.0  0.3   6924  1664 ?        S    11:58   0:00 grep -iE video|mjpeg|camera|python
+
+
+4. Unit status: sudo -n systemctl status ov9281-init.service --no-pager
+SSH exit code: 1
+Raw output:
+○ ov9281-init.service - Initialize AT-OV9281 Camera Parameters
+     Loaded: loaded (/etc/systemd/system/ov9281-init.service; enabled; vendor preset: enabled)
+     Active: inactive (dead) since Mon 2025-05-05 01:36:31 UTC; 10h ago
+    Process: 626 ExecStart=/usr/local/bin/init_ov9281.sh (code=exited, status=0/SUCCESS)
+   Main PID: 626 (code=exited, status=0/SUCCESS)
+        CPU: 50ms
+
+May 05 01:36:30 pynq systemd[1]: Starting Initialize AT-OV9281 Camera Parameters...
+May 05 01:36:31 pynq init_ov9281.sh[626]: OV9281 parameters initialized successfully.
+May 05 01:36:31 pynq systemd[1]: ov9281-init.service: Deactivated successfully.
+May 05 01:36:31 pynq systemd[1]: Finished Initialize AT-OV9281 Camera Parameters.
+
+
+5. Current-boot journal: sudo -n journalctl -u ov9281-init.service -b --no-pager -n 40
+SSH exit code: 0
+Raw output:
+May 05 01:36:30 pynq systemd[1]: Starting Initialize AT-OV9281 Camera Parameters...
+May 05 01:36:31 pynq init_ov9281.sh[626]: OV9281 parameters initialized successfully.
+May 05 01:36:31 pynq systemd[1]: ov9281-init.service: Deactivated successfully.
+May 05 01:36:31 pynq systemd[1]: Finished Initialize AT-OV9281 Camera Parameters.
+
+
+6. Unit properties, utility paths, and boot_id (read-only)
+SSH exit code: 0
+Raw output:
+Type=oneshot
+RemainAfterExit=no
+Result=success
+ExecMainStatus=0
+ActiveState=inactive
+SubState=dead
+UnitFileState=enabled
+/usr/bin/fuser
+/usr/bin/lsof
+2cc2ab91-2e3f-450e-b9e7-361ec38e2815
+

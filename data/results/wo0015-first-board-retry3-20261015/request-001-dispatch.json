@@ -1,0 +1,4 @@
+{
+  "command": "/usr/local/share/pynq-venv/bin/python -I -S -B -c 'import base64;exec(compile(base64.b64decode('\"'\"'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmltcG9ydCBoYXNobGliLHppcGZpbGUsanNvbgpwPVBhdGgoJy9ob21lL3hpbGlueC93bzAwMTVfZmlyc3RfYm9hcmRfcmV0cnkzXzIwMjYxMDE1JykKej1wLyJidW5kbGUuemlwIgphc3NlcnQgaGFzaGxpYi5zaGEyNTYoei5yZWFkX2J5dGVzKCkpLmhleGRpZ2VzdCgpPT0nZDk5MGYyZmNiZDNkNzM1Y2IwMGQwMTc5M2IyYjQ4OGFjYjYwNTU1ZTE5ZWM1YTZmZmM3YTFlZjY0NGEzNjAwMicKd2l0aCB6aXBmaWxlLlppcEZpbGUoeikgYXMgYToKIGFzc2VydCBhbGwoKHAvbikucmVzb2x2ZSgpLmlzX3JlbGF0aXZlX3RvKHAucmVzb2x2ZSgpKSBmb3IgbiBpbiBhLm5hbWVsaXN0KCkpCiBhLmV4dHJhY3RhbGwocCkKcHJpbnQoanNvbi5kdW1wcyh7bjpoYXNobGliLnNoYTI1NigocC9uKS5yZWFkX2J5dGVzKCkpLmhleGRpZ2VzdCgpIGZvciBuIGluICgicnVuLW1hbmlmZXN0Lmpzb24iLCJ3bzE1LmJpdCIsIndvMTUuaHdoIil9KSxmbHVzaD1UcnVlKQo='\"'\"'),\"wo0015-readonly-or-unpack\",\"exec\"))'",
+  "single_attempt": true
+}

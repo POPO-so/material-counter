@@ -1,0 +1,26 @@
+{
+  "sealed_files_verified": 364,
+  "sealed_manifest_sha256": "26b2a21dcb68dae34164e6f3dcb79d209637ced195ed7de9a56f38635910bf8d",
+  "indexed_files_verified": 320,
+  "protected_files_verified": 389,
+  "hardware_locks": {
+    "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+  },
+  "git": {
+    "main": {
+      "head": "16377a0b3ceb20dfa3253d2a9417fc21c300be5cbadab53ded807d00db829c24",
+      "tracked_diff": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_diff": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "worktree": {
+      "head": "8d19afa50db2ab9bf66326fbb9ceb89d1fb90627209543a3ef05a0cfcfe85847",
+      "tracked_diff": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_diff": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "restricted_raw": "NOT_TRAVERSED_NOT_READ_NOT_COPIED",
+  "revision": "NOT_READ",
+  "large_image_read": false,
+  "fsbl_reparsed": false
+}

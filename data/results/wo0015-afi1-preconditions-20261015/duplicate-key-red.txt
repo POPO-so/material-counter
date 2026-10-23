@@ -1,0 +1,20 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+__________ test_duplicate_key_cannot_be_hidden_by_final_valid_value ___________
+
+scene = (<module 'readonly_collector' from 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\...s-20261015\\readonly_admission_collector.py'>, <test_readonly_admission_collector.FakeFS object at 0x0000028030A82030>)
+
+    def test_duplicate_key_cannot_be_hidden_by_final_valid_value(scene):
+        m, fs = scene
+        original = fs.files[m.GLOBAL].decode()
+        fs.files[m.GLOBAL] = ('{"bitfile_name":"/bad/bit",' + original[1:]).encode()
+>       assert run(scene)["os_precheck"] == "UNKNOWN"
+E       AssertionError: assert 'VERIFIED' == 'UNKNOWN'
+E         
+E         - UNKNOWN
+E         + VERIFIED
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:200: AssertionError
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_duplicate_key_cannot_be_hidden_by_final_valid_value
+1 failed in 0.16s

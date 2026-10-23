@@ -1,0 +1,7 @@
+{
+  "board_accessed": false,
+  "error": "PreflightError: MEMINFO_IOMEM_VERIFIED requires CmaTotal=131072 KiB and CmaFree>=32768 KiB",
+  "pynq_imported": false,
+  "status": "OVERLAY_ONLY_REJECTED",
+  "task": "WO-0015"
+}

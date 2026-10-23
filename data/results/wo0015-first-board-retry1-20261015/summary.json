@@ -1,0 +1,51 @@
+{
+  "status": "FAIL_STOPPED",
+  "stopped_at": "STEP_1_DEPLOYMENT_CONFIGURATION_BEFORE_OVERLAY",
+  "cause": "root-owned extracted files rejected unprivileged SFTP configuration upload",
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "boot_gate_pass": true,
+  "board_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "authorized_manifest_sha256": "ceac16e28b968bc28d3e4f30828402447c9dbe8c566f9800a789478a435a3d8b",
+  "board_manifest_sha256": "817d09ac508e07ab9c156541a0e39cf8c71d361a7dfaaba67951729dd907c674",
+  "authorized_config_applied": false,
+  "cma_before_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 74736
+  },
+  "cma_after_kib": {
+    "CmaTotal": 131072,
+    "CmaFree": 73976
+  },
+  "overlay_load_count": 0,
+  "overlay_load_elapsed_s": null,
+  "mmio_reads": 0,
+  "mmio_writes": 0,
+  "cma_allocations": 0,
+  "frames_sent": 0,
+  "frames_received": 0,
+  "stage_invocations": {
+    "overlay-only": 0,
+    "dma-single": 0,
+    "dma-three": 0
+  },
+  "stages": {
+    "step1": "FAIL_STOPPED_DEPLOYMENT",
+    "step2": "NOT_RUN",
+    "step3": "NOT_RUN"
+  },
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "original_zip_unchanged": true,
+  "previous_evidence_unchanged": true,
+  "functional_code_changed": false,
+  "committed": false,
+  "merged": false,
+  "git_heads": {
+    "main": "7a868c070024bdc29cdeb057fbec9ccaf94ef160",
+    "worktree": "b7d8be05caff7da3ad2235617b43b591daa5e5fc"
+  }
+}

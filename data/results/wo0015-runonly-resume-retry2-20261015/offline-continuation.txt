@@ -1,0 +1,350 @@
+{
+  "allocation_accounting": {
+    "hard_gate": false,
+    "note": "Global CMA free-page differences are telemetry, not per-buffer allocation proof.",
+    "observed_cma_decrease_kib": 304,
+    "page_rounded_bytes_kib": 304
+  },
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": false,
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "build_id": "wo0015-hw-50mhz-20261015",
+  "clock_mhz": 50,
+  "cma_allocation_samples": [
+    {
+      "cma_free_kib": 32768,
+      "stage": "before"
+    },
+    {
+      "cma_free_kib": 32540,
+      "stage": "after_mm2s"
+    },
+    {
+      "cma_free_kib": 32464,
+      "stage": "after_s2mm"
+    },
+    {
+      "cma_free_kib": 32768,
+      "stage": "after_release"
+    }
+  ],
+  "cma_free_after_kib": 32768,
+  "cma_free_before_kib": 32768,
+  "cma_free_delta_kib": 0,
+  "cma_free_during_kib": 32464,
+  "cma_watermark_kib": 16384,
+  "dma_may_be_active": false,
+  "dma_start_attempted": true,
+  "frame_count": 1,
+  "frames": [
+    {
+      "accepted_pixels": 76800,
+      "byte_mismatches": 0,
+      "checker": {
+        "checksum": 571200,
+        "eols": 240,
+        "foreground_pixels": 2240,
+        "input_beats_delta": 57608,
+        "input_bytes_delta": 230432,
+        "input_tlast_delta": 1,
+        "output_total_delta": 76800,
+        "packet_done_delta": 1,
+        "pixels": 76800,
+        "sofs": 1
+      },
+      "frame_id": 0,
+      "mm2s_dmasr": 4098,
+      "packer_status": 2,
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    }
+  ],
+  "hardware_stage": "dma-single",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+  "post_alloc_physical_gate": {
+    "mm2s_physical_range": [
+      268435456,
+      268665888
+    ],
+    "permitted_buffer_ranges": [
+      [
+        0,
+        536870912
+      ]
+    ],
+    "rx_actual_bytes": 76800,
+    "s2mm_physical_range": [
+      268668928,
+      268745728
+    ],
+    "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+    "tx_actual_bytes": 230432
+  },
+  "post_stage_audit": {
+    "boot_id_after": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "boot_id_before": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "dmesg_health": "PASS",
+    "dmesg_new_lines": [],
+    "fpga_manager": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "process_ownership": {
+      "denied": [],
+      "findings": []
+    },
+    "pynq_state": {
+      "load_status": "LOADED",
+      "loaded_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "require_empty_shutdown": false,
+      "shutdown_ips_empty": true
+    }
+  },
+  "pynq_imported": false,
+  "runtime_preflight": {
+    "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "fpga_manager": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "kernel_log": [
+      "mock kernel baseline 0",
+      "mock kernel baseline 1",
+      "mock kernel baseline 2",
+      "mock kernel baseline 3",
+      "mock kernel baseline 4",
+      "mock kernel baseline 5",
+      "mock kernel baseline 6",
+      "mock kernel baseline 7",
+      "mock kernel baseline 8",
+      "mock kernel baseline 9",
+      "mock kernel baseline 10",
+      "mock kernel baseline 11"
+    ],
+    "process_ownership": {
+      "denied": [],
+      "findings": []
+    },
+    "pynq_state": {
+      "load_status": "LOADED",
+      "loaded_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "require_empty_shutdown": false,
+      "shutdown_ips_empty": true
+    }
+  },
+  "rx_bytes_each": 76800,
+  "single_pass_receipt": {
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "build_id": "wo0015-hw-50mhz-20261015",
+    "clock_mhz": 50,
+    "frame_count": 1,
+    "frame_ids": [
+      0
+    ],
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+    "runtime_audit_sha256": "091c5dfbe16de583dce7ff61a72eb0f68aaf4739dbae237ef3db6dc1fcbec4b1",
+    "s2mm_beats": 19200,
+    "s2mm_bytes": 76800,
+    "schema": 1,
+    "stage": "dma-single",
+    "status": "DMA_SINGLE_PASS",
+    "work_order": "WO-0015"
+  },
+  "status": "DMA_SINGLE_PASS",
+  "task": "WO-0015",
+  "transfer_started": true,
+  "tx_bytes_each": 230432
+}
+{"continuation_receipt": {"status": "PASS", "stage": "dma-single", "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b", "executor_sha256": "6be386b2140d8a373677eb337e6a3028464c0c720a75bd6c14ea03046cec7ec1", "continuation_sha256": "0d3b73910894cc3cb57f18ba0e0934375a1e2ddaec60d3fd0db9b370580a36a5", "base_manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312", "result_sha256": "98164d6c11e361f837bc33b7d88c058ae154369437335708f718067842db9e6c", "guard": "C:\\Users\\POP\\AppData\\Local\\Temp\\tmpk6efedi2\\guards\\dma-single-watermark-retry2-consumed.json"}}
+{
+  "allocation_accounting": {
+    "hard_gate": false,
+    "note": "Global CMA free-page differences are telemetry, not per-buffer allocation proof.",
+    "observed_cma_decrease_kib": 304,
+    "page_rounded_bytes_kib": 304
+  },
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": false,
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "build_id": "wo0015-hw-50mhz-20261015",
+  "clock_mhz": 50,
+  "cma_allocation_samples": [
+    {
+      "cma_free_kib": 32768,
+      "stage": "before"
+    },
+    {
+      "cma_free_kib": 32540,
+      "stage": "after_mm2s"
+    },
+    {
+      "cma_free_kib": 32464,
+      "stage": "after_s2mm"
+    },
+    {
+      "cma_free_kib": 32768,
+      "stage": "after_release"
+    }
+  ],
+  "cma_free_after_kib": 32768,
+  "cma_free_before_kib": 32768,
+  "cma_free_delta_kib": 0,
+  "cma_free_during_kib": 32464,
+  "cma_watermark_kib": 16384,
+  "dma_may_be_active": false,
+  "dma_start_attempted": true,
+  "frame_count": 3,
+  "frames": [
+    {
+      "accepted_pixels": 76800,
+      "byte_mismatches": 0,
+      "checker": {
+        "checksum": 571200,
+        "eols": 240,
+        "foreground_pixels": 2240,
+        "input_beats_delta": 57608,
+        "input_bytes_delta": 230432,
+        "input_tlast_delta": 1,
+        "output_total_delta": 76800,
+        "packet_done_delta": 1,
+        "pixels": 76800,
+        "sofs": 1
+      },
+      "frame_id": 0,
+      "mm2s_dmasr": 4098,
+      "packer_status": 2,
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    },
+    {
+      "accepted_pixels": 76800,
+      "byte_mismatches": 0,
+      "checker": {
+        "checksum": 571200,
+        "eols": 240,
+        "foreground_pixels": 2240,
+        "input_beats_delta": 57608,
+        "input_bytes_delta": 230432,
+        "input_tlast_delta": 1,
+        "output_total_delta": 76800,
+        "packet_done_delta": 1,
+        "pixels": 76800,
+        "sofs": 1
+      },
+      "frame_id": 1,
+      "mm2s_dmasr": 4098,
+      "packer_status": 2,
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    },
+    {
+      "accepted_pixels": 76800,
+      "byte_mismatches": 0,
+      "checker": {
+        "checksum": 571200,
+        "eols": 240,
+        "foreground_pixels": 2240,
+        "input_beats_delta": 57608,
+        "input_bytes_delta": 230432,
+        "input_tlast_delta": 1,
+        "output_total_delta": 76800,
+        "packet_done_delta": 1,
+        "pixels": 76800,
+        "sofs": 1
+      },
+      "frame_id": 2,
+      "mm2s_dmasr": 4098,
+      "packer_status": 2,
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    }
+  ],
+  "hardware_stage": "dma-three",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+  "post_alloc_physical_gate": {
+    "mm2s_physical_range": [
+      268746752,
+      268977184
+    ],
+    "permitted_buffer_ranges": [
+      [
+        0,
+        536870912
+      ]
+    ],
+    "rx_actual_bytes": 76800,
+    "s2mm_physical_range": [
+      268980224,
+      269057024
+    ],
+    "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+    "tx_actual_bytes": 230432
+  },
+  "post_stage_audit": {
+    "boot_id_after": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "boot_id_before": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "dmesg_health": "PASS",
+    "dmesg_new_lines": [],
+    "fpga_manager": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "process_ownership": {
+      "denied": [],
+      "findings": []
+    },
+    "pynq_state": {
+      "load_status": "LOADED",
+      "loaded_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "require_empty_shutdown": false,
+      "shutdown_ips_empty": true
+    }
+  },
+  "pynq_imported": false,
+  "runtime_preflight": {
+    "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+    "fpga_manager": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "kernel_log": [
+      "mock kernel baseline 0",
+      "mock kernel baseline 1",
+      "mock kernel baseline 2",
+      "mock kernel baseline 3",
+      "mock kernel baseline 4",
+      "mock kernel baseline 5",
+      "mock kernel baseline 6",
+      "mock kernel baseline 7",
+      "mock kernel baseline 8",
+      "mock kernel baseline 9",
+      "mock kernel baseline 10",
+      "mock kernel baseline 11"
+    ],
+    "process_ownership": {
+      "denied": [],
+      "findings": []
+    },
+    "pynq_state": {
+      "load_status": "LOADED",
+      "loaded_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "require_empty_shutdown": false,
+      "shutdown_ips_empty": true
+    }
+  },
+  "rx_bytes_each": 76800,
+  "status": "DMA_THREE_PASS",
+  "task": "WO-0015",
+  "transfer_started": true,
+  "tx_bytes_each": 230432
+}
+{"continuation_receipt": {"status": "PASS", "stage": "dma-three", "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b", "executor_sha256": "6be386b2140d8a373677eb337e6a3028464c0c720a75bd6c14ea03046cec7ec1", "continuation_sha256": "0d3b73910894cc3cb57f18ba0e0934375a1e2ddaec60d3fd0db9b370580a36a5", "base_manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312", "result_sha256": "0b631c43aef78b77cbc976a51da6b7f268e95c017143a973eb66f6f2be868e58", "guard": "C:\\Users\\POP\\AppData\\Local\\Temp\\tmpk6efedi2\\guards\\dma-three-watermark-retry2-consumed.json"}}
+{"status": "OFFLINE_CONTINUATION_MOCK_PASS", "frames": 4, "mismatches": 0}

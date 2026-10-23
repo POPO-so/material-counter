@@ -1,0 +1,20 @@
+{
+  "archive_sha256": "19ba6f895a523b323d4c05803ae4f063d9ba9b47aa191b50246cc3a485a7d948",
+  "launch_lock": {
+    "board_once_watermark.py": "6be386b2140d8a373677eb337e6a3028464c0c720a75bd6c14ea03046cec7ec1",
+    "transition.py": "6cc30e004babe4dfc175c233dfc4afddda2ca4b02c496ecba39256cbab8172ef",
+    "execute_stage.py": "a9ec41ec253b47439a04f4015e0bce1ce3245c5d87c6ef11b6ecfe2be49697c9",
+    "collect_exit.py": "dd004344544991a477a124a6ff6034dfa4cb3958b722b6a7e871e0765a21426d",
+    "locked-evidence.json": "05b15139960e7a563442bf49d76ffa7143a367615f80760e756d4306e900adee",
+    "continuation-execution.json": "0d3b73910894cc3cb57f18ba0e0934375a1e2ddaec60d3fd0db9b370580a36a5",
+    "execution-lock.json": "4c1b291a0a27dfb5f0515490878341babe6470b5ab13c2f1cf86041794119b15"
+  },
+  "commands": [
+    "deploy",
+    "transition",
+    "dma-single",
+    "dma-three",
+    "exit-pass",
+    "exit-failure"
+  ]
+}

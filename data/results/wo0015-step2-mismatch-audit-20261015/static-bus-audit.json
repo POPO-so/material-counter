@@ -1,0 +1,60 @@
+{
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "dma": {
+    "C_M_AXI_S2MM_DATA_WIDTH": "32",
+    "C_S_AXIS_S2MM_TDATA_WIDTH": "32",
+    "C_M_AXI_MM2S_DATA_WIDTH": "64",
+    "C_M_AXIS_MM2S_TDATA_WIDTH": "32"
+  },
+  "ps": {
+    "PCW_S_AXI_HP0_DATA_WIDTH": "64",
+    "PCW_S_AXI_HP1_DATA_WIDTH": "32"
+  },
+  "pipeline": {
+    "WIDTH": "320",
+    "HEIGHT": "240",
+    "THRESHOLD": "128"
+  },
+  "bus": {
+    "axi_dma_0": [
+      {
+        "BUSNAME": "axi_dma_0_M_AXI_S2MM",
+        "DATAWIDTH": "32",
+        "NAME": "M_AXI_S2MM",
+        "VLNV": "xilinx.com:interface:aximm:1.0"
+      }
+    ],
+    "hp1_fabric": [
+      {
+        "BUSNAME": "axi_dma_0_M_AXI_S2MM",
+        "DATAWIDTH": "32",
+        "NAME": "S00_AXI",
+        "VLNV": "xilinx.com:interface:aximm:1.0"
+      },
+      {
+        "BUSNAME": "hp1_fabric_M00_AXI",
+        "DATAWIDTH": "32",
+        "NAME": "M00_AXI",
+        "VLNV": "xilinx.com:interface:aximm:1.0"
+      }
+    ],
+    "ps7": [
+      {
+        "BUSNAME": "hp1_fabric_M00_AXI",
+        "DATAWIDTH": "32",
+        "NAME": "S_AXI_HP1",
+        "VLNV": "xilinx.com:interface:aximm:1.0"
+      }
+    ]
+  },
+  "converter": "hp1_fabric/s00_couplers/auto_pc: AXI4 to AXI3; both sides32; no auto_us/auto_ds",
+  "runtime_afi1_mode_sampled": false,
+  "runtime_afi1_control_addresses": [
+    "0xF8009000",
+    "0xF8009014"
+  ],
+  "generated_post_config_mask_value": [
+    "mask=1,value=1",
+    "mask=1,value=1"
+  ]
+}

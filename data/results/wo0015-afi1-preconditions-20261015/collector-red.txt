@@ -1,0 +1,1060 @@
+EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE                             [100%]
+=================================== ERRORS ====================================
+___________ ERROR at setup of test_os_snapshot_does_not_grant_mmio ____________
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F138E750>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_______ ERROR at setup of test_raw_bytes_hash_before_text_normalization _______
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F138D070>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+___ ERROR at setup of test_fresh_challenge_required_before_any_file_read[] ____
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F138E030>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+__ ERROR at setup of test_fresh_challenge_required_before_any_file_read[abc] __
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A1B80>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_fresh_challenge_required_before_any_file_read[0000000000000000000000000000000] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A26C0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_fresh_challenge_required_before_any_file_read[gggggggggggggggggggggggggggggggg] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A0A40>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_fresh_challenge_required_before_any_file_read[True] __
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A1A60>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_fresh_challenge_required_before_any_file_read[None] __
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A32C0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+__ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[boot] ___
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13FE180>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+___ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[bit] ___
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13FCC20>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+___ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[hwh] ___
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13FDB50>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+__ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[guard] __
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13FEBA0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[kernel] __
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1470290>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[manager] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1470E00>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+__ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[flags] __
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13FF350>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[global] __
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13FCB90>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[missing] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A3110>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+___ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[uid] ___
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A3E30>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+__ ERROR at setup of test_fail_closed_on_identity_environment_or_hash[arch] ___
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A0CE0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+__ ERROR at setup of test_window_continuity_and_metadata_race_rejected[boot] __
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F137BD70>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_window_continuity_and_metadata_race_rejected[global] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F14715B0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_window_continuity_and_metadata_race_rejected[uptime_reverse] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1470AD0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_window_continuity_and_metadata_race_rejected[uptime_slow] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1470500>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_window_continuity_and_metadata_race_rejected[uptime_nan] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1472C90>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_window_continuity_and_metadata_race_rejected[uptime_inf] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1484050>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+____ ERROR at setup of test_process_ownership_and_visibility_gate[mem_fd] _____
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1485250>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+____ ERROR at setup of test_process_ownership_and_visibility_gate[uio_map] ____
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1473170>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+____ ERROR at setup of test_process_ownership_and_visibility_gate[dri_fd] _____
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1472F00>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+____ ERROR at setup of test_process_ownership_and_visibility_gate[zocl_fd] ____
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A2570>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_process_ownership_and_visibility_gate[owner_command] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A03B0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+____ ERROR at setup of test_process_ownership_and_visibility_gate[denied] _____
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F138F380>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+___ ERROR at setup of test_process_ownership_and_visibility_gate[vanished] ____
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13FCDD0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_global_state_schema_or_file_identity_rejected[bitfile_name-/other/wo15.bit] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1485FD0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_global_state_schema_or_file_identity_rejected[bitfile_hash-0000000000000000000000000000000000000000] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1485BB0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_global_state_schema_or_file_identity_rejected[shutdown_ips-value2] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F14847A0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_global_state_schema_or_file_identity_rejected[ip_dict-value3] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F14E40B0>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_nonempty_shutdown_metadata_is_only_observed_never_invoked _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F14E4D10>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_old_true_boolean_dictionary_cannot_be_passed_as_verifier _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F14E5B20>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_real_backend_rejects_nonwhitelisted_paths_without_open[/dev/mem] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1485940>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_real_backend_rejects_nonwhitelisted_paths_without_open[/dev/uio0] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1487B00>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_real_backend_rejects_nonwhitelisted_paths_without_open[/sys/class/fpga_manager/fpga0/firmware] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13FD280>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_real_backend_rejects_nonwhitelisted_paths_without_open[/etc/shadow] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F13A0E00>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+_ ERROR at setup of test_real_backend_rejects_nonwhitelisted_paths_without_open[/proc/../dev/mem] _
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F138F860>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+____ ERROR at setup of test_import_and_cli_have_no_collector_side_effects _____
+
+    @pytest.fixture
+    def mod():
+        spec = importlib.util.spec_from_file_location("readonly_collector", MODULE)
+        module = importlib.util.module_from_spec(spec)
+>       spec.loader.exec_module(module)
+
+data\results\wo0015-afi1-preconditions-20261015\test_readonly_admission_collector.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<frozen importlib._bootstrap_external>:995: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1132: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x00000209F1473740>
+path = 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-afi1-preconditions-20261015\\readonly_admission_collector.py'
+
+<frozen importlib._bootstrap_external>:1190: FileNotFoundError
+=========================== short test summary info ===========================
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_os_snapshot_does_not_grant_mmio
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_raw_bytes_hash_before_text_normalization
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fresh_challenge_required_before_any_file_read[]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fresh_challenge_required_before_any_file_read[abc]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fresh_challenge_required_before_any_file_read[0000000000000000000000000000000]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fresh_challenge_required_before_any_file_read[gggggggggggggggggggggggggggggggg]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fresh_challenge_required_before_any_file_read[True]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fresh_challenge_required_before_any_file_read[None]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[boot]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[bit]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[hwh]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[guard]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[kernel]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[manager]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[flags]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[global]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[missing]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[uid]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_fail_closed_on_identity_environment_or_hash[arch]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_window_continuity_and_metadata_race_rejected[boot]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_window_continuity_and_metadata_race_rejected[global]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_window_continuity_and_metadata_race_rejected[uptime_reverse]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_window_continuity_and_metadata_race_rejected[uptime_slow]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_window_continuity_and_metadata_race_rejected[uptime_nan]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_window_continuity_and_metadata_race_rejected[uptime_inf]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_process_ownership_and_visibility_gate[mem_fd]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_process_ownership_and_visibility_gate[uio_map]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_process_ownership_and_visibility_gate[dri_fd]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_process_ownership_and_visibility_gate[zocl_fd]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_process_ownership_and_visibility_gate[owner_command]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_process_ownership_and_visibility_gate[denied]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_process_ownership_and_visibility_gate[vanished]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_global_state_schema_or_file_identity_rejected[bitfile_name-/other/wo15.bit]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_global_state_schema_or_file_identity_rejected[bitfile_hash-0000000000000000000000000000000000000000]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_global_state_schema_or_file_identity_rejected[shutdown_ips-value2]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_global_state_schema_or_file_identity_rejected[ip_dict-value3]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_nonempty_shutdown_metadata_is_only_observed_never_invoked
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_old_true_boolean_dictionary_cannot_be_passed_as_verifier
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_real_backend_rejects_nonwhitelisted_paths_without_open[/dev/mem]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_real_backend_rejects_nonwhitelisted_paths_without_open[/dev/uio0]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_real_backend_rejects_nonwhitelisted_paths_without_open[/sys/class/fpga_manager/fpga0/firmware]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_real_backend_rejects_nonwhitelisted_paths_without_open[/etc/shadow]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_real_backend_rejects_nonwhitelisted_paths_without_open[/proc/../dev/mem]
+ERROR data/results/wo0015-afi1-preconditions-20261015/test_readonly_admission_collector.py::test_import_and_cli_have_no_collector_side_effects
+44 errors in 0.49s

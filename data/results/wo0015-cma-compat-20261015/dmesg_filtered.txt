@@ -1,0 +1,8 @@
+[    0.043261] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[   40.238561] IPVS: Connection hash table configured (size=4096, memory=16Kbytes)
+[   40.456512] Freeing unused kernel image (initmem) memory: 1024K
+[  146.377578] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA
+[  146.377655] [drm] Memory 1 is not reserved in device tree. Will allocate memory from CMA
+[  146.377724] [drm] Memory 2 is not reserved in device tree. Will allocate memory from CMA
+[  146.377792] [drm] Memory 3 is not reserved in device tree. Will allocate memory from CMA
+[  146.377856] [drm] Memory 4 is not reserved in device tree. Will allocate memory from CMA

@@ -1,0 +1,8 @@
+{"status": "AWAITING_NATIVE_HIDDEN_CREDENTIALS", "time_ns": 1792054579584967000}
+{"status": "CONNECT_BEGIN", "time_ns": 1792054606476052400}
+{"status": "STRICT_SSH_AUTHENTICATED", "time_ns": 1792054608352115600, "fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o"}
+{"status": "DISPATCH", "time_ns": 1792054608358944300, "name": "initial-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792054610737586700, "name": "initial-readonly", "exit_code": 0, "elapsed_s": 2.062000000005355}
+{"status": "FAIL_STOPPED", "time_ns": 1792054610741604000, "error": "RuntimeError: boot_id mismatch; no hardware access"}
+{"status": "DISPATCH", "time_ns": 1792054757899259500, "name": "postflight-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792054760150458900, "name": "postflight-readonly", "exit_code": 0, "elapsed_s": 1.9680000000080327}

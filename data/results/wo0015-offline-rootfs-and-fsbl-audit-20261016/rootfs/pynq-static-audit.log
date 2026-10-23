@@ -1,0 +1,25 @@
+{
+  "top_level_json": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\pynq-afi-and-base-hwh-audit.json",
+  "rootfs_json": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\pynq-static-audit.json",
+  "pynq_version": "3.1.1",
+  "record_py_rows_verified": 173,
+  "record_mismatches": 0,
+  "record_missing": 0,
+  "hp1": {
+    "hwh_data_width_bits": "64",
+    "hwh_parameter_occurrences": 1,
+    "tcl_data_width_values": [],
+    "tcl_enable_values": [
+      "0"
+    ],
+    "hwh_line_numbers": [
+      54118
+    ],
+    "tcl_width_line_numbers": [],
+    "tcl_enable_line_numbers": [
+      4119
+    ]
+  },
+  "kernel_fpga_c_files_present": [],
+  "dtb_source_file_count": 0
+}

@@ -1,0 +1,8 @@
+{
+  "timestamp_local": "2026-10-17T17:48:24.306575+08:00",
+  "command": "SSH BatchMode + sudo -n Python read-only /proc and listener inspection",
+  "returncode": 0,
+  "stdout": "{\"meminfo_lines\": [\"CmaTotal:         131072 kB\", \"CmaFree:          113864 kB\"], \"port_8080_listeners\": [], \"processes_of_interest\": [{\"argv\": [\"/usr/bin/python3\", \"/usr/bin/networkd-dispatcher\", \"--run-startup-triggers\"], \"comm\": \"networkd-dispat\", \"device_fds\": [], \"pid\": 174}, {\"argv\": [\"/usr/bin/python3\", \"/usr/share/unattended-upgrades/unattended-upgrade-shutdown\", \"--wait-for-signal\"], \"comm\": \"unattended-upgr\", \"device_fds\": [], \"pid\": 524}, {\"argv\": [\"/usr/local/share/pynq-venv/bin/python3\", \"/usr/local/share/pynq-venv/bin/jupyter-notebook\", \"--no-browser\", \"--allow-root\"], \"comm\": \"jupyter-noteboo\", \"device_fds\": [], \"pid\": 632}, {\"argv\": [\"python3\", \"/usr/local/bin/redirect_server\"], \"comm\": \"python3\", \"device_fds\": [], \"pid\": 788}, {\"argv\": [\"sudo\", \"-n\", \"python3\", \"-\"], \"comm\": \"sudo\", \"device_fds\": [], \"pid\": 7527}, {\"argv\": [\"python3\", \"-\"], \"comm\": \"python3\", \"device_fds\": [], \"pid\": 7533}], \"ss_exit\": 0, \"ss_stderr\": \"\"}\n",
+  "stderr": "",
+  "password_prompted_or_supplied": false
+}

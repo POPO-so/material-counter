@@ -1,0 +1,28 @@
+FFF                                                                      [100%]
+================================== FAILURES ===================================
+_ test_post_run_resource_or_signature_changes_keep_failure_marker[CmaFree-0] __
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:113: in test_post_run_resource_or_signature_changes_keep_failure_marker
+    assert result['status'] == 'FAIL_STOPPED'
+E   AssertionError: assert 'RUN_ONLY_PASS' == 'FAIL_STOPPED'
+E     
+E     - FAIL_STOPPED
+E     + RUN_ONLY_PASS
+_ test_post_run_resource_or_signature_changes_keep_failure_marker[ownership_clean-False] _
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:113: in test_post_run_resource_or_signature_changes_keep_failure_marker
+    assert result['status'] == 'FAIL_STOPPED'
+E   AssertionError: assert 'RUN_ONLY_PASS' == 'FAIL_STOPPED'
+E     
+E     - FAIL_STOPPED
+E     + RUN_ONLY_PASS
+_ test_post_run_resource_or_signature_changes_keep_failure_marker[packer_signature-0] _
+data\results\wo0015-runonly-proposal-20261015\test_run_only_model.py:113: in test_post_run_resource_or_signature_changes_keep_failure_marker
+    assert result['status'] == 'FAIL_STOPPED'
+E   AssertionError: assert 'RUN_ONLY_PASS' == 'FAIL_STOPPED'
+E     
+E     - FAIL_STOPPED
+E     + RUN_ONLY_PASS
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_post_run_resource_or_signature_changes_keep_failure_marker[CmaFree-0]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_post_run_resource_or_signature_changes_keep_failure_marker[ownership_clean-False]
+FAILED data/results/wo0015-runonly-proposal-20261015/test_run_only_model.py::test_post_run_resource_or_signature_changes_keep_failure_marker[packer_signature-0]
+3 failed, 26 deselected in 0.10s

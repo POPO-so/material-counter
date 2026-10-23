@@ -1,0 +1,1273 @@
+﻿{
+  "afi1_snapshots": [
+    {
+      "access": "read-only",
+      "afi1_skip_reason": null,
+      "afi1_status": "READ",
+      "registers": {
+        "AFI1_RDCHAN_CTRL": {
+          "address": "0xf8009000",
+          "raw_hex": "0x00000001",
+          "value": 1,
+          "width_bit0": 1,
+          "width_bits": 32
+        },
+        "AFI1_WRCHAN_CTRL": {
+          "address": "0xf8009014",
+          "raw_hex": "0x00000f01",
+          "value": 3841,
+          "width_bit0": 1,
+          "width_bits": 32
+        },
+        "SLCR_FPGA0_CLK_CTRL": {
+          "address": "0xf8000170",
+          "raw_hex": "0x00400800",
+          "value": 4196352
+        },
+        "SLCR_FPGA_RST_CTRL": {
+          "address": "0xf8000240",
+          "raw_hex": "0x00000000",
+          "value": 0
+        }
+      },
+      "stage": "pre_dma_afi1_sync"
+    },
+    {
+      "access": "read-only",
+      "afi1_skip_reason": null,
+      "afi1_status": "READ",
+      "registers": {
+        "AFI1_RDCHAN_CTRL": {
+          "address": "0xf8009000",
+          "raw_hex": "0x00000001",
+          "value": 1,
+          "width_bit0": 1,
+          "width_bits": 32
+        },
+        "AFI1_WRCHAN_CTRL": {
+          "address": "0xf8009014",
+          "raw_hex": "0x00000f01",
+          "value": 3841,
+          "width_bit0": 1,
+          "width_bits": 32
+        },
+        "SLCR_FPGA0_CLK_CTRL": {
+          "address": "0xf8000170",
+          "raw_hex": "0x00400800",
+          "value": 4196352
+        },
+        "SLCR_FPGA_RST_CTRL": {
+          "address": "0xf8000240",
+          "raw_hex": "0x00000000",
+          "value": 0
+        }
+      },
+      "stage": "post_overlay_afi1_sync"
+    },
+    {
+      "access": "read-only",
+      "afi1_skip_reason": null,
+      "afi1_status": "READ",
+      "registers": {
+        "AFI1_RDCHAN_CTRL": {
+          "address": "0xf8009000",
+          "raw_hex": "0x00000001",
+          "value": 1,
+          "width_bit0": 1,
+          "width_bits": 32
+        },
+        "AFI1_WRCHAN_CTRL": {
+          "address": "0xf8009014",
+          "raw_hex": "0x00000f01",
+          "value": 3841,
+          "width_bit0": 1,
+          "width_bits": 32
+        },
+        "SLCR_FPGA0_CLK_CTRL": {
+          "address": "0xf8000170",
+          "raw_hex": "0x00400800",
+          "value": 4196352
+        },
+        "SLCR_FPGA_RST_CTRL": {
+          "address": "0xf8000240",
+          "raw_hex": "0x00000000",
+          "value": 0
+        }
+      },
+      "stage": "post_dma"
+    }
+  ],
+  "afi1_sync": {
+    "fpga_rst_ctrl": 0,
+    "fpga_rst_ctrl_raw_hex": "0x00000000",
+    "hwh_hp1_data_width_bits": 32,
+    "hwh_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.hwh",
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "before": 1,
+        "before_raw_hex": "0x00000001",
+        "readback": 1,
+        "readback_raw_hex": "0x00000001",
+        "width_bit0": 1,
+        "write_raw_hex": "0x00000001",
+        "write_value": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "before": 3841,
+        "before_raw_hex": "0x00000f01",
+        "readback": 3841,
+        "readback_raw_hex": "0x00000f01",
+        "width_bit0": 1,
+        "write_raw_hex": "0x00000f01",
+        "write_value": 3841
+      }
+    },
+    "stage": "dma-single",
+    "status": "AFI1_HP1_32BIT_SYNC_PASS"
+  },
+  "allocation_accounting": {
+    "hard_gate": false,
+    "note": "Global CMA free-page differences are telemetry, not per-buffer allocation proof.",
+    "observed_cma_decrease_kib": 232,
+    "page_rounded_bytes_kib": 304
+  },
+  "artifact_fingerprints": {
+    "bit_matches_manifest": true,
+    "bit_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.bit",
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "hwh_matches_manifest": true,
+    "hwh_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.hwh",
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+  },
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": true,
+  "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+  "build_id": "wo0015-hw-50mhz-20261015",
+  "clock_mhz": 50,
+  "cma_allocation_samples": [
+    {
+      "cma_free_kib": 113868,
+      "stage": "before"
+    },
+    {
+      "cma_free_kib": 113692,
+      "stage": "after_mm2s"
+    },
+    {
+      "cma_free_kib": 113636,
+      "stage": "after_s2mm"
+    },
+    {
+      "cma_free_kib": 113636,
+      "stage": "after_release"
+    }
+  ],
+  "cma_free_after_kib": 113636,
+  "cma_free_before_kib": 113868,
+  "cma_free_delta_kib": -232,
+  "cma_free_during_kib": 113636,
+  "cma_watermark_kib": 16384,
+  "dma_may_be_active": false,
+  "dma_start_attempted": true,
+  "frame_count": 1,
+  "frames": [
+    {
+      "accepted_pixels": 76800,
+      "byte_mismatches": 0,
+      "checker": {
+        "checksum": 571200,
+        "eols": 240,
+        "foreground_pixels": 2240,
+        "input_beats_delta": 57608,
+        "input_bytes_delta": 230432,
+        "input_tlast_delta": 1,
+        "output_total_delta": 76800,
+        "packet_done_delta": 1,
+        "pixels": 76800,
+        "sofs": 1
+      },
+      "frame_id": 0,
+      "mm2s_dmasr": 4098,
+      "packer_status": 2,
+      "raw_capture": {
+        "artifacts": {
+          "bit_matches_manifest": true,
+          "bit_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.bit",
+          "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+          "hwh_matches_manifest": true,
+          "hwh_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.hwh",
+          "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+        },
+        "byte_count": 76800,
+        "capture_status": "SAVED",
+        "captured_before_release": true,
+        "context": {
+          "accepted_pixels": 76800,
+          "afi1_after_dma": {
+            "access": "read-only",
+            "afi1_skip_reason": null,
+            "afi1_status": "READ",
+            "registers": {
+              "AFI1_RDCHAN_CTRL": {
+                "address": "0xf8009000",
+                "raw_hex": "0x00000001",
+                "value": 1,
+                "width_bit0": 1,
+                "width_bits": 32
+              },
+              "AFI1_WRCHAN_CTRL": {
+                "address": "0xf8009014",
+                "raw_hex": "0x00000f01",
+                "value": 3841,
+                "width_bit0": 1,
+                "width_bits": 32
+              },
+              "SLCR_FPGA0_CLK_CTRL": {
+                "address": "0xf8000170",
+                "raw_hex": "0x00400800",
+                "value": 4196352
+              },
+              "SLCR_FPGA_RST_CTRL": {
+                "address": "0xf8000240",
+                "raw_hex": "0x00000000",
+                "value": 0
+              }
+            },
+            "stage": "after_dma_frame_0"
+          },
+          "afi1_before_dma": {
+            "access": "read-only",
+            "afi1_skip_reason": null,
+            "afi1_status": "READ",
+            "registers": {
+              "AFI1_RDCHAN_CTRL": {
+                "address": "0xf8009000",
+                "raw_hex": "0x00000001",
+                "value": 1,
+                "width_bit0": 1,
+                "width_bits": 32
+              },
+              "AFI1_WRCHAN_CTRL": {
+                "address": "0xf8009014",
+                "raw_hex": "0x00000f01",
+                "value": 3841,
+                "width_bit0": 1,
+                "width_bits": 32
+              },
+              "SLCR_FPGA0_CLK_CTRL": {
+                "address": "0xf8000170",
+                "raw_hex": "0x00400800",
+                "value": 4196352
+              },
+              "SLCR_FPGA_RST_CTRL": {
+                "address": "0xf8000240",
+                "raw_hex": "0x00000000",
+                "value": 0
+              }
+            },
+            "stage": "before_dma_frame_0"
+          },
+          "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+          "checker_after": {
+            "eols": 240,
+            "error_code": 0,
+            "frame_id": 0,
+            "input_beats": 57608,
+            "input_bytes": 230432,
+            "input_checksum": 6620674,
+            "input_first_word": 1464807732,
+            "input_last_word": 3235823636,
+            "input_tlast": 1,
+            "output_checksum": 571200,
+            "output_stalls": 0,
+            "output_total": 76800,
+            "packet_done_count": 1,
+            "packet_error_count": 0,
+            "pixels": 76800,
+            "sofs": 1,
+            "status": 9
+          },
+          "checker_before": {
+            "eols": 0,
+            "error_code": 0,
+            "frame_id": 0,
+            "input_beats": 0,
+            "input_bytes": 0,
+            "input_checksum": 0,
+            "input_first_word": 0,
+            "input_last_word": 0,
+            "input_tlast": 0,
+            "output_checksum": 0,
+            "output_stalls": 0,
+            "output_total": 0,
+            "packet_done_count": 0,
+            "packet_error_count": 0,
+            "pixels": 0,
+            "sofs": 0,
+            "status": 0
+          },
+          "frame_id": 0,
+          "frame_index": 0,
+          "manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b",
+          "mm2s_dmasr": 4098,
+          "packer_error": 0,
+          "packer_status": 2,
+          "physical_gate": {
+            "mm2s_physical_range": [
+              361234432,
+              361464864
+            ],
+            "permitted_buffer_ranges": [
+              [
+                1048576,
+                536870912
+              ]
+            ],
+            "rx_actual_bytes": 76800,
+            "s2mm_physical_range": [
+              361103360,
+              361180160
+            ],
+            "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+            "tx_actual_bytes": 230432
+          },
+          "s2mm_actual_length": 76800,
+          "s2mm_dmasr": 4098,
+          "sent_beats": 19200
+        },
+        "diagnostics_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_diagnostics.json",
+        "expected_golden_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+        "expected_golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+        "first_64_bytes_words": [
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 0,
+            "parity": "even",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 0
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 4,
+            "parity": "odd",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 1
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 8,
+            "parity": "even",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 2
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 12,
+            "parity": "odd",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 3
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 16,
+            "parity": "even",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 4
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 20,
+            "parity": "odd",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 5
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 24,
+            "parity": "even",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 6
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 28,
+            "parity": "odd",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 7
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 32,
+            "parity": "even",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 8
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 36,
+            "parity": "odd",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 9
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 40,
+            "parity": "even",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 10
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 44,
+            "parity": "odd",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 11
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 48,
+            "parity": "even",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 12
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 52,
+            "parity": "odd",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 13
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 56,
+            "parity": "even",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 14
+          },
+          {
+            "golden_hex": "00000000",
+            "golden_u32_le": 0,
+            "mismatch_bytes": 0,
+            "offset": 60,
+            "parity": "odd",
+            "rx_hex": "00000000",
+            "rx_u32_le": 0,
+            "word_index": 15
+          }
+        ],
+        "first_mismatch": null,
+        "first_mismatches": [],
+        "golden_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+        "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+        "mismatch_bytes": 0,
+        "parity": {
+          "even": {
+            "golden_match_bytes": 38400,
+            "mismatch_bytes": 0,
+            "poison_word_bytes": 0,
+            "poison_words": 0,
+            "word_count": 9600,
+            "zero_word_bytes": 37000,
+            "zero_words": 9250
+          },
+          "odd": {
+            "golden_match_bytes": 38400,
+            "mismatch_bytes": 0,
+            "poison_word_bytes": 0,
+            "poison_words": 0,
+            "word_count": 9600,
+            "zero_word_bytes": 37000,
+            "zero_words": 9250
+          }
+        },
+        "poison_byte": 165,
+        "poison_u32": 2779096485,
+        "rx_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_rx_raw.bin",
+        "rx_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+        "schema": 1,
+        "tx_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_tx_raw.bin",
+        "tx_sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+        "word_bytes": 4
+      },
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    }
+  ],
+  "hardware_stage": "dma-single",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b",
+  "post_alloc_physical_gate": {
+    "mm2s_physical_range": [
+      361234432,
+      361464864
+    ],
+    "permitted_buffer_ranges": [
+      [
+        1048576,
+        536870912
+      ]
+    ],
+    "rx_actual_bytes": 76800,
+    "s2mm_physical_range": [
+      361103360,
+      361180160
+    ],
+    "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+    "tx_actual_bytes": 230432
+  },
+  "post_stage_audit": {
+    "boot_id_after": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+    "boot_id_before": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+    "dmesg_health": "PASS",
+    "dmesg_new_lines": [
+      "[ 1827.220296] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4514), ret: 0",
+      "[ 1827.220411] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4514)",
+      "[ 1827.221239] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4514), ret: 0",
+      "[ 1827.228349] [drm] bitstream 0803bde7-ef31-4917-ee94-dcd5ec1b899c locked, ref=1",
+      "[ 1827.228439] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(4514) add context Domain(65535) CU(0xffff) shared(true)",
+      "[ 1827.234687] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(4514) del context Domain(65535) CU(0xffff)"
+    ],
+    "fpga_manager": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "process_ownership": {
+      "denied": [],
+      "findings": [],
+      "scanned_proc": "/proc"
+    },
+    "pynq_state": {
+      "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+      "loaded_bit_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.bit",
+      "loaded_bit_sha1": "acb473c8c8dbae8b20a24aafb5d304b57c19845b",
+      "loaded_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "pl_state_status": "GLOBAL_STATE_PRESENT",
+      "shutdown_ips": {},
+      "shutdown_ips_empty": true
+    }
+  },
+  "pynq_imported": true,
+  "runtime_preflight": {
+    "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+    "cma_admission": {
+      "CmaFree_kib": 113868,
+      "CmaTotal_kib": 131072,
+      "limitation": "kernel CMA accounting and verified DDR safety envelope only; not a measured CMA interval or static CMA subregion; authoritative PYNQ physical-address, size, overlap and allocation accounting checks remain mandatory",
+      "permitted_buffer_ranges": [
+        [
+          1048576,
+          536870912
+        ]
+      ],
+      "physical_cma_range_known": false,
+      "requires_authoritative_post_alloc_gate": true,
+      "source": "MEMINFO_IOMEM_VERIFIED",
+      "system_ram_ranges": [
+        [
+          0,
+          536870912
+        ]
+      ]
+    },
+    "fpga_manager": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "kernel_log": [
+      "[    1.010338] raid6: int32x2  gen()   200 MB/s",
+      "[    1.180284] raid6: int32x1  gen()   177 MB/s",
+      "[    1.183324] raid6: using algorithm int32x2 gen() 200 MB/s",
+      "[    1.350235] raid6: .... xor() 124 MB/s, rmw enabled",
+      "[    1.353825] raid6: using intx1 recovery algorithm",
+      "[    1.358456] SCSI subsystem initialized",
+      "[    1.361314] usbcore: registered new interface driver usbfs",
+      "[    1.365572] usbcore: registered new interface driver hub",
+      "[    1.369686] usbcore: registered new device driver usb",
+      "[    1.373768] mc: Linux media interface: v0.10",
+      "[    1.376830] videodev: Linux video capture interface: v2.00",
+      "[    1.381135] pps_core: LinuxPPS API ver. 1 registered",
+      "[    1.384810] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>",
+      "[    1.392701] PTP clock support registered",
+      "[    1.395399] EDAC MC: Ver: 3.0.0",
+      "[    1.398090] FPGA manager framework",
+      "[    1.400564] Advanced Linux Sound Architecture Driver Initialized.",
+      "[    1.406935] vgaarb: loaded",
+      "[    1.409173] clocksource: Switched to clocksource arm_global_timer",
+      "[    1.429821] NET: Registered PF_INET protocol family",
+      "[    1.433749] IP idents hash table entries: 8192 (order: 4, 65536 bytes, linear)",
+      "[    1.441377] tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)",
+      "[    1.448587] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)",
+      "[    1.455159] TCP established hash table entries: 4096 (order: 2, 16384 bytes, linear)",
+      "[    1.461705] TCP bind hash table entries: 4096 (order: 4, 65536 bytes, linear)",
+      "[    1.467713] TCP: Hash tables configured (established 4096 bind 4096)",
+      "[    1.472895] UDP hash table entries: 256 (order: 1, 8192 bytes, linear)",
+      "[    1.478213] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes, linear)",
+      "[    1.484120] NET: Registered PF_UNIX/PF_LOCAL protocol family",
+      "[    1.489242] RPC: Registered named UNIX socket transport module.",
+      "[    1.493884] RPC: Registered udp transport module.",
+      "[    1.497292] RPC: Registered tcp transport module.",
+      "[    1.500723] RPC: Registered tcp-with-tls transport module.",
+      "[    1.504914] RPC: Registered tcp NFSv4.1 backchannel transport module.",
+      "[    1.513228] PCI: CLS 0 bytes, default 64",
+      "[    1.516680] armv7-pmu f8891000.pmu: hw perfevents: no interrupt-affinity property, guessing.",
+      "[    1.524142] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available",
+      "[    1.532578] Initialise system trusted keyrings",
+      "[    1.536007] workingset: timestamp_bits=14 max_order=17 bucket_order=3",
+      "[    1.541830] squashfs: version 4.0 (2009/01/31) Phillip Lougher",
+      "[    1.546899] jffs2: version 2.2. (NAND) (SUMMARY)  © 2001-2006 Red Hat, Inc.",
+      "[    1.725032] xor: measuring software checksum speed",
+      "[    1.737961]    arm4regs        :  1046 MB/sec",
+      "[    1.753493]    8regs           :   790 MB/sec",
+      "[    1.768330]    32regs          :   836 MB/sec",
+      "[    1.771403] xor: using function: arm4regs (1046 MB/sec)",
+      "[    1.775339] Key type asymmetric registered",
+      "[    1.778144] Asymmetric key parser 'x509' registered",
+      "[    1.782057] io scheduler mq-deadline registered",
+      "[    1.785304] io scheduler kyber registered",
+      "[    1.788119] io scheduler bfq registered",
+      "[    1.791671] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized",
+      "[    1.800926] dma-pl330 f8003000.dma-controller: Loaded driver for PL330 DMAC-241330",
+      "[    1.807232] dma-pl330 f8003000.dma-controller: \tDBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16",
+      "[    1.831262] brd: module loaded",
+      "[    1.843057] loop: module loaded",
+      "[    1.846989] spi_master spi0: cannot find modalias for /axi/spi@e000d000/flash@0",
+      "[    1.853129] spi_master spi0: Failed to create SPI device for /axi/spi@e000d000/flash@0",
+      "[    1.863561] tun: Universal TUN/TAP device driver, 1.6",
+      "[    1.867746] CAN device driver interface",
+      "[    1.871097] macb e000b000.ethernet: invalid hw address, using random",
+      "[   39.957454] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 40 (aa:a1:0a:f8:06:1d)",
+      "[   39.966433] e1000e: Intel(R) PRO/1000 Network Driver",
+      "[   39.970127] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.",
+      "[   39.975869] usbcore: registered new interface driver cdc_acm",
+      "[   39.980270] cdc_acm: USB Abstract Control Model driver for USB modems and ISDN adapters",
+      "[   39.987036] usbcore: registered new interface driver cdc_wdm",
+      "[   39.991492] usbcore: registered new interface driver usb-storage",
+      "[   39.996361] usbcore: registered new interface driver usbserial_generic",
+      "[   40.001658] usbserial: USB Serial support registered for generic",
+      "[   40.006425] usbcore: registered new interface driver usb_serial_simple",
+      "[   40.011722] usbserial: USB Serial support registered for carelink",
+      "[   40.016563] usbserial: USB Serial support registered for flashloader",
+      "[   40.021685] usbserial: USB Serial support registered for funsoft",
+      "[   40.026440] usbserial: USB Serial support registered for google",
+      "[   40.031120] usbserial: USB Serial support registered for hp4x",
+      "[   40.035613] usbserial: USB Serial support registered for kaufmann",
+      "[   40.040468] usbserial: USB Serial support registered for libtransistor",
+      "[   40.045745] usbserial: USB Serial support registered for moto_modem",
+      "[   40.050800] usbserial: USB Serial support registered for motorola_tetra",
+      "[   40.056161] usbserial: USB Serial support registered for nokia",
+      "[   40.060762] usbserial: USB Serial support registered for novatel_gps",
+      "[   40.065877] usbserial: USB Serial support registered for siemens_mpi",
+      "[   40.071066] usbserial: USB Serial support registered for suunto",
+      "[   40.075736] usbserial: USB Serial support registered for vivopay",
+      "[   40.080520] usbserial: USB Serial support registered for zio",
+      "[   40.086176] ULPI transceiver vendor/product ID 0x0451/0x1507",
+      "[   40.090592] Found TI TUSB1210 ULPI transceiver.",
+      "[   40.093833] ULPI integrity check: passed.",
+      "[   40.097535] ci_hdrc ci_hdrc.0: EHCI Host Controller",
+      "[   40.101214] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1",
+      "[   40.130253] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00",
+      "[   40.135647] hub 1-0:1.0: USB hub found",
+      "[   40.138273] hub 1-0:1.0: 1 port detected",
+      "[   40.143332] i2c_dev: i2c /dev entries driver",
+      "[   40.146475] cdns-i2c e0004000.i2c: can't get pinctrl, bus recovery not supported",
+      "[   40.153404] cdns-i2c e0004000.i2c: 400 kHz mmio e0004000 irq 42",
+      "[   40.158245] cdns-i2c e0005000.i2c: can't get pinctrl, bus recovery not supported",
+      "[   40.165066] cdns-i2c e0005000.i2c: 400 kHz mmio e0005000 irq 43",
+      "[   40.172234] cdns-wdt f8005000.watchdog: Xilinx Watchdog Timer with timeout 10s",
+      "[   40.179967] device-mapper: ioctl: 4.48.0-ioctl (2023-03-01) initialised: dm-devel@redhat.com",
+      "[   40.187584] EDAC MC: ECC not enabled",
+      "[   40.190095] Xilinx Zynq CpuIdle Driver started",
+      "[   40.193952] sdhci: Secure Digital Host Controller Interface driver",
+      "[   40.198842] sdhci: Copyright(c) Pierre Ossman",
+      "[   40.201930] sdhci-pltfm: SDHCI platform and OF driver helper",
+      "[   40.206890] ledtrig-cpu: registered to indicate activity on CPUs",
+      "[   40.212076] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 551318127 ns",
+      "[   40.220068] timer #0 at (ptrval), irq=46",
+      "[   40.223305] usbcore: registered new interface driver usbhid",
+      "[   40.227590] usbhid: USB HID core driver",
+      "[   40.232933] fpga_manager fpga0: Xilinx Zynq FPGA Manager registered",
+      "[   40.239243] mmc0: SDHCI controller on e0100000.mmc [e0100000.mmc] using ADMA",
+      "[   40.240225] IPVS: Registered protocols (TCP, UDP)",
+      "[   40.248601] IPVS: Connection hash table configured (size=4096, memory=16Kbytes)",
+      "[   40.255056] IPVS: ipvs loaded.",
+      "[   40.256843] IPVS: [rr] scheduler registered.",
+      "[   40.260326] Initializing XFRM netlink socket",
+      "[   40.263495] NET: Registered PF_INET6 protocol family",
+      "[   40.269790] Segment Routing with IPv6",
+      "[   40.272277] In-situ OAM (IOAM) with IPv6",
+      "[   40.275130] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver",
+      "[   40.280877] NET: Registered PF_PACKET protocol family",
+      "[   40.284646] can: controller area network core",
+      "[   40.287807] NET: Registered PF_CAN protocol family",
+      "[   40.291350] can: raw protocol",
+      "[   40.293047] can: broadcast manager protocol",
+      "[   40.295957] can: netlink gateway - max_hops=1",
+      "[   40.299791] Registering SWP/SWPB emulation handler",
+      "[   40.318314] mmc0: new high speed SDHC card at address b371",
+      "[   40.320758] Loading compiled-in X.509 certificates",
+      "[   40.323503] mmcblk0: mmc0:b371 CBADS 14.6 GiB",
+      "[   40.332457]  mmcblk0: p1 p2",
+      "[   40.342346] Btrfs loaded, zoned=no, fsverity=no",
+      "[   40.358019] of-fpga-region fpga-region: FPGA Region probed",
+      "[   40.362815] of_cfs_init",
+      "[   40.364115] of_cfs_init: OK",
+      "[   40.365959] cfg80211: Loading compiled-in X.509 certificates for regulatory database",
+      "[   40.376609] Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'",
+      "[   40.384030] Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'",
+      "[   40.390177] platform regulatory.0: Direct firmware load for regulatory.db failed with error -2",
+      "[   40.397520] cfg80211: failed to load regulatory.db",
+      "[   40.399347] clk: Not disabling unused clocks",
+      "[   40.403990] ALSA device list:",
+      "[   40.405661]   No soundcards found.",
+      "[   40.421786] EXT4-fs (mmcblk0p2): mounted filesystem 63b8b04d-af08-419a-a9dc-16f374e283dc r/w with ordered data mode. Quota mode: disabled.",
+      "[   40.433097] VFS: Mounted root (ext4 filesystem) on device 179:2.",
+      "[   40.438909] devtmpfs: mounted",
+      "[   40.443593] Freeing unused kernel image (initmem) memory: 1024K",
+      "[   40.459756] Run /sbin/init as init process",
+      "[   40.462575]   with arguments:",
+      "[   40.462584]     /sbin/init",
+      "[   40.462595]     earlyprintk",
+      "[   40.462605]   with environment:",
+      "[   40.462613]     HOME=/",
+      "[   40.462623]     TERM=linux",
+      "[   40.529268] usb 1-1: new high-speed USB device number 2 using ci_hdrc",
+      "[   41.490391] systemd[1]: System time before build time, advancing clock.",
+      "[   41.651810] systemd[1]: Failed to find module 'autofs4'",
+      "[   42.110603] systemd[1]: systemd 249.11-0ubuntu3 running in system mode (+PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT +GNUTLS -OPENSSL +ACL +BLKID +CURL +ELFUTILS -FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP -LIBFDISK +PCRE2 -PWQUALITY -P11KIT -QRENCODE +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified)",
+      "[   42.141082] systemd[1]: Detected architecture arm.",
+      "[   42.228360] systemd[1]: Hostname set to <pynq>.",
+      "[   51.490247] systemd[1]: Queued start job for default target Multi-User System.",
+      "[   54.139205] random: crng init done",
+      "[   54.183467] systemd[1]: Created slice Slice /system/modprobe.",
+      "[   54.222823] systemd[1]: Created slice Slice /system/serial-getty.",
+      "[   54.261645] systemd[1]: Created slice User and Session Slice.",
+      "[   54.300110] systemd[1]: Started Dispatch Password Requests to Console Directory Watch.",
+      "[   54.339858] systemd[1]: Started Forward Password Requests to Wall Directory Watch.",
+      "[   54.380025] systemd[1]: Condition check resulted in Arbitrary Executable File Formats File System Automount Point being skipped.",
+      "[   54.390869] systemd[1]: Reached target Local Encrypted Volumes.",
+      "[   54.430082] systemd[1]: Reached target Remote File Systems.",
+      "[   54.469485] systemd[1]: Reached target Slice Units.",
+      "[   54.499851] systemd[1]: Reached target Local Verity Protected Volumes.",
+      "[   54.540541] systemd[1]: Listening on Syslog Socket.",
+      "[   54.569994] systemd[1]: Listening on initctl Compatibility Named Pipe.",
+      "[   54.623758] systemd[1]: Condition check resulted in Journal Audit Socket being skipped.",
+      "[   54.631900] systemd[1]: Listening on Journal Socket (/dev/log).",
+      "[   54.670717] systemd[1]: Listening on Journal Socket.",
+      "[   54.705369] systemd[1]: Listening on udev Control Socket.",
+      "[   54.740506] systemd[1]: Listening on udev Kernel Socket.",
+      "[   54.780597] systemd[1]: Condition check resulted in Huge Pages File System being skipped.",
+      "[   54.879810] systemd[1]: Mounting POSIX Message Queue File System...",
+      "[   54.929794] systemd[1]: Mounting Kernel Debug File System...",
+      "[   54.960145] systemd[1]: Condition check resulted in Kernel Trace File System being skipped.",
+      "[   54.982083] systemd[1]: Starting Journal Service...",
+      "[   55.028371] systemd[1]: Starting Restore / save the current clock...",
+      "[   55.088577] systemd[1]: Starting Set the console keyboard layout...",
+      "[   55.107163] systemd[1]: Condition check resulted in Create List of Static Device Nodes being skipped.",
+      "[   55.125221] systemd[1]: Starting Load Kernel Module configfs...",
+      "[   55.220634] systemd[1]: Starting Load Kernel Module drm...",
+      "[   55.258114] systemd[1]: Starting Load Kernel Module fuse...",
+      "[   55.303380] systemd[1]: Started Nameserver information manager.",
+      "[   55.353159] systemd[1]: Reached target Preparation for Network.",
+      "[   55.580432] systemd[1]: Starting Load Kernel Modules...",
+      "[   55.617811] systemd[1]: Starting Remount Root and Kernel File Systems...",
+      "[   55.664404] systemd[1]: Starting Coldplug All udev Devices...",
+      "[   55.723710] systemd[1]: Started Journal Service.",
+      "[   56.290714] Adding 524284k swap on /var/swap.  Priority:-2 extents:2 across:2097148k SS",
+      "[   56.304587] systemd-journald[82]: Received client request to flush runtime journal.",
+      "[   56.329933] systemd-journald[82]: File /var/log/journal/c82cf5bcd3a14b95935d65bfb529d72d/system.journal corrupted or uncleanly shut down, renaming and replacing.",
+      "[   58.376854] zocl: loading out-of-tree module taints kernel.",
+      "[   58.435808] [drm] Probing for xlnx,zocl",
+      "[   58.435857] zocl-drm axi:zyxclmm_drm: error -ENXIO: IRQ index 0 not found",
+      "[   58.479444] [drm] PR[0] Isolation addr 0x0",
+      "[   58.495252] [drm] Initialized zocl 0.0.0  for axi:zyxclmm_drm on minor 0",
+      "[   58.889679] usb 1-1: Found UVC 1.00 device USB Camera (0edc:2076)",
+      "[   58.948339] usbcore: registered new interface driver uvcvideo",
+      "[   62.828150] macb e000b000.ethernet eth0: PHY [e000b000.ethernet-ffffffff:00] driver [RTL8211E Gigabit Ethernet] (irq=POLL)",
+      "[   62.828194] macb e000b000.ethernet eth0: configuring for phy/rgmii-id link mode",
+      "[   65.115970] FAT-fs (mmcblk0p1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.",
+      "[   65.951964] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx",
+      "[   81.961961] systemd[557]: memfd_create() called without MFD_EXEC or MFD_NOEXEC_SEAL set",
+      "[  123.653038] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(370), ret: 0",
+      "[  123.653175] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(370)",
+      "[  123.654227] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(370), ret: 0",
+      "[  156.366534] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(870), ret: 0",
+      "[  156.366660] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(870)",
+      "[  156.367504] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(870), ret: 0",
+      "[  158.441752] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(870)",
+      "[  163.938919] fpga_manager fpga0: writing base.bin to Xilinx Zynq FPGA Manager",
+      "[  164.026022] [drm] Loading xclbin 16becb71-c4cb-df44-9916-222504fbdb45 to slot 0",
+      "[  164.026062] [drm] skip kind 29(AIE_RESOURCES) return code: -22",
+      "[  164.026083] [drm] skip kind 8(IP_LAYOUT) return code: -22",
+      "[  164.026099] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22",
+      "[  164.026113] [drm] skip kind 25(AIE_METADATA) return code: -22",
+      "[  164.026126] [drm] skip kind 7(CONNECTIVITY) return code: -22",
+      "[  164.026140] [drm] found kind 6(MEM_TOPOLOGY)",
+      "[  164.026265] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA",
+      "[  164.026344] [drm] Memory 1 is not reserved in device tree. Will allocate memory from CMA",
+      "[  164.026413] [drm] Memory 2 is not reserved in device tree. Will allocate memory from CMA",
+      "[  164.026478] [drm] Memory 3 is not reserved in device tree. Will allocate memory from CMA",
+      "[  164.026542] [drm] Memory 4 is not reserved in device tree. Will allocate memory from CMA",
+      "[  164.026615] [drm] zocl_xclbin_read_axlf 16becb71-c4cb-df44-9916-222504fbdb45 ret: 0",
+      "[  164.057074] [drm] bitstream 16becb71-c4cb-df44-9916-222504fbdb45 locked, ref=1",
+      "[  164.057194] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(370) add context Domain(65535) CU(0xffff) shared(true)",
+      "[  164.057306] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(370) del context Domain(65535) CU(0xffff)",
+      "[  164.057359] [drm] bitstream 16becb71-c4cb-df44-9916-222504fbdb45 unlocked, ref=0",
+      "[  170.551445] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(370)",
+      "[ 1151.889884] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(3281), ret: 0",
+      "[ 1151.890004] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(3281)",
+      "[ 1151.890760] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(3281), ret: 0",
+      "[ 1151.895203] [drm] bitstream 16becb71-c4cb-df44-9916-222504fbdb45 locked, ref=1",
+      "[ 1151.895300] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(3281) add context Domain(65535) CU(0xffff) shared(true)",
+      "[ 1151.896318] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(3281) del context Domain(65535) CU(0xffff)",
+      "[ 1151.896380] [drm] bitstream 16becb71-c4cb-df44-9916-222504fbdb45 unlocked, ref=0",
+      "[ 1154.497540] fpga_manager fpga0: writing wo15.bin to Xilinx Zynq FPGA Manager",
+      "[ 1154.579110] [drm] Loading xclbin 0803bde7-ef31-4917-ee94-dcd5ec1b899c to slot 0",
+      "[ 1154.579145] [drm] skip kind 29(AIE_RESOURCES) return code: -22",
+      "[ 1154.579241] [drm] skip kind 8(IP_LAYOUT) return code: -22",
+      "[ 1154.579263] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22",
+      "[ 1154.579279] [drm] skip kind 25(AIE_METADATA) return code: -22",
+      "[ 1154.579293] [drm] skip kind 7(CONNECTIVITY) return code: -22",
+      "[ 1154.579307] [drm] found kind 6(MEM_TOPOLOGY)",
+      "[ 1154.579480] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA",
+      "[ 1154.579557] [drm] zocl_xclbin_read_axlf 0803bde7-ef31-4917-ee94-dcd5ec1b899c ret: 0",
+      "[ 1154.604445] [drm] bitstream 0803bde7-ef31-4917-ee94-dcd5ec1b899c locked, ref=1",
+      "[ 1154.604559] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(3281) add context Domain(65535) CU(0xffff) shared(true)",
+      "[ 1154.604668] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(3281) del context Domain(65535) CU(0xffff)",
+      "[ 1154.604728] [drm] bitstream 0803bde7-ef31-4917-ee94-dcd5ec1b899c unlocked, ref=0",
+      "[ 1155.880211] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(3281)",
+      "[ 1794.614167] sh (4463): drop_caches: 3"
+    ],
+    "process_ownership": {
+      "denied": [],
+      "findings": [],
+      "scanned_proc": "/proc"
+    },
+    "pynq_state": {
+      "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+      "loaded_bit_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.bit",
+      "loaded_bit_sha1": "acb473c8c8dbae8b20a24aafb5d304b57c19845b",
+      "loaded_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "pl_state_status": "GLOBAL_STATE_PRESENT",
+      "shutdown_ips": {},
+      "shutdown_ips_empty": true
+    }
+  },
+  "rx_bytes_each": 76800,
+  "rx_diagnostics": {
+    "artifacts": {
+      "bit_matches_manifest": true,
+      "bit_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.bit",
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "hwh_matches_manifest": true,
+      "hwh_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.hwh",
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+    },
+    "byte_count": 76800,
+    "capture_status": "SAVED",
+    "captured_before_release": true,
+    "context": {
+      "accepted_pixels": 76800,
+      "afi1_after_dma": {
+        "access": "read-only",
+        "afi1_skip_reason": null,
+        "afi1_status": "READ",
+        "registers": {
+          "AFI1_RDCHAN_CTRL": {
+            "address": "0xf8009000",
+            "raw_hex": "0x00000001",
+            "value": 1,
+            "width_bit0": 1,
+            "width_bits": 32
+          },
+          "AFI1_WRCHAN_CTRL": {
+            "address": "0xf8009014",
+            "raw_hex": "0x00000f01",
+            "value": 3841,
+            "width_bit0": 1,
+            "width_bits": 32
+          },
+          "SLCR_FPGA0_CLK_CTRL": {
+            "address": "0xf8000170",
+            "raw_hex": "0x00400800",
+            "value": 4196352
+          },
+          "SLCR_FPGA_RST_CTRL": {
+            "address": "0xf8000240",
+            "raw_hex": "0x00000000",
+            "value": 0
+          }
+        },
+        "stage": "after_dma_frame_0"
+      },
+      "afi1_before_dma": {
+        "access": "read-only",
+        "afi1_skip_reason": null,
+        "afi1_status": "READ",
+        "registers": {
+          "AFI1_RDCHAN_CTRL": {
+            "address": "0xf8009000",
+            "raw_hex": "0x00000001",
+            "value": 1,
+            "width_bit0": 1,
+            "width_bits": 32
+          },
+          "AFI1_WRCHAN_CTRL": {
+            "address": "0xf8009014",
+            "raw_hex": "0x00000f01",
+            "value": 3841,
+            "width_bit0": 1,
+            "width_bits": 32
+          },
+          "SLCR_FPGA0_CLK_CTRL": {
+            "address": "0xf8000170",
+            "raw_hex": "0x00400800",
+            "value": 4196352
+          },
+          "SLCR_FPGA_RST_CTRL": {
+            "address": "0xf8000240",
+            "raw_hex": "0x00000000",
+            "value": 0
+          }
+        },
+        "stage": "before_dma_frame_0"
+      },
+      "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+      "checker_after": {
+        "eols": 240,
+        "error_code": 0,
+        "frame_id": 0,
+        "input_beats": 57608,
+        "input_bytes": 230432,
+        "input_checksum": 6620674,
+        "input_first_word": 1464807732,
+        "input_last_word": 3235823636,
+        "input_tlast": 1,
+        "output_checksum": 571200,
+        "output_stalls": 0,
+        "output_total": 76800,
+        "packet_done_count": 1,
+        "packet_error_count": 0,
+        "pixels": 76800,
+        "sofs": 1,
+        "status": 9
+      },
+      "checker_before": {
+        "eols": 0,
+        "error_code": 0,
+        "frame_id": 0,
+        "input_beats": 0,
+        "input_bytes": 0,
+        "input_checksum": 0,
+        "input_first_word": 0,
+        "input_last_word": 0,
+        "input_tlast": 0,
+        "output_checksum": 0,
+        "output_stalls": 0,
+        "output_total": 0,
+        "packet_done_count": 0,
+        "packet_error_count": 0,
+        "pixels": 0,
+        "sofs": 0,
+        "status": 0
+      },
+      "frame_id": 0,
+      "frame_index": 0,
+      "manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b",
+      "mm2s_dmasr": 4098,
+      "packer_error": 0,
+      "packer_status": 2,
+      "physical_gate": {
+        "mm2s_physical_range": [
+          361234432,
+          361464864
+        ],
+        "permitted_buffer_ranges": [
+          [
+            1048576,
+            536870912
+          ]
+        ],
+        "rx_actual_bytes": 76800,
+        "s2mm_physical_range": [
+          361103360,
+          361180160
+        ],
+        "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+        "tx_actual_bytes": 230432
+      },
+      "s2mm_actual_length": 76800,
+      "s2mm_dmasr": 4098,
+      "sent_beats": 19200
+    },
+    "diagnostics_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_diagnostics.json",
+    "expected_golden_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+    "expected_golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+    "first_64_bytes_words": [
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 0,
+        "parity": "even",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 0
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 4,
+        "parity": "odd",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 1
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 8,
+        "parity": "even",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 2
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 12,
+        "parity": "odd",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 3
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 16,
+        "parity": "even",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 4
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 20,
+        "parity": "odd",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 5
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 24,
+        "parity": "even",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 6
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 28,
+        "parity": "odd",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 7
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 32,
+        "parity": "even",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 8
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 36,
+        "parity": "odd",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 9
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 40,
+        "parity": "even",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 10
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 44,
+        "parity": "odd",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 11
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 48,
+        "parity": "even",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 12
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 52,
+        "parity": "odd",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 13
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 56,
+        "parity": "even",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 14
+      },
+      {
+        "golden_hex": "00000000",
+        "golden_u32_le": 0,
+        "mismatch_bytes": 0,
+        "offset": 60,
+        "parity": "odd",
+        "rx_hex": "00000000",
+        "rx_u32_le": 0,
+        "word_index": 15
+      }
+    ],
+    "first_mismatch": null,
+    "first_mismatches": [],
+    "golden_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_expected_golden.bin",
+    "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+    "mismatch_bytes": 0,
+    "parity": {
+      "even": {
+        "golden_match_bytes": 38400,
+        "mismatch_bytes": 0,
+        "poison_word_bytes": 0,
+        "poison_words": 0,
+        "word_count": 9600,
+        "zero_word_bytes": 37000,
+        "zero_words": 9250
+      },
+      "odd": {
+        "golden_match_bytes": 38400,
+        "mismatch_bytes": 0,
+        "poison_word_bytes": 0,
+        "poison_words": 0,
+        "word_count": 9600,
+        "zero_word_bytes": 37000,
+        "zero_words": 9250
+      }
+    },
+    "poison_byte": 165,
+    "poison_u32": 2779096485,
+    "rx_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_rx_raw.bin",
+    "rx_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+    "schema": 1,
+    "tx_path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/dma-single-diagnostics/step2_frame00_id0000000000_tx_raw.bin",
+    "tx_sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae",
+    "word_bytes": 4
+  },
+  "single_pass_receipt": {
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+    "build_id": "wo0015-hw-50mhz-20261015",
+    "clock_mhz": 50,
+    "frame_count": 1,
+    "frame_ids": [
+      0
+    ],
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b",
+    "runtime_audit_sha256": "69939c9cba354b392034d45337d07ad6e91dd4736aa3bc95e1aac0febbf0b443",
+    "s2mm_beats": 19200,
+    "s2mm_bytes": 76800,
+    "schema": 1,
+    "stage": "dma-single",
+    "status": "DMA_SINGLE_PASS",
+    "work_order": "WO-0015"
+  },
+  "status": "DMA_SINGLE_PASS",
+  "task": "WO-0015",
+  "transfer_started": true,
+  "tx_bytes_each": 230432
+}

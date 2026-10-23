@@ -1,0 +1,17 @@
+...........F............................................................ [ 17%]
+........................................................................ [ 34%]
+...................................................................... [ 51%]
+........................................................................ [ 68%]
+..................................................................... [ 85%]
+.............................................................            [100%]
+================================== FAILURES ===================================
+_________ PacketVectorTests.test_all_h3_sources_are_gray8_320_by_240 __________
+python\refmodel\experiments\wo0014\test_image_vectors.py:106: in test_all_h3_sources_are_gray8_320_by_240
+    sources = h3_pngs()
+              ^^^^^^^^^
+python\refmodel\experiments\wo0014\image_vectors.py:126: in h3_pngs
+    raise ValueError(f"expected {EXPECTED_H3_PNG_COUNT} H3 PNGs, found {len(files)} under {root}")
+E   ValueError: expected 487 H3 PNGs, found 0 under C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\synthetic\h3_full
+=========================== short test summary info ===========================
+FAILED python/refmodel/experiments/wo0014/test_image_vectors.py::PacketVectorTests::test_all_h3_sources_are_gray8_320_by_240
+1 failed, 415 passed, 5 subtests passed in 67.95s (0:01:07)

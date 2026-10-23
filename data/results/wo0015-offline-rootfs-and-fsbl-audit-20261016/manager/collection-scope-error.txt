@@ -1,0 +1,297 @@
+
+=================================== ERRORS ====================================
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/arduino/tests/test_arduino.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\arduino\tests\test_arduino.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\arduino\tests\test_arduino.py:6: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/arduino/tests/test_arduino_devmode.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\arduino\tests\test_arduino_devmode.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\arduino\tests\test_arduino_devmode.py:7: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_all.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_all.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_all.py:13: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_boolean_generator.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_boolean_generator.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_boolean_generator.py:10: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_fsm_generator.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_fsm_generator.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_fsm_generator.py:9: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_logictools.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_logictools.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_logictools.py:8: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_pattern_generator.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_pattern_generator.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_pattern_generator.py:8: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_trace_analyzer.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_trace_analyzer.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_trace_analyzer.py:7: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_waveform.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_waveform.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\logictools\tests\test_waveform.py:8: in <module>
+    from pynq.lib.logictools import Waveform
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod.py:6: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_als.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_als.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_als.py:7: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_cable.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_cable.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_cable.py:8: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_dac_adc.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_dac_adc.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_dac_adc.py:8: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_devmode.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_devmode.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_devmode.py:7: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_led8.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_led8.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_led8.py:7: in <module>
+    import termios
+E   ModuleNotFoundError: No module named 'termios'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_oled.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_oled.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_oled.py:6: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_tmp2.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_tmp2.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\pmod\tests\test_pmod_tmp2.py:6: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_audio.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_audio.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_audio.py:8: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_button.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_button.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_button.py:6: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_led.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_led.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_led.py:7: in <module>
+    import termios
+E   ModuleNotFoundError: No module named 'termios'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_rgbled.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_rgbled.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_rgbled.py:7: in <module>
+    import termios
+E   ModuleNotFoundError: No module named 'termios'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_switch.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_switch.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_switch.py:7: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_video.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_video.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\lib\tests\test_video.py:8: in <module>
+    from pynq import Overlay
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/tests/test_gpio.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\tests\test_gpio.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\tests\test_gpio.py:5: in <module>
+    import pynq
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/tests/test_mmio.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\tests\test_mmio.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\tests\test_mmio.py:7: in <module>
+    import pynq
+E   ModuleNotFoundError: No module named 'pynq'
+_ ERROR collecting data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/tests/test_pl.py _
+ImportError while importing test module 'C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\tests\test_pl.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\tests\test_pl.py:7: in <module>
+    from pynq import PL
+E   ModuleNotFoundError: No module named 'pynq'
+============================== warnings summary ===============================
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\tests\test_su.py:11
+  C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\extracted\pynq\tests\test_su.py:11: PytestUnknownMarkWarning: Unknown pytest.mark.run - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.run(order=1)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/arduino/tests/test_arduino.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/arduino/tests/test_arduino_devmode.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_all.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_boolean_generator.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_fsm_generator.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_logictools.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_pattern_generator.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_trace_analyzer.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/logictools/tests/test_waveform.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_als.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_cable.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_dac_adc.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_devmode.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_led8.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_oled.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/pmod/tests/test_pmod_tmp2.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_audio.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_button.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_led.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_rgbled.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_switch.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/lib/tests/test_video.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/tests/test_gpio.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/tests/test_mmio.py
+ERROR data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/rootfs/extracted/pynq/tests/test_pl.py
+!!!!!!!!!!!!!!!!!! Interrupted: 26 errors during collection !!!!!!!!!!!!!!!!!!!
+1 warning, 26 errors in 3.03s

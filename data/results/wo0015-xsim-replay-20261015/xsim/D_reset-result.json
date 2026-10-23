@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "case": "D_reset",
+  "kind": "reset",
+  "status": "PASS_RESET_STOP",
+  "frames_expected": 1,
+  "frames_eof": 0,
+  "eof_beat_numbers": [],
+  "eof_positions_zero_based": [],
+  "output_beats": 4,
+  "output_bytes": 16,
+  "golden_bytes": 76800,
+  "mismatch_bytes": 0,
+  "actual_binary_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+  "actual_trace_sha256": "5be764d73bad2593cc772e0766cdad534ef0b04c7fa6a9f55de42c532650d26b",
+  "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+  "source_manifest_sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+  "seed": 1
+}

@@ -1,0 +1,79 @@
+{
+  "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "manifest_sha256": "2205c49479ffb8dae66aa7e34864aaa6783186c2dd1f96d8da9caeb9a24ecad0",
+  "overlay_only": {
+    "status": "OVERLAY_LOAD_PASS",
+    "board_accessed": true,
+    "pynq_imported": true,
+    "snapshots": {
+      "pre-overlay": {
+        "FPGA0_CLK_CTRL": "0x00200500",
+        "FPGA_RST_CTRL": "0x00000000",
+        "AFI1_RDCHAN_CTRL": "0x00000000",
+        "AFI1_WRCHAN_CTRL": "0x00000f00",
+        "AFI1_WRCHAN_CTRL_bit0": 0
+      },
+      "post-overlay": {
+        "FPGA0_CLK_CTRL": "0x00400800",
+        "FPGA_RST_CTRL": "0x00000000",
+        "AFI1_RDCHAN_CTRL": "0x00000000",
+        "AFI1_WRCHAN_CTRL": "0x00000f00",
+        "AFI1_WRCHAN_CTRL_bit0": 0
+      }
+    }
+  },
+  "dma_single": {
+    "status": "DMA_SINGLE_FAIL",
+    "board_accessed": true,
+    "transfer_started": true,
+    "dma_start_attempted": true,
+    "dma_may_be_active": false,
+    "error": "ExecutionFailure: S2MM Binary8 differs from golden for frame 0: 39520 mismatches, first offset=4",
+    "byte_mismatches": 39520,
+    "first_mismatch": 4,
+    "s2mm_dmasr": 4098,
+    "mm2s_dmasr": 4098,
+    "post-dma-registers": {
+      "FPGA0_CLK_CTRL": "0x00400800",
+      "FPGA_RST_CTRL": "0x00000000",
+      "AFI1_RDCHAN_CTRL": "0x00000000",
+      "AFI1_WRCHAN_CTRL": "0x00000f00",
+      "AFI1_WRCHAN_CTRL_bit0": 0
+    },
+    "parity": {
+      "even": {
+        "golden_match_bytes": 37280,
+        "mismatch_bytes": 1120,
+        "poison_word_bytes": 0,
+        "poison_words": 0,
+        "word_count": 9600,
+        "zero_word_bytes": 37000,
+        "zero_words": 9250
+      },
+      "odd": {
+        "golden_match_bytes": 0,
+        "mismatch_bytes": 38400,
+        "poison_word_bytes": 38400,
+        "poison_words": 9600,
+        "word_count": 9600,
+        "zero_word_bytes": 0,
+        "zero_words": 0
+      }
+    },
+    "rx_diagnostics": "SAVED",
+    "raw_files": {
+      "rx_raw.bin": {
+        "bytes": 76800,
+        "sha256": "7a007545ac170b9fa1a4379f4e10e9cddfcb7bd1f2cfe59bdb4f399c5fb2727e"
+      },
+      "tx_raw.bin": {
+        "bytes": 230432,
+        "sha256": "cacf35237e6b4e79de2940a55ad414565fb9eadd581dfe8251ef09f4909f9dae"
+      },
+      "expected_golden.bin": {
+        "bytes": 76800,
+        "sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e"
+      }
+    }
+  }
+}

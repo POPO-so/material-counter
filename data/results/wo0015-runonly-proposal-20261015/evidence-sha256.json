@@ -1,0 +1,18 @@
+{
+  "added-gates-red.txt": "b76f7ba25479fae7797ac0f67d1bc9c7aaeb261f475469fe0e4db3e47a177e17",
+  "added-gates-red.xml": "57a4af344440a850fe781bf556b82089fa791aae97ed1a1b6ba9496b534f8884",
+  "amd-primary-sources.json": "83549b193ec698434041afa0cc41e312d2f5a9c3a21ef2e06a5f20e0b2a38ea2",
+  "historical-marker-red.txt": "41f9ae444f329d0c7c4c014502fe3a18f345dc8e5d8ba9044c81b6d4896785d6",
+  "main-git-status.txt": "c05a02aee0833d05f5550c604a436e539a2558c78598c215e59106ac80b4a5dc",
+  "offline-model-final.txt": "148c6e0e369a5acfad96c9e6977d7a83bc1b73da69f6972ebb1d8162bae203c5",
+  "offline-model-final.xml": "547c1efdc1419c74dbcb6f7178a61354cb6b4da7683f69aa683ee3334a4e00c7",
+  "offline-model-tests.txt": "a3fe4ddba525e2dd19aaf0480a325195649ca6a6ce9e0e24bcad3dca0d9f5be7",
+  "offline-model-tests.xml": "1165bf3069c73b4ab85f02121a4668179e5eecc3235ef0e8fe077e0e70bc95b2",
+  "postflight-red.txt": "ddb3afac50f6a3e8ff64100a1a65641df2844fd61e805e17b5bf3e341bddc784",
+  "prepare_proposal.py": "ffe7bcf6d32f9d4c0d8abb221c9b8fc032b75004026b164eaac17a557aa26578",
+  "proposal.json": "54bf5fda1a49618de1ded661933366ff1e897a334281d51c1c9f4bb66a161419",
+  "run-only-and-resume-plan.md": "f79e073045d03001e995d8c2374f7ef3f284ff51a71149e2983ce198401f2ea7",
+  "run_only_model.py": "42fda1b3c18cbf4dc2c4977e50868f6d733407a806e1e36708832e165f71e629",
+  "test_run_only_model.py": "a747f50765543edffe789c4fe789d9cdc30e522b643368812fb538a73df0d4e3",
+  "worktree-git-status.txt": "4dec75a69193673e5979ebcc68ba8af1a9a6de5ef20ad31224bf8fbedd2a884e"
+}

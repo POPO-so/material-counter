@@ -1,0 +1,15 @@
+BOOT_ID=2cc2ab91-2e3f-450e-b9e7-361ec38e2815
+bash: line 28: warning: here-document at line 3 delimited by end-of-file (wanted `PY')
+ROOT_FILES=["cma-watermark-recovery-consumed.json", "dma-single-consumed.json", "dma-single-watermark-retry2-consumed.json", "overlay-only-consumed.json", "overlay-only-pass.json", "run-only-init-consumed.json", "terminal-failure.json"]
+ROOT_DIRS=["continuations", "history"]
+GUARD=cma-watermark-recovery-consumed.json SHA256=ed86d62376dfaf78673b7af9b0e014e5a3ffbb56909b70ac5f40eb97abcc4de0
+GUARD=dma-single-consumed.json SHA256=1585844bceb4bca82cee2f4a2be14916b2fee847a26fb7f28c207e9234fcf862
+GUARD=dma-single-watermark-retry2-consumed.json SHA256=1585844bceb4bca82cee2f4a2be14916b2fee847a26fb7f28c207e9234fcf862
+GUARD=overlay-only-consumed.json SHA256=c333975de186464bc3db9809c7762d7d7115cfc73f8b17f8e8672e3349efa37f
+GUARD=overlay-only-pass.json SHA256=ee3d9ba6462962657bbd43807302387af16d4fbec34ee65f909a385886802d96
+GUARD=run-only-init-consumed.json SHA256=ac53e6acba00404c86acd7c2e5dae1729ef0a62228538f857b8104d6b866df18
+GUARD=terminal-failure.json SHA256=b796fba0208adbfe2ec5df7ceaa6a3988f6602f9c1f6e18c8b74a6255817421e
+BOARD_ONCE_PROCESSES=[]
+Traceback (most recent call last):
+  File "<stdin>", line 25, in <module>
+NameError: name 'PY' is not defined

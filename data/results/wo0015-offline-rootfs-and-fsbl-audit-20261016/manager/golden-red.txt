@@ -1,0 +1,89 @@
+test_foreground_in_first_word_changes_first_difference (test_golden_analysis.GoldenTests.test_foreground_in_first_word_changes_first_difference) ... ERROR
+test_non_parity_counterexample_same_summary (test_golden_analysis.GoldenTests.test_non_parity_counterexample_same_summary) ... ERROR
+test_parity_counts_use_four_byte_words (test_golden_analysis.GoldenTests.test_parity_counts_use_four_byte_words) ... ERROR
+test_reject_non_binary (test_golden_analysis.GoldenTests.test_reject_non_binary) ... ERROR
+test_reject_short (test_golden_analysis.GoldenTests.test_reject_short) ... ERROR
+test_reject_unaligned (test_golden_analysis.GoldenTests.test_reject_unaligned) ... ERROR
+test_zero_first_word_explains_offset_four (test_golden_analysis.GoldenTests.test_zero_first_word_explains_offset_four) ... ERROR
+
+======================================================================
+ERROR: test_foreground_in_first_word_changes_first_difference (test_golden_analysis.GoldenTests.test_foreground_in_first_word_changes_first_difference)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\test_golden_analysis.py", line 12, in test_foreground_in_first_word_changes_first_difference
+    r = analyze(bytes([255, 0, 0, 0]) + bytes(12))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\golden_analysis.py", line 3, in analyze
+    raise NotImplementedError
+NotImplementedError
+
+======================================================================
+ERROR: test_non_parity_counterexample_same_summary (test_golden_analysis.GoldenTests.test_non_parity_counterexample_same_summary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\test_golden_analysis.py", line 21, in test_non_parity_counterexample_same_summary
+    r = analyze(bytes(32))
+        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\golden_analysis.py", line 3, in analyze
+    raise NotImplementedError
+NotImplementedError
+
+======================================================================
+ERROR: test_parity_counts_use_four_byte_words (test_golden_analysis.GoldenTests.test_parity_counts_use_four_byte_words)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\test_golden_analysis.py", line 16, in test_parity_counts_use_four_byte_words
+    r = analyze(bytes([255]*4 + [0]*4 + [0]*4 + [255]*4))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\golden_analysis.py", line 3, in analyze
+    raise NotImplementedError
+NotImplementedError
+
+======================================================================
+ERROR: test_reject_non_binary (test_golden_analysis.GoldenTests.test_reject_non_binary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\test_golden_analysis.py", line 30, in test_reject_non_binary
+    with self.assertRaises(ValueError): analyze(bytes([3]*16))
+                                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\golden_analysis.py", line 3, in analyze
+    raise NotImplementedError
+NotImplementedError
+
+======================================================================
+ERROR: test_reject_short (test_golden_analysis.GoldenTests.test_reject_short)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\test_golden_analysis.py", line 33, in test_reject_short
+    with self.assertRaises(ValueError): analyze(bytes(4))
+                                        ^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\golden_analysis.py", line 3, in analyze
+    raise NotImplementedError
+NotImplementedError
+
+======================================================================
+ERROR: test_reject_unaligned (test_golden_analysis.GoldenTests.test_reject_unaligned)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\test_golden_analysis.py", line 27, in test_reject_unaligned
+    with self.assertRaises(ValueError): analyze(bytes(17))
+                                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\golden_analysis.py", line 3, in analyze
+    raise NotImplementedError
+NotImplementedError
+
+======================================================================
+ERROR: test_zero_first_word_explains_offset_four (test_golden_analysis.GoldenTests.test_zero_first_word_explains_offset_four)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\test_golden_analysis.py", line 6, in test_zero_first_word_explains_offset_four
+    r = analyze(bytes(16))
+        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\manager\golden_analysis.py", line 3, in analyze
+    raise NotImplementedError
+NotImplementedError
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.001s
+
+FAILED (errors=7)

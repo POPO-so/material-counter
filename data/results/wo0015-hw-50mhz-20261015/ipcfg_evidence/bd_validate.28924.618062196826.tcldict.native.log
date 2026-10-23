@@ -1,0 +1,3 @@
+INFO: [BD 5-943] Reserving offset range <0x4040_0000 [ 64K ]> from slave interface '/control_fabric/S00_AXI' to master interface '/control_fabric/M00_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x43C2_0000 [ 64K ]> from slave interface '/control_fabric/S00_AXI' to master interface '/control_fabric/M01_AXI'. This will be used by smartconnect on path for routing.
+INFO: [xilinx.com:ip:smartconnect:1.0-1] wo15_control_fabric_0: SmartConnect wo15_control_fabric_0 is in Ultralite mode.

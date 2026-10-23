@@ -1,0 +1,7 @@
+{
+  "board_accessed": false,
+  "error": "PreflightError: CMA reserved-memory tree is unavailable: /proc/device-tree/reserved-memory",
+  "pynq_imported": false,
+  "status": "OVERLAY_ONLY_REJECTED",
+  "task": "WO-0015"
+}

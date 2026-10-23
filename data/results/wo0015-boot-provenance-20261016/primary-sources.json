@@ -1,0 +1,13 @@
+{
+  "scope": "Format and OS semantics references; not proof of the actual board software",
+  "sources": [
+    {"title": "UG1283 Zynq-7000 SoC Boot Header", "url": "https://docs.amd.com/r/en-US/Bootgen-User-Guide-UG1283/Zynq-7000-SoC-Boot-Header", "location": "Boot Header table: offsets 0x20-0x48, 0x98, 0x9C", "used_for": "Signature, FSBL byte offset/length, checksum and table pointers"},
+    {"title": "UG1283 Zynq-7000 SoC Image Header Table", "url": "https://docs.amd.com/r/en-US/Bootgen-User-Guide-UG1283/Zynq-7000-SoC-Image-Header-Table", "location": "Version/count and word-offset pointer fields", "used_for": "IHT validation and distinction between byte/word offsets"},
+    {"title": "UG1283 Zynq-7000 SoC Image Header", "url": "https://docs.amd.com/r/en-US/Bootgen-User-Guide-UG1283/Zynq-7000-SoC-Image-Header", "location": "Linked image headers, partition count, packed name", "used_for": "Static image-name reconstruction; names do not prove source ELF bytes"},
+    {"title": "UG821 Partition Header Table", "url": "https://docs.amd.com/r/en-US/ug821-zynq-7000-swdev/Partition-Header-Table", "location": "0x00-0x3C fields; inverted header checksum", "used_for": "Actual partition data boundaries and checksum"},
+    {"title": "UG1283 Zynq-7000 SoC Register Initialization Table", "url": "https://docs.amd.com/r/en-US/Bootgen-User-Guide-UG1283/Zynq-7000-SoC-Register-Initialization-Table", "location": "0xA0-0x89C, 256 address/value pairs", "used_for": "Skip addresses versus active BootROM initialization entries"},
+    {"title": "Linux ext4 Super Block", "url": "https://www.kernel.org/doc/html/latest/filesystems/ext4/super.html", "location": "s_magic 0x38; s_uuid 0x68; s_volume_name 0x78", "used_for": "Read-only superblock UUID extraction without mount or journal replay"},
+    {"title": "Linux man-pages open(2)", "url": "https://man7.org/linux/man-pages/man2/open.2.html", "location": "O_PATH, O_NOFOLLOW, O_NOATIME and O_NONBLOCK", "used_for": "Review of proposed future OS-file opens, privileges and remaining limits"}
+  ],
+  "version_boundary": "AMD search fragments report version All; references define container formats and are not treated as proof of the candidate build version. No new AFI interpretation replaces the previous conflict."
+}

@@ -1,0 +1,21 @@
+test_ee_len_0x8000_is_initialized_32768_blocks (test_ext4_ro.Ext4ReadOnlyTests.test_ee_len_0x8000_is_initialized_32768_blocks) ... ERROR
+test_finds_requested_uuid_without_mounting (test_ext4_ro.Ext4ReadOnlyTests.test_finds_requested_uuid_without_mounting) ... ok
+test_reads_file_by_inode_extent_and_directory_path (test_ext4_ro.Ext4ReadOnlyTests.test_reads_file_by_inode_extent_and_directory_path) ... ok
+test_rejects_extent_outside_partition (test_ext4_ro.Ext4ReadOnlyTests.test_rejects_extent_outside_partition) ... ok
+
+======================================================================
+ERROR: test_ee_len_0x8000_is_initialized_32768_blocks (test_ext4_ro.Ext4ReadOnlyTests.test_ee_len_0x8000_is_initialized_32768_blocks)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\test_ext4_ro.py", line 92, in test_ee_len_0x8000_is_initialized_32768_blocks
+    self.assertEqual(fs._extent_records(bytes(node)), [(0, 6, 32768, False)])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\ext4_ro.py", line 224, in _extent_records
+    raise Ext4Error("zero-length extent")
+ext4_ro.Ext4Error: zero-length extent
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.057s
+
+FAILED (errors=1)
+EXPECTED_RED_EXIT_CODE=1

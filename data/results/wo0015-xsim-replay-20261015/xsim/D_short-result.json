@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "case": "D_short",
+  "kind": "fault",
+  "status": "PASS_FAULT_STOP",
+  "frames_expected": 1,
+  "frames_eof": 0,
+  "eof_beat_numbers": [],
+  "eof_positions_zero_based": [],
+  "output_beats": 9599,
+  "output_bytes": 38396,
+  "golden_bytes": 76800,
+  "mismatch_bytes": 0,
+  "actual_binary_sha256": "eb4c5253858fd8f3972a242fec6e5e6769b56910cea3bafa00077e37e9438c56",
+  "actual_trace_sha256": "bf120456ba21a0c236a8e09ab05bc2e5fccd97968e003cd7c1859316e64b88c3",
+  "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+  "source_manifest_sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+  "seed": 1
+}

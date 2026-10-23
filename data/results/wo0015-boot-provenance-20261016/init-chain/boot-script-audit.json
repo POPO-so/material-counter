@@ -1,0 +1,9 @@
+{
+  "source_sha256": "3b9b939dfab95e26e69855ab23fc84e6e2ab9431ab71998aece3db7f2a8c37cd",
+  "header_crc_valid": true,
+  "data_crc_valid": true,
+  "declared_payload_bytes": 3409,
+  "script_type_byte": 6,
+  "executed": false,
+  "note": "Source recipe only; scripts may select external boot files and alternate boot modes. No claim of historical execution."
+}

@@ -1,0 +1,8 @@
+﻿BOOT=f8b24aee-ed7e-430a-b3f3-d26056746bfd
+CmaTotal:         131072 kB
+CmaFree:           28892 kB
+2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b  /home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo0015-manifest.json
+ACTIVE_GUARDS
+overlay-only-consumed.json 237 bytes
+overlay-only-pass.json 635 bytes
+ACTIVE_EXECUTORS

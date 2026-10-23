@@ -1,0 +1,39 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Thu Oct 15 15:52:35 2026
+# Process ID         : 39112
+# Current directory  : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-final-20261015/xsim
+# Command line       : xsim.exe -log guards.log -mode tcl -source {xsim.dir/wo15_guards/xsim_script.tcl}
+# Log file           : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-final-20261015/xsim/guards.log
+# Journal file       : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-final-20261015/xsim\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 7551 MB
+#-----------------------------------------------------------
+source xsim.dir/wo15_guards/xsim_script.tcl
+# xsim {wo15_guards} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+STAGE direct packer bad SOF
+GUARD_PACKER_FAULT_PASS case=1 code=3 eof=0
+STAGE direct packer bad EOL
+GUARD_PACKER_FAULT_PASS case=2 code=4 eof=0
+STAGE direct packer non-binary value
+GUARD_PACKER_FAULT_PASS case=3 code=5 eof=0
+STAGE wrapper arm and start valid packet
+STAGE wrapper busy ARM during output stall
+WO0015_GUARDS_PASS bad_sof=1 bad_eol=1 bad_value=1 busy_arm_slverr=1 transfer_preserved=1
+$finish called at time : 1220 ns : File "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/sim/wo0015/tb_axis_s2mm_guards.sv" Line 461
+exit
+INFO: [Common 17-206] Exiting xsim at Thu Oct 15 15:52:37 2026...

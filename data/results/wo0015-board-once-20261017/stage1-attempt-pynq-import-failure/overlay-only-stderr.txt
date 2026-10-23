@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/xilinx/wo0015/board_once.py", line 1791, in <module>
+    raise SystemExit(main())
+  File "/home/xilinx/wo0015/board_once.py", line 1739, in main
+    live_boot_id, meminfo, cma_ranges, runtime_snapshot = _runtime_preflight(
+  File "/home/xilinx/wo0015/board_once.py", line 1515, in _runtime_preflight
+    runtime_audit = dict(api.audit_environment(
+  File "/home/xilinx/wo0015/board_once.py", line 1145, in audit_environment
+    pynq = self._load_pynq()
+  File "/home/xilinx/wo0015/board_once.py", line 1137, in _load_pynq
+    import pynq
+ModuleNotFoundError: No module named 'pynq'

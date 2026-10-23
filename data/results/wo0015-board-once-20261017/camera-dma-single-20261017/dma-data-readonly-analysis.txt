@@ -1,0 +1,29 @@
+Read-only raw TX/RX/PL-to-Golden analysis
+SSH exit code: 0
+Output:
+rx_bytes=76800
+rx_vs_reference_mismatches=0
+rx_first_mismatch=None
+rx_sha256=eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350
+pl_output_bytes=76800
+pl_output_vs_reference_mismatches=0
+pl_output_first_mismatch=None
+pl_output_sha256=eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350
+tx_bytes=230432
+tx_vs_reference_mismatches=0
+tx_first_mismatch=None
+tx_sha256=a83fb2e350fcad33af62a80c6746d3e35821339b9a73a02db030123466a82f67
+diagnostic_top_keys=artifacts,byte_count,capture_status,captured_before_release,context,diagnostics_path,expected_golden_path,expected_golden_sha256,first_64_bytes_words,first_mismatch,first_mismatches,golden_path,golden_sha256,mismatch_bytes,parity,poison_byte,poison_u32,rx_path,rx_sha256,schema,tx_path,tx_sha256,word_bytes
+context.checker_after.frame_id=3
+context.checker_after.status=9
+context.checker_before.frame_id=3
+context.checker_before.status=9
+context.frame_id=3
+context.frame_index=0
+context.mm2s_dmasr=4098
+context.packer_status=2
+context.physical_gate.status=POST_ALLOC_PHYSICAL_GATE_PASS
+context.s2mm_dmasr=4098
+golden_sha256=eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350
+rx_sha256=eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350
+tx_sha256=a83fb2e350fcad33af62a80c6746d3e35821339b9a73a02db030123466a82f67

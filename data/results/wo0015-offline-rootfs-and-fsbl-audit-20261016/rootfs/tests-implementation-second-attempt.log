@@ -1,0 +1,18 @@
+test_finds_requested_uuid_without_mounting (test_ext4_ro.Ext4ReadOnlyTests.test_finds_requested_uuid_without_mounting) ... ERROR
+test_reads_file_by_inode_extent_and_directory_path (test_ext4_ro.Ext4ReadOnlyTests.test_reads_file_by_inode_extent_and_directory_path) ... ok
+test_rejects_extent_outside_partition (test_ext4_ro.Ext4ReadOnlyTests.test_rejects_extent_outside_partition) ... ok
+
+======================================================================
+ERROR: test_finds_requested_uuid_without_mounting (test_ext4_ro.Ext4ReadOnlyTests.test_finds_requested_uuid_without_mounting)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\rootfs\test_ext4_ro.py", line 76, in test_finds_requested_uuid_without_mounting
+    self.assertEqual(fs.partition_offset, PART_LBA * 512)
+                     ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Ext4Image' object has no attribute 'partition_offset'
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.090s
+
+FAILED (errors=1)
+GREEN_EXIT_CODE=1

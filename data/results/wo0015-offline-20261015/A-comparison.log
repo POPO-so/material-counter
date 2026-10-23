@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "case": "A",
+  "kind": "normal",
+  "status": "PASS",
+  "frames_expected": 1,
+  "frames_eof": 1,
+  "eof_beat_numbers": [
+    19200
+  ],
+  "eof_positions_zero_based": [
+    19199
+  ],
+  "output_beats": 19200,
+  "output_bytes": 76800,
+  "golden_bytes": 76800,
+  "mismatch_bytes": 0,
+  "actual_binary_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+  "actual_trace_sha256": "6e96c7aef064ee634f20e260b54f89f83d73b156eee9174cb9c44baf7a6f5625",
+  "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+  "source_manifest_sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d",
+  "seed": 1
+}
+

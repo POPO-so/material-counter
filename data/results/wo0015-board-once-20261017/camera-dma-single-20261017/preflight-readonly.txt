@@ -1,0 +1,9 @@
+Read-only camera DMA preflight
+SSH exit code: 0
+Output:
+camera_manifest=PASS sha256=bdb30097ba54b93acd518027632fd6d7d96111f0f5f6d24ea6620880b153ae66
+camera_sidecar_and_artifact_hashes=PASS
+step3_evidence=PASS status=DMA_THREE_PASS boot_id=2cc2ab91-2e3f-450e-b9e7-361ec38e2815 frame_count=3
+camera_frame_id=3 next_after_step3=PASS
+camera_stage_authorization=PASS one_transfer
+camera_guard_and_result_paths=unused

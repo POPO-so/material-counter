@@ -1,0 +1,19 @@
+{
+  "source_image": "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+  "source_image_sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+  "hash_method": "Worker reported one complete read-only SHA-256 pass; no accompanying vendor checksum or download receipt",
+  "source_image_creation_utc": "2025-09-24T02:57:36+00:00",
+  "source_image_mtime_utc": "2026-10-08T07:54:00.267157+00:00",
+  "timestamp_role": "Auxiliary host filesystem metadata; not a build or flashing receipt",
+  "fat_entry": {
+    "short_name": "BOOT.BIN",
+    "attribute": 32,
+    "first_cluster": 2,
+    "nbytes": 1165852,
+    "fat_date_raw": 23352,
+    "fat_time_raw": 36631,
+    "clusters_read": 285,
+    "sha256": "3bf9c24025a489926fd76872754977c5954e2ab25c91957373386e1f20915af6"
+  },
+  "extraction": "Bounded MBR/FAT16 parser; no mount or target binary execution"
+}

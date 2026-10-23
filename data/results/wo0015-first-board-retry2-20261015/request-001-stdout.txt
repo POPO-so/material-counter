@@ -1,0 +1,93 @@
+{
+  "status": "PERMISSION_REPAIR_PASS",
+  "path": "/home/xilinx/wo0015_first_board_retry1_20261015",
+  "uid": 1000,
+  "gid": 1000,
+  "before": {
+    ".": {
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o775"
+    },
+    "board_preflight.py": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "wo15.bit": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "frame-2.binary.bin": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "wo15.hwh": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "xsim-replay-summary.json": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "frame-0.binary.bin": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "build-pair-manifest.json": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "run-manifest.json": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "bundle.zip": {
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o664"
+    },
+    "frame-0.rgb.bin": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "SHA256SUMS.json": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "frame-2.rgb.bin": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "board_once.py": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "frame-1.binary.bin": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    },
+    "frame-1.rgb.bin": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    }
+  },
+  "sha256_after": {
+    "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+  },
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b"
+}

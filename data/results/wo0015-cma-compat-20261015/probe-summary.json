@@ -1,0 +1,13 @@
+{
+  "status": "READONLY_PROBE_PASS",
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "host_fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o",
+  "known_hosts_unchanged": true,
+  "prohibited_operations": {
+    "pynq_import": 0,
+    "overlay_load": 0,
+    "device_open": 0,
+    "cma_allocation": 0,
+    "dma_start": 0
+  }
+}

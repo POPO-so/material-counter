@@ -1,0 +1,34 @@
+{
+  "short_name": "BOOT.PY",
+  "attribute": 32,
+  "first_cluster": 288,
+  "nbytes": 991,
+  "fat_date_raw": 23352,
+  "fat_time_raw": 36631,
+  "clusters_read": 1,
+  "sha256": "b2653ef809c3271231c78772342c2be728d39686a877d3c6fe8cdabfd4ac1d42",
+  "kind": "LOCAL_IMAGE_CURRENT_FILE_NOT_HISTORICAL_BOOT_PROOF",
+  "first16_hex": "2321202f7573722f62696e2f656e7620",
+  "selected_strings": [
+    {
+      "offset": 64,
+      "ascii": "#from pynq.lib import Wifi"
+    },
+    {
+      "offset": 214,
+      "ascii": "#subprocess.call('pynq_hostname.sh aNewHostName'.split())"
+    },
+    {
+      "offset": 273,
+      "ascii": "# example #3 - blink LEDs (PYNQ-Z1, PYNQ-Z2, ZCU104)"
+    },
+    {
+      "offset": 326,
+      "ascii": "#from pynq import Overlay"
+    },
+    {
+      "offset": 560,
+      "ascii": "from pynq.overlays.base import BaseOverlay"
+    }
+  ]
+}

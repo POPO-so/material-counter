@@ -1,0 +1,50 @@
+FF.....FF.FF                                                             [100%]
+================================== FAILURES ===================================
+____ test_meminfo_and_exact_system_ram_admit_reserved_low_candidate[32768] ____
+scripts\wo0015\test_cma_two_tier.py:38: in test_meminfo_and_exact_system_ram_admit_reserved_low_candidate
+    result = _resolve(meminfo={"CmaTotal": 131072, "CmaFree": cma_free_kib})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_two_tier.py:33: in _resolve
+    return preflight.resolve_cma_sources(**inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:905: in resolve_cma_sources
+    raise PreflightError("no precise CMA range and no unambiguous cma= boot evidence")
+E   board_preflight.PreflightError: no precise CMA range and no unambiguous cma= boot evidence
+____ test_meminfo_and_exact_system_ram_admit_reserved_low_candidate[73944] ____
+scripts\wo0015\test_cma_two_tier.py:38: in test_meminfo_and_exact_system_ram_admit_reserved_low_candidate
+    result = _resolve(meminfo={"CmaTotal": 131072, "CmaFree": cma_free_kib})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\test_cma_two_tier.py:33: in _resolve
+    return preflight.resolve_cma_sources(**inputs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\wo0015\board_preflight.py:905: in resolve_cma_sources
+    raise PreflightError("no precise CMA range and no unambiguous cma= boot evidence")
+E   board_preflight.PreflightError: no precise CMA range and no unambiguous cma= boot evidence
+_ test_post_alloc_gate_rejects_addresses_below_one_mib_even_if_cma_range_includes_them[tx_address] _
+scripts\wo0015\test_cma_two_tier.py:76: in test_post_alloc_gate_rejects_addresses_below_one_mib_even_if_cma_range_includes_them
+    with pytest.raises(preflight.PreflightError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE PreflightError
+_ test_post_alloc_gate_rejects_addresses_below_one_mib_even_if_cma_range_includes_them[rx_address] _
+scripts\wo0015\test_cma_two_tier.py:76: in test_post_alloc_gate_rejects_addresses_below_one_mib_even_if_cma_range_includes_them
+    with pytest.raises(preflight.PreflightError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE PreflightError
+___ test_mock_run_reports_cma_use_during_both_allocations_and_exact_gate[1] ___
+scripts\wo0015\test_cma_two_tier.py:104: in test_mock_run_reports_cma_use_during_both_allocations_and_exact_gate
+    samples = result["cma_allocation_samples"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'cma_allocation_samples'
+___ test_mock_run_reports_cma_use_during_both_allocations_and_exact_gate[3] ___
+scripts\wo0015\test_cma_two_tier.py:104: in test_mock_run_reports_cma_use_during_both_allocations_and_exact_gate
+    samples = result["cma_allocation_samples"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'cma_allocation_samples'
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_cma_two_tier.py::test_meminfo_and_exact_system_ram_admit_reserved_low_candidate[32768]
+FAILED scripts/wo0015/test_cma_two_tier.py::test_meminfo_and_exact_system_ram_admit_reserved_low_candidate[73944]
+FAILED scripts/wo0015/test_cma_two_tier.py::test_post_alloc_gate_rejects_addresses_below_one_mib_even_if_cma_range_includes_them[tx_address]
+FAILED scripts/wo0015/test_cma_two_tier.py::test_post_alloc_gate_rejects_addresses_below_one_mib_even_if_cma_range_includes_them[rx_address]
+FAILED scripts/wo0015/test_cma_two_tier.py::test_mock_run_reports_cma_use_during_both_allocations_and_exact_gate[1]
+FAILED scripts/wo0015/test_cma_two_tier.py::test_mock_run_reports_cma_use_during_both_allocations_and_exact_gate[3]
+6 failed, 6 passed in 1.29s

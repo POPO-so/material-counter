@@ -1,0 +1,32 @@
+{
+  "raw_fsbl_sha256": "16081243af5ed1d5b908b0c038c13c3e205c131b31d538690786a530dba82161",
+  "pattern_sha256": "d05828a2b32fe89b92d66292883e3dea0e9990cf0125545b0e59d26d328cbacc",
+  "pattern_offsets": [
+    67448,
+    67508,
+    67568
+  ],
+  "words_hex": [
+    "0x00000022",
+    "0xF8000008",
+    "0x0000DF0D",
+    "0x00000033",
+    "0xF8000900",
+    "0x0000000F",
+    "0x0000000F",
+    "0x00000033",
+    "0xF8000240",
+    "0xFFFFFFFF",
+    "0x00000000",
+    "0x00000022",
+    "0xF8000004",
+    "0x0000767B",
+    "0x00000000"
+  ],
+  "interpretation": {
+    "VERIFIED": "Three exact raw byte patterns with PS7 instruction grammar; no F8009000/F8009014 absolute little-endian words in this payload",
+    "INFERRED": "These resemble default PS7 post-config tables that enable level shifters/reset without setting AFI1 bit0",
+    "UNKNOWN": "Symbol names, silicon assignment, call sites, reachability, indirect register writes and actual execution"
+  },
+  "macro_reference": "Saved WO0015 generated ps7_init.h:38-51; opcode WRITE=2 with 2 args, MASKWRITE=3 with 3 args, EXIT=0"
+}

@@ -1,0 +1,333 @@
+FFFFFFFFFFFF                                                             [100%]
+================================== FAILURES ===================================
+_ test_valid_manifest_checks_bit_hwh_packet_golden_and_1_or_3_frame_contract __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_valid_manifest_checks_bit0')
+
+    def test_valid_manifest_checks_bit_hwh_packet_golden_and_1_or_3_frame_contract(tmp_path):
+        manifest_path, _ = make_manifest(tmp_path)
+    
+>       plan = preflight.validate_manifest(
+            manifest_path,
+            expected_manifest_sha256=file_sha256(manifest_path),
+        )
+
+scripts\wo0015\test_board_preflight.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_valid_manifest_checks_bit0/wo0015-manifest.json'),)
+kwargs = {'expected_manifest_sha256': '2746c1debcd7f6dca83c56a2c8abddd4d7be4fa18f93f546d912479387b718fd'}
+
+    def validate_manifest(*args, **kwargs):
+>       raise PreflightError("not implemented")
+E       board_preflight.PreflightError: not implemented
+
+scripts\wo0015\board_preflight.py:22: PreflightError
+__________________ test_manifest_digest_mismatch_is_rejected __________________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_manifest_digest_mismatch_0')
+
+    def test_manifest_digest_mismatch_is_rejected(tmp_path):
+        manifest_path, _ = make_manifest(tmp_path)
+    
+>       with pytest.raises(preflight.PreflightError, match="manifest SHA-256"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'manifest SHA-256'
+E         Actual message: 'not implemented'
+
+scripts\wo0015\test_board_preflight.py:200: AssertionError
+______ test_s2mm_disabled_in_hwh_is_rejected_even_when_hwh_hash_matches _______
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_s2mm_disabled_in_hwh_is_r0')
+
+    def test_s2mm_disabled_in_hwh_is_rejected_even_when_hwh_hash_matches(tmp_path):
+        manifest_path, manifest = make_manifest(tmp_path, frame_count=1)
+        hwh_path = tmp_path / manifest["hwh_path"]
+        hwh_path.write_bytes(_hwh_bytes(include_s2mm="0"))
+        manifest["hwh_sha256"] = file_sha256(hwh_path)
+        _write_manifest(manifest_path, manifest)
+    
+>       with pytest.raises(preflight.PreflightError, match="C_INCLUDE_S2MM"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'C_INCLUDE_S2MM'
+E         Actual message: 'not implemented'
+
+scripts\wo0015\test_board_preflight.py:211: AssertionError
+__________ test_binary_golden_must_match_independent_rgb_conversion ___________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_binary_golden_must_match_0')
+
+    def test_binary_golden_must_match_independent_rgb_conversion(tmp_path):
+        manifest_path, manifest = make_manifest(tmp_path, frame_count=1)
+        binary_path = tmp_path / manifest["frames"][0]["binary_path"]
+        corrupted = bytearray(binary_path.read_bytes())
+        corrupted[17] ^= 0xFF
+        binary_path.write_bytes(corrupted)
+        manifest["frames"][0]["binary_sha256"] = file_sha256(binary_path)
+        _write_manifest(manifest_path, manifest)
+    
+>       with pytest.raises(preflight.PreflightError, match="independent Binary8 golden"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'independent Binary8 golden'
+E         Actual message: 'not implemented'
+
+scripts\wo0015\test_board_preflight.py:224: AssertionError
+_______ test_only_one_or_three_strictly_increasing_frames_are_accepted ________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_only_one_or_three_strictl0')
+
+    def test_only_one_or_three_strictly_increasing_frames_are_accepted(tmp_path):
+        manifest_path, manifest = make_manifest(tmp_path, frame_count=2)
+>       with pytest.raises(preflight.PreflightError, match="one or three frames"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'one or three frames'
+E         Actual message: 'not implemented'
+
+scripts\wo0015\test_board_preflight.py:230: AssertionError
+_ test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs0---execute] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ0')
+kwargs = {'execute': False, 'authorization': 'WO-0015-S2MM-ONCE'}
+match = '--execute'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False, "authorization": preflight.RUN_AUTHORIZATION}, "--execute"),
+            ({"execute": True, "authorization": None}, "matching authorization"),
+            ({"execute": True, "authorization": "other"}, "matching authorization"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ0/wo0015-manifest.json'),)
+kwargs = {}
+
+    def validate_manifest(*args, **kwargs):
+>       raise PreflightError("not implemented")
+E       board_preflight.PreflightError: not implemented
+
+scripts\wo0015\board_preflight.py:22: PreflightError
+_ test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs1-matching authorization] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ1')
+kwargs = {'execute': True, 'authorization': None}
+match = 'matching authorization'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False, "authorization": preflight.RUN_AUTHORIZATION}, "--execute"),
+            ({"execute": True, "authorization": None}, "matching authorization"),
+            ({"execute": True, "authorization": "other"}, "matching authorization"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ1/wo0015-manifest.json'),)
+kwargs = {}
+
+    def validate_manifest(*args, **kwargs):
+>       raise PreflightError("not implemented")
+E       board_preflight.PreflightError: not implemented
+
+scripts\wo0015\board_preflight.py:22: PreflightError
+_ test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs2-matching authorization] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ2')
+kwargs = {'execute': True, 'authorization': 'other'}
+match = 'matching authorization'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False, "authorization": preflight.RUN_AUTHORIZATION}, "--execute"),
+            ({"execute": True, "authorization": None}, "matching authorization"),
+            ({"execute": True, "authorization": "other"}, "matching authorization"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ2/wo0015-manifest.json'),)
+kwargs = {}
+
+    def validate_manifest(*args, **kwargs):
+>       raise PreflightError("not implemented")
+E       board_preflight.PreflightError: not implemented
+
+scripts\wo0015\board_preflight.py:22: PreflightError
+_ test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs3-manifest SHA-256] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ3')
+kwargs = {'execute': True, 'authorization': 'WO-0015-S2MM-ONCE', 'manifest_sha256': '1111111111111111111111111111111111111111111111111111111111111111'}
+match = 'manifest SHA-256'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False, "authorization": preflight.RUN_AUTHORIZATION}, "--execute"),
+            ({"execute": True, "authorization": None}, "matching authorization"),
+            ({"execute": True, "authorization": "other"}, "matching authorization"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ3/wo0015-manifest.json'),)
+kwargs = {}
+
+    def validate_manifest(*args, **kwargs):
+>       raise PreflightError("not implemented")
+E       board_preflight.PreflightError: not implemented
+
+scripts\wo0015\board_preflight.py:22: PreflightError
+_ test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs4-boot_id] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ4')
+kwargs = {'execute': True, 'authorization': 'WO-0015-S2MM-ONCE', 'boot_id': 'other-boot'}
+match = 'boot_id'
+
+    @pytest.mark.parametrize(
+        "kwargs,match",
+        [
+            ({"execute": False, "authorization": preflight.RUN_AUTHORIZATION}, "--execute"),
+            ({"execute": True, "authorization": None}, "matching authorization"),
+            ({"execute": True, "authorization": "other"}, "matching authorization"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "manifest_sha256": "1" * 64}, "manifest SHA-256"),
+            ({"execute": True, "authorization": preflight.RUN_AUTHORIZATION,
+              "boot_id": "other-boot"}, "boot_id"),
+        ],
+    )
+    def test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot(
+        tmp_path, kwargs, match
+    ):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_execution_gate_requ4/wo0015-manifest.json'),)
+kwargs = {}
+
+    def validate_manifest(*args, **kwargs):
+>       raise PreflightError("not implemented")
+E       board_preflight.PreflightError: not implemented
+
+scripts\wo0015\board_preflight.py:22: PreflightError
+________________ test_matching_board_authorization_is_accepted ________________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_matching_board_authorizat0')
+
+    def test_matching_board_authorization_is_accepted(tmp_path):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+>       plan = preflight.validate_manifest(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:272: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_matching_board_authorizat0/wo0015-manifest.json'),)
+kwargs = {}
+
+    def validate_manifest(*args, **kwargs):
+>       raise PreflightError("not implemented")
+E       board_preflight.PreflightError: not implemented
+
+scripts\wo0015\board_preflight.py:22: PreflightError
+________ test_board_preflight_cli_is_offline_and_does_not_import_pynq _________
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-128/test_board_preflight_cli_is_of0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001DA6BDC0620>
+
+    def test_board_preflight_cli_is_offline_and_does_not_import_pynq(tmp_path, monkeypatch):
+        manifest_path, _ = make_manifest(tmp_path, frame_count=1)
+        real_import = __import__
+    
+        def no_pynq_import(name, *args, **kwargs):
+            if name == "pynq" or name.startswith("pynq."):
+                raise AssertionError("offline preflight tried to import PYNQ")
+            return real_import(name, *args, **kwargs)
+    
+        monkeypatch.setattr("builtins.__import__", no_pynq_import)
+    
+>       assert preflight.main(["--manifest", str(manifest_path)]) == 0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_preflight.py:294: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+argv = ['--manifest', 'C:\\Users\\POP\\AppData\\Local\\Temp\\pytest-of-POP\\pytest-128\\test_board_preflight_cli_is_of0\\wo0015-manifest.json']
+
+    def main(argv=None):
+>       raise PreflightError("not implemented")
+E       board_preflight.PreflightError: not implemented
+
+scripts\wo0015\board_preflight.py:30: PreflightError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_board_preflight.py::test_valid_manifest_checks_bit_hwh_packet_golden_and_1_or_3_frame_contract
+FAILED scripts/wo0015/test_board_preflight.py::test_manifest_digest_mismatch_is_rejected
+FAILED scripts/wo0015/test_board_preflight.py::test_s2mm_disabled_in_hwh_is_rejected_even_when_hwh_hash_matches
+FAILED scripts/wo0015/test_board_preflight.py::test_binary_golden_must_match_independent_rgb_conversion
+FAILED scripts/wo0015/test_board_preflight.py::test_only_one_or_three_strictly_increasing_frames_are_accepted
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs0---execute]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs1-matching authorization]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs2-matching authorization]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs3-manifest SHA-256]
+FAILED scripts/wo0015/test_board_preflight.py::test_board_execution_gate_requires_execute_authorization_manifest_and_fixed_boot[kwargs4-boot_id]
+FAILED scripts/wo0015/test_board_preflight.py::test_matching_board_authorization_is_accepted
+FAILED scripts/wo0015/test_board_preflight.py::test_board_preflight_cli_is_offline_and_does_not_import_pynq
+12 failed in 2.15s

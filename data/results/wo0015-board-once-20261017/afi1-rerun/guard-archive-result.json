@@ -1,0 +1,34 @@
+{
+  "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "old_manifest_sha256": "2205c49479ffb8dae66aa7e34864aaa6783186c2dd1f96d8da9caeb9a24ecad0",
+  "remote_staging": {
+    "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+    "copied": {
+      "dma-single-consumed.json": "109f2b92aff12fa2dfca75b948dce0901697d4b69221629405afe46164dc075e",
+      "overlay-only-consumed.json": "10c9d0f65758bd1d7b415409147b892cfed74cc5b23e567463f6dc0be81b2136",
+      "overlay-only-pass.json": "a4fb476bc97f25bdb0346f11edc31906e6a55bc4bc9663200f8649e6634ad3f1",
+      "terminal-failure.json": "317f3b82fb9b1accda79f438fe07041e258297e7e819770992912cd4aaafad12"
+    },
+    "staging_dir": "/home/xilinx/wo0015/afi1-legacy-staging-20261017-1805"
+  },
+  "local_archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-board-once-20261017\\afi1-rerun\\legacy-guards-afi1-20261017-1805",
+  "local_sha256": {
+    "dma-single-consumed.json": "109f2b92aff12fa2dfca75b948dce0901697d4b69221629405afe46164dc075e",
+    "overlay-only-consumed.json": "10c9d0f65758bd1d7b415409147b892cfed74cc5b23e567463f6dc0be81b2136",
+    "overlay-only-pass.json": "a4fb476bc97f25bdb0346f11edc31906e6a55bc4bc9663200f8649e6634ad3f1",
+    "terminal-failure.json": "317f3b82fb9b1accda79f438fe07041e258297e7e819770992912cd4aaafad12"
+  },
+  "remote_archive": {
+    "active_guard_files": [],
+    "archive": "/var/lib/wo0015-s2mm/archive-afi1-20261017-1805",
+    "archived": {
+      "dma-single-consumed.json": "109f2b92aff12fa2dfca75b948dce0901697d4b69221629405afe46164dc075e",
+      "overlay-only-consumed.json": "10c9d0f65758bd1d7b415409147b892cfed74cc5b23e567463f6dc0be81b2136",
+      "overlay-only-pass.json": "a4fb476bc97f25bdb0346f11edc31906e6a55bc4bc9663200f8649e6634ad3f1",
+      "terminal-failure.json": "317f3b82fb9b1accda79f438fe07041e258297e7e819770992912cd4aaafad12"
+    },
+    "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+    "staging_removed": true
+  },
+  "password_prompted_or_supplied": false
+}

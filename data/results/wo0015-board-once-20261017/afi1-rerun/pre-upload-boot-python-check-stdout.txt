@@ -1,0 +1,1 @@
+{"boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815", "python": "/usr/local/share/pynq-venv/bin/python3", "expected_invocation": "/usr/local/share/pynq-venv/bin/python3", "python_prefix": "/usr/local/share/pynq-venv", "pynq_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/__init__.py"}

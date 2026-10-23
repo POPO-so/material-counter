@@ -1,0 +1,45 @@
+{
+  "capture_date": "2026-10-15",
+  "scope": "Targeted AMD official source captures from results already obtained in this review. No additional search was performed for this capture file.",
+  "copyright_handling": "This file stores official source metadata, retrieval boundaries, citation locations, and short excerpts only; it does not reproduce the full copyrighted register pages or revision-history page.",
+  "fpga_rst_ctrl_search_result": {
+    "tool": "mcp__amd_doc_search__vivado_doc_search",
+    "source": {
+      "document_id": "UG585",
+      "family": "Adaptive SoC, Zynq 7000",
+      "title": "Zynq 7000 SoC Technical Reference Manual (UG585)",
+      "url": "https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Register-FPGA_RST_CTRL-Details",
+      "version_label_returned_by_tool": "All"
+    },
+    "capture_kind": "Relevant field row copied from the official AMD search response; not the full tool response/page.",
+    "field_row_excerpt": "reserved 21 rw 0x1 Reserved - always write with 0",
+    "citation_location": "Appendix B, Register FPGA_RST_CTRL Details; current AMD fragment has no printed page metadata.",
+    "version_boundary": "The fragment itself is not version-pinned. Its association with the portal's currently listed UG585 v1.15 is inferred, not verified at fragment level.",
+    "paraphrase_of_adjacent_rows": "The indexed table also marks bits 20, 22, 23, and 24 as reserved with reset value 1 and a zero-write instruction; no AXDS1 field name is listed."
+  },
+  "revision_history_page_capture": {
+    "tool": "web__run open",
+    "source_url": "https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Revision-History",
+    "rendered_document_label": "Revision History - 1.15 English - UG585",
+    "document_id": "UG585",
+    "release_date": "2026-02-06",
+    "version": "1.15 English",
+    "retrieval_note": "The page response reported 4495 total lines. The full page response was not archived locally; this file records the relevant lines and concise paraphrase only.",
+    "captured_excerpt": {
+      "page_lines": "4291-4296",
+      "verbatim_excerpt": "02/06/2026 Version 1.15",
+      "paraphrase": "The 1.15 entry lists trademark, QSPI reset-value, PSS_IDCODE, and UART clarification updates; it does not list FPGA_RST_CTRL."
+    },
+    "history_context": [
+      {
+        "page_lines": "4297-4312",
+        "paraphrase": "The v1.14 entry concerns secure boot, JTAG, QSPI, and selected register-detail clarifications; no FPGA_RST_CTRL change is listed in this excerpt."
+      },
+      {
+        "page_lines": "4313-4338",
+        "paraphrase": "The v1.13 entry lists general updates and register-detail updates for SPI, DMA, L2, Cache, CAN, and GEM; it does not identify FPGA_RST_CTRL."
+      }
+    ],
+    "version_assessment": "This is the latest revision-history entry exposed by the AMD UG585 portal response retrieved on 2026-10-15. This does not establish that no later version exists outside the queried portal snapshot."
+  }
+}

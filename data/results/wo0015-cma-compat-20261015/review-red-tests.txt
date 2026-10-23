@@ -1,0 +1,16 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+________ test_exact_cma_cannot_overlap_kernel_or_reserved_iomem[dmesg] ________
+scripts\wo0015\test_cma_compat.py:75: in test_exact_cma_cannot_overlap_kernel_or_reserved_iomem
+    with pytest.raises(pre.PreflightError, match='iomem'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE PreflightError
+_____ test_exact_cma_cannot_overlap_kernel_or_reserved_iomem[device_tree] _____
+scripts\wo0015\test_cma_compat.py:75: in test_exact_cma_cannot_overlap_kernel_or_reserved_iomem
+    with pytest.raises(pre.PreflightError, match='iomem'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE PreflightError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_cma_compat.py::test_exact_cma_cannot_overlap_kernel_or_reserved_iomem[dmesg]
+FAILED scripts/wo0015/test_cma_compat.py::test_exact_cma_cannot_overlap_kernel_or_reserved_iomem[device_tree]
+2 failed, 59 deselected in 0.09s

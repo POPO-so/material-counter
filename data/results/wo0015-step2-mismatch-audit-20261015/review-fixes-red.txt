@@ -1,0 +1,48 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+______ test_real_pynq_hold_wrapper_preserves_stage_and_idle_dma_metadata ______
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-178/test_real_pynq_hold_wrapper_pr0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000012B3B024EC0>
+
+    def test_real_pynq_hold_wrapper_preserves_stage_and_idle_dma_metadata(tmp_path,monkeypatch):
+        manifest,_=make_manifest(tmp_path,frame_count=1);plan=pre.validate_manifest(manifest)
+        api=run.PynqBoardAPI(plan,stage='dma-single');payloads=[]
+        class HoldReached(BaseException):pass
+        monkeypatch.setattr(run,'_install_hold_signals',lambda:None)
+        monkeypatch.setattr(run,'_emit',lambda payload,path:payloads.append(payload))
+        monkeypatch.setattr(run,'_hold_forever',lambda:(_ for _ in ()).throw(HoldReached()))
+        with pytest.raises(HoldReached):
+            api.fail_hold(None,{'status':'DMA_SINGLE_FAIL_HOLD','dma_may_be_active':False,
+                               'buffers_retained_for_evidence':True,'hold_reason':'capture failed'})
+>       assert payloads[0]['status']=='DMA_SINGLE_FAIL_HOLD'
+E       AssertionError: assert 'FAIL_HOLD' == 'DMA_SINGLE_FAIL_HOLD'
+E         
+E         - DMA_SINGLE_FAIL_HOLD
+E         + FAIL_HOLD
+
+scripts\wo0015\test_rx_diagnostics.py:113: AssertionError
+_ test_partial_capture_failure_reports_planned_paths_without_overwriting_partial_raw _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-178/test_partial_capture_failure_r0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000012B3B026ED0>
+
+    def test_partial_capture_failure_reports_planned_paths_without_overwriting_partial_raw(tmp_path,monkeypatch):
+        manifest,_=make_manifest(tmp_path,frame_count=1);plan=pre.validate_manifest(manifest)
+        api=run.MockBoardAPI(plan,corrupt_s2mm_frame=1)
+        def partial(directory,stem,rx,golden,**kw):
+            Path(directory).mkdir();(Path(directory)/(stem+'_rx_raw.bin')).write_bytes(rx)
+            raise OSError('golden write failed')
+        monkeypatch.setattr(run,'persist_rx_diagnostics',partial)
+        with pytest.raises(run.ExecutionFailure) as failure:
+            run.run_frames(plan,api,diagnostic_dir=tmp_path/'diag')
+        d=failure.value.evidence['rx_diagnostics']
+>       assert d['partial_files_may_exist'] is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'partial_files_may_exist'
+
+scripts\wo0015\test_rx_diagnostics.py:127: KeyError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_real_pynq_hold_wrapper_preserves_stage_and_idle_dma_metadata
+FAILED scripts/wo0015/test_rx_diagnostics.py::test_partial_capture_failure_reports_planned_paths_without_overwriting_partial_raw
+2 failed, 9 deselected in 1.41s

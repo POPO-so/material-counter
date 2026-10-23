@@ -1,0 +1,2 @@
+﻿CmaTotal:         131072 kB
+CmaFree:          113868 kB

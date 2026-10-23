@@ -1,0 +1,4 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/sim/wo0015/tb_axis_s2mm_guards.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_axis_s2mm_guards
+ERROR: [VRFC 10-2989] 'p_mvalid' is not declared [C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/sim/wo0015/tb_axis_s2mm_guards.sv:200]
+ERROR: [VRFC 10-8530] module 'tb_axis_s2mm_guards' is ignored due to previous errors [C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/sim/wo0015/tb_axis_s2mm_guards.sv:5]

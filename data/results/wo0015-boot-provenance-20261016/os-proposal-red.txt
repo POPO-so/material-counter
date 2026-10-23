@@ -1,0 +1,20 @@
+F
+================================== FAILURES ===================================
+____________ test_fixed_whitelist_stage_and_raw_bytes[os-metadata] ____________
+
+mod = <module 'boot_os_proposal' from 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-boot-provenance-20261016\\os_file_proposal.py'>
+stage = 'os-metadata'
+
+    @pytest.mark.parametrize("stage", ["os-metadata", "boot-bin"])
+    def test_fixed_whitelist_stage_and_raw_bytes(mod, stage):
+        fs = Fake(mod)
+        result = mod.collect(fs, stage=stage, nonce="a" * 32)
+>       assert result["status"] == "STOPPED_PRECONDITION_UNVERIFIED"
+               ^^^^^^^^^^^^^^^^
+E       KeyError: 'status'
+
+data\results\wo0015-boot-provenance-20261016\test_os_file_proposal.py:49: KeyError
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-boot-provenance-20261016/test_os_file_proposal.py::test_fixed_whitelist_stage_and_raw_bytes[os-metadata]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 0.10s

@@ -1,0 +1,8 @@
+{
+  "status": "NOT_APPROVED_DO_NOT_EXECUTE",
+  "draft_executed": false,
+  "core_sha256": "2cde78bc12b72399173ec921a022e543eac3322269b8496ca5bf377d357e5e4b",
+  "draft_sha256": "41936d69738e6bb5d76544b25c5ab0eeb8fd530ddcbce8e08ad0fbff1881186a",
+  "baseline_promotion": false,
+  "b2_chaining": false
+}

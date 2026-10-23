@@ -1,0 +1,192 @@
+.............F.....FF.FFFF....F....                                      [100%]
+================================== FAILURES ===================================
+___ test_hwh_ignores_bus_interface_parameters_when_reading_ip_configuration ___
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_hwh_ignores_bus_interface0')
+
+    def test_hwh_ignores_bus_interface_parameters_when_reading_ip_configuration(tmp_path):
+        root = ET.fromstring(_hwh_bytes())
+        dma = next(node for node in root.iter()
+                   if node.tag == "MODULE" and node.attrib["INSTANCE"] == "axi_dma_0")
+>       _add_bus_params(dma, "S_AXI_LITE", ADDR_WIDTH="10", DATA_WIDTH="32", PROTOCOL="AXI4LITE")
+
+scripts\wo0015\test_board_preflight.py:314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+module = <Element 'MODULE' at 0x000001EB1DD37F10>, interface = 'S_AXI_LITE'
+params = {'ADDR_WIDTH': '10', 'DATA_WIDTH': '32', 'PROTOCOL': 'AXI4LITE'}
+
+    def _add_bus_params(module: ET.Element, interface: str, **params: str) -> None:
+>       bus = next(node for node in module.iter()
+                   if node.tag == "BUSINTERFACE" and node.attrib.get("NAME") == interface)
+E       StopIteration
+
+scripts\wo0015\test_board_preflight.py:44: StopIteration
+__ test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[1] __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_mock_dma_runs_fixed_frame0')
+frame_count = 1
+
+    @pytest.mark.parametrize("frame_count", [1, 3])
+    def test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first(tmp_path, frame_count):
+        plan, _ = _plan(tmp_path, frame_count)
+        api = runner.MockBoardAPI(plan, initial_idle=False)
+    
+        result = runner.run_frames(plan, api, timeout_s=2.0)
+    
+        assert result["status"] == "DMA_ONCE_PASS"
+        assert result["frame_count"] == frame_count
+        assert [frame["frame_id"] for frame in result["frames"]] == [
+            frame.frame_id for frame in plan.frames
+        ]
+        assert api.allocations == [preflight.TX_BYTES, preflight.RX_BYTES]
+        assert api.free_count == 2
+        assert api.cma_free_kib() == result["cma_free_before_kib"]
+>       assert result["dma_start_attempted"] is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'dma_start_attempted'
+
+scripts\wo0015\test_board_once.py:38: KeyError
+__ test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[3] __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_mock_dma_runs_fixed_frame1')
+frame_count = 3
+
+    @pytest.mark.parametrize("frame_count", [1, 3])
+    def test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first(tmp_path, frame_count):
+        plan, _ = _plan(tmp_path, frame_count)
+        api = runner.MockBoardAPI(plan, initial_idle=False)
+    
+        result = runner.run_frames(plan, api, timeout_s=2.0)
+    
+        assert result["status"] == "DMA_ONCE_PASS"
+        assert result["frame_count"] == frame_count
+        assert [frame["frame_id"] for frame in result["frames"]] == [
+            frame.frame_id for frame in plan.frames
+        ]
+        assert api.allocations == [preflight.TX_BYTES, preflight.RX_BYTES]
+        assert api.free_count == 2
+        assert api.cma_free_kib() == result["cma_free_before_kib"]
+>       assert result["dma_start_attempted"] is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'dma_start_attempted'
+
+scripts\wo0015\test_board_once.py:38: KeyError
+__ test_dma_error_after_length_fail_holds_buffers_and_never_retries_or_frees __
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_dma_error_after_length_fa0')
+
+    def test_dma_error_after_length_fail_holds_buffers_and_never_retries_or_frees(tmp_path):
+        plan, _ = _plan(tmp_path, 1)
+        api = runner.MockBoardAPI(plan, s2mm_error_frame=1)
+    
+        with pytest.raises(runner.ExecutionFailure, match="S2MM.*error") as caught:
+            runner.run_frames(plan, api, timeout_s=1.0)
+    
+        assert caught.value.transfer_started is True
+        assert api.free_count == 0
+        assert len(api.allocations) == 2
+        assert len([item for item in api.write_trace
+                    if item[0] == preflight.DMA_BASE and item[1] == 0x58]) == 1
+        assert len([item for item in api.write_trace
+                    if item[0] == preflight.DMA_BASE and item[1] == 0x28]) == 1
+        assert runner.QUARANTINED_BUFFERS
+>       assert caught.value.dma_start_attempted is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'ExecutionFailure' object has no attribute 'dma_start_attempted'
+
+scripts\wo0015\test_board_once.py:104: AttributeError
+_______ test_tx_rx_overlapping_or_non_cma_buffers_fail_before_dma_start _______
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_tx_rx_overlapping_or_non_0')
+
+    def test_tx_rx_overlapping_or_non_cma_buffers_fail_before_dma_start(tmp_path):
+        plan, _ = _plan(tmp_path, 1)
+>       overlapping = runner.MockBoardAPI(plan, s2mm_address_override=0x10000000)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: MockBoardAPI.__init__() got an unexpected keyword argument 's2mm_address_override'
+
+scripts\wo0015\test_board_once.py:110: TypeError
+__ test_completed_pixel_mismatch_is_board_transfer_failure_without_dma_hold ___
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_completed_pixel_mismatch_0')
+
+    def test_completed_pixel_mismatch_is_board_transfer_failure_without_dma_hold(tmp_path):
+        plan, _ = _plan(tmp_path, 1)
+>       api = runner.MockBoardAPI(plan, corrupt_s2mm_frame=1)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: MockBoardAPI.__init__() got an unexpected keyword argument 'corrupt_s2mm_frame'
+
+scripts\wo0015\test_board_once.py:128: TypeError
+_ test_pynq_sync_methods_fail_closed_when_no_supported_cache_operation_exists _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_pynq_sync_methods_fail_cl0')
+
+    def test_pynq_sync_methods_fail_closed_when_no_supported_cache_operation_exists(tmp_path):
+        plan, _ = _plan(tmp_path, 1)
+        api = runner.PynqBoardAPI(plan, stage="dma-single")
+        buffer_without_sync = bytearray(preflight.RX_BYTES)
+>       with pytest.raises(RuntimeError, match="sync_to_device|flush"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+scripts\wo0015\test_board_once.py:145: Failed
+____ test_staged_mock_consumes_distinct_guards_and_single_pass_gates_three ____
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_staged_mock_consumes_dist0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001EB1BC27E90>
+capsys = <_pytest.capture.CaptureFixture object at 0x000001EB1BC25A30>
+
+    def test_staged_mock_consumes_distinct_guards_and_single_pass_gates_three(tmp_path, monkeypatch, capsys):
+        plan, _ = _plan(tmp_path, 3)
+        overlay_receipt = tmp_path / "overlay-pass.json"
+        runner.write_overlay_pass_receipt(overlay_receipt, plan)
+        single_receipt = tmp_path / "single-pass.json"
+        api = runner.MockBoardAPI(plan)
+        guards = {stage: tmp_path / f"{stage}.guard"
+                  for stage in ("dma-single", "dma-three")}
+        monkeypatch.setattr(runner, "OVERLAY_PASS_RECEIPT", overlay_receipt)
+        monkeypatch.setattr(runner, "DMA_SINGLE_PASS_RECEIPT", single_receipt)
+        monkeypatch.setattr(runner, "_guard_path", lambda stage: guards[stage])
+        monkeypatch.setattr(runner, "PynqBoardAPI", lambda _plan, stage: api)
+    
+>       single = runner._dma_stage(plan, plan.boot_id, "dma-single", None, 2.0)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_board_once.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan = ValidatedRun(manifest_path=WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-138/test_staged_mock_cons...checksum=29377861, binary_checksum=9792000)), hp0_range=(0, 536870912), hp1_range=(0, 536870912), ready_for_board=True)
+live_boot_id = 'cb087bbb-932d-4a6e-9600-98dd1c7e5f8d', stage = 'dma-single'
+evidence_path = None, timeout_s = 2.0, cma_ranges = None
+
+    def _dma_stage(plan: preflight.ValidatedRun, live_boot_id: str, stage: str,
+                   evidence_path: str | None, timeout_s: float,
+                   cma_ranges: tuple[tuple[int, int], ...] | None = None) -> dict[str, Any]:
+        if stage not in ("dma-single", "dma-three"):
+            raise preflight.PreflightError(f"invalid DMA stage {stage!r}")
+        if len(plan.frames) != 3:
+            raise preflight.PreflightError("DMA stages require the shared three-frame manifest")
+        preflight.validate_manifest(plan.manifest_path, plan.manifest_sha256)
+        require_overlay_pass_receipt(OVERLAY_PASS_RECEIPT, plan)
+        if stage == "dma-three":
+            require_dma_single_pass_receipt(DMA_SINGLE_PASS_RECEIPT, plan)
+        frame_limit = 1 if stage == "dma-single" else 3
+        expected_prior_frames = 0 if stage == "dma-single" else 1
+        preflight.claim_once_guard(_guard_path(stage), boot_id=live_boot_id,
+                                   manifest_sha256=plan.manifest_sha256, stage=stage)
+>       api = PynqBoardAPI(plan, stage=stage, cma_ranges=cma_ranges)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: test_staged_mock_consumes_distinct_guards_and_single_pass_gates_three.<locals>.<lambda>() got an unexpected keyword argument 'cma_ranges'
+
+scripts\wo0015\board_once.py:1075: TypeError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_board_preflight.py::test_hwh_ignores_bus_interface_parameters_when_reading_ip_configuration
+FAILED scripts/wo0015/test_board_once.py::test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[1]
+FAILED scripts/wo0015/test_board_once.py::test_mock_dma_runs_fixed_frames_with_two_reused_buffers_and_s2mm_first[3]
+FAILED scripts/wo0015/test_board_once.py::test_dma_error_after_length_fail_holds_buffers_and_never_retries_or_frees
+FAILED scripts/wo0015/test_board_once.py::test_tx_rx_overlapping_or_non_cma_buffers_fail_before_dma_start
+FAILED scripts/wo0015/test_board_once.py::test_completed_pixel_mismatch_is_board_transfer_failure_without_dma_hold
+FAILED scripts/wo0015/test_board_once.py::test_pynq_sync_methods_fail_closed_when_no_supported_cache_operation_exists
+FAILED scripts/wo0015/test_board_once.py::test_staged_mock_consumes_distinct_guards_and_single_pass_gates_three
+8 failed, 27 passed in 4.98s

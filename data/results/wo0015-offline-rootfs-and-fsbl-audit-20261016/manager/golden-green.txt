@@ -1,0 +1,12 @@
+test_foreground_in_first_word_changes_first_difference (test_golden_analysis.GoldenTests.test_foreground_in_first_word_changes_first_difference) ... ok
+test_non_parity_counterexample_same_summary (test_golden_analysis.GoldenTests.test_non_parity_counterexample_same_summary) ... ok
+test_parity_counts_use_four_byte_words (test_golden_analysis.GoldenTests.test_parity_counts_use_four_byte_words) ... ok
+test_reject_non_binary (test_golden_analysis.GoldenTests.test_reject_non_binary) ... ok
+test_reject_short (test_golden_analysis.GoldenTests.test_reject_short) ... ok
+test_reject_unaligned (test_golden_analysis.GoldenTests.test_reject_unaligned) ... ok
+test_zero_first_word_explains_offset_four (test_golden_analysis.GoldenTests.test_zero_first_word_explains_offset_four) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.000s
+
+OK

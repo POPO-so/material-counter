@@ -1,0 +1,16 @@
+{
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": false,
+  "boot_id_bound": "cb087bbb-932d-4a6e-9600-98dd1c7e5f8d",
+  "build_id": "wo0015-hw-50mhz-20261015",
+  "clock_mhz": 50,
+  "frame_count": 3,
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "manifest_sha256": "817d09ac508e07ab9c156541a0e39cf8c71d361a7dfaaba67951729dd907c674",
+  "pynq_imported": false,
+  "ready_for_board": true,
+  "rx_bytes_each": 76800,
+  "status": "OFFLINE_PREFLIGHT_PASS",
+  "task": "WO-0015",
+  "tx_bytes_each": 230432
+}

@@ -1,0 +1,690 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFF                                            [100%]
+================================== FAILURES ===================================
+___________________________ test_root_opens_nothing ___________________________
+
+    def test_root_opens_nothing():
+>       f=FakeOS(root=True); r=collect(f)
+                               ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+________________ test_bad_or_retired_boot_shortcircuits[bad\n] ________________
+
+first = b'bad\n'
+
+    @pytest.mark.parametrize('first',[b'bad\n',NEW.upper(),NEW+b'\n',NEW+b' ',b'\xff',b'',OLD.encode()+b'\n'])
+    def test_bad_or_retired_boot_shortcircuits(first):
+>       f=FakeOS(first=first); r=collect(f)
+                                 ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_ test_bad_or_retired_boot_shortcircuits[12345678-1234-1234-1234-123456789ABC\n] _
+
+first = b'12345678-1234-1234-1234-123456789ABC\n'
+
+    @pytest.mark.parametrize('first',[b'bad\n',NEW.upper(),NEW+b'\n',NEW+b' ',b'\xff',b'',OLD.encode()+b'\n'])
+    def test_bad_or_retired_boot_shortcircuits(first):
+>       f=FakeOS(first=first); r=collect(f)
+                                 ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_ test_bad_or_retired_boot_shortcircuits[12345678-1234-1234-1234-123456789abc\n\n] _
+
+first = b'12345678-1234-1234-1234-123456789abc\n\n'
+
+    @pytest.mark.parametrize('first',[b'bad\n',NEW.upper(),NEW+b'\n',NEW+b' ',b'\xff',b'',OLD.encode()+b'\n'])
+    def test_bad_or_retired_boot_shortcircuits(first):
+>       f=FakeOS(first=first); r=collect(f)
+                                 ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_ test_bad_or_retired_boot_shortcircuits[12345678-1234-1234-1234-123456789abc\n ] _
+
+first = b'12345678-1234-1234-1234-123456789abc\n '
+
+    @pytest.mark.parametrize('first',[b'bad\n',NEW.upper(),NEW+b'\n',NEW+b' ',b'\xff',b'',OLD.encode()+b'\n'])
+    def test_bad_or_retired_boot_shortcircuits(first):
+>       f=FakeOS(first=first); r=collect(f)
+                                 ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+________________ test_bad_or_retired_boot_shortcircuits[\xff] _________________
+
+first = b'\xff'
+
+    @pytest.mark.parametrize('first',[b'bad\n',NEW.upper(),NEW+b'\n',NEW+b' ',b'\xff',b'',OLD.encode()+b'\n'])
+    def test_bad_or_retired_boot_shortcircuits(first):
+>       f=FakeOS(first=first); r=collect(f)
+                                 ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+__________________ test_bad_or_retired_boot_shortcircuits[] ___________________
+
+first = b''
+
+    @pytest.mark.parametrize('first',[b'bad\n',NEW.upper(),NEW+b'\n',NEW+b' ',b'\xff',b'',OLD.encode()+b'\n'])
+    def test_bad_or_retired_boot_shortcircuits(first):
+>       f=FakeOS(first=first); r=collect(f)
+                                 ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_ test_bad_or_retired_boot_shortcircuits[822a9c29-37c0-438c-81c4-da998d57073b\n] _
+
+first = b'822a9c29-37c0-438c-81c4-da998d57073b\n'
+
+    @pytest.mark.parametrize('first',[b'bad\n',NEW.upper(),NEW+b'\n',NEW+b' ',b'\xff',b'',OLD.encode()+b'\n'])
+    def test_bad_or_retired_boot_shortcircuits(first):
+>       f=FakeOS(first=first); r=collect(f)
+                                 ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+__________________ test_explicit_mismatch_shortcircuits[kw0] __________________
+
+kw = {'mode': 'approved'}
+
+    @pytest.mark.parametrize('kw',[{'mode':'approved'},{'expected':OLD}])
+    def test_explicit_mismatch_shortcircuits(kw):
+>       f=FakeOS(); r=collect(f,**kw)
+                      ^^^^^^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+__________________ test_explicit_mismatch_shortcircuits[kw1] __________________
+
+kw = {'expected': '822a9c29-37c0-438c-81c4-da998d57073b'}
+
+    @pytest.mark.parametrize('kw',[{'mode':'approved'},{'expected':OLD}])
+    def test_explicit_mismatch_shortcircuits(kw):
+>       f=FakeOS(); r=collect(f,**kw)
+                      ^^^^^^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+________________________ test_boot_changed_invalidates ________________________
+
+    def test_boot_changed_invalidates():
+>       f=FakeOS(last=b'87654321-1234-1234-1234-123456789abc\n'); r=collect(f)
+                                                                    ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_______________________ test_candidate_stays_unapproved _______________________
+
+    def test_candidate_stays_unapproved():
+>       f=FakeOS(chunk=1); r=collect(f)
+                             ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_________ test_eacces_stops_without_retry[/proc/sys/kernel/osrelease] _________
+
+path = '/proc/sys/kernel/osrelease'
+
+    @pytest.mark.parametrize('path',OTHERS)
+    def test_eacces_stops_without_retry(path):
+>       f=FakeOS(fault=path);r=collect(f)
+                               ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_______________ test_eacces_stops_without_retry[/proc/version] ________________
+
+path = '/proc/version'
+
+    @pytest.mark.parametrize('path',OTHERS)
+    def test_eacces_stops_without_retry(path):
+>       f=FakeOS(fault=path);r=collect(f)
+                               ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_______________ test_eacces_stops_without_retry[/proc/cmdline] ________________
+
+path = '/proc/cmdline'
+
+    @pytest.mark.parametrize('path',OTHERS)
+    def test_eacces_stops_without_retry(path):
+>       f=FakeOS(fault=path);r=collect(f)
+                               ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+________________ test_eacces_stops_without_retry[/proc/uptime] ________________
+
+path = '/proc/uptime'
+
+    @pytest.mark.parametrize('path',OTHERS)
+    def test_eacces_stops_without_retry(path):
+>       f=FakeOS(fault=path);r=collect(f)
+                               ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+____________ test_eacces_stops_without_retry[/proc/self/mountinfo] ____________
+
+path = '/proc/self/mountinfo'
+
+    @pytest.mark.parametrize('path',OTHERS)
+    def test_eacces_stops_without_retry(path):
+>       f=FakeOS(fault=path);r=collect(f)
+                               ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+________________________ test_bounded_eof[65535-True] _________________________
+
+size = 65535, valid = True
+
+    @pytest.mark.parametrize('size,valid',[(65535,True),(65536,True),(65537,False)])
+    def test_bounded_eof(size,valid):
+>       f=FakeOS(content=b'x'*size);r=collect(f)
+                                      ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+________________________ test_bounded_eof[65536-True] _________________________
+
+size = 65536, valid = True
+
+    @pytest.mark.parametrize('size,valid',[(65535,True),(65536,True),(65537,False)])
+    def test_bounded_eof(size,valid):
+>       f=FakeOS(content=b'x'*size);r=collect(f)
+                                      ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+________________________ test_bounded_eof[65537-False] ________________________
+
+size = 65537, valid = False
+
+    @pytest.mark.parametrize('size,valid',[(65535,True),(65536,True),(65537,False)])
+    def test_bounded_eof(size,valid):
+>       f=FakeOS(content=b'x'*size);r=collect(f)
+                                      ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+______________________ test_open_error_terminal[fault0] _______________________
+
+fault = OSError(10062, 'symlink')
+
+    @pytest.mark.parametrize('fault',[OSError(errno.ELOOP,'symlink'),OSError(errno.EIO,'I/O'),InterruptedError('interrupted')])
+    def test_open_error_terminal(fault):
+        f=FakeOS(); orig=f.open
+        def fail(path,flags):
+            if path==OTHERS[0]: f.opens.append(path); raise fault
+            return orig(path,flags)
+>       f.open=fail;r=collect(f)
+                      ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+______________________ test_open_error_terminal[fault1] _______________________
+
+fault = OSError(5, 'I/O')
+
+    @pytest.mark.parametrize('fault',[OSError(errno.ELOOP,'symlink'),OSError(errno.EIO,'I/O'),InterruptedError('interrupted')])
+    def test_open_error_terminal(fault):
+        f=FakeOS(); orig=f.open
+        def fail(path,flags):
+            if path==OTHERS[0]: f.opens.append(path); raise fault
+            return orig(path,flags)
+>       f.open=fail;r=collect(f)
+                      ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+______________________ test_open_error_terminal[fault2] _______________________
+
+fault = InterruptedError('interrupted')
+
+    @pytest.mark.parametrize('fault',[OSError(errno.ELOOP,'symlink'),OSError(errno.EIO,'I/O'),InterruptedError('interrupted')])
+    def test_open_error_terminal(fault):
+        f=FakeOS(); orig=f.open
+        def fail(path,flags):
+            if path==OTHERS[0]: f.opens.append(path); raise fault
+            return orig(path,flags)
+>       f.open=fail;r=collect(f)
+                      ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+_______________________ test_read_error_closes_no_retry _______________________
+
+    def test_read_error_closes_no_retry():
+        f=FakeOS(); f.read=lambda *a: (_ for _ in ()).throw(OSError(errno.EIO,'read'))
+>       assert not collect(f)['valid'] and f.opens==[BOOT] and f.closed==[1]
+                   ^^^^^^^^^^
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:102: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:49: in collect
+    return core().collect_b1_coldstart(fake, mode=kw.get('mode','coldstart_register_candidate'), retired_boot_ids=(OLD,), expected_boot_id=kw.get('expected'))
+           ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def core():
+>       assert (HERE / 'coldstart_b1.py').exists(), 'coldstart implementation missing'
+E       AssertionError: coldstart implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'coldstart_b1.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:16: AssertionError
+______ test_mountinfo[1 0 8:1 / / rw - ext4 /dev/root rw\n-False-False] _______
+
+text = '1 0 8:1 / / rw - ext4 /dev/root rw\n', present = False, ro = False
+
+    @pytest.mark.parametrize('text,present,ro',[
+        ('1 0 8:1 / / rw - ext4 /dev/root rw\n',False,False),
+        ('2 1 8:1 / /boot rw,relatime - vfat /dev/mmcblk0p1 rw\n',True,False),
+        ('2 1 8:1 / /boot ro,relatime - vfat /dev/mmcblk0p1 rw\n',True,True),
+        ('2 1 8:1 / /boot ro - vfat /dev/mmcblk0p1 ro\n3 1 8:2 / /boot rw - ext4 /dev/x rw\n',True,False)])
+    def test_mountinfo(text,present,ro):
+>       assert (HERE/'host_mountinfo.py').exists(), 'mountinfo implementation missing'
+E       AssertionError: mountinfo implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'host_mountinfo.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:110: AssertionError
+_ test_mountinfo[2 1 8:1 / /boot rw,relatime - vfat /dev/mmcblk0p1 rw\n-True-False] _
+
+text = '2 1 8:1 / /boot rw,relatime - vfat /dev/mmcblk0p1 rw\n', present = True
+ro = False
+
+    @pytest.mark.parametrize('text,present,ro',[
+        ('1 0 8:1 / / rw - ext4 /dev/root rw\n',False,False),
+        ('2 1 8:1 / /boot rw,relatime - vfat /dev/mmcblk0p1 rw\n',True,False),
+        ('2 1 8:1 / /boot ro,relatime - vfat /dev/mmcblk0p1 rw\n',True,True),
+        ('2 1 8:1 / /boot ro - vfat /dev/mmcblk0p1 ro\n3 1 8:2 / /boot rw - ext4 /dev/x rw\n',True,False)])
+    def test_mountinfo(text,present,ro):
+>       assert (HERE/'host_mountinfo.py').exists(), 'mountinfo implementation missing'
+E       AssertionError: mountinfo implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'host_mountinfo.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:110: AssertionError
+_ test_mountinfo[2 1 8:1 / /boot ro,relatime - vfat /dev/mmcblk0p1 rw\n-True-True] _
+
+text = '2 1 8:1 / /boot ro,relatime - vfat /dev/mmcblk0p1 rw\n', present = True
+ro = True
+
+    @pytest.mark.parametrize('text,present,ro',[
+        ('1 0 8:1 / / rw - ext4 /dev/root rw\n',False,False),
+        ('2 1 8:1 / /boot rw,relatime - vfat /dev/mmcblk0p1 rw\n',True,False),
+        ('2 1 8:1 / /boot ro,relatime - vfat /dev/mmcblk0p1 rw\n',True,True),
+        ('2 1 8:1 / /boot ro - vfat /dev/mmcblk0p1 ro\n3 1 8:2 / /boot rw - ext4 /dev/x rw\n',True,False)])
+    def test_mountinfo(text,present,ro):
+>       assert (HERE/'host_mountinfo.py').exists(), 'mountinfo implementation missing'
+E       AssertionError: mountinfo implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'host_mountinfo.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:110: AssertionError
+_ test_mountinfo[2 1 8:1 / /boot ro - vfat /dev/mmcblk0p1 ro\n3 1 8:2 / /boot rw - ext4 /dev/x rw\n-True-False] _
+
+text = '2 1 8:1 / /boot ro - vfat /dev/mmcblk0p1 ro\n3 1 8:2 / /boot rw - ext4 /dev/x rw\n'
+present = True, ro = False
+
+    @pytest.mark.parametrize('text,present,ro',[
+        ('1 0 8:1 / / rw - ext4 /dev/root rw\n',False,False),
+        ('2 1 8:1 / /boot rw,relatime - vfat /dev/mmcblk0p1 rw\n',True,False),
+        ('2 1 8:1 / /boot ro,relatime - vfat /dev/mmcblk0p1 rw\n',True,True),
+        ('2 1 8:1 / /boot ro - vfat /dev/mmcblk0p1 ro\n3 1 8:2 / /boot rw - ext4 /dev/x rw\n',True,False)])
+    def test_mountinfo(text,present,ro):
+>       assert (HERE/'host_mountinfo.py').exists(), 'mountinfo implementation missing'
+E       AssertionError: mountinfo implementation missing
+E       assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'host_mountinfo.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:110: AssertionError
+____________________ test_malformed_mountinfo_fails_closed ____________________
+
+    def test_malformed_mountinfo_fails_closed():
+>       assert (HERE/'host_mountinfo.py').exists()
+E       AssertionError: assert False
+E        +  where False = exists()
+E        +    where exists = (WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-coldstart-b1-and-uart-plan-20261016') / 'host_mountinfo.py').exists
+
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py:116: AssertionError
+=========================== short test summary info ===========================
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_root_opens_nothing
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bad_or_retired_boot_shortcircuits[bad\n]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bad_or_retired_boot_shortcircuits[12345678-1234-1234-1234-123456789ABC\n]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bad_or_retired_boot_shortcircuits[12345678-1234-1234-1234-123456789abc\n\n]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bad_or_retired_boot_shortcircuits[12345678-1234-1234-1234-123456789abc\n ]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bad_or_retired_boot_shortcircuits[\xff]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bad_or_retired_boot_shortcircuits[]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bad_or_retired_boot_shortcircuits[822a9c29-37c0-438c-81c4-da998d57073b\n]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_explicit_mismatch_shortcircuits[kw0]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_explicit_mismatch_shortcircuits[kw1]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_boot_changed_invalidates
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_candidate_stays_unapproved
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_eacces_stops_without_retry[/proc/sys/kernel/osrelease]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_eacces_stops_without_retry[/proc/version]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_eacces_stops_without_retry[/proc/cmdline]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_eacces_stops_without_retry[/proc/uptime]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_eacces_stops_without_retry[/proc/self/mountinfo]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bounded_eof[65535-True]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bounded_eof[65536-True]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_bounded_eof[65537-False]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_open_error_terminal[fault0]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_open_error_terminal[fault1]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_open_error_terminal[fault2]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_read_error_closes_no_retry
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_mountinfo[1 0 8:1 / / rw - ext4 /dev/root rw\n-False-False]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_mountinfo[2 1 8:1 / /boot rw,relatime - vfat /dev/mmcblk0p1 rw\n-True-False]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_mountinfo[2 1 8:1 / /boot ro,relatime - vfat /dev/mmcblk0p1 rw\n-True-True]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_mountinfo[2 1 8:1 / /boot ro - vfat /dev/mmcblk0p1 ro\n3 1 8:2 / /boot rw - ext4 /dev/x rw\n-True-False]
+FAILED ..\..\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016\test_coldstart.py::test_malformed_mountinfo_fails_closed
+29 failed in 0.40s

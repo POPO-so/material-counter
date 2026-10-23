@@ -1,0 +1,122 @@
+..............F.FFF                                             [100%]
+================================== FAILURES ===================================
+_ B2TemplateTests.test_success_uses_openat_and_fstatvfs_before_and_after_content _
+
+self = <test_proposal_contract_v2.B2TemplateTests testMethod=test_success_uses_openat_and_fstatvfs_before_and_after_content>
+
+    def test_success_uses_openat_and_fstatvfs_before_and_after_content(self):
+        os_api = fakes.OfflineOSMock()
+    
+        result = _b2(os_api)
+    
+        self.assertEqual(result.status, "OFFLINE_MODEL_PASS")
+        self.assertEqual(result.data, os_api.payload)
+        self.assertEqual(os_api.proc_open_paths, [template.BOOT_ID, template.BOOT_ID])
+        opens = [event for event in os_api.events if event[0] == "open" and event[1] in ("/boot", "BOOT.BIN")]
+        self.assertEqual(opens, [
+            ("open", "/boot", os_api.O_RDONLY | os_api.O_DIRECTORY | os_api.O_NOFOLLOW, None),
+            ("open", "BOOT.BIN", os_api.O_RDONLY | os_api.O_NOFOLLOW, "dirfd"),
+        ])
+        names = [event[0] for event in os_api.events if len(event) < 2 or event[1] in ("bootfd", "dirfd")]
+        vfs_indexes = [index for index, event in enumerate(os_api.events) if event[0] == "fstatvfs"]
+        stat_indexes = [index for index, event in enumerate(os_api.events) if event[0] == "fstat" and event[1] == "bootfd"]
+        read_index = next(index for index, event in enumerate(os_api.events) if event[0] == "read" and event[1] == "bootfd")
+        self.assertLess(vfs_indexes[0], stat_indexes[0])
+        self.assertLess(stat_indexes[0], read_index)
+        self.assertLess(read_index, vfs_indexes[1])
+        self.assertLess(vfs_indexes[1], stat_indexes[1])
+>       self.assertIn("bootfd", names)
+E       AssertionError: 'bootfd' not found in ['fstatvfs', 'fstat', 'read', 'read', 'fstatvfs', 'fstat', 'close', 'close']
+
+test_proposal_contract_v2.py:101: AssertionError
+_ StaticGuardTests.test_proposal_documents_are_blocked_and_transport_is_fixed _
+
+self = <test_proposal_contract_v2.StaticGuardTests testMethod=test_proposal_documents_are_blocked_and_transport_is_fixed>
+
+    def test_proposal_documents_are_blocked_and_transport_is_fixed(self):
+        command = (ROOT / "command-audit-and-whitelist-v2.md").read_text(encoding="utf-8")
+        approval = (ROOT / "next-step-approval-request-v2.md").read_text(encoding="utf-8")
+        for text in (command, approval):
+            self.assertIn("NOT_APPROVED_DO_NOT_EXECUTE", text)
+            self.assertIn("-T", text)
+            self.assertIn("ControlMaster=no", text)
+            self.assertIn("ClearAllForwardings=yes", text)
+            self.assertIn("StrictHostKeyChecking=yes", text)
+            self.assertIn(template.KNOWN_HOSTS_OPTION, text)
+            self.assertIn("-I -S -B", text)
+            self.assertIn("EACCES", text)
+            self.assertIn("ST_RDONLY", text)
+            for field in template.STAT_FIELDS:
+                self.assertIn(field, text)
+>           self.assertIn("Ŀ���ļ�/���ص�ֻ��", text)
+E           AssertionError: 'Ŀ���ļ�/���ص�ֻ��' not found in '# WO-0015 B1/B2 command audit and file whitelist v2\n\n> **NOT_APPROVED_DO_NOT_EXECUTE**  \n> Offline proposal only. No board connection, SSH attempt, `/proc` read, `/boot` read, register access, Overlay load, or DMA operation was performed for this review.\n\nThis revision records the requested B1/B2 safety contract. It does not include a runnable SSH command, a remote script, a command generator, credentials, or a default executor. The companion Python file under `proposals/` is an in-memory contract model for offline unit tests; it has no filesystem, process, or network backend.\n\n## B1 whitelist and fail-fast order\n\nB1 has six distinct `/proc` paths. The first remote-process operation in any future reviewed implementation must read only the boot ID as an ordinary user:\n\n`/proc/sys/kernel/random/boot_id`\n\nThe first bytes must match the historical authorization baseline `822a9c29-37c0-438c-81c4-da998d57073b`. If they do not match, the process exits immediately; it must not open any of the other five paths. If the boot ID matches, the only remaining B1 paths are:\n\n| Order | Path | Limit | Rule |\n|---|---|---:|---|\n| 1 | `/proc/sys/kernel/random/boot_id` | 1 MiB | First read; exact expected boot required before any other path |\n| 2 | `/proc/sys/kernel/osrelease` | 1 MiB | One read |\n| 3 | `/proc/version` | 1 MiB | One read |\n| 4 | `/proc/cmdline` | 1 MiB | One read |\n| 5 | `/proc/uptime` | 1 MiB | One read |\n| 6 | `/proc/self/mountinfo` | 1 MiB | One read; descriptive evidence only |\n\nAfter those five reads, the future process must reread `boot_id` and stop if it differs from the first bytes. A read error, including `EACCES`, stops the process at that point. There is no retry, privilege change, alternative path, or fallback. These are six distinct files and at most seven read operations when the start/end boot-ID checks are included.\n\nThe process must use ordinary-user permissions for every path. The command template must not invoke `sudo` or another elevation method. `EACCES` is a terminal rejection; it must not trigger a prompt, PAM authentication, `auth.log` activity caused by elevation, or a second command.\n\n## B2 file and mount contract\n\nB2 is a separately reviewed stage, after B1 evidence is assessed. A future B2 process must also check the same boot ID before opening `/boot` and recheck it after the file transaction. B2 adds only the regular file `/boot/BOOT.BIN`; it must not use `mountinfo` text as the sole read-only check.\n\nThe required directory-relative sequence is:\n\n```python\ndir_fd = os.open("/boot", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)\nfd = os.open("BOOT.BIN", os.O_RDONLY | os.O_NOFOLLOW, dir_fd=dir_fd)\n```\n\nBefore reading any file-content byte, call `os.fstatvfs(fd)` and require `bool(f_flag & os.ST_RDONLY)`, then capture `os.fstat(fd)`. Read the file through that pinned descriptor. Immediately after the content read, call `os.fstatvfs(fd)` again and require `ST_RDONLY`, then call `os.fstat(fd)` again. The pre-read and post-read tuples `(st_dev, st_ino, st_size, st_mtime_ns)` must match exactly. Close both descriptors on every path.\n\nAny symlink rejection, non-regular object, missing flag, writable filesystem, changed stat tuple, changed boot ID, `EACCES`, or I/O error stops the stage. In particular, a writable `fstatvfs` result before the content read requires zero content reads. Do not retry, remount, mount, unmount, change flags, try another path, or escalate privileges. `O_NOATIME` is not a fallback for the `ST_RDONLY` requirement.\n\n`ST_RDONLY` is the required kernel VFS assertion for the filesystem containing the opened target file at the two check points. This establishes the target-file/mount read-only condition used by this proposal. It does not establish that the entire SD card receives zero writes: an SSH login can still cause system logging or other activity. If whole-card zero-write is required, keep the card offline and do not use SSH.\n\n## SSH and interpreter option whitelist\n\nIf a later, separately approved stage is ever prepared, its SSH option set must include all of the following:\n\n| Option | Required value | Purpose |\n|---|---|---|\n| `-T` | enabled | No pseudo-terminal |\n| `-o ControlMaster=no` | fixed | No multiplexed control connection |\n| `-o ClearAllForwardings=yes` | fixed | Clear configured port, agent, and X11 forwarding |\n| `-o StrictHostKeyChecking=yes` | fixed | Reject unknown or changed host keys |\n| `-o UserKnownHostsFile=C:/Users/POP/.ssh/wo0015-known_hosts` | fixed absolute path | Use one explicitly named host-key file |\n\nThe host-key file contents, target identity, and current SSH reachability were not inspected or verified here. A missing/untrusted key must fail closed; do not accept a key interactively or switch to another known-hosts file. No host, username, key, address, or connection command is supplied in this proposal.\n\nThe remote interpreter flags are fixed as `-I -S -B`. The executable path and presence on a future target remain unverified and must be reviewed before any later approval. No `sudo`, PTY, ControlMaster, forwarding, retry, or fallback command is part of this proposal.\n\n## Command disposition and evidence boundary\n\nThe earlier v1 command document included a `sudo -n` wrapper. That v1 command is superseded for any future consideration and must not be copied into a new request. The old files remain unchanged as historical evidence. This v2 document describes policy and syscall order only; it does not implement or invoke them.\n\nOffline tests use synthetic bytes and in-memory mock methods only. They do not open `/proc` or `/boot`, create a real SSH process, call a remote backend, or grant AFI/DMA authorization. Current status remains `STOPPED_PRECONDITION_UNVERIFIED` and `afi_authorized=false`.\n'
+
+test_proposal_contract_v2.py:220: AssertionError
+_ StaticGuardTests.test_template_contains_syscall_core_but_no_executor_or_entry_point _
+
+self = <test_proposal_contract_v2.StaticGuardTests testMethod=test_template_contains_syscall_core_but_no_executor_or_entry_point>
+
+    def test_template_contains_syscall_core_but_no_executor_or_entry_point(self):
+        source = (PROPOSALS / "remote_template_v2.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        forbidden_imports = {"subprocess", "socket", "paramiko", "fabric", "pexpect", "pathlib"}
+        os_api_calls = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                self.assertFalse({alias.name.split(".")[0] for alias in node.names} & forbidden_imports)
+            elif isinstance(node, ast.ImportFrom):
+                self.assertNotIn((node.module or "").split(".")[0], forbidden_imports)
+            elif isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name) and node.func.value.id == "os":
+                    os_api_calls.add(node.func.attr)
+                if isinstance(node.func, ast.Name):
+                    self.assertNotIn(node.func.id, {"open", "exec", "eval", "compile", "__import__"})
+        self.assertTrue({"open", "fstatvfs", "fstat", "read", "close"} <= os_api_calls)
+        self.assertNotIn("__main__", source)
+        self.assertNotIn("subprocess", source)
+        self.assertIn('os.open("/boot", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)', source)
+        self.assertIn('os.open("BOOT.BIN", os.O_RDONLY | os.O_NOFOLLOW, dir_fd=dir_fd)', source)
+        self.assertIn("bool(before_vfs.f_flag & os.ST_RDONLY)", source)
+        self.assertIn("bool(after_vfs.f_flag & os.ST_RDONLY)", source)
+>       self.assertIn("(" + ", ".join(repr(field) for field in template.STAT_FIELDS) + ")", source)
+E       AssertionError: "('st_dev', 'st_ino', 'st_size', 'st_mtime_ns')" not found in '"""WO-0015 B1/B2 source template; no entry point and no default executor.\n\nThe capture functions require explicit reader and OS-API dependencies. The\noffline tests inject fakes into these same functions. Nothing in this module\nconstructs the real ``os`` adapter, connects to SSH, or starts a remote process.\n"""\nimport errno\nimport stat\nfrom dataclasses import dataclass\n\n\nVERSION = "wo0015-remote-template-v2"\nEXPECTED_BOOT_ID = "822a9c29-37c0-438c-81c4-da998d57073b"\nEXPECTED_BOOT_ID_BYTES = (EXPECTED_BOOT_ID + "\\n").encode("ascii")\nBOOT_ID = "/proc/sys/kernel/random/boot_id"\nB1_OTHER_PATHS = (\n    "/proc/sys/kernel/osrelease",\n    "/proc/version",\n    "/proc/cmdline",\n    "/proc/uptime",\n    "/proc/self/mountinfo",\n)\nB1_PATHS = (BOOT_ID, *B1_OTHER_PATHS)\nB2_DIRECTORY = "/boot"\nB2_FILENAME = "BOOT.BIN"\nSTAT_FIELDS = ("st_dev", "st_ino", "st_size", "st_mtime_ns")\nMAX_PROC_BYTES = 1024 * 1024\nMAX_BOOT_BYTES = 64 * 1024 * 1024\n\n# Option data only. No code below turns this into an SSH invocation.\nSSH_OPTIONS = (\n    "-T",\n    "-o ControlMaster=no",\n    "-o ClearAllForwardings=yes",\n    "-o StrictHostKeyChecking=yes",\n    "-o UserKnownHostsFile=C:/Users/POP/.ssh/wo0015-known_hosts",\n)\nKNOWN_HOSTS_OPTION = SSH_OPTIONS[-1]\nREMOTE_PYTHON_FLAGS = ("-I", "-S", "-B")\n\n\n@dataclass(frozen=True)\nclass CaptureResult:\n    status: str\n    samples: tuple = ()\n    data: bytes = b""\n    reason: str = ""\n    afi_authorized: bool = False\n\n\nclass _StopCapture(Exception):\n    def __init__(self, status, reason, data=b""):\n        super().__init__(reason)\n        self.status = status\n        self.reason = reason\n        self.data = data\n\n\ndef _failure_status(exc):\n    if isinstance(exc, PermissionError) or getattr(exc, "errno", None) == errno.EACCES:\n        return "EACCES"\n    if getattr(exc, "errno", None) == errno.ELOOP:\n        return "SYMLINK"\n    return "READ_FAILED"\n\n\ndef _read_bounded(os, fd, max_bytes):\n    if type(max_bytes) is not int or max_bytes <= 0:\n        raise ValueError("invalid size limit")\n    chunks = []\n    total = 0\n    while True:\n        chunk = os.read(fd, min(65536, max_bytes + 1 - total))\n        if not chunk:\n            return b"".join(chunks)\n        if not isinstance(chunk, bytes):\n            raise ValueError("read API must return bytes")\n        chunks.append(chunk)\n        total += len(chunk)\n        if total > max_bytes:\n            raise ValueError("source exceeds fixed size limit")\n\n\ndef read_b1_file(path, *, os, max_bytes=MAX_PROC_BYTES):\n    """Read one exact B1 allowlisted regular file through injected OS APIs."""\n    if path not in B1_PATHS:\n        raise ValueError("path outside B1 allowlist")\n    if type(max_bytes) is not int or max_bytes <= 0 or max_bytes > MAX_PROC_BYTES:\n        raise ValueError("invalid B1 size limit")\n    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)\n    try:\n        info = os.fstat(fd)\n        if not stat.S_ISREG(info.st_mode):\n            raise ValueError("B1 source is not a regular file")\n        return _read_bounded(os, fd, max_bytes)\n    finally:\n        os.close(fd)\n\n\ndef make_b1_reader(os):\n    """Bind only the OS API dependency; creating the reader performs no I/O."""\n    def reader(path, *, max_bytes=MAX_PROC_BYTES):\n        return read_b1_file(path, os=os, max_bytes=max_bytes)\n\n    return reader\n\n\ndef capture_b1(reader):\n    """Shared B1 process core: boot identity is the first file read."""\n    if not callable(reader):\n        raise TypeError("B1 requires an explicitly supplied file reader")\n    samples = []\n    try:\n        first_boot = reader(BOOT_ID, max_bytes=MAX_PROC_BYTES)\n        if not isinstance(first_boot, bytes):\n            raise ValueError("reader must return raw bytes")\n        samples.append((BOOT_ID, first_boot))\n    except Exception as exc:\n        return CaptureResult(_failure_status(exc), tuple(samples), reason=type(exc).__name__)\n\n    if first_boot.strip() != EXPECTED_BOOT_ID.encode("ascii"):\n        return CaptureResult("BOOT_MISMATCH", tuple(samples), reason="other five B1 paths not read")\n\n    for path in B1_OTHER_PATHS:\n        try:\n            raw = reader(path, max_bytes=MAX_PROC_BYTES)\n            if not isinstance(raw, bytes):\n                raise ValueError("reader must return raw bytes")\n            samples.append((path, raw))\n        except Exception as exc:\n            return CaptureResult(_failure_status(exc), tuple(samples), reason=type(exc).__name__)\n\n    try:\n        final_boot = reader(BOOT_ID, max_bytes=MAX_PROC_BYTES)\n        if not isinstance(final_boot, bytes):\n            raise ValueError("reader must return raw bytes")\n        samples.append((BOOT_ID, final_boot))\n    except Exception as exc:\n        return CaptureResult(_failure_status(exc), tuple(samples), reason=type(exc).__name__)\n\n    if final_boot != first_boot:\n        return CaptureResult("BOOT_CHANGED", tuple(samples), reason="boot_id changed during B1")\n    return CaptureResult("OFFLINE_MODEL_PASS", tuple(samples))\n\n\ndef _identity_tuple(info):\n    return tuple(getattr(info, field) for field in STAT_FIELDS)\n\n\ndef capture_b2(reader, *, os):\n    """Shared B2 core using the injected OS API; callers must opt in explicitly."""\n    if not callable(reader):\n        raise TypeError("B2 requires an explicitly supplied boot-ID reader")\n    try:\n        first_boot = reader(BOOT_ID, max_bytes=MAX_PROC_BYTES)\n        if not isinstance(first_boot, bytes):\n            raise ValueError("reader must return raw bytes")\n    except Exception as exc:\n        return CaptureResult(_failure_status(exc), reason=type(exc).__name__)\n    if first_boot.strip() != EXPECTED_BOOT_ID.encode("ascii"):\n        return CaptureResult("BOOT_MISMATCH", reason="/boot directory not opened")\n\n    dir_fd = None\n    fd = None\n    result = None\n    cleanup_error = None\n    try:\n        dir_fd = os.open("/boot", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)\n        fd = os.open("BOOT.BIN", os.O_RDONLY | os.O_NOFOLLOW, dir_fd=dir_fd)\n\n        before_vfs = os.fstatvfs(fd)\n        if not bool(before_vfs.f_flag & os.ST_RDONLY):\n            raise _StopCapture("FILESYSTEM_WRITABLE", "pre-read ST_RDONLY absent")\n        before = os.fstat(fd)\n        if not stat.S_ISREG(before.st_mode):\n            raise _StopCapture("OBJECT_TYPE", "BOOT.BIN is not a regular file")\n        if before.st_size < 0 or before.st_size > MAX_BOOT_BYTES:\n            raise _StopCapture("SIZE_LIMIT", "BOOT.BIN size outside fixed bound")\n\n        data = _read_bounded(os, fd, MAX_BOOT_BYTES)\n\n        after_vfs = os.fstatvfs(fd)\n        if not bool(after_vfs.f_flag & os.ST_RDONLY):\n            raise _StopCapture("FILESYSTEM_WRITABLE", "post-read ST_RDONLY absent", data)\n        after = os.fstat(fd)\n        if not stat.S_ISREG(after.st_mode):\n            raise _StopCapture("OBJECT_TYPE", "BOOT.BIN type changed", data)\n        if _identity_tuple(before) != _identity_tuple(after):\n            raise _StopCapture("STAT_CHANGED", "pinned BOOT.BIN stat tuple changed", data)\n\n        final_boot = reader(BOOT_ID, max_bytes=MAX_PROC_BYTES)\n        if not isinstance(final_boot, bytes) or final_boot != first_boot:\n            raise _StopCapture("BOOT_CHANGED", "boot_id changed during B2", data)\n        result = CaptureResult("OFFLINE_MODEL_PASS", data=data)\n    except _StopCapture as stop:\n        result = CaptureResult(stop.status, data=stop.data, reason=stop.reason)\n    except Exception as exc:\n        result = CaptureResult(_failure_status(exc), reason=type(exc).__name__)\n    finally:\n        if fd is not None:\n            try:\n                os.close(fd)\n            except Exception as exc:\n                cleanup_error = exc\n        if dir_fd is not None:\n            try:\n                os.close(dir_fd)\n            except Exception as exc:\n                cleanup_error = cleanup_error or exc\n\n    if cleanup_error is not None:\n        return CaptureResult("CLOSE_FAILED", data=result.data if result else b"", reason=type(cleanup_error).__name__)\n    return result\n'
+
+test_proposal_contract_v2.py:203: AssertionError
+___ StaticGuardTests.test_template_hash_manifest_matches_exact_source_bytes ___
+
+self = <test_proposal_contract_v2.StaticGuardTests testMethod=test_template_hash_manifest_matches_exact_source_bytes>
+
+    def test_template_hash_manifest_matches_exact_source_bytes(self):
+        source = (PROPOSALS / "remote_template_v2.py").read_bytes()
+>       manifest = (PROPOSALS / "remote-template-sha256.txt").read_text(encoding="ascii").strip()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_proposal_contract_v2.py:228: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\POP\AppData\Local\Programs\Python\Python312\Lib\pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/remote-template-sha256.txt')
+mode = 'r', buffering = -1, encoding = 'ascii', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\proposals\\remote-template-sha256.txt'
+
+C:\Users\POP\AppData\Local\Programs\Python\Python312\Lib\pathlib.py:1013: FileNotFoundError
+=========================== short test summary info ===========================
+FAILED test_proposal_contract_v2.py::B2TemplateTests::test_success_uses_openat_and_fstatvfs_before_and_after_content
+FAILED test_proposal_contract_v2.py::StaticGuardTests::test_proposal_documents_are_blocked_and_transport_is_fixed
+FAILED test_proposal_contract_v2.py::StaticGuardTests::test_template_contains_syscall_core_but_no_executor_or_entry_point
+FAILED test_proposal_contract_v2.py::StaticGuardTests::test_template_hash_manifest_matches_exact_source_bytes
+4 failed, 15 passed, 9 subtests passed in 0.29s

@@ -1,0 +1,42 @@
+.............................F.........                                  [100%]
+================================== FAILURES ===================================
+_ test_completed_live_pixel_mismatch_is_not_reported_as_unstarted_or_dma_hold _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-142/test_completed_live_pixel_mism0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000173A96CFAA0>
+
+    def test_completed_live_pixel_mismatch_is_not_reported_as_unstarted_or_dma_hold(
+        tmp_path, monkeypatch
+    ):
+        plan, _ = _plan(tmp_path, 3)
+        overlay_receipt = tmp_path / "overlay-pass.json"
+        runner.write_overlay_pass_receipt(overlay_receipt, plan)
+        guard = tmp_path / "single-consumed.json"
+        terminal = tmp_path / "terminal-failure.json"
+        api = runner.MockBoardAPI(plan, corrupt_s2mm_frame=1)
+        api._overlay_loaded = True
+        api.board_accessed = True  # Model the live adapter after MMIO was opened.
+        monkeypatch.setattr(runner, "OVERLAY_PASS_RECEIPT", overlay_receipt)
+        monkeypatch.setattr(runner, "_guard_path", lambda _stage: guard)
+        monkeypatch.setattr(runner, "TERMINAL_FAILURE", terminal)
+        monkeypatch.setattr(runner, "PynqBoardAPI",
+                            lambda _plan, stage, cma_ranges=None: api)
+    
+        with pytest.raises(runner.ExecutionFailure, match="differs from golden") as caught:
+            runner._dma_stage(plan, plan.boot_id, "dma-single", None, 1.0)
+    
+        assert caught.value.board_accessed is True
+        assert caught.value.evidence["board_accessed"] is True
+        assert caught.value.evidence["transfer_started"] is True
+        assert caught.value.evidence["dma_start_attempted"] is True
+        assert caught.value.evidence["dma_may_be_active"] is False
+>       assert caught.value.evidence["status"] == "DMA_SINGLE_FAIL"
+E       AssertionError: assert 'RUNNING' == 'DMA_SINGLE_FAIL'
+E         
+E         - DMA_SINGLE_FAIL
+E         + RUNNING
+
+scripts\wo0015\test_board_once.py:208: AssertionError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_board_once.py::test_completed_live_pixel_mismatch_is_not_reported_as_unstarted_or_dma_hold
+1 failed, 38 passed in 5.37s

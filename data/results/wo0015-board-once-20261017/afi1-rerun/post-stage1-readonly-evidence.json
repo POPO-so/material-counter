@@ -1,0 +1,22 @@
+{
+  "active_guard_files": [
+    "overlay-only-consumed.json",
+    "terminal-failure.json"
+  ],
+  "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "files": {
+    "overlay-only-consumed.json": {
+      "sha256": "df89863f1e6fb457ebd09bcc785dff4c7c152be1a0d8780be88b8f7929278fd8"
+    },
+    "terminal-failure.json": {
+      "sha256": "0f2f467620ce4fe2a3c60b056aac8d5e9423a38bd061611f40fda3d41650cf7e"
+    }
+  },
+  "password_prompted_or_supplied": false,
+  "registers": {
+    "AFI1_RDCHAN_CTRL": 1,
+    "AFI1_WRCHAN_CTRL": 3840,
+    "SLCR_FPGA0_CLK_CTRL": 4196352,
+    "SLCR_FPGA_RST_CTRL": 0
+  }
+}

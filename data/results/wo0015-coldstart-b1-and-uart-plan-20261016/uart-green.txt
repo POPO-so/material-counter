@@ -1,0 +1,8 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-coldstart-b1-and-uart-plan-20261016
+collected 22 items
+
+test_uart_readonly.py ......................                             [100%]
+
+============================= 22 passed in 0.07s ==============================

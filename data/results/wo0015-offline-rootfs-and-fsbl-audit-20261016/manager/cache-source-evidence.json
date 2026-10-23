@@ -1,0 +1,236 @@
+[
+  {
+    "path": "data\\results\\wo0015-runonly-resume-retry2-20261015\\remote-evidence\\board_once_watermark.py",
+    "sha256": "6be386b2140d8a373677eb337e6a3028464c0c720a75bd6c14ea03046cec7ec1",
+    "functions": [
+      {
+        "qualified_name": "ExecutionFailure.__init__",
+        "line": 99,
+        "end_line": 109,
+        "source": "    def __init__(self, message: str, *, transfer_started: bool,\n                 evidence: Mapping[str, Any] | None = None,\n                 dma_start_attempted: bool | None = None,\n                 dma_may_be_active: bool | None = None):\n        super().__init__(message)\n        self.transfer_started = transfer_started\n        self.dma_start_attempted = (transfer_started if dma_start_attempted is None\n                                    else dma_start_attempted)\n        self.dma_may_be_active = (transfer_started if dma_may_be_active is None\n                                  else dma_may_be_active)\n        self.evidence = dict(evidence or {})"
+      },
+      {
+        "qualified_name": "_MockBuffer.__init__",
+        "line": 604,
+        "end_line": 606,
+        "source": "    def __init__(self, size: int, device_address: int):\n        super().__init__(size)\n        self.device_address = device_address"
+      },
+      {
+        "qualified_name": "MockBoardAPI.__init__",
+        "line": 615,
+        "end_line": 673,
+        "source": "    def __init__(self, plan: preflight.ValidatedRun, *, initial_idle: bool = True,\n                 s2mm_error_frame: int | None = None,\n                 force_nonidle_frame: int | None = None,\n                 s2mm_address_override: int | None = None,\n                 corrupt_s2mm_frame: int | None = None):\n        self.plan = plan\n        self.allocations: list[int] = []\n        self.free_count = 0\n        self.write_trace: list[tuple[int, int, int]] = []\n        self.last_s2mm_address = 0\n        self.last_mm2s_address = 0\n        self.s2mm_error_frame = s2mm_error_frame\n        self.force_nonidle_frame = force_nonidle_frame\n        self.s2mm_address_override = s2mm_address_override\n        self.corrupt_s2mm_frame = corrupt_s2mm_frame\n        self.cma_ranges: tuple[tuple[int, int], ...] = ((0, 0x20000000),)\n        self.sync_to_device_trace: list[tuple[Any, bytes]] = []\n        self._start_cma_free_kib = max(32768, preflight.MIN_CMA_KIB + 128)\n        self._cma_free_kib = self._start_cma_free_kib\n        self._next_address = 0x10000000\n        self._current_frame_index = -1\n        self._frame_limit = len(plan.frames)\n        self._run_allocation_index = 0\n        self.overlay_load_count = 0\n        self._overlay_loaded = False\n        self._mm2s_buffer: _MockBuffer | None = None\n        self._s2mm_buffer: _MockBuffer | None = None\n        self._packer_status = 0\n        self._packer_pixels = 0\n        self._packer_beats = 0\n        self._packer_error = 0\n        self._actual_s2mm_length = 0\n        self._checker: dict[int, int] = {\n            CHECKER_STATUS: 0,\n            CHECKER_ERROR_CODE: 0,\n            CHECKER_FRAME_ID: 0,\n            CHECKER_PACKET_DONE_COUNT: 0,\n            CHECKER_PACKET_ERROR_COUNT: 0,\n            CHECKER_INPUT_BYTES: 0,\n            CHECKER_INPUT_BEATS: 0,\n            CHECKER_INPUT_TLAST: 0,\n            CHECKER_INPUT_FIRST_WORD: 0,\n            CHECKER_INPUT_LAST_WORD: 0,\n            CHECKER_INPUT_CHECKSUM: 0,\n            CHECKER_PIXELS: 0,\n            CHECKER_SOFS: 0,\n            CHECKER_EOLS: 0,\n            CHECKER_OUTPUT_CHECKSUM: 0,\n            CHECKER_OUTPUT_TOTAL: 0,\n            CHECKER_OUTPUT_STALLS: 0,\n        }\n        initial = DMA_IDLE if initial_idle else 0\n        self._dma: dict[int, int] = {\n            DMA_MM2S_DMASR: initial,\n            DMA_S2MM_DMASR: initial,\n            DMA_MM2S_LENGTH: 0,\n            DMA_S2MM_LENGTH: 0,\n        }\n        self._monotonic = 0.0"
+      },
+      {
+        "qualified_name": "MockBoardAPI.allocate",
+        "line": 715,
+        "end_line": 731,
+        "source": "    def allocate(self, size: int) -> _MockBuffer:\n        self.allocations.append(size)\n        address = (self._next_address + preflight.PAGE_BYTES - 1) & ~(preflight.PAGE_BYTES - 1)\n        if self._run_allocation_index == 1 and self.s2mm_address_override is not None:\n            address = self.s2mm_address_override\n        pages = (size + preflight.PAGE_BYTES - 1) // preflight.PAGE_BYTES\n        self._next_address = address + pages * preflight.PAGE_BYTES\n        self._cma_free_kib -= pages * preflight.PAGE_BYTES // 1024\n        buffer = _MockBuffer(size, address)\n        if self._run_allocation_index == 0:\n            self._mm2s_buffer = buffer\n        elif self._run_allocation_index == 1:\n            self._s2mm_buffer = buffer\n        else:\n            raise AssertionError(\"runner allocated a third buffer in one stage\")\n        self._run_allocation_index += 1\n        return buffer"
+      },
+      {
+        "qualified_name": "MockBoardAPI.sync_to_device",
+        "line": 739,
+        "end_line": 740,
+        "source": "    def sync_to_device(self, _buffer: Any) -> None:\n        self.sync_to_device_trace.append((_buffer, bytes(memoryview(_buffer).cast(\"B\"))))"
+      },
+      {
+        "qualified_name": "MockBoardAPI.sync_from_device",
+        "line": 742,
+        "end_line": 743,
+        "source": "    def sync_from_device(self, _buffer: Any) -> None:\n        return None"
+      },
+      {
+        "qualified_name": "PynqBoardAPI.__init__",
+        "line": 863,
+        "end_line": 872,
+        "source": "    def __init__(self, plan: preflight.ValidatedRun, *, stage: str,\n                 cma_ranges: tuple[tuple[int, int], ...] | None = None):\n        self.plan = plan\n        self.stage = stage\n        self.cma_ranges = cma_ranges\n        self._overlay = None\n        self._mmio: dict[int, Any] = {}\n        self._allocate = None\n        self._pynq = None\n        self.board_accessed = False"
+      },
+      {
+        "qualified_name": "PynqBoardAPI.allocate",
+        "line": 927,
+        "end_line": 930,
+        "source": "    def allocate(self, size: int) -> Any:\n        if self._allocate is None:\n            raise RuntimeError(\"PYNQ MMIO/allocator has not been initialized\")\n        return self._allocate(shape=(size,), dtype=\"u1\")"
+      },
+      {
+        "qualified_name": "PynqBoardAPI.sync_to_device",
+        "line": 950,
+        "end_line": 959,
+        "source": "    def sync_to_device(self, buffer: Any) -> None:\n        method = getattr(buffer, \"sync_to_device\", None)\n        if callable(method):\n            method()\n        else:\n            flush = getattr(buffer, \"flush\", None)\n            if callable(flush):\n                flush()\n            else:\n                raise RuntimeError(\"buffer has neither sync_to_device nor flush cache operation\")"
+      },
+      {
+        "qualified_name": "PynqBoardAPI.sync_from_device",
+        "line": 961,
+        "end_line": 970,
+        "source": "    def sync_from_device(self, buffer: Any) -> None:\n        method = getattr(buffer, \"sync_from_device\", None)\n        if callable(method):\n            method()\n        else:\n            invalidate = getattr(buffer, \"invalidate\", None)\n            if callable(invalidate):\n                invalidate()\n            else:\n                raise RuntimeError(\"buffer has neither sync_from_device nor invalidate cache operation\")"
+      }
+    ]
+  },
+  {
+    "path": "data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq\\buffer.py",
+    "sha256": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463",
+    "functions": [
+      {
+        "qualified_name": "PynqBuffer.__new__",
+        "line": 38,
+        "end_line": 48,
+        "source": "    def __new__(\n        cls, *args, device=None, device_address=0, bo=0, coherent=False, **kwargs\n    ):\n        self = super().__new__(cls, *args, **kwargs)\n        self.device_address = device_address\n        self.coherent = coherent\n        self.bo = bo\n        self.device = device\n        self.offset = 0\n        self.freed = False\n        return self"
+      },
+      {
+        "qualified_name": "PynqBuffer.cacheable",
+        "line": 86,
+        "end_line": 87,
+        "source": "    def cacheable(self):\n        return not self.coherent"
+      },
+      {
+        "qualified_name": "PynqBuffer.physical_address",
+        "line": 90,
+        "end_line": 91,
+        "source": "    def physical_address(self):\n        return self.device_address"
+      },
+      {
+        "qualified_name": "PynqBuffer.flush",
+        "line": 104,
+        "end_line": 107,
+        "source": "    def flush(self):\n        \"\"\"Flush the underlying memory if necessary\"\"\"\n        if not self.coherent:\n            self.device.flush(self.bo, self.offset, self.virtual_address, self.nbytes)"
+      },
+      {
+        "qualified_name": "PynqBuffer.invalidate",
+        "line": 109,
+        "end_line": 114,
+        "source": "    def invalidate(self):\n        \"\"\"Invalidate the underlying memory if necessary\"\"\"\n        if not self.coherent:\n            self.device.invalidate(\n                self.bo, self.offset, self.virtual_address, self.nbytes\n            )"
+      },
+      {
+        "qualified_name": "PynqBuffer.sync_to_device",
+        "line": 116,
+        "end_line": 121,
+        "source": "    def sync_to_device(self):\n        \"\"\"Copy the contents of the host buffer into the mirrored\n        device buffer\n\n        \"\"\"\n        self.flush()"
+      },
+      {
+        "qualified_name": "PynqBuffer.sync_from_device",
+        "line": 123,
+        "end_line": 128,
+        "source": "    def sync_from_device(self):\n        \"\"\"Copy the contents of the device buffer into the mirrored\n        host buffer\n\n        \"\"\"\n        self.invalidate()"
+      },
+      {
+        "qualified_name": "allocate",
+        "line": 138,
+        "end_line": 158,
+        "source": "def allocate(shape, dtype=\"u4\", target=None, **kwargs):\n    \"\"\"Allocate a PYNQ buffer\n\n    This API mimics the numpy ndarray constructor with the following\n    differences:\n\n     * The default dtype is 32-bit unsigned int rather than float\n     * A new ``target`` keyword parameter to determine where the\n       buffer should be allocated\n\n    The target determines where the buffer gets allocated\n\n     * If None then the currently active device is used\n     * If a Device is specified then the main memory\n\n    \"\"\"\n    from .pl_server import Device\n\n    if target is None:\n        target = Device.active_device\n    return target.allocate(shape, dtype, **kwargs)"
+      }
+    ]
+  },
+  {
+    "path": "data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq\\pl_server\\device.py",
+    "sha256": "2f12c521a9250f594219888417f7b1b6c8a1fceb16afd6890187ad91f4b36426",
+    "functions": [
+      {
+        "qualified_name": "DeviceMeta.__init__",
+        "line": 32,
+        "end_line": 41,
+        "source": "    def __init__(cls, name, bases, attrs):\n        if \"_probe_\" in attrs:\n            priority = attrs[\"_probe_priority_\"]\n            if (\n                priority in DeviceMeta._subclasses\n                and DeviceMeta._subclasses[priority].__name__ != name\n            ):\n                raise RuntimeError(\"Multiple Device subclasses with same priority\")\n            DeviceMeta._subclasses[priority] = cls\n        super().__init__(name, bases, attrs)"
+      },
+      {
+        "qualified_name": "Device.__init__",
+        "line": 109,
+        "end_line": 114,
+        "source": "    def __init__(self, tag, warn=False):\n        # Args validation\n        if type(tag) is not str:\n            raise ValueError(\"Argument 'tag' must be a string\")\n        self.tag = tag\n        self.parser = None"
+      },
+      {
+        "qualified_name": "Device.allocate",
+        "line": 127,
+        "end_line": 145,
+        "source": "    def allocate(self, shape, dtype, **kwargs):\n        \"\"\"Allocate an array on the device\n\n        Returns a buffer on memory accessible to the device\n\n        Parameters\n        ----------\n        shape : tuple(int)\n            The shape of the array\n        dtype : np.dtype\n            The type of the elements of the array\n\n        Returns\n        ------\n        PynqBuffer\n            The buffer shared between the host and the device\n\n        \"\"\"\n        return self.default_memory.allocate(shape, dtype, **kwargs)"
+      }
+    ]
+  },
+  {
+    "path": "data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq\\pl_server\\embedded_device.py",
+    "sha256": "124511991cb3c0d15842344efb8621a5dd15fc0e5d8eb70d29cbfa81f398a12f",
+    "functions": [
+      {
+        "qualified_name": "BitstreamHandler.__init__",
+        "line": 139,
+        "end_line": 140,
+        "source": "    def __init__(self, filepath):\n        self._filepath = Path(filepath)"
+      },
+      {
+        "qualified_name": "XclbinHandler.__init__",
+        "line": 296,
+        "end_line": 301,
+        "source": "    def __init__(self, filepath):\n        from .xclbin_parser import parse_xclbin_header\n\n        super().__init__(filepath)\n        self._data = self._filepath.read_bytes()\n        self._sections, _ = parse_xclbin_header(self._data)"
+      },
+      {
+        "qualified_name": "EmbeddedXrtMemory.__init__",
+        "line": 494,
+        "end_line": 496,
+        "source": "    def __init__(self, device, desc):\n        super().__init__(device, desc)\n        self._mmio = None"
+      },
+      {
+        "qualified_name": "EmbeddedDevice.__init__",
+        "line": 568,
+        "end_line": 573,
+        "source": "    def __init__(self, index=0, tag=\"embedded_xrt{}\"):\n        super().__init__(index, tag.format(index))\n        self.capabilities[\"REGISTER_RW\"] = False\n        self.capabilities[\"MEMORY_MAPPED\"] = True\n        self.capabilities[\"CALLABLE\"] = False\n        self.arch = platform.machine()"
+      }
+    ]
+  },
+  {
+    "path": "data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq\\pl_server\\xrt_device.py",
+    "sha256": "fb4bdbe4cac759c66feeb0248e13c83592ddfad32b36bc83764484411812556a",
+    "functions": [
+      {
+        "qualified_name": "_xrt_allocate",
+        "line": 59,
+        "end_line": 88,
+        "source": "def _xrt_allocate(shape, dtype, device, memidx, cacheable=0, pointer=None, cache=None):\n    elements = 1\n    try:\n        for s in shape:\n            elements *= s\n    except TypeError:\n        elements = shape\n    dtype = np.dtype(dtype)\n    size = elements * dtype.itemsize\n    if pointer is not None:\n        bo, buf, device_address = pointer\n    else:\n        bo = device.allocate_bo(size, memidx, cacheable)\n        buf = device.map_bo(bo)\n        device_address = device.get_device_address(bo)\n    ar = PynqBuffer(\n        shape,\n        dtype,\n        bo=bo,\n        device=device,\n        buffer=buf,\n        device_address=device_address,\n        coherent=False,\n    )\n    if pointer is not None:\n        weakref.finalize(buf, _free_bo, device, bo, ar.virtual_address, ar.nbytes)\n    if cache is not None:\n        ar.pointer = (bo, buf, device_address)\n        ar.return_to = cache\n    return ar"
+      },
+      {
+        "qualified_name": "XrtMemory.__init__",
+        "line": 106,
+        "end_line": 111,
+        "source": "    def __init__(self, device, desc):\n        self.idx = desc[\"idx\"]\n        self.size = desc[\"size\"]\n        self.base_address = desc[\"base_address\"]\n        self.desc = desc\n        self.device = device"
+      },
+      {
+        "qualified_name": "XrtMemory.allocate",
+        "line": 113,
+        "end_line": 126,
+        "source": "    def allocate(self, shape, dtype, **kwargs):\n        \"\"\"Create a new  buffer in the memory bank\n\n        Parameters\n        ----------\n        shape : tuple(int)\n            Shape of the array\n        dtype : np.dtype\n            Data type of the array\n\n        \"\"\"\n        buf = _xrt_allocate(shape, dtype, self.device, self.idx, **kwargs)\n        buf.memory = self\n        return buf"
+      },
+      {
+        "qualified_name": "XrtUUID.__init__",
+        "line": 150,
+        "end_line": 151,
+        "source": "    def __init__(self, val):\n        self.bytes = val"
+      },
+      {
+        "qualified_name": "ExecBo.__init__",
+        "line": 162,
+        "end_line": 166,
+        "source": "    def __init__(self, bo, ptr, device, length):\n        self.bo = bo\n        self.ptr = ptr\n        self.device = device\n        self.length = length"
+      },
+      {
+        "qualified_name": "XrtStream.__init__",
+        "line": 207,
+        "end_line": 220,
+        "source": "    def __init__(self, device, desc):\n        ip_dict = device.ip_dict\n        idx = desc[\"idx\"]\n        for ip_name, ip in ip_dict.items():\n            for stream_name, stream in ip[\"streams\"].items():\n                if stream[\"stream_id\"] == idx:\n                    if stream[\"direction\"] == \"output\":\n                        self.source = ip_name + \".\" + stream_name\n                    elif stream[\"direction\"] == \"input\":\n                        self.sink = ip_name + \".\" + stream_name\n        self.source_ip = None\n        self.monitors = []\n        self.monitor_ips = []\n        self.sink_ip = None"
+      },
+      {
+        "qualified_name": "XrtDevice.__init__",
+        "line": 234,
+        "end_line": 248,
+        "source": "    def __init__(self, index, tag=\"xrt{}\"):\n        super().__init__(tag.format(index))\n        self.capabilities = {\n            \"REGISTER_RW\": True,\n            \"CALLABLE\": True,\n        }\n        self._index = index\n        self._get_handle()\n        self._info = self.device_info\n        self.contexts = dict()\n        self._find_sysfs()\n        self.active_bos = []\n        self._bo_cache = []\n        self._loop = asyncio.get_event_loop()\n        self._streams = {}"
+      },
+      {
+        "qualified_name": "XrtDevice.flush",
+        "line": 322,
+        "end_line": 326,
+        "source": "    def flush(self, bo, offset, ptr, size):\n        try:\n            bo.sync(pyxrt.xclBOSyncDirection.XCL_BO_SYNC_BO_TO_DEVICE)\n        except Exception as e:\n            raise RuntimeError(f\"Buffer Flush Failed: {str(e)}\")"
+      },
+      {
+        "qualified_name": "XrtDevice.invalidate",
+        "line": 328,
+        "end_line": 332,
+        "source": "    def invalidate(self, bo, offset, ptr, size):\n        try:\n            bo.sync(pyxrt.xclBOSyncDirection.XCL_BO_SYNC_BO_FROM_DEVICE)\n        except Exception as e:\n            raise RuntimeError(f\"Buffer Invalidate Failed: {str(e)}\")"
+      }
+    ]
+  }
+]

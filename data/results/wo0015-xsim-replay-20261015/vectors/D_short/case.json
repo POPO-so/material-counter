@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "case": "D_short",
+  "kind": "fault",
+  "mode": 2,
+  "geometry": {
+    "width": 320,
+    "height": 240,
+    "pixels": 76800
+  },
+  "threshold": 128,
+  "expected_frames": 1,
+  "expected_eofs": 0,
+  "expected_fault": true,
+  "expected_reset_clear": false,
+  "malformed_kind": "short",
+  "input_beat_count": 28804,
+  "input_records_sha256": "0696ae578478b20f0a28ad1df10f9a2655016115ed1d64cffe8d7290abe6a4a3",
+  "golden_bytes": 76800,
+  "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+  "source_frames": [
+    {
+      "source_index": 0,
+      "path": "data/synthetic/h3_full/backbone_fast_large_01/frames/frame_0000.png",
+      "sha256": "33ed693191a8676ff495235f5b83541eb4147eb9119d76321dd0b7bd8a861be3",
+      "width": 320,
+      "height": 240,
+      "mode": "L",
+      "frame_id": 0,
+      "payload_bytes": 230400,
+      "packet_beats": 57608,
+      "binary_checksum": 571200,
+      "resolved_path": "C:\\fpga\\material-counter\\data\\synthetic\\h3_full\\backbone_fast_large_01\\frames\\frame_0000.png",
+      "source_pixels_sha256": "d93bbbe1218e1c19007a620020d96ff61c2d096d3ad2992b7a7c443faca6b94f",
+      "rgb_payload_sha256": "73007a6a8be8b0b69411359513ac5f7959f5ea4b090bf65e4c12463266d91d39",
+      "golden_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e",
+      "foreground_pixels": 2240,
+      "background_pixels": 74560
+    }
+  ],
+  "record_format": "10 hex digits: {3'b000,TLAST,TKEEP[3:0],TDATA[31:0]}",
+  "golden_format": "one Binary8 byte per line in golden.hex; packed bytes in golden.bin",
+  "source_manifest_sha256": "8d123469853ad2425e03d91590aa7473de4ca72a04fffaa6bc2d8964b377317d"
+}

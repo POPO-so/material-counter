@@ -1,0 +1,13 @@
+{
+  "source": "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+  "sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+  "nbytes": 8337309696,
+  "creation_utc": "2025-09-24T02:57:36+00:00",
+  "mtime_utc": "2026-10-08T07:54:00.267157+00:00",
+  "recorded_utc": "2026-10-15T18:33:34.674139+00:00",
+  "read_mode": "rb regular host image; no mount",
+  "verification": "Manager complete hash persisted to verify Worker-reported hash where no raw Worker log survived",
+  "source_metadata_unchanged": true,
+  "vendor_checksum_available": false,
+  "flash_or_boot_binding": "UNKNOWN"
+}

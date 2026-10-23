@@ -1,0 +1,84 @@
+"""NOT_APPROVED_DO_NOT_EXECUTE. Injected POSIX core; no transport/entry point.
+
+Candidate capture cannot authorize a boot ID or call B2 or any hardware API.
+"""
+import re
+import stat
+
+EXECUTION_STATUS = 'NOT_APPROVED_DO_NOT_EXECUTE'
+MAX_PROC_READ_BYTES = 65536
+BOOT_ID_PATH = '/proc/sys/kernel/random/boot_id'
+RETIRED_BOOT_IDS = ('822a9c29-37c0-438c-81c4-da998d57073b',)
+OTHER_PATHS = ('/proc/sys/kernel/osrelease', '/proc/version', '/proc/cmdline',
+               '/proc/uptime', '/proc/self/mountinfo')
+UUID_RE = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+
+def _read_proc(os, path):
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            raise ValueError('NONREGULAR_PROC')
+        chunks, total = [], 0
+        while True:
+            # One overflow byte proves that a limit-sized sample lacks EOF.
+            chunk = os.read(fd, min(4096, MAX_PROC_READ_BYTES + 1 - total))
+            if type(chunk) is not bytes:
+                raise ValueError('INVALID_READ_TYPE')
+            if not chunk:
+                return b''.join(chunks)
+            total += len(chunk)
+            if total > MAX_PROC_READ_BYTES:
+                raise ValueError('PROC_TOO_LONG')
+            chunks.append(chunk)
+    finally:
+        os.close(fd)
+
+def _uuid(raw):
+    text = raw.decode('ascii')
+    if text.endswith('\n'):
+        text = text[:-1]
+    if UUID_RE.fullmatch(text) is None:
+        raise ValueError('INVALID_BOOT_ID')
+    return text
+
+def collect_b1_coldstart(os, *, mode, retired_boot_ids, expected_boot_id=None):
+    """First OS call is geteuid. Only in-memory fakes are authorized this round.
+
+    Every failure yields an invalid record; a future frozen process wrapper
+    converts it into a nonzero exit. Partial samples never become a baseline.
+    """
+    try:
+        if os.geteuid() == 0:
+            return _failed('ROOT_FORBIDDEN')
+        first_raw = _read_proc(os, BOOT_ID_PATH)
+        first = _uuid(first_raw)
+        # The mandatory retired ID cannot be removed by an injected allowlist.
+        retired = tuple(retired_boot_ids)
+        if retired != RETIRED_BOOT_IDS:
+            raise ValueError('RETIRED_SET_MISMATCH')
+        if first in retired:
+            raise ValueError('RETIRED_BOOT_ID')
+        if mode != 'coldstart_register_candidate':
+            raise ValueError('EXPECTED_MODE_MISMATCH')
+        if expected_boot_id is not None and first != expected_boot_id:
+            raise ValueError('EXPECTED_BOOT_ID_MISMATCH')
+        samples = {BOOT_ID_PATH: first_raw.decode('ascii')}
+        for path in OTHER_PATHS:
+            samples[path] = _read_proc(os, path).decode('utf-8', errors='strict')
+        last_raw = _read_proc(os, BOOT_ID_PATH)
+        last = _uuid(last_raw)
+        if last != first or last_raw != first_raw:
+            raise ValueError('BOOT_ID_CHANGED')
+        return {'valid':True, 'status':'CANDIDATE_BOOT_ID_UNAPPROVED',
+                'state':'STOPPED_CANDIDATE_BOOT_UNAPPROVED',
+                'boot_id_first':first, 'boot_id_last':last, 'samples':samples,
+                'b2_executed':False, 'afi_authorized':False,
+                'hardware_baseline_approved':False}
+    except (OSError, ValueError, TypeError) as exc:
+        return _failed(str(exc))
+
+def _failed(reason):
+    return {'valid':False, 'status':'INVALID_CAPTURE',
+            'state':'STOPPED_PRECONDITION_UNVERIFIED', 'reason':reason,
+            'b2_executed':False, 'afi_authorized':False,
+            'hardware_baseline_approved':False}

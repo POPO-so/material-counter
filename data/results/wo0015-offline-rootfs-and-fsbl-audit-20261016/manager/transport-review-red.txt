@@ -1,0 +1,15 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_ StaticGuardTests.test_proposal_documents_are_blocked_and_transport_is_fixed _
+
+self = <test_proposal_contract_v2.StaticGuardTests testMethod=test_proposal_documents_are_blocked_and_transport_is_fixed>
+
+    def test_proposal_documents_are_blocked_and_transport_is_fixed(self):
+>       self.assertEqual(template.REMOTE_PYTHON_EXECUTABLE, "/usr/bin/python3")
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'remote_template_v2' has no attribute 'REMOTE_PYTHON_EXECUTABLE'
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\proposals\test_proposal_contract_v2.py:263: AttributeError
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/proposals/test_proposal_contract_v2.py::StaticGuardTests::test_proposal_documents_are_blocked_and_transport_is_fixed
+1 failed, 20 deselected in 0.09s

@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nDOC #UG585 [User Guide]\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nfamily: Adaptive SoC, Zynq 7000\ntitle: Zynq 7000 SoC Technical Reference Manual (UG585)\ntool: All\nurl: https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Register-axi_hp-AFI_RDCHAN_CTRL\nversion: All\n\nTitle: Zynq 7000 SoC Technical Reference Manual (UG585)  ###  Page Content: Table 1. Register (axi_hp) AFI_RDCHAN_CTRL Name AFI_RDCHAN_CTRL Relative Address 0x00000000 Absolute Address axi_hp0: 0xF8008000 axi_hp1: 0xF8009000 axi_hp2: 0xF800A000 axi_hp3: 0xF800B000 Width 32 bits Access Type mixed Reset Value 0x00000000 Description Read Channel Control Register\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nDOC #UG585 [User Guide]\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nfamily: Adaptive SoC, Zynq 7000\ntitle: Zynq 7000 SoC Technical Reference Manual (UG585)\ntool: All\nurl: https://docs.amd.com/r/en-US/ug585-zynq-7000-SoC-TRM/Register-axi_hp-AFI_RDCHAN_ISSUINGCAP\nversion: All\n\nTitle: Zynq 7000 SoC Technical Reference Manual (UG585)  ###  Page Content: Table 1. Register (axi_hp) AFI_RDCHAN_ISSUINGCAP Name AFI_RDCHAN_ISSUINGCAP Relative Address 0x00000004 Absolute Address axi_hp0: 0xF8008004 axi_hp1: 0xF8009004 axi_hp2: 0xF800A004 axi_hp3: 0xF800B004 Width 32 bits Access Type mixed Reset Value 0x00000007 Description Read Issuing Capability Register\n\n"
+    }
+  ]
+}

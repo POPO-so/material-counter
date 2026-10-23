@@ -1,0 +1,319 @@
+{
+  "audit_kind": "offline static ARM/FDT/U-Boot default-environment audit",
+  "execution_performed": false,
+  "disassembly_method": {
+    "tool": "GNU arm-none-eabi-objdump 2.32.0.20190204",
+    "arguments": "-D -b binary -marm --adjust-vma=0",
+    "address_model": "raw file offset equals virtual address because base VMA is zero",
+    "file": "data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/partition-00.arm-base0.disasm.txt"
+  },
+  "original_artifact_filename_search": {
+    "roots": [
+      "C:/fpga",
+      "C:/Users/POP/Desktop/FPGA赛"
+    ],
+    "method": "filename-only rg --files filters for FSBL ELF, BIF, MAP and serial/UART/boot logs; restricted-raw, REVISION and credential-named paths excluded",
+    "result": "no original FSBL ELF, BIF or serial/UART/boot log filename found; six matching MAP files were unrelated Vivado incremental-synthesis maps",
+    "content_read": false
+  },
+  "input_hashes": {
+    "partition_00_raw_fsbl_payload": {
+      "bytes": 98320,
+      "sha256": "16081243af5ed1d5b908b0c038c13c3e205c131b31d538690786a530dba82161",
+      "header_name": "zynq_fsbl.elf",
+      "elf_magic_present": false
+    },
+    "partition_01_uboot_payload": {
+      "bytes": 1041824,
+      "sha256": "0821d755f1941d9603065b1be0f687da69d4d791e50d525bdb20a8cc8fc3fed1"
+    },
+    "partition_02_dtb": {
+      "bytes": 19740,
+      "sha256": "3f16c67252ed274eaa2bb7ab6500a820a2fe88fd0352e9bba1ab919defac1798"
+    }
+  },
+  "boot_header": {
+    "load_address": "0x00000000",
+    "entry_address": "0x00000000",
+    "checksum_valid": true,
+    "authenticity_statement": "Checksums detect structural corruption only; no signature or source-build identity verification",
+    "execution_evidence": "NONE: static data only",
+    "partitions": [
+      {
+        "index": 0,
+        "header_image_name": "zynq_fsbl.elf",
+        "data_nbytes": 98320,
+        "load_address": "0x00000000",
+        "execution_address": "0x00000000",
+        "attributes_hex": "0x00000010",
+        "sha256": "16081243af5ed1d5b908b0c038c13c3e205c131b31d538690786a530dba82161",
+        "checksum_valid": true
+      },
+      {
+        "index": 1,
+        "header_image_name": "u-boot.elf",
+        "data_nbytes": 1041824,
+        "load_address": "0x04000000",
+        "execution_address": "0x04000000",
+        "attributes_hex": "0x00000010",
+        "sha256": "0821d755f1941d9603065b1be0f687da69d4d791e50d525bdb20a8cc8fc3fed1",
+        "checksum_valid": true
+      },
+      {
+        "index": 2,
+        "header_image_name": "system.dtb",
+        "data_nbytes": 19740,
+        "load_address": "0x00100000",
+        "execution_address": "0x00000000",
+        "attributes_hex": "0x00000012",
+        "sha256": "3f16c67252ed274eaa2bb7ab6500a820a2fe88fd0352e9bba1ab919defac1798",
+        "checksum_valid": true
+      }
+    ],
+    "bootrom_register_initialization_pairs": [],
+    "static_no_pl_partition": true,
+    "pl_mask_source": "0x20 is corroborated by installed SDK template; source identity is not established"
+  },
+  "artifacts": {
+    "full_arm_base0_disassembly": "data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/partition-00.arm-base0.disasm.txt",
+    "decoded_tables": "data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/decoded-tables.json",
+    "readable_dts": "data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/system.dts",
+    "uboot_allowlisted_env": "data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/uboot-boot-env-allowlist.json",
+    "detailed_findings": "data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/findings.md",
+    "archive_search": "data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/archive-search.json"
+  },
+  "table_summary": {
+    "table_groups": 5,
+    "table_count": 21,
+    "operation_count": 675,
+    "direct_write_count": 654,
+    "post_config_candidates": [
+      "0x00010778",
+      "0x000107B4",
+      "0x000107F0"
+    ]
+  },
+  "control_flow": {
+    "bitstream_flag_static_mapping": {
+      "numeric_address": "0x000193ED",
+      "symbol_name": "BitstreamFlag (INFERRED from installed SDK template; not an ELF symbol)",
+      "direct_instruction_xrefs": [
+        "0x00000AC0 STRB zero",
+        "0x00000BAC STRB one",
+        "0x000012DC LDRB"
+      ]
+    },
+    "startup_bss_clear": {
+      "startup_path": "0x00000000 branches to 0x0000012C; 0x00000398 branches to 0x00004438; 0x00004438 calls 0x000071AC then clears BSS",
+      "range_start": "0x00019040",
+      "range_end_exclusive": "0x0001B400",
+      "flag_address_inside_range": true,
+      "effect": "word-wise zero stores cover word 0x193EC containing byte 0x193ED before later code"
+    },
+    "partition_attribute_branch": {
+      "routine_address": "0x00000AA8",
+      "caller_address": "0x000102A4",
+      "flag_reset_instruction": "0x00000AC0: STRB r3,[r4,#0x391], r4=0x1905C, r3=0 => [0x193ED]=0",
+      "partition_attribute_load": "0x00000B64 loads [r9,#0x58] into fp",
+      "pl_branch": "0x00000B80 TST fp,#0x20; nonzero falls through 0xB98; 0xB94 BEQ 0xBB4 takes non-PL path",
+      "pl_flag_set_instruction": "0x00000BAC: STRB r2,[r4,#0x391] after r2=1 on PL path",
+      "ps_path": "0x00000BB4 tests bit 0x10; stores other context bytes at 0x193EB/0x193EE/0x193EC, with no store to 0x193ED",
+      "actual_image_partition_attributes": [
+        "0x00000010",
+        "0x00000010",
+        "0x00000012"
+      ],
+      "static_image_path_conclusion": "all three BOOT.BIN partition attributes have bit 0x20 clear; on the normal parser path none takes the PL flag-set path, so flag remains 0 after reset and partition scan (INFERRED static control-flow result; not target execution)"
+    },
+    "handoff_branch": {
+      "caller": "0x000102A8 calls 0x000012CC after 0x000102A4 calls 0x00000AA8",
+      "flag_read": "0x000012CC/0x000012D4 construct address 0x193ED; 0x000012DC LDRB; 0x000012E0 CMP r3,#0",
+      "zero_branch": "0x000012E4 BNE 0x00001350 is not taken when flag is 0; flow skips post-config call and continues at 0x000012E8",
+      "post_config_branch": "0x00001350 BL 0x00002C48 is reached only via the nonzero branch at 0x12E4",
+      "handoff_transfer": "on the nonzero handoff-address path, 0x00001334 BL 0x000103E0; helper 0x103E0 copies r0 to LR and transfers with BX LR at 0x10400. The binary checks r4 at 0x1310/0x1320 and takes a separate zero-address path; BOOT header gives U-Boot execution address 0x04000000 but does not prove LoadBootImage returned it at runtime.",
+      "addressed_machine_code_evidence": [
+        {
+          "address": "0x00000AC0",
+          "word": "0xE5C43391",
+          "fact": "STRB r3,[r4,#0x391]; r4=0x1905C and r3=0 at this point, so store byte zero at 0x193ED"
+        },
+        {
+          "address": "0x00000B80",
+          "word": "0xE31B0020",
+          "fact": "TST fp,#0x20 on partition-header attributes"
+        },
+        {
+          "address": "0x00000B94",
+          "word": "0x0A000006",
+          "fact": "BEQ 0xBB4 routes bit-0x20-clear partitions away from PL flag-set block"
+        },
+        {
+          "address": "0x00000BAC",
+          "word": "0xE5C42391",
+          "fact": "STRB r2,[r4,#0x391]; on PL path r2 was set to 1"
+        },
+        {
+          "address": "0x00000BB4",
+          "word": "0xE31B0010",
+          "fact": "PS path tests bit 0x10; its stores do not target 0x193ED"
+        },
+        {
+          "address": "0x00004438",
+          "word": "0xEB000B5B",
+          "fact": "calls early CPU/MMU setup before BSS clear loop"
+        },
+        {
+          "address": "0x00004450",
+          "word": "0xE4810004",
+          "fact": "zero-word store and post-increment in first BSS-clear range"
+        },
+        {
+          "address": "0x00004468",
+          "word": "0xE4810004",
+          "fact": "zero-word store and post-increment in second BSS-clear range"
+        },
+        {
+          "address": "0x000012DC",
+          "word": "0xE5D33000",
+          "fact": "LDRB r3,[0x193ED]"
+        },
+        {
+          "address": "0x000012E4",
+          "word": "0x1A000019",
+          "fact": "BNE 0x1350 gates handoff-time post-config on nonzero flag"
+        },
+        {
+          "address": "0x00001334",
+          "word": "0xEB003C29",
+          "fact": "BL 0x103E0 uses nonzero handoff address after zero-flag path"
+        }
+      ]
+    },
+    "jtag_branch": {
+      "bootmode_dispatch": "0x000101C4 loads BOOT_MODE, masks low 3 bits; selector table at 0x101E0 maps value 0 to 0x102E8",
+      "machine_test": "0x000102F0 loads 0xF800700C; 0x000102F4 TST bit 0x4; 0x000102F8 BNE 0x103A4 calls 0x2C48 there and rejoins at 0x102FC; clear bit skips that call",
+      "interpretation": "SDK template labels selector 0 JTAG and bit 0x4 PCFG_DONE; template association only, and runtime boot mode/PCFG_DONE are UNKNOWN"
+    },
+    "evidence_classes": {
+      "MACHINE_CODE_FACT": "instruction words and control-flow targets decoded from the raw payload at base 0",
+      "IMAGE_HEADER_FACT": "partition attributes and execution addresses parsed from local BOOT.BIN analysis",
+      "INFERRED": "BitstreamFlag/FsblHandoff/LoadBootImage names, partition attribute semantics, and normal-path outcome based on static inputs plus SDK template cross-reference",
+      "UNKNOWN": "whether this BOOT image ever executed, actual runtime flag/MMIO values, alternate boot image or mutated partition headers, aliases through unrelated runtime pointers, and selected U-Boot environment"
+    }
+  },
+  "dtb": {
+    "partition_bytes": 19740,
+    "metadata": {
+      "total_size": 19738,
+      "version": 17,
+      "last_compatible_version": 16,
+      "boot_cpu_id": 0,
+      "structure_size": 14176,
+      "strings_size": 1410
+    },
+    "trailing_partition_padding_bytes": 2,
+    "node_count": 98,
+    "property_count": 478,
+    "reservation_count": 0,
+    "secret_identity_properties_redacted": [
+      "ethaddr",
+      "local-mac-address",
+      "mac-address",
+      "serial",
+      "serial-number"
+    ],
+    "rendering": "readable DTS-like text; scalar arrays use big-endian 32-bit cells; unclassified non-cell data uses bytes",
+    "relevant_fpga_register_nodes": {
+      "nodes": [
+        {
+          "path": "/fpga-region",
+          "properties": {
+            "compatible": [
+              "fpga-region"
+            ],
+            "phandle": [
+              "0x00000015"
+            ],
+            "fpga-mgr": [
+              "0x00000003"
+            ],
+            "#address-cells": [
+              "0x00000001"
+            ],
+            "#size-cells": [
+              "0x00000001"
+            ],
+            "ranges": true
+          },
+          "fpga_mgr_resolves_to": "/axi/devcfg@f8007000",
+          "fpga_mgr_phandle": "0x00000003"
+        },
+        {
+          "path": "/axi/slcr@f8000000",
+          "properties": {
+            "compatible": [
+              "xlnx,zynq-slcr",
+              "syscon",
+              "simple-mfd"
+            ],
+            "reg": [
+              "0xF8000000",
+              "0x00001000"
+            ],
+            "phandle": [
+              "0x00000009"
+            ],
+            "#address-cells": [
+              "0x00000001"
+            ],
+            "#size-cells": [
+              "0x00000001"
+            ],
+            "ranges": true
+          }
+        },
+        {
+          "path": "/axi/devcfg@f8007000",
+          "properties": {
+            "compatible": [
+              "xlnx,zynq-devcfg-1.0"
+            ],
+            "reg": [
+              "0xF8007000",
+              "0x00000100"
+            ],
+            "phandle": [
+              "0x00000003"
+            ]
+          }
+        }
+      ],
+      "afi_name_property_hits": [],
+      "search_interpretation": "FDT names, property names and printable property values only; an absent AFI label does not prove absence of runtime register writes"
+    }
+  },
+  "uboot_env": {
+    "entries_reported": 16,
+    "report_scope": "exact boot/FPGA/AFI allowlist; other environment variables deliberately omitted",
+    "possible_register_initialization": "UNKNOWN: BootGen analysis contains no BootROM init pairs; decoded FSBL table addresses are enumerated separately; U-Boot default strings do not prove runtime MMIO behavior, and this audit does not establish absence of all code-driven or indirect U-Boot writes."
+  },
+  "limitations": [
+    "Header image_name says zynq_fsbl.elf, but raw extracted payload begins with ARM branch instructions and lacks ELF magic; do not treat the image name as ELF/source identity.",
+    "SDK source excerpts are installed 2026.1 reference templates and not proven to be the source of this raw image.",
+    "Static analysis only: no target execution, board, SSH, MMIO, mount, or hardware-state claim.",
+    "Full indirect write behavior outside decoded table commands is not proven absent."
+  ],
+  "archive_search": {
+    "artifact": "data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/archive-search.json",
+    "known_archives_enumerated": 3,
+    "zip_member_names_enumerated": 482,
+    "relevant_filename_match_count": 0,
+    "excluded_sensitive_named_member_count": 0,
+    "direct_backup_directory": "F:/FPGA/backups",
+    "direct_backup_filename_search_recursive": false,
+    "direct_backup_filename_candidate_count": 1,
+    "member_content_read": false,
+    "archives_hashed": false,
+    "negative_claim_boundary": "Only the three named ZIPs and direct filenames in F:/FPGA/backups were searched."
+  }
+}

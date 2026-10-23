@@ -1,0 +1,1362 @@
+{
+  "executed-script": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-runonly-resume-retry2-20261015\\remote-evidence\\board_once_watermark.py",
+    "sha256": "6be386b2140d8a373677eb337e6a3028464c0c720a75bd6c14ea03046cec7ec1",
+    "excerpts": [
+      {
+        "line": 440,
+        "text": "                    transfer_started=False,"
+      },
+      {
+        "line": 441,
+        "text": "                    evidence={\"s2mm_dmasr\": s2mm_before, \"mm2s_dmasr\": mm2s_before},"
+      },
+      {
+        "line": 442,
+        "text": "                )"
+      },
+      {
+        "line": 443,
+        "text": ""
+      },
+      {
+        "line": 444,
+        "text": "            api.write_buffer(mm2s_buffer, frame.packet)"
+      },
+      {
+        "line": 445,
+        "text": "            api.sync_to_device(mm2s_buffer)"
+      },
+      {
+        "line": 446,
+        "text": "            api.write_buffer(s2mm_buffer, b\"\\xA5\" * preflight.RX_BYTES)"
+      },
+      {
+        "line": 447,
+        "text": "            api.sync_to_device(s2mm_buffer)"
+      },
+      {
+        "line": 448,
+        "text": "            packer_status = api.read32(preflight.CHECKER_BASE, PACKER_STATUS)"
+      },
+      {
+        "line": 449,
+        "text": "            if packer_status & (PACKER_BUSY | PACKER_FAULT):"
+      },
+      {
+        "line": 450,
+        "text": "                raise ExecutionFailure(f\"Packer is busy/faulted before frame {frame.frame_id}\","
+      },
+      {
+        "line": 451,
+        "text": "                                       transfer_started=False,"
+      },
+      {
+        "line": 510,
+        "text": "                )"
+      },
+      {
+        "line": 511,
+        "text": "            after_checker = _checker_snapshot(api)"
+      },
+      {
+        "line": 512,
+        "text": "            _check_checker_frame(previous_checker, after_checker, frame)"
+      },
+      {
+        "line": 513,
+        "text": "            api.sync_from_device(s2mm_buffer)"
+      },
+      {
+        "line": 514,
+        "text": "            returned = bytes(memoryview(s2mm_buffer).cast(\"B\")[:preflight.RX_BYTES])"
+      },
+      {
+        "line": 515,
+        "text": "            if returned != frame.binary:"
+      },
+      {
+        "line": 516,
+        "text": "                mismatches = sum(left != right for left, right in zip(returned, frame.binary))"
+      },
+      {
+        "line": 517,
+        "text": "                first = next((offset for offset, pair in enumerate(zip(returned, frame.binary))"
+      },
+      {
+        "line": 518,
+        "text": "                              if pair[0] != pair[1]), None)"
+      },
+      {
+        "line": 519,
+        "text": "                raise ExecutionFailure("
+      },
+      {
+        "line": 520,
+        "text": "                    f\"S2MM Binary8 differs from golden for frame {frame.frame_id}: \""
+      },
+      {
+        "line": 521,
+        "text": "                    f\"{mismatches} mismatches, first offset={first}\","
+      },
+      {
+        "line": 522,
+        "text": "                    transfer_started=False,"
+      },
+      {
+        "line": 523,
+        "text": "                    evidence={\"byte_mismatches\": mismatches, \"first_mismatch\": first,"
+      },
+      {
+        "line": 524,
+        "text": "                              \"s2mm_actual_length\": actual_s2mm_length},"
+      },
+      {
+        "line": 525,
+        "text": "                )"
+      },
+      {
+        "line": 526,
+        "text": ""
+      },
+      {
+        "line": 945,
+        "text": "        return physical"
+      },
+      {
+        "line": 946,
+        "text": ""
+      },
+      {
+        "line": 947,
+        "text": "    def write_buffer(self, buffer: Any, data: bytes) -> None:"
+      },
+      {
+        "line": 948,
+        "text": "        memoryview(buffer).cast(\"B\")[:len(data)] = data"
+      },
+      {
+        "line": 949,
+        "text": ""
+      },
+      {
+        "line": 950,
+        "text": "    def sync_to_device(self, buffer: Any) -> None:"
+      },
+      {
+        "line": 951,
+        "text": "        method = getattr(buffer, \"sync_to_device\", None)"
+      },
+      {
+        "line": 952,
+        "text": "        if callable(method):"
+      },
+      {
+        "line": 953,
+        "text": "            method()"
+      },
+      {
+        "line": 954,
+        "text": "        else:"
+      },
+      {
+        "line": 955,
+        "text": "            flush = getattr(buffer, \"flush\", None)"
+      },
+      {
+        "line": 956,
+        "text": "            if callable(flush):"
+      },
+      {
+        "line": 957,
+        "text": "                flush()"
+      },
+      {
+        "line": 958,
+        "text": "            else:"
+      },
+      {
+        "line": 959,
+        "text": "                raise RuntimeError(\"buffer has neither sync_to_device nor flush cache operation\")"
+      },
+      {
+        "line": 960,
+        "text": ""
+      },
+      {
+        "line": 961,
+        "text": "    def sync_from_device(self, buffer: Any) -> None:"
+      },
+      {
+        "line": 962,
+        "text": "        method = getattr(buffer, \"sync_from_device\", None)"
+      },
+      {
+        "line": 963,
+        "text": "        if callable(method):"
+      },
+      {
+        "line": 964,
+        "text": "            method()"
+      },
+      {
+        "line": 965,
+        "text": "        else:"
+      },
+      {
+        "line": 966,
+        "text": "            invalidate = getattr(buffer, \"invalidate\", None)"
+      },
+      {
+        "line": 967,
+        "text": "            if callable(invalidate):"
+      },
+      {
+        "line": 968,
+        "text": "                invalidate()"
+      },
+      {
+        "line": 969,
+        "text": "            else:"
+      },
+      {
+        "line": 970,
+        "text": "                raise RuntimeError(\"buffer has neither sync_from_device nor invalidate cache operation\")"
+      },
+      {
+        "line": 971,
+        "text": ""
+      },
+      {
+        "line": 972,
+        "text": "    def free(self, buffer: Any) -> None:"
+      },
+      {
+        "line": 973,
+        "text": "        method = getattr(buffer, \"freebuffer\", None)"
+      },
+      {
+        "line": 974,
+        "text": "        if not callable(method):"
+      }
+    ]
+  },
+  "build-tcl": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\scripts\\wo0015\\create_s2mm_bd.tcl",
+    "sha256": "b66cbcc843a9ebd4255e80aa6b655552a1d9a54e4e04b871a2e581c44b4a7f24",
+    "excerpts": [
+      {
+        "line": 150,
+        "text": "    {WO-0015 approved S2MM memory width 32 and PS HP1 width 32; MM2S HP0 remains 64-bit}] {REQ:pinned+applied}"
+      },
+      {
+        "line": 151,
+        "text": ""
+      },
+      {
+        "line": 152,
+        "text": "wo15_capture dma_create [list ipcfg::create_cell xilinx.com:ip:axi_dma axi_dma_0] {SUCCESS:created}"
+      },
+      {
+        "line": 153,
+        "text": "set dma_requirements [dict create \\"
+      },
+      {
+        "line": 154,
+        "text": "    CONFIG.c_include_sg 0 CONFIG.c_include_mm2s 1 CONFIG.c_include_s2mm 1 \\"
+      },
+      {
+        "line": 155,
+        "text": "    CONFIG.c_micro_dma 0 CONFIG.c_sg_length_width 18 CONFIG.c_addr_width 32 \\"
+      },
+      {
+        "line": 156,
+        "text": "    CONFIG.c_m_axi_mm2s_data_width 64 CONFIG.c_m_axis_mm2s_tdata_width 32 \\"
+      },
+      {
+        "line": 157,
+        "text": "    CONFIG.c_include_mm2s_dre 0 CONFIG.c_mm2s_burst_size 16 \\"
+      },
+      {
+        "line": 158,
+        "text": "    CONFIG.c_m_axi_s2mm_data_width 32 CONFIG.c_s_axis_s2mm_tdata_width 32 \\"
+      },
+      {
+        "line": 159,
+        "text": "    CONFIG.c_include_s2mm_dre 0 CONFIG.c_s2mm_burst_size 16]"
+      },
+      {
+        "line": 160,
+        "text": "wo15_capture dma_parameters [list ipcfg::require axi_dma_0 $dma_requirements \\"
+      },
+      {
+        "line": 161,
+        "text": "    {WO-0015 direct-register DMA: MM2S 64/32, S2MM 32/32, 18-bit length, 32-bit address, no SG/Micro/DRE}] {REQ:pinned+applied}"
+      },
+      {
+        "line": 162,
+        "text": ""
+      },
+      {
+        "line": 163,
+        "text": "wo15_capture control_fabric_create [list ipcfg::create_cell_cfg xilinx.com:ip:smartconnect control_fabric \\"
+      },
+      {
+        "line": 164,
+        "text": "    [dict create CONFIG.NUM_SI 1 CONFIG.NUM_MI 2 CONFIG.NUM_CLKS 1 CONFIG.HAS_ARESETN 1]] {SUCCESS:created+configured}"
+      },
+      {
+        "line": 165,
+        "text": "wo15_capture hp0_converter_create [list ipcfg::create_cell_cfg xilinx.com:ip:axi_protocol_converter hp0_protocol \\"
+      },
+      {
+        "line": 166,
+        "text": "    [dict create CONFIG.SI_PROTOCOL AXI4 CONFIG.MI_PROTOCOL AXI3 CONFIG.DATA_WIDTH 64 CONFIG.TRANSLATION_MODE 2]] {SUCCESS:created+configured}"
+      },
+      {
+        "line": 167,
+        "text": ""
+      },
+      {
+        "line": 168,
+        "text": "wo15_capture hp1_fabric_create [list ipcfg::create_cell xilinx.com:ip:axi_interconnect hp1_fabric] {SUCCESS:created}"
+      },
+      {
+        "line": 169,
+        "text": "set hp1_fabric_requirements [dict create CONFIG.NUM_SI 1 CONFIG.NUM_MI 1]"
+      },
+      {
+        "line": 170,
+        "text": "wo15_capture hp1_fabric_parameters [list ipcfg::require hp1_fabric $hp1_fabric_requirements \\"
+      },
+      {
+        "line": 171,
+        "text": "    {One AXI Interconnect SI from S2MM and one MI to the PS HP1 port; endpoint connectivity derives AXI4-to-AXI3 conversion}] {REQ:pinned+applied}"
+      },
+      {
+        "line": 172,
+        "text": ""
+      },
+      {
+        "line": 173,
+        "text": "wo15_capture reset_create [list ipcfg::create_cell_cfg xilinx.com:ip:proc_sys_reset reset_pl \\"
+      },
+      {
+        "line": 174,
+        "text": "    [dict create CONFIG.C_EXT_RESET_HIGH 0 CONFIG.C_AUX_RESET_HIGH 1]] {SUCCESS:created+configured}"
+      },
+      {
+        "line": 175,
+        "text": "wo15_capture high_create [list ipcfg::create_cell_cfg xilinx.com:ip:xlconstant constant_high \\"
+      },
+      {
+        "line": 176,
+        "text": "    [dict create CONFIG.CONST_WIDTH 1 CONFIG.CONST_VAL 1]] {SUCCESS:created+configured}"
+      },
+      {
+        "line": 177,
+        "text": "wo15_capture low_create [list ipcfg::create_cell_cfg xilinx.com:ip:xlconstant constant_low \\"
+      },
+      {
+        "line": 178,
+        "text": "    [dict create CONFIG.CONST_WIDTH 1 CONFIG.CONST_VAL 0]] {SUCCESS:created+configured}"
+      },
+      {
+        "line": 179,
+        "text": ""
+      },
+      {
+        "line": 180,
+        "text": "create_bd_cell -type module -reference axis_dma_s2mm_pipeline_bd image_pipeline"
+      },
+      {
+        "line": 181,
+        "text": "wo15_capture image_parameters [list set_property -dict [list \\"
+      },
+      {
+        "line": 182,
+        "text": "    CONFIG.WIDTH 320 CONFIG.HEIGHT 240 CONFIG.THRESHOLD 128] [get_bd_cells image_pipeline]]"
+      },
+      {
+        "line": 183,
+        "text": ""
+      },
+      {
+        "line": 184,
+        "text": "# Control path and original HP0 MM2S read path."
+      },
+      {
+        "line": 185,
+        "text": "connect_bd_intf_net [get_bd_intf_pins ps7/M_AXI_GP0] [get_bd_intf_pins control_fabric/S00_AXI]"
+      },
+      {
+        "line": 186,
+        "text": "connect_bd_intf_net [get_bd_intf_pins control_fabric/M00_AXI] [get_bd_intf_pins axi_dma_0/S_AXI_LITE]"
+      },
+      {
+        "line": 187,
+        "text": "connect_bd_intf_net [get_bd_intf_pins control_fabric/M01_AXI] [get_bd_intf_pins image_pipeline/s_axi]"
+      },
+      {
+        "line": 188,
+        "text": "connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXI_MM2S] [get_bd_intf_pins hp0_protocol/S_AXI]"
+      },
+      {
+        "line": 189,
+        "text": "connect_bd_intf_net [get_bd_intf_pins hp0_protocol/M_AXI] [get_bd_intf_pins ps7/S_AXI_HP0]"
+      },
+      {
+        "line": 190,
+        "text": ""
+      },
+      {
+        "line": 191,
+        "text": "# S2MM write path. The AXI Interconnect SI follows the DMA AXI4 interface;"
+      },
+      {
+        "line": 192,
+        "text": "# its MI follows the PS HP1 AXI3 interface. Do not replace this with SmartConnect."
+      },
+      {
+        "line": 193,
+        "text": "connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXI_S2MM] [get_bd_intf_pins hp1_fabric/S00_AXI]"
+      },
+      {
+        "line": 194,
+        "text": "connect_bd_intf_net [get_bd_intf_pins hp1_fabric/M00_AXI] [get_bd_intf_pins ps7/S_AXI_HP1]"
+      },
+      {
+        "line": 195,
+        "text": ""
+      },
+      {
+        "line": 244,
+        "text": "    ps7/S_AXI_HP0 64 AXI3"
+      },
+      {
+        "line": 245,
+        "text": "    axi_dma_0/M_AXI_S2MM 32 AXI4"
+      },
+      {
+        "line": 246,
+        "text": "    hp1_fabric/s00_couplers/auto_pc/S_AXI 32 AXI4"
+      },
+      {
+        "line": 247,
+        "text": "    hp1_fabric/s00_couplers/auto_pc/M_AXI 32 AXI3"
+      },
+      {
+        "line": 248,
+        "text": "    ps7/S_AXI_HP1 32 AXI3"
+      },
+      {
+        "line": 249,
+        "text": "} {"
+      },
+      {
+        "line": 250,
+        "text": "    dict set interface_readback $name [wo15_check_axi_interface $name $width $protocol]"
+      },
+      {
+        "line": 251,
+        "text": "}"
+      },
+      {
+        "line": 252,
+        "text": "dict set interface_readback image_pipeline/m_axis [wo15_check_axis_interface image_pipeline/m_axis 4]"
+      },
+      {
+        "line": 253,
+        "text": "dict set interface_readback axi_dma_0/S_AXIS_S2MM [wo15_check_axis_interface axi_dma_0/S_AXIS_S2MM 4]"
+      },
+      {
+        "line": 254,
+        "text": ""
+      },
+      {
+        "line": 280,
+        "text": "    {Micro DMA disabled} CONFIG.c_micro_dma applied"
+      },
+      {
+        "line": 281,
+        "text": "    {18-bit MM2S/S2MM buffer length register} CONFIG.c_sg_length_width applied"
+      },
+      {
+        "line": 282,
+        "text": "    {32-bit DMA address width} CONFIG.c_addr_width applied"
+      },
+      {
+        "line": 283,
+        "text": "    {MM2S memory width 64 bits and stream width 32 bits} CONFIG.c_m_axi_mm2s_data_width applied"
+      },
+      {
+        "line": 284,
+        "text": "    {S2MM memory width 32 bits and stream width 32 bits} CONFIG.c_m_axi_s2mm_data_width applied"
+      },
+      {
+        "line": 285,
+        "text": "    {S2MM DRE disabled} CONFIG.c_include_s2mm_dre applied"
+      },
+      {
+        "line": 286,
+        "text": "    {PS HP0 remains 64-bit for MM2S} CONFIG.PCW_S_AXI_HP0_DATA_WIDTH applied"
+      },
+      {
+        "line": 287,
+        "text": "    {PS HP1 is enabled at 32-bit for S2MM} CONFIG.PCW_S_AXI_HP1_DATA_WIDTH applied"
+      },
+      {
+        "line": 288,
+        "text": "    {HP1 AXI4 SI to AXI3 MI through 1x1 AXI Interconnect} hp1_fabric/S00_AXI->M00_AXI applied"
+      },
+      {
+        "line": 289,
+        "text": "    {FCLK_CLK0 is 50 MHz} CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ applied"
+      }
+    ]
+  },
+  "hwh": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\export\\wo15.hwh",
+    "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "excerpts": [
+      {
+        "line": 997,
+        "text": "        <PARAMETER NAME=\"C_M_AXIS_MM2S_TDATA_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 998,
+        "text": "        <PARAMETER NAME=\"C_M_AXI_MM2S_ADDR_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 999,
+        "text": "        <PARAMETER NAME=\"C_M_AXI_MM2S_DATA_WIDTH\" VALUE=\"64\"/>"
+      },
+      {
+        "line": 1000,
+        "text": "        <PARAMETER NAME=\"C_M_AXI_S2MM_ADDR_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 1001,
+        "text": "        <PARAMETER NAME=\"C_M_AXI_S2MM_DATA_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 1002,
+        "text": "        <PARAMETER NAME=\"C_M_AXI_SG_ADDR_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 1003,
+        "text": "        <PARAMETER NAME=\"C_M_AXI_SG_DATA_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 1004,
+        "text": "        <PARAMETER NAME=\"C_NUM_MM2S_CHANNELS\" VALUE=\"1\"/>"
+      },
+      {
+        "line": 1005,
+        "text": "        <PARAMETER NAME=\"C_NUM_S2MM_CHANNELS\" VALUE=\"1\"/>"
+      },
+      {
+        "line": 1006,
+        "text": "        <PARAMETER NAME=\"C_PRMRY_IS_ACLK_ASYNC\" VALUE=\"0\"/>"
+      },
+      {
+        "line": 1007,
+        "text": "        <PARAMETER NAME=\"C_S2MM_BURST_SIZE\" VALUE=\"16\"/>"
+      },
+      {
+        "line": 1008,
+        "text": "        <PARAMETER NAME=\"C_SG_INCLUDE_STSCNTRL_STRM\" VALUE=\"0\"/>"
+      },
+      {
+        "line": 1009,
+        "text": "        <PARAMETER NAME=\"C_SG_LENGTH_WIDTH\" VALUE=\"18\"/>"
+      },
+      {
+        "line": 1010,
+        "text": "        <PARAMETER NAME=\"C_SG_USE_STSAPP_LENGTH\" VALUE=\"0\"/>"
+      },
+      {
+        "line": 1011,
+        "text": "        <PARAMETER NAME=\"C_S_AXIS_S2MM_STS_TDATA_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 1012,
+        "text": "        <PARAMETER NAME=\"C_S_AXIS_S2MM_TDATA_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 1013,
+        "text": "        <PARAMETER NAME=\"C_S_AXI_LITE_ADDR_WIDTH\" VALUE=\"10\"/>"
+      },
+      {
+        "line": 1014,
+        "text": "        <PARAMETER NAME=\"C_S_AXI_LITE_DATA_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 1444,
+        "text": "          </PORTMAPS>"
+      },
+      {
+        "line": 1445,
+        "text": "        </BUSINTERFACE>"
+      },
+      {
+        "line": 1446,
+        "text": "        <BUSINTERFACE BUSNAME=\"axi_dma_0_M_AXI_S2MM\" DATAWIDTH=\"32\" NAME=\"M_AXI_S2MM\" TYPE=\"MASTER\" VLNV=\"xilinx.com:interface:aximm:1.0\">"
+      },
+      {
+        "line": 1447,
+        "text": "          <PARAMETER NAME=\"ADDR_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 1448,
+        "text": "          <PARAMETER NAME=\"ARUSER_WIDTH\" VALUE=\"0\"/>"
+      },
+      {
+        "line": 1449,
+        "text": "          <PARAMETER NAME=\"AWUSER_WIDTH\" VALUE=\"0\"/>"
+      },
+      {
+        "line": 3044,
+        "text": "      </PORTS>"
+      },
+      {
+        "line": 3045,
+        "text": "      <BUSINTERFACES>"
+      },
+      {
+        "line": 3046,
+        "text": "        <BUSINTERFACE BUSNAME=\"axi_dma_0_M_AXI_S2MM\" DATAWIDTH=\"32\" NAME=\"S00_AXI\" TYPE=\"SLAVE\" VLNV=\"xilinx.com:interface:aximm:1.0\">"
+      },
+      {
+        "line": 3047,
+        "text": "          <PORTMAPS>"
+      },
+      {
+        "line": 3048,
+        "text": "            <PORTMAP LOGICAL=\"AWADDR\" PHYSICAL=\"S00_AXI_awaddr\"/>"
+      },
+      {
+        "line": 3049,
+        "text": "            <PORTMAP LOGICAL=\"AWBURST\" PHYSICAL=\"S00_AXI_awburst\"/>"
+      },
+      {
+        "line": 3050,
+        "text": "            <PORTMAP LOGICAL=\"AWCACHE\" PHYSICAL=\"S00_AXI_awcache\"/>"
+      },
+      {
+        "line": 3051,
+        "text": "            <PORTMAP LOGICAL=\"AWLEN\" PHYSICAL=\"S00_AXI_awlen\"/>"
+      },
+      {
+        "line": 3052,
+        "text": "            <PORTMAP LOGICAL=\"AWPROT\" PHYSICAL=\"S00_AXI_awprot\"/>"
+      },
+      {
+        "line": 3053,
+        "text": "            <PORTMAP LOGICAL=\"AWREADY\" PHYSICAL=\"S00_AXI_awready\"/>"
+      },
+      {
+        "line": 3054,
+        "text": "            <PORTMAP LOGICAL=\"AWSIZE\" PHYSICAL=\"S00_AXI_awsize\"/>"
+      },
+      {
+        "line": 3055,
+        "text": "            <PORTMAP LOGICAL=\"AWVALID\" PHYSICAL=\"S00_AXI_awvalid\"/>"
+      },
+      {
+        "line": 3056,
+        "text": "            <PORTMAP LOGICAL=\"BREADY\" PHYSICAL=\"S00_AXI_bready\"/>"
+      },
+      {
+        "line": 3057,
+        "text": "            <PORTMAP LOGICAL=\"BRESP\" PHYSICAL=\"S00_AXI_bresp\"/>"
+      },
+      {
+        "line": 3058,
+        "text": "            <PORTMAP LOGICAL=\"BVALID\" PHYSICAL=\"S00_AXI_bvalid\"/>"
+      },
+      {
+        "line": 3059,
+        "text": "            <PORTMAP LOGICAL=\"WDATA\" PHYSICAL=\"S00_AXI_wdata\"/>"
+      },
+      {
+        "line": 3060,
+        "text": "            <PORTMAP LOGICAL=\"WLAST\" PHYSICAL=\"S00_AXI_wlast\"/>"
+      },
+      {
+        "line": 3061,
+        "text": "            <PORTMAP LOGICAL=\"WREADY\" PHYSICAL=\"S00_AXI_wready\"/>"
+      },
+      {
+        "line": 3062,
+        "text": "            <PORTMAP LOGICAL=\"WSTRB\" PHYSICAL=\"S00_AXI_wstrb\"/>"
+      },
+      {
+        "line": 3063,
+        "text": "            <PORTMAP LOGICAL=\"WVALID\" PHYSICAL=\"S00_AXI_wvalid\"/>"
+      },
+      {
+        "line": 3064,
+        "text": "          </PORTMAPS>"
+      },
+      {
+        "line": 3065,
+        "text": "        </BUSINTERFACE>"
+      },
+      {
+        "line": 3066,
+        "text": "        <BUSINTERFACE BUSNAME=\"hp1_fabric_M00_AXI\" DATAWIDTH=\"32\" NAME=\"M00_AXI\" TYPE=\"MASTER\" VLNV=\"xilinx.com:interface:aximm:1.0\">"
+      },
+      {
+        "line": 3067,
+        "text": "          <PORTMAPS>"
+      },
+      {
+        "line": 3068,
+        "text": "            <PORTMAP LOGICAL=\"ARADDR\" PHYSICAL=\"M00_AXI_araddr\"/>"
+      },
+      {
+        "line": 3069,
+        "text": "            <PORTMAP LOGICAL=\"ARBURST\" PHYSICAL=\"M00_AXI_arburst\"/>"
+      },
+      {
+        "line": 3070,
+        "text": "            <PORTMAP LOGICAL=\"ARCACHE\" PHYSICAL=\"M00_AXI_arcache\"/>"
+      },
+      {
+        "line": 3112,
+        "text": "      <PARAMETERS>"
+      },
+      {
+        "line": 3113,
+        "text": "        <PARAMETER NAME=\"BASE_ADDR\" VALUE=\"0x43C20000\"/>"
+      },
+      {
+        "line": 3114,
+        "text": "        <PARAMETER NAME=\"HEIGHT\" VALUE=\"240\"/>"
+      },
+      {
+        "line": 3115,
+        "text": "        <PARAMETER NAME=\"THRESHOLD\" VALUE=\"128\"/>"
+      },
+      {
+        "line": 3116,
+        "text": "        <PARAMETER NAME=\"WIDTH\" VALUE=\"320\"/>"
+      },
+      {
+        "line": 3117,
+        "text": "        <PARAMETER NAME=\"Component_Name\" VALUE=\"wo15_image_pipeline_0\"/>"
+      },
+      {
+        "line": 3118,
+        "text": "        <PARAMETER NAME=\"EDK_IPTYPE\" VALUE=\"PERIPHERAL\"/>"
+      },
+      {
+        "line": 4110,
+        "text": "        <PARAMETER NAME=\"PCW_S_AXI_HP0_DATA_WIDTH\" VALUE=\"64\"/>"
+      },
+      {
+        "line": 4111,
+        "text": "        <PARAMETER NAME=\"PCW_S_AXI_HP0_FREQMHZ\" VALUE=\"50\"/>"
+      },
+      {
+        "line": 4112,
+        "text": "        <PARAMETER NAME=\"PCW_S_AXI_HP0_ID_WIDTH\" VALUE=\"6\"/>"
+      },
+      {
+        "line": 4113,
+        "text": "        <PARAMETER NAME=\"PCW_S_AXI_HP1_DATA_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 4114,
+        "text": "        <PARAMETER NAME=\"PCW_S_AXI_HP1_FREQMHZ\" VALUE=\"50\"/>"
+      },
+      {
+        "line": 4115,
+        "text": "        <PARAMETER NAME=\"PCW_S_AXI_HP1_ID_WIDTH\" VALUE=\"6\"/>"
+      },
+      {
+        "line": 5105,
+        "text": "          </PORTMAPS>"
+      },
+      {
+        "line": 5106,
+        "text": "        </BUSINTERFACE>"
+      },
+      {
+        "line": 5107,
+        "text": "        <BUSINTERFACE BUSNAME=\"hp1_fabric_M00_AXI\" DATAWIDTH=\"32\" NAME=\"S_AXI_HP1\" TYPE=\"SLAVE\" VLNV=\"xilinx.com:interface:aximm:1.0\">"
+      },
+      {
+        "line": 5108,
+        "text": "          <PARAMETER NAME=\"ADDR_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 5109,
+        "text": "          <PARAMETER NAME=\"ARUSER_WIDTH\" VALUE=\"0\"/>"
+      },
+      {
+        "line": 5110,
+        "text": "          <PARAMETER NAME=\"AWUSER_WIDTH\" VALUE=\"0\"/>"
+      },
+      {
+        "line": 5111,
+        "text": "          <PARAMETER NAME=\"BUSER_WIDTH\" VALUE=\"0\"/>"
+      },
+      {
+        "line": 5112,
+        "text": "          <PARAMETER NAME=\"CLK_DOMAIN\" VALUE=\"wo15_ps7_0_FCLK_CLK0\"/>"
+      },
+      {
+        "line": 5113,
+        "text": "          <PARAMETER NAME=\"DATA_WIDTH\" VALUE=\"32\"/>"
+      },
+      {
+        "line": 5114,
+        "text": "          <PARAMETER NAME=\"FREQ_HZ\" VALUE=\"50000000\"/>"
+      },
+      {
+        "line": 5115,
+        "text": "          <PARAMETER NAME=\"HAS_BRESP\" VALUE=\"1\"/>"
+      },
+      {
+        "line": 5116,
+        "text": "          <PARAMETER NAME=\"HAS_BURST\" VALUE=\"1\"/>"
+      }
+    ]
+  },
+  "bd": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\project\\wo15_50m.srcs\\sources_1\\bd\\wo15\\wo15.bd",
+    "sha256": "38a6b0b98ff3528146f7a07dd81403d7c665f26e8dc4a01f6a011c6db3f768c2",
+    "excerpts": [
+      {
+        "line": 838,
+        "text": "              \"auto_pc\": {"
+      },
+      {
+        "line": 839,
+        "text": "                \"vlnv\": \"xilinx.com:ip:axi_protocol_converter:2.1\","
+      },
+      {
+        "line": 840,
+        "text": "                \"ip_revision\": \"38\","
+      },
+      {
+        "line": 841,
+        "text": "                \"xci_name\": \"wo15_hp1_fabric_imp_auto_pc_0\","
+      },
+      {
+        "line": 842,
+        "text": "                \"xci_path\": \"ip\\\\wo15_hp1_fabric_imp_auto_pc_0\\\\wo15_hp1_fabric_imp_auto_pc_0.xci\","
+      },
+      {
+        "line": 843,
+        "text": "                \"inst_hier_path\": \"hp1_fabric/s00_couplers/auto_pc\","
+      },
+      {
+        "line": 844,
+        "text": "                \"has_run_ip_tcl\": \"true\","
+      },
+      {
+        "line": 845,
+        "text": "                \"parameters\": {"
+      },
+      {
+        "line": 846,
+        "text": "                  \"MI_PROTOCOL\": {"
+      },
+      {
+        "line": 847,
+        "text": "                    \"value\": \"AXI3\""
+      },
+      {
+        "line": 848,
+        "text": "                  },"
+      },
+      {
+        "line": 849,
+        "text": "                  \"SI_PROTOCOL\": {"
+      },
+      {
+        "line": 850,
+        "text": "                    \"value\": \"AXI4\""
+      },
+      {
+        "line": 851,
+        "text": "                  }"
+      },
+      {
+        "line": 852,
+        "text": "                },"
+      },
+      {
+        "line": 853,
+        "text": "                \"interface_ports\": {"
+      },
+      {
+        "line": 1435,
+        "text": "        ]"
+      },
+      {
+        "line": 1436,
+        "text": "      },"
+      },
+      {
+        "line": 1437,
+        "text": "      \"axi_dma_0_M_AXI_S2MM\": {"
+      },
+      {
+        "line": 1438,
+        "text": "        \"interface_ports\": ["
+      },
+      {
+        "line": 1439,
+        "text": "          \"axi_dma_0/M_AXI_S2MM\","
+      },
+      {
+        "line": 1440,
+        "text": "          \"hp1_fabric/S00_AXI\""
+      },
+      {
+        "line": 1441,
+        "text": "        ]"
+      },
+      {
+        "line": 1442,
+        "text": "      },"
+      },
+      {
+        "line": 1443,
+        "text": "      \"control_fabric_M00_AXI\": {"
+      },
+      {
+        "line": 1444,
+        "text": "        \"interface_ports\": ["
+      },
+      {
+        "line": 1445,
+        "text": "          \"control_fabric/M00_AXI\","
+      },
+      {
+        "line": 1446,
+        "text": "          \"axi_dma_0/S_AXI_LITE\""
+      },
+      {
+        "line": 1447,
+        "text": "        ]"
+      },
+      {
+        "line": 1448,
+        "text": "      },"
+      },
+      {
+        "line": 1449,
+        "text": "      \"control_fabric_M01_AXI\": {"
+      },
+      {
+        "line": 1450,
+        "text": "        \"interface_ports\": ["
+      },
+      {
+        "line": 1451,
+        "text": "          \"control_fabric/M01_AXI\","
+      },
+      {
+        "line": 1452,
+        "text": "          \"image_pipeline/s_axi\""
+      },
+      {
+        "line": 1453,
+        "text": "        ]"
+      },
+      {
+        "line": 1454,
+        "text": "      },"
+      },
+      {
+        "line": 1455,
+        "text": "      \"hp0_protocol_M_AXI\": {"
+      },
+      {
+        "line": 1456,
+        "text": "        \"interface_ports\": ["
+      },
+      {
+        "line": 1457,
+        "text": "          \"hp0_protocol/M_AXI\","
+      },
+      {
+        "line": 1458,
+        "text": "          \"ps7/S_AXI_HP0\""
+      },
+      {
+        "line": 1459,
+        "text": "        ]"
+      },
+      {
+        "line": 1460,
+        "text": "      },"
+      },
+      {
+        "line": 1461,
+        "text": "      \"hp1_fabric_M00_AXI\": {"
+      },
+      {
+        "line": 1462,
+        "text": "        \"interface_ports\": ["
+      },
+      {
+        "line": 1463,
+        "text": "          \"hp1_fabric/M00_AXI\","
+      },
+      {
+        "line": 1464,
+        "text": "          \"ps7/S_AXI_HP1\""
+      },
+      {
+        "line": 1465,
+        "text": "        ]"
+      },
+      {
+        "line": 1466,
+        "text": "      },"
+      },
+      {
+        "line": 1467,
+        "text": "      \"image_pipeline_m_axis\": {"
+      }
+    ]
+  },
+  "ps7-post-config": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-hw-50mhz-20261015\\project\\wo15_50m.gen\\sources_1\\bd\\wo15\\ip\\wo15_ps7_0\\ps7_init.tcl",
+    "sha256": "ac0bed12175d1767213dcb99e2f37c774cebc409659763b40f9e7d748aceb8a5",
+    "excerpts": [
+      {
+        "line": 150,
+        "text": "proc ps7_post_config_3_0 {} {"
+      },
+      {
+        "line": 151,
+        "text": "    mwr -force 0XF8000008 0x0000DF0D"
+      },
+      {
+        "line": 152,
+        "text": "    mask_write 0XF8000900 0x0000000F 0x0000000F"
+      },
+      {
+        "line": 153,
+        "text": "    mask_write 0XF8000240 0xFFFFFFFF 0x00000000"
+      },
+      {
+        "line": 154,
+        "text": "    mask_write 0XF8009000 0x00000001 0x00000001"
+      },
+      {
+        "line": 155,
+        "text": "    mask_write 0XF8009014 0x00000001 0x00000001"
+      },
+      {
+        "line": 156,
+        "text": "    mwr -force 0XF8000004 0x0000767B"
+      },
+      {
+        "line": 157,
+        "text": "}"
+      },
+      {
+        "line": 158,
+        "text": "proc ps7_debug_3_0 {} {"
+      },
+      {
+        "line": 529,
+        "text": "proc ps7_post_config {} {"
+      },
+      {
+        "line": 530,
+        "text": "    set saved_mode [configparams force-mem-accesses]                  "
+      },
+      {
+        "line": 531,
+        "text": "    configparams force-mem-accesses 1 "
+      },
+      {
+        "line": 532,
+        "text": "    "
+      },
+      {
+        "line": 533,
+        "text": "\tvariable PCW_SILICON_VER_1_0"
+      },
+      {
+        "line": 534,
+        "text": "    variable PCW_SILICON_VER_2_0"
+      },
+      {
+        "line": 535,
+        "text": "    variable PCW_SILICON_VER_3_0"
+      },
+      {
+        "line": 536,
+        "text": "    set sil_ver [ps_version]"
+      },
+      {
+        "line": 537,
+        "text": ""
+      },
+      {
+        "line": 538,
+        "text": "    if { $sil_ver == $PCW_SILICON_VER_1_0} {"
+      },
+      {
+        "line": 539,
+        "text": "        ps7_post_config_1_0   "
+      },
+      {
+        "line": 540,
+        "text": "    } elseif { $sil_ver == $PCW_SILICON_VER_2_0 } {"
+      },
+      {
+        "line": 541,
+        "text": "        ps7_post_config_2_0   "
+      },
+      {
+        "line": 542,
+        "text": "    } else {"
+      },
+      {
+        "line": 543,
+        "text": "        ps7_post_config_3_0   "
+      },
+      {
+        "line": 544,
+        "text": "    }"
+      },
+      {
+        "line": 545,
+        "text": "\tconfigparams force-mem-accesses $saved_mode                                       "
+      },
+      {
+        "line": 546,
+        "text": "}"
+      }
+    ]
+  },
+  "xsim-tb": {
+    "path": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\fpga\\sim\\wo0015\\tb_axis_dma_s2mm_pipeline.sv",
+    "sha256": "7be500bf29aea048295b23c1eb2838c23468f87ed17947a7b3f7e28588536e9e",
+    "excerpts": [
+      {
+        "line": 1,
+        "text": "`timescale 1ns/1ps"
+      },
+      {
+        "line": 2,
+        "text": ""
+      },
+      {
+        "line": 3,
+        "text": "// Full-chain offline self-check: RGB packet -> Gray/Binary8 -> S2MM packer."
+      },
+      {
+        "line": 4,
+        "text": "// Input beats are 40-bit hex records {3'b0, TLAST, TKEEP, TDATA}; golden.hex"
+      },
+      {
+        "line": 5,
+        "text": "// contains one Binary8 byte per line. No AXI DMA IP or board is modeled here."
+      },
+      {
+        "line": 6,
+        "text": "module tb_axis_dma_s2mm_pipeline #("
+      },
+      {
+        "line": 7,
+        "text": "    parameter integer WIDTH = 320,"
+      },
+      {
+        "line": 8,
+        "text": "    parameter integer HEIGHT = 240,"
+      },
+      {
+        "line": 9,
+        "text": "    parameter integer THRESHOLD = 128"
+      },
+      {
+        "line": 10,
+        "text": ");"
+      },
+      {
+        "line": 11,
+        "text": "    localparam integer PIXELS_PER_FRAME = WIDTH * HEIGHT;"
+      },
+      {
+        "line": 12,
+        "text": "    localparam integer BEATS_PER_FRAME = PIXELS_PER_FRAME / 4;"
+      },
+      {
+        "line": 103,
+        "text": "    axis_dma_s2mm_pipeline_bd #("
+      },
+      {
+        "line": 104,
+        "text": "        .WIDTH(WIDTH), .HEIGHT(HEIGHT), .THRESHOLD(THRESHOLD)"
+      },
+      {
+        "line": 105,
+        "text": "    ) dut ("
+      },
+      {
+        "line": 106,
+        "text": "        .aclk(aclk), .aresetn(aresetn),"
+      },
+      {
+        "line": 107,
+        "text": "        .s_axi_awaddr(s_axi_awaddr), .s_axi_awvalid(s_axi_awvalid),"
+      },
+      {
+        "line": 108,
+        "text": "        .s_axi_awready(s_axi_awready), .s_axi_wdata(s_axi_wdata),"
+      },
+      {
+        "line": 109,
+        "text": "        .s_axi_wstrb(s_axi_wstrb), .s_axi_wvalid(s_axi_wvalid),"
+      },
+      {
+        "line": 110,
+        "text": "        .s_axi_wready(s_axi_wready), .s_axi_bresp(s_axi_bresp),"
+      },
+      {
+        "line": 111,
+        "text": "        .s_axi_bvalid(s_axi_bvalid), .s_axi_bready(s_axi_bready),"
+      },
+      {
+        "line": 112,
+        "text": "        .s_axi_araddr(s_axi_araddr), .s_axi_arvalid(s_axi_arvalid),"
+      },
+      {
+        "line": 113,
+        "text": "        .s_axi_arready(s_axi_arready), .s_axi_rdata(s_axi_rdata),"
+      },
+      {
+        "line": 114,
+        "text": "        .s_axi_rresp(s_axi_rresp), .s_axi_rvalid(s_axi_rvalid),"
+      },
+      {
+        "line": 115,
+        "text": "        .s_axi_rready(s_axi_rready), .s_axis_tdata(s_axis_tdata),"
+      },
+      {
+        "line": 116,
+        "text": "        .s_axis_tkeep(s_axis_tkeep), .s_axis_tlast(s_axis_tlast),"
+      },
+      {
+        "line": 117,
+        "text": "        .s_axis_tvalid(s_axis_tvalid), .s_axis_tready(s_axis_tready),"
+      },
+      {
+        "line": 118,
+        "text": "        .m_axis_tdata(m_axis_tdata), .m_axis_tkeep(m_axis_tkeep),"
+      },
+      {
+        "line": 119,
+        "text": "        .m_axis_tlast(m_axis_tlast), .m_axis_tvalid(m_axis_tvalid),"
+      },
+      {
+        "line": 120,
+        "text": "        .m_axis_tready(m_axis_tready)"
+      },
+      {
+        "line": 121,
+        "text": "    );"
+      },
+      {
+        "line": 215,
+        "text": "    endtask"
+      },
+      {
+        "line": 216,
+        "text": ""
+      },
+      {
+        "line": 217,
+        "text": "    task automatic arm_frame;"
+      },
+      {
+        "line": 218,
+        "text": "        begin"
+      },
+      {
+        "line": 219,
+        "text": "            axi_write(32'h0000005c, 32'h00000001);"
+      },
+      {
+        "line": 220,
+        "text": "        end"
+      },
+      {
+        "line": 221,
+        "text": "    endtask"
+      },
+      {
+        "line": 495,
+        "text": "                $fatal(1, \"legacy signature 0x04=0x%08x\", read_value);"
+      },
+      {
+        "line": 496,
+        "text": "            axi_write(32'h00000000, 32'h00000001);"
+      },
+      {
+        "line": 497,
+        "text": "            axi_read(32'h00000000, read_value);"
+      },
+      {
+        "line": 498,
+        "text": "            if (read_value != 1)"
+      },
+      {
+        "line": 499,
+        "text": "                $fatal(1, \"legacy drain control 0x00=%0d expected=1\", read_value);"
+      },
+      {
+        "line": 500,
+        "text": "            axi_read(32'h00000060, read_value);"
+      },
+      {
+        "line": 501,
+        "text": "            if (read_value != 32'h574f3135)"
+      },
+      {
+        "line": 502,
+        "text": "                $fatal(1, \"WO-0015 signature 0x60=0x%08x\", read_value);"
+      },
+      {
+        "line": 503,
+        "text": ""
+      },
+      {
+        "line": 504,
+        "text": "            if (mode == MODE_NORMAL || mode == MODE_RANDOM) begin"
+      },
+      {
+        "line": 505,
+        "text": "                expected_eof_count = frame_count;"
+      },
+      {
+        "line": 506,
+        "text": "                $display(\"STAGE normal start case=%0s frames=%0d seed=%0d beats=%0d\","
+      },
+      {
+        "line": 507,
+        "text": "                         case_label, frame_count, seed, input_count);"
+      },
+      {
+        "line": 508,
+        "text": "                arm_frame();"
+      },
+      {
+        "line": 509,
+        "text": "                fork"
+      }
+    ]
+  }
+}

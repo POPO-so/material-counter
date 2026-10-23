@@ -1,0 +1,37 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Thu Oct 15 15:55:53 2026
+# Process ID         : 48024
+# Current directory  : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-replay-20261015/xsim
+# Command line       : xsim.exe -log C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-replay-20261015/xsim/C-seed20261015.log -mode tcl -source {xsim.dir/wo15_pipeline/xsim_script.tcl}
+# Log file           : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-replay-20261015/xsim/C-seed20261015.log
+# Journal file       : C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-replay-20261015/xsim\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 2147 MB
+# Total Virtual      : 36204 MB
+# Available Virtual  : 7614 MB
+#-----------------------------------------------------------
+source xsim.dir/wo15_pipeline/xsim_script.tcl
+# xsim {wo15_pipeline} -testplusarg INPUT=C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-replay-20261015/vectors/C/beats.hex -testplusarg GOLDEN=C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-replay-20261015/vectors/C/golden.hex -testplusarg ACTUAL=C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-replay-20261015/xsim/C-seed20261015-actual.hex -testplusarg METRICS=C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/data/results/wo0015-xsim-replay-20261015/xsim/C-seed20261015-metrics.tsv -testplusarg MODE=1 -testplusarg FRAMES=3 -testplusarg SEED=20261015 -testplusarg CASE=C-seed20261015 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+STAGE normal start case=C-seed20261015 frames=3 seed=20261015 beats=172824
+FRAME_PASS index=0 pixels=76800 beats=19200 eof=1 checksum=571200
+STAGE rearm frame=1 input_valid_waiting=1
+FRAME_PASS index=1 pixels=76800 beats=19200 eof=1 checksum=571200
+STAGE rearm frame=2 input_valid_waiting=1
+FRAME_PASS index=2 pixels=76800 beats=19200 eof=1 checksum=571200
+WO0015_PIPELINE_PASS case=C-seed20261015 frames=3 pixels=230400 beats=57600 eofs=3 seed=20261015
+$finish called at time : 12124170 ns : File "C:/Users/POP/.codex/worktrees/wo0015-design-20261015/material-counter/fpga/sim/wo0015/tb_axis_dma_s2mm_pipeline.sv" Line 592
+exit
+INFO: [Common 17-206] Exiting xsim at Thu Oct 15 15:55:56 2026...

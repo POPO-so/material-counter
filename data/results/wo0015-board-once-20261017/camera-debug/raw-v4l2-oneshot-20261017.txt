@@ -1,0 +1,13 @@
+WO-0015 minimal V4L2 raw-read attempt
+Date: 2026-10-17
+Board: xilinx@192.168.2.99
+Command: sudo -n env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python3 -c "<explicit CAP_V4L2, YUYV, 640x400, one cap.read()>"
+SSH exit code: 0
+
+Combined output:
+[ WARN:0] global ./modules/videoio/src/cap_v4l.cpp (1001) tryIoctl VIDEOIO(V4L2:/dev/video0): select() timeout.
+OpenCV version: 4.5.4
+Is Opened: True
+Read Success: False
+Failed to grab frame (select timeout or buffer empty)
+

@@ -1,0 +1,527 @@
+FFFFFFF.FFFF.....                                                        [100%]
+================================== FAILURES ===================================
+_ test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses[samples0] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_global_cma_rise_flat_or_n0')
+samples = [37884, 38612, 38612, 38612]
+
+    @pytest.mark.parametrize('samples',[[37884,38612,38612,38612],
+                                      [40000,40000,40000,39000],
+                                      [16384,16384,16384,16384]])
+    def test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses(tmp_path,samples):
+        api=Telemetry(plan_at(tmp_path),samples)
+>       result=run.run_frames(api.plan,api,timeout_s=2,frame_limit=1)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_cma_watermark.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan = ValidatedRun(manifest_path=WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_global_cma_rise_...checksum=29377861, binary_checksum=9792000)), hp0_range=(0, 536870912), hp1_range=(0, 536870912), ready_for_board=True)
+api = <test_cma_watermark.Telemetry object at 0x0000019FE8ADB050>, timeout_s = 2
+frame_limit = 1, expected_prior_frames = 0
+
+    def run_frames(plan: preflight.ValidatedRun, api: Any, *,
+                   timeout_s: float = DEFAULT_TIMEOUT_S,
+                   frame_limit: int | None = None,
+                   expected_prior_frames: int = 0) -> dict[str, Any]:
+        """Run one or three frames through an injected low-level Board API.
+    
+        The API contract is intentionally small: allocate, free, buffer sync, MMIO,
+        monotonic/sleep, and a CmaFree reader. Hardware and Mock use the same path.
+        """
+        _validate_timeout(timeout_s)
+        if frame_limit is None:
+            frame_limit = len(plan.frames)
+        if frame_limit not in (1, 3) or frame_limit > len(plan.frames):
+            raise ValueError("frame_limit must select one or three manifest frames")
+        if expected_prior_frames and (expected_prior_frames != 1 or len(plan.frames) != 3):
+            raise ValueError("one prior frame is supported only for a three-frame manifest")
+        frames_to_run = plan.frames[:frame_limit]
+        begin_run = getattr(api, "begin_run", None)
+        if callable(begin_run):
+            begin_run(frame_limit, expected_prior_frames)
+        initial_cma_free = api.cma_free_kib()
+        mm2s_buffer = None
+        s2mm_buffer = None
+        may_be_in_flight = False
+        dma_start_attempted = False
+        transfer_started = False
+        released = False
+        evidence: dict[str, Any] = {
+            "task": "WO-0015",
+            "status": "RUNNING",
+            "board_accessed": bool(getattr(api, "board_accessed", False)),
+            "dma_start_attempted": False,
+            "transfer_started": False,
+            "dma_may_be_active": False,
+            "boot_id": plan.boot_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "build_id": plan.build_id,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "clock_mhz": 50,
+            "frame_count": frame_limit,
+            "tx_bytes_each": preflight.TX_BYTES,
+            "rx_bytes_each": preflight.RX_BYTES,
+            "cma_free_before_kib": initial_cma_free,
+            "cma_allocation_samples": [{"stage": "before", "cma_free_kib": initial_cma_free}],
+            "frames": [],
+            "hardware_stage": getattr(api, "stage", "mock"),
+        }
+        def record_release_cma() -> int:
+            value = api.cma_free_kib()
+            evidence["cma_free_after_kib"] = value
+            evidence["cma_free_delta_kib"] = value - initial_cma_free
+            evidence["cma_allocation_samples"].append({"stage": "after_release", "cma_free_kib": value})
+            return value
+    
+        try:
+            baseline_checker = _require_clean_start(api, plan, expected_prior_frames)
+            mm2s_buffer = api.allocate(preflight.TX_BYTES)
+            evidence["cma_allocation_samples"].append(
+                {"stage": "after_mm2s", "cma_free_kib": api.cma_free_kib()})
+            s2mm_buffer = api.allocate(preflight.RX_BYTES)
+            during_cma_free = api.cma_free_kib()
+            evidence["cma_free_during_kib"] = during_cma_free
+            evidence["cma_allocation_samples"].append(
+                {"stage": "after_s2mm", "cma_free_kib": during_cma_free})
+            expected_kib = sum((n + preflight.PAGE_BYTES - 1) // preflight.PAGE_BYTES
+                               for n in (preflight.TX_BYTES, preflight.RX_BYTES)) * preflight.PAGE_BYTES // 1024
+            evidence["allocation_accounting"] = {
+                "page_rounded_bytes_kib": expected_kib,
+                "observed_cma_decrease_kib": initial_cma_free - during_cma_free}
+            if initial_cma_free - during_cma_free < expected_kib:
+>               raise ExecutionFailure("CmaFree did not show the required allocated-page decrease before DMA",
+                                       transfer_started=False, evidence=evidence)
+E                                      board_once.ExecutionFailure: CmaFree did not show the required allocated-page decrease before DMA
+
+scripts\wo0015\board_once.py:400: ExecutionFailure
+_ test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses[samples1] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_global_cma_rise_flat_or_n1')
+samples = [40000, 40000, 40000, 39000]
+
+    @pytest.mark.parametrize('samples',[[37884,38612,38612,38612],
+                                      [40000,40000,40000,39000],
+                                      [16384,16384,16384,16384]])
+    def test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses(tmp_path,samples):
+        api=Telemetry(plan_at(tmp_path),samples)
+>       result=run.run_frames(api.plan,api,timeout_s=2,frame_limit=1)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_cma_watermark.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan = ValidatedRun(manifest_path=WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_global_cma_rise_...checksum=29377861, binary_checksum=9792000)), hp0_range=(0, 536870912), hp1_range=(0, 536870912), ready_for_board=True)
+api = <test_cma_watermark.Telemetry object at 0x0000019FEA550DD0>, timeout_s = 2
+frame_limit = 1, expected_prior_frames = 0
+
+    def run_frames(plan: preflight.ValidatedRun, api: Any, *,
+                   timeout_s: float = DEFAULT_TIMEOUT_S,
+                   frame_limit: int | None = None,
+                   expected_prior_frames: int = 0) -> dict[str, Any]:
+        """Run one or three frames through an injected low-level Board API.
+    
+        The API contract is intentionally small: allocate, free, buffer sync, MMIO,
+        monotonic/sleep, and a CmaFree reader. Hardware and Mock use the same path.
+        """
+        _validate_timeout(timeout_s)
+        if frame_limit is None:
+            frame_limit = len(plan.frames)
+        if frame_limit not in (1, 3) or frame_limit > len(plan.frames):
+            raise ValueError("frame_limit must select one or three manifest frames")
+        if expected_prior_frames and (expected_prior_frames != 1 or len(plan.frames) != 3):
+            raise ValueError("one prior frame is supported only for a three-frame manifest")
+        frames_to_run = plan.frames[:frame_limit]
+        begin_run = getattr(api, "begin_run", None)
+        if callable(begin_run):
+            begin_run(frame_limit, expected_prior_frames)
+        initial_cma_free = api.cma_free_kib()
+        mm2s_buffer = None
+        s2mm_buffer = None
+        may_be_in_flight = False
+        dma_start_attempted = False
+        transfer_started = False
+        released = False
+        evidence: dict[str, Any] = {
+            "task": "WO-0015",
+            "status": "RUNNING",
+            "board_accessed": bool(getattr(api, "board_accessed", False)),
+            "dma_start_attempted": False,
+            "transfer_started": False,
+            "dma_may_be_active": False,
+            "boot_id": plan.boot_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "build_id": plan.build_id,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "clock_mhz": 50,
+            "frame_count": frame_limit,
+            "tx_bytes_each": preflight.TX_BYTES,
+            "rx_bytes_each": preflight.RX_BYTES,
+            "cma_free_before_kib": initial_cma_free,
+            "cma_allocation_samples": [{"stage": "before", "cma_free_kib": initial_cma_free}],
+            "frames": [],
+            "hardware_stage": getattr(api, "stage", "mock"),
+        }
+        def record_release_cma() -> int:
+            value = api.cma_free_kib()
+            evidence["cma_free_after_kib"] = value
+            evidence["cma_free_delta_kib"] = value - initial_cma_free
+            evidence["cma_allocation_samples"].append({"stage": "after_release", "cma_free_kib": value})
+            return value
+    
+        try:
+            baseline_checker = _require_clean_start(api, plan, expected_prior_frames)
+            mm2s_buffer = api.allocate(preflight.TX_BYTES)
+            evidence["cma_allocation_samples"].append(
+                {"stage": "after_mm2s", "cma_free_kib": api.cma_free_kib()})
+            s2mm_buffer = api.allocate(preflight.RX_BYTES)
+            during_cma_free = api.cma_free_kib()
+            evidence["cma_free_during_kib"] = during_cma_free
+            evidence["cma_allocation_samples"].append(
+                {"stage": "after_s2mm", "cma_free_kib": during_cma_free})
+            expected_kib = sum((n + preflight.PAGE_BYTES - 1) // preflight.PAGE_BYTES
+                               for n in (preflight.TX_BYTES, preflight.RX_BYTES)) * preflight.PAGE_BYTES // 1024
+            evidence["allocation_accounting"] = {
+                "page_rounded_bytes_kib": expected_kib,
+                "observed_cma_decrease_kib": initial_cma_free - during_cma_free}
+            if initial_cma_free - during_cma_free < expected_kib:
+>               raise ExecutionFailure("CmaFree did not show the required allocated-page decrease before DMA",
+                                       transfer_started=False, evidence=evidence)
+E                                      board_once.ExecutionFailure: CmaFree did not show the required allocated-page decrease before DMA
+
+scripts\wo0015\board_once.py:400: ExecutionFailure
+_ test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses[samples2] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_global_cma_rise_flat_or_n2')
+samples = [16384, 16384, 16384, 16384]
+
+    @pytest.mark.parametrize('samples',[[37884,38612,38612,38612],
+                                      [40000,40000,40000,39000],
+                                      [16384,16384,16384,16384]])
+    def test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses(tmp_path,samples):
+        api=Telemetry(plan_at(tmp_path),samples)
+>       result=run.run_frames(api.plan,api,timeout_s=2,frame_limit=1)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_cma_watermark.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan = ValidatedRun(manifest_path=WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_global_cma_rise_...checksum=29377861, binary_checksum=9792000)), hp0_range=(0, 536870912), hp1_range=(0, 536870912), ready_for_board=True)
+api = <test_cma_watermark.Telemetry object at 0x0000019FEA550E30>, timeout_s = 2
+frame_limit = 1, expected_prior_frames = 0
+
+    def run_frames(plan: preflight.ValidatedRun, api: Any, *,
+                   timeout_s: float = DEFAULT_TIMEOUT_S,
+                   frame_limit: int | None = None,
+                   expected_prior_frames: int = 0) -> dict[str, Any]:
+        """Run one or three frames through an injected low-level Board API.
+    
+        The API contract is intentionally small: allocate, free, buffer sync, MMIO,
+        monotonic/sleep, and a CmaFree reader. Hardware and Mock use the same path.
+        """
+        _validate_timeout(timeout_s)
+        if frame_limit is None:
+            frame_limit = len(plan.frames)
+        if frame_limit not in (1, 3) or frame_limit > len(plan.frames):
+            raise ValueError("frame_limit must select one or three manifest frames")
+        if expected_prior_frames and (expected_prior_frames != 1 or len(plan.frames) != 3):
+            raise ValueError("one prior frame is supported only for a three-frame manifest")
+        frames_to_run = plan.frames[:frame_limit]
+        begin_run = getattr(api, "begin_run", None)
+        if callable(begin_run):
+            begin_run(frame_limit, expected_prior_frames)
+        initial_cma_free = api.cma_free_kib()
+        mm2s_buffer = None
+        s2mm_buffer = None
+        may_be_in_flight = False
+        dma_start_attempted = False
+        transfer_started = False
+        released = False
+        evidence: dict[str, Any] = {
+            "task": "WO-0015",
+            "status": "RUNNING",
+            "board_accessed": bool(getattr(api, "board_accessed", False)),
+            "dma_start_attempted": False,
+            "transfer_started": False,
+            "dma_may_be_active": False,
+            "boot_id": plan.boot_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "build_id": plan.build_id,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "clock_mhz": 50,
+            "frame_count": frame_limit,
+            "tx_bytes_each": preflight.TX_BYTES,
+            "rx_bytes_each": preflight.RX_BYTES,
+            "cma_free_before_kib": initial_cma_free,
+            "cma_allocation_samples": [{"stage": "before", "cma_free_kib": initial_cma_free}],
+            "frames": [],
+            "hardware_stage": getattr(api, "stage", "mock"),
+        }
+        def record_release_cma() -> int:
+            value = api.cma_free_kib()
+            evidence["cma_free_after_kib"] = value
+            evidence["cma_free_delta_kib"] = value - initial_cma_free
+            evidence["cma_allocation_samples"].append({"stage": "after_release", "cma_free_kib": value})
+            return value
+    
+        try:
+            baseline_checker = _require_clean_start(api, plan, expected_prior_frames)
+            mm2s_buffer = api.allocate(preflight.TX_BYTES)
+            evidence["cma_allocation_samples"].append(
+                {"stage": "after_mm2s", "cma_free_kib": api.cma_free_kib()})
+            s2mm_buffer = api.allocate(preflight.RX_BYTES)
+            during_cma_free = api.cma_free_kib()
+            evidence["cma_free_during_kib"] = during_cma_free
+            evidence["cma_allocation_samples"].append(
+                {"stage": "after_s2mm", "cma_free_kib": during_cma_free})
+            expected_kib = sum((n + preflight.PAGE_BYTES - 1) // preflight.PAGE_BYTES
+                               for n in (preflight.TX_BYTES, preflight.RX_BYTES)) * preflight.PAGE_BYTES // 1024
+            evidence["allocation_accounting"] = {
+                "page_rounded_bytes_kib": expected_kib,
+                "observed_cma_decrease_kib": initial_cma_free - during_cma_free}
+            if initial_cma_free - during_cma_free < expected_kib:
+>               raise ExecutionFailure("CmaFree did not show the required allocated-page decrease before DMA",
+                                       transfer_started=False, evidence=evidence)
+E                                      board_once.ExecutionFailure: CmaFree did not show the required allocated-page decrease before DMA
+
+scripts\wo0015\board_once.py:400: ExecutionFailure
+_ test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers[samples0-0] _
+
+self = <test_cma_watermark.Telemetry object at 0x0000019FEA553710>
+
+>   def cma_free_kib(self):return next(self.samples)
+                                  ^^^^^^^^^^^^^^^^^^
+E   StopIteration
+
+scripts\wo0015\test_cma_watermark.py:16: StopIteration
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_low_watermark_stops_befor0')
+samples = [16383, 40000], allocated = 0
+
+    @pytest.mark.parametrize('samples,allocated',[
+        ([16383,40000],0),([40000,16383,40000],1),([40000,40000,16383,40000],2)])
+    def test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers(tmp_path,samples,allocated):
+        api=Telemetry(plan_at(tmp_path),samples)
+        with pytest.raises(run.ExecutionFailure,match='watermark') as failure:
+>           run.run_frames(api.plan,api,timeout_s=2,frame_limit=1)
+
+scripts\wo0015\test_cma_watermark.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_once.py:584: in run_frames
+    record_release_cma()
+scripts\wo0015\board_once.py:378: in record_release_cma
+    value = api.cma_free_kib()
+            ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_cma_watermark.Telemetry object at 0x0000019FEA553710>
+
+>   def cma_free_kib(self):return next(self.samples)
+                                  ^^^^^^^^^^^^^^^^^^
+E   StopIteration
+
+scripts\wo0015\test_cma_watermark.py:16: StopIteration
+_ test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers[samples1-1] _
+
+plan = ValidatedRun(manifest_path=WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_low_watermark_st...checksum=29377861, binary_checksum=9792000)), hp0_range=(0, 536870912), hp1_range=(0, 536870912), ready_for_board=True)
+api = <test_cma_watermark.Telemetry object at 0x0000019FEA553320>, timeout_s = 2
+frame_limit = 1, expected_prior_frames = 0
+
+    def run_frames(plan: preflight.ValidatedRun, api: Any, *,
+                   timeout_s: float = DEFAULT_TIMEOUT_S,
+                   frame_limit: int | None = None,
+                   expected_prior_frames: int = 0) -> dict[str, Any]:
+        """Run one or three frames through an injected low-level Board API.
+    
+        The API contract is intentionally small: allocate, free, buffer sync, MMIO,
+        monotonic/sleep, and a CmaFree reader. Hardware and Mock use the same path.
+        """
+        _validate_timeout(timeout_s)
+        if frame_limit is None:
+            frame_limit = len(plan.frames)
+        if frame_limit not in (1, 3) or frame_limit > len(plan.frames):
+            raise ValueError("frame_limit must select one or three manifest frames")
+        if expected_prior_frames and (expected_prior_frames != 1 or len(plan.frames) != 3):
+            raise ValueError("one prior frame is supported only for a three-frame manifest")
+        frames_to_run = plan.frames[:frame_limit]
+        begin_run = getattr(api, "begin_run", None)
+        if callable(begin_run):
+            begin_run(frame_limit, expected_prior_frames)
+        initial_cma_free = api.cma_free_kib()
+        mm2s_buffer = None
+        s2mm_buffer = None
+        may_be_in_flight = False
+        dma_start_attempted = False
+        transfer_started = False
+        released = False
+        evidence: dict[str, Any] = {
+            "task": "WO-0015",
+            "status": "RUNNING",
+            "board_accessed": bool(getattr(api, "board_accessed", False)),
+            "dma_start_attempted": False,
+            "transfer_started": False,
+            "dma_may_be_active": False,
+            "boot_id": plan.boot_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "build_id": plan.build_id,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "clock_mhz": 50,
+            "frame_count": frame_limit,
+            "tx_bytes_each": preflight.TX_BYTES,
+            "rx_bytes_each": preflight.RX_BYTES,
+            "cma_free_before_kib": initial_cma_free,
+            "cma_allocation_samples": [{"stage": "before", "cma_free_kib": initial_cma_free}],
+            "frames": [],
+            "hardware_stage": getattr(api, "stage", "mock"),
+        }
+        def record_release_cma() -> int:
+            value = api.cma_free_kib()
+            evidence["cma_free_after_kib"] = value
+            evidence["cma_free_delta_kib"] = value - initial_cma_free
+            evidence["cma_allocation_samples"].append({"stage": "after_release", "cma_free_kib": value})
+            return value
+    
+        try:
+            baseline_checker = _require_clean_start(api, plan, expected_prior_frames)
+            mm2s_buffer = api.allocate(preflight.TX_BYTES)
+            evidence["cma_allocation_samples"].append(
+                {"stage": "after_mm2s", "cma_free_kib": api.cma_free_kib()})
+            s2mm_buffer = api.allocate(preflight.RX_BYTES)
+            during_cma_free = api.cma_free_kib()
+            evidence["cma_free_during_kib"] = during_cma_free
+            evidence["cma_allocation_samples"].append(
+                {"stage": "after_s2mm", "cma_free_kib": during_cma_free})
+            expected_kib = sum((n + preflight.PAGE_BYTES - 1) // preflight.PAGE_BYTES
+                               for n in (preflight.TX_BYTES, preflight.RX_BYTES)) * preflight.PAGE_BYTES // 1024
+            evidence["allocation_accounting"] = {
+                "page_rounded_bytes_kib": expected_kib,
+                "observed_cma_decrease_kib": initial_cma_free - during_cma_free}
+            if initial_cma_free - during_cma_free < expected_kib:
+>               raise ExecutionFailure("CmaFree did not show the required allocated-page decrease before DMA",
+                                       transfer_started=False, evidence=evidence)
+E                                      board_once.ExecutionFailure: CmaFree did not show the required allocated-page decrease before DMA
+
+scripts\wo0015\board_once.py:400: ExecutionFailure
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_low_watermark_stops_befor1')
+samples = [40000, 16383, 40000], allocated = 1
+
+    @pytest.mark.parametrize('samples,allocated',[
+        ([16383,40000],0),([40000,16383,40000],1),([40000,40000,16383,40000],2)])
+    def test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers(tmp_path,samples,allocated):
+        api=Telemetry(plan_at(tmp_path),samples)
+        with pytest.raises(run.ExecutionFailure,match='watermark') as failure:
+>           run.run_frames(api.plan,api,timeout_s=2,frame_limit=1)
+
+scripts\wo0015\test_cma_watermark.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+scripts\wo0015\board_once.py:562: in run_frames
+    record_release_cma()
+scripts\wo0015\board_once.py:378: in record_release_cma
+    value = api.cma_free_kib()
+            ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_cma_watermark.Telemetry object at 0x0000019FEA553320>
+
+>   def cma_free_kib(self):return next(self.samples)
+                                  ^^^^^^^^^^^^^^^^^^
+E   StopIteration
+
+scripts\wo0015\test_cma_watermark.py:16: StopIteration
+_ test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers[samples2-2] _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_low_watermark_stops_befor2')
+samples = [40000, 40000, 16383, 40000], allocated = 2
+
+    @pytest.mark.parametrize('samples,allocated',[
+        ([16383,40000],0),([40000,16383,40000],1),([40000,40000,16383,40000],2)])
+    def test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers(tmp_path,samples,allocated):
+        api=Telemetry(plan_at(tmp_path),samples)
+>       with pytest.raises(run.ExecutionFailure,match='watermark') as failure:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ExecutionFailure
+
+scripts\wo0015\test_cma_watermark.py:37: Failed
+_____ test_low_release_watermark_fails_after_completed_transfer_and_free ______
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-166/test_low_release_watermark_fai0')
+
+    def test_low_release_watermark_fails_after_completed_transfer_and_free(tmp_path):
+        api=Telemetry(plan_at(tmp_path),[40000,39000,39000,16383])
+>       with pytest.raises(run.ExecutionFailure,match='watermark') as failure:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'watermark'
+E         Actual message: 'CmaFree did not return to its starting value (40000 -> 16383 KiB)'
+
+scripts\wo0015\test_cma_watermark.py:44: AssertionError
+______ test_physical_address_must_be_nonzero_integer_without_coercion[0] ______
+
+physical = 0
+
+    @pytest.mark.parametrize('physical',[None,0,False,1.5,'402653184'])
+    def test_physical_address_must_be_nonzero_integer_without_coercion(physical):
+        buffer=SimpleNamespace(physical_address=physical,device_address=physical)
+>       with pytest.raises(pre.PreflightError,match='physical'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE PreflightError
+
+scripts\wo0015\test_cma_watermark.py:52: Failed
+____ test_physical_address_must_be_nonzero_integer_without_coercion[False] ____
+
+physical = False
+
+    @pytest.mark.parametrize('physical',[None,0,False,1.5,'402653184'])
+    def test_physical_address_must_be_nonzero_integer_without_coercion(physical):
+        buffer=SimpleNamespace(physical_address=physical,device_address=physical)
+>       with pytest.raises(pre.PreflightError,match='physical'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE PreflightError
+
+scripts\wo0015\test_cma_watermark.py:52: Failed
+_____ test_physical_address_must_be_nonzero_integer_without_coercion[1.5] _____
+
+physical = 1.5
+
+    @pytest.mark.parametrize('physical',[None,0,False,1.5,'402653184'])
+    def test_physical_address_must_be_nonzero_integer_without_coercion(physical):
+        buffer=SimpleNamespace(physical_address=physical,device_address=physical)
+>       with pytest.raises(pre.PreflightError,match='physical'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE PreflightError
+
+scripts\wo0015\test_cma_watermark.py:52: Failed
+__ test_physical_address_must_be_nonzero_integer_without_coercion[402653184] __
+
+physical = '402653184'
+
+    @pytest.mark.parametrize('physical',[None,0,False,1.5,'402653184'])
+    def test_physical_address_must_be_nonzero_integer_without_coercion(physical):
+        buffer=SimpleNamespace(physical_address=physical,device_address=physical)
+>       with pytest.raises(pre.PreflightError,match='physical'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE PreflightError
+
+scripts\wo0015\test_cma_watermark.py:52: Failed
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_cma_watermark.py::test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses[samples0]
+FAILED scripts/wo0015/test_cma_watermark.py::test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses[samples1]
+FAILED scripts/wo0015/test_cma_watermark.py::test_global_cma_rise_flat_or_nonrestoration_are_telemetry_with_valid_physical_addresses[samples2]
+FAILED scripts/wo0015/test_cma_watermark.py::test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers[samples0-0]
+FAILED scripts/wo0015/test_cma_watermark.py::test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers[samples1-1]
+FAILED scripts/wo0015/test_cma_watermark.py::test_low_watermark_stops_before_any_register_write_and_releases_partial_buffers[samples2-2]
+FAILED scripts/wo0015/test_cma_watermark.py::test_low_release_watermark_fails_after_completed_transfer_and_free
+FAILED scripts/wo0015/test_cma_watermark.py::test_physical_address_must_be_nonzero_integer_without_coercion[0]
+FAILED scripts/wo0015/test_cma_watermark.py::test_physical_address_must_be_nonzero_integer_without_coercion[False]
+FAILED scripts/wo0015/test_cma_watermark.py::test_physical_address_must_be_nonzero_integer_without_coercion[1.5]
+FAILED scripts/wo0015/test_cma_watermark.py::test_physical_address_must_be_nonzero_integer_without_coercion[402653184]
+11 failed, 6 passed in 3.03s

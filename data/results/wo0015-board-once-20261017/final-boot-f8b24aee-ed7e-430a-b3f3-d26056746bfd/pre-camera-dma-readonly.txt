@@ -1,0 +1,5 @@
+﻿BOOT=f8b24aee-ed7e-430a-b3f3-d26056746bfd
+CmaTotal:         131072 kB
+CmaFree:          113940 kB
+CAMERA_GUARD=ABSENT
+ACTIVE_EXECUTORS=

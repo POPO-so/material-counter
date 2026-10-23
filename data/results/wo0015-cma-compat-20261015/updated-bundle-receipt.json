@@ -1,0 +1,17 @@
+{
+  "status": "OFFLINE_PACKAGE_PASS_RUNTIME_ADMISSION_STILL_BLOCKED",
+  "board_accessed": false,
+  "retry3_executed": false,
+  "bundle": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-cma-bundle-20261015",
+  "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-cma-bundle-20261015.zip",
+  "archive_sha256": "4b684418c159f0d0e8d7eb96ba92ecd0355e4fad618c3c535080400ae7a6949d",
+  "manifest_sha256": "f91323b0d8bfc3f0ed831cebc806d01d2caa901dfbcf0a7f6521db183029e974",
+  "packaged_boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "board_once_sha256": "604a267256857f5372f2d659080cc8c1a5e1767e4824631d42c702380e63e7f5",
+  "board_preflight_sha256": "6325f6d475890264fa970906cb6f0cba4c1a7e0d925e8c87c04ce1c325d62932",
+  "source_board_preflight_sha256": "67e4b6c9f0c8e3016d1201b87b86972f295ed04624a5255dc88c811a338f8fc2",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "runtime_admission_approved": false,
+  "limitation": "Current captured boot has neither exact CMA range metadata nor cma= evidence; no hardware execution is authorized."
+}

@@ -1,0 +1,21 @@
+{
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "evaluation": "local replay of captured metadata only",
+  "CmaTotal_kib": 131072,
+  "CmaFree_kib": 73944,
+  "physical_cma_range_known": false,
+  "measured_cma_ranges": null,
+  "system_ram_ranges": [
+    [
+      0,
+      536870912
+    ]
+  ],
+  "cmdline_has_cma_argument": false,
+  "bootargs_has_cma_argument": false,
+  "debugfs_cma_exists": false,
+  "board_accessed_by_replay": false,
+  "decision": "REJECTED_MISSING_CMA_SOURCE",
+  "error": "no precise CMA range and no unambiguous cma= boot evidence",
+  "retry3_runtime_eligible": false
+}

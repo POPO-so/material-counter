@@ -1,0 +1,17 @@
+{
+  "status": "OFFLINE_PACKAGE_PASS_AUTHORIZED_RETRY3",
+  "board_accessed": false,
+  "retry3_executed": false,
+  "bundle": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-two-tier-bundle-20261015",
+  "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-retry3-two-tier-bundle-20261015.zip",
+  "archive_sha256": "d990f2fcbd3d735cb00d01793b2b488acb60555e19ec5a6ffc7a1ef644a36002",
+  "manifest_sha256": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+  "packaged_boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "board_once_sha256": "921ee6aae276b53f68c359decdfadf188e67667514edfecac3e6f84c09bb0422",
+  "board_preflight_sha256": "4c62fd37e5b6fa6c349a58ad7c2dc49b49e0f890b77b07400d304616c7a005d0",
+  "source_board_preflight_sha256": "5372e322aa44ed5ed5ee3aeb8985efdcf4da85e76225e637a2219c7729f4b366",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "runtime_admission_approved": true,
+  "limitation": "Captain authorizes MEMINFO_IOMEM_VERIFIED and one ordered Retry3 sequence; fresh board admission and post-allocation gates remain mandatory."
+}

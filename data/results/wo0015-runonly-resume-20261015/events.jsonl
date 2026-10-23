@@ -1,0 +1,6 @@
+{"status": "AWAITING_NATIVE_HIDDEN_CREDENTIALS", "time_ns": 1792071663320497500}
+{"status": "CONNECT_BEGIN", "time_ns": 1792071670854051800}
+{"status": "STRICT_SSH_AUTHENTICATED", "time_ns": 1792071672732427600, "fingerprint": "SHA256:TB0FfGjfMzgZUv/reJgTpeq/AM68sMCpGC5xm6Pit7o"}
+{"status": "DISPATCH", "time_ns": 1792071672732427600, "name": "initial-readonly"}
+{"status": "COMMAND_EXIT", "time_ns": 1792071675457302800, "name": "initial-readonly", "exit_code": 0, "elapsed_s": 2.389999999999418}
+{"status": "FAIL_STOPPED", "time_ns": 1792071675479664000, "error": "RuntimeError: guard set/bytes differ; no recovery dispatch"}

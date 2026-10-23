@@ -1,0 +1,8 @@
+{
+  "timestamp_local": "2026-10-17T17:44:36.307996+08:00",
+  "command": "ssh BatchMode + sudo -n python3 - (archive exactly 7 old boot guards)",
+  "returncode": 0,
+  "stdout": "{\"active_root_files\": [], \"archive\": \"/var/lib/wo0015-s2mm/archive-822a9c29-20261017\", \"archived_files\": [\"cma-watermark-recovery-consumed.json\", \"dma-single-consumed.json\", \"dma-single-watermark-retry2-consumed.json\", \"overlay-only-consumed.json\", \"overlay-only-pass.json\", \"run-only-init-consumed.json\", \"terminal-failure.json\"], \"boot_id\": \"2cc2ab91-2e3f-450e-b9e7-361ec38e2815\", \"result\": \"ARCHIVE_PASS\"}\n",
+  "stderr": "",
+  "password_prompted_or_supplied": false
+}

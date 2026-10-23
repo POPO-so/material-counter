@@ -1,0 +1,16 @@
+{
+  "boot_id": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "deployed_sha256": {
+    "wo15.bit": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "wo15.hwh": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "board_once.py": "921ee6aae276b53f68c359decdfadf188e67667514edfecac3e6f84c09bb0422",
+    "board_preflight.py": "4c62fd37e5b6fa6c349a58ad7c2dc49b49e0f890b77b07400d304616c7a005d0",
+    "run-manifest.json": "84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312",
+    "SHA256SUMS.json": "0909b8fbce87704c7ec70665f16830303a5c1408f62ed05fc70ae56681fa1fd2"
+  },
+  "guard_sha256": {
+    "overlay-only-pass.json": "ee3d9ba6462962657bbd43807302387af16d4fbec34ee65f909a385886802d96",
+    "terminal-failure.json": "662e03d871f7275ed47bec0c302440a94dbc4e2fa35d499bce49a44d8decdeda",
+    "overlay-only-consumed.json": "c333975de186464bc3db9809c7762d7d7115cfc73f8b17f8e8672e3349efa37f"
+  }
+}

@@ -1,0 +1,2 @@
+Release 3.1 (Carlisle) 2025_09_24 1d2ac96
+Board 2025_09_24 1d2ac96 https://[REDACTED]@github.com/Xilinx/PYNQ.git

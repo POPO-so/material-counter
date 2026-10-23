@@ -1,0 +1,42 @@
+{
+  "short_name": "IMAGE.UB",
+  "attribute": 32,
+  "first_cluster": 290,
+  "nbytes": 7147780,
+  "fat_date_raw": 23352,
+  "fat_time_raw": 36631,
+  "clusters_read": 1746,
+  "sha256": "8e380cb96c2803e1d5d1c46b1f2f8e505b4c31dcf24d68da4669be7502c6bbae",
+  "kind": "LOCAL_IMAGE_CURRENT_FILE_NOT_HISTORICAL_BOOT_PROOF",
+  "first16_hex": "d00dfeed006d110400000038006d0cf8",
+  "selected_strings": [
+    {
+      "offset": 92,
+      "ascii": "U-Boot fitImage for PYNQ arm kernel"
+    },
+    {
+      "offset": 184,
+      "ascii": "Linux Kernel"
+    },
+    {
+      "offset": 25563,
+      "ascii": "Uncompressing Linux..."
+    },
+    {
+      "offset": 26256,
+      "ascii": "linux,phandle"
+    },
+    {
+      "offset": 26319,
+      "ascii": "linux,usable-memory-range"
+    },
+    {
+      "offset": 26365,
+      "ascii": "linux,usable-memory"
+    },
+    {
+      "offset": 7146616,
+      "ascii": "Boot Linux kernel with FDT blob"
+    }
+  ]
+}

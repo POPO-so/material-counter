@@ -1,0 +1,568 @@
+{
+  "classification": "STATIC_OFFLINE_ROOTFS_AUDIT_NOT_RUNTIME_BOARD_EVIDENCE",
+  "scope": {
+    "mount": false,
+    "journal_replay": false,
+    "network_board_access": false,
+    "image_code_executed": false,
+    "restricted_raw_read": false,
+    "REVISION_contents_read": false,
+    "ext4_interpretation": "on-disk static view only"
+  },
+  "image_identity": {
+    "classification": "VERIFIED_LOCAL_IMAGE_IDENTITY",
+    "path": "C:\\Users\\POP\\Desktop\\FPGA赛\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+    "size_bytes": 8337309696,
+    "expected_size_bytes": 8337309696,
+    "sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+    "expected_sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+    "size_matches": true,
+    "sha256_matches": true,
+    "source_metadata_stable_during_read": true,
+    "read_mode": "regular host file opened rb; opaque sequential SHA-256 only; no mount; no extraction; no image code execution",
+    "content_scope": "The digest covers the complete image byte stream. No credential-named image member was parsed, displayed, or extracted."
+  },
+  "ext4": {
+    "uuid": "63b8b04d-af08-419a-a9dc-16f374e283dc",
+    "partition_index": 2,
+    "partition_start_lba": 268288,
+    "partition_offset_bytes": 137363456,
+    "partition_size_bytes": 8199946240,
+    "block_size_bytes": 4096,
+    "blocks_count": 2001940,
+    "inodes_count": 1001920,
+    "inode_size_bytes": 256,
+    "group_descriptor_size_bytes": 64,
+    "group_count": 62,
+    "feature_incompat_hex": "0x2c2",
+    "superblock_state_raw": 1,
+    "superblock_state_clean_bit": true,
+    "superblock_state_error_bit": false,
+    "needs_recovery_feature_bit": false,
+    "journal_replayed": false,
+    "filesystem_view": "on-disk static metadata/data view; no journal replay and no mount"
+  },
+  "pynq_distribution": {
+    "metadata": {
+      "Name": "pynq",
+      "Version": "3.1.1",
+      "Summary": "(PY)thon productivity for zy(NQ)",
+      "Home-page": "https://github.com/Xilinx/PYNQ"
+    },
+    "version_source": "image-local dist-info/METADATA",
+    "wheel_record_audit": {
+      "scope": "all hashed .py rows under pynq/ in the image-local RECORD",
+      "verified_rows": 173,
+      "mismatches": [],
+      "missing_extracted_rows": [],
+      "result": "PASS",
+      "interpretation": "Extracted package .py bytes match this image's local RECORD. This does not authenticate the upstream wheel or exclude downstream changes already captured in METADATA/RECORD."
+    },
+    "source_directory": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-offline-rootfs-and-fsbl-audit-20261016\\rootfs\\extracted\\pynq",
+    "source_module_note": "Installed module is pynq.pl_server.xrt_device; no pynq/pl_server/xrt.py file was present in extracted Python sources."
+  },
+  "extracted_artifacts": {
+    "boot_py": {
+      "image_path": "/BOOT.PY",
+      "extracted_path": "extracted/boot/BOOT.PY",
+      "size_bytes": 991,
+      "sha256": "b2653ef809c3271231c78772342c2be728d39686a877d3c6fe8cdabfd4ac1d42",
+      "kind": "boot_script_from_prior_read_only_extraction"
+    },
+    "overlay_py": {
+      "image_path": "/home/xilinx/pynq/overlay.py",
+      "extracted_path": "extracted/pynq/overlay.py",
+      "size_bytes": 35298,
+      "sha256": "ee8145ff89a3ec88e28bc44368a8708ac2d2a3d6cd2e55843a33dbc546f69626",
+      "kind": "pynq_python_source"
+    },
+    "bitstream_py": {
+      "image_path": "/home/xilinx/pynq/bitstream.py",
+      "extracted_path": "extracted/pynq/bitstream.py",
+      "size_bytes": 7430,
+      "sha256": "b7e37302fefca9f2d09ebf487aa14abac8e603e12c544e8888d9ebaca9bf2914",
+      "kind": "pynq_python_source"
+    },
+    "buffer_py": {
+      "image_path": "/home/xilinx/pynq/buffer.py",
+      "extracted_path": "extracted/pynq/buffer.py",
+      "size_bytes": 4677,
+      "sha256": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463",
+      "kind": "pynq_python_source"
+    },
+    "registers_py": {
+      "image_path": "/home/xilinx/pynq/registers.py",
+      "extracted_path": "extracted/pynq/registers.py",
+      "size_bytes": 14959,
+      "sha256": "4442cad2eb89b0a778788ff16cd417d3cf144532bf22d98fdea27f616cf5b4e6",
+      "kind": "pynq_python_source"
+    },
+    "mmio_py": {
+      "image_path": "/home/xilinx/pynq/mmio.py",
+      "extracted_path": "extracted/pynq/mmio.py",
+      "size_bytes": 6134,
+      "sha256": "c9827fa71513f5e9d58022801143ca59195b55a23e73ee98bce0b98458f3321b",
+      "kind": "pynq_python_source"
+    },
+    "device_py": {
+      "image_path": "/home/xilinx/pynq/pl_server/device.py",
+      "extracted_path": "extracted/pynq/pl_server/device.py",
+      "size_bytes": 15270,
+      "sha256": "2f12c521a9250f594219888417f7b1b6c8a1fceb16afd6890187ad91f4b36426",
+      "kind": "pynq_python_source"
+    },
+    "embedded_device_py": {
+      "image_path": "/home/xilinx/pynq/pl_server/embedded_device.py",
+      "extracted_path": "extracted/pynq/pl_server/embedded_device.py",
+      "size_bytes": 24470,
+      "sha256": "124511991cb3c0d15842344efb8621a5dd15fc0e5d8eb70d29cbfa81f398a12f",
+      "kind": "pynq_python_source"
+    },
+    "xrt_device_py": {
+      "image_path": "/home/xilinx/pynq/pl_server/xrt_device.py",
+      "extracted_path": "extracted/pynq/pl_server/xrt_device.py",
+      "size_bytes": 13833,
+      "sha256": "fb4bdbe4cac759c66feeb0248e13c83592ddfad32b36bc83764484411812556a",
+      "kind": "pynq_python_source"
+    },
+    "base_bit": {
+      "image_path": "/home/xilinx/pynq/overlays/base/base.bit",
+      "extracted_path": "extracted/pynq/overlays/base/base.bit",
+      "size_bytes": 4045672,
+      "sha256": "3239e9cc37ee4993c25f02ae6c97da0b3372f0e722e267d10073e20adc5d6717",
+      "kind": "base_overlay_artifact"
+    },
+    "base_hwh": {
+      "image_path": "/home/xilinx/pynq/overlays/base/base.hwh",
+      "extracted_path": "extracted/pynq/overlays/base/base.hwh",
+      "size_bytes": 4529854,
+      "sha256": "222898ef2c0ccc4a0c47608e99d8dc7c9c6cdfed5130964884ff35005827ef3a",
+      "kind": "base_overlay_artifact"
+    },
+    "base_tcl": {
+      "image_path": "/home/xilinx/pynq/overlays/base/base.tcl",
+      "extracted_path": "extracted/pynq/overlays/base/base.tcl",
+      "size_bytes": 236577,
+      "sha256": "ab0a99865ce597b68e72f4db71b8d5d3d60929613183fae27ef44db6a985cfe3",
+      "kind": "base_overlay_source"
+    },
+    "pyxrt_extension": {
+      "image_path": "/usr/lib/python3.10/pyxrt.so",
+      "extracted_path": "extracted/system/usr/lib/python3.10/pyxrt.so",
+      "size_bytes": 8915648,
+      "sha256": "78cc6cf1617db6e35fd6c23989ab2a95c982b47917cd3a88f5881eaa43384748",
+      "kind": "pyxrt_python_extension_binary"
+    },
+    "libcma_header": {
+      "image_path": "/usr/include/libxlnk_cma.h",
+      "extracted_path": "extracted/system/usr/include/libxlnk_cma.h",
+      "size_bytes": 1767,
+      "sha256": "c3c6a79fe75d509be6a18e3c15c5940bfa7e90a274fce4271c704fe39b3c7df9",
+      "kind": "cma_header"
+    },
+    "libcma_binary": {
+      "image_path": "/usr/lib/libcma.so",
+      "extracted_path": "extracted/system/usr/lib/libcma.so",
+      "size_bytes": 57048,
+      "sha256": "126301f9575d119f3b12e41bc2ce26df79a0fdae210169da3bf4b6548dd1fdd3",
+      "kind": "cma_shared_library"
+    },
+    "xrt_version_header": {
+      "image_path": "/usr/include/xrt/version.h",
+      "extracted_path": "extracted/system/usr/include/xrt/version.h",
+      "size_bytes": 2359,
+      "sha256": "83a73b17321a5de270ea9cfc7629c73ad986ffce71a3fd0401a4067fd567ceb0",
+      "kind": "xrt_header"
+    },
+    "xrt_core_binary": {
+      "image_path": "/usr/lib/libxrt_core.so.2.17.0",
+      "extracted_path": "extracted/system/usr/lib/libxrt_core.so.2.17.0",
+      "size_bytes": 11015368,
+      "sha256": "1a94490c1bb21415224d18bc75441347844669c6a3822ddc48934d09a34b9653",
+      "kind": "xrt_shared_library"
+    },
+    "xrt_coreutil_binary": {
+      "image_path": "/usr/lib/libxrt_coreutil.so.2.17.0",
+      "extracted_path": "extracted/system/usr/lib/libxrt_coreutil.so.2.17.0",
+      "size_bytes": 29974056,
+      "sha256": "6fc828e1b8183e72ad3fb8b5eb7ced03c7726aa134547ccac09d1e9664bf3ed7",
+      "kind": "xrt_shared_library"
+    },
+    "xrt_cpp_binary": {
+      "image_path": "/usr/lib/libxrt++.so.2.17.0",
+      "extracted_path": "extracted/system/usr/lib/libxrt++.so.2.17.0",
+      "size_bytes": 2339884,
+      "sha256": "93a94a74f797bd9c5ca490dccff8542bfd52f7181231b57b46f6780d03a4059e",
+      "kind": "xrt_shared_library"
+    },
+    "kernel_config": {
+      "image_path": "/usr/src/kernel/.config",
+      "extracted_path": "extracted/system/kernel/.config",
+      "size_bytes": 188415,
+      "sha256": "0426bab1b08c3fb6fd20ded309c176fea3ae62bc8bd3c13e4d3c78fc31413c02",
+      "kind": "kernel_build_config"
+    },
+    "kernel_modules_builtin": {
+      "image_path": "/usr/lib/modules/6.6.10-xilinx-v2024.1-g3c0eca68c652/modules.builtin",
+      "extracted_path": "extracted/system/kernel/modules.builtin",
+      "size_bytes": 12373,
+      "sha256": "6bebd670c905eca96c2e9410d6d6a2b1f845cd1324786d2891d6ce99d0a1f75f",
+      "kind": "kernel_builtin_module_index"
+    },
+    "kernel_fpga_makefile": {
+      "image_path": "/usr/src/kernel/drivers/fpga/Makefile",
+      "extracted_path": "extracted/system/kernel/drivers/fpga/Makefile",
+      "size_bytes": 2390,
+      "sha256": "51ab66f8a25f43bf4999d5a9bd63089559fd6c3e9233a19494d3221125a4005e",
+      "kind": "kernel_fpga_makefile"
+    },
+    "kernel_fpga_kconfig": {
+      "image_path": "/usr/src/kernel/drivers/fpga/Kconfig",
+      "extracted_path": "extracted/system/kernel/drivers/fpga/Kconfig",
+      "size_bytes": 10151,
+      "sha256": "6254fb5ee109c0581aefda317626781ac00e45b4cdce7efb6e8c2b7d34723eec",
+      "kind": "kernel_fpga_kconfig"
+    }
+  },
+  "base_overlay": {
+    "boot_py_evidence": {
+      "claim": "BOOT.PY imports BaseOverlay and constructs BaseOverlay('base.bit'); runtime execution is not proven by static contents",
+      "image_path": "/BOOT.PY",
+      "extracted_path": "extracted/boot/BOOT.PY",
+      "sha256": "b2653ef809c3271231c78772342c2be728d39686a877d3c6fe8cdabfd4ac1d42",
+      "line_numbers": [
+        27,
+        29
+      ]
+    },
+    "bit_size_bytes": 4045672,
+    "bit_sha256": "3239e9cc37ee4993c25f02ae6c97da0b3372f0e722e267d10073e20adc5d6717",
+    "hwh_size_bytes": 4529854,
+    "hwh_sha256": "222898ef2c0ccc4a0c47608e99d8dc7c9c6cdfed5130964884ff35005827ef3a",
+    "ps_hp_ports": {
+      "HP0": {
+        "hwh_data_width_bits": "64",
+        "hwh_parameter_occurrences": 1,
+        "tcl_data_width_values": [
+          "64"
+        ],
+        "tcl_enable_values": [
+          "1"
+        ],
+        "hwh_line_numbers": [
+          54115
+        ],
+        "tcl_width_line_numbers": [
+          3986
+        ],
+        "tcl_enable_line_numbers": [
+          4118
+        ]
+      },
+      "HP1": {
+        "hwh_data_width_bits": "64",
+        "hwh_parameter_occurrences": 1,
+        "tcl_data_width_values": [],
+        "tcl_enable_values": [
+          "0"
+        ],
+        "hwh_line_numbers": [
+          54118
+        ],
+        "tcl_width_line_numbers": [],
+        "tcl_enable_line_numbers": [
+          4119
+        ]
+      },
+      "HP2": {
+        "hwh_data_width_bits": "64",
+        "hwh_parameter_occurrences": 1,
+        "tcl_data_width_values": [
+          "64"
+        ],
+        "tcl_enable_values": [
+          "1"
+        ],
+        "hwh_line_numbers": [
+          54121
+        ],
+        "tcl_width_line_numbers": [
+          3988
+        ],
+        "tcl_enable_line_numbers": [
+          4120
+        ]
+      },
+      "HP3": {
+        "hwh_data_width_bits": "64",
+        "hwh_parameter_occurrences": 1,
+        "tcl_data_width_values": [],
+        "tcl_enable_values": [
+          "0"
+        ],
+        "hwh_line_numbers": [
+          54124
+        ],
+        "tcl_width_line_numbers": [],
+        "tcl_enable_line_numbers": [
+          4121
+        ]
+      }
+    },
+    "interpretation": "base.hwh reports 64-bit HP0-HP3 data-width parameters; base.tcl marks HP0 and HP2 enabled and HP1/HP3 disabled. HP1's 64-bit parameter is therefore metadata/config width, not proof HP1 is enabled or was used by WO-0015."
+  },
+  "static_call_paths": {
+    "boot_overlay": [
+      {
+        "path": "extracted/boot/BOOT.PY",
+        "lines": [
+          27,
+          29
+        ],
+        "finding": "imports BaseOverlay and constructs it with base.bit"
+      },
+      {
+        "path": "extracted/pynq/overlays/base/base.py",
+        "lines": [
+          56,
+          57
+        ],
+        "finding": "BaseOverlay forwards arguments to Overlay"
+      },
+      {
+        "path": "extracted/pynq/overlay.py",
+        "lines": [
+          289,
+          318,
+          353,
+          354,
+          402,
+          432
+        ],
+        "finding": "Overlay default download=True; full download sets clocks then calls Bitstream/Device download"
+      },
+      {
+        "path": "extracted/pynq/bitstream.py",
+        "lines": [
+          99,
+          118,
+          151,
+          168
+        ],
+        "finding": "resolves the named bitstream and delegates download to its device"
+      },
+      {
+        "path": "extracted/pynq/pl_server/embedded_device.py",
+        "lines": [
+          538,
+          539,
+          665,
+          690
+        ],
+        "finding": "EmbeddedDevice writes fpga_manager flags/firmware then calls AXI-width setup and XRT download/post-download"
+      }
+    ],
+    "ps_axi_width_and_afi": [
+      {
+        "path": "extracted/pynq/pl_server/embedded_device.py",
+        "lines": [
+          604,
+          637
+        ],
+        "finding": "set_axi_port_width only runs its register mapping when parser.family_ps == zynq_ultra_ps_e; it does not implement Zynq-7000 PS7 AFI settings"
+      },
+      {
+        "path": "extracted/pynq/registers.py",
+        "lines": [
+          94,
+          128,
+          166
+        ],
+        "finding": "Register maps a physical address through MMIO and supports read-modify-write bit fields"
+      },
+      {
+        "path": "extracted/pynq/mmio.py",
+        "lines": [
+          42,
+          85
+        ],
+        "finding": "MMIO maps through Device.mmap for MEMORY_MAPPED devices"
+      }
+    ],
+    "reset_boundary": [
+      {
+        "path": "extracted/pynq/pl_server/device.py",
+        "lines": [
+          147,
+          158,
+          383,
+          423
+        ],
+        "finding": "Device.reset resets software metadata dictionaries; shutdown only accesses configured AXI shutdown-manager IPs; neither establishes absence of kernel/FPGA-manager reset side effects"
+      },
+      {
+        "path": "extracted/pynq/pl_server/embedded_device.py",
+        "lines": [
+          682,
+          690
+        ],
+        "finding": "writes sysfs fpga_manager firmware node, so kernel driver behavior remains in the load chain"
+      }
+    ],
+    "buffer_xrt": [
+      {
+        "path": "extracted/pynq/buffer.py",
+        "lines": [
+          85,
+          128,
+          138,
+          158
+        ],
+        "finding": "PynqBuffer.cacheable is !coherent; sync_to_device/from_device call flush/invalidate; allocate delegates to active Device"
+      },
+      {
+        "path": "extracted/pynq/pl_server/xrt_device.py",
+        "lines": [
+          59,
+          88,
+          322,
+          346
+        ],
+        "finding": "_xrt_allocate defaults cacheable=0 and sets coherent=False; allocate_bo then uses pyxrt normal flags unless cacheable is truthy; flush/invalidate call pyxrt BO sync to/from device"
+      },
+      {
+        "path": "extracted/pynq/pl_server/xrt_device.py",
+        "lines": [
+          19,
+          23,
+          251
+        ],
+        "finding": "ON_TARGET imports pyxrt; its Python extension is /usr/lib/python3.10/pyxrt.so in this image"
+      }
+    ]
+  },
+  "semantic_cache_note": "For the inspected XRT PynqBuffer path, PynqBuffer.cacheable=True is a derived property from coherent=False; the allocation argument cacheable defaults to 0, selecting pyxrt.bo.flags.normal. These are distinct meanings. sync_to_device/from_device route to XRT bo.sync TO_DEVICE/FROM_DEVICE. libcma is installed, but no libcma call appears in this inspected Python allocation/sync path; this is not a claim about all binaries or other code paths.",
+  "native_source_availability": {
+    "pynq_package_c_cpp_files_matching_xrt_or_cma": [],
+    "usr_src_top_level": [
+      "googletest",
+      "gtest",
+      "kernel"
+    ],
+    "kernel_fpga_driver_source_files": [],
+    "libcma_implementation_source_found": false,
+    "pyxrt_extension_source_found": false,
+    "available_artifacts": [
+      "libxlnk_cma.h API declarations",
+      "libcma.so opaque binary",
+      "pyxrt.so opaque extension binary",
+      "XRT 2.17.0 headers and runtime binaries",
+      "partial kernel source/build metadata"
+    ],
+    "bounded_inventory_note": "Absence means not present in inspected PYNQ package, /usr/src top-level source inventory, and kernel drivers/fpga path; binaries were not reverse engineered."
+  },
+  "register_literal_scan": {
+    "scope": "178 extracted PYNQ .py files",
+    "searched_literals": [
+      "f8009000",
+      "f8009014",
+      "f8000240",
+      "FPGA_RST_CTRL",
+      "AFI1_RDCHAN_CTRL",
+      "AFI1_WRCHAN_CTRL"
+    ],
+    "hits": {
+      "f8009000": [],
+      "f8009014": [],
+      "f8000240": [],
+      "FPGA_RST_CTRL": [],
+      "AFI1_RDCHAN_CTRL": [],
+      "AFI1_WRCHAN_CTRL": []
+    },
+    "interpretation": "No direct matching PS7 AFI / FPGA_RST_CTRL address or register-name literal was found in extracted PYNQ Python sources. This does not inspect opaque ELF/kernel execution paths."
+  },
+  "kernel_local_evidence": {
+    "release_directory": "6.6.10-xilinx-v2024.1-g3c0eca68c652",
+    "config_evidence": [
+      {
+        "line": 351,
+        "text": "CONFIG_ARCH_ZYNQ=y"
+      },
+      {
+        "line": 797,
+        "text": "CONFIG_CMA=y"
+      },
+      {
+        "line": 6274,
+        "text": "CONFIG_FPGA=y"
+      },
+      {
+        "line": 6279,
+        "text": "CONFIG_FPGA_MGR_ZYNQ_FPGA=y"
+      },
+      {
+        "line": 6283,
+        "text": "CONFIG_FPGA_MGR_ZYNQ_AFI_FPGA=y"
+      },
+      {
+        "line": 6284,
+        "text": "CONFIG_FPGA_BRIDGE=y"
+      },
+      {
+        "line": 6287,
+        "text": "CONFIG_FPGA_REGION=y"
+      },
+      {
+        "line": 6288,
+        "text": "CONFIG_OF_FPGA_REGION=y"
+      },
+      {
+        "line": 6882,
+        "text": "CONFIG_CMA_SIZE_MBYTES=128"
+      }
+    ],
+    "builtin_fpga_zynq_lines": [
+      "kernel/drivers/gpio/gpio-zynq.ko",
+      "kernel/drivers/gpu/drm/xlnx/xlnx_drm.ko",
+      "kernel/drivers/spi/spi-zynq-qspi.ko",
+      "kernel/drivers/fpga/fpga-mgr.ko",
+      "kernel/drivers/fpga/zynq-fpga.ko",
+      "kernel/drivers/fpga/zynq-afi.ko",
+      "kernel/drivers/fpga/fpga-bridge.ko",
+      "kernel/drivers/fpga/xilinx-pr-decoupler.ko",
+      "kernel/drivers/fpga/fpga-region.ko",
+      "kernel/drivers/fpga/of-fpga-region.ko"
+    ],
+    "fpga_source_directory_entries": [
+      "Kconfig",
+      "Makefile",
+      "tests"
+    ],
+    "fpga_driver_c_sources_present": [],
+    "arch_arm_boot_dts_source_file_count": 0,
+    "ext4_boot_entries_except_excluded_name": [
+      "boot.py"
+    ],
+    "conclusion": "Local build config and modules.builtin indicate FPGA manager, Zynq FPGA manager, Zynq AFI FPGA, FPGA bridge/region and CMA support are built in (CMA size 128 MiB). The image's kernel source tree lacks the FPGA driver's C implementations and has no .dts/.dtsi/.dtb under arch/arm/boot/dts; there is no local source/DTB evidence to bind fpga_manager writes to a specific PS7 reset/AFI side effect."
+  },
+  "unknowns_and_risks": [
+    "The image is a clean-flag, no-needs_recovery static ext4 view; no journal replay or mount occurred, so only bytes currently on disk are asserted.",
+    "No board runtime was observed. BOOT.PY content does not prove it ran on any boot, and no PS7 AFI/reset register value was read on hardware.",
+    "The PYNQ Python sources contain no direct searched PS7 AFI / FPGA_RST_CTRL literals, but fpga_manager sysfs programming enters the kernel. The actual Zynq FPGA-manager driver C source and device tree are absent from this image view; kernel-triggered reset/AFI effects stay UNKNOWN.",
+    "The local PYNQ metadata says version 3.1.1 and extracted .py files match its local RECORD. This validates internal image consistency only, not the official upstream tag or whether vendor/downstream changes were included before RECORD creation.",
+    "libcma.so and pyxrt.so are binary extensions. They were hashed/extracted as opaque files and not loaded or executed; libcma implementation behavior is not established here.",
+    "This parser is deliberately scoped to this MBR/ext4 image: supports only known incompat bits, refuses unknown bits, does not replay journals, and caps extent depth at 5 / file size at 512 MiB. Unsupported metadata fails closed."
+  ],
+  "tests": {
+    "command": "C:\\fpga\\material-counter\\.venv\\Scripts\\python.exe -B -m pytest -p no:cacheprovider -q test_ext4_ro.py",
+    "result": "4 passed",
+    "log": "tests-final.log",
+    "edge_case": "ee_len=0x8000 is initialized 32768 blocks; only values >0x8000 mark unwritten extents",
+    "red_green_logs": [
+      "tests-red.log",
+      "tests-ee_len-red.log",
+      "tests-green.log"
+    ]
+  },
+  "extraction_manifest": "source-manifest.json"
+}

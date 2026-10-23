@@ -1,0 +1,22 @@
+......................F...............                                   [100%]
+================================== FAILURES ===================================
+_ test_first_pre_length_idle_zero_is_allowed_but_later_nonidle_stops_without_retry _
+
+tmp_path = WindowsPath('C:/Users/POP/AppData/Local/Temp/pytest-of-POP/pytest-140/test_first_pre_length_idle_zer0')
+
+    def test_first_pre_length_idle_zero_is_allowed_but_later_nonidle_stops_without_retry(tmp_path):
+        plan, _ = _plan(tmp_path, 3)
+        api = runner.MockBoardAPI(plan, initial_idle=False, force_nonidle_frame=2)
+    
+        with pytest.raises(runner.ExecutionFailure, match="frame 2.*not Idle") as caught:
+            runner.run_frames(plan, api, timeout_s=1.0)
+    
+>       assert caught.value.transfer_started is False
+E       AssertionError: assert True is False
+E        +  where True = ExecutionFailure('frame 2 pre-length DMA state is not Idle').transfer_started
+E        +    where ExecutionFailure('frame 2 pre-length DMA state is not Idle') = <ExceptionInfo ExecutionFailure('frame 2 pre-length DMA state is not Idle') tblen=2>.value
+
+scripts\wo0015\test_board_once.py:81: AssertionError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_board_once.py::test_first_pre_length_idle_zero_is_allowed_but_later_nonidle_stops_without_retry
+1 failed, 37 passed in 5.14s

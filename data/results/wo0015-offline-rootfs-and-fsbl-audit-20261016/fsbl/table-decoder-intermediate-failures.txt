@@ -1,0 +1,46 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter
+collected 12 items
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\test_fsbl_audit.py . [  8%]
+....F.....F                                                              [100%]
+
+================================== FAILURES ===================================
+________ FsblTableDecodeTests.test_parses_complete_partition_dtb_tree _________
+
+self = <test_fsbl_audit.FsblTableDecodeTests testMethod=test_parses_complete_partition_dtb_tree>
+
+    def test_parses_complete_partition_dtb_tree(self):
+        root_path = MODULE_PATH.resolve().parents[4]
+        raw = (root_path / 'data/results/wo0015-boot-provenance-20261016/extracted/partition-02.raw.bin').read_bytes()
+        tree, reservations, metadata = audit.parse_fdt(raw)
+        nodes, properties = audit._node_counts(tree)
+>       self.assertEqual(metadata['total_size'], len(raw))
+E       AssertionError: 19738 != 19740
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\test_fsbl_audit.py:102: AssertionError
+__ FsblTableDecodeTests.test_three_post_config_candidates_are_byte_identical __
+
+self = <test_fsbl_audit.FsblTableDecodeTests testMethod=test_three_post_config_candidates_are_byte_identical>
+
+    def test_three_post_config_candidates_are_byte_identical(self):
+        root = MODULE_PATH.resolve().parents[4]
+        image = (root / 'data/results/wo0015-boot-provenance-20261016/extracted/partition-00.raw.bin').read_bytes()
+        post_group = audit.decode_catalog(image)['groups'][0]['tables']
+        self.assertEqual(len(post_group), 3)
+>       self.assertEqual(post_group[0]['operations'], post_group[1]['operations'])
+E       AssertionError: Lists differ: [{'command_offset': 67448, 'command_word': 34, 'opcode': 2, 'ar[598 chars]331}] != [{'command_offset': 67508, 'command_word': 34, 'opcode': 2, 'ar[598 chars]331}]
+E       
+E       First differing element 0:
+E       {'command_offset': 67448, 'command_word': 34, 'opcode': 2, 'ar[87 chars]7101}
+E       {'command_offset': 67508, 'command_word': 34, 'opcode': 2, 'ar[87 chars]7101}
+E       
+E       Diff is 1138 characters long. Set self.maxDiff to None to see it.
+
+data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\test_fsbl_audit.py:34: AssertionError
+- generated xml file: C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\fsbl\table-decoder-tests.xml -
+=========================== short test summary info ===========================
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/test_fsbl_audit.py::FsblTableDecodeTests::test_parses_complete_partition_dtb_tree
+FAILED data/results/wo0015-offline-rootfs-and-fsbl-audit-20261016/fsbl/test_fsbl_audit.py::FsblTableDecodeTests::test_three_post_config_candidates_are_byte_identical
+======================== 2 failed, 10 passed in 0.22s =========================

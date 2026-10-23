@@ -1,0 +1,13 @@
+{
+  "classification": "VERIFIED_LOCAL_IMAGE_IDENTITY",
+  "path": "C:\\Users\\POP\\Desktop\\FPGA\u8d5b\\pynq_z2_v3.1.1\\pynq_z2_v3.1.1.img",
+  "size_bytes": 8337309696,
+  "expected_size_bytes": 8337309696,
+  "sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+  "expected_sha256": "4a6ac1cdbb413d768fcb059b7182e1f53aa7f728b898b7f5061cbb0b7cc93aab",
+  "size_matches": true,
+  "sha256_matches": true,
+  "source_metadata_stable_during_read": true,
+  "read_mode": "regular host file opened rb; opaque sequential SHA-256 only; no mount; no extraction; no image code execution",
+  "content_scope": "The digest covers the complete image byte stream. No credential-named image member was parsed, displayed, or extracted."
+}

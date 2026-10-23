@@ -1,0 +1,23 @@
+{
+  "board_preflight.py": {
+    "modified_existing_functions": [],
+    "added_functions": [
+      "CmaAdmission.as_evidence",
+      "_checked_cma_intervals",
+      "_reject_iomem_conflicts",
+      "_system_ram_intervals",
+      "read_cma_admission",
+      "read_debugfs_cma_ranges",
+      "resolve_cma_sources",
+      "validate_dma_buffer_pair"
+    ]
+  },
+  "board_once.py": {
+    "modified_existing_functions": [
+      "run_frames",
+      "PynqBoardAPI.device_address",
+      "_runtime_preflight"
+    ],
+    "added_functions": []
+  }
+}

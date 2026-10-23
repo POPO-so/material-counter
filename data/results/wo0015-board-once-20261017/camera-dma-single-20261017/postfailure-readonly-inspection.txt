@@ -1,0 +1,38 @@
+Read-only post-failure state inspection
+SSH exit code: 0
+Output:
+boot_id=2cc2ab91-2e3f-450e-b9e7-361ec38e2815
+--- stage markers ---
+PRESENT /var/lib/wo0015-s2mm/camera-dma-single-consumed.json
+{
+  "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+  "consumed": true,
+  "frame_id": 3,
+  "manifest_sha256": "bdb30097ba54b93acd518027632fd6d7d96111f0f5f6d24ea6620880b153ae66",
+  "schema": 1,
+  "stage": "camera-dma-single",
+  "work_order": "WO-0015"
+}
+ABSENT /var/lib/wo0015-s2mm/camera-dma-single-pass.json
+PRESENT /var/lib/wo0015-s2mm/terminal-failure.json
+{"bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420", "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815", "build_id": "wo0015-hw-50mhz-20261015", "manifest_sha256": "bdb30097ba54b93acd518027632fd6d7d96111f0f5f6d24ea6620880b153ae66", "reason": "TypeError: Object of type bytes is not JSON serializable", "schema": 1, "stage": "camera-dma-single", "status": "TERMINAL_FAILURE", "work_order": "WO-0015"}
+--- result/output files ---
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-dma-diagnostics/step2_frame00_id0000000003_diagnostics.json size=9200 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-dma-diagnostics/step2_frame00_id0000000003_expected_golden.bin size=76800 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-dma-diagnostics/step2_frame00_id0000000003_rx_raw.bin size=76800 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-dma-diagnostics/step2_frame00_id0000000003_tx_raw.bin size=230432 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-gray-320x240.pgm size=76815 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-run.json size=3390 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-source-gray.pgm size=256015 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.binary.bin size=76800 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.rgb.bin size=230432 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-4.binary.bin size=76800 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-4.rgb.bin size=230432 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-5.binary.bin size=76800 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-5.rgb.bin size=230432 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/pl-binary8-output.bin size=76800 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/pl-binary8-output.pgm size=76815 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/wo0015-camera-manifest.json size=2913 bytes
+--- relevant hashes ---
+eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350  /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/pl-binary8-output.bin
+002975c7fce9fafb292a9c2b8d0c37dbb49c879ac32dfc12e103581f6048e53f  /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/pl-binary8-output.pgm

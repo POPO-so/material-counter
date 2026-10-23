@@ -1,0 +1,79 @@
+{
+  "boot_header_checksum_valid": true,
+  "key_source_hex": "0x00000000",
+  "header_version_hex": "0x01010000",
+  "fsbl_source_offset": 5888,
+  "fsbl_image_nbytes": 98320,
+  "fsbl_total_nbytes": 98320,
+  "fsbl_load_address": "0x00000000",
+  "fsbl_entry_address": "0x00000000",
+  "image_header_table_offset": 2240,
+  "partition_header_table_offset": 3200,
+  "image_headers": [
+    {
+      "header_offset": 2304,
+      "first_partition_header": 3200,
+      "partition_count": 1,
+      "image_name": "zynq_fsbl.elf"
+    },
+    {
+      "header_offset": 2368,
+      "first_partition_header": 3264,
+      "partition_count": 1,
+      "image_name": "u-boot.elf"
+    },
+    {
+      "header_offset": 2432,
+      "first_partition_header": 3328,
+      "partition_count": 1,
+      "image_name": "system.dtb"
+    }
+  ],
+  "partitions": [
+    {
+      "index": 0,
+      "header_offset": 3200,
+      "image_name": "zynq_fsbl.elf",
+      "data_offset": 5888,
+      "data_nbytes": 98320,
+      "unpacked_nbytes": 98320,
+      "total_nbytes": 98320,
+      "load_address": "0x00000000",
+      "execution_address": "0x00000000",
+      "attributes_hex": "0x00000010",
+      "checksum_valid": true,
+      "sha256_total_partition": "16081243af5ed1d5b908b0c038c13c3e205c131b31d538690786a530dba82161"
+    },
+    {
+      "index": 1,
+      "header_offset": 3264,
+      "image_name": "u-boot.elf",
+      "data_offset": 104256,
+      "data_nbytes": 1041824,
+      "unpacked_nbytes": 1041824,
+      "total_nbytes": 1041824,
+      "load_address": "0x04000000",
+      "execution_address": "0x04000000",
+      "attributes_hex": "0x00000010",
+      "checksum_valid": true,
+      "sha256_total_partition": "0821d755f1941d9603065b1be0f687da69d4d791e50d525bdb20a8cc8fc3fed1"
+    },
+    {
+      "index": 2,
+      "header_offset": 3328,
+      "image_name": "system.dtb",
+      "data_offset": 1146112,
+      "data_nbytes": 19740,
+      "unpacked_nbytes": 19740,
+      "total_nbytes": 19740,
+      "load_address": "0x00100000",
+      "execution_address": "0x00000000",
+      "attributes_hex": "0x00000012",
+      "checksum_valid": true,
+      "sha256_total_partition": "3f16c67252ed274eaa2bb7ab6500a820a2fe88fd0352e9bba1ab919defac1798"
+    }
+  ],
+  "bootrom_register_initialization_pairs": [],
+  "authenticity": "Checksums detect structural corruption only; no signature or source-build identity verification",
+  "execution_evidence": "NONE: static data only"
+}

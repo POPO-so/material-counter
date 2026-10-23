@@ -1,0 +1,11 @@
+pytest final: 4 passed in 0.08s
+audit JSON: 
+C:\Users\POP\.codex\worktrees\wo0015-design-20261015\material-counter\data\results\wo0015-offline-rootfs-and-fsbl-audit-20261016\pynq-afi-and-base-hwh-audit.json
+result-top JSON exists: 
+True
+repo-root JSON exists: 
+False
+primary accidental test exists: 
+False
+primary accidental rootfs dir exists: 
+False

@@ -1,0 +1,45 @@
+Command: sudo -n env XILINX_XRT=/usr v4l2-ctl -d /dev/video0 --list-formats-ext
+SSH exit code: 0
+Output:
+ioctl: VIDIOC_ENUM_FMT
+	Type: Video Capture
+
+	[0]: 'MJPG' (Motion-JPEG, compressed)
+		Size: Discrete 640x400
+			Interval: Discrete 0.005s (210.000 fps)
+			Interval: Discrete 0.008s (120.000 fps)
+			Interval: Discrete 0.017s (60.000 fps)
+		Size: Discrete 160x120
+			Interval: Discrete 0.005s (210.000 fps)
+			Interval: Discrete 0.008s (120.000 fps)
+			Interval: Discrete 0.017s (60.000 fps)
+		Size: Discrete 176x144
+			Interval: Discrete 0.005s (210.000 fps)
+			Interval: Discrete 0.008s (120.000 fps)
+			Interval: Discrete 0.017s (60.000 fps)
+		Size: Discrete 320x240
+			Interval: Discrete 0.005s (210.000 fps)
+			Interval: Discrete 0.008s (120.000 fps)
+			Interval: Discrete 0.017s (60.000 fps)
+		Size: Discrete 352x288
+			Interval: Discrete 0.005s (210.000 fps)
+			Interval: Discrete 0.008s (120.000 fps)
+			Interval: Discrete 0.017s (60.000 fps)
+		Size: Discrete 424x240
+			Interval: Discrete 0.005s (210.000 fps)
+			Interval: Discrete 0.008s (120.000 fps)
+			Interval: Discrete 0.017s (60.000 fps)
+		Size: Discrete 640x360
+			Interval: Discrete 0.005s (210.000 fps)
+			Interval: Discrete 0.008s (120.000 fps)
+			Interval: Discrete 0.017s (60.000 fps)
+		Size: Discrete 960x540
+			Interval: Discrete 0.008s (120.000 fps)
+		Size: Discrete 1280x720
+			Interval: Discrete 0.008s (120.000 fps)
+			Interval: Discrete 0.017s (60.000 fps)
+	[1]: 'YUYV' (YUYV 4:2:2)
+		Size: Discrete 640x400
+			Interval: Discrete 0.033s (30.000 fps)
+		Size: Discrete 1280x720
+			Interval: Discrete 0.100s (10.000 fps)

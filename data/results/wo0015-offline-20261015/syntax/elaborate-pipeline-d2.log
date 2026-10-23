@@ -1,0 +1,20 @@
+Vivado Simulator v2026.1
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: F:\AMDDesignTools\2026.1\Vivado\bin\unwrapped\win64.o\xelab.exe tb_axis_dma_s2mm_pipeline -s wo15_pipeline_d2 -log elaborate-pipeline-d2.log 
+Multi-threading is on. Using 22 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module work.axis_s2mm_frame_packer_default
+Compiling module work.axis_dma_rgb_adapter_default
+Compiling module work.axis_rgb2gray
+Compiling module work.axis_gray2binary_default
+Compiling module work.axis_binary_output_checker_defau...
+Compiling module work.axis_dma_image_pipeline
+Compiling module work.axis_dma_s2mm_pipeline_bd
+Compiling module work.tb_axis_dma_s2mm_pipeline
+Built simulation snapshot wo15_pipeline_d2

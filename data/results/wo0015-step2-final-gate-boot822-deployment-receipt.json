@@ -1,0 +1,16 @@
+{
+  "status": "OFFLINE_BUNDLE_VALIDATED",
+  "board_accessed": false,
+  "boot_id_bound": "822a9c29-37c0-438c-81c4-da998d57073b",
+  "directory": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-step2-final-gate-boot822-20261017",
+  "manifest": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-step2-final-gate-boot822-20261017\\wo0015-manifest.json",
+  "manifest_sha256": "a1fc936597babf959ad3d60fbe597a0e2b0fe492511743ccda3dbc36fab9ca39",
+  "archive": "C:\\Users\\POP\\.codex\\worktrees\\wo0015-design-20261015\\material-counter\\data\\results\\wo0015-step2-final-gate-boot822-deployment.zip",
+  "archive_sha256": "2eb6c107986297a4e9324c7e0ea12c5b6efc9b9e703733a5cca1243fcb536622",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "executor_sha256": {
+    "board_once.py": "ba0be4e4e9b1614de7d3edc039c59966fd9d1fb6fff3862d466e5f6675bb3f05",
+    "board_preflight.py": "4c62fd37e5b6fa6c349a58ad7c2dc49b49e0f890b77b07400d304616c7a005d0"
+  }
+}

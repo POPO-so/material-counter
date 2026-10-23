@@ -1,0 +1,75 @@
+Command: sudo -n read-only hashes, sizes, camera-run.json
+SSH exit code: 0
+Output:
+bdb30097ba54b93acd518027632fd6d7d96111f0f5f6d24ea6620880b153ae66  /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/wo0015-camera-manifest.json
+c9631051c8e871a5e7b628faa5fe03b1147995e1ee0fef3a8874dbfe37470c94  /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-run.json
+87afac5996d55d90811c1e57fe37967fcbaacee4eb705d1bfabc94a510a6bbe2  /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-source-gray.pgm
+86508e430b2432596910a8998a2c855b3eb4048ae710fd3f5d4a86945d715014  /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-gray-320x240.pgm
+a83fb2e350fcad33af62a80c6746d3e35821339b9a73a02db030123466a82f67  /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.rgb.bin
+eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350  /home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.binary.bin
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-source-gray.pgm size=256015 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-gray-320x240.pgm size=76815 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.rgb.bin size=230432 bytes
+/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.binary.bin size=76800 bytes
+{
+  "authorized_transfer_count": 1,
+  "board_once_sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+  "board_preflight_sha256": "df0fb5966822a9cb482cf42d38e1816d109d88e88366d9f4d1c26bd7189cfe43",
+  "camera_adapter_sha256": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+  "camera_dma_script_sha256": "3df97de838b922316e8bbfdb416f6e2df2e090f3b033b52c2d62bb917b152162",
+  "camera_stage": "camera-dma-single",
+  "capture_kind": "v4l2-single-frame",
+  "channel_mapping": "R=G=B=Y",
+  "frame_artifacts": [
+    {
+      "frame_id": 3,
+      "golden_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.binary.bin",
+      "golden_sha256": "eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350",
+      "packet_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-3.rgb.bin",
+      "packet_sha256": "a83fb2e350fcad33af62a80c6746d3e35821339b9a73a02db030123466a82f67"
+    },
+    {
+      "frame_id": 4,
+      "golden_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-4.binary.bin",
+      "golden_sha256": "eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350",
+      "packet_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-4.rgb.bin",
+      "packet_sha256": "8d11294889bc895c7f77244dae215af1fb2c19c75b94227f4a44bd96990e9349"
+    },
+    {
+      "frame_id": 5,
+      "golden_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-5.binary.bin",
+      "golden_sha256": "eaaeffb2f35b1f65e1ac03ad5f426b3989ebe5e45ce4dbd2fb56e56e849ee350",
+      "packet_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/frame-5.rgb.bin",
+      "packet_sha256": "556b97b89747d11aee6a1ce2dc62ed20aff7cee618722722cd439b7dc89f60fe"
+    }
+  ],
+  "frame_id_to_send": 3,
+  "manifest_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/wo0015-camera-manifest.json",
+  "manifest_sha256": "bdb30097ba54b93acd518027632fd6d7d96111f0f5f6d24ea6620880b153ae66",
+  "reserved_unrun_frame_ids": [
+    4,
+    5
+  ],
+  "resize": "bilinear, endpoint-aligned, round-to-nearest",
+  "resized_gray_file_sha256": "86508e430b2432596910a8998a2c855b3eb4048ae710fd3f5d4a86945d715014",
+  "resized_gray_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-gray-320x240.pgm",
+  "resized_gray_sha256": "a61478419bc09617d5845573e2717b5707aac28801dd74a4cf5aea055bba14a2",
+  "resized_shape": [
+    240,
+    320
+  ],
+  "schema": 1,
+  "source_file_sha256": null,
+  "source_gray_file_sha256": "87afac5996d55d90811c1e57fe37967fcbaacee4eb705d1bfabc94a510a6bbe2",
+  "source_gray_path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/camera-source-gray.pgm",
+  "source_gray_sha256": "fc67dbfcb67968f3126c2f9a81919be58887fa853f923218568b1f7882c4911d",
+  "source_label": "/dev/video0",
+  "source_shape": [
+    400,
+    640
+  ],
+  "template_manifest_path": "/home/xilinx/wo0015/wo0015-manifest.json",
+  "template_manifest_sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935",
+  "threshold": 128,
+  "work_order": "WO-0015"
+}

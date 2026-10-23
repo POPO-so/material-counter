@@ -1,0 +1,4 @@
+{
+  "command": "sudo -S -p \"\" env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python -B -u /home/xilinx/wo0015_first_board_retry3_20261015/board_once.py --mode dma-single --manifest /home/xilinx/wo0015_first_board_retry3_20261015/run-manifest.json --manifest-sha256 84c27012ec038d48267128af08deb9685eb1bb9a5fdb1a79e5da064083788312 --execute --authorize-stage dma-single --approve-once --timeout-s 5 --evidence-json /home/xilinx/wo0015_runonly_resume_retry1_20261015/dma-single-result.json",
+  "single_attempt": true
+}
