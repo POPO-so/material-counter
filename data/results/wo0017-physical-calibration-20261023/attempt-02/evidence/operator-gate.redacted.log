@@ -1,0 +1,18 @@
+[OPERATOR_GATE] One-time operator passcode: [REDACTED]
+[OPERATOR_GATE] CALIBRATION_STANDBY_NO_CAMERA_NO_DMA_LOCK_READY {"boot_id": "35983d66-bb1d-4a8a-85e5-802170825515", "calibration_id": "physical-calibration-20261023-02", "camera_opened": false, "camera_ownership": {"device": "/dev/video0", "owners": [], "read_only": true}, "camera_profile": {"auto_exposure": 1, "brightness": 0, "exposure_time_absolute": 50, "fps": 60.0, "pixel_format": "MJPG", "readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n", "resolution": [640, 400]}, "cma_free_kib": 81544, "dma_status": {"mm2s": "0x00000001", "s2mm": "0x00000001"}, "dma_transfer_started": false, "lock_path": "/var/lib/wo0017/calibration/35983d66-bb1d-4a8a-85e5-802170825515/physical-calibration-20261023-02/calibration-lock.json", "lock_sha256": "a9e57f9b297421ab5d883e49ed47efa2fea32ea20084173eaf53c1f9f39f3f3b", "pynq_imported": false, "status": "CALIBRATION_STANDBY_READY"}
+[OPERATOR_GATE] CALIBRATION_LOCK_CONSUMED {"boot_id": "35983d66-bb1d-4a8a-85e5-802170825515", "calibration_id": "physical-calibration-20261023-02", "consumed": true, "ready_lock_sha256": "a9e57f9b297421ab5d883e49ed47efa2fea32ea20084173eaf53c1f9f39f3f3b", "schema": 1, "stage": "physical-calibration", "work_order": "WO-0017"}
+[MILESTONE] PROCESS_START monotonic=46248.417826
+Traceback (most recent call last):
+  File "/home/xilinx/wo0017/physical-calibration-20261023-02/scripts/wo0016/operator_gate_launcher.py", line 429, in <module>
+    raise SystemExit(canonical_main())
+  File "/home/xilinx/wo0017/physical-calibration-20261023-02/scripts/wo0016/operator_gate_launcher.py", line 403, in main
+    code = runner.main(runner_args, operator_gate_sha256=gate_launcher_sha256,
+  File "/home/xilinx/wo0017/physical-calibration-20261023-02/scripts/wo0016/run_stream_counter.py", line 2061, in main
+    result = execute_board_stream(args, operator_gate_sha256=operator_gate_sha256,
+  File "/home/xilinx/wo0017/physical-calibration-20261023-02/scripts/wo0016/run_stream_counter.py", line 1445, in execute_board_stream
+    audit = api.audit_environment(require_empty_shutdown=False, require_loaded_bit=True)
+  File "/home/xilinx/wo0017/physical-calibration-20261023-02/scripts/wo0015/board_once.py", line 1265, in audit_environment
+    pynq = self._load_pynq()
+  File "/home/xilinx/wo0017/physical-calibration-20261023-02/scripts/wo0015/board_once.py", line 1257, in _load_pynq
+    import pynq
+ModuleNotFoundError: No module named 'pynq'

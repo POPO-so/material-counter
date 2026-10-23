@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "work_order": "WO-0017",
+  "purpose": "Physical calibration preview; no formal Permit issued or consumed",
+  "attempt_id": "physical-calibration-20261023-04",
+  "status": "FAILED_PREPARATION",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "local_page": "http://127.0.0.1:18081/",
+  "remote_deployment": "/home/xilinx/wo0017/physical-calibration-20261023-04",
+  "runtime_sha256": {
+    "scripts/wo0016/capture_dataset.py": "e472b796aa5d26a9df96f1a4e0c451c12de2f8f4cf32d82ba8d7cb5e5cb36b46",
+    "scripts/wo0016/mjpeg_preview.py": "ca0ef2956b844f2235d9ce9a2b9b2cf4732ad3f27264dcf88e37708297c8cbba",
+    "scripts/wo0016/live_calibration.py": "492b64e6565cbda24f51d64d825b5592b42777f63fb03dd13feef4e9e8df42de",
+    "scripts/wo0015/board_preflight.py": "1e4be8cd1257eca4041a89a683c3d6582cbb28a1b37fa70cc942ac3041c36ef4",
+    "scripts/wo0016/operator_gate_launcher.py": "30eef9f82033f366938ed697f08582b1b851a6ab04b7ebec918e46439431526d",
+    "scripts/wo0015/board_once.py": "bbddecb0933dbdb3b3300677de0b3f99520e45ed44f5b3cebe812c788405f36d",
+    "scripts/wo0016/stream_counter.py": "04cbc56caf1a5e3f74318206ed9ccc3958922ae23e944ea7ff5ab179673f5fef",
+    "scripts/wo0016/wo0017_capture_profile.py": "cefd8601b90cefa20cbe20ed830d05e8d99dc4524fccf72aabed4ed3650bdbef",
+    "scripts/wo0015/camera_adapter.py": "80438da151d7450caaa9ccf2fd78758eb0943414a8bdb7dafe36d43b5879f8ba",
+    "scripts/wo0016/physical_calibration_lock.py": "b4787fe9537c46a9762882a8b95553407a3c5270127207e5c9dd43cd3fe3a1d0",
+    "scripts/wo0016/run_stream_counter.py": "10578c0050c1ea3d150578de5fb201910b27b952a043ba860eab9053be302763",
+    "scripts/wo0016/packet_encoder.py": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+    "scripts/wo0015/prepare_vectors.py": "242a2ac8db69a3b8c2f89f94774146f61fcc22193bcab6ada8d6bb5e247784e6",
+    "scripts/wo0016/prepare_physical_calibration.py": "8d5640d5b23c8cfe048d81df93ea6a3430f176d32e511d85b2abda7338871cc7"
+  },
+  "manifest_sha256": "d02b04e495ad80f0256f35002cda474bcc6af16590b8085a8044f86f52e5f782",
+  "stage1_receipt_sha256": "b3dfa4788dac8ac3b1b867846fe7f654cc41ef1e49de29f5facd161994fa7d74",
+  "calibration_lock": {
+    "sha256": null,
+    "lock_status": "NOT_ISSUED",
+    "consumed": false,
+    "path": "/var/lib/wo0017/calibration/35983d66-bb1d-4a8a-85e5-802170825515/physical-calibration-20261023-04/calibration-lock.json"
+  },
+  "capture": {
+    "max_frames": 300,
+    "profile": "full-width-mixed",
+    "threshold": 128,
+    "capture_dir": "/home/xilinx/wo0017/physical-calibration-20261023-02/capture",
+    "evidence_json": "/home/xilinx/wo0017/physical-calibration-20261023-02/evidence.json",
+    "max_bytes": 134217728,
+    "dual_arrays": [
+      "gray8",
+      "binary8"
+    ]
+  },
+  "board_readback": {
+    "cma_free_kib": 78592,
+    "camera_owners": [],
+    "fpga_owners": [],
+    "brightness": 0,
+    "auto_exposure": 1,
+    "exposure_time_absolute": 50,
+    "resolution": [
+      640,
+      400
+    ],
+    "pixel_format": "MJPG",
+    "fps": 60.0,
+    "mm2s_dmasr": "0x00000001",
+    "s2mm_dmasr": "0x00000001",
+    "control_status": "READY"
+  },
+  "previous_attempt": {
+    "attempt_id": "physical-calibration-20261023-01",
+    "status": "FAILED",
+    "frames": 0,
+    "error": "PreflightError: manifest boot_id differs from the approved boot",
+    "camera_opened": false,
+    "dma_started": false,
+    "historical_directory_preserved": true
+  },
+  "verification": {
+    "focused_regression": "passed",
+    "wo0016_tests": "262 passed, 3 skipped",
+    "remote_sha256": "14/14 runtime files plus manifest and Stage 1 receipt matched",
+    "remote_compileall": "passed"
+  },
+  "attempt_result": {
+    "pynq_imported": false,
+    "formal_permit_consumed": false,
+    "formal_permit_issued": false,
+    "camera_opened": false,
+    "calibration_lock_issued": false,
+    "error": "CaptureError: capture output directory already exists; calibration capture path must be absent before preflight",
+    "dma_transfer_started": false,
+    "status": "CALIBRATION_PREP_REJECTED"
+  }
+}

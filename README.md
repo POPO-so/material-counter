@@ -59,11 +59,20 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 | **Implemented / Offline verified** | `python/synth/` 确定性合成数据与回归；`fpga/rtl/` 流骨架、RGB→Gray、Gray→Binary、ROI、3×3 形态学；`python/refmodel/ps_reference/` 区域/跟踪/越线参考；`fpga/experimental/wo0014/` RGB 包流水线。离线验证不等于上板验收。 |
 | **Board-tested / 有限通信证据** | WO-0013 单次 MM2S→PL Monitor 已通过；WO-0014 50 MHz 单帧及三帧聚合统计已取得板上证据，但三帧任务最终为 `FAIL_STOPPED`。没有逐像素回读或整机计数证据。 |
 | **WO-0016 / Stage B-2 Closeout** | Attempt-5 Recovery-2 完成 165/165 帧，计数 4/5（80%），端到端 22.132 FPS；板端流采集完成，物料准确率验收未通过，已确定不再重测。Stage A Attempt 8 为 15.157 FPS；ROI 平均计数耗时 17.657 ms，高于 2.5 ms 目标，CCL 实测运行 30/30 帧。详见 [WO-0016 板端验收记录](docs/verification/wo-0016-board-acceptance.md)。 |
+| **WO-0017 / Physical calibration** | 校准专用入口与一发式锁已实现；2026-10-23 Attempt-07 通过 worker 环境审计并到达待操作员启动的 READY。尚未开始采样，物理映射、样本分布和真实物料准确率均未测量。详见下方 [WO-0017 当前进展](#wo-0017-当前进展2026-10-23) 和[校准记录](data/results/wo0017-physical-calibration-20261023/attempt-07/README.md)。 |
 | **Synthesized / Implemented timing** | WO-0014 的 50/100 MHz 完整工程均有综合、布线时序及 BIT/HWH；100 MHz 板测为 `NOT_VERIFIED`。ROI、形态学的独立 OOC 综合不能当作完整系统时序闭合。 |
 | **Planned / Proposed** | 正式 PL 特征提取、PL→PS 回传与板上跟踪计数闭环、编码器实际带速、真实摄像头和显示。WO-0012 特征/序列化仍为候选草案。 |
 | **Exploratory** | 结合计数、在途量和实际带速进行送料停止时机预测与控制；失败不影响 Core/MVP。 |
 
 当前已完成若干隔离 POC，**Architecture / Route Not Frozen**。Route A、Route B、Hybrid 以及真实视频输入路线仍需正式决策；PR 合并不代表架构冻结或硬件验收。
+
+### WO-0017 当前进展（2026-10-23）
+
+- 已在 `scripts/wo0016/` 实现独立的物理标定准备与待机路径，限定 300 帧、`full-width-mixed` 配置、同步 Gray8/Binary8 原始数组，以及单独的 Boot-ID 标定锁；不读写或消耗正式验收 Permit/WO-0016 Guard。
+- Attempt-02 因 worker Python 环境缺少 `pynq` 而在开相机前失败；该次标定锁已消费，但相机未打开、DMA 未启动、帧数为 0，也没有签发或消费正式 Permit。Attempt-03/04 在准备阶段被拒绝。Attempt-05 到达待操作员启动的 READY，Attempt-06 标定锁已就绪但 standby 启动待完成。Attempt-07 使用 `/usr/local/share/pynq-venv/bin/python3` 通过依赖审计，随后只读状态核验通过并到达 loopback standby READY。板端证据和各次尝试见[标定记录目录](data/results/wo0017-physical-calibration-20261023/)；Attempt-02 的发布版日志脱敏说明见[发布记录](data/results/wo0017-physical-calibration-20261023/attempt-02/PUBLICATION-REDACTIONS.md)。
+- Attempt-07 readback：Boot ID 未变化；原始待机 JSON 记录 `CmaFree=67,184 KiB`；MM2S/S2MM DMASR 均为 `0x00000001`；摄像头为 640×400 MJPG、60 FPS、手动曝光 50、亮度 0；摄像头和 FPGA 设备均未被占用。环境审计本身返回 `board_accessed=false`、`mmio_opened=false`、`overlay_loaded=false`。
+- **采样未开始**：没有相机帧、DMA 传输或物理测量；活动视野映射、不同物料像素分布和计数准确率仍为 `NOT VERIFIED`。READY 只表示一次性标定入口已待机，不代表采样或验收通过。
+- Attempt-07 板端 payload 绑定到 `3e88de7f`。后续源码提交 `d2f0dee3` 增加了延迟落盘、DMASR 基线绑定及严格帧数参数检查；这些后续改动尚未部署到板端，也没有新的板测证据。
 
 ### 合并范围与验证依据
 

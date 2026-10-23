@@ -1,0 +1,47 @@
+{
+  "status": "CALIBRATION_STANDBY_READY",
+  "attempt_id": "physical-calibration-20261023-05",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "cma_free_kib_latest": 70732,
+  "cma_required_kib": 32768,
+  "camera_owners": [],
+  "fpga_owners": [],
+  "camera_profile": {
+    "auto_exposure": 1,
+    "pixel_format": "MJPG",
+    "exposure_time_absolute": 50,
+    "resolution": [
+      640,
+      400
+    ],
+    "fps": 60,
+    "brightness": 0
+  },
+  "dma_status": {
+    "mm2s": "0x00000001",
+    "s2mm": "0x00000001"
+  },
+  "service": {
+    "pid": 14220,
+    "page": "http://127.0.0.1:18081/",
+    "bind": "127.0.0.1:8081",
+    "status": "READY"
+  },
+  "capture": {
+    "max_frames": 300,
+    "directory_absent_before_start": true,
+    "profile": "full-width-mixed",
+    "directory": "/home/xilinx/wo0017/physical-calibration-20261023-05/capture",
+    "threshold": 128
+  },
+  "lock": {
+    "path": "/var/lib/wo0017/calibration/35983d66-bb1d-4a8a-85e5-802170825515/physical-calibration-20261023-05/calibration-lock.json",
+    "sha256": "d896d1aecf7d069bf7eec65fe5c4530cfe059348b70bf64f700a375a2f019d48",
+    "consumed": false
+  },
+  "pynq_imported": false,
+  "camera_opened": false,
+  "dma_transfer_started": false,
+  "one_time_passcode_disclosed": false,
+  "board_wall_clock_note": "Board date reported 2025-05-07; duration evidence uses monotonic clock"
+}

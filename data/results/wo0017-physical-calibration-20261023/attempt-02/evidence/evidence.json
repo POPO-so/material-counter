@@ -1,0 +1,263 @@
+{
+  "attempt_marker_path": "/var/lib/wo0017/calibration/35983d66-bb1d-4a8a-85e5-802170825515/physical-calibration-20261023-02/consumed.json",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "board_accessed": false,
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "buffers_released": false,
+  "calibration_lock": {
+    "consumed_marker": {
+      "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+      "calibration_id": "physical-calibration-20261023-02",
+      "consumed": true,
+      "ready_lock_sha256": "a9e57f9b297421ab5d883e49ed47efa2fea32ea20084173eaf53c1f9f39f3f3b",
+      "schema": 1,
+      "stage": "physical-calibration",
+      "work_order": "WO-0017"
+    },
+    "consumed_marker_path": "/var/lib/wo0017/calibration/35983d66-bb1d-4a8a-85e5-802170825515/physical-calibration-20261023-02/consumed.json",
+    "path": "/var/lib/wo0017/calibration/35983d66-bb1d-4a8a-85e5-802170825515/physical-calibration-20261023-02/calibration-lock.json",
+    "sha256": "a9e57f9b297421ab5d883e49ed47efa2fea32ea20084173eaf53c1f9f39f3f3b"
+  },
+  "camera_device": "/dev/video0",
+  "camera_mode": "MJPG 640x400 mapped to Gray8 320x240",
+  "camera_open_monotonic": null,
+  "camera_ownership_pre_start": {
+    "device": "/dev/video0",
+    "owners": [],
+    "read_only": true
+  },
+  "camera_profile_pre_start": {
+    "auto_exposure": 1,
+    "brightness": 0,
+    "exposure_time_absolute": 50,
+    "fps": 60.0,
+    "pixel_format": "MJPG",
+    "readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+    "resolution": [
+      640,
+      400
+    ]
+  },
+  "clock_mhz": 50,
+  "cma_admission": {
+    "CmaFree_kib": 80112,
+    "CmaTotal_kib": 131072,
+    "limitation": "kernel CMA accounting and verified DDR safety envelope only; not a measured CMA interval or static CMA subregion; authoritative PYNQ physical-address, size, overlap and allocation accounting checks remain mandatory",
+    "permitted_buffer_ranges": [
+      [
+        1048576,
+        536870912
+      ]
+    ],
+    "physical_cma_range_known": false,
+    "requires_authoritative_post_alloc_gate": true,
+    "source": "MEMINFO_IOMEM_VERIFIED",
+    "system_ram_ranges": [
+      [
+        0,
+        536870912
+      ]
+    ]
+  },
+  "cma_free_before_kib": 80112,
+  "cma_watermark_kib": 32768,
+  "counting_config": {
+    "backward_tolerance": 4.0,
+    "component_cluster_dx": 0.0,
+    "component_cluster_dy": 12.0,
+    "component_cluster_gap": 14.0,
+    "confirm_hits": 2,
+    "cooldown_frames": 0,
+    "cooldown_lateral": 15.0,
+    "count_axis": "x",
+    "direction": 1,
+    "edge_max_missing": 0,
+    "guarded_merge": true,
+    "hysteresis": 2.0,
+    "line_x": 160,
+    "line_y": 120,
+    "max_area": 900,
+    "max_bbox_height": 85,
+    "max_bbox_width": 85,
+    "max_lateral_step": 10.0,
+    "max_merge_area": 260,
+    "max_merged_span": 24,
+    "max_missing": 3,
+    "max_step": 48.0,
+    "min_area": 12,
+    "prediction_max_missing": 3,
+    "roi_mode": "full",
+    "single_intact_area": 95,
+    "strict_lateral_gate": true
+  },
+  "direction": 1,
+  "dma_status_pre_pynq": {
+    "mm2s": 1,
+    "s2mm": 1
+  },
+  "error": "ModuleNotFoundError: No module named 'pynq'",
+  "expected_count": null,
+  "formal_acceptance_permit": null,
+  "fpga_manager": {
+    "flags": "0",
+    "state": "operating"
+  },
+  "frame_0_start_monotonic": null,
+  "frame_geometry": {
+    "active_output_roi_xyxy": [
+      0,
+      20,
+      320,
+      220
+    ],
+    "belt_width_mm_nominal": 180.0,
+    "mapping": "letterbox",
+    "output_resolution": [
+      320,
+      240
+    ],
+    "physical_calibration_status": "NOT_MEASURED",
+    "pixels_per_mm_y": null,
+    "source_resolution": [
+      640,
+      400
+    ],
+    "source_roi_xyxy": [
+      0,
+      0,
+      640,
+      400
+    ]
+  },
+  "frames_processed": 0,
+  "ground_truth_count": null,
+  "guard": {
+    "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+    "calibration_id": "physical-calibration-20261023-02",
+    "consumed": true,
+    "ready_lock_sha256": "a9e57f9b297421ab5d883e49ed47efa2fea32ea20084173eaf53c1f9f39f3f3b",
+    "schema": 1,
+    "stage": "physical-calibration",
+    "work_order": "WO-0017"
+  },
+  "guard_mode": "independent calibration lock consumed-once",
+  "hold_reason": null,
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "line_y": 120,
+  "manifest_sha256": "d02b04e495ad80f0256f35002cda474bcc6af16590b8085a8044f86f52e5f782",
+  "material_label": null,
+  "max_frames": 300,
+  "milestone_log": "/home/xilinx/wo0017/physical-calibration-20261023-02/evidence.milestones.jsonl",
+  "min_area": 12,
+  "operator_prearm_delay_s": 0.0,
+  "overlay_ready_monotonic": null,
+  "process_ownership": {
+    "denied": [],
+    "findings": [],
+    "scanned_proc": "/proc"
+  },
+  "process_start_monotonic": 46248.417825953,
+  "pynq_imported": false,
+  "schema": 1,
+  "stabilization_delay_s": 3.0,
+  "stage": "physical-calibration",
+  "stage1_overlay_pass_receipt": {
+    "attempt": "root-02",
+    "axi_dma_phys_addr": "0x40400000",
+    "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+    "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+    "clock_mhz": 50,
+    "cma_after_kib": {
+      "CmaFree": 99544,
+      "CmaTotal": 131072
+    },
+    "cma_before_kib": {
+      "CmaFree": 120500,
+      "CmaTotal": 131072
+    },
+    "dma_register_write_performed": false,
+    "dma_registers": {
+      "mm2s_dmacr": {
+        "offset": "0x0",
+        "value": "0x10002"
+      },
+      "mm2s_dmasr": {
+        "offset": "0x4",
+        "value": "0x1"
+      },
+      "s2mm_dmacr": {
+        "offset": "0x30",
+        "value": "0x10002"
+      },
+      "s2mm_dmasr": {
+        "offset": "0x34",
+        "value": "0x1"
+      }
+    },
+    "dma_status_bits": {
+      "mm2s": {
+        "err_bits_4_6": 0,
+        "err_irq_bit_14": false,
+        "halted": true,
+        "idle": false,
+        "pg021_error_mask_clear": true
+      },
+      "s2mm": {
+        "err_bits_4_6": 0,
+        "err_irq_bit_14": false,
+        "halted": true,
+        "idle": false,
+        "pg021_error_mask_clear": true
+      }
+    },
+    "dma_transfer_started": false,
+    "effective_uid": 0,
+    "fpga_manager_after": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "fpga_manager_before": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "manifest_sha256": "4493e4dab601e0560002ec089fb43c2f333a5ed18897b25500e7b0b1d1890a1c",
+    "monotonic_end_ns": 2867751350989,
+    "monotonic_start_ns": 2855497369408,
+    "new_kernel_log_lines": [
+      "[Wed May  7 11:39:43 2025] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(5636), ret: 0",
+      "[Wed May  7 11:39:43 2025] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(5636)",
+      "[Wed May  7 11:39:43 2025] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(5636), ret: 0",
+      "[Wed May  7 11:39:43 2025] [drm] bitstream 952a9129-683f-a12e-2f98-18bcfddff3ed locked, ref=1",
+      "[Wed May  7 11:39:43 2025] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(5636) add context Domain(65535) CU(0xffff) shared(true)",
+      "[Wed May  7 11:39:43 2025] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(5636) del context Domain(65535) CU(0xffff)",
+      "[Wed May  7 11:39:43 2025] [drm] bitstream 952a9129-683f-a12e-2f98-18bcfddff3ed unlocked, ref=0",
+      "[Wed May  7 11:39:46 2025] fpga_manager fpga0: writing wo15.bin to Xilinx Zynq FPGA Manager",
+      "[Wed May  7 11:39:46 2025] [drm] Loading xclbin 117cea9d-4f2f-0165-1064-454264494129 to slot 0",
+      "[Wed May  7 11:39:46 2025] [drm] skip kind 29(AIE_RESOURCES) return code: -22",
+      "[Wed May  7 11:39:46 2025] [drm] skip kind 8(IP_LAYOUT) return code: -22",
+      "[Wed May  7 11:39:46 2025] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22",
+      "[Wed May  7 11:39:46 2025] [drm] skip kind 25(AIE_METADATA) return code: -22",
+      "[Wed May  7 11:39:46 2025] [drm] skip kind 7(CONNECTIVITY) return code: -22",
+      "[Wed May  7 11:39:46 2025] [drm] found kind 6(MEM_TOPOLOGY)",
+      "[Wed May  7 11:39:46 2025] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA",
+      "[Wed May  7 11:39:46 2025] [drm] zocl_xclbin_read_axlf 117cea9d-4f2f-0165-1064-454264494129 ret: 0",
+      "[Wed May  7 11:39:46 2025] [drm] bitstream 117cea9d-4f2f-0165-1064-454264494129 locked, ref=1",
+      "[Wed May  7 11:39:46 2025] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(5636) add context Domain(65535) CU(0xffff) shared(true)",
+      "[Wed May  7 11:39:46 2025] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(5636) del context Domain(65535) CU(0xffff)"
+    ],
+    "overlay_download_returned": true,
+    "pynq_version": "3.1.1",
+    "schema": 1,
+    "stage": "phase1b-stage1-overlay",
+    "status": "OVERLAY_STAGE1_PASS",
+    "work_order": "WO-0017"
+  },
+  "stageb2_attempt_id": null,
+  "stageb2_attempt_permit": null,
+  "stageb2_ready_guard": null,
+  "status": "BOARD_STREAM_FAILED",
+  "threshold": 128,
+  "work_order": "WO-0016",
+  "xilinx_xrt": "/usr"
+}
