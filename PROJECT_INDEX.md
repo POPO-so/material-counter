@@ -35,6 +35,7 @@ Agent navigation map for `material-counter`. Use linked documents as the source 
 | RTL simulation | Relevant WO and `docs/02_interfaces.md` → actual RTL/TB → matching verification/source-hash record. Existing frontend and experimental simulations are present; use fresh output directories for replay. |
 | Modify PS tracking | README → scope/interfaces → `docs/work-orders/wo-0010-ps-reference.md` → `python/refmodel/ps_reference/`. It is an offline reference, not a board DMA receiver. |
 | Video source / camera / pin I/O | `docs/work-orders/wo-0002-video-input-feasibility.md` or WO-0005 → `docs/adr/adr-0001-video-source.md` → `hw/pin_budget.md` → relevant interface sections. |
+| Camera environment exposure setup | [Proposed WO-0017](docs/work-orders/wo-0017-pynq-camera-exposure-buttons.md) and [button utility](scripts/camera_setup/README.md); attaches to the WO-0017 overlay with `download=False` and preserves the WO-0015 processing chain. |
 | Synthetic data / its tests | `docs/work-orders/wo-0001a-h3-generator-hardening.md` → `python/synth/` implementation and tests. |
 | Understand architecture or scope | README current status → `docs/00_scope.md` → relevant sections of `MASTER_PLAN.md` Part 2 / Part 3. Read more only if the task needs it. |
 | Understand a past decision | Relevant file in `docs/adr/`; then follow its cited evidence and related WO as needed. |
