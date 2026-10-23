@@ -1,0 +1,44 @@
+........................................................................ [ 29%]
+........................................................................ [ 58%]
+..................................................s..................... [ 88%]
+...........................F.                                            [100%]
+================================== FAILURES ===================================
+_ VectorContractTests.test_prepare_a_validates_source_manifest_and_records_frame_hashes _
+
+self = <test_vectors.VectorContractTests testMethod=test_prepare_a_validates_source_manifest_and_records_frame_hashes>
+
+    def test_prepare_a_validates_source_manifest_and_records_frame_hashes(self) -> None:
+>       h3_root, source_manifest_path = resolve_inputs(REPO_ROOT, None, None)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+scripts\wo0015\test_vectors.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+root = WindowsPath('C:/Users/POP/.codex/worktrees/wo0016-attempt6-optimization/material-counter')
+h3_root_arg = None, manifest_arg = None
+
+    def resolve_inputs(root: Path, h3_root_arg: Path | None,
+                       manifest_arg: Path | None) -> tuple[Path, Path]:
+        if h3_root_arg is not None:
+            h3_root = h3_root_arg.resolve()
+        else:
+            h3_root = (root / "data/synthetic/h3_full").resolve()
+            if not list(h3_root.glob("*/frames/frame_*.png")):
+                h3_root = (ORIGINAL_ROOT / "data/synthetic/h3_full").resolve()
+    
+        if manifest_arg is not None:
+            manifest_path = manifest_arg.resolve()
+        else:
+            manifest_path = (root / DEFAULT_MANIFEST_REL).resolve()
+            if not manifest_path.is_file():
+                manifest_path = (ORIGINAL_ROOT / DEFAULT_MANIFEST_REL).resolve()
+        if not h3_root.is_dir():
+            raise FileNotFoundError(f"H3 directory not found: {h3_root}")
+        if not manifest_path.is_file():
+>           raise FileNotFoundError(f"WO-0014 source manifest not found: {manifest_path}")
+E           FileNotFoundError: WO-0014 source manifest not found: C:\fpga\material-counter\data\results\wo0014-offline-20261014\vectors\manifest.json
+
+scripts\wo0015\prepare_vectors.py:116: FileNotFoundError
+=========================== short test summary info ===========================
+FAILED scripts/wo0015/test_vectors.py::VectorContractTests::test_prepare_a_validates_source_manifest_and_records_frame_hashes
+1 failed, 243 passed, 1 skipped in 23.15s

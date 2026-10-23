@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "purpose": "Host artifact integrity only; not a board admission manifest",
+  "files": [
+    {
+      "path": "data/results/wo0016-stageB-20261019-110113/board-readonly.json",
+      "bytes": 14655,
+      "sha256": "f73dfe23c2dfa265d5cba0510d963abce069c082edc5f0eba42321b21fbb773e"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-110113/board-service-diagnostic.txt",
+      "bytes": 835,
+      "sha256": "e50ef5bc2f9093aca4b857c7bd0a99bb8c552634faa65f86529b0fb93efb64a0"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-110113/delivery-csv-check.json",
+      "bytes": 759,
+      "sha256": "ab1d0e50023a8cc8452f162a9c5cd1445f466f5c5fd7f0f1c834c9467b44e355"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-110113/phase1-audit.json",
+      "bytes": 5056,
+      "sha256": "ce84fbe7e56a0c536454493debde0c0f6a9b4ec051a0bd83d2f5836c71226a0e"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-110113/phase1-audit.md",
+      "bytes": 6631,
+      "sha256": "78c53adb9300cb02ae7bd47e7da0efda476c10976d98a7bc409ea417ba636461"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-110113/phase1-plan.md",
+      "bytes": 1791,
+      "sha256": "a14208e99163fca5573efa436b461edaf002569d6641cb6395f02bbfaad1dd3e"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-110113/pytest-baseline.log",
+      "bytes": 2586,
+      "sha256": "87d1443d362469ac6a7654600215639a10c54c0334720b01b883651b38fa5c0a"
+    },
+    {
+      "path": "data/results/wo0016-stageB-20261019-110113/pytest-wo0016-final.txt",
+      "bytes": 182,
+      "sha256": "cecfcf8e0e346b4696c5c8c7f55e5ad56e8f9c753eb0d2ed84868e2f77e0eccb"
+    },
+    {
+      "path": "scripts/wo0016/stageb_analysis.py",
+      "bytes": 11930,
+      "sha256": "a420a907e0070f43fce91821be78995716666b5aae6403d8ec805df36dd3245c"
+    },
+    {
+      "path": "scripts/wo0016/test_stageb_analysis.py",
+      "bytes": 7993,
+      "sha256": "9c665cf3108bf1abd06e880e2ec638726c875d8877b8d784dac35af2fadeb6b5"
+    },
+    {
+      "path": "scripts/wo0016/STAGEB_PHASE1.md",
+      "bytes": 2814,
+      "sha256": "2462f64d070758e304ac38050e03f4bd55d3a97d536d69f2e9b6df0127468b63"
+    }
+  ]
+}

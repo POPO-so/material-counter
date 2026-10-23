@@ -1,0 +1,335 @@
+{
+  "boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "camera_controls": {
+    "argv": [
+      "v4l2-ctl",
+      "-d",
+      "/dev/video0",
+      "--get-ctrl=auto_exposure,exposure_time_absolute,power_line_frequency,gamma"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "power_line_frequency: 1\ngamma: 100\nauto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 50\n"
+  },
+  "camera_format": {
+    "argv": [
+      "v4l2-ctl",
+      "-d",
+      "/dev/video0",
+      "--get-fmt-video"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \n"
+  },
+  "camera_fps": {
+    "argv": [
+      "v4l2-ctl",
+      "-d",
+      "/dev/video0",
+      "--get-parm"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "Streaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 210.000 (210/1)\n\tRead buffers     : 0\n"
+  },
+  "camera_identity": {
+    "argv": [
+      "v4l2-ctl",
+      "-d",
+      "/dev/video0",
+      "--info"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "Driver Info:\n\tDriver name      : uvcvideo\n\tCard type        : USB Camera: USB GS CAM\n\tBus info         : usb-ci_hdrc.0-1\n\tDriver version   : 6.6.10\n\tCapabilities     : 0x84a00001\n\t\tVideo Capture\n\t\tMetadata Capture\n\t\tStreaming\n\t\tExtended Pix Format\n\t\tDevice Capabilities\n\tDevice Caps      : 0x04200001\n\t\tVideo Capture\n\t\tStreaming\n\t\tExtended Pix Format\nMedia Driver Info:\n\tDriver name      : uvcvideo\n\tModel            : USB Camera: USB GS CAM\n\tSerial           : 20210616103\n\tBus info         : usb-ci_hdrc.0-1\n\tMedia version    : 6.6.10\n\tHardware revision: 0x00000103 (259)\n\tDriver version   : 6.6.10\nInterface Info:\n\tID               : 0x03000002\n\tType             : V4L Video\nEntity Info:\n\tID               : 0x00000001 (1)\n\tName             : USB Camera: USB GS CAM\n\tFunction         : V4L2 I/O\n\tFlags            : default\n\tPad 0x01000007   : 0: Sink\n\t  Link 0x02000010: from remote pad 0x100000a of entity 'Extension 4' (Video Pixel Formatter): Data, Enabled, Immutable\n"
+  },
+  "camera_owners": {
+    "argv": [
+      "fuser",
+      "/dev/video0"
+    ],
+    "returncode": 1,
+    "stderr": "",
+    "stdout": ""
+  },
+  "camera_service": {
+    "argv": [
+      "systemctl",
+      "is-active",
+      "ov9281-init.service"
+    ],
+    "returncode": 3,
+    "stderr": "",
+    "stdout": "inactive\n"
+  },
+  "cma_kib": {
+    "CmaFree": 71684,
+    "CmaTotal": 131072
+  },
+  "deployed_scripts": [
+    {
+      "path": "/home/xilinx/wo0016/run_stream_counter.py",
+      "sha256": "fc58d73f14433c9a0917e82283ee43b918ea6bd9f81baadabb0410e980913956"
+    },
+    {
+      "path": "/home/xilinx/wo0016/stream_counter.py",
+      "sha256": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625"
+    },
+    {
+      "path": "/home/xilinx/wo0016/mjpeg_preview.py",
+      "sha256": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6"
+    },
+    {
+      "path": "/home/xilinx/wo0016/packet_encoder.py",
+      "sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8"
+    },
+    {
+      "boot_binding_lines": [
+        "AUTHORIZED_BOOT_ID = \"f8b24aee-ed7e-430a-b3f3-d26056746bfd\""
+      ],
+      "path": "/home/xilinx/wo0016/wo0015/board_preflight.py",
+      "sha256": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6"
+    },
+    {
+      "path": "/home/xilinx/wo0016/wo0015/board_once.py",
+      "sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525"
+    }
+  ],
+  "dma_started": false,
+  "firmware_manifests": [
+    {
+      "assets": [
+        {
+          "bytes": 4045767,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/wo15.bit",
+          "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+        },
+        {
+          "bytes": 315912,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/wo15.hwh",
+          "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+        }
+      ],
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+      "executor_sha256": {
+        "board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+        "board_preflight.py": "df0fb5966822a9cb482cf42d38e1816d109d88e88366d9f4d1c26bd7189cfe43"
+      },
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "path": "/home/xilinx/wo0015/run-manifest.json",
+      "sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935"
+    },
+    {
+      "assets": [
+        {
+          "bytes": 4045767,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/wo15.bit",
+          "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+        },
+        {
+          "bytes": 315912,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/wo15.hwh",
+          "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+        }
+      ],
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+      "executor_sha256": {
+        "board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+        "board_preflight.py": "df0fb5966822a9cb482cf42d38e1816d109d88e88366d9f4d1c26bd7189cfe43"
+      },
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "path": "/home/xilinx/wo0015/wo0015-manifest.json",
+      "sha256": "e4d4da53e66c2fd4f1a3df082439dd439e54fa4ef1ba422367cab25ae9e98935"
+    },
+    {
+      "assets": [
+        {
+          "bytes": 4045767,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/wo15.bit",
+          "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+        },
+        {
+          "bytes": 315912,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/wo15.hwh",
+          "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+        }
+      ],
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "2cc2ab91-2e3f-450e-b9e7-361ec38e2815",
+      "executor_sha256": {
+        "board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+        "board_preflight.py": "df0fb5966822a9cb482cf42d38e1816d109d88e88366d9f4d1c26bd7189cfe43"
+      },
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "path": "/home/xilinx/wo0015/camera-prepares-mjpg-20261017/camera-72cd35d96d174153ae721e3002bb657b/wo0015-camera-manifest.json",
+      "sha256": "bdb30097ba54b93acd518027632fd6d7d96111f0f5f6d24ea6620880b153ae66"
+    },
+    {
+      "assets": [
+        {
+          "bytes": 4045767,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.bit",
+          "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+        },
+        {
+          "bytes": 315912,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.hwh",
+          "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+        }
+      ],
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+      "executor_sha256": {
+        "board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+        "board_preflight.py": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6"
+      },
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/run-manifest.json",
+      "sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b"
+    },
+    {
+      "assets": [
+        {
+          "bytes": 4045767,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.bit",
+          "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+        },
+        {
+          "bytes": 315912,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.hwh",
+          "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+        }
+      ],
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+      "executor_sha256": {
+        "board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+        "board_preflight.py": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6"
+      },
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo0015-manifest.json",
+      "sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b"
+    },
+    {
+      "assets": [
+        {
+          "bytes": 4045767,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.bit",
+          "sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420"
+        },
+        {
+          "bytes": 315912,
+          "exists": true,
+          "matches_manifest": true,
+          "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/wo15.hwh",
+          "sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6"
+        }
+      ],
+      "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+      "executor_sha256": {
+        "board_once.py": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+        "board_preflight.py": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6"
+      },
+      "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+      "path": "/home/xilinx/wo0015/final-boot-f8b24aee-ed7e-430a-b3f3-d26056746bfd/camera-prepares-final-20261017/camera-e03610ba8fc34b3d830d12f315749e6e/wo0015-camera-manifest.json",
+      "sha256": "f0bafdd7c99892574a41a6fce6ecfa76221402ea0fcc7d63a94132cd1c16ca87"
+    }
+  ],
+  "guard_receipts": [
+    {
+      "content": {
+        "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+        "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+        "build_id": "wo0015-hw-50mhz-20261015",
+        "checker_signature": 1464807732,
+        "clock_mhz": 50,
+        "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+        "load_performed": true,
+        "manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b",
+        "packer_signature": 1464807733,
+        "runtime_audit_sha256": "68e4c7cb21d8c665a41d491a5f2846c36a5ae29d7d84af383f15387b857c0309",
+        "schema": 1,
+        "stage": "overlay-only",
+        "status": "OVERLAY_LOAD_PASS",
+        "work_order": "WO-0015"
+      },
+      "exists": true,
+      "path": "/var/lib/wo0015-s2mm/overlay-only-pass.json",
+      "sha256": "158a1e050122d2396941fc23d7b6a11bcbe2989f5b3a82d7314840fba18b55cc"
+    },
+    {
+      "exists": false,
+      "path": "/var/lib/wo0015-s2mm/terminal-failure.json"
+    },
+    {
+      "content": {
+        "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+        "boot_id": "f8b24aee-ed7e-430a-b3f3-d26056746bfd",
+        "consumed": true,
+        "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+        "manifest_sha256": "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b",
+        "max_frames": 30,
+        "schema": 1,
+        "stage": "wo0016-stream",
+        "work_order": "WO-0016"
+      },
+      "exists": true,
+      "path": "/var/lib/wo0016/stream-counter-consumed.json",
+      "sha256": "44e312a27b793ab276f8a24c30ba6d1ef6a4f8fddb530c6f272244d7c0ffc671"
+    }
+  ],
+  "hardware_writes": false,
+  "host_time_utc": "2025-05-05T22:06:22Z",
+  "identity": {
+    "/etc/hostname": "pynq"
+  },
+  "port_8080": {
+    "argv": [
+      "ss",
+      "-ltnp",
+      "sport = :8080"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "State Recv-Q Send-Q Local Address:Port Peer Address:PortProcess\n"
+  },
+  "purpose": "WO0016_STAGE_B_PHASE1_READ_ONLY",
+  "python_processes": {
+    "argv": [
+      "ps",
+      "-eo",
+      "pid,ppid,user,stat,etimes,args"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "  PID  PPID USER     STAT ELAPSED COMMAND\n  193     1 root     Ss       387 /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers\n  527     1 root     Ssl      368 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal\n  675     1 root     S        343 /usr/local/share/pynq-venv/bin/python3 /usr/local/share/pynq-venv/bin/jupyter-notebook --no-browser --allow-root\n  812     1 root     S        305 python3 /usr/local/bin/redirect_server\n 1295  1293 root     Ss         1 sudo -n /usr/bin/python3 -\n 1300  1295 root     S          0 /usr/bin/python3 -"
+  },
+  "schema": 1,
+  "status": "READ_ONLY_COLLECTION_COMPLETE_NOT_HARDWARE_ADMISSION"
+}

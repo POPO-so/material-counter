@@ -1,0 +1,25 @@
+{
+  "expected": {
+    "path": "data/results/wo0010-reference-final-20261013/conditions.csv",
+    "sha256": "85ae53eb9af5fb264d5433207298b3f288c019667694d855062e4d886b0b234d",
+    "bytes": 6190,
+    "origin": "local commit 7a868c0"
+  },
+  "variants": {
+    "current": {
+      "bytes": 6147,
+      "sha256": "dee73876cd4617f80fd15ac161f1421bf986298470739a8f271b48913c93a080",
+      "matches_inventory": false
+    },
+    "LF": {
+      "bytes": 6147,
+      "sha256": "dee73876cd4617f80fd15ac161f1421bf986298470739a8f271b48913c93a080",
+      "matches_inventory": false
+    },
+    "CRLF": {
+      "bytes": 6190,
+      "sha256": "85ae53eb9af5fb264d5433207298b3f288c019667694d855062e4d886b0b234d",
+      "matches_inventory": true
+    }
+  }
+}

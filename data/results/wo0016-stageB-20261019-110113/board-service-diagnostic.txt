@@ -1,0 +1,42 @@
+BOOT_ID=58e6af6c-6660-4d44-b0c5-e18f4a564202
+
+SERVICE_PROPERTIES
+Type=oneshot
+RemainAfterExit=no
+Result=success
+ExecMainCode=1
+ExecMainStatus=0
+LoadState=loaded
+ActiveState=inactive
+SubState=dead
+FragmentPath=/etc/systemd/system/ov9281-init.service
+UnitFileState=enabled
+
+SERVICE_UNIT
+# /etc/systemd/system/ov9281-init.service
+[Unit]
+Description=Initialize AT-OV9281 Camera Parameters
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/init_ov9281.sh
+
+[Install]
+WantedBy=multi-user.target
+
+FPGA_STATE
+/sys/class/fpga_manager/fpga0/state: operating
+
+/sys/class/fpga_manager/fpga0/name: Xilinx Zynq FPGA Manager
+
+
+UPTIME
+484.07 726.83
+
+CAMERA_DEVICE
+/sys/devices/soc0/axi/e0002000.usb/ci_hdrc.0/usb1/1-1/1-1:1.0
+
+SERVICE_JOURNAL
+Failed to add match '25
+': Invalid argument

@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "stage": "WO0016_STAGE_B_PHASE1",
+  "status": "STOPPED_PRECONDITION_UNVERIFIED",
+  "host_session_date": "2026-10-19",
+  "worktree": "C:\\Users\\POP\\.codex\\worktrees\\wo0016-attempt6-optimization\\material-counter",
+  "git_head": "59268209148888c135ff7ff5c0aa7dba8ddbaf66",
+  "authorized_boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "observed_boot_id": "58e6af6c-6660-4d44-b0c5-e18f4a564202",
+  "cma": {
+    "CmaFree": 71684,
+    "CmaTotal": 131072
+  },
+  "source_correspondence": [
+    {
+      "board_path": "/home/xilinx/wo0016/run_stream_counter.py",
+      "local_sha256": "fc58d73f14433c9a0917e82283ee43b918ea6bd9f81baadabb0410e980913956",
+      "board_sha256": "fc58d73f14433c9a0917e82283ee43b918ea6bd9f81baadabb0410e980913956",
+      "match": true
+    },
+    {
+      "board_path": "/home/xilinx/wo0016/stream_counter.py",
+      "local_sha256": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625",
+      "board_sha256": "67058c8133470dcb49051ac64d674933d74f47af6756807faa9e4d6cba4e5625",
+      "match": true
+    },
+    {
+      "board_path": "/home/xilinx/wo0016/mjpeg_preview.py",
+      "local_sha256": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6",
+      "board_sha256": "86496cbb4e52388bdebd588a1957d316e44dec3d9ea8f8ee134707e36a62d6b6",
+      "match": true
+    },
+    {
+      "board_path": "/home/xilinx/wo0016/packet_encoder.py",
+      "local_sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+      "board_sha256": "19a6c642088153088fd98876b8e28804d39a59f5fe7e5a7f6b54c873a4595bc8",
+      "match": true
+    },
+    {
+      "board_path": "/home/xilinx/wo0016/wo0015/board_preflight.py",
+      "local_sha256": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6",
+      "board_sha256": "f6556d811f2b4488b1ad471ea5d8ad565b74ae194b6db0b4356ae907e05de2d6",
+      "match": true
+    },
+    {
+      "board_path": "/home/xilinx/wo0016/wo0015/board_once.py",
+      "local_sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "board_sha256": "95204794257a3522afc3b7a7cae944f1c1e8bbde7b8d131a19faf32f29235525",
+      "match": true
+    }
+  ],
+  "baseline_pytest": {
+    "passed": 243,
+    "skipped": 1,
+    "failed": 1,
+    "canonical_fixture_substituted": false,
+    "failure": "Missing canonical WO-0014 vectors/manifest.json",
+    "raw_log": "pytest-baseline.log"
+  },
+  "delivery_integrity": {
+    "status": "FAIL",
+    "first_failure": "conditions.csv raw-byte SHA-256 mismatch",
+    "first_failure_cause": "LF/CRLF: CRLF conversion exactly matches recorded bytes/hash",
+    "files_modified": false,
+    "later_checks": "NOT_RUN"
+  },
+  "hardware": {
+    "board_read_only_accessed": true,
+    "pynq_imported": false,
+    "overlay_loaded_or_reloaded": false,
+    "mmio_accessed": false,
+    "cma_allocated": false,
+    "dma_started": false,
+    "camera_stream_started": false,
+    "guards_modified": false,
+    "camera_parameters_modified": false
+  },
+  "gate_blockers": [
+    "Canonical fixture missing; suite not fully green",
+    "Observed manifests and Stage1 receipt bind old boot",
+    "Deployed board_preflight AUTHORIZED_BOOT_ID binds old boot",
+    "Existing WO0016 stream guard is consumed",
+    "Requested physical DMA addresses not established for current boot"
+  ],
+  "service_observation": {
+    "type": "oneshot",
+    "remain_after_exit": false,
+    "enabled": true,
+    "result": "success",
+    "exec_main_status": 0,
+    "active_state": "inactive",
+    "interpretation": "inactive expected after successful oneshot; does not prove init failure"
+  },
+  "smoke_3frames": {
+    "status": "NOT_RUN"
+  },
+  "empty_belt_5seconds": {
+    "status": "NOT_RUN",
+    "observed_duration_seconds": null,
+    "background_gray_mean": null,
+    "foreground_gray_peak": null,
+    "false_foreground_pixels": null,
+    "dma_status": null
+  },
+  "preview_8080": {
+    "status": "NOT_STARTED",
+    "listening_at_read_only_snapshot": false,
+    "live_calibration_integrated": false,
+    "start_command": null
+  },
+  "offline_analysis_component": {
+    "status": "OFFLINE_PREPARED_NOT_LIVE_INTEGRATED",
+    "board_deployed": false,
+    "new_files": [
+      "scripts/wo0016/stageb_analysis.py",
+      "scripts/wo0016/test_stageb_analysis.py",
+      "scripts/wo0016/STAGEB_PHASE1.md"
+    ],
+    "focused_tests_passed": 11,
+    "manager_wo0016_regression": {
+      "passed": 77,
+      "failed": 0,
+      "elapsed_seconds": 5.28,
+      "raw_log": "pytest-wo0016-final.txt"
+    }
+  },
+  "board_time_warning": "board-readonly.json host_time_utc is board OS wall clock from 2025, not host session acquisition time",
+  "operator_coordination": {
+    "before_camera_sampling": "Notify operator to switch on light and wait for ready feedback",
+    "before_empty_belt_or_dynamic_sampling": "Notify operator to start conveyor and wait for ready feedback",
+    "current_physical_action_required": false
+  }
+}
