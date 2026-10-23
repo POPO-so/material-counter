@@ -8,6 +8,30 @@ Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
 
 仓库名保持为 `material-counter`，不随作品正式名称变化而重命名。
 
+## 换电脑继续开发（2026-10-23）
+
+队友需先获得此私有仓库的 GitHub 访问权限，再克隆并从 `main` 继续：
+
+```powershell
+git clone https://github.com/POPO-so/material-counter.git C:\mc
+cd C:\mc
+git switch main
+```
+
+截至本次交接，`main` 是推荐的当前开发基线。其余工作快照以独立分支保留，按需检出；它们是恢复点，不代表已合并到 `main`：
+
+| 分支 | 内容与边界 |
+|---|---|
+| `handoff/feat-pl-stream-skeleton-20261023` | 大型 `feat/pl-stream-skeleton` 工作区的源码基线；配套未跟踪工作文件放在下方 Release 压缩包中。 |
+| `handoff/pynq-exposure-buttons-20261023` | 曝光按钮 Proposed 候选；其中历史 WO-0017 编号与 `main` 当前的物理标定 WO-0017 重名。Vivado 构建和上板均未验证。 |
+| `handoff/wo0015-design-20261023` | WO-0015 隔离工作区快照；因凭据字段而排除了 `data/results/wo0014-coldboot-closure-20261015/`。 |
+| `handoff/wo0016-attempt6-analysis-20261023` | WO-0016 Attempt-6 的离线 Stage B 第一阶段分析与证据。 |
+| `handoff/wo0016-stageb-phase1-5-20261023` | WO-0016 Stage B phase 1–5 源码、脚本与结果记录。 |
+
+大型工作区快照作为 GitHub Release 附件提供：[handoff-2026-10-23](https://github.com/POPO-so/material-counter/releases/tag/handoff-2026-10-23)，下载 `feat-pl-stream-skeleton-worktree-20261023.zip`。压缩包内的 `HANDOFF-RESTORE.txt` 说明恢复方式与排除项，`SHA256SUMS.txt` 用于核对文件完整性。解压前先检出 `handoff/feat-pl-stream-skeleton-20261023`。
+
+凭据和密码不会随快照上传。WO-0017 Attempt-02 的两份原始凭据日志未上传，GitHub 上只有脱敏版本；WO-0014 coldboot closure 原始目录在本次可用工作区中未找到，也没有放入交接快照，如队友需要请从另行保存的备份恢复。
+
 ## 正式作品简介
 
 本项目面向垫圈、螺母等小型物料连续输送过程中的高速计数需求，基于 PYNQ-Z2 搭建实时视觉处理系统。系统利用传送带单向运动、相邻帧目标位移较小以及编码器可获取实际带速等场景约束，目标是由 FPGA 侧完成图像采集、区域裁剪、滤波、二值化、形态学处理、轻量区域/连通域分析及目标特征提取，将原始图像转换为目标位置、面积和边界框等信息；处理器端根据相邻帧目标的位置变化建立跟踪关系，并结合运动方向、编码器带速、速度预测和目标状态管理实现稳定越线计数，减少重复计数和短时漏检。
