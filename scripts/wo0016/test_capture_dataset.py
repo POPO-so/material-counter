@@ -147,6 +147,46 @@ def test_lossless_gray_and_raw_mask_round_trip(tmp_path):
     np.testing.assert_array_equal(frames[1].mask, mask1)
 
 
+def test_dataset_loader_reserves_frame_geometry_but_keeps_config_and_algorithm_gates(tmp_path):
+    geometry = {
+        "source_resolution": [640, 400],
+        "mask_resolution": [320, 240],
+        "valid_rows": [20, 220],
+    }
+    writer = CaptureWriter(
+        tmp_path / "capture", expected_frames=1,
+        config={"line_y": 120, "min_area": 12, "frame_geometry": geometry},
+        max_bytes=1_000_000,
+    )
+    image = np.zeros((240, 320), dtype=np.uint8)
+    writer.submit(0, image, image, _frame_metadata(0))
+    original_manifest = writer.close()
+    assert original_manifest["status"] == "COMPLETE"
+
+    manifest_path = tmp_path / "capture" / "manifest.json"
+    records_path = tmp_path / "capture" / "frame-records.jsonl"
+    manifest_path.write_text(json.dumps(original_manifest), encoding="utf-8")
+    loaded_manifest, frames = load_dataset(tmp_path / "capture")
+    assert loaded_manifest["config"]["frame_geometry"] == geometry
+    assert len(frames) == 1
+
+    tampered_manifest = json.loads(json.dumps(original_manifest))
+    tampered_manifest["config"]["frame_geometry"]["valid_rows"] = [21, 220]
+    manifest_path.write_text(json.dumps(tampered_manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="capture config hash"):
+        load_dataset(tmp_path / "capture")
+
+    row = json.loads(records_path.read_text(encoding="utf-8"))
+    row["metadata"]["algorithm_config"]["line_y"] = 121
+    record_bytes = (json.dumps(row) + "\n").encode("utf-8")
+    records_path.write_bytes(record_bytes)
+    tampered_manifest = json.loads(json.dumps(original_manifest))
+    tampered_manifest["frame_records_sha256"] = hashlib.sha256(record_bytes).hexdigest()
+    manifest_path.write_text(json.dumps(tampered_manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="algorithm config does not match manifest config"):
+        load_dataset(tmp_path / "capture")
+
+
 def test_writer_preallocates_and_seals_combined_raw_frame_archive(tmp_path):
     writer = _session(tmp_path, frames=2)
     assert writer.raw_gray8.shape == (2, 240, 320)

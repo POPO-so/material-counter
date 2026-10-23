@@ -1,0 +1,31 @@
+{
+  "actual_window_entity_count": null,
+  "empty_belt_first_frame": null,
+  "empty_belt_last_frame": null,
+  "empty_belt_observed_frames": null,
+  "entities": [
+    {
+      "completed_pass": null,
+      "entered_detection_window": null,
+      "entity_id": "E001",
+      "first_visible_frame": null,
+      "fully_visible": null,
+      "identity_evidence": "",
+      "identity_reviewed": false,
+      "insertion_order": 1,
+      "last_visible_frame": null,
+      "notes": "",
+      "put_in_monotonic_ns": null,
+      "track_ids": []
+    }
+  ],
+  "experiment_id": "",
+  "experiment_type": "A_SINGLE | B_FIVE_SPACED | C_CLOSE_PAIR | D_EMPTY_BELT",
+  "independent_record_reference": "",
+  "notes": "Ground truth must be entered from an independent observation source.",
+  "observer": "",
+  "provenance": "human_observation | independent_video | external_measurement",
+  "schema_version": 1,
+  "status": "UNANNOTATED",
+  "window_count_confirmed": false
+}

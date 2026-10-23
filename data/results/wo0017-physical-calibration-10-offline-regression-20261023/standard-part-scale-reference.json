@@ -1,0 +1,1588 @@
+{
+  "schema_version": 1,
+  "artifact": "conditional_standard_part_scale_reference",
+  "status": "CONDITIONAL_REFERENCE_ONLY",
+  "source": {
+    "calibration_id": "physical-calibration-20261023-10",
+    "manager_track_check": "data/results/wo0017-physical-calibration-10-offline-regression-20261023/manager-track-check.json",
+    "manager_track_check_sha256": "19c5b627a7cf6a7747a0d021a3e857109fcb55fb699e87a08c0c88923951bba3",
+    "frame_results": "data/results/wo0017-physical-calibration-20261023/physical-calibration-20261023-10/standby-reopen-102405062967732/frame-results.json",
+    "frame_results_sha256": "14a8f840928a677c3ee6df6b1b0e730caadd7429c95b4cb247848acdd7472431",
+    "frame_count": 300,
+    "track_count": 12,
+    "event_track_pairs_verified": true,
+    "full_track_max_bbox_crosschecked_against_frame_results": true
+  },
+  "mapping": {
+    "mapped_resolution_px": [
+      320,
+      240
+    ],
+    "source_resolution_px": [
+      640,
+      400
+    ],
+    "source_reference_factor_from_mapped": 2.0,
+    "units": "mapped px/mm; source px/mm is exactly mapped px/mm multiplied by 2",
+    "bbox_width_height_convention": "inclusive coordinates; width=x_max-x_min+1; height=y_max-y_min+1"
+  },
+  "formula": {
+    "mapped_range_px_per_mm": "[min(bbox_width,bbox_height)/max(reference_mm), max(bbox_width,bbox_height)/min(reference_mm)]",
+    "source_range_px_per_mm": "2 * mapped_range_px_per_mm",
+    "interpretation": "arithmetic range under each hypothetical part-size/orientation assumption; not a confidence interval"
+  },
+  "formal_calibration_record": {
+    "status": "NOT_MEASURED",
+    "pixels_per_mm_y": null,
+    "modified": false,
+    "note": "This conditional object-size reference does not measure the 180 mm belt edges or establish formal physical scale."
+  },
+  "part_hypotheses": {
+    "M6_nut": {
+      "label": "M6 螺母",
+      "min_mm": 10.0,
+      "max_mm": 11.5,
+      "basis": "对边 10 mm / 对角 11.5 mm"
+    },
+    "M6_washer": {
+      "label": "M6 垫片外径",
+      "min_mm": 12.0,
+      "max_mm": 12.0,
+      "basis": "外径 12 mm"
+    },
+    "M8_nut": {
+      "label": "M8 螺母",
+      "min_mm": 13.0,
+      "max_mm": 15.0,
+      "basis": "对边 13 mm / 对角 15 mm"
+    }
+  },
+  "cross_track_envelopes": {
+    "M6_nut": {
+      "label": "M6 螺母",
+      "reference": {
+        "label": "M6 螺母",
+        "min_mm": 10.0,
+        "max_mm": 11.5,
+        "basis": "对边 10 mm / 对角 11.5 mm"
+      },
+      "across_12_tracks": {
+        "crossing_bbox": {
+          "mapped_px_per_mm": [
+            0.8695652173913043,
+            2.9
+          ],
+          "source_px_per_mm": [
+            1.7391304347826086,
+            5.8
+          ]
+        },
+        "full_track_max_bbox": {
+          "mapped_px_per_mm": [
+            1.1304347826086956,
+            3.0
+          ],
+          "source_px_per_mm": [
+            2.260869565217391,
+            6.0
+          ]
+        }
+      }
+    },
+    "M6_washer": {
+      "label": "M6 垫片外径",
+      "reference": {
+        "label": "M6 垫片外径",
+        "min_mm": 12.0,
+        "max_mm": 12.0,
+        "basis": "外径 12 mm"
+      },
+      "across_12_tracks": {
+        "crossing_bbox": {
+          "mapped_px_per_mm": [
+            0.8333333333333334,
+            2.4166666666666665
+          ],
+          "source_px_per_mm": [
+            1.6666666666666667,
+            4.833333333333333
+          ]
+        },
+        "full_track_max_bbox": {
+          "mapped_px_per_mm": [
+            1.0833333333333333,
+            2.5
+          ],
+          "source_px_per_mm": [
+            2.1666666666666665,
+            5.0
+          ]
+        }
+      }
+    },
+    "M8_nut": {
+      "label": "M8 螺母",
+      "reference": {
+        "label": "M8 螺母",
+        "min_mm": 13.0,
+        "max_mm": 15.0,
+        "basis": "对边 13 mm / 对角 15 mm"
+      },
+      "across_12_tracks": {
+        "crossing_bbox": {
+          "mapped_px_per_mm": [
+            0.6666666666666666,
+            2.230769230769231
+          ],
+          "source_px_per_mm": [
+            1.3333333333333333,
+            4.461538461538462
+          ]
+        },
+        "full_track_max_bbox": {
+          "mapped_px_per_mm": [
+            0.8666666666666667,
+            2.3076923076923075
+          ],
+          "source_px_per_mm": [
+            1.7333333333333334,
+            4.615384615384615
+          ]
+        }
+      }
+    }
+  },
+  "tracks": [
+    {
+      "track_id": 1,
+      "event_frame": 154,
+      "crossing_bbox": {
+        "x_min": 168,
+        "x_max": 177,
+        "y_min": 133,
+        "y_max": 145,
+        "width_mapped_px": 10,
+        "height_mapped_px": 13
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 15,
+        "height_mapped_px": 13,
+        "y_min_over_track": 133,
+        "y_max_over_track": 145,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        33,
+        93.125,
+        117
+      ],
+      "manager_track_width_min_mean_max_px": [
+        7,
+        11.5,
+        15
+      ],
+      "manager_track_height_min_mean_max_px": [
+        11,
+        12.375,
+        13
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              0.8695652173913043,
+              1.3
+            ],
+            "source_px_per_mm": [
+              1.7391304347826086,
+              2.6
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.1304347826086956,
+              1.5
+            ],
+            "source_px_per_mm": [
+              2.260869565217391,
+              3.0
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              0.8333333333333334,
+              1.0833333333333333
+            ],
+            "source_px_per_mm": [
+              1.6666666666666667,
+              2.1666666666666665
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.0833333333333333,
+              1.25
+            ],
+            "source_px_per_mm": [
+              2.1666666666666665,
+              2.5
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              0.6666666666666666,
+              1.0
+            ],
+            "source_px_per_mm": [
+              1.3333333333333333,
+              2.0
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              0.8666666666666667,
+              1.1538461538461537
+            ],
+            "source_px_per_mm": [
+              1.7333333333333334,
+              2.3076923076923075
+            ]
+          }
+        }
+      },
+      "risk_notes": [
+        "小亮片风险：manager-track-check 最小面积仅 33 px、最小宽度 7 px，可能是强光碎片而非完整标准件轮廓。"
+      ]
+    },
+    {
+      "track_id": 4,
+      "event_frame": 168,
+      "crossing_bbox": {
+        "x_min": 165,
+        "x_max": 192,
+        "y_min": 30,
+        "y_max": 58,
+        "width_mapped_px": 28,
+        "height_mapped_px": 29
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 28,
+        "height_mapped_px": 30,
+        "y_min_over_track": 29,
+        "y_max_over_track": 58,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        320,
+        396.8181818181818,
+        443
+      ],
+      "manager_track_width_min_mean_max_px": [
+        25,
+        27.272727272727273,
+        28
+      ],
+      "manager_track_height_min_mean_max_px": [
+        28,
+        28.636363636363637,
+        30
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              2.4347826086956523,
+              2.9
+            ],
+            "source_px_per_mm": [
+              4.869565217391305,
+              5.8
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              2.4347826086956523,
+              3.0
+            ],
+            "source_px_per_mm": [
+              4.869565217391305,
+              6.0
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              2.3333333333333335,
+              2.4166666666666665
+            ],
+            "source_px_per_mm": [
+              4.666666666666667,
+              4.833333333333333
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              2.3333333333333335,
+              2.5
+            ],
+            "source_px_per_mm": [
+              4.666666666666667,
+              5.0
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.8666666666666667,
+              2.230769230769231
+            ],
+            "source_px_per_mm": [
+              3.7333333333333334,
+              4.461538461538462
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.8666666666666667,
+              2.3076923076923075
+            ],
+            "source_px_per_mm": [
+              3.7333333333333334,
+              4.615384615384615
+            ]
+          }
+        }
+      },
+      "risk_notes": []
+    },
+    {
+      "track_id": 7,
+      "event_frame": 173,
+      "crossing_bbox": {
+        "x_min": 156,
+        "x_max": 174,
+        "y_min": 202,
+        "y_max": 219,
+        "width_mapped_px": 19,
+        "height_mapped_px": 18
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 20,
+        "height_mapped_px": 18,
+        "y_min_over_track": 202,
+        "y_max_over_track": 219,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        45,
+        171.84615384615384,
+        209
+      ],
+      "manager_track_width_min_mean_max_px": [
+        17,
+        19.076923076923077,
+        20
+      ],
+      "manager_track_height_min_mean_max_px": [
+        13,
+        16.76923076923077,
+        18
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.565217391304348,
+              1.9
+            ],
+            "source_px_per_mm": [
+              3.130434782608696,
+              3.8
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.565217391304348,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.130434782608696,
+              4.0
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.5,
+              1.5833333333333333
+            ],
+            "source_px_per_mm": [
+              3.0,
+              3.1666666666666665
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.5,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.0,
+              3.3333333333333335
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.2,
+              1.4615384615384615
+            ],
+            "source_px_per_mm": [
+              2.4,
+              2.923076923076923
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.2,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.4,
+              3.076923076923077
+            ]
+          }
+        }
+      },
+      "risk_notes": [
+        "触及映射图有效下边界 y=219；可能被画面边缘截断。"
+      ]
+    },
+    {
+      "track_id": 8,
+      "event_frame": 175,
+      "crossing_bbox": {
+        "x_min": 170,
+        "x_max": 189,
+        "y_min": 188,
+        "y_max": 205,
+        "width_mapped_px": 20,
+        "height_mapped_px": 18
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 21,
+        "height_mapped_px": 19,
+        "y_min_over_track": 188,
+        "y_max_over_track": 212,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        15,
+        159.2,
+        232
+      ],
+      "manager_track_width_min_mean_max_px": [
+        5,
+        18.6,
+        21
+      ],
+      "manager_track_height_min_mean_max_px": [
+        10,
+        17.2,
+        19
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.565217391304348,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.130434782608696,
+              4.0
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.6521739130434783,
+              2.1
+            ],
+            "source_px_per_mm": [
+              3.3043478260869565,
+              4.2
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.5,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.0,
+              3.3333333333333335
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.5833333333333333,
+              1.75
+            ],
+            "source_px_per_mm": [
+              3.1666666666666665,
+              3.5
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.2,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.4,
+              3.076923076923077
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.2666666666666666,
+              1.6153846153846154
+            ],
+            "source_px_per_mm": [
+              2.533333333333333,
+              3.230769230769231
+            ]
+          }
+        }
+      },
+      "risk_notes": []
+    },
+    {
+      "track_id": 13,
+      "event_frame": 190,
+      "crossing_bbox": {
+        "x_min": 155,
+        "x_max": 173,
+        "y_min": 203,
+        "y_max": 219,
+        "width_mapped_px": 19,
+        "height_mapped_px": 17
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 20,
+        "height_mapped_px": 17,
+        "y_min_over_track": 203,
+        "y_max_over_track": 219,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        16,
+        134.66666666666666,
+        194
+      ],
+      "manager_track_width_min_mean_max_px": [
+        4,
+        18.133333333333333,
+        20
+      ],
+      "manager_track_height_min_mean_max_px": [
+        8,
+        14.333333333333334,
+        17
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.4782608695652173,
+              1.9
+            ],
+            "source_px_per_mm": [
+              2.9565217391304346,
+              3.8
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.4782608695652173,
+              2.0
+            ],
+            "source_px_per_mm": [
+              2.9565217391304346,
+              4.0
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.4166666666666667,
+              1.5833333333333333
+            ],
+            "source_px_per_mm": [
+              2.8333333333333335,
+              3.1666666666666665
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.4166666666666667,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              2.8333333333333335,
+              3.3333333333333335
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.1333333333333333,
+              1.4615384615384615
+            ],
+            "source_px_per_mm": [
+              2.2666666666666666,
+              2.923076923076923
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.1333333333333333,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.2666666666666666,
+              3.076923076923077
+            ]
+          }
+        }
+      },
+      "risk_notes": [
+        "触及映射图有效下边界 y=219；可能被画面边缘截断。"
+      ]
+    },
+    {
+      "track_id": 14,
+      "event_frame": 202,
+      "crossing_bbox": {
+        "x_min": 167,
+        "x_max": 189,
+        "y_min": 129,
+        "y_max": 152,
+        "width_mapped_px": 23,
+        "height_mapped_px": 24
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 24,
+        "height_mapped_px": 24,
+        "y_min_over_track": 129,
+        "y_max_over_track": 153,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        175,
+        315.9166666666667,
+        343
+      ],
+      "manager_track_width_min_mean_max_px": [
+        18,
+        23.25,
+        24
+      ],
+      "manager_track_height_min_mean_max_px": [
+        23,
+        23.5,
+        24
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              2.0,
+              2.4
+            ],
+            "source_px_per_mm": [
+              4.0,
+              4.8
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              2.0869565217391304,
+              2.4
+            ],
+            "source_px_per_mm": [
+              4.173913043478261,
+              4.8
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.9166666666666667,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.8333333333333335,
+              4.0
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              2.0,
+              2.0
+            ],
+            "source_px_per_mm": [
+              4.0,
+              4.0
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.5333333333333334,
+              1.8461538461538463
+            ],
+            "source_px_per_mm": [
+              3.066666666666667,
+              3.6923076923076925
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.6,
+              1.8461538461538463
+            ],
+            "source_px_per_mm": [
+              3.2,
+              3.6923076923076925
+            ]
+          }
+        }
+      },
+      "risk_notes": []
+    },
+    {
+      "track_id": 16,
+      "event_frame": 212,
+      "crossing_bbox": {
+        "x_min": 166,
+        "x_max": 185,
+        "y_min": 201,
+        "y_max": 219,
+        "width_mapped_px": 20,
+        "height_mapped_px": 19
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 20,
+        "height_mapped_px": 19,
+        "y_min_over_track": 201,
+        "y_max_over_track": 219,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        12,
+        170.33333333333334,
+        224
+      ],
+      "manager_track_width_min_mean_max_px": [
+        3,
+        18.166666666666668,
+        20
+      ],
+      "manager_track_height_min_mean_max_px": [
+        10,
+        17.416666666666668,
+        19
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.6521739130434783,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.3043478260869565,
+              4.0
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.6521739130434783,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.3043478260869565,
+              4.0
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.5833333333333333,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.1666666666666665,
+              3.3333333333333335
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.5833333333333333,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.1666666666666665,
+              3.3333333333333335
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.2666666666666666,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.533333333333333,
+              3.076923076923077
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.2666666666666666,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.533333333333333,
+              3.076923076923077
+            ]
+          }
+        }
+      },
+      "risk_notes": [
+        "触及映射图有效下边界 y=219；可能被画面边缘截断。"
+      ]
+    },
+    {
+      "track_id": 19,
+      "event_frame": 218,
+      "crossing_bbox": {
+        "x_min": 161,
+        "x_max": 180,
+        "y_min": 62,
+        "y_max": 81,
+        "width_mapped_px": 20,
+        "height_mapped_px": 20
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 20,
+        "height_mapped_px": 21,
+        "y_min_over_track": 61,
+        "y_max_over_track": 81,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        15,
+        160.84615384615384,
+        219
+      ],
+      "manager_track_width_min_mean_max_px": [
+        4,
+        18.153846153846153,
+        20
+      ],
+      "manager_track_height_min_mean_max_px": [
+        7,
+        17.46153846153846,
+        21
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.7391304347826086,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.4782608695652173,
+              4.0
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.7391304347826086,
+              2.1
+            ],
+            "source_px_per_mm": [
+              3.4782608695652173,
+              4.2
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.6666666666666667,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.3333333333333335,
+              3.3333333333333335
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.6666666666666667,
+              1.75
+            ],
+            "source_px_per_mm": [
+              3.3333333333333335,
+              3.5
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.3333333333333333,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.6666666666666665,
+              3.076923076923077
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.3333333333333333,
+              1.6153846153846154
+            ],
+            "source_px_per_mm": [
+              2.6666666666666665,
+              3.230769230769231
+            ]
+          }
+        }
+      },
+      "risk_notes": []
+    },
+    {
+      "track_id": 20,
+      "event_frame": 231,
+      "crossing_bbox": {
+        "x_min": 153,
+        "x_max": 172,
+        "y_min": 129,
+        "y_max": 147,
+        "width_mapped_px": 20,
+        "height_mapped_px": 19
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 21,
+        "height_mapped_px": 20,
+        "y_min_over_track": 129,
+        "y_max_over_track": 148,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        26,
+        181.76923076923077,
+        228
+      ],
+      "manager_track_width_min_mean_max_px": [
+        16,
+        19.615384615384617,
+        21
+      ],
+      "manager_track_height_min_mean_max_px": [
+        9,
+        18.153846153846153,
+        20
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.6521739130434783,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.3043478260869565,
+              4.0
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.7391304347826086,
+              2.1
+            ],
+            "source_px_per_mm": [
+              3.4782608695652173,
+              4.2
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.5833333333333333,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.1666666666666665,
+              3.3333333333333335
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.6666666666666667,
+              1.75
+            ],
+            "source_px_per_mm": [
+              3.3333333333333335,
+              3.5
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.2666666666666666,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.533333333333333,
+              3.076923076923077
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.3333333333333333,
+              1.6153846153846154
+            ],
+            "source_px_per_mm": [
+              2.6666666666666665,
+              3.230769230769231
+            ]
+          }
+        }
+      },
+      "risk_notes": []
+    },
+    {
+      "track_id": 22,
+      "event_frame": 237,
+      "crossing_bbox": {
+        "x_min": 165,
+        "x_max": 187,
+        "y_min": 173,
+        "y_max": 195,
+        "width_mapped_px": 23,
+        "height_mapped_px": 23
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 24,
+        "height_mapped_px": 24,
+        "y_min_over_track": 172,
+        "y_max_over_track": 196,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        127,
+        290.72727272727275,
+        329
+      ],
+      "manager_track_width_min_mean_max_px": [
+        20,
+        23,
+        24
+      ],
+      "manager_track_height_min_mean_max_px": [
+        22,
+        23.181818181818183,
+        24
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              2.0,
+              2.3
+            ],
+            "source_px_per_mm": [
+              4.0,
+              4.6
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              2.0869565217391304,
+              2.4
+            ],
+            "source_px_per_mm": [
+              4.173913043478261,
+              4.8
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.9166666666666667,
+              1.9166666666666667
+            ],
+            "source_px_per_mm": [
+              3.8333333333333335,
+              3.8333333333333335
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              2.0,
+              2.0
+            ],
+            "source_px_per_mm": [
+              4.0,
+              4.0
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.5333333333333334,
+              1.7692307692307692
+            ],
+            "source_px_per_mm": [
+              3.066666666666667,
+              3.5384615384615383
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.6,
+              1.8461538461538463
+            ],
+            "source_px_per_mm": [
+              3.2,
+              3.6923076923076925
+            ]
+          }
+        }
+      },
+      "risk_notes": []
+    },
+    {
+      "track_id": 24,
+      "event_frame": 258,
+      "crossing_bbox": {
+        "x_min": 163,
+        "x_max": 182,
+        "y_min": 50,
+        "y_max": 68,
+        "width_mapped_px": 20,
+        "height_mapped_px": 19
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 20,
+        "height_mapped_px": 20,
+        "y_min_over_track": 50,
+        "y_max_over_track": 69,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        77,
+        177.33333333333334,
+        217
+      ],
+      "manager_track_width_min_mean_max_px": [
+        18,
+        19.5,
+        20
+      ],
+      "manager_track_height_min_mean_max_px": [
+        18,
+        19.083333333333332,
+        20
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.6521739130434783,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.3043478260869565,
+              4.0
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.7391304347826086,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.4782608695652173,
+              4.0
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.5833333333333333,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.1666666666666665,
+              3.3333333333333335
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.6666666666666667,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.3333333333333335,
+              3.3333333333333335
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.2666666666666666,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.533333333333333,
+              3.076923076923077
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.3333333333333333,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.6666666666666665,
+              3.076923076923077
+            ]
+          }
+        }
+      },
+      "risk_notes": []
+    },
+    {
+      "track_id": 25,
+      "event_frame": 264,
+      "crossing_bbox": {
+        "x_min": 172,
+        "x_max": 191,
+        "y_min": 175,
+        "y_max": 193,
+        "width_mapped_px": 20,
+        "height_mapped_px": 19
+      },
+      "full_track_max_bbox": {
+        "width_mapped_px": 21,
+        "height_mapped_px": 20,
+        "y_min_over_track": 175,
+        "y_max_over_track": 194,
+        "width_height_maxima_may_be_from_different_frames": true
+      },
+      "manager_track_area_min_mean_max_px": [
+        27,
+        168.5,
+        245
+      ],
+      "manager_track_width_min_mean_max_px": [
+        6,
+        18.857142857142858,
+        21
+      ],
+      "manager_track_height_min_mean_max_px": [
+        8,
+        17.214285714285715,
+        20
+      ],
+      "standard_part_scale_ranges": {
+        "M6_nut": {
+          "reference": {
+            "min_mm": 10.0,
+            "max_mm": 11.5,
+            "basis": "对边 10 mm / 对角 11.5 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.6521739130434783,
+              2.0
+            ],
+            "source_px_per_mm": [
+              3.3043478260869565,
+              4.0
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.7391304347826086,
+              2.1
+            ],
+            "source_px_per_mm": [
+              3.4782608695652173,
+              4.2
+            ]
+          }
+        },
+        "M6_washer": {
+          "reference": {
+            "min_mm": 12.0,
+            "max_mm": 12.0,
+            "basis": "外径 12 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.5833333333333333,
+              1.6666666666666667
+            ],
+            "source_px_per_mm": [
+              3.1666666666666665,
+              3.3333333333333335
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.6666666666666667,
+              1.75
+            ],
+            "source_px_per_mm": [
+              3.3333333333333335,
+              3.5
+            ]
+          }
+        },
+        "M8_nut": {
+          "reference": {
+            "min_mm": 13.0,
+            "max_mm": 15.0,
+            "basis": "对边 13 mm / 对角 15 mm"
+          },
+          "crossing_bbox": {
+            "mapped_px_per_mm": [
+              1.2666666666666666,
+              1.5384615384615385
+            ],
+            "source_px_per_mm": [
+              2.533333333333333,
+              3.076923076923077
+            ]
+          },
+          "full_track_max_bbox": {
+            "mapped_px_per_mm": [
+              1.3333333333333333,
+              1.6153846153846154
+            ],
+            "source_px_per_mm": [
+              2.6666666666666665,
+              3.230769230769231
+            ]
+          }
+        }
+      },
+      "risk_notes": []
+    }
+  ],
+  "limitations": [
+    "Actual material identities are unknown; all three standard-part categories are hypothetical comparison cases.",
+    "Strong-light fragments, partial silhouettes, overlap, and image-edge truncation can make bounding boxes smaller than complete physical outlines.",
+    "Track 1 carries a small bright-fragment risk; Tracks 7, 13, and 16 reach mapped y=219, the last valid image row.",
+    "The cross-track envelope is only an arithmetic envelope under the stated category/axis assumptions, not a statistical confidence interval.",
+    "No formal calibration status was changed; pixels_per_mm_y remains null and NOT_MEASURED."
+  ]
+}

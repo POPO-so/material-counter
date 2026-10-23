@@ -1,0 +1,160 @@
+{
+  "scope": "LOCAL_DERIVED_VISUALIZATION",
+  "panels": [
+    {
+      "frame_id": 154,
+      "track_id": 1,
+      "bbox_xyxy_inclusive": [
+        168,
+        133,
+        177,
+        145
+      ],
+      "area_px": 91,
+      "touches_active_border": false
+    },
+    {
+      "frame_id": 168,
+      "track_id": 4,
+      "bbox_xyxy_inclusive": [
+        165,
+        30,
+        192,
+        58
+      ],
+      "area_px": 385,
+      "touches_active_border": false
+    },
+    {
+      "frame_id": 173,
+      "track_id": 7,
+      "bbox_xyxy_inclusive": [
+        156,
+        202,
+        174,
+        219
+      ],
+      "area_px": 209,
+      "touches_active_border": true
+    },
+    {
+      "frame_id": 175,
+      "track_id": 8,
+      "bbox_xyxy_inclusive": [
+        170,
+        188,
+        189,
+        205
+      ],
+      "area_px": 210,
+      "touches_active_border": false
+    },
+    {
+      "frame_id": 190,
+      "track_id": 13,
+      "bbox_xyxy_inclusive": [
+        155,
+        203,
+        173,
+        219
+      ],
+      "area_px": 190,
+      "touches_active_border": true
+    },
+    {
+      "frame_id": 202,
+      "track_id": 14,
+      "bbox_xyxy_inclusive": [
+        167,
+        129,
+        189,
+        152
+      ],
+      "area_px": 327,
+      "touches_active_border": false
+    },
+    {
+      "frame_id": 212,
+      "track_id": 16,
+      "bbox_xyxy_inclusive": [
+        166,
+        201,
+        185,
+        219
+      ],
+      "area_px": 219,
+      "touches_active_border": true
+    },
+    {
+      "frame_id": 218,
+      "track_id": 19,
+      "bbox_xyxy_inclusive": [
+        161,
+        62,
+        180,
+        81
+      ],
+      "area_px": 210,
+      "touches_active_border": false
+    },
+    {
+      "frame_id": 231,
+      "track_id": 20,
+      "bbox_xyxy_inclusive": [
+        153,
+        129,
+        172,
+        147
+      ],
+      "area_px": 223,
+      "touches_active_border": false
+    },
+    {
+      "frame_id": 237,
+      "track_id": 22,
+      "bbox_xyxy_inclusive": [
+        165,
+        173,
+        187,
+        195
+      ],
+      "area_px": 318,
+      "touches_active_border": false
+    },
+    {
+      "frame_id": 258,
+      "track_id": 24,
+      "bbox_xyxy_inclusive": [
+        163,
+        50,
+        182,
+        68
+      ],
+      "area_px": 202,
+      "touches_active_border": false
+    },
+    {
+      "frame_id": 264,
+      "track_id": 25,
+      "bbox_xyxy_inclusive": [
+        172,
+        175,
+        191,
+        193
+      ],
+      "area_px": 215,
+      "touches_active_border": false
+    }
+  ],
+  "preview_path": "C:\\wt\\wo0017-physical-calibration-20261023\\data\\results\\wo0017-physical-calibration-10-offline-regression-20261023\\ruler-preview-reviewed.png",
+  "preview_sha256": "9c0cb7161583f7c337dcb810210647a57e28d6ff25f9e4e155e16987afc964d6",
+  "raw_npz_sha256": "1cac1bdfe0c85677cb4f723757cd1609093dd93e00697c41f31b08d013e432aa",
+  "frame_results_sha256": "14a8f840928a677c3ee6df6b1b0e730caadd7429c95b4cb247848acdd7472431",
+  "script_sha256": "3de8c2f399241344af1f507aa9841e32f5835b0a5bb2fa4e7f4780dedd0050f6",
+  "image_size": [
+    2000,
+    1290
+  ],
+  "physical_calibration_status": "NOT_MEASURED",
+  "pixels_per_mm_y": null
+}

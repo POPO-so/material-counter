@@ -1,0 +1,446 @@
+{
+  "physical_total_confirmed_by_operator": 12,
+  "count_events": 12,
+  "algorithm_track_ids": [
+    1,
+    4,
+    7,
+    8,
+    13,
+    14,
+    16,
+    19,
+    20,
+    22,
+    24,
+    25
+  ],
+  "track_ids_are_physical_ids": false,
+  "full_track_scope": "all actual association records for each of the 12 count-event track IDs during the 300 captured frames; missed/predicted frames excluded",
+  "event_window_scope": "each count event frame +/- 5 frames, clipped to captured range",
+  "associated_observations": 157,
+  "full_track_associated_observations": 157,
+  "event_window_associated_observations": 126,
+  "full_track_association_counts_by_track": {
+    "1": 16,
+    "4": 11,
+    "7": 13,
+    "8": 15,
+    "13": 15,
+    "14": 12,
+    "16": 12,
+    "19": 13,
+    "20": 13,
+    "22": 11,
+    "24": 12,
+    "25": 14
+  },
+  "merged_detection_area_px": {
+    "n": 157,
+    "min": 12.0,
+    "mean": 194.0828025477707,
+    "max": 443.0
+  },
+  "merged_detection_bbox_width_px": {
+    "n": 157,
+    "min": 3.0,
+    "mean": 19.248407643312103,
+    "max": 28.0
+  },
+  "merged_detection_bbox_height_px": {
+    "n": 157,
+    "min": 7.0,
+    "mean": 18.363057324840764,
+    "max": 30.0
+  },
+  "raw_component_area_px": {
+    "n": 182,
+    "min": 12.0,
+    "mean": 167.42307692307693,
+    "max": 443.0
+  },
+  "largest_raw_ccl_component_px": 443,
+  "max_merge_area_cap_applies_to_single_components": false,
+  "merge_area_cap_note": "260 px limits a proposed merged group. A single raw CCL component can exceed 260 while remaining eligible under the separate max_area=900 limit.",
+  "fragment_merge_observation_count": 25,
+  "full_track_fragment_merge_observation_count": 25,
+  "event_window_fragment_merge_observation_count": 15,
+  "full_track_fragment_merge_union_operation_count": 25,
+  "event_window_fragment_merge_union_operation_count": 15,
+  "full_track_fragment_merge_counts_by_track": {
+    "1": 2,
+    "4": 0,
+    "7": 3,
+    "8": 3,
+    "13": 4,
+    "14": 0,
+    "16": 2,
+    "19": 2,
+    "20": 3,
+    "22": 1,
+    "24": 2,
+    "25": 3
+  },
+  "event_window_fragment_merge_counts_by_track": {
+    "1": 1,
+    "4": 0,
+    "7": 2,
+    "8": 2,
+    "13": 1,
+    "14": 0,
+    "16": 1,
+    "19": 2,
+    "20": 2,
+    "22": 1,
+    "24": 1,
+    "25": 2
+  },
+  "fragment_merge_frames": [
+    {
+      "track_id": 1,
+      "frame_id": 144,
+      "raw_component_areas_px": [
+        34,
+        16
+      ],
+      "merged_area_px": 50
+    },
+    {
+      "track_id": 1,
+      "frame_id": 159,
+      "raw_component_areas_px": [
+        13,
+        20
+      ],
+      "merged_area_px": 33
+    },
+    {
+      "track_id": 7,
+      "frame_id": 166,
+      "raw_component_areas_px": [
+        46,
+        48
+      ],
+      "merged_area_px": 94
+    },
+    {
+      "track_id": 7,
+      "frame_id": 177,
+      "raw_component_areas_px": [
+        78,
+        37
+      ],
+      "merged_area_px": 115
+    },
+    {
+      "track_id": 7,
+      "frame_id": 178,
+      "raw_component_areas_px": [
+        27,
+        18
+      ],
+      "merged_area_px": 45
+    },
+    {
+      "track_id": 8,
+      "frame_id": 167,
+      "raw_component_areas_px": [
+        36,
+        26
+      ],
+      "merged_area_px": 62
+    },
+    {
+      "track_id": 8,
+      "frame_id": 179,
+      "raw_component_areas_px": [
+        27,
+        12
+      ],
+      "merged_area_px": 39
+    },
+    {
+      "track_id": 8,
+      "frame_id": 180,
+      "raw_component_areas_px": [
+        20,
+        13
+      ],
+      "merged_area_px": 33
+    },
+    {
+      "track_id": 13,
+      "frame_id": 183,
+      "raw_component_areas_px": [
+        20,
+        36
+      ],
+      "merged_area_px": 56
+    },
+    {
+      "track_id": 13,
+      "frame_id": 195,
+      "raw_component_areas_px": [
+        57,
+        40
+      ],
+      "merged_area_px": 97
+    },
+    {
+      "track_id": 13,
+      "frame_id": 196,
+      "raw_component_areas_px": [
+        28,
+        24
+      ],
+      "merged_area_px": 52
+    },
+    {
+      "track_id": 13,
+      "frame_id": 197,
+      "raw_component_areas_px": [
+        20,
+        15
+      ],
+      "merged_area_px": 35
+    },
+    {
+      "track_id": 16,
+      "frame_id": 206,
+      "raw_component_areas_px": [
+        49,
+        80
+      ],
+      "merged_area_px": 129
+    },
+    {
+      "track_id": 16,
+      "frame_id": 216,
+      "raw_component_areas_px": [
+        23,
+        19
+      ],
+      "merged_area_px": 42
+    },
+    {
+      "track_id": 19,
+      "frame_id": 222,
+      "raw_component_areas_px": [
+        34,
+        29
+      ],
+      "merged_area_px": 63
+    },
+    {
+      "track_id": 19,
+      "frame_id": 223,
+      "raw_component_areas_px": [
+        17,
+        27
+      ],
+      "merged_area_px": 44
+    },
+    {
+      "track_id": 20,
+      "frame_id": 224,
+      "raw_component_areas_px": [
+        35,
+        38
+      ],
+      "merged_area_px": 73
+    },
+    {
+      "track_id": 20,
+      "frame_id": 235,
+      "raw_component_areas_px": [
+        63,
+        33
+      ],
+      "merged_area_px": 96
+    },
+    {
+      "track_id": 20,
+      "frame_id": 236,
+      "raw_component_areas_px": [
+        13,
+        13
+      ],
+      "merged_area_px": 26
+    },
+    {
+      "track_id": 22,
+      "frame_id": 241,
+      "raw_component_areas_px": [
+        111,
+        16
+      ],
+      "merged_area_px": 127
+    },
+    {
+      "track_id": 24,
+      "frame_id": 251,
+      "raw_component_areas_px": [
+        39,
+        42
+      ],
+      "merged_area_px": 81
+    },
+    {
+      "track_id": 24,
+      "frame_id": 262,
+      "raw_component_areas_px": [
+        43,
+        34
+      ],
+      "merged_area_px": 77
+    },
+    {
+      "track_id": 25,
+      "frame_id": 257,
+      "raw_component_areas_px": [
+        60,
+        73
+      ],
+      "merged_area_px": 133
+    },
+    {
+      "track_id": 25,
+      "frame_id": 268,
+      "raw_component_areas_px": [
+        18,
+        20
+      ],
+      "merged_area_px": 38
+    },
+    {
+      "track_id": 25,
+      "frame_id": 269,
+      "raw_component_areas_px": [
+        14,
+        13
+      ],
+      "merged_area_px": 27
+    }
+  ],
+  "parameters": {
+    "component_cluster_gap_px": 14.0,
+    "single_intact_area_px": 95,
+    "max_merge_area_px": 260,
+    "max_merged_span_px": 24,
+    "max_raw_detection_area_px": 900
+  },
+  "observed_gate_margins": {
+    "full_lifecycle_associations": {
+      "decision_count": 58,
+      "applied_merge_count": 25,
+      "applied_merge_gap_distance_px": {
+        "n": 25,
+        "min": 0.0,
+        "mean": 4.513954312071844,
+        "max": 11.0
+      },
+      "applied_merge_gap_remaining_px": {
+        "n": 25,
+        "min": 3.0,
+        "mean": 9.486045687928156,
+        "max": 14.0
+      },
+      "applied_merge_single_intact_area_margin_px": {
+        "n": 25,
+        "min": 35.0,
+        "mean": 68.8,
+        "max": 83.0
+      },
+      "applied_merge_area_remaining_px": {
+        "n": 25,
+        "min": 127.0,
+        "mean": 193.32,
+        "max": 234.0
+      },
+      "applied_merge_span_remaining_px": {
+        "n": 25,
+        "min": 2.0,
+        "mean": 6.16,
+        "max": 13.0
+      },
+      "blocked_both_intact_candidates": 22,
+      "blocked_merge_area_candidates": 0,
+      "blocked_merge_span_candidates": 11
+    },
+    "event_window_pm5_associations": {
+      "decision_count": 41,
+      "applied_merge_count": 15,
+      "applied_merge_gap_distance_px": {
+        "n": 15,
+        "min": 0.0,
+        "mean": 5.45659052011974,
+        "max": 11.0
+      },
+      "applied_merge_gap_remaining_px": {
+        "n": 15,
+        "min": 3.0,
+        "mean": 8.54340947988026,
+        "max": 14.0
+      },
+      "applied_merge_single_intact_area_margin_px": {
+        "n": 15,
+        "min": 55.0,
+        "mean": 73.33333333333333,
+        "max": 83.0
+      },
+      "applied_merge_area_remaining_px": {
+        "n": 15,
+        "min": 133.0,
+        "mean": 199.86666666666667,
+        "max": 234.0
+      },
+      "applied_merge_span_remaining_px": {
+        "n": 15,
+        "min": 2.0,
+        "mean": 6.266666666666667,
+        "max": 13.0
+      },
+      "blocked_both_intact_candidates": 20,
+      "blocked_merge_area_candidates": 0,
+      "blocked_merge_span_candidates": 6
+    }
+  },
+  "recorded_algorithm_config": {
+    "source": "capture/frame-records.jsonl metadata.algorithm_config",
+    "all_300_frames_match": true,
+    "recorded_counter_config": {
+      "backward_tolerance": 4.0,
+      "component_cluster_dx": 0.0,
+      "component_cluster_dy": 12.0,
+      "component_cluster_gap": 14.0,
+      "confirm_hits": 2,
+      "cooldown_frames": 0,
+      "cooldown_lateral": 15.0,
+      "count_axis": "x",
+      "direction": 1,
+      "edge_max_missing": 0,
+      "guarded_merge": true,
+      "hysteresis": 2.0,
+      "line_x": 160,
+      "line_y": 120,
+      "max_area": 900,
+      "max_bbox_height": 85,
+      "max_bbox_width": 85,
+      "max_lateral_step": 10.0,
+      "max_merge_area": 260,
+      "max_merged_span": 24,
+      "max_missing": 3,
+      "max_step": 48.0,
+      "min_area": 12,
+      "prediction_max_missing": 3,
+      "roi_mode": "full",
+      "single_intact_area": 95,
+      "strict_lateral_gate": true
+    },
+    "replay_dimensions_from_npz": {
+      "width": 320,
+      "height": 240
+    }
+  },
+  "interpretation": "Observed margins cover the 157 actual association records for the 12 count-event algorithm tracks (separately reporting the +/-5-frame subset); missed/predicted frames are excluded. The 260 px cap applies to proposed merged groups, not single raw CCL components; a raw component may exceed 260 while remaining below max_area=900. With no per-item human labels, track IDs are not independent physical-object identities, so this finite run does not establish general safety or accuracy."
+}

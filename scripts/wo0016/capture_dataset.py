@@ -696,7 +696,7 @@ def load_dataset(output_dir: str | Path, *, require_complete: bool = True
     config_digest = hashlib.sha256(_json_bytes(config)).hexdigest()
     reserved_config_keys = {
         "algorithm", "threshold", "input_resolution", "mask_resolution",
-        "roi_bounds_convention", "counter_config",
+        "roi_bounds_convention", "counter_config", "frame_geometry",
     }
     effective_config = config.get("counter_config")
     if effective_config is None:
