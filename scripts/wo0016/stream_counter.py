@@ -36,6 +36,7 @@ class FrameInput:
     capture_monotonic_ns: int
     capture_wall_time_ns: int
     camera_read_ms: float
+    source_gray: np.ndarray | None = None
 
 
 class BufferState(str, Enum):
@@ -58,6 +59,7 @@ class DmaBufferSlot:
     capture_mask: np.ndarray | None = None
     preview_gray: np.ndarray | None = None
     capture_metadata: dict[str, Any] | None = None
+    capture_source_gray: np.ndarray | None = None
     dma_complete_monotonic_ns: int | None = None
 
 
@@ -873,6 +875,7 @@ class DoubleBufferStream:
                  on_frame: Callable[[FrameResult, np.ndarray], Any] | None = None,
                  preview_callback: Callable[[FrameResult, np.ndarray, np.ndarray], Any] | None = None,
                  raw_capture_callback: Callable[[int, np.ndarray, np.ndarray], None] | None = None,
+                 source_capture_callback: Callable[[int, np.ndarray], None] | None = None,
                  capture_callback: Callable[[FrameResult, DmaBufferSlot], Any] | None = None,
                  stage_timings_ms: dict[str, list[float]] | None = None,
                  transfer_timeout_s: float = 5.0):
@@ -893,6 +896,7 @@ class DoubleBufferStream:
         self.on_frame = on_frame
         self.preview_callback = preview_callback
         self.raw_capture_callback = raw_capture_callback
+        self.source_capture_callback = source_capture_callback
         self.capture_callback = capture_callback
         self.stage_timings_ms = stage_timings_ms
         self._postprocess_ms: dict[int, float] = {}
@@ -968,8 +972,15 @@ class DoubleBufferStream:
                 slot.state = BufferState.CPU_OWNED
                 slot.frame_id = frame_id
                 slot.dma_complete_monotonic_ns = None
+                slot.capture_source_gray = None
                 if frame_input is not None and frame_input.source_sequence != frame_id:
                     raise ValueError("camera source sequence does not match DMA frame ID")
+                if frame_input is not None and frame_input.source_gray is not None:
+                    source_gray = np.asarray(frame_input.source_gray)
+                    if (source_gray.dtype != np.uint8 or source_gray.shape != (400, 640)
+                            or not source_gray.flags.c_contiguous):
+                        raise ValueError("original source frames must be contiguous uint8 640x400")
+                    slot.capture_source_gray = source_gray
                 if self.capture_callback is not None or self.raw_capture_callback is not None:
                     if slot.capture_gray is None:
                         raise RuntimeError("capture-enabled slot has no Gray8 snapshot storage")
@@ -1065,6 +1076,8 @@ class DoubleBufferStream:
                     raw_copy_started = time.perf_counter()
                     self.raw_capture_callback(frame_id, slot.capture_gray, slot.capture_mask)
                     self._record_timing("raw_capture_copy", time.perf_counter() - raw_copy_started)
+                if self.source_capture_callback is not None and slot.capture_source_gray is not None:
+                    self.source_capture_callback(frame_id, slot.capture_source_gray)
                 self._postprocess_ms[frame_id] = postprocess_ms
 
                 if consumer.done():
@@ -1188,6 +1201,7 @@ class DoubleBufferStream:
             slot.state = BufferState.FREE
             slot.frame_id = None
             slot.capture_metadata = None
+            slot.capture_source_gray = None
             slot.dma_complete_monotonic_ns = None
             self._free_slots.put_nowait(slot)
 

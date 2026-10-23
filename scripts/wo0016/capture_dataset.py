@@ -22,6 +22,9 @@ FRAME_BYTES = WIDTH * HEIGHT
 SCHEMA_VERSION = 1
 DEFAULT_MAX_BYTES = 96 * 1024 * 1024
 RAW_FRAME_ARCHIVE_NAME = "frames_gray8_binary8.npz"
+SOURCE_FRAME_ARCHIVE_NAME = "frames_source640x400.npz"
+SOURCE_FRAME_SHAPE = (400, 640)
+SOURCE_FRAME_BYTES = int(np.prod(SOURCE_FRAME_SHAPE))
 
 
 class CaptureError(RuntimeError):
@@ -116,11 +119,15 @@ def _validate_frame_metadata(frame_id: int, metadata: Mapping[str, Any]) -> dict
     return safe
 
 
-def estimated_capture_bytes(expected_frames: int) -> int:
+def estimated_capture_bytes(expected_frames: int, *, source_frame_count: int = 0) -> int:
     """Conservative cap for per-frame records plus the combined raw-frame NPZ."""
     if isinstance(expected_frames, bool) or not isinstance(expected_frames, int) or expected_frames < 1:
         raise ValueError("expected_frames must be a positive integer")
-    return expected_frames * (4 * FRAME_BYTES + 4096) + 32768
+    if (isinstance(source_frame_count, bool) or not isinstance(source_frame_count, int)
+            or source_frame_count < 0 or source_frame_count > expected_frames):
+        raise ValueError("source_frame_count must be between zero and expected_frames")
+    return (expected_frames * (4 * FRAME_BYTES + 4096) + 32768
+            + source_frame_count * (SOURCE_FRAME_BYTES + 4096))
 
 
 def _sha256_file(path: Path) -> str:
@@ -132,7 +139,8 @@ def _sha256_file(path: Path) -> str:
 
 
 def preflight_capture_target(output_dir: str | Path, *, expected_frames: int,
-                             max_bytes: int = DEFAULT_MAX_BYTES) -> dict[str, Any]:
+                             max_bytes: int = DEFAULT_MAX_BYTES,
+                             source_frame_count: int = 0) -> dict[str, Any]:
     target = Path(output_dir).expanduser().resolve(strict=False)
     normalized_parts = [part.lower() for part in target.parts]
     protected_archive = any(
@@ -150,7 +158,8 @@ def preflight_capture_target(output_dir: str | Path, *, expected_frames: int,
         raise CaptureError(f"capture parent directory must already exist: {parent}")
     if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes < 1:
         raise ValueError("max_bytes must be a positive integer")
-    estimate = estimated_capture_bytes(expected_frames)
+    estimate = estimated_capture_bytes(expected_frames,
+                                       source_frame_count=source_frame_count)
     if estimate > max_bytes:
         raise CaptureError(
             f"capture capacity limit {max_bytes} bytes is below estimated requirement {estimate} bytes"
@@ -170,11 +179,28 @@ class CaptureWriter:
     def __init__(self, output_dir: str | Path, *, expected_frames: int,
                  config: Mapping[str, Any], max_bytes: int = DEFAULT_MAX_BYTES,
                  queue_depth: int = 2, metadata: Mapping[str, Any] | None = None,
-                 source_type: str = "camera_capture"):
+                 source_type: str = "camera_capture",
+                 source_frame_ids: tuple[int, ...] = ()):
         if isinstance(queue_depth, bool) or not isinstance(queue_depth, int) or queue_depth < 1:
             raise ValueError("queue_depth must be a positive integer")
+        if not isinstance(source_frame_ids, tuple):
+            raise ValueError("source_frame_ids must be a tuple of selected frame indexes")
+        # Validate frame counts before using them in index checks or set construction.
+        estimated_capture_bytes(expected_frames, source_frame_count=len(source_frame_ids))
+        if any(isinstance(value, bool) or not isinstance(value, int)
+               or not 0 <= value < expected_frames for value in source_frame_ids):
+            raise ValueError("source_frame_ids must be unique indexes inside the capture window")
+        if len(set(source_frame_ids)) != len(source_frame_ids):
+            raise ValueError("source_frame_ids must be unique indexes inside the capture window")
+        self.source_frame_ids = source_frame_ids
+        self.source_frame_index = {frame_id: index
+                                   for index, frame_id in enumerate(source_frame_ids)}
+        self.source_gray8 = (np.empty((len(source_frame_ids), *SOURCE_FRAME_SHAPE),
+                                      dtype=np.uint8) if source_frame_ids else None)
+        self._source_frames_recorded: set[int] = set()
         self.preflight = preflight_capture_target(
-            output_dir, expected_frames=expected_frames, max_bytes=max_bytes
+            output_dir, expected_frames=expected_frames, max_bytes=max_bytes,
+            source_frame_count=len(source_frame_ids),
         )
         self.output_dir = Path(self.preflight["path"])
         self.expected_frames = expected_frames
@@ -216,9 +242,12 @@ class CaptureWriter:
             "config": self.config,
             "metadata": self.metadata,
             "capacity": self.preflight,
-            "estimated_total_bytes": estimated_capture_bytes(expected_frames),
+            "estimated_total_bytes": estimated_capture_bytes(
+                expected_frames, source_frame_count=len(source_frame_ids)),
             "max_bytes": max_bytes,
             "raw_frame_archive": None,
+            "source_frame_ids": list(source_frame_ids),
+            "source_frame_archive": None,
         }
         try:
             self.output_dir.mkdir(mode=0o700)
@@ -301,6 +330,29 @@ class CaptureWriter:
             np.copyto(self.raw_gray8[frame_id], gray_array, casting="no")
             np.copyto(self.raw_binary8[frame_id], mask_array, casting="no")
             self._raw_frames_recorded += 1
+
+    def record_source_frame(self, frame_id: int, source: np.ndarray) -> None:
+        """Retain only explicitly selected raw 640x400 source frames for calibration."""
+        if self._closed:
+            raise CaptureError("capture writer is already closed")
+        if self._error is not None:
+            raise CaptureError(f"capture writer failed: {self._error}")
+        index = self.source_frame_index.get(frame_id)
+        if index is None:
+            return
+        array = np.asarray(source)
+        if (array.dtype != np.uint8 or array.shape != SOURCE_FRAME_SHAPE
+                or not array.flags.c_contiguous):
+            raise CaptureError(
+                f"source frame must be contiguous uint8 {SOURCE_FRAME_SHAPE}; "
+                f"got dtype={array.dtype}, shape={array.shape}"
+            )
+        if frame_id in self._source_frames_recorded:
+            raise CaptureError(f"source frame {frame_id} was recorded more than once")
+        if self.source_gray8 is None:
+            raise CaptureError("source frame storage was not configured")
+        np.copyto(self.source_gray8[index], array, casting="no")
+        self._source_frames_recorded.add(frame_id)
 
     @staticmethod
     def _validate_image(image: np.ndarray, label: str) -> np.ndarray:
@@ -412,14 +464,21 @@ class CaptureWriter:
                 os.fsync(stream.fileno())
         complete = (self._error is None and self._written == self.expected_frames
                     and self._accepted == self.expected_frames and self._dropped == 0
-                    and self._raw_frames_recorded == self.expected_frames)
+                    and self._raw_frames_recorded == self.expected_frames
+                    and self._source_frames_recorded == set(self.source_frame_ids))
         if self._error is None and self._raw_frames_recorded != self.expected_frames:
             self._error = (f"raw frame capture is incomplete: {self._raw_frames_recorded}/"
                            f"{self.expected_frames}")
+        if (self._error is None
+                and self._source_frames_recorded != set(self.source_frame_ids)):
+            self._error = "selected original-resolution source frame capture is incomplete"
         raw_frame_archive = None
+        source_frame_archive = None
         if complete:
             try:
                 raw_frame_archive = self._write_raw_frame_archive()
+                if self.source_frame_ids:
+                    source_frame_archive = self._write_source_frame_archive()
             except Exception as exc:
                 self._error = f"{type(exc).__name__}: {exc}"
                 complete = False
@@ -436,6 +495,7 @@ class CaptureWriter:
             "frame_records_sha256": (hashlib.sha256(self._records_path.read_bytes()).hexdigest()
                                       if self._records_path.exists() else None),
             "raw_frame_archive": raw_frame_archive,
+            "source_frame_archive": source_frame_archive,
             "error": self._error,
         })
         self._write_manifest()
@@ -489,6 +549,61 @@ class CaptureWriter:
                 "raw_gray8_sha256": gray_sha256,
                 "raw_binary8_sha256": mask_sha256,
             }
+        finally:
+            for temporary in (archive_tmp, sidecar_tmp):
+                try:
+                    temporary.unlink(missing_ok=True)
+                except OSError:
+                    pass
+
+    def _write_source_frame_archive(self) -> dict[str, Any]:
+        if self.source_gray8 is None or not self.source_frame_ids:
+            raise CaptureError("source frame archive was not configured")
+        archive_path = self.output_dir / SOURCE_FRAME_ARCHIVE_NAME
+        archive_tmp = archive_path.with_suffix(archive_path.suffix + ".tmp")
+        sidecar_path = archive_path.with_suffix(archive_path.suffix + ".sha256")
+        sidecar_tmp = sidecar_path.with_suffix(sidecar_path.suffix + ".tmp")
+        source = self.source_gray8
+        source_sha256 = hashlib.sha256(memoryview(source)).hexdigest()
+        embedded_metadata = {
+            "schema_version": 1,
+            "frame_ids": list(self.source_frame_ids),
+            "frame_shape": list(SOURCE_FRAME_SHAPE),
+            "array_shape": list(source.shape),
+            "dtype": "uint8",
+            "source_gray8_sha256": source_sha256,
+        }
+        try:
+            with archive_tmp.open("xb") as stream:
+                np.savez(stream, source_frame_ids=np.asarray(self.source_frame_ids, dtype=np.uint32),
+                         source_gray8=source,
+                         archive_metadata_json=np.asarray(
+                             _json_bytes(embedded_metadata).decode("utf-8")))
+                stream.flush()
+                os.fsync(stream.fileno())
+            archive_sha256 = _sha256_file(archive_tmp)
+            os.replace(archive_tmp, archive_path)
+            sidecar_text = f"{archive_sha256}  {archive_path.name}\n"
+            with sidecar_tmp.open("x", encoding="ascii", newline="\n") as stream:
+                stream.write(sidecar_text)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(sidecar_tmp, sidecar_path)
+            raw_path = self.output_dir / RAW_FRAME_ARCHIVE_NAME
+            raw_sidecar = raw_path.with_suffix(".npz.sha256")
+            committed_bytes = (self._bytes_written + archive_path.stat().st_size
+                               + sidecar_path.stat().st_size
+                               + (raw_path.stat().st_size if raw_path.exists() else 0)
+                               + (raw_sidecar.stat().st_size if raw_sidecar.exists() else 0))
+            if committed_bytes > self.max_bytes - 8192:
+                raise CaptureError("capture files exceed configured capacity limit")
+            return {"filename": archive_path.name,
+                    "sha256_sidecar": f"{archive_path.name}.sha256",
+                    "sha256": archive_sha256,
+                    "size_bytes": archive_path.stat().st_size,
+                    "frame_ids": list(self.source_frame_ids),
+                    "shape": list(source.shape), "dtype": "uint8",
+                    "source_gray8_sha256": source_sha256}
         finally:
             for temporary in (archive_tmp, sidecar_tmp):
                 try:
@@ -601,6 +716,63 @@ def load_dataset(output_dir: str | Path, *, require_complete: bool = True
                 or embedded_metadata.get("raw_gray8_sha256") != gray_digest
                 or embedded_metadata.get("raw_binary8_sha256") != mask_digest):
             raise ValueError("raw frame NPZ array SHA-256 or embedded metadata mismatch")
+    source_ids = manifest.get("source_frame_ids", [])
+    if (not isinstance(source_ids, list)
+            or any(isinstance(frame_id, bool) or not isinstance(frame_id, int)
+                   or not 0 <= frame_id < expected for frame_id in source_ids)
+            or len(set(source_ids)) != len(source_ids)):
+        raise ValueError("selected source-frame ID metadata is invalid")
+    source_archive_info = manifest.get("source_frame_archive")
+    if source_archive_info is None:
+        if source_ids:
+            raise ValueError("selected original source frames are missing their NPZ archive")
+    else:
+        if not source_ids or not isinstance(source_archive_info, dict):
+            raise ValueError("source frame archive metadata is malformed")
+        if (source_archive_info.get("filename") != SOURCE_FRAME_ARCHIVE_NAME
+                or source_archive_info.get("sha256_sidecar")
+                != f"{SOURCE_FRAME_ARCHIVE_NAME}.sha256"
+                or source_archive_info.get("frame_ids") != source_ids):
+            raise ValueError("source frame archive path or index metadata is invalid")
+        source_path = root / SOURCE_FRAME_ARCHIVE_NAME
+        source_sidecar = root / f"{SOURCE_FRAME_ARCHIVE_NAME}.sha256"
+        if not source_path.is_file() or not source_sidecar.is_file():
+            raise ValueError("source frame NPZ or its SHA-256 sidecar is missing")
+        source_archive_sha256 = source_archive_info.get("sha256")
+        if (not isinstance(source_archive_sha256, str)
+                or _sha256_file(source_path) != source_archive_sha256):
+            raise ValueError("source frame NPZ full-file SHA-256 mismatch")
+        if (source_sidecar.read_text(encoding="ascii").strip()
+                != f"{source_archive_sha256}  {SOURCE_FRAME_ARCHIVE_NAME}"):
+            raise ValueError("source frame NPZ SHA-256 sidecar mismatch")
+        if source_archive_info.get("size_bytes") != source_path.stat().st_size:
+            raise ValueError("source frame NPZ size does not match its manifest")
+        with np.load(source_path, allow_pickle=False) as stored:
+            try:
+                source_ids_array = stored["source_frame_ids"]
+                source_gray_archive = stored["source_gray8"]
+                source_metadata = json.loads(str(stored["archive_metadata_json"].item()))
+            except (KeyError, ValueError, json.JSONDecodeError) as exc:
+                raise ValueError("source frame NPZ members or metadata are invalid") from exc
+        expected_source_shape = (len(source_ids), *SOURCE_FRAME_SHAPE)
+        if (source_ids_array.dtype != np.uint32
+                or source_ids_array.shape != (len(source_ids),)
+                or source_ids_array.tolist() != source_ids
+                or source_gray_archive.dtype != np.uint8
+                or source_gray_archive.shape != expected_source_shape
+                or not source_gray_archive.flags.c_contiguous):
+            raise ValueError("source frame NPZ array geometry, dtype, or index mismatch")
+        source_pixels_sha256 = hashlib.sha256(memoryview(source_gray_archive)).hexdigest()
+        if (source_archive_info.get("shape") != list(expected_source_shape)
+                or source_archive_info.get("dtype") != "uint8"
+                or source_archive_info.get("source_gray8_sha256") != source_pixels_sha256
+                or source_metadata.get("schema_version") != 1
+                or source_metadata.get("frame_ids") != source_ids
+                or source_metadata.get("frame_shape") != list(SOURCE_FRAME_SHAPE)
+                or source_metadata.get("array_shape") != list(expected_source_shape)
+                or source_metadata.get("dtype") != "uint8"
+                or source_metadata.get("source_gray8_sha256") != source_pixels_sha256):
+            raise ValueError("source frame NPZ pixel hash or embedded metadata mismatch")
     frames = []
     for expected_id, record in enumerate(raw_records):
         if record.get("frame_id") != expected_id:

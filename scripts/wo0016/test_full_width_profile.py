@@ -70,10 +70,11 @@ def test_letterbox_camera_prefetch_does_not_overwrite_previous_frame():
         def __getattr__(self, key): return getattr(cv2, key)
         def VideoCapture(self, *args): return capture
     metadata = {}
+    mapping_timings = []
     async def consume():
         stream = runner._camera_gray_frames_impl(
             "fake", max_frames=2, cv2_module=FakeCV(), frame_mapping="letterbox",
-            capture_metadata=metadata)
+            capture_metadata=metadata, mapping_timings_ms=mapping_timings)
         first = await anext(stream)
         await asyncio.sleep(.02)
         second = await anext(stream)
@@ -84,6 +85,7 @@ def test_letterbox_camera_prefetch_does_not_overwrite_previous_frame():
     asyncio.run(consume())
     assert capture.released
     assert metadata["frame_geometry"]["mapping"] == "letterbox"
+    assert len(mapping_timings) == 2 and all(value >= 0 for value in mapping_timings)
 
 
 @pytest.mark.parametrize("direction", ["1", "-1"])

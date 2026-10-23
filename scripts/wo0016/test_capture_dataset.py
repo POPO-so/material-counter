@@ -122,6 +122,51 @@ def test_writer_preallocates_and_seals_combined_raw_frame_archive(tmp_path):
     assert loaded_manifest["raw_frame_archive"] == archive_info
 
 
+def test_calibration_writer_seals_selected_full_resolution_source_frames(tmp_path):
+    writer = CaptureWriter(
+        tmp_path / "capture", expected_frames=2,
+        config={"line_y": 120, "min_area": 12},
+        max_bytes=2_000_000, source_frame_ids=(0, 1),
+    )
+    raw_sources = [np.full((400, 640), value, dtype=np.uint8) for value in (31, 97)]
+    gray = np.full((240, 320), 31, dtype=np.uint8)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    for frame_id, source in enumerate(raw_sources):
+        writer.record_source_frame(frame_id, source)
+        writer.record_raw_frame(frame_id, gray, mask)
+        writer.submit(frame_id, gray, mask, _frame_metadata(frame_id))
+
+    manifest = writer.close()
+    archive = tmp_path / "capture" / "frames_source640x400.npz"
+    source_info = manifest["source_frame_archive"]
+    assert manifest["status"] == "COMPLETE"
+    assert source_info["frame_ids"] == [0, 1]
+    assert source_info["shape"] == [2, 400, 640]
+    with np.load(archive, allow_pickle=False) as stored:
+        np.testing.assert_array_equal(stored["source_gray8"], np.stack(raw_sources))
+        np.testing.assert_array_equal(stored["source_frame_ids"], [0, 1])
+    loaded_manifest, _ = load_dataset(tmp_path / "capture")
+    assert loaded_manifest["source_frame_archive"] == source_info
+
+
+def test_dataset_loader_rejects_tampered_original_source_frame_archive(tmp_path):
+    writer = CaptureWriter(
+        tmp_path / "capture", expected_frames=1,
+        config={"line_y": 120, "min_area": 12},
+        max_bytes=2_000_000, source_frame_ids=(0,),
+    )
+    gray = np.zeros((240, 320), dtype=np.uint8)
+    writer.record_source_frame(0, np.full((400, 640), 41, dtype=np.uint8))
+    writer.record_raw_frame(0, gray, gray)
+    writer.submit(0, gray, gray, _frame_metadata(0))
+    assert writer.close()["status"] == "COMPLETE"
+
+    archive_path = tmp_path / "capture" / "frames_source640x400.npz"
+    archive_path.write_bytes(archive_path.read_bytes() + b"tamper")
+    with pytest.raises(ValueError, match="source frame NPZ full-file SHA-256"):
+        load_dataset(tmp_path / "capture")
+
+
 def test_dataset_loader_rejects_tampered_combined_raw_frame_archive(tmp_path):
     writer = _session(tmp_path, frames=1)
     gray = np.full((240, 320), 37, dtype=np.uint8)

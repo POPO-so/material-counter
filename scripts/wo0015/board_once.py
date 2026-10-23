@@ -49,6 +49,8 @@ SNAPSHOT_REGISTERS = {
     "AFI1_RDCHAN_CTRL": AFI1_RDCHAN_CTRL,
     "AFI1_WRCHAN_CTRL": AFI1_WRCHAN_CTRL,
 }
+DMA_STATUS_REGISTERS = frozenset((preflight.DMA_BASE + DMA_MM2S_DMASR,
+                                  preflight.DMA_BASE + DMA_S2MM_DMASR))
 
 DMA_RUN = 1 << 0
 CMA_WATERMARK_KIB = 16384
@@ -147,7 +149,8 @@ def read_phys32_readonly(address: int, *, mem_path: str = "/dev/mem",
                          page_size: int | None = None, open_fn: Any = None,
                          mmap_fn: Any = None, close_fn: Any = None) -> int:
     """Read one whitelisted physical register through a read-only mapping."""
-    if isinstance(address, bool) or not isinstance(address, int) or address not in SNAPSHOT_REGISTERS.values():
+    if (isinstance(address, bool) or not isinstance(address, int)
+            or address not in set(SNAPSHOT_REGISTERS.values()) | DMA_STATUS_REGISTERS):
         raise ValueError("physical register address is not in the read-only snapshot allowlist")
     if page_size is None:
         page_size = int(os.sysconf("SC_PAGE_SIZE"))

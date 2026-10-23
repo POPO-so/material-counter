@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import mmap
+import os
 import sys
 from pathlib import Path
 
@@ -14,6 +16,40 @@ sys.path.insert(0, str(HERE))
 import board_preflight as preflight
 import board_once as runner
 from test_board_preflight import make_manifest, sha256
+
+
+def test_readonly_dma_status_addresses_are_whitelisted_without_write_access():
+    values = {
+        preflight.DMA_BASE + runner.DMA_MM2S_DMASR: 0x1,
+        preflight.DMA_BASE + runner.DMA_S2MM_DMASR: 0x1,
+    }
+    calls = []
+
+    class FakeMapping:
+        def __init__(self, value):
+            self.value = value
+        def __getitem__(self, key):
+            return self.value.to_bytes(4, "little")
+        def close(self):
+            pass
+
+    def open_fn(path, flags):
+        calls.append((path, flags))
+        return 17
+
+    def mmap_fn(fd, size, *, access, offset):
+        assert fd == 17 and size == 4096
+        assert access == mmap.ACCESS_READ
+        assert offset == preflight.DMA_BASE
+        return FakeMapping(0x1)
+
+    for address in values:
+        value = runner.read_phys32_readonly(
+            address, page_size=4096, open_fn=open_fn, mmap_fn=mmap_fn,
+            close_fn=lambda _fd: None)
+        assert value == 0x1
+    assert len(calls) == 2
+    assert all(flags & os.O_RDWR == 0 for _, flags in calls)
 
 
 def _plan(tmp_path: Path, frame_count: int = 3):

@@ -7,6 +7,9 @@ import time
 import urllib.error
 import urllib.request
 
+import pytest
+
+import operator_gate_launcher
 from operator_gate_launcher import OperatorGate, make_server
 
 
@@ -82,6 +85,109 @@ def test_b1_standby_page_instructs_empty_belt_instead_of_material_feeding():
         assert "第 '+s.feed_number" not in page
     finally:
         stop_server(server, thread)
+
+
+def test_physical_calibration_standby_page_is_one_shot_and_has_no_formal_permit():
+    gate = OperatorGate(require_control_binding=True)
+    gate.bind_control_sha256("e" * 64, label="calibration lock")
+    server = make_server(gate, port=0, profile="calibration", standby=True)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        page = urllib.request.urlopen(f"http://127.0.0.1:{server.server_port}/").read().decode()
+        state = json.load(urllib.request.urlopen(
+            f"http://127.0.0.1:{server.server_port}/status"))
+        assert "Physical Calibration" in page
+        assert "300 FRAMES" in page
+        assert "NO FORMAL PERMIT" in page
+        assert "Calibration lock · SHA-256" in page
+        assert "NO FORMAL PERMIT" in page
+        assert "s.control_binding_sha256" in page
+        assert 'id="passcode"' in page
+        assert "本标定页面不要求操作口令" not in page
+        assert state["control_binding_label"] == "calibration lock"
+        assert state["permit_sha256"] is None
+    finally:
+        stop_server(server, thread)
+
+
+def test_physical_calibration_requires_a_single_use_passcode(monkeypatch):
+    passcode = "fresh-calibration-code"
+    monkeypatch.setattr("operator_gate_launcher.secrets.token_urlsafe",
+                        lambda _length: passcode)
+    gate = OperatorGate(require_control_binding=True)
+    gate.bind_control_sha256("f" * 64, label="calibration lock")
+    server = make_server(gate, port=0, profile="calibration", standby=True)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    url = f"http://127.0.0.1:{server.server_port}"
+    try:
+        page = urllib.request.urlopen(url).read().decode()
+        assert 'id="passcode"' in page
+        assert "本标定页面不要求操作口令" not in page
+        assert "仅监听本机回环" in page
+        gate.mark_ready()
+        for candidate in (None, "wrong-code"):
+            try:
+                post_start(url, candidate)
+            except urllib.error.HTTPError as error:
+                assert error.code == 401
+            else:
+                raise AssertionError("calibration start must reject a missing or wrong passcode")
+        assert post_start(url, passcode) == 200
+        try:
+            post_start(url, passcode)
+        except urllib.error.HTTPError as error:
+            assert error.code == 409
+        else:
+            raise AssertionError("a second calibration start must be rejected")
+    finally:
+        stop_server(server, thread)
+
+
+def test_physical_calibration_audits_worker_before_opening_control_listener(
+        tmp_path, monkeypatch):
+    calls = []
+
+    def reject_worker(*_args, **_kwargs):
+        calls.append("worker")
+        raise RuntimeError("worker environment audit failed")
+
+    def unexpected_listener(*_args, **_kwargs):
+        calls.append("listener")
+        raise AssertionError("8081 listener must not open after a failed runtime audit")
+
+    monkeypatch.setattr(operator_gate_launcher, "verify_worker_environment",
+                        reject_worker, raising=False)
+    monkeypatch.setattr(operator_gate_launcher, "make_server", unexpected_listener)
+
+    with pytest.raises(RuntimeError, match="worker environment audit failed"):
+        operator_gate_launcher.main([
+            "--attempt-dir", str(tmp_path), "--control-port", "0",
+            "--standby-before-preflight", "--", "--mode", "board",
+            "--physical-calibration", "--worker-python", sys.executable,
+        ])
+
+    assert calls == ["worker"]
+
+
+def test_physical_calibration_without_passcode_rejects_non_loopback_host(monkeypatch):
+    monkeypatch.setattr(
+        "operator_gate_launcher.secrets.token_urlsafe",
+        lambda _length: "test-only-code",
+    )
+
+    class NoBindServer(operator_gate_launcher.ThreadingHTTPServer):
+        def __init__(self, *_args, **_kwargs):
+            raise AssertionError("must reject the host before binding a socket")
+
+    monkeypatch.setattr("operator_gate_launcher.ThreadingHTTPServer", NoBindServer)
+    try:
+        make_server(OperatorGate(), port=0, host="0.0.0.0", profile="calibration")
+    except ValueError as error:
+        assert "loopback" in str(error)
+    else:
+        raise AssertionError("no-passcode calibration control must remain loopback-only")
 
 
 def start_server(monkeypatch, passcode="secret", **gate_kwargs):
@@ -198,14 +304,14 @@ def test_ready_gate_times_out_without_starting_countdown():
     assert not gate._start_event.is_set()
 
 
-def test_raw_event_cannot_forge_authenticated_browser_request():
+def test_raw_event_cannot_forge_authorized_browser_request():
     gate = OperatorGate()
     gate._start_event.set()
     assert not hasattr(gate, "start_event")
     try:
         gate.wait_for_operator(timeout_s=0.01)
     except RuntimeError as error:
-        assert "authenticated browser request" in str(error)
+        assert "authorized browser request" in str(error)
     else:
         raise AssertionError("a raw event must not authorize sampling")
 

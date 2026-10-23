@@ -15,6 +15,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_stream_counter as runner  # noqa: E402
 
 
+def test_physical_calibration_manifest_validation_pins_the_approved_boot():
+    from types import SimpleNamespace
+
+    args = SimpleNamespace(
+        expected_boot_id="35983d66-bb1d-4a8a-85e5-802170825515",
+        wo0017_profile=None,
+    )
+
+    assert runner.manifest_validation_options(args, calibration_mode=True) == {
+        "approved_boot_id": args.expected_boot_id,
+    }
+
+
 def test_formal_ready_id_selects_a_new_file_without_replacing_legacy_ready():
     boot = "35983d66-bb1d-4a8a-85e5-802170825515"
     base = Path("/var/lib/wo0017") / boot / "b1"
@@ -35,6 +48,7 @@ def test_wo0017_runtime_binding_covers_raw_writer_and_camera_controls():
     sources = runner.formal_runtime_sha256()
     assert {"capture_dataset.py", "live_calibration.py", "run_stream_counter.py",
             "operator_gate_launcher.py", "wo0017_capture_profile.py",
+            "calibration_runtime_gate.py", "start_physical_calibration_standby.py",
             "wo0015/board_preflight.py", "wo0015/board_once.py"} <= set(sources)
     assert all(len(value) == 64 for value in sources.values())
 from run_stream_counter import (  # noqa: E402
@@ -1223,7 +1237,7 @@ def test_camera_rejects_v4l2_fps_below_50_before_starting_stream():
 
 def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
     summary = summarize_stage_timings_ms({
-        "capture": [1.0, 3.0], "encode": [2.0],
+        "capture": [1.0, 3.0], "mapping": [0.5, 1.5], "encode": [2.0],
         "dma": [4.0, 6.0], "packer_check": [0.5, 1.5],
         "roi_count": [2.0], "mjpeg_encode": [1.0], "mjpeg_handoff": [40.0],
         "postprocess": [],
@@ -1231,6 +1245,7 @@ def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
 
     assert summary == {
         "avg_capture_ms": 2.0, "capture_timing_samples": 2,
+        "avg_mapping_ms": 1.0, "mapping_timing_samples": 2,
         "avg_encode_ms": 2.0, "encode_timing_samples": 1,
         "avg_dma_ms": 5.0, "dma_timing_samples": 2,
         "avg_rx_sync_ms": None, "rx_sync_timing_samples": 0,

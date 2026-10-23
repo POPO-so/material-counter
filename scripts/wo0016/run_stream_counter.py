@@ -18,6 +18,7 @@ import queue
 import re
 import stat as stat_module
 import sys
+import subprocess
 import threading
 import time
 from pathlib import Path
@@ -68,8 +69,11 @@ from stream_counter import (
     MaskCounter,
     allocate_ping_pong_buffers,
 )
+import physical_calibration_lock as calibration_lock
+from calibration_runtime_gate import DEFAULT_WORKER_PYTHON
 
 WO16_STAGE = "wo0016-stream"
+WO17_CALIBRATION_STAGE = "wo0017-physical-calibration"
 WO16_GUARD = Path("/var/lib/wo0016/stream-counter-consumed.json")
 STAGEB2_READY_GUARD_DIR = Path("/var/lib/wo0016")
 STAGEB2_ATTEMPT_DIR = STAGEB2_READY_GUARD_DIR / "attempts"
@@ -82,6 +86,9 @@ STAGEB2_OPERATOR_PREARM_DELAY_S = 15.0
 STAGEB2_THRESHOLD = 128
 EXPECTED_FRAME_DMASR = 0x00001002
 CMA_WATERMARK_KIB = 32768
+PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS = (
+    0, 1, 2, 3, 4, 5, 10, 20, 30, 60, 90, 120, 150, 180, 210, 240, 270, 299,
+)
 AFI1_EXPECTED_READBACK = {
     "AFI1_RDCHAN_CTRL": 0x00000001,
     "AFI1_WRCHAN_CTRL": 0x00000F01,
@@ -457,9 +464,13 @@ def verify_frame_dmasr(api: Any, frame_id: int,
 def require_board_opt_in(*, execute: bool, authorize_stage: str | None,
                          approve_once: bool, manifest: str | None,
                          manifest_sha256: str | None, max_frames: int,
-                         evidence_json: str | None) -> None:
-    if execute is not True or approve_once is not True or authorize_stage != WO16_STAGE:
-        raise ValueError("board mode requires --execute --authorize-stage wo0016-stream --approve-once")
+                         evidence_json: str | None,
+                         calibration: bool = False) -> None:
+    expected_stage = WO17_CALIBRATION_STAGE if calibration else WO16_STAGE
+    if execute is not True or approve_once is not True or authorize_stage != expected_stage:
+        raise ValueError(
+            f"board mode requires --execute --authorize-stage {expected_stage} --approve-once"
+        )
     if not manifest or not manifest_sha256:
         raise ValueError("board mode requires a WO-0015 50 MHz manifest and its reviewed SHA-256")
     if max_frames < 1:
@@ -509,15 +520,22 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                                    operator_gate: Any | None = None,
                                    milestone_callback: Callable[[str, float], None] | None = None,
                                    capture_timings_ms: list[float] | None = None,
+                                   mapping_timings_ms: list[float] | None = None,
                                    steady_start_time: list[float] | None = None,
                                    capture_metadata: dict[str, Any] | None = None,
                                    include_capture_metadata: bool = False,
+                                   source_frame_ids: tuple[int, ...] = (),
                                    frame_mapping: str = "stretch"
                                    ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Internal capture loop; board callers must use camera_gray_frames()."""
     geometry = frame_geometry(frame_mapping)
     if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
         raise ValueError("max_frames must be a positive integer")
+    if (not isinstance(source_frame_ids, tuple)
+            or any(isinstance(frame_id, bool) or not isinstance(frame_id, int)
+                   or not 0 <= frame_id < max_frames for frame_id in source_frame_ids)
+            or len(set(source_frame_ids)) != len(source_frame_ids)):
+        raise ValueError("source_frame_ids must be unique integer indexes within max_frames")
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
             or not math.isfinite(float(read_timeout_s)) or read_timeout_s <= 0):
         raise ValueError("read_timeout_s must be finite and positive")
@@ -599,7 +617,9 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                 f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height} "
                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
             )
-        def read_gray_frame(*, warmup: bool) -> tuple[np.ndarray, float, int, int]:
+        def read_gray_frame(*, warmup: bool,
+                            source_frame_id: int | None = None
+                            ) -> tuple[np.ndarray, float, int, int, np.ndarray | None]:
             capture_started = time.perf_counter()
             ok, frame = capture.read()
             if not ok or frame is None:
@@ -610,11 +630,14 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
             image = np.asarray(frame)
             if warmup:
                 return (image, (time.perf_counter() - capture_started) * 1000.0,
-                        capture_monotonic_ns, capture_wall_time_ns)
+                        capture_monotonic_ns, capture_wall_time_ns, None)
             if image.ndim == 3 and image.shape[2] in (1, 3, 4):
                 image = image[:, :, 0]
             if image.dtype != np.uint8 or image.shape != (400, 640):
                 raise RuntimeError(f"camera frame geometry is {image.shape}; expected (400, 640)")
+            source_gray = (np.ascontiguousarray(image).copy()
+                           if source_frame_id in source_frame_ids else None)
+            mapping_started = time.perf_counter()
             if frame_mapping == "letterbox":
                 # A fresh buffer is required: the next read is prefetched before yield.
                 gray = np.empty((HEIGHT, WIDTH), np.uint8)
@@ -622,6 +645,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
             else:
                 gray = cv2_module.resize(
                     image, (WIDTH, HEIGHT), interpolation=cv2_module.INTER_NEAREST)
+            if mapping_timings_ms is not None:
+                mapping_timings_ms.append((time.perf_counter() - mapping_started) * 1000.0)
             gray = np.asarray(gray)
             if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
                 raise RuntimeError(
@@ -629,7 +654,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                     f"expected uint8 {(HEIGHT, WIDTH)}"
                 )
             return (gray, (time.perf_counter() - capture_started) * 1000.0,
-                    capture_monotonic_ns, capture_wall_time_ns)
+                    capture_monotonic_ns, capture_wall_time_ns, source_gray)
 
         loop = asyncio.get_running_loop()
         tasks = queue.Queue(maxsize=1)
@@ -648,9 +673,10 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                 task = tasks.get()
                 if task is stop_worker:
                     return
-                warmup, waiter = task
+                warmup, waiter, source_frame_id = task
                 try:
-                    value = read_gray_frame(warmup=warmup)
+                    value = read_gray_frame(warmup=warmup,
+                                            source_frame_id=source_frame_id)
                 except BaseException as exc:
                     try:
                         loop.call_soon_threadsafe(settle_waiter, waiter, None, exc)
@@ -667,7 +693,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
         )
         worker.start()
 
-        async def get_frame(*, warmup: bool) -> tuple[np.ndarray, float, int, int]:
+        async def get_frame(*, warmup: bool
+                             ) -> tuple[np.ndarray, float, int, int, np.ndarray | None]:
             nonlocal pending_waiter
             if pending_waiter is None:
                 raise RuntimeError("camera prefetch slot is empty")
@@ -681,12 +708,12 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
             pending_waiter = None
             return frame_result
 
-        def prefetch(*, warmup: bool) -> None:
+        def prefetch(*, warmup: bool, source_frame_id: int | None = None) -> None:
             nonlocal pending_waiter
             if tasks is None or loop is None or pending_waiter is not None:
                 raise RuntimeError("camera prefetch slot is not available")
             pending_waiter = loop.create_future()
-            tasks.put_nowait((warmup, pending_waiter))
+            tasks.put_nowait((warmup, pending_waiter, source_frame_id))
 
         warmup_frames = 2
         for _ in range(warmup_frames):
@@ -723,15 +750,16 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                     emit_milestone("FRAME_0_CAPTURE_START_FEED_NOW")
                     if steady_start_time is not None:
                         steady_start_time[:] = [time.perf_counter()]
-                prefetch(warmup=False)
-            gray, capture_ms, capture_monotonic_ns, capture_wall_time_ns = await get_frame(warmup=False)
+                prefetch(warmup=False, source_frame_id=frame_index)
+            (gray, capture_ms, capture_monotonic_ns,
+             capture_wall_time_ns, source_gray) = await get_frame(warmup=False)
             if capture_timings_ms is not None:
                 capture_timings_ms.append(capture_ms)
             if frame_index + 1 < max_frames:
-                prefetch(warmup=False)
+                prefetch(warmup=False, source_frame_id=frame_index + 1)
             if include_capture_metadata:
                 yield FrameInput(gray, frame_index, capture_monotonic_ns,
-                                 capture_wall_time_ns, capture_ms)
+                                 capture_wall_time_ns, capture_ms, source_gray)
             else:
                 yield gray
     except GeneratorExit:
@@ -802,9 +830,11 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                              operator_prearm_delay_s: float = 0.0,
                              milestone_callback: Callable[[str, float], None] | None = None,
                              capture_timings_ms: list[float] | None = None,
+                             mapping_timings_ms: list[float] | None = None,
                              steady_start_time: list[float] | None = None,
                              capture_metadata: dict[str, Any] | None = None,
                              include_capture_metadata: bool = False,
+                             source_frame_ids: tuple[int, ...] = (),
                              frame_mapping: str = "stretch"
                              ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Yield camera frames only through a live, authenticated operator session."""
@@ -812,6 +842,8 @@ async def camera_gray_frames(device: str, *, max_frames: int,
     if (not isinstance(operator_gate, operator_gate_launcher.OperatorGate)
             or not operator_gate_launcher.is_registered_operator_gate_session(operator_gate)):
         raise ValueError("camera capture requires a live operator control server session")
+    if source_frame_ids and not include_capture_metadata:
+        raise ValueError("original source-frame retention requires capture metadata")
     require_standard_camera_controls(device)
     first_frame = True
     async for frame in _camera_gray_frames_impl(
@@ -821,9 +853,11 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             operator_prearm_delay_s=operator_prearm_delay_s,
             operator_gate=operator_gate, milestone_callback=milestone_callback,
             capture_timings_ms=capture_timings_ms,
+            mapping_timings_ms=mapping_timings_ms,
             steady_start_time=steady_start_time,
             capture_metadata=capture_metadata,
-            include_capture_metadata=include_capture_metadata, frame_mapping=frame_mapping):
+            include_capture_metadata=include_capture_metadata,
+            source_frame_ids=source_frame_ids, frame_mapping=frame_mapping):
         if first_frame:
             require_standard_camera_controls(device)
             first_frame = False
@@ -849,7 +883,9 @@ def validate_operator_gate_launcher_sha256(value: str | None,
 def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
              "capture_dataset.py", "live_calibration.py",
-             "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py")
+             "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py",
+             "physical_calibration_lock.py", "prepare_physical_calibration.py",
+             "calibration_runtime_gate.py", "start_physical_calibration_standby.py")
     paths = {name: SCRIPT_DIR / name for name in names}
     paths.update({"wo0015/" + name: WO15_DIR / name
                   for name in ("board_once.py", "board_preflight.py", "camera_adapter.py",
@@ -908,6 +944,222 @@ def require_formal_xrt_environment(args: argparse.Namespace) -> None:
         raise ValueError("WO-0017 requires XILINX_XRT=/usr in the launch process before READY or Permit consumption")
 
 
+def validate_calibration_options(args: argparse.Namespace) -> None:
+    """Constrain the non-formal calibration mode to its fixed one-shot contract."""
+    if getattr(args, "physical_calibration", False) is not True:
+        raise ValueError("physical calibration mode is not enabled")
+    if args.mode != "board":
+        raise ValueError("physical calibration requires board mode")
+    worker_python = getattr(args, "worker_python", None)
+    if not isinstance(worker_python, str) or not worker_python.startswith("/"):
+        raise ValueError("physical calibration requires an absolute PYNQ worker Python path")
+    if getattr(args, "wo0017_profile", None) or getattr(args, "no_consume_guard", False):
+        raise ValueError("physical calibration cannot use a formal profile or formal attempt guard")
+    if args.authorize_stage != WO17_CALIBRATION_STAGE:
+        raise ValueError(f"physical calibration requires --authorize-stage {WO17_CALIBRATION_STAGE}")
+    if args.execute is not True or args.approve_once is not True:
+        raise ValueError("physical calibration requires --execute --approve-once")
+    if args.counting_profile != "full-width-mixed":
+        raise ValueError("physical calibration requires --counting-profile full-width-mixed")
+    if args.max_frames != 300:
+        raise ValueError("physical calibration requires exactly 300 frames")
+    if args.stabilization_delay_s != 3.0 or args.operator_prearm_delay_s != 0.0:
+        raise ValueError("physical calibration requires a 3-second stabilization and no extra pre-arm")
+    if args.camera != "/dev/video0":
+        raise ValueError("physical calibration is pinned to /dev/video0")
+    if not args.manifest or not args.manifest_sha256:
+        raise ValueError("physical calibration requires a hash-pinned WO-0015 manifest")
+    if not args.expected_boot_id or not args.stage1_receipt or not args.stage1_receipt_sha256:
+        raise ValueError("physical calibration requires a pinned Boot ID and Stage 1 receipt")
+    if not args.capture_dir:
+        raise ValueError("physical calibration requires dual-array raw frame capture")
+    if (not args.evidence_json or not Path(args.evidence_json).is_absolute()
+            or not args.calibration_lock or not Path(args.calibration_lock).is_absolute()):
+        raise ValueError("physical calibration evidence and lock paths must be absolute")
+    if (not isinstance(getattr(args, "calibration_id", None), str)
+            or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}",
+                            args.calibration_id, re.ASCII) is None):
+        raise ValueError("calibration id must contain 1-64 ASCII letters, digits, '_' or '-'")
+    config = counting_configuration(args)
+    required = {
+        "count_axis": "x", "line_x": 160, "roi_mode": "full", "guarded_merge": True,
+        "single_intact_area": 95, "max_merge_area": 260, "max_merged_span": 24,
+        "max_step": 48.0, "max_lateral_step": 10.0, "backward_tolerance": 4.0,
+        "component_cluster_gap": 14.0,
+    }
+    if any(config.get(name) != value for name, value in required.items()):
+        raise ValueError("physical calibration counting configuration differs from full-width contract")
+
+
+def _read_standard_camera_profile(device: str) -> dict[str, Any]:
+    require_standard_camera_controls(device)
+    command = ["v4l2-ctl", "-d", device, "--get-fmt-video", "--get-parm"]
+    if getattr(os, "geteuid", lambda: -1)() != 0:
+        command = ["sudo", "-n"] + command
+    output = subprocess.run(command, check=True, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, text=True, timeout=5).stdout
+    requirements = {
+        "resolution": r"Width/Height\s*:\s*640/400",
+        "pixel_format": r"Pixel Format\s*:\s*'MJPG'",
+        "fps": r"Frames per second\s*:\s*60(?:\.0+)?\s*\(60/1\)",
+    }
+    for label, pattern in requirements.items():
+        if re.search(pattern, output) is None:
+            raise RuntimeError(f"camera {label} readback does not match 640x400 MJPG@60: {output}")
+    return {"resolution": [640, 400], "pixel_format": "MJPG", "fps": 60.0,
+            "auto_exposure": 1, "exposure_time_absolute": 50, "brightness": 0,
+            "readback": output}
+
+
+def _require_camera_device_unowned(device: str) -> dict[str, Any]:
+    command = ["fuser", device]
+    if getattr(os, "geteuid", lambda: -1)() != 0:
+        command = ["sudo", "-n"] + command
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            text=True, timeout=5)
+    if result.returncode == 0:
+        raise RuntimeError(f"camera device is already owned: {result.stdout.strip()}")
+    if result.returncode != 1:
+        raise RuntimeError(f"camera ownership query failed: {result.stderr.strip()}")
+    return {"device": device, "owners": [], "read_only": True}
+
+
+def physical_calibration_context(args: argparse.Namespace, plan: Any) -> dict[str, Any]:
+    validate_calibration_options(args)
+    if plan.boot_id != args.expected_boot_id:
+        raise ValueError("physical calibration Boot ID does not match the pinned manifest")
+    from wo0017_capture_profile import validate_stage1_receipt
+    receipt = validate_stage1_receipt(args.stage1_receipt,
+                                      args.stage1_receipt_sha256, plan)
+    capture = preflight_capture_target(
+        args.capture_dir, expected_frames=300, max_bytes=args.capture_max_bytes,
+        source_frame_count=len(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS))
+    runtime = formal_runtime_sha256()
+    lock_path = calibration_lock.calibration_lock_path(plan.boot_id, args.calibration_id)
+    requested_lock_path = Path(args.calibration_lock).expanduser().resolve(strict=False)
+    if requested_lock_path != lock_path.resolve(strict=False):
+        raise ValueError("calibration lock path must be the new Boot-ID-scoped calibration path")
+    identity = {
+        "schema": 1,
+        "work_order": "WO-0017",
+        "stage": "physical-calibration",
+        "calibration_id": args.calibration_id,
+        "boot_id": plan.boot_id,
+        "manifest_sha256": plan.manifest_sha256,
+        "bit_sha256": plan.bit_sha256,
+        "hwh_sha256": plan.hwh_sha256,
+        "stage1_receipt_sha256": args.stage1_receipt_sha256,
+        "max_frames": 300,
+        "threshold": STAGEB2_THRESHOLD,
+        "counting_profile": "full-width-mixed",
+        "counting_config": counting_configuration(args),
+        "preprocessing_config": preprocessing_configuration(args),
+        "camera_profile": {"resolution": [640, 400], "pixel_format": "MJPG",
+                            "fps": 60, "auto_exposure": 1,
+                            "exposure_time_absolute": 50, "brightness": 0},
+        "capture_config": {"enabled": True, "dual_arrays": ["gray8", "binary8"],
+                            "output_directory": capture["path"],
+                            "max_bytes": args.capture_max_bytes,
+                            "queue_depth": 2, "schema_version": 1,
+                            "source_resolution": [640, 400],
+                            "source_frame_ids": list(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS),
+                            "source_archive": "frames_source640x400.npz"},
+        "evidence_json": str(Path(args.evidence_json).expanduser().resolve(strict=False)),
+        "worker_python": args.worker_python,
+        "runtime_sha256": runtime,
+    }
+    return {"identity": identity, "receipt": receipt, "runtime_sha256": runtime,
+            "lock_path": lock_path, "consumed_path": lock_path.parent / "consumed.json",
+            "capture_preflight": capture}
+
+
+def validate_calibration_board_state(args: argparse.Namespace, *,
+                                     gate_launcher_sha256: str,
+                                     operator_gate: Any | None = None,
+                                     require_lock: bool = True) -> dict[str, Any]:
+    """Read-only admission for the calibration standby; never imports PYNQ or opens V4L2."""
+    validate_calibration_options(args)
+    if os.environ.get("XILINX_XRT") != "/usr":
+        raise ValueError("physical calibration requires XILINX_XRT=/usr")
+    require_board_opt_in(execute=args.execute, authorize_stage=args.authorize_stage,
+                         approve_once=args.approve_once, manifest=args.manifest,
+                         manifest_sha256=args.manifest_sha256, max_frames=args.max_frames,
+                         evidence_json=args.evidence_json, calibration=True)
+    plan = preflight.validate_manifest(args.manifest, args.manifest_sha256,
+                                       approved_boot_id=args.expected_boot_id)
+    if not plan.ready_for_board or plan.manifest.get("clock_mhz") != 50:
+        raise preflight.PreflightError("calibration manifest is not board-ready at 50 MHz")
+    if preflight.read_boot_id() != plan.boot_id:
+        raise preflight.PreflightError("calibration live Boot ID differs from the pinned manifest")
+    meminfo = preflight.read_cma_meminfo()
+    if meminfo["CmaFree"] <= CMA_WATERMARK_KIB:
+        raise preflight.PreflightError("calibration CmaFree must be strictly above 32768 KiB")
+    admission = preflight.read_cma_admission(meminfo=meminfo)
+    ownership = preflight.audit_process_ownership()
+    manager = preflight.read_fpga_manager()
+    camera_owner = _require_camera_device_unowned(args.camera)
+    camera_profile = _read_standard_camera_profile(args.camera)
+    mm2s_status = board_once.read_phys32_readonly(preflight.DMA_BASE + 0x04)
+    s2mm_status = board_once.read_phys32_readonly(preflight.DMA_BASE + 0x34)
+    if mm2s_status != 0x00000001 or s2mm_status != 0x00000001:
+        raise preflight.PreflightError(
+            f"calibration requires idle initial DMASR=0x00000001; "
+            f"MM2S=0x{mm2s_status:08x}, S2MM=0x{s2mm_status:08x}"
+        )
+    calibration = physical_calibration_context(args, plan)
+    lock_data = None
+    if require_lock:
+        lock_data = calibration_lock.validate_ready_calibration_lock(
+            calibration["lock_path"], calibration["identity"])
+        if calibration["consumed_path"].exists() or calibration["consumed_path"].is_symlink():
+            raise RuntimeError("calibration lock has already been consumed; no retry is allowed")
+        if not hmac.compare_digest(gate_launcher_sha256,
+                                   calibration["runtime_sha256"]["operator_gate_launcher.py"]):
+            raise RuntimeError("calibration lock does not bind the current operator gate launcher")
+        if operator_gate is not None:
+            operator_gate.bind_control_sha256(lock_data["sha256"], label="calibration lock")
+    return {"plan": plan, "calibration": calibration, "lock": lock_data,
+            "meminfo": meminfo, "cma_admission": admission.as_evidence(),
+            "process_ownership": ownership, "fpga_manager": manager,
+            "camera_ownership": camera_owner, "camera_profile": camera_profile,
+            "dma_status": {"mm2s": mm2s_status, "s2mm": s2mm_status},
+            "pynq_imported": False, "camera_opened": False,
+            "dma_transfer_started": False}
+
+
+def validate_calibration_prelaunch(args: argparse.Namespace,
+                                   gate_launcher_sha256: str,
+                                   operator_gate: Any) -> dict[str, Any]:
+    state = validate_calibration_board_state(
+        args, gate_launcher_sha256=gate_launcher_sha256,
+        operator_gate=operator_gate, require_lock=True)
+    return {"status": "CALIBRATION_STANDBY_READY",
+            "calibration_id": args.calibration_id,
+            "boot_id": state["plan"].boot_id,
+            "lock_path": str(state["calibration"]["lock_path"]),
+            "lock_sha256": state["lock"]["sha256"],
+            "cma_free_kib": state["meminfo"]["CmaFree"],
+            "dma_status": {key: f"0x{value:08x}"
+                           for key, value in state["dma_status"].items()},
+            "camera_profile": state["camera_profile"],
+            "camera_ownership": state["camera_ownership"],
+            "pynq_imported": False, "camera_opened": False,
+            "dma_transfer_started": False}
+
+
+def claim_calibration_after_operator_click(args: argparse.Namespace) -> dict[str, Any]:
+    """Consume the independent calibration lock immediately after the 8081 click."""
+    validate_calibration_options(args)
+    plan = preflight.validate_manifest(args.manifest, args.manifest_sha256,
+                                       approved_boot_id=args.expected_boot_id)
+    calibration = physical_calibration_context(args, plan)
+    if (calibration["consumed_path"].exists()
+            or calibration["consumed_path"].is_symlink()):
+        raise RuntimeError("calibration lock has already been consumed; no retry is allowed")
+    return calibration_lock.claim_calibration_lock_once(
+        calibration["lock_path"], calibration["identity"])
+
+
 def validate_formal_prelaunch(args: argparse.Namespace, launcher_sha256: str) -> dict[str, Any]:
     """Read-only admission to the browser standby; never import PYNQ or claim an attempt."""
     if not args.wo0017_profile:
@@ -943,10 +1195,22 @@ def validate_formal_prelaunch(args: argparse.Namespace, launcher_sha256: str) ->
     return validate_stageb2_attempt_permit(attempt / "attempt-permit.json", identity)
 
 
+def manifest_validation_options(args: argparse.Namespace, *,
+                               calibration_mode: bool = False) -> dict[str, str]:
+    """Pass the approved Boot ID for WO-0017 and independent calibration runs."""
+    if calibration_mode or getattr(args, "wo0017_profile", None):
+        approved_boot_id = getattr(args, "expected_boot_id", None)
+        if not approved_boot_id:
+            raise ValueError("board run requires an explicit approved Boot ID")
+        return {"approved_boot_id": approved_boot_id}
+    return {}
+
+
 def execute_board_stream(args: argparse.Namespace, *,
                          operator_gate_sha256: str | None = None,
                          operator_gate: Any | None = None) -> dict[str, Any]:
     """Run one finite, guarded streaming session against the already-loaded WO-0015 BIT."""
+    calibration_mode = bool(getattr(args, "physical_calibration", False))
     gate_launcher_sha256 = validate_operator_gate_launcher_sha256(
         operator_gate_sha256, operator_gate
     )
@@ -958,37 +1222,64 @@ def execute_board_stream(args: argparse.Namespace, *,
         manifest_sha256=args.manifest_sha256,
         max_frames=args.max_frames,
         evidence_json=args.evidence_json,
+        calibration=calibration_mode,
     )
     require_formal_xrt_environment(args)
+    if calibration_mode and os.environ.get("XILINX_XRT") != "/usr":
+        raise ValueError("physical calibration requires XILINX_XRT=/usr")
     capture_dir = getattr(args, "capture_dir", None)
     capture_max_bytes = getattr(args, "capture_max_bytes", DEFAULT_MAX_BYTES)
+    source_frame_count = (len(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS)
+                          if calibration_mode else 0)
     capture_preflight = (preflight_capture_target(
-        capture_dir, expected_frames=args.max_frames, max_bytes=capture_max_bytes
+        capture_dir, expected_frames=args.max_frames, max_bytes=capture_max_bytes,
+        source_frame_count=source_frame_count
     ) if capture_dir else None)
     process_start_monotonic = getattr(args, "process_start_monotonic", time.monotonic())
     milestone_path = Path(args.evidence_json).with_suffix(".milestones.jsonl")
     if milestone_path.exists():
         raise FileExistsError("milestone log path already exists; choose a new attempt result path")
-    manifest_options = ({"approved_boot_id": args.expected_boot_id}
-                        if getattr(args, "wo0017_profile", None) else {})
+    manifest_options = manifest_validation_options(args, calibration_mode=calibration_mode)
     plan = preflight.validate_manifest(args.manifest, args.manifest_sha256, **manifest_options)
     if not plan.ready_for_board:
         raise preflight.PreflightError("manifest is not marked ready_for_board")
     if plan.manifest.get("clock_mhz") != 50:
         raise preflight.PreflightError("WO-0016 is locked to the WO-0015 50 MHz image")
     formal = formal_capture_context(args, plan)
-    stage1_receipt = (formal["receipt"] if formal else board_once.require_overlay_pass_receipt(
-        board_once.OVERLAY_PASS_RECEIPT, plan))
+    calibration = physical_calibration_context(args, plan) if calibration_mode else None
+    stage1_receipt = (formal["receipt"] if formal else
+                      calibration["receipt"] if calibration else
+                      board_once.require_overlay_pass_receipt(
+                          board_once.OVERLAY_PASS_RECEIPT, plan))
     live_boot = preflight.read_boot_id()
     if live_boot != plan.boot_id:
         raise preflight.PreflightError("live boot_id does not match the pinned WO-0015 manifest")
     meminfo = preflight.read_cma_meminfo()
-    if meminfo["CmaFree"] < CMA_WATERMARK_KIB:
-        raise preflight.PreflightError("CmaFree is below the WO-0016 pre-allocation watermark")
+    if ((calibration_mode and meminfo["CmaFree"] <= CMA_WATERMARK_KIB)
+            or (not calibration_mode and meminfo["CmaFree"] < CMA_WATERMARK_KIB)):
+        raise preflight.PreflightError(
+            "CmaFree must be strictly above 32768 KiB for calibration" if calibration_mode
+            else "CmaFree is below the WO-0016 pre-allocation watermark"
+        )
     admission = preflight.read_cma_admission(meminfo=meminfo)
     ownership = preflight.audit_process_ownership()
     manager = preflight.read_fpga_manager()
-    guard_dir = formal["ready_path"].parent if formal else WO16_GUARD.parent
+    calibration_camera_profile = None
+    calibration_camera_owner = None
+    calibration_dma_status = None
+    if calibration_mode:
+        calibration_camera_owner = _require_camera_device_unowned(args.camera)
+        calibration_camera_profile = _read_standard_camera_profile(args.camera)
+        calibration_dma_status = {
+            "mm2s": board_once.read_phys32_readonly(preflight.DMA_BASE + 0x04),
+            "s2mm": board_once.read_phys32_readonly(preflight.DMA_BASE + 0x34),
+        }
+        if any(status != 0x00000001 for status in calibration_dma_status.values()):
+            raise preflight.PreflightError(
+                "calibration initial DMASR must remain exactly 0x00000001 after operator click"
+            )
+    guard_dir = (formal["ready_path"].parent if formal else
+                 calibration["lock_path"].parent if calibration else WO16_GUARD.parent)
     if guard_dir.is_symlink():
         raise preflight.PreflightError("WO-0016 guard directory must not be a symlink")
     guard_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -998,6 +1289,7 @@ def execute_board_stream(args: argparse.Namespace, *,
     stageb2_ready_guard = None
     stageb2_attempt_permit = None
     attempt_path = None
+    calibration_lock_record = None
     if args.no_consume_guard:
         if not getattr(args, "attempt_id", None):
             raise ValueError("--no-consume-guard requires a unique --attempt-id")
@@ -1061,6 +1353,16 @@ def execute_board_stream(args: argparse.Namespace, *,
             "stabilization_delay_s": args.stabilization_delay_s,
             "operator_prearm_delay_s": args.operator_prearm_delay_s,
         })
+    elif calibration_mode:
+        ready_lock = calibration_lock.validate_ready_calibration_lock(
+            calibration["lock_path"], calibration["identity"])
+        if operator_gate is not None:
+            operator_gate.bind_control_sha256(ready_lock["sha256"],
+                                              label="calibration lock")
+        calibration_lock_record = calibration_lock.validate_consumed_calibration_lock(
+            calibration["lock_path"], calibration["identity"])["receipt"]
+        attempt_path = calibration["consumed_path"]
+        guard = calibration_lock_record
     else:
         guard = claim_once_guard(WO16_GUARD, {
             "schema": 1,
@@ -1086,7 +1388,8 @@ def execute_board_stream(args: argparse.Namespace, *,
     evidence: dict[str, Any] = {
         "schema": 1,
         "work_order": "WO-0017" if formal else "WO-0016",
-        "status": "WO0016_RUNNING",
+        "stage": "physical-calibration" if calibration_mode else None,
+        "status": "WO0017_PHYSICAL_CALIBRATION_RUNNING" if calibration_mode else "WO0016_RUNNING",
         "board_accessed": False,
         "boot_id": plan.boot_id,
         "manifest_sha256": plan.manifest_sha256,
@@ -1094,8 +1397,18 @@ def execute_board_stream(args: argparse.Namespace, *,
         "hwh_sha256": plan.hwh_sha256,
         "clock_mhz": 50,
         "guard": guard,
-        "guard_mode": ("READY Guard validate-only; attempt permit consumed-once"
+        "guard_mode": ("independent calibration lock consumed-once" if calibration_mode else
+                       "READY Guard validate-only; attempt permit consumed-once"
                        if args.no_consume_guard else "consume-once"),
+        "calibration_lock": (None if calibration is None else {
+            "path": str(calibration["lock_path"]),
+            "sha256": hashlib.sha256(calibration_lock._json_bytes({
+                **calibration["identity"], "lock_status": "READY", "consumed": False
+            })).hexdigest(),
+            "consumed_marker_path": str(calibration["consumed_path"]),
+            "consumed_marker": calibration_lock_record,
+        }),
+        "formal_acceptance_permit": None if calibration_mode else None,
         "stageb2_ready_guard": stageb2_ready_guard,
         "stageb2_attempt_id": args.attempt_id if args.no_consume_guard else None,
         "stageb2_attempt_permit": stageb2_attempt_permit,
@@ -1106,6 +1419,9 @@ def execute_board_stream(args: argparse.Namespace, *,
         "fpga_manager": manager,
         "cma_free_before_kib": meminfo["CmaFree"],
         "cma_watermark_kib": CMA_WATERMARK_KIB,
+        "camera_profile_pre_start": calibration_camera_profile,
+        "camera_ownership_pre_start": calibration_camera_owner,
+        "dma_status_pre_pynq": calibration_dma_status,
         "max_frames": args.max_frames,
         "camera_device": args.camera,
         "camera_mode": "MJPG 640x400 mapped to Gray8 320x240",
@@ -1155,6 +1471,11 @@ def execute_board_stream(args: argparse.Namespace, *,
         evidence["afi1_snapshot"] = afi
         for offset, label in ((0x04, "MM2S"), (0x34, "S2MM")):
             status = api.read32(preflight.DMA_BASE, offset)
+            if calibration_mode and status != 0x00000001:
+                raise preflight.PreflightError(
+                    f"{label} initial DMASR changed from calibration baseline 0x00000001: "
+                    f"0x{status:08x}"
+                )
             if status & board_once.DMA_ERROR_MASK:
                 raise preflight.PreflightError(f"{label} DMA begins with an error status")
             if not (status & board_once.DMA_HALTED) and not (status & board_once.DMA_IDLE):
@@ -1208,6 +1529,8 @@ def execute_board_stream(args: argparse.Namespace, *,
                 },
                 max_bytes=capture_max_bytes,
                 queue_depth=2,
+                source_frame_ids=(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS
+                                  if calibration_mode else ()),
                 metadata={
                     "work_order": "WO-0017 Phase 1B",
                     "input_stage": "decoded first camera channel mapped to FPGA Gray8 input; geometry recorded in config",
@@ -1278,7 +1601,7 @@ def execute_board_stream(args: argparse.Namespace, *,
         hub = MjpegFrameHub()
         preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
-            "capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
+            "capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
             "raw_capture_copy", "mjpeg_encode", "mjpeg_handoff",
             "mjpeg_background_encode", "postprocess")}
         preview_publisher = PeriodicMjpegPublisher(
@@ -1350,6 +1673,8 @@ def execute_board_stream(args: argparse.Namespace, *,
             preview_callback=preview_publisher,
             raw_capture_callback=(capture_writer.record_raw_frame
                                   if capture_writer is not None else None),
+            source_capture_callback=(capture_writer.record_source_frame
+                                     if capture_writer is not None and calibration_mode else None),
             capture_callback=(capture_frame if capture_writer is not None else None),
             stage_timings_ms=stage_timings_ms,
             transfer_timeout_s=args.timeout_s,
@@ -1375,9 +1700,12 @@ def execute_board_stream(args: argparse.Namespace, *,
             operator_gate=operator_gate,
             milestone_callback=record_camera_milestone,
             capture_timings_ms=stage_timings_ms["capture"],
+            mapping_timings_ms=stage_timings_ms["mapping"],
             steady_start_time=steady_start_time,
             capture_metadata=capture_metadata,
             include_capture_metadata=(capture_writer is not None),
+            source_frame_ids=(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS
+                              if calibration_mode else ()),
             frame_mapping=preprocessing_configuration(args)["mapping"])))
         if not steady_start_time:
             raise RuntimeError("camera did not establish a steady-stream timing boundary")
@@ -1400,8 +1728,13 @@ def execute_board_stream(args: argparse.Namespace, *,
             evidence["capture_status"] = capture_result["status"]
             if capture_result["status"] != "COMPLETE":
                 raise CaptureError("requested evidence capture is incomplete")
+        final_camera_profile = (_read_standard_camera_profile(args.camera)
+                                if calibration_mode else None)
+        final_camera_ownership = (_require_camera_device_unowned(args.camera)
+                                  if calibration_mode else None)
         evidence.update({
-            "status": "BOARD_STREAM_COMPLETE",
+            "status": ("PHYSICAL_CALIBRATION_COMPLETE" if calibration_mode
+                       else "BOARD_STREAM_COMPLETE"),
             "board_accessed": True,
             "frames_processed": len(results),
             "total_count": total_count,
@@ -1430,12 +1763,17 @@ def execute_board_stream(args: argparse.Namespace, *,
                                      else loopback_client.error),
             "preview_url": f"http://{args.host}:{preview.port}/",
             "dma_status_final": {"mm2s": mm2s_status, "s2mm": s2mm_status},
+            "camera_profile_final": final_camera_profile,
+            "camera_ownership_final": final_camera_ownership,
             "frame_dma_status": frame_dma_status,
             "packer_frame_status": packer_frame_status,
             "packer_output_frames_verified": len(results),
             "pynq_imported": True,
-            "accuracy_formula": "1 - abs(total_count - expected_count) / max(expected_count, 1)",
-            "note": "Measured only for the supplied finite live-camera interval; no automatic retry/reset/reload.",
+            "accuracy_formula": (None if calibration_mode else
+                                 "1 - abs(total_count - expected_count) / max(expected_count, 1)"),
+            "note": ("Calibration/preview measurement only; no formal Permit, acceptance decision, or retry."
+                     if calibration_mode else
+                     "Measured only for the supplied finite live-camera interval; no automatic retry/reset/reload."),
         })
         _release_buffers(api, tx_buffers + rx_buffers, released_buffer_ids)
         evidence["cma_free_after_release_kib"] = api.cma_free_kib()
@@ -1603,7 +1941,7 @@ def summarize_roi_subtimings_ms(results: tuple[Any, ...] | list[Any]) -> dict[st
 def summarize_stage_timings_ms(timings: Mapping[str, list[float]]) -> dict[str, Any]:
     """Return per-frame average stage durations and sample counts in milliseconds."""
     result: dict[str, Any] = {}
-    for stage in ("capture", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
+    for stage in ("capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
                   "mjpeg_encode", "mjpeg_handoff", "mjpeg_background_encode", "postprocess"):
         samples = timings.get(stage, [])
         result[f"avg_{stage}_ms"] = (
@@ -1631,6 +1969,14 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--wo0017-profile", choices=("b1", "b2"))
     parser.add_argument("--wo0017-ready-id",
                         help="new immutable READY record ID; omitting it retains the original ready.json")
+    parser.add_argument("--physical-calibration", action="store_true",
+                        help="use the independent one-shot calibration lock; no formal Permit is read or consumed")
+    parser.add_argument("--calibration-id",
+                        help="unique calibration identity scoped below the current Boot ID")
+    parser.add_argument("--calibration-lock",
+                        help="absolute path to the private Boot-ID-scoped calibration lock")
+    parser.add_argument("--worker-python", default=DEFAULT_WORKER_PYTHON,
+                        help="exact PYNQ Python executable pinned to this calibration lock")
     parser.add_argument("--expected-boot-id")
     parser.add_argument("--stage1-receipt")
     parser.add_argument("--stage1-receipt-sha256")
@@ -1697,6 +2043,8 @@ def main(argv: list[str] | None = None, *,
     args = parser.parse_args(argv)
     args.process_start_monotonic = process_start_monotonic
     try:
+        if args.physical_calibration:
+            validate_calibration_options(args)
         if args.no_consume_guard and args.mode != "board":
             raise ValueError("--no-consume-guard is only valid in explicitly authorized board mode")
         if args.no_consume_guard and not args.attempt_id:

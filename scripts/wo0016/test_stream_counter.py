@@ -1266,6 +1266,38 @@ def test_preview_callback_receives_gray_and_mask_from_the_same_dma_slot():
     assert observed == [(0, 30, 25), (1, 31, 25)]
 
 
+def test_selected_original_source_frame_reaches_capture_callback_without_mapping():
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    dma = MockDma([_mask(116)])
+    original = np.arange(400 * 640, dtype=np.uint32).reshape(400, 640).astype(np.uint8)
+    mapped = np.full((240, 320), 73, dtype=np.uint8)
+    observed = []
+
+    async def source_frames():
+        yield FrameInput(mapped, 0, 1, 2, 0.1, original)
+
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=MaskCounter(line_y=120),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        source_capture_callback=lambda frame_id, gray: observed.append(
+            (frame_id, gray.copy())
+        ),
+        transfer_timeout_s=1.0,
+    )
+
+    asyncio.run(stream.run(source_frames()))
+
+    assert len(observed) == 1
+    assert observed[0][0] == 0
+    np.testing.assert_array_equal(observed[0][1], original)
+    assert observed[0][1].shape == (400, 640)
+
+
 def test_blocked_jpeg_encoder_does_not_block_dma_counter_pipeline(monkeypatch):
     import mjpeg_preview
 
