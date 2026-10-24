@@ -48,6 +48,64 @@ def test_touching_split_keeps_hollow_nut_and_uniform_blob_intact():
     assert len(split_touching_component(np.ones((10, 20), np.uint8))) == 1
 
 
+def test_recorded_touching_pair_shape_counts_twice_after_split():
+    # Thresholded component from camera-only capture frame 828, archive SHA256
+    # 0b55c6e1d5a43a4c69702dd89ef14be09c1673cdbc7b8d22b7bf5b8fbe40ce9e.
+    # The full source archive is local evidence; this small mask keeps the
+    # regression test portable and exercises the observed two-run contact neck.
+    packed = bytes.fromhex(
+        "03f8003ff803ffe01fff81fffc0fffe0fe1f87e07c7e01e3e00fbf003df801f7c00fbe007df807c7c03e3f03e0fc7f07fff03fff80fff807ff801ffc0020800ffe007ff803ffe03fff03fff81fffe1f83f8f80fcfc03e7c01f3e00f9f003ef801f7c01fbf00f8f80fc7e0fc1fdfe0fffe07fff01fff007ff001ff800"
+    )
+    component = np.unpackbits(np.frombuffer(packed, dtype=np.uint8))[:47 * 21]
+    component = component.reshape(47, 21).astype(np.uint8) * 255
+    assert int(np.count_nonzero(component)) == 553
+    assert len(split_touching_component(component)) == 2
+
+    options = dict(roi_mode="full", count_axis="x", line_x=160,
+                   guarded_merge=True, component_cluster_gap=14,
+                   single_intact_area=95, max_merge_area=260,
+                   max_step=48, max_lateral_step=10, max_missing=3,
+                   confirm_hits=2)
+    baseline = MaskCounter(**options)
+    improved = MaskCounter(**options, max_split_area=700)
+    for frame_id, x in enumerate(range(125, 177, 2)):
+        mask = np.zeros((240, 320), dtype=np.uint8)
+        mask[108:155, x:x + 21] = component
+        baseline.update(frame_id, mask)
+        improved.update(frame_id, mask)
+    assert baseline.total_count == 1
+    assert improved.total_count == 2
+
+
+def test_recorded_three_nut_cluster_counts_three_hole_centers():
+    # Thresholded component from camera-only capture frame 30, archive SHA256
+    # 7edb8fcc077a0592b957f485ae6d5b99989bdf61b2d0c17cff7d71afaa2ad9fa.
+    packed = bytes.fromhex(
+        "000c0000001ffc000000fff8000003ffe000000fff8000007fff000003f8fe00000fc1f800003e03f00001f007c00007c01f00003f007e0000fc01f9fe03f007efff07c01f7ffc1f80fffff83f03ffffe0fe3fffffc1fffffc3f87ffffe07e0fffff00f83ffffc03e07fffe00f80ffdf801f07fffe007c1ffffc01f0fffff00f87ffffe07e1fffff81f87fffffffc3f87ffffe0fc0fffff87e01ffffe1f803ffff07c00ffff81f003e01c07c00f80001f803e00007e01f80001fc07c00003f83f00000ffff800001fffe000007fff000000fffc000001ffe0000007ff0000000"
+    )
+    component = np.unpackbits(np.frombuffer(packed, dtype=np.uint8))[:47 * 38]
+    component = component.reshape(47, 38).astype(np.uint8) * 255
+    assert int(np.count_nonzero(component)) == 885
+    pieces = split_touching_component(component)
+    assert len(pieces) == 3
+    assert sum(int(np.count_nonzero(piece)) for piece in pieces) == 885
+
+    options = dict(roi_mode="full", count_axis="x", line_x=160,
+                   guarded_merge=True, component_cluster_gap=14,
+                   single_intact_area=95, max_merge_area=260,
+                   max_step=48, max_lateral_step=10, max_missing=3,
+                   confirm_hits=2)
+    baseline = MaskCounter(**options)
+    improved = MaskCounter(**options, max_split_area=900)
+    for frame_id, x in enumerate(range(110, 175, 4)):
+        mask = np.zeros((240, 320), dtype=np.uint8)
+        mask[111:158, x:x + 38] = component
+        baseline.update(frame_id, mask)
+        improved.update(frame_id, mask)
+    assert baseline.total_count == 1
+    assert improved.total_count == 3
+
+
 def _mask(center_y, *, center_x=80, size=5):
     mask = np.zeros((240, 320), dtype=np.uint8)
     half = size // 2

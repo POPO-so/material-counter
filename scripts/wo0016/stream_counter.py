@@ -141,6 +141,7 @@ class MaskCounter:
                  component_cluster_gap: float = 0.0,
                  guarded_merge: bool = False, single_intact_area: int = 95,
                  max_merge_area: int = 260, max_merged_span: int = 24,
+                 max_split_area: int | None = None,
                  strict_lateral_gate: bool = False,
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
@@ -190,6 +191,8 @@ class MaskCounter:
             single_intact_area, "single_intact_area", minimum=1
         )
         self.max_merge_area = _integer(max_merge_area, "max_merge_area", minimum=1)
+        self.max_split_area = (self.max_merge_area if max_split_area is None else
+                               _integer(max_split_area, "max_split_area", minimum=1))
         self.max_merged_span = _integer(max_merged_span, "max_merged_span", minimum=1)
         self.cooldown_frames = _integer(cooldown_frames, "cooldown_frames", minimum=0)
         self.cooldown_lateral = _nonnegative_float(cooldown_lateral, "cooldown_lateral")
@@ -422,10 +425,10 @@ class MaskCounter:
                     full_frame_contour[:, 0, 1] += top
                     rejected_contours.append(full_frame_contour)
                 continue
-            if (self.guarded_merge and self.single_intact_area < area <= self.max_merge_area):
+            if (self.guarded_merge and self.single_intact_area < area <= self.max_split_area):
                 cropped = labels[y:y + box_height, x:x + box_width] == label
                 pieces = split_touching_component(cropped, min_child_area=self.min_area)
-                if len(pieces) == 2:
+                if 2 <= len(pieces) <= 3:
                     for piece in pieces:
                         ys, xs = np.nonzero(piece)
                         piece_area = len(xs)

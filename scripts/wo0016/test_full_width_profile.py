@@ -47,6 +47,7 @@ def test_full_width_profile_binds_guards_full_roi_and_strict_directional_trackin
         "max_merge_area": 260, "max_merged_span": 24, "strict_lateral_gate": True}
     assert config["count_axis"] == "x" and config["line_x"] == 160
     assert config["component_cluster_gap"] == 14
+    assert config["max_split_area"] == 900
     assert config["max_step"] == 48 and config["max_lateral_step"] == 10
     assert config["max_missing"] == 3 and config["cooldown_frames"] == 0
     assert runner.preprocessing_configuration(args)["mapping"] == "letterbox"

@@ -45,6 +45,31 @@ python scripts/wo0016/replay_capture_dataset.py <dataset-directory> --output <ne
 
 The replay reads the saved raw masks through the baseline `MaskCounter`; it does not reconstruct masks from previews. The Python API accepts a future counter factory so the same stored masks can be compared against a later V2 implementation. Entity-level PASS requires an independent observer/video record, full-pass visibility, unique entity IDs, in-range frame intervals, and manually reviewed entity-to-Track-ID links. Events outside an entity interval cannot satisfy it. A reviewed empty Track ID list records an independently confirmed miss. Empty-belt PASS requires zero raw components, detections, and events in the independently confirmed interval. Replay output records the Ground Truth SHA-256. Missing or incomplete Ground Truth is `NOT VERIFIED`.
 
+To locate losses caused by proximity clustering, compare the captured masks
+under the recorded configuration and a diagnostic zero-gap configuration:
+
+```powershell
+python scripts/wo0016/diagnose_touching_capture.py <dataset-directory> --output <new-diagnosis.json>
+```
+
+The output lists qualified Binary8 component counts, precluster and final
+detection counts, rejected large components, track associations, and crossing
+events for every frame. `proximity_merge_candidate` means at least two
+qualified pixel components became fewer observations; a changed count is not
+an accuracy result without independent object annotations. The command only
+reads a complete, hash-verified capture dataset and does not access the board.
+
+For a temporary optical check before the current board has a valid PL Binary8
+capture path, `capture_touching_camera_only.py` records Gray8 from `/dev/video0`
+without accessing FPGA or DMA. Use a new absolute output directory for each run.
+`--compact` keeps only 320×240 Gray8 and permits up to 1800 frames, enough to
+cover conveyor startup. Its manifest explicitly marks the result
+`CAMERA_ONLY_NOT_PL_BINARY8`; thresholding those frames is provisional and does
+not establish board acceptance. For objects that start outside the camera view,
+`--wait-for-object-s 180` keeps reading until three consecutive frames show at
+least 100 pixels at Gray8 >= 128 in the left half, then saves the requested
+number of frames. The manifest records the actual wait duration.
+
 Capture is not proof that the hardware mask carries an echoed frame ID, nor is a software-synthetic dataset board evidence. Review the current capture report and hardware checklist before any separate board authorization.
 
 ## Evidence boundary

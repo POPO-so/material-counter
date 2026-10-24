@@ -317,7 +317,8 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
               "prediction_max_missing": args.prediction_max_missing}
     if getattr(args, "counting_profile", "legacy") == "full-width-mixed":
         config.update({"roi_mode": "full", "guarded_merge": True,
-                       "single_intact_area": 95, "max_merge_area": 260, "max_merged_span": 24,
+                       "single_intact_area": 95, "max_merge_area": 260,
+                       "max_split_area": 900, "max_merged_span": 24,
                        "strict_lateral_gate": True, "count_axis": "x", "line_x": 160,
                        "line_y": 120, "min_area": 12, "max_missing": 3,
                        "max_step": 48.0, "max_lateral_step": 10.0, "backward_tolerance": 4.0,
@@ -992,7 +993,8 @@ def validate_calibration_options(args: argparse.Namespace) -> None:
     config = counting_configuration(args)
     required = {
         "count_axis": "x", "line_x": 160, "roi_mode": "full", "guarded_merge": True,
-        "single_intact_area": 95, "max_merge_area": 260, "max_merged_span": 24,
+        "single_intact_area": 95, "max_merge_area": 260,
+        "max_split_area": 900, "max_merged_span": 24,
         "max_step": 48.0, "max_lateral_step": 10.0, "backward_tolerance": 4.0,
         "component_cluster_gap": 14.0,
     }

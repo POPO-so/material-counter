@@ -57,6 +57,7 @@ def test_multiline_options_have_safe_defaults_and_strict_validation():
     assert legacy.strict_lateral_gate is False
     assert legacy.single_intact_area == 95
     assert legacy.max_merge_area == 260
+    assert legacy.max_split_area == 260
     assert legacy.max_merged_span == 24
 
     configured = MaskCounter(
@@ -77,6 +78,7 @@ def test_multiline_options_have_safe_defaults_and_strict_validation():
         {"max_merged_span": False},
         {"single_intact_area": 0},
         {"max_merge_area": -1},
+        {"max_split_area": 0},
         {"max_merged_span": 0},
     ):
         with pytest.raises(ValueError):
