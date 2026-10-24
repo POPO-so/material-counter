@@ -25,6 +25,27 @@ from stream_counter import (
     allocate_ping_pong_buffers,
     transfer_async,
 )
+from split_touching import split_touching_component
+
+
+def test_touching_neck_is_split_and_survives_guarded_clustering():
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    mask[100:114, 125:139] = 255
+    mask[120:134, 125:139] = 255
+    mask[114:120, 131:133] = 255
+    counter = MaskCounter(roi_mode="full", count_axis="x", guarded_merge=True,
+                          component_cluster_gap=14, enable_touching_split=True)
+    result = counter.update(0, mask)
+    assert len(result.detections) == 2
+    assert sum(d.area for d in result.detections) == int(np.count_nonzero(mask))
+    assert result.detections[0].centroid_y != result.detections[1].centroid_y
+
+
+def test_touching_split_keeps_hollow_nut_and_uniform_blob_intact():
+    hollow = np.ones((14, 14), np.uint8)
+    hollow[4:10, 4:10] = 0
+    assert len(split_touching_component(hollow)) == 1
+    assert len(split_touching_component(np.ones((10, 20), np.uint8))) == 1
 
 
 def _mask(center_y, *, center_x=80, size=5):

@@ -33,6 +33,15 @@ def test_preview_draws_red_virtual_line_and_count_text_on_binary_mask():
                   & (np.ptp(text_pixels, axis=2) <= 4))
 
 
+def test_x160_line_and_effective_roi_border_are_drawn_on_mjpeg_frame():
+    frame = render_preview_frame(np.zeros((240, 320), np.uint8), total_count=0,
+                                 line_y=120, count_axis="x", line_x=160,
+                                 roi_top=50, roi_bottom=190)
+    assert tuple(frame[110, 160]) == (0, 0, 255)
+    assert tuple(frame[50, 3]) == (50, 220, 130)
+    assert tuple(frame[189, 3]) == (50, 220, 130)
+
+
 def test_preview_jpeg_is_valid_and_invalid_binary_masks_are_rejected():
     mask = np.zeros((240, 320), dtype=np.uint8)
 

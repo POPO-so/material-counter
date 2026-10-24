@@ -126,7 +126,8 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                          pip_label: str = "PL DMA MASK",
                          tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
                          track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None,
-                         calibration: dict | None = None
+                         calibration: dict | None = None,
+                         roi_top: int = 0, roi_bottom: int = 240
                          ) -> np.ndarray:
     """Render the Gray8 camera frame with tracking HUD and Binary8 DMA-mask PIP."""
     image = np.asarray(mask)
@@ -155,10 +156,18 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
     frame = cv2.cvtColor(background, cv2.COLOR_GRAY2BGR)
     if count_axis not in ("x", "y") or not isinstance(line_x, int) or not 0 <= line_x < image.shape[1]:
         raise ValueError("invalid count axis or line_x")
+    if not 0 <= roi_top < roi_bottom <= image.shape[0]:
+        raise ValueError("invalid effective ROI bounds")
+    cv2.rectangle(frame, (0, roi_top), (image.shape[1] - 1, roi_bottom - 1),
+                  (50, 220, 130), 1, lineType=cv2.LINE_8)
     start, end = (((line_x, 0), (line_x, image.shape[0]-1)) if count_axis == "x"
                   else ((0, int(line_y)), (image.shape[1]-1, int(line_y))))
     cv2.line(frame, start, end,
              (0, 0, 255), 2, lineType=cv2.LINE_8)
+    if count_axis == "x":
+        cv2.putText(frame, f"X={line_x}", (min(line_x + 4, 270), 100),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1,
+                    lineType=cv2.LINE_AA)
     boundary_values = (line_x - hysteresis, line_x + hysteresis) if count_axis == "x" else (
         line_y - hysteresis, line_y + hysteresis
     )
@@ -248,7 +257,8 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
                         pip_label: str = "PL DMA MASK",
                         tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
                         track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None,
-                        calibration: dict | None = None
+                        calibration: dict | None = None,
+                        roi_top: int = 0, roi_bottom: int = 240
                         ) -> bytes:
     if isinstance(quality, bool) or not isinstance(quality, (int, np.integer)) or not 1 <= quality <= 100:
         raise ValueError("JPEG quality must be an integer in 1..100")
@@ -258,7 +268,8 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
                                  source_gray=source_gray, hysteresis=hysteresis,
                                  pip_label=pip_label,
                                  tracks=tracks, track_trails=track_trails,
-                                 **({"calibration": calibration} if calibration is not None else {}))
+                                 **({"calibration": calibration} if calibration is not None else {}),
+                                 roi_top=roi_top, roi_bottom=roi_bottom)
     encoded, payload = cv2.imencode(".jpg", frame,
                                     [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
     if not encoded:
@@ -273,7 +284,8 @@ class PeriodicMjpegPublisher:
                  interval: int = PREVIEW_FRAME_INTERVAL,
                  quality: int = PREVIEW_JPEG_QUALITY, count_label: str = "TOTAL COUNT",
                  count_axis: str = "y", line_x: int = 160,
-                 hysteresis: float = 2.0, pip_label: str = "PL DMA MASK"):
+                 hysteresis: float = 2.0, pip_label: str = "PL DMA MASK",
+                 active_rows: tuple[int, int] | list[int] | None = None):
         if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
             raise ValueError("preview interval must be a positive integer")
         if isinstance(quality, bool) or not isinstance(quality, int) or not 1 <= quality <= 100:
@@ -286,6 +298,12 @@ class PeriodicMjpegPublisher:
         self.count_axis = count_axis
         self.line_x = line_x
         self.hysteresis = float(hysteresis)
+        if active_rows is not None and (
+                not isinstance(active_rows, (tuple, list)) or len(active_rows) != 2
+                or any(isinstance(v, bool) or not isinstance(v, int) for v in active_rows)
+                or not 0 <= active_rows[0] < active_rows[1] <= 240):
+            raise ValueError("active_rows must be two row bounds inside the preview")
+        self.active_rows = None if active_rows is None else tuple(active_rows)
         if not isinstance(pip_label, str) or not pip_label.strip():
             raise ValueError("pip_label must be non-empty text")
         self.pip_label = pip_label
@@ -302,6 +320,7 @@ class PeriodicMjpegPublisher:
         self._encode_gray = np.empty((240, 320), dtype=np.uint8)
         self._latest_tracks: tuple[dict[str, Any], ...] = ()
         self._latest_calibration: dict | None = None
+        self._latest_roi = (0, 240)
         self._track_trails: dict[int, list[tuple[float, float]]] = defaultdict(list)
         self._latest_metadata: tuple[int, int, int] | None = None
         self._snapshot_sequence = 0
@@ -335,6 +354,11 @@ class PeriodicMjpegPublisher:
                 np.copyto(self._latest_gray, gray, casting="no")
                 self._latest_tracks = tuple(getattr(result, "tracks", ()))
                 self._latest_calibration = getattr(result, "calibration", None)
+                self._latest_roi = (int(getattr(result, "roi_top", 0)),
+                                    int(getattr(result, "roi_bottom", 240)))
+                if self.active_rows is not None:
+                    self._latest_roi = (max(self._latest_roi[0], self.active_rows[0]),
+                                        min(self._latest_roi[1], self.active_rows[1]))
                 visible_ids = {int(track.get("track_id", 0)) for track in self._latest_tracks
                                if not track.get("finished") and not track.get("missed", 0)}
                 self._track_trails = defaultdict(list, {
@@ -388,6 +412,7 @@ class PeriodicMjpegPublisher:
                 np.copyto(self._encode_gray, self._latest_gray, casting="no")
                 tracks = self._latest_tracks
                 calibration = self._latest_calibration
+                roi_top, roi_bottom = self._latest_roi
                 trails = {track_id: tuple(points)
                           for track_id, points in self._track_trails.items()}
                 self._encoded_sequence = sequence
@@ -405,6 +430,8 @@ class PeriodicMjpegPublisher:
                     pip_label=self.pip_label,
                     tracks=tracks, track_trails=trails,
                     **({"calibration": calibration} if calibration is not None else {}),
+                    **({"roi_top": roi_top, "roi_bottom": roi_bottom}
+                       if (roi_top, roi_bottom) != (0, 240) else {}),
                 )
                 self.hub.publish(jpeg, dimensions=(self._encode_mask.shape[1],
                                  self._encode_mask.shape[0] + (85 if calibration is not None else 0)))
@@ -590,22 +617,35 @@ class MjpegPreviewServer:
                 self.end_headers()
                 self.wfile.write(body)
 
+            def _reject_post(self, code: int, payload: Any) -> None:
+                # Drain small rejected bodies before closing: unread request
+                # data can reset a Windows TCP connection before the 403 arrives.
+                # Never parse/execute the body or drain an unbounded request.
+                try:
+                    length = int(self.headers.get("Content-Length", "0"))
+                    if 0 < length <= 512:
+                        self.connection.settimeout(2.0)
+                        self.rfile.read(length)
+                except (OSError, ValueError):
+                    pass
+                self._json(code, payload)
+
             def do_POST(self) -> None:
                 self.close_connection = True
                 if self.path != "/api/calibration" or control_callback is None:
-                    self._json(403, {"error": "calibration controls disabled"})
+                    self._reject_post(403, {"error": "calibration controls disabled"})
                     return
                 if not ipaddress.ip_address(self.client_address[0]).is_loopback:
-                    self._json(403, {"error": "local API only: use an SSH tunnel"})
+                    self._reject_post(403, {"error": "local API only: use an SSH tunnel"})
                     return
                 origin = self.headers.get("Origin")
                 expected_origin = "http://" + self.headers.get("Host", "")
                 host = urlsplit(expected_origin).hostname
                 if host not in ("127.0.0.1", "localhost", "::1") or (origin and origin != expected_origin):
-                    self._json(403, {"error": "local same-origin access required"})
+                    self._reject_post(403, {"error": "local same-origin access required"})
                     return
                 if self.headers.get_content_type() != "application/json":
-                    self._json(415, {"error": "application/json required"})
+                    self._reject_post(415, {"error": "application/json required"})
                     return
                 try:
                     length = int(self.headers.get("Content-Length", "0"))

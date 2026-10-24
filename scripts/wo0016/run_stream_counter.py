@@ -303,6 +303,12 @@ def stageb2_guard_identity(*, boot_id: str, manifest_sha256: str,
 
 
 def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
+    enable_split = getattr(args, "enable_touching_split", False)
+    split_area = getattr(args, "min_split_area", 280)
+    if not isinstance(enable_split, bool):
+        raise ValueError("enable_touching_split must be a bool")
+    if isinstance(split_area, bool) or not isinstance(split_area, int) or split_area < 280:
+        raise ValueError("min_split_area must be an integer >= 280")
     config = {"count_axis": args.count_axis, "line_x": args.line_x,
               "line_y": args.line_y, "direction": args.direction,
               "min_area": args.min_area, "max_area": args.max_area,
@@ -315,7 +321,9 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
               "cooldown_frames": args.cooldown_frames,
               "cooldown_lateral": args.cooldown_lateral,
               "edge_max_missing": args.edge_max_missing,
-              "prediction_max_missing": args.prediction_max_missing}
+              "prediction_max_missing": args.prediction_max_missing,
+              "enable_touching_split": enable_split,
+              "min_split_area": split_area}
     if getattr(args, "counting_profile", "legacy") == "full-width-mixed":
         config.update({"roi_mode": "full", "active_rows": [20, 220], "guarded_merge": True,
                        "single_intact_area": 95, "max_merge_area": 260, "max_merged_span": 24,
@@ -883,6 +891,7 @@ def validate_operator_gate_launcher_sha256(value: str | None,
 
 def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
+             "split_touching.py",
              "capture_dataset.py", "live_calibration.py",
              "packet_encoder.py", "mjpeg_preview.py", "dashboard_state.py", "dashboard.html",
              "wo0017_capture_profile.py",
@@ -1631,6 +1640,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             line_x=counting_configuration(args)["line_x"],
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
             hysteresis=args.hysteresis,
+            active_rows=counting_configuration(args).get("active_rows"),
         )
         def publish_frame(result: Any, mask: Any, source_gray: Any) -> None:
             # Reuse the existing preview callback thread handoff; avoid adding
@@ -1992,6 +2002,10 @@ def _nonnegative_count_argument(value: str) -> int:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0016 asynchronous double-buffer Binary8 counter")
+    parser.add_argument("--enable-touching-split", action="store_true",
+                        help="opt in to experimental large touching-component splitting")
+    parser.add_argument("--min-split-area", type=int, default=280,
+                        help="minimum split candidate area in pixels (>=280; default: 280)")
     parser.add_argument("--mode", choices=("mock", "board"), default="mock")
     parser.add_argument("--counting-profile", choices=("legacy", "full-width-mixed"), default="legacy",
                         help="full-width-mixed selects full-height ROI, letterbox mapping and guarded merge/tracking defaults")
@@ -2075,6 +2089,7 @@ def main(argv: list[str] | None = None, *,
     args = parser.parse_args(argv)
     args.process_start_monotonic = process_start_monotonic
     try:
+        counting_config = counting_configuration(args)
         if args.physical_calibration:
             validate_calibration_options(args)
         if args.no_consume_guard and args.mode != "board":
@@ -2094,8 +2109,10 @@ def main(argv: list[str] | None = None, *,
                                          min_area=args.min_area,
                                          expected_count=args.ground_truth_count,
                                          material_label=args.material_label,
-                                         counter_config=(counting_configuration(args)
-                                             if args.counting_profile == "full-width-mixed" else None))
+                                         counter_config=(counting_config if (
+                                             args.counting_profile == "full-width-mixed"
+                                             or args.enable_touching_split or args.min_split_area != 280)
+                                             else None))
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 0 if result["status"] == "MOCK_PASS" else 1
         result = execute_board_stream(args, operator_gate_sha256=operator_gate_sha256,

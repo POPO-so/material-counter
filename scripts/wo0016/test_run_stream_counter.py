@@ -48,10 +48,13 @@ def test_wo0017_runtime_binding_covers_raw_writer_and_camera_controls():
     sources = runner.formal_runtime_sha256()
     assert {"capture_dataset.py", "live_calibration.py", "run_stream_counter.py",
             "dashboard_state.py", "dashboard.html",
+            "split_touching.py",
             "operator_gate_launcher.py", "wo0017_capture_profile.py",
             "calibration_runtime_gate.py", "start_physical_calibration_standby.py",
             "wo0015/board_preflight.py", "wo0015/board_once.py"} <= set(sources)
     assert all(len(value) == 64 for value in sources.values())
+    splitter_path = Path(runner.__file__).with_name("split_touching.py")
+    assert sources["split_touching.py"] == hashlib.sha256(splitter_path.read_bytes()).hexdigest()
 from run_stream_counter import (  # noqa: E402
     build_synthetic_masks,
     claim_once_guard,
