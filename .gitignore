@@ -69,3 +69,7 @@ data/results/**/*.vpd
 *~
 Thumbs.db
 desktop.ini
+
+# Raw credential-bearing attempt evidence stays local; sanitized evidence is tracked.
+/data/results/wo0017-physical-calibration-20261023/attempt-02/evidence-bundle.tar
+/data/results/wo0017-physical-calibration-20261023/attempt-02/evidence/operator-gate.log

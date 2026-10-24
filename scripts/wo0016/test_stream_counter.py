@@ -30,11 +30,11 @@ from split_touching import split_touching_component
 
 def test_touching_neck_is_split_and_survives_guarded_clustering():
     mask = np.zeros((240, 320), dtype=np.uint8)
-    mask[100:110, 125:135] = 255
-    mask[115:125, 125:135] = 255
-    mask[109:116, 129:131] = 255
+    mask[100:114, 125:139] = 255
+    mask[120:134, 125:139] = 255
+    mask[114:120, 131:133] = 255
     counter = MaskCounter(roi_mode="full", count_axis="x", guarded_merge=True,
-                          component_cluster_gap=14)
+                          component_cluster_gap=14, enable_touching_split=True)
     result = counter.update(0, mask)
     assert len(result.detections) == 2
     assert sum(d.area for d in result.detections) == int(np.count_nonzero(mask))
@@ -67,7 +67,7 @@ def test_recorded_touching_pair_shape_counts_twice_after_split():
                    max_step=48, max_lateral_step=10, max_missing=3,
                    confirm_hits=2)
     baseline = MaskCounter(**options)
-    improved = MaskCounter(**options, max_split_area=700)
+    improved = MaskCounter(**options, max_split_area=700, enable_touching_split=True)
     for frame_id, x in enumerate(range(125, 177, 2)):
         mask = np.zeros((240, 320), dtype=np.uint8)
         mask[108:155, x:x + 21] = component
@@ -96,7 +96,7 @@ def test_recorded_three_nut_cluster_counts_three_hole_centers():
                    max_step=48, max_lateral_step=10, max_missing=3,
                    confirm_hits=2)
     baseline = MaskCounter(**options)
-    improved = MaskCounter(**options, max_split_area=900)
+    improved = MaskCounter(**options, max_split_area=900, enable_touching_split=True)
     for frame_id, x in enumerate(range(110, 175, 4)):
         mask = np.zeros((240, 320), dtype=np.uint8)
         mask[111:158, x:x + 38] = component

@@ -2,6 +2,8 @@
 
 Agent navigation map for `material-counter`. Use linked documents as the source of project facts; this file only points to them.
 
+Main maintained directories: [项目树](文档/项目树.md).
+
 ## Start here
 
 `PROJECT_INDEX.md` → [README current status](README.md#当前状态) → task's Work Order / interface / ADR → actual code → relevant `MASTER_PLAN.md` sections only when needed. Do not read the full Master Plan by default.

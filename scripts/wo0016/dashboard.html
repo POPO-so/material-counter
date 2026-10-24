@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1467d8">
+<title>FPGA 物料计数控制看板</title>
+<style>
+:root{color-scheme:light;--blue:#1467d8;--blue-dark:#0b4eae;--bg:#edf4fc;--paper:#fff;--ink:#142640;--muted:#536882;--line:#dbe6f3;--green:#08754b;--red:#b42318;--amber:#8a5100;--radius:14px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Microsoft YaHei","PingFang SC",system-ui,sans-serif}button,input{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{cursor:not-allowed;background:#e9eef5;color:#66758b;border-color:#d4deea}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ed9800;outline-offset:4px}button:not(:disabled):hover{filter:brightness(.93)}button:not(:disabled):active{transform:translateY(1px)}[hidden]{display:none!important}.skip{position:absolute;top:-80px;left:16px;padding:12px;background:white;z-index:5}.skip:focus{top:10px}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}.icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.topbar{background:linear-gradient(105deg,var(--blue-dark),var(--blue));color:white;padding:24px 32px}.top-inner{max-width:1536px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:15px}.brand>.icon{width:42px;height:42px}.brand h1{font-size:clamp(22px,2.2vw,32px);line-height:1.3;margin:0;font-weight:750;text-wrap:balance}.brand p{margin:5px 0 0;color:#e0edff;font-size:14px}.devices{display:flex;gap:8px;flex-wrap:wrap}.device{font-size:13px;padding:9px 12px;background:#ffffff12;border:1px solid #ffffff45;border-radius:8px;display:flex;gap:7px;align-items:center}.dot{width:8px;height:8px;background:#d9e4f3;border-radius:50%;flex-shrink:0}.device[data-kind=good] .dot{background:#63efb5}.device[data-kind=bad] .dot{background:#ffb8ad}.device[data-kind=warn] .dot{background:#ffdb8d}
+main{max-width:1600px;margin:auto;padding:24px 32px 18px}.connection{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;color:var(--muted);font-size:13px;flex-wrap:wrap}.connection p{margin:0}.connection strong{color:var(--ink)}.workspace{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}.left,.right{display:grid;gap:20px;min-width:0}.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 3px 14px #1c5ea307;min-width:0}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:20px 22px 16px}.card h2{font-size:19px;display:flex;align-items:center;gap:10px;margin:0;font-weight:700}.card h2 .icon{color:var(--blue)}.small{font-size:13px;color:var(--muted)}.preview-meta{display:flex;gap:15px;flex-wrap:wrap;font-variant-numeric:tabular-nums}.video{position:relative;margin:0 18px;border:1px solid var(--line);border-radius:8px;background:#f5f8fc;aspect-ratio:4/3;overflow:hidden;display:grid;place-items:center}.video img{display:block;width:100%;height:100%;object-fit:contain}.video-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#f5f8fcf5;padding:24px;text-align:center}.video-overlay>.icon{width:46px;height:46px;color:#91a8c4}.video-overlay strong{font-size:18px}.video-overlay p{max-width:32em;margin:0;color:var(--muted);font-size:14px}.video-footer{padding:14px 20px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.source{font-size:13px;color:var(--muted);overflow-wrap:anywhere}.text-button{background:white;border:1px solid var(--line);border-radius:6px;padding:9px 13px;min-height:44px;color:var(--blue-dark);font-size:13px}
+.count-card{padding-bottom:18px}.count-display{margin:0 18px;background:linear-gradient(115deg,#176cdf,#105ac6);border-radius:10px;color:white;padding:22px 24px 18px;text-align:center}.count-display .label{font-size:14px;color:#e5efff}.count{display:block;font:750 clamp(64px,7vw,112px)/1.2 "Segoe UI",system-ui,sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.count-meta{display:flex;justify-content:space-between;gap:12px;margin-top:12px;font-size:12px;color:#e5efff}.count.flash{animation:count-flash .5s ease-out}@keyframes count-flash{from{opacity:.55}to{opacity:1}}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:14px}.metric{padding:19px;display:flex;gap:13px;align-items:start;min-height:116px}.metric>.icon{color:var(--blue);width:30px;height:30px;margin-top:3px}.metric h2{font-size:14px;color:var(--muted);margin-bottom:7px}.value{font:700 clamp(24px,2.4vw,34px)/1.3 "Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.unit{font-size:12px;color:var(--muted);margin-left:5px}.metric small{display:block;font-size:12px;color:var(--muted);margin-top:4px}.state-value{font:700 20px/1.5 "Microsoft YaHei",sans-serif;color:var(--ink)}
+.controls{padding:0 22px 20px}.actions{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px}.action{min-height:52px;padding:10px 7px;border:1px solid var(--line);border-radius:8px;display:flex;gap:6px;align-items:center;justify-content:center;font-size:15px;font-weight:600}.action .icon{width:19px;height:19px}.control-note{font-size:13px;color:var(--muted);margin:12px 0 0}.calibration{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.calibration h3{margin:0 0 10px;font-size:15px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fields label{font-size:13px;color:var(--muted)}input{display:block;width:100%;min-height:44px;padding:8px;border:1px solid #a6b9d0;border-radius:6px;color:var(--ink);margin-top:5px}.cal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.apply{background:var(--blue);color:white;border:1px solid var(--blue);border-radius:6px;padding:9px 16px;min-height:44px}.feedback{font-size:13px;color:var(--muted);margin:12px 0 0;overflow-wrap:anywhere}.feedback.error{color:var(--red)}.logs{list-style:none;padding:0 20px 16px;margin:0;height:180px;overflow:auto;scrollbar-gutter:stable}.logs li{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid #eef3f9;padding:7px 0;font-size:13px;overflow-wrap:anywhere}.logs time{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}.logs span{min-width:0}.log-note{font-size:12px;color:var(--muted);padding:0 20px 16px;margin:0}.footnote{margin:18px 0 0;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(min-width:1500px){.video{aspect-ratio:1.46}}@media(max-width:1100px){.topbar{padding:22px}.workspace{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}main{padding:20px}.metric{padding:16px 12px;gap:8px}.metric>.icon{width:24px}.card-head{padding:18px}.count{font-size:80px}.actions{grid-template-columns:1fr}.controls{padding:0 18px 18px}}
+@media(max-width:800px){.workspace{grid-template-columns:1fr}.count{font-size:80px}.count-display{padding:15px 20px}.actions{grid-template-columns:1fr 1fr 1fr}.topbar{padding:20px 16px}main{padding:16px}.brand>.icon{width:34px}.device{font-size:12px;padding:7px 9px}.devices{gap:6px}.top-inner{gap:16px}.left{gap:16px}.right{gap:16px}.workspace{gap:16px}.video{aspect-ratio:4/3}.connection{align-items:start}.count-meta{flex-wrap:wrap}}
+@media(max-width:380px){.metrics{gap:8px}.metric>.icon{display:none}.actions{grid-template-columns:1fr}.brand{gap:10px}.brand h1{font-size:21px}.fields{grid-template-columns:1fr}}
+dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);border-radius:14px;padding:24px;color:var(--ink);box-shadow:0 24px 80px #14264033;overscroll-behavior:contain}dialog::backdrop{background:#14264066}dialog h2{font-size:20px;margin:0 0 12px}dialog p{font-size:15px;margin:0 0 20px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.view-mode-control{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:14px;color:var(--muted)}.view-mode-control select{min-height:44px;min-width:190px;padding:8px 34px 8px 10px;border:1px solid #a6b9d0;border-radius:6px;color:var(--ink);background:white}.view-mode-control select:disabled{color:#66758b;background:#e9eef5;border-color:#d4deea}.view-mode-control select:focus-visible{outline:3px solid #ed9800;outline-offset:4px}.health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:0 22px 20px}.health-item{min-width:0;padding:12px;border:1px solid var(--line);border-radius:8px;background:#f8fbff}.health-item span,.health-item small{display:block;color:var(--muted);font-size:12px}.health-item strong{display:block;margin:4px 0;font:700 18px/1.35 "Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.health-item code{font:600 13px/1.4 ui-monospace,Consolas,monospace}.health-note{margin:-6px 22px 18px;color:var(--muted);font-size:12px}
+.view-mode-control select{font:inherit}@media(max-width:600px){.health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到控制看板</a>
+<svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="chip" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 1v4m6-4v4M9 19v4m6-4v4M1 9h4m-4 6h4m14-6h4m-4 6h4"/><rect x="9" y="9" width="6" height="6" rx="1"/></symbol>
+<symbol id="picture" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="15" cy="8" r="1.5"/><path d="m3 17 6-7 6 7 3-3 3 3"/></symbol>
+<symbol id="bars" viewBox="0 0 24 24"><path d="M5 20V10m7 10V4m7 16V8" stroke-width="4"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="gauge" viewBox="0 0 24 24"><path d="M4 19a10 10 0 1 1 16 0M12 12l5-5M6 12H4m8-6V4m6 8h2"/><circle cx="12" cy="12" r="2"/></symbol>
+<symbol id="list" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M9 3h6v4H9zM8 12h8m-8 4h5"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8z"/></symbol>
+<symbol id="stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1"/></symbol>
+<symbol id="trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></symbol>
+</defs></svg>
+<header class="topbar"><div class="top-inner">
+<div class="brand"><svg class="icon" aria-hidden="true"><use href="#chip"/></svg><div><h1>FPGA 物料计数控制看板</h1><p>PYNQ-Z2 视觉计数系统</p></div></div>
+<div class="devices" aria-label="设备状态">
+<span class="device" id="camera"><i class="dot" aria-hidden="true"></i><span>相机：未连接</span></span>
+<span class="device" id="fpga"><i class="dot" aria-hidden="true"></i><span>FPGA：未连接</span></span>
+<span class="device" id="dma"><i class="dot" aria-hidden="true"></i><span>DMA：未连接</span></span>
+<span class="device" id="system"><i class="dot" aria-hidden="true"></i><span>系统：等待状态</span></span>
+</div></div></header>
+<main id="main">
+<div class="connection"><p><strong id="connection">正在连接状态接口…</strong> <span id="mode"></span></p><p>更新间隔 1.5 秒 <span aria-hidden="true">／</span> 最近同步 <span id="updated">--</span></p></div>
+<div class="workspace">
+<div class="left">
+<section class="card" aria-labelledby="preview-title"><div class="card-head"><h2 id="preview-title"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><span id="preview-heading">二值化实时预览</span></h2><div class="small preview-meta"><span>画面 <span id="resolution">--</span></span><span>预览 <span id="preview-fps">--</span> FPS</span></div></div>
+<div class="video"><img id="stream" alt="实时预览；画中画显示二值化图像，来源见下方说明" width="320" height="240" hidden><div id="video-overlay" class="video-overlay"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><strong id="video-title">等待预览画面</strong><p id="video-note">尚未收到图像。请检查采集服务与连接。</p></div></div>
+<div class="video-footer"><span id="source" class="source">图像来源未确认</span><button class="text-button" id="toggle-preview" type="button" aria-pressed="false">暂停预览</button></div></section>
+<section class="card" aria-labelledby="logs-title"><div class="card-head"><h2 id="logs-title"><svg class="icon" aria-hidden="true"><use href="#list"/></svg>系统事件</h2><span class="small">最近 30 条</span></div><ol id="logs" class="logs" tabindex="0" aria-label="最近系统事件"><li><span>等待服务端状态事件…</span></li></ol><p class="log-note">显示计数及状态变化；完整日志保留在原运行记录中。</p></section>
+</div>
+<div class="right">
+<section class="card count-card" aria-labelledby="count-title"><div class="card-head"><h2 id="count-title"><svg class="icon" aria-hidden="true"><use href="#bars"/></svg><span id="count-label">累计计数</span></h2><span class="small">本次会话</span></div><div class="count-display"><span class="label" id="count-hint">等待真实计数数据</span><strong id="count" class="count">--</strong><div class="count-meta"><span>单位：个</span><span id="count-freshness">尚无已处理帧</span></div></div></section>
+<div class="metrics">
+<section class="card metric"><svg class="icon" aria-hidden="true"><use href="#list"/></svg><div><h2>当前帧区域数</h2><span id="detections" class="value">--</span><span class="unit">个</span><small>当前计数配置内的区域</small></div></section>
+<section class="card metric"><svg class="icon" aria-hidden="true"><use href="#gauge"/></svg><div><h2 id="processing-label">实际处理帧率</h2><span id="processing-fps" class="value">--</span><span class="unit">FPS</span><small id="fps-note">已完成帧的会话均值</small></div></section>
+<section class="card metric"><svg class="icon" aria-hidden="true"><use href="#clock"/></svg><div><h2>运行时长</h2><span id="elapsed" class="value">--</span><small>从首个完成帧开始</small></div></section>
+<section class="card metric"><svg class="icon" aria-hidden="true"><use href="#check"/></svg><div><h2>当前状态</h2><span id="phase" class="state-value">未连接</span><small id="frame-age">等待采集状态</small></div></section>
+</div>
+<section class="card" aria-labelledby="health-title"><div class="card-head"><h2 id="health-title"><svg class="icon" aria-hidden="true"><use href="#check"/></svg>DMA 与内存健康</h2><span class="small">最近状态快照</span></div><div class="health-grid">
+<div class="health-item"><span>CMA 可用</span><strong id="cma-free">--</strong><small>KiB</small></div><div class="health-item"><span>进程 RSS</span><strong id="rss">--</strong><small>KiB</small></div>
+<div class="health-item"><span>MM2S DMASR</span><strong><code id="dma-mm2s">--</code></strong><small>最近读取</small></div><div class="health-item"><span>S2MM DMASR</span><strong><code id="dma-s2mm">--</code></strong><small>最近读取</small></div></div><p class="health-note">显示服务端最近报告的数据；“--”表示尚未提供。</p></section>
+<section class="card" aria-labelledby="controls-title"><div class="card-head"><h2 id="controls-title"><svg class="icon" aria-hidden="true"><use href="#chip"/></svg>监控操作</h2><span class="small">按服务端能力启用</span></div><div class="controls">
+<div class="view-mode-control"><label for="view-mode">画面显示</label><select id="view-mode" disabled aria-describedby="control-note"><option value="overlay">原图与叠加层</option><option id="binary-option" value="binary">FPGA Binary8</option></select></div>
+<div class="actions"><button class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#play"/></svg>开始采集</button><button id="stop-monitor" class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#stop"/></svg>停止监控</button><button id="reset-count" class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#trash"/></svg>计数清零</button></div>
+<p id="control-note" class="control-note">停止和清零只在当前服务明确提供对应控制时启用。</p>
+<form id="calibration" class="calibration" hidden><h3>相机标定</h3><div class="fields"><label for="exposure">曝光时间<input id="exposure" name="exposure" type="number" min="50" max="10000" step="1" inputmode="numeric" autocomplete="off" required></label><label for="brightness">亮度<input id="brightness" name="brightness" type="number" min="-64" max="64" step="1" inputmode="numeric" autocomplete="off" required></label></div><div class="cal-actions"><button id="apply" class="apply" type="submit">应用参数</button><button id="restore" class="text-button" type="button">恢复基准参数</button></div><p class="control-note">仅标定模式可用，需通过本地 SSH 隧道访问。恢复操作沿用后端基准。</p></form>
+<p id="feedback" class="feedback" role="status" aria-live="polite"></p></div></section>
+</div></div>
+<footer class="footnote"><span>暂停预览不影响采集；画面模式切换不改变计数结果</span><span>设备状态表示最近完成帧的观测，不代表整机验收通过</span></footer>
+</main>
+<dialog id="confirm-control" aria-labelledby="confirm-title" aria-describedby="confirm-description">
+<form method="dialog"><h2 id="confirm-title">确认相机标定操作</h2><p id="confirm-description"></p><div class="cal-actions"><button class="text-button" value="cancel">取消</button><button class="apply" value="confirm">确认操作</button></div></form>
+</dialog>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const numeric = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
+const integer = value => numeric(value) && Number.isSafeInteger(value);
+const fmt = new Intl.NumberFormat('zh-CN');
+const clock = new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+let paused=false, connected=false, polling=false, pending=false, timer=null, request=null;
+let countAnimation=null;
+let snapshot=null, streamFailed=false, retryAfter=0, lastCount=null, eventSignature='', viewModeAccepted='overlay';
+function text(id,value){const node=$(id),next=String(value);if(node.textContent!==next)node.textContent=next;}
+function device(id,label,value){
+  const states={frames_received:['有图像','good'],frame_verified:['帧已校验','good'],disabled:['未启用','warn'],unknown:['未连接',''],running:['运行中','good'],waiting:['等待采集','warn'],stopping:['正在停止','warn'],failed:['故障','bad'],fail_hold:['故障保持','bad'],complete:['已完成',''],stopped:['已停止',''],stale:['数据过期','warn']};
+  const [title,kind]=states[value]||['未连接',''];
+  $(id).dataset.kind=kind;$(id).querySelector('span').textContent=label+'：'+title;
+}
+function overlay(title,note){$('stream').hidden=true;$('video-overlay').hidden=false;text('video-title',title);text('video-note',note);}
+function detach(){if($('stream').hasAttribute('src'))$('stream').removeAttribute('src');$('stream').hidden=true;}
+function preview(){
+  if(paused||document.hidden){detach();overlay('预览已暂停','计数与采集继续运行；恢复后显示最新画面。');return;}
+  if(!connected||!snapshot){detach();overlay('预览未连接','无法获取状态，请检查服务与网络连接。');return;}
+  const p=snapshot.preview||{};
+  if(p.closed){detach();overlay('预览已结束','采集服务已关闭本次图像流。');return;}
+  if(streamFailed&&Date.now()<retryAfter){overlay('图像连接中断','正在等待重新连接；计数主链路不受影响。');return;}
+  if(!$('stream').hasAttribute('src')){streamFailed=false;$('stream').src='/stream.mjpg';}
+  if(!numeric(p.age_seconds)||p.age_seconds>5){overlay('等待新画面','尚无图像或已超过 5 秒未更新，请检查采集服务。');return;}
+  if($('stream').naturalWidth>0&&!streamFailed){$('stream').hidden=false;$('video-overlay').hidden=true;}
+}
+$('stream').addEventListener('load',()=>preview());
+$('stream').addEventListener('error',()=>{if(!$('stream').hasAttribute('src'))return;streamFailed=true;retryAfter=Date.now()+5000;detach();overlay('图像连接中断','稍后自动重连；也可以暂停后恢复预览。');});
+$('toggle-preview').addEventListener('click',()=>{paused=!paused;streamFailed=false;retryAfter=0;$('toggle-preview').setAttribute('aria-pressed',String(paused));text('toggle-preview',paused?'恢复预览':'暂停预览');preview();});
+function duration(seconds){if(!numeric(seconds))return '--';const n=Math.floor(seconds);return [Math.floor(n/3600),Math.floor(n/60)%60,n%60].map(v=>String(v).padStart(2,'0')).join(':');}
+function logs(events){
+  const rows=Array.isArray(events)?events.slice(-30):[];
+  const signature=JSON.stringify(rows);if(signature===eventSignature)return;eventSignature=signature;
+  const list=$('logs'), nearEnd=list.scrollHeight-list.scrollTop-list.clientHeight<40;
+  list.replaceChildren();
+  if(!rows.length){const li=document.createElement('li');li.textContent='尚无服务端状态事件';list.append(li);return;}
+  for(const event of rows){const li=document.createElement('li'),time=document.createElement('time'),span=document.createElement('span');time.textContent=numeric(event.time)?clock.format(new Date(event.time*1000)):'--';span.textContent=String(event.message||'').slice(0,500);li.append(time,span);list.append(li);}
+  if(nearEnd)list.scrollTop=list.scrollHeight;
+}
+function disableLiveControls(){const caps=snapshot?.capabilities||{};$('reset-count').disabled=pending||!connected||caps.reset!==true;$('stop-monitor').disabled=pending||!connected||caps.stop!==true;$('view-mode').disabled=pending||!connected||caps.view_mode!==true;}
+function disableCalibration(){for(const el of $('calibration').querySelectorAll('input,button'))el.disabled=pending||!connected;disableLiveControls();}
+function formatDma(value){if(integer(value))return '0x'+value.toString(16).padStart(8,'0');if(typeof value==='string'&&/^(0x)?[0-9a-f]{1,8}$/i.test(value))return value.startsWith('0x')||value.startsWith('0X')?value:'0x'+value.padStart(8,'0');return '--';}
+function render(data){
+  snapshot=data;connected=true;
+  const s=data.telemetry&&typeof data.telemetry==='object'?data.telemetry:{};
+  const p=data.preview||{}, fresh=s.stale===false&&numeric(s.last_frame_age_seconds)&&s.last_frame_age_seconds<=5&&s.phase==='running';
+  const valid=s.source==='software'||s.source==='pl_dma';
+  const mock=s.mode==='mock';
+  text('connection',valid?'状态接口已连接':'状态接口已连接 · 计数数据未提供');text('updated',clock.format(new Date()));
+  text('mode',mock?'离线合成监控 · 非相机/FPGA 数据':s.source==='software'?'相机软件预览 · FPGA / DMA 未启用':s.source==='pl_dma'?'FPGA Binary8 / S2MM 计数':'');
+  text('source',mock?'离线合成帧 · 不代表相机或 FPGA 输出':s.source==='software'?'软件阈值图像 · 非 FPGA 输出':s.source==='pl_dma'?'相机 Gray8 + FPGA Binary8 画中画':'图像来源未确认');
+  text('preview-heading',mock?'合成动态图预览':s.source==='pl_dma'?'FPGA 二值化实时预览':s.source==='software'?'相机与软件二值化预览':'二值化实时预览');
+  text('binary-option',mock?'合成 Binary8':s.source==='pl_dma'?'FPGA Binary8':'软件 Binary8');
+  text('count-label',mock?'合成累计计数':s.source==='software'?'软件预览累计计数':'累计计数');
+  text('count-hint',mock?'合成数据演示，不代表硬件':(['complete','stopped'].includes(s.phase)?'本次会话最终结果':fresh?(s.source==='software'?'仅软件预览结果':'来自已处理的 FPGA 回传帧'):'等待最新计数数据'));
+  const final=['complete','stopped'].includes(s.phase);
+  const current=valid&&(fresh||final)&&integer(s.total_count)?s.total_count:null;
+  text('count',current===null?'--':fmt.format(current));$('count').style.fontSize=current!==null&&String(current).length>7?'clamp(32px,5vw,64px)':'';
+  if(current!==null&&lastCount!==null&&current!==lastCount&&!matchMedia('(prefers-reduced-motion: reduce)').matches){countAnimation?.cancel();countAnimation=$('count').animate([{opacity:.55},{opacity:1}],{duration:500,easing:'ease-out'});}
+  lastCount=current;
+  text('count-freshness',final?'采集已结束 · 保留最终计数':fresh?'已同步最新完成帧':s.stale?'帧数据未更新':'尚无已处理帧');
+  text('detections',fresh&&integer(s.detections)?fmt.format(s.detections):'--');
+  text('processing-fps',fresh&&numeric(s.processing_fps)?s.processing_fps.toFixed(1):'--');
+  text('processing-label',mock?'合成处理帧率':'实际处理帧率');
+  text('fps-note',s.fps_kind==='completed-frame sliding window'?'最近完成帧滑动窗口均值':s.fps_kind==='completed-frame session mean'?'已完成帧的会话均值':'FPS 统计口径未提供');
+  text('elapsed',duration(s.elapsed_seconds));
+  text('frame-age',numeric(s.last_frame_age_seconds)?'最近帧 '+s.last_frame_age_seconds.toFixed(1)+' 秒前':'尚无完成帧');
+  const phase=s.phase==='running'&&!fresh?'stale':s.phase;
+  text('phase',phase==='running'&&mock?'合成演示中':({waiting:'等待采集',running:s.source==='software'?'软件预览中':'正在计数',stopping:'正在停止监控',complete:'已完成',failed:'运行故障',fail_hold:'DMA 故障保持',stopped:'已停止',stale:'数据过期'})[phase]||'状态未提供');
+  for(const id of ['camera','fpga','dma'])device(id,id==='camera'?'相机':id.toUpperCase(),mock?'disabled':fresh||s[id]==='disabled'?s[id]:'unknown');
+  device('system','系统',phase);
+  text('resolution',integer(p.width)&&p.width>0&&integer(p.height)&&p.height>0?p.width+' × '+p.height:'--');
+  text('preview-fps',numeric(p.fps)?p.fps.toFixed(1):'--');
+  const health=data.health&&typeof data.health==='object'?data.health:{};
+  text('cma-free',integer(health.cma_free_kib)?fmt.format(health.cma_free_kib):'--');
+  text('rss',integer(health.rss_kib)?fmt.format(health.rss_kib):'--');
+  const dma=health.dma_status&&typeof health.dma_status==='object'?health.dma_status:{};
+  text('dma-mm2s',formatDma(dma.mm2s));text('dma-s2mm',formatDma(dma.s2mm));
+  if(!pending&&['overlay','binary'].includes(data.view_mode)){viewModeAccepted=data.view_mode;$('view-mode').value=viewModeAccepted;}
+  text('control-note',data.capabilities?.reset===true?'计数清零会重置本次显示基准；停止会结束当前监控服务。':'停止和清零只在当前服务明确提供对应控制时启用。');
+  if(integer(p.width)&&p.width>0&&integer(p.height)&&p.height>0){$('stream').width=p.width;$('stream').height=p.height;}
+  logs(s.events);
+  $('calibration').hidden=data.capabilities?.calibration!==true;
+  const controls=data.camera_controls;
+  if(controls&&!pending&&document.activeElement!==$('exposure')&&document.activeElement!==$('brightness')){
+    // Fill once; subsequent polling must not overwrite unsaved operator edits.
+    if(!$('calibration').dataset.initialized&&Number.isInteger(controls.exposure_time_absolute)&&Number.isInteger(controls.brightness)){
+      $('exposure').value=controls.exposure_time_absolute;$('brightness').value=controls.brightness;$('calibration').dataset.initialized='true';
+    }
+  }
+  disableCalibration();preview();
+}
+function offline(){
+  connected=false;snapshot=null;lastCount=null;text('connection','状态未连接 · 请检查服务与网络');text('updated','--');text('mode','');
+  for(const id of ['count','detections','processing-fps','elapsed','preview-fps','resolution'])text(id,'--');
+  for(const id of ['camera','fpga','dma'])device(id,id==='camera'?'相机':id.toUpperCase(),'unknown');device('system','系统','unknown');
+  text('phase','未连接');text('frame-age','无法获取当前状态');text('count-hint','状态接口未连接');text('count-freshness','等待重新连接');text('source','图像来源未确认');
+  for(const id of ['cma-free','rss','dma-mm2s','dma-s2mm'])text(id,'--');
+  disableCalibration();preview();
+}
+async function poll(){
+  if(polling||document.hidden)return;polling=true;request=new AbortController();const timeout=setTimeout(()=>request.abort(),4000);
+  try{const r=await fetch('/status.json',{cache:'no-store',signal:request.signal});if(!r.ok)throw new Error('status');const data=await r.json();if(data.schema!==1)throw new Error('schema');render(data);}
+  catch(e){if(!document.hidden)offline();}
+  finally{clearTimeout(timeout);polling=false;request=null;if(!document.hidden)timer=setTimeout(poll,1500);}
+}
+document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(document.hidden){request?.abort();preview();}else if(!polling)poll();});
+window.addEventListener('pagehide',()=>{clearTimeout(timer);request?.abort();detach();});
+async function adjust(reset){
+  if(pending||!connected)return;
+  if(!reset&&!$('calibration').reportValidity())return;
+  if(!await confirmControl(reset))return;
+  const body=reset?{reset:true}:{exposure_time_absolute:Number($('exposure').value),brightness:Number($('brightness').value)};
+  pending=true;disableCalibration();text('feedback','正在等待后端确认…');$('feedback').classList.remove('error');
+  const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),5000);
+  try{const response=await fetch('/api/calibration',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const result=await response.json();if(!response.ok)throw new Error(result.error||'操作未被后端接受');
+    if(!Number.isInteger(result.exposure_time_absolute)||!Number.isInteger(result.brightness))throw new Error('后端未返回有效参数，请重新查询状态');
+    $('exposure').value=result.exposure_time_absolute;$('brightness').value=result.brightness;text('feedback','后端已确认：曝光 '+fmt.format(result.exposure_time_absolute)+'，亮度 '+fmt.format(result.brightness));
+  }catch(e){$('feedback').classList.add('error');text('feedback',e.name==='AbortError'?'请求超时，结果未知。请核对状态后再操作。':String(e.message)+'；请检查标定模式及本地 SSH 隧道。');}
+  finally{clearTimeout(timeout);pending=false;disableCalibration();}
+}
+async function liveControl(action){
+  const routes={reset:{path:'/api/reset-count',capability:'reset',body:{}},stop:{path:'/api/stop',capability:'stop',body:{}},view:{path:'/api/view-mode',capability:'view_mode',body:{mode:$('view-mode').value}}};
+  const spec=routes[action];if(!spec||pending||!connected||snapshot?.capabilities?.[spec.capability]!==true)return;
+  const previousMode=viewModeAccepted;pending=true;disableCalibration();$('feedback').classList.remove('error');text('feedback','正在等待后端确认…');
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);
+  try{
+    const response=await fetch(spec.path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(spec.body),signal:controller.signal});
+    const result=await response.json();if(!response.ok)throw new Error(result.error||'操作未被后端接受');
+    if(action==='view'){
+      const selected=result.view_mode||result.mode||spec.body.mode;
+      if(!['overlay','binary'].includes(selected))throw new Error('后端未返回有效画面模式');
+      viewModeAccepted=selected;$('view-mode').value=selected;text('feedback',selected==='binary'?'已切换到 FPGA Binary8 画面':'已切换到原图叠加画面');
+    }else if(action==='reset')text('feedback','清零请求已确认，等待下一帧更新计数。');
+    else text('feedback','停止请求已由后端确认。');
+  }catch(e){if(action==='view')$('view-mode').value=previousMode;$('feedback').classList.add('error');text('feedback',e.name==='AbortError'?'请求超时，结果未知。请核对状态后再操作。':String(e.message));}
+  finally{clearTimeout(timeout);pending=false;disableCalibration();poll();}
+}
+function confirmControl(reset){
+  const dialog=$('confirm-control');
+  if(dialog.open)return Promise.resolve(false);
+  text('confirm-description',reset?'恢复相机标定基准参数。是否继续？':'将应用当前曝光和亮度参数。是否继续？');
+  dialog.returnValue='cancel';
+  return new Promise(resolve=>{dialog.addEventListener('close',()=>resolve(dialog.returnValue==='confirm'),{once:true});dialog.showModal();});
+}
+$('calibration').addEventListener('submit',event=>{event.preventDefault();adjust(false);});$('restore').addEventListener('click',()=>adjust(true));
+$('reset-count').addEventListener('click',()=>liveControl('reset'));$('stop-monitor').addEventListener('click',()=>liveControl('stop'));$('view-mode').addEventListener('change',()=>liveControl('view'));
+poll();
+</script>
+</body>
+</html>

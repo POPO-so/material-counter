@@ -11,6 +11,7 @@ import asyncio
 from dataclasses import asdict
 import hashlib
 import hmac
+import itertools
 import json
 import math
 import os
@@ -46,6 +47,7 @@ import board_once
 import board_preflight as preflight
 from camera_adapter import gray320x240_to_rgb_packet
 from packet_encoder import gray320x240_to_rgb_packet_into
+from dashboard_state import DashboardState
 from mjpeg_preview import (
     PREVIEW_FRAME_INTERVAL,
     PREVIEW_JPEG_QUALITY,
@@ -302,6 +304,12 @@ def stageb2_guard_identity(*, boot_id: str, manifest_sha256: str,
 
 
 def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
+    enable_split = getattr(args, "enable_touching_split", False)
+    split_area = getattr(args, "min_split_area", 280)
+    if not isinstance(enable_split, bool):
+        raise ValueError("enable_touching_split must be a bool")
+    if isinstance(split_area, bool) or not isinstance(split_area, int) or split_area < 280:
+        raise ValueError("min_split_area must be an integer >= 280")
     config = {"count_axis": args.count_axis, "line_x": args.line_x,
               "line_y": args.line_y, "direction": args.direction,
               "min_area": args.min_area, "max_area": args.max_area,
@@ -314,9 +322,11 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
               "cooldown_frames": args.cooldown_frames,
               "cooldown_lateral": args.cooldown_lateral,
               "edge_max_missing": args.edge_max_missing,
-              "prediction_max_missing": args.prediction_max_missing}
+              "prediction_max_missing": args.prediction_max_missing,
+              "enable_touching_split": enable_split,
+              "min_split_area": split_area}
     if getattr(args, "counting_profile", "legacy") == "full-width-mixed":
-        config.update({"roi_mode": "full", "guarded_merge": True,
+        config.update({"roi_mode": "full", "active_rows": [20, 220], "guarded_merge": True,
                        "single_intact_area": 95, "max_merge_area": 260,
                        "max_split_area": 900, "max_merged_span": 24,
                        "strict_lateral_gate": True, "count_axis": "x", "line_x": 160,
@@ -513,7 +523,7 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
     return await asyncio.wait_for(completed, timeout=timeout_s)
 
 
-async def _camera_gray_frames_impl(device: str, *, max_frames: int,
+async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                                    cv2_module: Any = cv2,
                                    read_timeout_s: float = 5.0,
                                    stabilization_delay_s: float = 0.0,
@@ -526,15 +536,21 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                                    capture_metadata: dict[str, Any] | None = None,
                                    include_capture_metadata: bool = False,
                                    source_frame_ids: tuple[int, ...] = (),
-                                   frame_mapping: str = "stretch"
+                                   frame_mapping: str = "stretch",
+                                   live_stop_requested: Callable[[], bool] | None = None
                                    ) -> AsyncIterator[np.ndarray | FrameInput]:
-    """Internal capture loop; board callers must use camera_gray_frames()."""
+    """Private camera prefetch; live owner must complete independent admission.
+
+    The public finite camera entry still requires its authenticated operator
+    gate. Only an explicit callable stop request permits an unbounded source.
+    """
     geometry = frame_geometry(frame_mapping)
-    if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
+    continuous = max_frames is None and callable(live_stop_requested)
+    if not continuous and (isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1):
         raise ValueError("max_frames must be a positive integer")
     if (not isinstance(source_frame_ids, tuple)
             or any(isinstance(frame_id, bool) or not isinstance(frame_id, int)
-                   or not 0 <= frame_id < max_frames for frame_id in source_frame_ids)
+                   or max_frames is None or not 0 <= frame_id < max_frames for frame_id in source_frame_ids)
             or len(set(source_frame_ids)) != len(source_frame_ids)):
         raise ValueError("source_frame_ids must be unique integer indexes within max_frames")
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
@@ -745,7 +761,10 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
         if steady_start_time is not None:
             steady_start_time.clear()
 
-        for frame_index in range(max_frames):
+        frame_indexes = itertools.count() if continuous else range(max_frames)
+        for frame_index in frame_indexes:
+            if live_stop_requested is not None and live_stop_requested():
+                break
             if pending_waiter is None:
                 if frame_index == 0:
                     emit_milestone("FRAME_0_CAPTURE_START_FEED_NOW")
@@ -756,7 +775,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
              capture_wall_time_ns, source_gray) = await get_frame(warmup=False)
             if capture_timings_ms is not None:
                 capture_timings_ms.append(capture_ms)
-            if frame_index + 1 < max_frames:
+            if (continuous or frame_index + 1 < max_frames) and not (
+                    live_stop_requested is not None and live_stop_requested()):
                 prefetch(warmup=False, source_frame_id=frame_index + 1)
             if include_capture_metadata:
                 yield FrameInput(gray, frame_index, capture_monotonic_ns,
@@ -883,8 +903,10 @@ def validate_operator_gate_launcher_sha256(value: str | None,
 
 def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
+             "split_touching.py",
              "capture_dataset.py", "live_calibration.py",
-             "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py",
+             "packet_encoder.py", "mjpeg_preview.py", "dashboard_state.py", "dashboard.html",
+             "wo0017_capture_profile.py",
              "physical_calibration_lock.py", "prepare_physical_calibration.py",
              "calibration_runtime_gate.py", "start_physical_calibration_standby.py")
     paths = {name: SCRIPT_DIR / name for name in names}
@@ -1398,6 +1420,7 @@ def execute_board_stream(args: argparse.Namespace, *,
     preview: MjpegPreviewServer | None = None
     preview_publisher: PeriodicMjpegPublisher | None = None
     loopback_client: MjpegLoopbackClient | None = None
+    dashboard = DashboardState(source="pl_dma")
     dma = None
     released_buffer_ids: set[int] = set()
     evidence: dict[str, Any] = {
@@ -1617,7 +1640,9 @@ def execute_board_stream(args: argparse.Namespace, *,
                 slot.capture_metadata["packer_status"] = dict(packer_record)
 
         hub = MjpegFrameHub()
-        preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
+        preview = MjpegPreviewServer(
+            hub=hub, host=args.host, port=args.port,
+            state_provider=lambda: {"dashboard": dashboard.snapshot()}).start()
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
             "capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
             "raw_capture_copy", "mjpeg_encode", "mjpeg_handoff",
@@ -1628,7 +1653,14 @@ def execute_board_stream(args: argparse.Namespace, *,
             line_x=counting_configuration(args)["line_x"],
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
             hysteresis=args.hysteresis,
+            active_rows=counting_configuration(args).get("active_rows"),
         )
+        def publish_frame(result: Any, mask: Any, source_gray: Any) -> None:
+            # Reuse the existing preview callback thread handoff; avoid adding
+            # another asyncio.to_thread operation to every counting frame.
+            dashboard.on_frame(result)
+            preview_publisher(result, mask, source_gray)
+
         stage_timings_ms["mjpeg_encode"] = preview_publisher.background_encode_timings_ms
         stage_timings_ms["mjpeg_background_encode"] = (
             preview_publisher.background_encode_timings_ms
@@ -1688,7 +1720,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             before_transfer=arm_frame,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
-            preview_callback=preview_publisher,
+            preview_callback=publish_frame,
             raw_capture_callback=(capture_writer.record_raw_frame
                                   if capture_writer is not None else None),
             source_capture_callback=(capture_writer.record_source_frame
@@ -1735,6 +1767,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 raise RuntimeError(f"{label} is not error-free and idle at normal shutdown")
         elapsed = max(time.perf_counter() - steady_start_time[0], 1e-9)
         total_count = results[-1].total_count if results else 0
+        dashboard.set_phase("complete", "本次有界采集已完成；不代表物料准确率验收通过")
         accuracy = _count_accuracy(total_count, args.ground_truth_count)
         accuracy_fraction = _count_accuracy_fraction(total_count, args.ground_truth_count)
         preview_publisher.close()
@@ -1801,6 +1834,7 @@ def execute_board_stream(args: argparse.Namespace, *,
         _write_json_exclusive(Path(args.evidence_json), evidence)
         return evidence
     except BaseException as exc:
+        dashboard.set_phase("failed", f"采集失败：{type(exc).__name__}: {exc}")
         dma_safe_to_release = _dma_buffers_safe_to_release(api, dma, stream)
         hold = not dma_safe_to_release
         evidence.update({
@@ -1981,6 +2015,10 @@ def _nonnegative_count_argument(value: str) -> int:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0016 asynchronous double-buffer Binary8 counter")
+    parser.add_argument("--enable-touching-split", action="store_true",
+                        help="opt in to experimental large touching-component splitting")
+    parser.add_argument("--min-split-area", type=int, default=280,
+                        help="minimum split candidate area in pixels (>=280; default: 280)")
     parser.add_argument("--mode", choices=("mock", "board"), default="mock")
     parser.add_argument("--counting-profile", choices=("legacy", "full-width-mixed"), default="legacy",
                         help="full-width-mixed selects full-height ROI, letterbox mapping and guarded merge/tracking defaults")
@@ -2064,6 +2102,7 @@ def main(argv: list[str] | None = None, *,
     args = parser.parse_args(argv)
     args.process_start_monotonic = process_start_monotonic
     try:
+        counting_config = counting_configuration(args)
         if args.physical_calibration:
             validate_calibration_options(args)
         if args.no_consume_guard and args.mode != "board":
@@ -2083,8 +2122,10 @@ def main(argv: list[str] | None = None, *,
                                          min_area=args.min_area,
                                          expected_count=args.ground_truth_count,
                                          material_label=args.material_label,
-                                         counter_config=(counting_configuration(args)
-                                             if args.counting_profile == "full-width-mixed" else None))
+                                         counter_config=(counting_config if (
+                                             args.counting_profile == "full-width-mixed"
+                                             or args.enable_touching_split or args.min_split_area != 280)
+                                             else None))
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 0 if result["status"] == "MOCK_PASS" else 1
         result = execute_board_stream(args, operator_gate_sha256=operator_gate_sha256,

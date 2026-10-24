@@ -6,6 +6,7 @@ import inspect
 import math
 import threading
 import time
+from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, AsyncIterable, Callable, Protocol
@@ -124,11 +125,14 @@ class MaskCounter:
 
     The ROI can cover one conveyor lane or the full frame. max_step is
     longitudinal; max_lateral_step is perpendicular to motion.
+    active_rows skips verified zero padding in full mode while keeping
+    projections, detections and tracking in the original frame coordinates.
     """
 
     def __init__(self, *, width: int = WIDTH, height: int = HEIGHT,
                  line_y: int = 120, roi_half_height: int = 24,
                  roi_mode: str = "lane",
+                 active_rows: tuple[int, int] | list[int] | None = None,
                  min_area: int = 12, direction: int = 1,
                  hysteresis: float = 2.0, confirm_hits: int = 2,
                  max_missing: int = 1, max_step: float = 24.0,
@@ -141,7 +145,8 @@ class MaskCounter:
                  component_cluster_gap: float = 0.0,
                  guarded_merge: bool = False, single_intact_area: int = 95,
                  max_merge_area: int = 260, max_merged_span: int = 24,
-                 max_split_area: int | None = None,
+                 max_split_area: int | None = 900,
+                 enable_touching_split: bool = False, min_split_area: int = 280,
                  strict_lateral_gate: bool = False,
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
@@ -155,6 +160,16 @@ class MaskCounter:
         if not isinstance(roi_mode, str) or roi_mode not in ("lane", "full"):
             raise ValueError("roi_mode must be lane or full")
         self.roi_mode = roi_mode
+        self.active_rows = None
+        if active_rows is not None:
+            if (roi_mode != "full" or not isinstance(active_rows, (tuple, list))
+                    or len(active_rows) != 2):
+                raise ValueError("active_rows requires full ROI and two row bounds")
+            start = _integer(active_rows[0], "active_rows start", minimum=0)
+            stop = _integer(active_rows[1], "active_rows stop", minimum=1)
+            if not start < stop <= self.height:
+                raise ValueError("active_rows must lie inside the frame")
+            self.active_rows = (start, stop)
         self.min_area = _integer(min_area, "min_area", minimum=1)
         self.max_area = None if max_area is None else _integer(max_area, "max_area", minimum=self.min_area)
         self.max_bbox_width = _integer(max_bbox_width, "max_bbox_width", minimum=1)
@@ -187,6 +202,10 @@ class MaskCounter:
         if not isinstance(guarded_merge, bool):
             raise ValueError("guarded_merge must be a bool")
         self.guarded_merge = guarded_merge
+        if not isinstance(enable_touching_split, bool):
+            raise ValueError("enable_touching_split must be a bool")
+        self.enable_touching_split = enable_touching_split
+        self.min_split_area = _integer(min_split_area, "min_split_area", minimum=280)
         self.single_intact_area = _integer(
             single_intact_area, "single_intact_area", minimum=1
         )
@@ -313,17 +332,20 @@ class MaskCounter:
         if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (self.height, self.width):
             raise ValueError(f"mask must be a uint8 array with shape {(self.height, self.width)}")
         roi_top, roi_bottom = self._roi_bounds()
-        roi = image[roi_top:roi_bottom, :]
+        scan_top, scan_bottom = self._scan_bounds(image)
+        roi = image[scan_top:scan_bottom, :]
         if np.any((roi != 0) & (roi != 0xFF)):
             raise ValueError("mask values must be Binary8 0x00 or 0xFF")
         validate_ms = (time.perf_counter() - validate_started) * 1000.0
 
         projection_started = time.perf_counter()
         row_projection, column_projection, foreground_pixels = self._project_roi(roi)
+        row_projection = ((0,) * (scan_top - roi_top) + row_projection
+                          + (0,) * (roi_bottom - scan_bottom))
         projection_ms = (time.perf_counter() - projection_started) * 1000.0
 
         ccl_started = time.perf_counter()
-        raw_detections = self._roi_components(roi, roi_top, foreground_pixels)
+        raw_detections = self._roi_components(roi, scan_top, foreground_pixels)
         detections = self._cluster_components(raw_detections)
         ccl_ms = (time.perf_counter() - ccl_started) * 1000.0
 
@@ -361,6 +383,15 @@ class MaskCounter:
         top = max(0, self.line_y - self.roi_half_height)
         bottom = min(self.height, self.line_y + self.roi_half_height + 1)
         return top, bottom
+
+    def _scan_bounds(self, image: np.ndarray) -> tuple[int, int]:
+        """Skip verified zero padding; retain full semantics if padding changes."""
+        if self.active_rows is not None:
+            top, bottom = self.active_rows
+            if ((top == 0 or cv2.countNonZero(image[:top]) == 0)
+                    and (bottom == self.height or cv2.countNonZero(image[bottom:]) == 0)):
+                return top, bottom
+        return self._roi_bounds()
 
     @staticmethod
     def _project_roi(roi: np.ndarray) -> tuple[tuple[int, ...], tuple[int, ...], int]:
@@ -412,7 +443,12 @@ class MaskCounter:
                 y_max=y + top + box_height - 1,
                 area=area,
                 centroid_x=float(centroids[label, 0]),
-                centroid_y=float(centroids[label, 1] + top),
+                # Recover the integer moment before translating: adding a
+                # float offset can differ by one ULP from full-frame CCL.
+                centroid_y=(float((round(float(centroids[label, 1]) * area)
+                                   + top * area) / area)
+                            if self.active_rows is not None and top != 0
+                            else float(centroids[label, 1] + top)),
             )
             if self._component_exceeds_limits(area, box_width, box_height):
                 rejected.append(detection)
@@ -425,9 +461,12 @@ class MaskCounter:
                     full_frame_contour[:, 0, 1] += top
                     rejected_contours.append(full_frame_contour)
                 continue
-            if (self.guarded_merge and self.single_intact_area < area <= self.max_split_area):
+            if (self.enable_touching_split
+                    and self.min_split_area <= area <= self.max_split_area):
                 cropped = labels[y:y + box_height, x:x + box_width] == label
-                pieces = split_touching_component(cropped, min_child_area=self.min_area)
+                pieces = split_touching_component(
+                    cropped, min_split_area=self.min_split_area,
+                    min_child_area=max(self.min_area, self.min_split_area // 2))
                 if 2 <= len(pieces) <= 3:
                     for piece in pieces:
                         ys, xs = np.nonzero(piece)
@@ -451,9 +490,12 @@ class MaskCounter:
         self, mask: np.ndarray
     ) -> tuple[list[Detection], int, int, tuple[int, ...], tuple[int, ...]]:
         top, bottom = self._roi_bounds()
-        roi = mask[top:bottom, :]
+        scan_top, scan_bottom = self._scan_bounds(mask)
+        roi = mask[scan_top:scan_bottom, :]
         row_projection, column_projection, foreground_pixels = self._project_roi(roi)
-        detections = self._roi_components(roi, top, foreground_pixels)
+        row_projection = ((0,) * (scan_top - top) + row_projection
+                          + (0,) * (bottom - scan_bottom))
+        detections = self._roi_components(roi, scan_top, foreground_pixels)
         return detections, top, bottom, row_projection, column_projection
 
     def _cluster_components(self, detections: list[Detection]) -> list[Detection]:
@@ -553,6 +595,8 @@ class MaskCounter:
             count = len(detections)
             parent = list(range(count))
             rank = [0] * count
+            split_origins = ([{self._split_origins[d]} if d in self._split_origins else set()
+                              for d in detections] if self._split_origins else None)
 
             def find(index: int) -> int:
                 while parent[index] != index:
@@ -564,9 +608,14 @@ class MaskCounter:
                 left_root, right_root = find(left), find(right)
                 if left_root == right_root:
                     return
+                if (split_origins is not None
+                        and split_origins[left_root] & split_origins[right_root]):
+                    return
                 if rank[left_root] < rank[right_root]:
                     left_root, right_root = right_root, left_root
                 parent[right_root] = left_root
+                if split_origins is not None:
+                    split_origins[left_root].update(split_origins[right_root])
                 if rank[left_root] == rank[right_root]:
                     rank[left_root] += 1
 
@@ -590,6 +639,9 @@ class MaskCounter:
             groups = []
             for detection in detections:
                 for group in groups:
+                    origin = self._split_origins.get(detection)
+                    if origin is not None and any(self._split_origins.get(d) == origin for d in group):
+                        continue
                     if all(abs(detection.centroid_x-other.centroid_x) <= self.component_cluster_dx
                            and abs(detection.centroid_y-other.centroid_y) <= self.component_cluster_dy
                            for other in group):
@@ -909,7 +961,8 @@ class DoubleBufferStream:
                  raw_capture_callback: Callable[[int, np.ndarray, np.ndarray], None] | None = None,
                  source_capture_callback: Callable[[int, np.ndarray], None] | None = None,
                  capture_callback: Callable[[FrameResult, DmaBufferSlot], Any] | None = None,
-                 stage_timings_ms: dict[str, list[float]] | None = None,
+                 stage_timings_ms: dict[str, list[float] | deque[float]] | None = None,
+                 history_limit: int | None = None,
                  transfer_timeout_s: float = 5.0):
         if len(tx_buffers) != 2 or len(rx_buffers) != 2:
             raise ValueError("exactly two TX and two RX buffers are required")
@@ -930,7 +983,16 @@ class DoubleBufferStream:
         self.raw_capture_callback = raw_capture_callback
         self.source_capture_callback = source_capture_callback
         self.capture_callback = capture_callback
+        if (history_limit is not None
+                and (isinstance(history_limit, bool)
+                     or not isinstance(history_limit, int) or history_limit < 1)):
+            raise ValueError("history_limit must be a positive integer or None")
+        self.history_limit = history_limit
         self.stage_timings_ms = stage_timings_ms
+        if history_limit is not None and stage_timings_ms is not None:
+            for stage, samples in tuple(stage_timings_ms.items()):
+                if not isinstance(samples, deque) or samples.maxlen != history_limit:
+                    stage_timings_ms[stage] = deque(samples, maxlen=history_limit)
         self._postprocess_ms: dict[int, float] = {}
         self.transfer_timeout_s = _positive_float(transfer_timeout_s, "transfer_timeout_s")
         self.slots = [
@@ -951,15 +1013,36 @@ class DoubleBufferStream:
         for slot in self.slots:
             self._free_slots.put_nowait(slot)
         self._ready_slots: asyncio.Queue[DmaBufferSlot | None] = asyncio.Queue(maxsize=2)
-        self._results: list[FrameResult] = []
+        self._results: list[FrameResult] | deque[FrameResult] = (
+            [] if history_limit is None else deque(maxlen=history_limit)
+        )
+        self._last_result: FrameResult | None = None
+        self._frames_processed = 0
         self._pending_waits: list[asyncio.Task] = []
         self.held_slots: tuple[DmaBufferSlot, ...] = ()
         self.dma_may_be_active = False
         self._has_run = False
 
-    async def run(self, frames: AsyncIterable[np.ndarray | FrameInput]) -> tuple[FrameResult, ...]:
+    @staticmethod
+    def _packet_frame_id(frame_id: int, *, bounded: bool) -> int:
+        """Wrap the AXI packet identity only for a long-running live stream."""
+        return frame_id & 0xFFFFFFFF if bounded else frame_id
+
+    @property
+    def frames_processed(self) -> int:
+        return self._frames_processed
+
+    @property
+    def last_result(self) -> FrameResult | None:
+        return self._last_result
+
+    async def run(self, frames: AsyncIterable[np.ndarray | FrameInput], *,
+                  stop_requested: Callable[[], bool] | None = None
+                  ) -> tuple[FrameResult, ...]:
         if self._has_run:
             raise RuntimeError("a DoubleBufferStream instance can run only once")
+        if stop_requested is not None and not callable(stop_requested):
+            raise TypeError("stop_requested must be callable or None")
         self._has_run = True
         consumer = asyncio.create_task(self._consume_ready_slots())
         frame_iterator = frames.__aiter__()
@@ -968,12 +1051,27 @@ class DoubleBufferStream:
         frame_id = 0
         try:
             while True:
+                if stop_requested is not None and stop_requested():
+                    break
                 if consumer.done():
                     consumer.result()
                 pending_source_task = asyncio.create_task(frame_iterator.__anext__())
-                done, _ = await asyncio.wait(
-                    (pending_source_task, consumer), return_when=asyncio.FIRST_COMPLETED
-                )
+                while True:
+                    done, _ = await asyncio.wait(
+                        (pending_source_task, consumer),
+                        timeout=(0.05 if stop_requested is not None else None),
+                        return_when=asyncio.FIRST_COMPLETED,
+                    )
+                    if done:
+                        break
+                    if stop_requested is not None and stop_requested():
+                        source_cleanup_error = await self._cancel_frame_read(pending_source_task)
+                        pending_source_task = None
+                        if source_cleanup_error is not None:
+                            raise source_cleanup_error
+                        break
+                if pending_source_task is None:
+                    break
                 if consumer in done:
                     source_error = await self._cancel_frame_read(pending_source_task)
                     pending_source_task = None
@@ -989,6 +1087,9 @@ class DoubleBufferStream:
                 try:
                     source_frame = pending_source_task.result()
                 except StopAsyncIteration:
+                    pending_source_task = None
+                    break
+                if stop_requested is not None and stop_requested():
                     pending_source_task = None
                     break
                 if consumer.done():
@@ -1040,10 +1141,13 @@ class DoubleBufferStream:
                         raise RuntimeError("preview callback has no per-slot Gray8 snapshot")
                     np.copyto(preview_gray, gray, casting="no")
                 encode_started = time.perf_counter()
+                packet_frame_id = self._packet_frame_id(
+                    frame_id, bounded=self.history_limit is not None
+                )
                 if self.packet_encoder_into is not None:
-                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=frame_id)
+                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=packet_frame_id)
                 else:
-                    packet = self.packet_encoder(gray, frame_id=frame_id)
+                    packet = self.packet_encoder(gray, frame_id=packet_frame_id)
                     if not isinstance(packet, (bytes, bytearray, memoryview)) or len(packet) != TX_BYTES:
                         raise ValueError(f"packet encoder must return exactly {TX_BYTES} bytes")
                     slot.tx_buffer[:] = np.frombuffer(packet, dtype=np.uint8)
@@ -1155,7 +1259,21 @@ class DoubleBufferStream:
                 return TimeoutError("frame source did not stop after cancellation")
         try:
             task.result()
-        except (asyncio.CancelledError, StopAsyncIteration):
+        except asyncio.CancelledError as exc:
+            cleanup_notes = tuple(getattr(exc, "__notes__", ()))
+            if cleanup_notes:
+                cleanup_error = RuntimeError(
+                    "frame source cancellation cleanup failed"
+                )
+                add_note = getattr(cleanup_error, "add_note", None)
+                if callable(add_note):
+                    for note in cleanup_notes:
+                        add_note(str(note))
+                else:
+                    cleanup_error.__notes__ = list(cleanup_notes)
+                return cleanup_error
+            return None
+        except StopAsyncIteration:
             return None
         except BaseException as exc:
             return exc
@@ -1230,6 +1348,8 @@ class DoubleBufferStream:
             postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
             self._record_timing("postprocess", postprocess_ms / 1000.0)
             self._results.append(result)
+            self._last_result = result
+            self._frames_processed += 1
             slot.state = BufferState.FREE
             slot.frame_id = None
             slot.capture_metadata = None
@@ -1239,7 +1359,14 @@ class DoubleBufferStream:
 
     def _record_timing(self, stage: str, elapsed_seconds: float) -> None:
         if self.stage_timings_ms is not None:
-            self.stage_timings_ms.setdefault(stage, []).append(elapsed_seconds * 1000.0)
+            samples = self.stage_timings_ms.get(stage)
+            if samples is None:
+                if self.history_limit is None:
+                    samples = []
+                else:
+                    samples = deque(maxlen=self.history_limit)
+                self.stage_timings_ms[stage] = samples
+            samples.append(elapsed_seconds * 1000.0)
 
     def _hold_nonfree_slots(self) -> None:
         held = []

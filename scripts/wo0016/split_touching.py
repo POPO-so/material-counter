@@ -47,22 +47,34 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int
     return tuple(children)
 
 
-def split_touching_component(component: np.ndarray, *, min_child_area: int = 12
+def split_touching_component(component: np.ndarray, *, min_child_area: int = 140,
+                             min_split_area: int = 280
                              ) -> tuple[np.ndarray, ...]:
     """Split two or three touching nuts when holes or a narrow neck are visible.
 
-    A silhouette without distinct holes or a neck is ambiguous (for example
-    flush rectangles), so it is left intact. Masks preserve the input union.
+    Candidates require at least 280 foreground pixels. Distinct enclosed holes
+    identify two or three nuts; otherwise only elongated silhouettes with a
+    narrow neck qualify. Each child meets min_child_area and the input union
+    is preserved.
     """
     pixels = np.asarray(component) != 0
     if pixels.ndim != 2:
         raise ValueError("component must be a 2D mask")
     area = int(np.count_nonzero(pixels))
-    if area < 2 * min_child_area:
+    if (isinstance(min_split_area, bool) or not isinstance(min_split_area, int)
+            or min_split_area < 280):
+        raise ValueError("min_split_area must be an integer >= 280")
+    if (isinstance(min_child_area, bool) or not isinstance(min_child_area, int)
+            or min_child_area < 1):
+        raise ValueError("min_child_area must be a positive integer")
+    if area < max(min_split_area, 2 * min_child_area):
         return (pixels,)
     hole_pieces = _split_by_enclosed_holes(pixels, min_child_area)
     if hole_pieces is not None:
         return hole_pieces
+    # Without independent holes, near-square silhouettes remain ambiguous.
+    if max(pixels.shape) < 1.35 * min(pixels.shape):
+        return (pixels,)
     candidates = []
     for axis in (0, 1):
         projection = np.count_nonzero(pixels, axis=axis)
@@ -80,7 +92,8 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12
             right_peak = int(np.max(projection[cut:]))
             if not 0 < neck <= 0.65 * min(left_peak, right_peak):
                 continue
-            strip = pixels[:, cut - 1 if projection[cut - 1] < projection[cut] else cut] if axis == 0 else pixels[cut - 1 if projection[cut - 1] < projection[cut] else cut, :]
+            neck_index = cut - 1 if projection[cut - 1] < projection[cut] else cut
+            strip = pixels[:, neck_index] if axis == 0 else pixels[neck_index, :]
             runs = np.count_nonzero(strip & ~np.r_[False, strip[:-1]])
             # A round hollow nut can have two runs through its central hole.
             # Two touching round nuts form an elongated, balanced pair instead.
@@ -101,4 +114,9 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12
     else:
         first[:cut] = pixels[:cut]
         second[cut:] = pixels[cut:]
+    # A cut must create two individual connected children, not two arbitrary
+    # collections of fragments that happen to lie on either side of a line.
+    if any(cv2.connectedComponents(piece.astype(np.uint8), connectivity=8)[0] != 2
+           for piece in (first, second)):
+        return (pixels,)
     return first, second

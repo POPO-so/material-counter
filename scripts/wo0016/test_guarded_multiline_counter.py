@@ -57,7 +57,8 @@ def test_multiline_options_have_safe_defaults_and_strict_validation():
     assert legacy.strict_lateral_gate is False
     assert legacy.single_intact_area == 95
     assert legacy.max_merge_area == 260
-    assert legacy.max_split_area == 260
+    assert legacy.max_split_area == 900
+    assert MaskCounter(max_split_area=None).max_split_area == 260
     assert legacy.max_merged_span == 24
 
     configured = MaskCounter(
