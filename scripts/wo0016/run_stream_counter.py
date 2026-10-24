@@ -11,6 +11,7 @@ import asyncio
 from dataclasses import asdict
 import hashlib
 import hmac
+import itertools
 import json
 import math
 import os
@@ -521,7 +522,7 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
     return await asyncio.wait_for(completed, timeout=timeout_s)
 
 
-async def _camera_gray_frames_impl(device: str, *, max_frames: int,
+async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                                    cv2_module: Any = cv2,
                                    read_timeout_s: float = 5.0,
                                    stabilization_delay_s: float = 0.0,
@@ -534,15 +535,21 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                                    capture_metadata: dict[str, Any] | None = None,
                                    include_capture_metadata: bool = False,
                                    source_frame_ids: tuple[int, ...] = (),
-                                   frame_mapping: str = "stretch"
+                                   frame_mapping: str = "stretch",
+                                   live_stop_requested: Callable[[], bool] | None = None
                                    ) -> AsyncIterator[np.ndarray | FrameInput]:
-    """Internal capture loop; board callers must use camera_gray_frames()."""
+    """Private camera prefetch; live owner must complete independent admission.
+
+    The public finite camera entry still requires its authenticated operator
+    gate. Only an explicit callable stop request permits an unbounded source.
+    """
     geometry = frame_geometry(frame_mapping)
-    if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
+    continuous = max_frames is None and callable(live_stop_requested)
+    if not continuous and (isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1):
         raise ValueError("max_frames must be a positive integer")
     if (not isinstance(source_frame_ids, tuple)
             or any(isinstance(frame_id, bool) or not isinstance(frame_id, int)
-                   or not 0 <= frame_id < max_frames for frame_id in source_frame_ids)
+                   or max_frames is None or not 0 <= frame_id < max_frames for frame_id in source_frame_ids)
             or len(set(source_frame_ids)) != len(source_frame_ids)):
         raise ValueError("source_frame_ids must be unique integer indexes within max_frames")
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
@@ -753,7 +760,10 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
         if steady_start_time is not None:
             steady_start_time.clear()
 
-        for frame_index in range(max_frames):
+        frame_indexes = itertools.count() if continuous else range(max_frames)
+        for frame_index in frame_indexes:
+            if live_stop_requested is not None and live_stop_requested():
+                break
             if pending_waiter is None:
                 if frame_index == 0:
                     emit_milestone("FRAME_0_CAPTURE_START_FEED_NOW")
@@ -764,7 +774,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
              capture_wall_time_ns, source_gray) = await get_frame(warmup=False)
             if capture_timings_ms is not None:
                 capture_timings_ms.append(capture_ms)
-            if frame_index + 1 < max_frames:
+            if (continuous or frame_index + 1 < max_frames) and not (
+                    live_stop_requested is not None and live_stop_requested()):
                 prefetch(warmup=False, source_frame_id=frame_index + 1)
             if include_capture_metadata:
                 yield FrameInput(gray, frame_index, capture_monotonic_ns,

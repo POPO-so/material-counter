@@ -100,6 +100,14 @@ class MjpegFrameHub:
             self._condition.notify_all()
             return self._sequence
 
+    def clear(self) -> None:
+        """Drop the current image and its age metrics without rewinding sequence."""
+        with self._condition:
+            self._jpeg = None
+            self._published_times.clear()
+            self._dimensions = None
+            self._condition.notify_all()
+
     def wait_for_next(self, *, after_sequence: int, timeout_s: float = 1.0
                       ) -> tuple[int, bytes] | None:
         if after_sequence < 0 or timeout_s < 0:
@@ -285,11 +293,19 @@ class PeriodicMjpegPublisher:
                  quality: int = PREVIEW_JPEG_QUALITY, count_label: str = "TOTAL COUNT",
                  count_axis: str = "y", line_x: int = 160,
                  hysteresis: float = 2.0, pip_label: str = "PL DMA MASK",
-                 active_rows: tuple[int, int] | list[int] | None = None):
+                 active_rows: tuple[int, int] | list[int] | None = None,
+                 history_limit: int | None = None,
+                 view_mode_provider=None):
         if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
             raise ValueError("preview interval must be a positive integer")
         if isinstance(quality, bool) or not isinstance(quality, int) or not 1 <= quality <= 100:
             raise ValueError("JPEG quality must be an integer in 1..100")
+        if history_limit is not None and (
+                isinstance(history_limit, bool) or not isinstance(history_limit, int)
+                or history_limit < 1):
+            raise ValueError("history_limit must be a positive integer or None")
+        if view_mode_provider is not None and not callable(view_mode_provider):
+            raise ValueError("view_mode_provider must be callable or None")
         self.hub = hub
         self.line_y = line_y
         if not isinstance(count_label, str) or not count_label.strip():
@@ -310,9 +326,12 @@ class PeriodicMjpegPublisher:
         self.interval = interval
         self.quality = quality
         self.encoded_frames = 0
-        self.handoff_timings_ms: list[float] = []
-        self.background_encode_timings_ms: list[float] = []
-        self.encode_errors: list[str] = []
+        self.history_limit = history_limit
+        self.view_mode_provider = view_mode_provider
+        self.handoff_timings_ms = (deque(maxlen=history_limit) if history_limit is not None else [])
+        self.background_encode_timings_ms = (
+            deque(maxlen=history_limit) if history_limit is not None else [])
+        self.encode_errors = deque(maxlen=history_limit) if history_limit is not None else []
         self._condition = threading.Condition()
         self._latest_mask = np.empty((240, 320), dtype=np.uint8)
         self._encode_mask = np.empty((240, 320), dtype=np.uint8)
@@ -325,6 +344,8 @@ class PeriodicMjpegPublisher:
         self._latest_metadata: tuple[int, int, int] | None = None
         self._snapshot_sequence = 0
         self._encoded_sequence = 0
+        self._epoch = 0
+        self._force_encode = False
         self._closing = False
         self._closed = False
         self._worker = threading.Thread(
@@ -339,8 +360,10 @@ class PeriodicMjpegPublisher:
         started = time.perf_counter()
         try:
             frame_id = int(result.frame_id)
-            if frame_id % self.interval:
-                return
+            with self._condition:
+                callback_epoch = self._epoch
+                if frame_id % self.interval and not self._force_encode:
+                    return
             image = np.asarray(mask)
             if image.dtype != np.uint8 or image.shape != (240, 320):
                 raise ValueError("preview snapshot must be a uint8 array with shape (240, 320)")
@@ -348,8 +371,11 @@ class PeriodicMjpegPublisher:
             if gray.dtype != np.uint8 or gray.shape != (240, 320):
                 raise ValueError("preview Gray8 snapshot must have shape (240, 320)")
             with self._condition:
-                if self._closing or self._closed:
+                if self._closing or self._closed or callback_epoch != self._epoch:
                     return
+                if frame_id % self.interval and not self._force_encode:
+                    return
+                self._force_encode = False
                 np.copyto(self._latest_mask, image, casting="no")
                 np.copyto(self._latest_gray, gray, casting="no")
                 self._latest_tracks = tuple(getattr(result, "tracks", ()))
@@ -380,6 +406,22 @@ class PeriodicMjpegPublisher:
         finally:
             self.handoff_timings_ms.append((time.perf_counter() - started) * 1000.0)
 
+    def invalidate(self) -> None:
+        """Discard queued/in-flight preview work and require the next frame."""
+        with self._condition:
+            self._epoch += 1
+            self._encoded_sequence = self._snapshot_sequence
+            self._latest_metadata = None
+            self._latest_tracks = ()
+            self._track_trails.clear()
+            self._latest_calibration = None
+            self._latest_roi = (0, 240)
+            self._force_encode = True
+            # Keep sequence monotonic so connected clients cannot mistake a
+            # reset image for an already-consumed multipart frame.
+            self.hub.clear()
+            self._condition.notify_all()
+
     def _encode_pending(self) -> None:
         if hasattr(os, "setpriority") and hasattr(threading, "get_native_id"):
             try:
@@ -408,6 +450,7 @@ class PeriodicMjpegPublisher:
                     continue
                 sequence = self._snapshot_sequence
                 frame_id, total_count, line_y = self._latest_metadata
+                epoch = self._epoch
                 np.copyto(self._encode_mask, self._latest_mask, casting="no")
                 np.copyto(self._encode_gray, self._latest_gray, casting="no")
                 tracks = self._latest_tracks
@@ -419,6 +462,11 @@ class PeriodicMjpegPublisher:
 
             started = time.perf_counter()
             try:
+                view_mode = ("overlay" if self.view_mode_provider is None
+                             else self.view_mode_provider())
+                if view_mode not in ("overlay", "binary"):
+                    raise ValueError("preview view mode must be 'overlay' or 'binary'")
+                main_background = self._encode_mask if view_mode == "binary" else self._encode_gray
                 jpeg = render_preview_jpeg(
                     self._encode_mask,
                     total_count=total_count,
@@ -426,16 +474,19 @@ class PeriodicMjpegPublisher:
                     quality=self.quality,
                     count_label=self.count_label,
                     count_axis=self.count_axis, line_x=self.line_x,
-                    source_gray=self._encode_gray, hysteresis=self.hysteresis,
+                    source_gray=main_background, hysteresis=self.hysteresis,
                     pip_label=self.pip_label,
                     tracks=tracks, track_trails=trails,
                     **({"calibration": calibration} if calibration is not None else {}),
                     **({"roi_top": roi_top, "roi_bottom": roi_bottom}
                        if (roi_top, roi_bottom) != (0, 240) else {}),
                 )
-                self.hub.publish(jpeg, dimensions=(self._encode_mask.shape[1],
-                                 self._encode_mask.shape[0] + (85 if calibration is not None else 0)))
-                self.encoded_frames += 1
+                with self._condition:
+                    if epoch != self._epoch or self._closing or self._closed:
+                        continue
+                    self.hub.publish(jpeg, dimensions=(self._encode_mask.shape[1],
+                                     self._encode_mask.shape[0] + (85 if calibration is not None else 0)))
+                    self.encoded_frames += 1
             except RuntimeError as exc:
                 if not self.hub.closed:
                     self.encode_errors.append(f"{type(exc).__name__}: {exc}")
@@ -543,14 +594,19 @@ class MjpegLoopbackClient:
                     frame = self._read_exactly(response, size)
                     if len(frame) != size:
                         break
+                    self._readline(response)  # Consume the MIME separator CRLF.
                     if "x-frame-sequence" in headers:
-                        self.frame_sequences.append(int(headers["x-frame-sequence"]))
+                        sequence = int(headers["x-frame-sequence"])
+                        if self.frame_sequences and sequence <= self.frame_sequences[-1]:
+                            # A legacy decoder-priming part is transport-only;
+                            # never count it as another delivered source frame.
+                            continue
+                        self.frame_sequences.append(sequence)
                     timestamp = time.perf_counter()
                     if self.first_frame_time is None:
                         self.first_frame_time = timestamp
                     self.last_frame_time = timestamp
                     self.frames_received += 1
-                    self._readline(response)  # Consume the MIME separator CRLF.
         except (OSError, RuntimeError, ValueError, KeyError) as exc:
             if not self._stop.is_set():
                 self.error = f"{type(exc).__name__}: {exc}"
@@ -575,7 +631,8 @@ class MjpegPreviewServer:
 
     def __init__(self, *, hub: MjpegFrameHub | None = None,
                  host: str = "0.0.0.0", port: int = 8080,
-                 state_provider=None, control_callback=None):
+                 state_provider=None, control_callback=None,
+                 live_control_callback=None):
         if not isinstance(host, str) or not host:
             raise ValueError("host must be non-empty text")
         if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
@@ -585,6 +642,7 @@ class MjpegPreviewServer:
         self.requested_port = port
         self.state_provider = state_provider
         self.control_callback = control_callback
+        self.live_control_callback = live_control_callback
         self._server: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
 
@@ -600,6 +658,7 @@ class MjpegPreviewServer:
         hub = self.hub
         state_provider = self.state_provider
         control_callback = self.control_callback
+        live_control_callback = self.live_control_callback
         page = Path(__file__).with_name("dashboard.html").read_bytes()
 
         class Handler(BaseHTTPRequestHandler):
@@ -630,19 +689,70 @@ class MjpegPreviewServer:
                     pass
                 self._json(code, payload)
 
+            def _is_local_request_host(self) -> bool:
+                header = self.headers.get("Host", "")
+                try:
+                    hostname = urlsplit("//" + header).hostname
+                except ValueError:
+                    return False
+                if not hostname:
+                    return False
+                hostname = hostname.rstrip(".").lower()
+                if hostname in ("localhost", "127.0.0.1", "::1"):
+                    return True
+                addresses = set()
+                names = set()
+                for address in (self.server.server_address[0],
+                                self.connection.getsockname()[0]):
+                    normalized = str(address).rstrip(".").lower()
+                    if normalized in ("0.0.0.0", "::", ""):
+                        continue
+                    try:
+                        addresses.add(ipaddress.ip_address(normalized))
+                    except ValueError:
+                        names.add(normalized)
+                if hostname in names:
+                    return True
+                try:
+                    request_ip = ipaddress.ip_address(hostname)
+                except ValueError:
+                    return False
+                return request_ip.is_loopback or request_ip in addresses
+
             def do_POST(self) -> None:
                 self.close_connection = True
-                if self.path != "/api/calibration" or control_callback is None:
-                    self._reject_post(403, {"error": "calibration controls disabled"})
-                    return
-                if not ipaddress.ip_address(self.client_address[0]).is_loopback:
-                    self._reject_post(403, {"error": "local API only: use an SSH tunnel"})
-                    return
-                origin = self.headers.get("Origin")
-                expected_origin = "http://" + self.headers.get("Host", "")
-                host = urlsplit(expected_origin).hostname
-                if host not in ("127.0.0.1", "localhost", "::1") or (origin and origin != expected_origin):
-                    self._reject_post(403, {"error": "local same-origin access required"})
+                live_actions = {
+                    "/api/reset-count": "reset",
+                    "/api/view-mode": "view",
+                    "/api/stop": "stop",
+                }
+                if self.path == "/api/calibration":
+                    if control_callback is None:
+                        self._reject_post(403, {"error": "calibration controls disabled"})
+                        return
+                    if not ipaddress.ip_address(self.client_address[0]).is_loopback:
+                        self._reject_post(403, {"error": "local API only: use an SSH tunnel"})
+                        return
+                    origin = self.headers.get("Origin")
+                    expected_origin = "http://" + self.headers.get("Host", "")
+                    host = urlsplit(expected_origin).hostname
+                    if host not in ("127.0.0.1", "localhost", "::1") or (origin and origin != expected_origin):
+                        self._reject_post(403, {"error": "local same-origin access required"})
+                        return
+                elif self.path in live_actions:
+                    if live_control_callback is None:
+                        self._reject_post(403, {"error": "live controls disabled"})
+                        return
+                    if not self._is_local_request_host():
+                        self._reject_post(403, {"error": "local server Host required"})
+                        return
+                    origin = self.headers.get("Origin")
+                    expected_origin = "http://" + self.headers.get("Host", "")
+                    if origin is not None and origin != expected_origin:
+                        self._reject_post(403, {"error": "same-origin access required"})
+                        return
+                else:
+                    self._reject_post(403, {"error": "controls disabled"})
                     return
                 if self.headers.get_content_type() != "application/json":
                     self._reject_post(415, {"error": "application/json required"})
@@ -653,7 +763,13 @@ class MjpegPreviewServer:
                         raise ValueError("JSON body must be 1..512 bytes")
                     self.connection.settimeout(2.0)
                     payload = json.loads(self.rfile.read(length))
-                    self._json(200, control_callback(payload))
+                    if not isinstance(payload, dict):
+                        raise ValueError("JSON body must be an object")
+                    if self.path == "/api/calibration":
+                        result = control_callback(payload)
+                    else:
+                        result = live_control_callback(live_actions[self.path], payload)
+                    self._json(200, result)
                 except PermissionError as exc:
                     self._json(403, {"error": str(exc)})
                 except (ValueError, TypeError) as exc:
@@ -667,14 +783,23 @@ class MjpegPreviewServer:
                         raw = state_provider() if state_provider is not None else {}
                         if not isinstance(raw, dict):
                             raise TypeError("state provider must return a dictionary")
+                        dashboard = raw.get("dashboard")
+                        phase = dashboard.get("phase") if isinstance(dashboard, dict) else None
+                        live_controls_enabled = (live_control_callback is not None
+                                                 and phase == "running")
                         self._json(200, {
                             "schema": 1,
                             "telemetry": raw.get("dashboard"),
                             "preview": hub.snapshot(),
                             "runtime_status": raw.get("status"),
+                            "health": raw.get("resource_health"),
+                            "view_mode": raw.get("view_mode"),
                             "camera_controls": raw.get("camera_controls"),
                             "capabilities": {
-                                "start": False, "stop": False, "reset": False,
+                                "start": False,
+                                "stop": live_controls_enabled,
+                                "reset": live_controls_enabled,
+                                "view_mode": live_controls_enabled,
                                 "calibration": (control_callback is not None
                                                 and raw.get("calibration_mode") is True),
                             },
@@ -706,8 +831,11 @@ class MjpegPreviewServer:
                 self.send_header("Connection", "close")
                 self.end_headers()
                 sequence = 0
+                first_part = True
                 self.connection.settimeout(2.0)
                 try:
+                    self.wfile.write(b"--frame\r\n")
+                    self.wfile.flush()
                     with hub.streaming_client():
                         while not hub.closed:
                             item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0)
@@ -719,11 +847,22 @@ class MjpegPreviewServer:
                                         return
                                 continue
                             sequence, jpeg = item
-                            header = (b"--frame\r\nContent-Type: image/jpeg\r\n"
+                            header = (b"Content-Type: image/jpeg\r\n"
                                       + f"Content-Length: {len(jpeg)}\r\nX-Frame-Sequence: {sequence}\r\n\r\n".encode("ascii"))
                             self.wfile.write(header)
                             self.wfile.write(jpeg)
-                            self.wfile.write(b"\r\n")
+                            self.wfile.write(b"\r\n--frame\r\n")
+                            # Chromium does not surface the first multipart JPEG
+                            # until it has consumed a following complete part.
+                            # Legacy preview servers have no reset control, so a
+                            # one-time duplicate safely primes that decoder. Live
+                            # Monitor servers provide controls and must only send
+                            # newly published frames, avoiding stale post-reset data.
+                            if first_part and live_control_callback is None:
+                                self.wfile.write(header)
+                                self.wfile.write(jpeg)
+                                self.wfile.write(b"\r\n--frame\r\n")
+                            first_part = False
                             self.wfile.flush()
                 except (BrokenPipeError, ConnectionResetError, OSError, RuntimeError):
                     return

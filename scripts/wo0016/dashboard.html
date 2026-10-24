@@ -18,6 +18,8 @@ main{max-width:1600px;margin:auto;padding:24px 32px 18px}.connection{display:fle
 @media(max-width:380px){.metrics{gap:8px}.metric>.icon{display:none}.actions{grid-template-columns:1fr}.brand{gap:10px}.brand h1{font-size:21px}.fields{grid-template-columns:1fr}}
 dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);border-radius:14px;padding:24px;color:var(--ink);box-shadow:0 24px 80px #14264033;overscroll-behavior:contain}dialog::backdrop{background:#14264066}dialog h2{font-size:20px;margin:0 0 12px}dialog p{font-size:15px;margin:0 0 20px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.view-mode-control{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:14px;color:var(--muted)}.view-mode-control select{min-height:44px;min-width:190px;padding:8px 34px 8px 10px;border:1px solid #a6b9d0;border-radius:6px;color:var(--ink);background:white}.view-mode-control select:disabled{color:#66758b;background:#e9eef5;border-color:#d4deea}.view-mode-control select:focus-visible{outline:3px solid #ed9800;outline-offset:4px}.health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:0 22px 20px}.health-item{min-width:0;padding:12px;border:1px solid var(--line);border-radius:8px;background:#f8fbff}.health-item span,.health-item small{display:block;color:var(--muted);font-size:12px}.health-item strong{display:block;margin:4px 0;font:700 18px/1.35 "Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.health-item code{font:600 13px/1.4 ui-monospace,Consolas,monospace}.health-note{margin:-6px 22px 18px;color:var(--muted);font-size:12px}
+.view-mode-control select{font:inherit}@media(max-width:600px){.health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -55,17 +57,21 @@ dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);bord
 <section class="card count-card" aria-labelledby="count-title"><div class="card-head"><h2 id="count-title"><svg class="icon" aria-hidden="true"><use href="#bars"/></svg><span id="count-label">累计计数</span></h2><span class="small">本次会话</span></div><div class="count-display"><span class="label" id="count-hint">等待真实计数数据</span><strong id="count" class="count">--</strong><div class="count-meta"><span>单位：个</span><span id="count-freshness">尚无已处理帧</span></div></div></section>
 <div class="metrics">
 <section class="card metric"><svg class="icon" aria-hidden="true"><use href="#list"/></svg><div><h2>当前帧区域数</h2><span id="detections" class="value">--</span><span class="unit">个</span><small>当前计数配置内的区域</small></div></section>
-<section class="card metric"><svg class="icon" aria-hidden="true"><use href="#gauge"/></svg><div><h2>实际处理帧率</h2><span id="processing-fps" class="value">--</span><span class="unit">FPS</span><small>已完成帧的会话均值</small></div></section>
+<section class="card metric"><svg class="icon" aria-hidden="true"><use href="#gauge"/></svg><div><h2 id="processing-label">实际处理帧率</h2><span id="processing-fps" class="value">--</span><span class="unit">FPS</span><small id="fps-note">已完成帧的会话均值</small></div></section>
 <section class="card metric"><svg class="icon" aria-hidden="true"><use href="#clock"/></svg><div><h2>运行时长</h2><span id="elapsed" class="value">--</span><small>从首个完成帧开始</small></div></section>
 <section class="card metric"><svg class="icon" aria-hidden="true"><use href="#check"/></svg><div><h2>当前状态</h2><span id="phase" class="state-value">未连接</span><small id="frame-age">等待采集状态</small></div></section>
 </div>
-<section class="card" aria-labelledby="controls-title"><div class="card-head"><h2 id="controls-title"><svg class="icon" aria-hidden="true"><use href="#chip"/></svg>控制操作</h2><span class="small">受门禁保护</span></div><div class="controls">
-<div class="actions"><button class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#play"/></svg>开始采集</button><button class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#stop"/></svg>停止</button><button class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#trash"/></svg>计数清零</button></div>
-<p id="control-note" class="control-note">开始采样请使用现有操作员门禁页。本服务未提供安全停止和计数清零接口。</p>
+<section class="card" aria-labelledby="health-title"><div class="card-head"><h2 id="health-title"><svg class="icon" aria-hidden="true"><use href="#check"/></svg>DMA 与内存健康</h2><span class="small">最近状态快照</span></div><div class="health-grid">
+<div class="health-item"><span>CMA 可用</span><strong id="cma-free">--</strong><small>KiB</small></div><div class="health-item"><span>进程 RSS</span><strong id="rss">--</strong><small>KiB</small></div>
+<div class="health-item"><span>MM2S DMASR</span><strong><code id="dma-mm2s">--</code></strong><small>最近读取</small></div><div class="health-item"><span>S2MM DMASR</span><strong><code id="dma-s2mm">--</code></strong><small>最近读取</small></div></div><p class="health-note">显示服务端最近报告的数据；“--”表示尚未提供。</p></section>
+<section class="card" aria-labelledby="controls-title"><div class="card-head"><h2 id="controls-title"><svg class="icon" aria-hidden="true"><use href="#chip"/></svg>监控操作</h2><span class="small">按服务端能力启用</span></div><div class="controls">
+<div class="view-mode-control"><label for="view-mode">画面显示</label><select id="view-mode" disabled aria-describedby="control-note"><option value="overlay">原图与叠加层</option><option id="binary-option" value="binary">FPGA Binary8</option></select></div>
+<div class="actions"><button class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#play"/></svg>开始采集</button><button id="stop-monitor" class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#stop"/></svg>停止监控</button><button id="reset-count" class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#trash"/></svg>计数清零</button></div>
+<p id="control-note" class="control-note">停止和清零只在当前服务明确提供对应控制时启用。</p>
 <form id="calibration" class="calibration" hidden><h3>相机标定</h3><div class="fields"><label for="exposure">曝光时间<input id="exposure" name="exposure" type="number" min="50" max="10000" step="1" inputmode="numeric" autocomplete="off" required></label><label for="brightness">亮度<input id="brightness" name="brightness" type="number" min="-64" max="64" step="1" inputmode="numeric" autocomplete="off" required></label></div><div class="cal-actions"><button id="apply" class="apply" type="submit">应用参数</button><button id="restore" class="text-button" type="button">恢复基准参数</button></div><p class="control-note">仅标定模式可用，需通过本地 SSH 隧道访问。恢复操作沿用后端基准。</p></form>
 <p id="feedback" class="feedback" role="status" aria-live="polite"></p></div></section>
 </div></div>
-<footer class="footnote"><span>计数主链路优先 · 暂停预览不影响采集</span><span>设备状态表示最近完成帧的观测，不代表整机验收通过</span></footer>
+<footer class="footnote"><span>暂停预览不影响采集；画面模式切换不改变计数结果</span><span>设备状态表示最近完成帧的观测，不代表整机验收通过</span></footer>
 </main>
 <dialog id="confirm-control" aria-labelledby="confirm-title" aria-describedby="confirm-description">
 <form method="dialog"><h2 id="confirm-title">确认相机标定操作</h2><p id="confirm-description"></p><div class="cal-actions"><button class="text-button" value="cancel">取消</button><button class="apply" value="confirm">确认操作</button></div></form>
@@ -79,10 +85,10 @@ const fmt = new Intl.NumberFormat('zh-CN');
 const clock = new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
 let paused=false, connected=false, polling=false, pending=false, timer=null, request=null;
 let countAnimation=null;
-let snapshot=null, streamFailed=false, retryAfter=0, lastCount=null, eventSignature='';
+let snapshot=null, streamFailed=false, retryAfter=0, lastCount=null, eventSignature='', viewModeAccepted='overlay';
 function text(id,value){const node=$(id),next=String(value);if(node.textContent!==next)node.textContent=next;}
 function device(id,label,value){
-  const states={frames_received:['有图像','good'],frame_verified:['帧已校验','good'],disabled:['未启用','warn'],unknown:['未连接',''],running:['运行中','good'],waiting:['等待采集','warn'],failed:['故障','bad'],complete:['已完成',''],stopped:['已停止',''],stale:['数据过期','warn']};
+  const states={frames_received:['有图像','good'],frame_verified:['帧已校验','good'],disabled:['未启用','warn'],unknown:['未连接',''],running:['运行中','good'],waiting:['等待采集','warn'],stopping:['正在停止','warn'],failed:['故障','bad'],fail_hold:['故障保持','bad'],complete:['已完成',''],stopped:['已停止',''],stale:['数据过期','warn']};
   const [title,kind]=states[value]||['未连接',''];
   $(id).dataset.kind=kind;$(id).querySelector('span').textContent=label+'：'+title;
 }
@@ -111,18 +117,22 @@ function logs(events){
   for(const event of rows){const li=document.createElement('li'),time=document.createElement('time'),span=document.createElement('span');time.textContent=numeric(event.time)?clock.format(new Date(event.time*1000)):'--';span.textContent=String(event.message||'').slice(0,500);li.append(time,span);list.append(li);}
   if(nearEnd)list.scrollTop=list.scrollHeight;
 }
-function disableCalibration(){for(const el of $('calibration').querySelectorAll('input,button'))el.disabled=pending||!connected;}
+function disableLiveControls(){const caps=snapshot?.capabilities||{};$('reset-count').disabled=pending||!connected||caps.reset!==true;$('stop-monitor').disabled=pending||!connected||caps.stop!==true;$('view-mode').disabled=pending||!connected||caps.view_mode!==true;}
+function disableCalibration(){for(const el of $('calibration').querySelectorAll('input,button'))el.disabled=pending||!connected;disableLiveControls();}
+function formatDma(value){if(integer(value))return '0x'+value.toString(16).padStart(8,'0');if(typeof value==='string'&&/^(0x)?[0-9a-f]{1,8}$/i.test(value))return value.startsWith('0x')||value.startsWith('0X')?value:'0x'+value.padStart(8,'0');return '--';}
 function render(data){
   snapshot=data;connected=true;
   const s=data.telemetry&&typeof data.telemetry==='object'?data.telemetry:{};
   const p=data.preview||{}, fresh=s.stale===false&&numeric(s.last_frame_age_seconds)&&s.last_frame_age_seconds<=5&&s.phase==='running';
   const valid=s.source==='software'||s.source==='pl_dma';
+  const mock=s.mode==='mock';
   text('connection',valid?'状态接口已连接':'状态接口已连接 · 计数数据未提供');text('updated',clock.format(new Date()));
-  text('mode',s.source==='software'?'相机软件预览 · FPGA / DMA 未启用':s.source==='pl_dma'?'FPGA Binary8 / S2MM 计数':'');
-  text('source',s.source==='software'?'软件阈值图像 · 非 FPGA 输出':s.source==='pl_dma'?'相机 Gray8 + FPGA Binary8 画中画':'图像来源未确认');
-  text('preview-heading',s.source==='pl_dma'?'FPGA 二值化实时预览':s.source==='software'?'相机与软件二值化预览':'二值化实时预览');
-  text('count-label',s.source==='software'?'软件预览累计计数':'累计计数');
-  text('count-hint',['complete','stopped'].includes(s.phase)?'本次会话最终结果':fresh?(s.source==='software'?'仅软件预览结果':'来自已处理的 FPGA 回传帧'):'等待最新计数数据');
+  text('mode',mock?'离线合成监控 · 非相机/FPGA 数据':s.source==='software'?'相机软件预览 · FPGA / DMA 未启用':s.source==='pl_dma'?'FPGA Binary8 / S2MM 计数':'');
+  text('source',mock?'离线合成帧 · 不代表相机或 FPGA 输出':s.source==='software'?'软件阈值图像 · 非 FPGA 输出':s.source==='pl_dma'?'相机 Gray8 + FPGA Binary8 画中画':'图像来源未确认');
+  text('preview-heading',mock?'合成动态图预览':s.source==='pl_dma'?'FPGA 二值化实时预览':s.source==='software'?'相机与软件二值化预览':'二值化实时预览');
+  text('binary-option',mock?'合成 Binary8':s.source==='pl_dma'?'FPGA Binary8':'软件 Binary8');
+  text('count-label',mock?'合成累计计数':s.source==='software'?'软件预览累计计数':'累计计数');
+  text('count-hint',mock?'合成数据演示，不代表硬件':(['complete','stopped'].includes(s.phase)?'本次会话最终结果':fresh?(s.source==='software'?'仅软件预览结果':'来自已处理的 FPGA 回传帧'):'等待最新计数数据'));
   const final=['complete','stopped'].includes(s.phase);
   const current=valid&&(fresh||final)&&integer(s.total_count)?s.total_count:null;
   text('count',current===null?'--':fmt.format(current));$('count').style.fontSize=current!==null&&String(current).length>7?'clamp(32px,5vw,64px)':'';
@@ -131,14 +141,23 @@ function render(data){
   text('count-freshness',final?'采集已结束 · 保留最终计数':fresh?'已同步最新完成帧':s.stale?'帧数据未更新':'尚无已处理帧');
   text('detections',fresh&&integer(s.detections)?fmt.format(s.detections):'--');
   text('processing-fps',fresh&&numeric(s.processing_fps)?s.processing_fps.toFixed(1):'--');
+  text('processing-label',mock?'合成处理帧率':'实际处理帧率');
+  text('fps-note',s.fps_kind==='completed-frame sliding window'?'最近完成帧滑动窗口均值':s.fps_kind==='completed-frame session mean'?'已完成帧的会话均值':'FPS 统计口径未提供');
   text('elapsed',duration(s.elapsed_seconds));
   text('frame-age',numeric(s.last_frame_age_seconds)?'最近帧 '+s.last_frame_age_seconds.toFixed(1)+' 秒前':'尚无完成帧');
   const phase=s.phase==='running'&&!fresh?'stale':s.phase;
-  text('phase',({waiting:'等待采集',running:s.source==='software'?'软件预览中':'正在计数',complete:'已完成',failed:'运行故障',stopped:'已停止',stale:'数据过期'})[phase]||'状态未提供');
-  for(const id of ['camera','fpga','dma'])device(id,id==='camera'?'相机':id.toUpperCase(),fresh||s[id]==='disabled'?s[id]:'unknown');
+  text('phase',phase==='running'&&mock?'合成演示中':({waiting:'等待采集',running:s.source==='software'?'软件预览中':'正在计数',stopping:'正在停止监控',complete:'已完成',failed:'运行故障',fail_hold:'DMA 故障保持',stopped:'已停止',stale:'数据过期'})[phase]||'状态未提供');
+  for(const id of ['camera','fpga','dma'])device(id,id==='camera'?'相机':id.toUpperCase(),mock?'disabled':fresh||s[id]==='disabled'?s[id]:'unknown');
   device('system','系统',phase);
   text('resolution',integer(p.width)&&p.width>0&&integer(p.height)&&p.height>0?p.width+' × '+p.height:'--');
   text('preview-fps',numeric(p.fps)?p.fps.toFixed(1):'--');
+  const health=data.health&&typeof data.health==='object'?data.health:{};
+  text('cma-free',integer(health.cma_free_kib)?fmt.format(health.cma_free_kib):'--');
+  text('rss',integer(health.rss_kib)?fmt.format(health.rss_kib):'--');
+  const dma=health.dma_status&&typeof health.dma_status==='object'?health.dma_status:{};
+  text('dma-mm2s',formatDma(dma.mm2s));text('dma-s2mm',formatDma(dma.s2mm));
+  if(!pending&&['overlay','binary'].includes(data.view_mode)){viewModeAccepted=data.view_mode;$('view-mode').value=viewModeAccepted;}
+  text('control-note',data.capabilities?.reset===true?'计数清零会重置本次显示基准；停止会结束当前监控服务。':'停止和清零只在当前服务明确提供对应控制时启用。');
   if(integer(p.width)&&p.width>0&&integer(p.height)&&p.height>0){$('stream').width=p.width;$('stream').height=p.height;}
   logs(s.events);
   $('calibration').hidden=data.capabilities?.calibration!==true;
@@ -156,6 +175,7 @@ function offline(){
   for(const id of ['count','detections','processing-fps','elapsed','preview-fps','resolution'])text(id,'--');
   for(const id of ['camera','fpga','dma'])device(id,id==='camera'?'相机':id.toUpperCase(),'unknown');device('system','系统','unknown');
   text('phase','未连接');text('frame-age','无法获取当前状态');text('count-hint','状态接口未连接');text('count-freshness','等待重新连接');text('source','图像来源未确认');
+  for(const id of ['cma-free','rss','dma-mm2s','dma-s2mm'])text(id,'--');
   disableCalibration();preview();
 }
 async function poll(){
@@ -179,6 +199,23 @@ async function adjust(reset){
   }catch(e){$('feedback').classList.add('error');text('feedback',e.name==='AbortError'?'请求超时，结果未知。请核对状态后再操作。':String(e.message)+'；请检查标定模式及本地 SSH 隧道。');}
   finally{clearTimeout(timeout);pending=false;disableCalibration();}
 }
+async function liveControl(action){
+  const routes={reset:{path:'/api/reset-count',capability:'reset',body:{}},stop:{path:'/api/stop',capability:'stop',body:{}},view:{path:'/api/view-mode',capability:'view_mode',body:{mode:$('view-mode').value}}};
+  const spec=routes[action];if(!spec||pending||!connected||snapshot?.capabilities?.[spec.capability]!==true)return;
+  const previousMode=viewModeAccepted;pending=true;disableCalibration();$('feedback').classList.remove('error');text('feedback','正在等待后端确认…');
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);
+  try{
+    const response=await fetch(spec.path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(spec.body),signal:controller.signal});
+    const result=await response.json();if(!response.ok)throw new Error(result.error||'操作未被后端接受');
+    if(action==='view'){
+      const selected=result.view_mode||result.mode||spec.body.mode;
+      if(!['overlay','binary'].includes(selected))throw new Error('后端未返回有效画面模式');
+      viewModeAccepted=selected;$('view-mode').value=selected;text('feedback',selected==='binary'?'已切换到 FPGA Binary8 画面':'已切换到原图叠加画面');
+    }else if(action==='reset')text('feedback','清零请求已确认，等待下一帧更新计数。');
+    else text('feedback','停止请求已由后端确认。');
+  }catch(e){if(action==='view')$('view-mode').value=previousMode;$('feedback').classList.add('error');text('feedback',e.name==='AbortError'?'请求超时，结果未知。请核对状态后再操作。':String(e.message));}
+  finally{clearTimeout(timeout);pending=false;disableCalibration();poll();}
+}
 function confirmControl(reset){
   const dialog=$('confirm-control');
   if(dialog.open)return Promise.resolve(false);
@@ -187,6 +224,7 @@ function confirmControl(reset){
   return new Promise(resolve=>{dialog.addEventListener('close',()=>resolve(dialog.returnValue==='confirm'),{once:true});dialog.showModal();});
 }
 $('calibration').addEventListener('submit',event=>{event.preventDefault();adjust(false);});$('restore').addEventListener('click',()=>adjust(true));
+$('reset-count').addEventListener('click',()=>liveControl('reset'));$('stop-monitor').addEventListener('click',()=>liveControl('stop'));$('view-mode').addEventListener('change',()=>liveControl('view'));
 poll();
 </script>
 </body>

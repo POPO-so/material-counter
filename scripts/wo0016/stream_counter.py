@@ -6,6 +6,7 @@ import inspect
 import math
 import threading
 import time
+from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, AsyncIterable, Callable, Protocol
@@ -956,7 +957,8 @@ class DoubleBufferStream:
                  raw_capture_callback: Callable[[int, np.ndarray, np.ndarray], None] | None = None,
                  source_capture_callback: Callable[[int, np.ndarray], None] | None = None,
                  capture_callback: Callable[[FrameResult, DmaBufferSlot], Any] | None = None,
-                 stage_timings_ms: dict[str, list[float]] | None = None,
+                 stage_timings_ms: dict[str, list[float] | deque[float]] | None = None,
+                 history_limit: int | None = None,
                  transfer_timeout_s: float = 5.0):
         if len(tx_buffers) != 2 or len(rx_buffers) != 2:
             raise ValueError("exactly two TX and two RX buffers are required")
@@ -977,7 +979,16 @@ class DoubleBufferStream:
         self.raw_capture_callback = raw_capture_callback
         self.source_capture_callback = source_capture_callback
         self.capture_callback = capture_callback
+        if (history_limit is not None
+                and (isinstance(history_limit, bool)
+                     or not isinstance(history_limit, int) or history_limit < 1)):
+            raise ValueError("history_limit must be a positive integer or None")
+        self.history_limit = history_limit
         self.stage_timings_ms = stage_timings_ms
+        if history_limit is not None and stage_timings_ms is not None:
+            for stage, samples in tuple(stage_timings_ms.items()):
+                if not isinstance(samples, deque) or samples.maxlen != history_limit:
+                    stage_timings_ms[stage] = deque(samples, maxlen=history_limit)
         self._postprocess_ms: dict[int, float] = {}
         self.transfer_timeout_s = _positive_float(transfer_timeout_s, "transfer_timeout_s")
         self.slots = [
@@ -998,15 +1009,36 @@ class DoubleBufferStream:
         for slot in self.slots:
             self._free_slots.put_nowait(slot)
         self._ready_slots: asyncio.Queue[DmaBufferSlot | None] = asyncio.Queue(maxsize=2)
-        self._results: list[FrameResult] = []
+        self._results: list[FrameResult] | deque[FrameResult] = (
+            [] if history_limit is None else deque(maxlen=history_limit)
+        )
+        self._last_result: FrameResult | None = None
+        self._frames_processed = 0
         self._pending_waits: list[asyncio.Task] = []
         self.held_slots: tuple[DmaBufferSlot, ...] = ()
         self.dma_may_be_active = False
         self._has_run = False
 
-    async def run(self, frames: AsyncIterable[np.ndarray | FrameInput]) -> tuple[FrameResult, ...]:
+    @staticmethod
+    def _packet_frame_id(frame_id: int, *, bounded: bool) -> int:
+        """Wrap the AXI packet identity only for a long-running live stream."""
+        return frame_id & 0xFFFFFFFF if bounded else frame_id
+
+    @property
+    def frames_processed(self) -> int:
+        return self._frames_processed
+
+    @property
+    def last_result(self) -> FrameResult | None:
+        return self._last_result
+
+    async def run(self, frames: AsyncIterable[np.ndarray | FrameInput], *,
+                  stop_requested: Callable[[], bool] | None = None
+                  ) -> tuple[FrameResult, ...]:
         if self._has_run:
             raise RuntimeError("a DoubleBufferStream instance can run only once")
+        if stop_requested is not None and not callable(stop_requested):
+            raise TypeError("stop_requested must be callable or None")
         self._has_run = True
         consumer = asyncio.create_task(self._consume_ready_slots())
         frame_iterator = frames.__aiter__()
@@ -1015,12 +1047,27 @@ class DoubleBufferStream:
         frame_id = 0
         try:
             while True:
+                if stop_requested is not None and stop_requested():
+                    break
                 if consumer.done():
                     consumer.result()
                 pending_source_task = asyncio.create_task(frame_iterator.__anext__())
-                done, _ = await asyncio.wait(
-                    (pending_source_task, consumer), return_when=asyncio.FIRST_COMPLETED
-                )
+                while True:
+                    done, _ = await asyncio.wait(
+                        (pending_source_task, consumer),
+                        timeout=(0.05 if stop_requested is not None else None),
+                        return_when=asyncio.FIRST_COMPLETED,
+                    )
+                    if done:
+                        break
+                    if stop_requested is not None and stop_requested():
+                        source_cleanup_error = await self._cancel_frame_read(pending_source_task)
+                        pending_source_task = None
+                        if source_cleanup_error is not None:
+                            raise source_cleanup_error
+                        break
+                if pending_source_task is None:
+                    break
                 if consumer in done:
                     source_error = await self._cancel_frame_read(pending_source_task)
                     pending_source_task = None
@@ -1036,6 +1083,9 @@ class DoubleBufferStream:
                 try:
                     source_frame = pending_source_task.result()
                 except StopAsyncIteration:
+                    pending_source_task = None
+                    break
+                if stop_requested is not None and stop_requested():
                     pending_source_task = None
                     break
                 if consumer.done():
@@ -1087,10 +1137,13 @@ class DoubleBufferStream:
                         raise RuntimeError("preview callback has no per-slot Gray8 snapshot")
                     np.copyto(preview_gray, gray, casting="no")
                 encode_started = time.perf_counter()
+                packet_frame_id = self._packet_frame_id(
+                    frame_id, bounded=self.history_limit is not None
+                )
                 if self.packet_encoder_into is not None:
-                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=frame_id)
+                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=packet_frame_id)
                 else:
-                    packet = self.packet_encoder(gray, frame_id=frame_id)
+                    packet = self.packet_encoder(gray, frame_id=packet_frame_id)
                     if not isinstance(packet, (bytes, bytearray, memoryview)) or len(packet) != TX_BYTES:
                         raise ValueError(f"packet encoder must return exactly {TX_BYTES} bytes")
                     slot.tx_buffer[:] = np.frombuffer(packet, dtype=np.uint8)
@@ -1202,7 +1255,21 @@ class DoubleBufferStream:
                 return TimeoutError("frame source did not stop after cancellation")
         try:
             task.result()
-        except (asyncio.CancelledError, StopAsyncIteration):
+        except asyncio.CancelledError as exc:
+            cleanup_notes = tuple(getattr(exc, "__notes__", ()))
+            if cleanup_notes:
+                cleanup_error = RuntimeError(
+                    "frame source cancellation cleanup failed"
+                )
+                add_note = getattr(cleanup_error, "add_note", None)
+                if callable(add_note):
+                    for note in cleanup_notes:
+                        add_note(str(note))
+                else:
+                    cleanup_error.__notes__ = list(cleanup_notes)
+                return cleanup_error
+            return None
+        except StopAsyncIteration:
             return None
         except BaseException as exc:
             return exc
@@ -1277,6 +1344,8 @@ class DoubleBufferStream:
             postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
             self._record_timing("postprocess", postprocess_ms / 1000.0)
             self._results.append(result)
+            self._last_result = result
+            self._frames_processed += 1
             slot.state = BufferState.FREE
             slot.frame_id = None
             slot.capture_metadata = None
@@ -1286,7 +1355,14 @@ class DoubleBufferStream:
 
     def _record_timing(self, stage: str, elapsed_seconds: float) -> None:
         if self.stage_timings_ms is not None:
-            self.stage_timings_ms.setdefault(stage, []).append(elapsed_seconds * 1000.0)
+            samples = self.stage_timings_ms.get(stage)
+            if samples is None:
+                if self.history_limit is None:
+                    samples = []
+                else:
+                    samples = deque(maxlen=self.history_limit)
+                self.stage_timings_ms[stage] = samples
+            samples.append(elapsed_seconds * 1000.0)
 
     def _hold_nonfree_slots(self) -> None:
         held = []
