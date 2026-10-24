@@ -1,0 +1,62 @@
+{
+  "host_record_date": "2026-10-24",
+  "operator_feedback": "测试效果不错，测试后主动关闭摄像头；要求保留关闭状态",
+  "final_summary": {
+    "dashboard": {
+      "source": "pl_dma",
+      "mode": "board",
+      "phase": "stopped",
+      "total_count": 71,
+      "detections": 0,
+      "frames_processed": 22035,
+      "processing_fps": null,
+      "fps_kind": "completed-frame sliding window",
+      "elapsed_seconds": 916.930652911,
+      "last_frame_age_seconds": 3.4974608259999513,
+      "stale": true,
+      "camera": "unknown",
+      "fpga": "unknown",
+      "dma": "unknown",
+      "events": [
+        {
+          "id": 22035,
+          "time": 1746755429.587633,
+          "message": "监控已停止"
+        }
+      ],
+      "reset_sequence": 0,
+      "reset_pending": false,
+      "view_mode": "binary",
+      "cma_free_kib": 43800,
+      "rss_kib": 147136,
+      "dma_status": {
+        "mm2s": "0x00001002",
+        "s2mm": "0x00001002"
+      }
+    },
+    "status": "stopped",
+    "resource_health": {
+      "cma_free_kib": 43800,
+      "rss_kib": 147136,
+      "dma_status": {
+        "mm2s": "0x00001002",
+        "s2mm": "0x00001002"
+      }
+    },
+    "view_mode": "binary"
+  },
+  "post_stop_readonly_observations": {
+    "scope": "separate checks after process exit, not simultaneous samples",
+    "boot_id": "cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76",
+    "pid_1822_exists": false,
+    "localhost_8080": "connection refused",
+    "cma_free_kib": 69864,
+    "mm2s_dmasr": "0x1002",
+    "s2mm_dmasr": "0x1002",
+    "both_idle": true,
+    "dma_error_bits": false
+  },
+  "restart_performed": false,
+  "material_ground_truth": null,
+  "accuracy_status": "NOT_VERIFIED"
+}

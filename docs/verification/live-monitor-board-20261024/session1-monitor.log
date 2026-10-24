@@ -1,0 +1,38 @@
+{"mode": "board", "url": "http://0.0.0.0:8080/", "controls": true, "hardware_verified": false}
+----------------------------------------
+Exception occurred during processing of request from ('192.168.2.10', 52418)
+Traceback (most recent call last):
+  File "/home/xilinx/wo0017/live-monitor-20261024-ee55267e/scripts/wo0016/mjpeg_preview.py", line 790, in do_GET
+    self._json(200, {
+  File "/home/xilinx/wo0017/live-monitor-20261024-ee55267e/scripts/wo0016/mjpeg_preview.py", line 677, in _json
+    self.wfile.write(body)
+  File "/usr/lib/python3.10/socketserver.py", line 826, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/socketserver.py", line 683, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+    self.handle()
+  File "/usr/lib/python3.10/http/server.py", line 427, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.10/http/server.py", line 413, in handle_one_request
+    method()
+  File "/home/xilinx/wo0017/live-monitor-20261024-ee55267e/scripts/wo0016/mjpeg_preview.py", line 808, in do_GET
+    self._json(503, {"error": "status unavailable"})
+  File "/home/xilinx/wo0017/live-monitor-20261024-ee55267e/scripts/wo0016/mjpeg_preview.py", line 676, in _json
+    self.end_headers()
+  File "/usr/lib/python3.10/http/server.py", line 527, in end_headers
+    self.flush_headers()
+  File "/usr/lib/python3.10/http/server.py", line 531, in flush_headers
+    self.wfile.write(b"".join(self._headers_buffer))
+  File "/usr/lib/python3.10/socketserver.py", line 826, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+{"dashboard": {"source": "pl_dma", "mode": "board", "phase": "stopped", "total_count": 71, "detections": 0, "frames_processed": 22035, "processing_fps": null, "fps_kind": "completed-frame sliding window", "elapsed_seconds": 916.930652911, "last_frame_age_seconds": 3.4974608259999513, "stale": true, "camera": "unknown", "fpga": "unknown", "dma": "unknown", "events": [{"id": 22035, "time": 1746755429.587633, "message": "监控已停止"}], "reset_sequence": 0, "reset_pending": false, "view_mode": "binary", "cma_free_kib": 43800, "rss_kib": 147136, "dma_status": {"mm2s": "0x00001002", "s2mm": "0x00001002"}}, "status": "stopped", "resource_health": {"cma_free_kib": 43800, "rss_kib": 147136, "dma_status": {"mm2s": "0x00001002", "s2mm": "0x00001002"}}, "view_mode": "binary"}
