@@ -80,3 +80,8 @@
 /data/results/wo0014-closeout-20261015/**/*.log -diff
 /data/results/wo0014-closeout-20261015/*.log -diff
 /data/results/wo0014-closeout-20261015/*.bin -diff
+
+# Complete camera-only evidence requested for the WO-0017 teammate handoff.
+/data/recorded/wo0017-touching-20261024/wo_touching_pair_motion_20261024_03/camera_gray_only.npz filter=lfs diff=lfs merge=lfs -text
+/data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_02/camera_gray_only.npz filter=lfs diff=lfs merge=lfs -text
+/data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_04/camera_gray_only.npz filter=lfs diff=lfs merge=lfs -text

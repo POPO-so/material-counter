@@ -1,0 +1,21 @@
+{
+  "archive": "camera_gray_only.npz",
+  "archive_bytes": 138277036,
+  "archive_sha256": "c534ad4334afa725337a03d5ed849e5ae81857b5c8f5bf1c1686b465884ed59d",
+  "compact": true,
+  "effective_fps": 35.611890906541625,
+  "elapsed_s": 50.544915032,
+  "frame_count": 1800,
+  "independent_ground_truth": "NOT_RECORDED",
+  "mode": {
+    "fourcc": 1196444237,
+    "fps_reported": 60.0,
+    "height": 400,
+    "width": 640
+  },
+  "resize": "first decoded channel; nearest 640x400 to 320x240",
+  "scope": "CAMERA_ONLY_NOT_PL_BINARY8",
+  "status": "COMPLETE",
+  "wait_for_object_s": 180.0,
+  "waited_s": 81.62165222300246
+}
