@@ -338,3 +338,105 @@ def test_reset_api_status_and_hud_use_the_same_frame_baseline(monkeypatch):
                 assert counter.total_count == 1
         finally:
             publisher.close()
+
+
+def monitor_result(*, velocity=4.0, area=135, events=(), tracks=True):
+    from dataclasses import make_dataclass
+    track = {"track_id": 1, "forward_velocity": velocity, "missed": 0,
+             "finished": False, "detection": {"area": area}}
+    return make_dataclass("MonitorResult", ["total_count", "detections", "tracks", "events"])(
+        len(events), (), (track,) if tracks else (), events)
+
+
+def test_conveyor_speed_window_conversion_and_expiry():
+    now = [0.0]
+    state = state_module().LiveMonitorState(mode="mock", history_limit=3,
+                                           mm_per_pixel=0.75, clock=lambda: now[0])
+    for i, velocity in enumerate((2., 4., 6., 8.)):
+        now[0] = i / 20
+        state.complete_frame(monitor_result(velocity=velocity))
+    data = state.snapshot()["dashboard"]
+    assert data["px_per_frame"] == pytest.approx(6)
+    assert data["px_per_second"] == pytest.approx(120)
+    assert data["cm_per_second"] == pytest.approx(9)
+    assert data["mm_per_pixel"] == 0.75
+    assert len(state.velocity_history) == 3
+    now[0] += 6
+    assert state.snapshot()["dashboard"]["cm_per_second"] is None
+    now[0] += 1
+    state.complete_frame(monitor_result(tracks=False))
+    assert state.snapshot()["dashboard"]["px_per_frame"] is None
+
+
+@pytest.mark.parametrize("velocity", [None, float("nan"), float("inf"), -2.0])
+def test_invalid_velocity_is_not_reported_as_conveyor_speed(velocity):
+    state = state_module().LiveMonitorState(mode="mock")
+    state.complete_frame(monitor_result(velocity=velocity))
+    assert state.snapshot()["dashboard"]["px_per_frame"] is None
+
+
+def test_crossing_log_contains_area_velocity_and_gap_recovery_and_reset():
+    from stream_counter import CountEvent
+    state = state_module().LiveMonitorState(mode="mock")
+    event = CountEvent(1, 10, 162, 110, inferred_gap=True)
+    state.complete_frame(monitor_result(events=(event,)))
+    data = state.snapshot()["dashboard"]
+    assert data["last_crossing_area_px"] == 135
+    assert "触发速度预测跨帧恢复" in data["events"][-1]["message"]
+    assert "135px" in data["events"][-1]["message"]
+    assert "4.00 px/帧" in data["events"][-1]["message"]
+    assert data["events"][-1]["area_px"] == 135
+    state.control("reset", {})
+    state.complete_frame(monitor_result())
+    assert state.snapshot()["dashboard"]["last_crossing_area_px"] is None
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "nan", "inf"])
+def test_invalid_mm_per_pixel_rejected_before_server_start(value):
+    import asyncio
+    import run_live_monitor as live
+    args = live.parser().parse_args(["--mm-per-pixel", value])
+    with pytest.raises(ValueError, match="mm-per-pixel"):
+        asyncio.run(live.run_monitor(args))
+
+
+def test_mm_per_pixel_default_and_custom():
+    import run_live_monitor as live
+    assert live.parser().parse_args([]).mm_per_pixel == 0.75
+    assert live.parser().parse_args(["--mm-per-pixel", "0.5"]).mm_per_pixel == 0.5
+
+
+def test_speed_uses_frame_means_and_ignores_unobserved_tracks():
+    from dataclasses import replace
+    now = [0.0]
+    state = state_module().LiveMonitorState(mode="mock", history_limit=3,
+                                           mm_per_pixel=0.5, clock=lambda: now[0])
+    result = monitor_result(velocity=0.0)
+    state.complete_frame(result)
+    now[0] = 0.1
+    tracks = (result.tracks[0], {**result.tracks[0], "track_id": 2, "forward_velocity": 8.0},
+              {**result.tracks[0], "track_id": 3, "forward_velocity": 100.0, "missed": 1},
+              {**result.tracks[0], "track_id": 4, "forward_velocity": 100.0, "finished": True})
+    state.complete_frame(replace(result, tracks=tracks))
+    data = state.snapshot()["dashboard"]
+    assert data["px_per_frame"] == pytest.approx(2.0)
+    assert data["cm_per_second"] == pytest.approx(1.0)
+    for _ in range(10):
+        now[0] += 0.1
+        state.complete_frame(monitor_result(tracks=False))
+    now[0] += 0.1
+    state.complete_frame(monitor_result(velocity=6.0))
+    assert state.snapshot()["dashboard"]["px_per_frame"] == 6.0
+
+
+def test_missing_event_track_is_explicit_unknown_and_log_is_bounded():
+    from stream_counter import CountEvent
+    state = state_module().LiveMonitorState(mode="mock")
+    result = monitor_result(events=(CountEvent(99, 1, 161, 110),), tracks=False)
+    for _ in range(40):
+        state.complete_frame(result)
+    data = state.snapshot()["dashboard"]
+    assert len(data["events"]) == 30
+    assert data["last_crossing_area_px"] is None
+    assert "面积 N/A，速度 N/A" in data["events"][-1]["message"]
+    assert "跨帧恢复" not in data["events"][-1]["message"]

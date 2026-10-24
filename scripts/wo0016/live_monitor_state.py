@@ -6,6 +6,7 @@ from dataclasses import replace
 from functools import lru_cache
 from pathlib import Path
 import os
+import math
 import threading
 import time
 
@@ -49,14 +50,19 @@ def process_rss_kib():
 
 
 class LiveMonitorState:
-    def __init__(self, *, mode, history_limit=120, clock=time.monotonic):
+    def __init__(self, *, mode, history_limit=120, mm_per_pixel=0.75, clock=time.monotonic):
         if mode not in ("mock", "board") or not isinstance(history_limit, int) or history_limit < 2:
             raise ValueError("mode and history_limit (>=2) are required")
+        if not math.isfinite(mm_per_pixel) or mm_per_pixel <= 0:
+            raise ValueError("mm-per-pixel must be finite and positive")
         self.mode = mode
+        self.mm_per_pixel = mm_per_pixel
         self.clock = clock
         self.lock = threading.RLock()
         self.stop = threading.Event()
         self.completed_times = deque(maxlen=history_limit)
+        self.velocity_history = deque(maxlen=history_limit)
+        self.last_crossing_area_px = None
         self.events = deque(maxlen=30)
         self.started = clock()
         self.frames = self.raw_total = self.base = self.total = self.detections = 0
@@ -98,6 +104,7 @@ class LiveMonitorState:
                 self.base = self.raw_total
                 self.reset_requested = False
                 self.reset_sequence += 1
+                self.last_crossing_area_px = None
                 self.invalidate_preview()
                 self.events.append({"id": self.frames, "time": time.time(), "message": "计数已清零"})
             self.raw_total = result.total_count
@@ -105,8 +112,31 @@ class LiveMonitorState:
             self.frames += 1
             self.detections = len(result.detections)
             self.completed_times.append(self.clock())
+            tracks = {track["track_id"]: track for track in getattr(result, "tracks", ())}
+            velocities = [track.get("forward_velocity") for track in tracks.values()
+                          if not track.get("missed", 0) and not track.get("finished", False)]
+            velocities = [value for value in velocities if self._valid_velocity(value)]
+            # One sample per completed frame: multiple targets do not overweight a frame.
+            self.velocity_history.append(sum(velocities) / len(velocities) if velocities else None)
+            for event in getattr(result, "events", ()):
+                track = tracks.get(event.track_id, {})
+                area = track.get("detection", {}).get("area")
+                velocity = track.get("forward_velocity")
+                velocity = velocity if self._valid_velocity(velocity) else None
+                self.last_crossing_area_px = area
+                details = f"面积 {area}px" if area is not None else "面积 N/A"
+                details += f"，速度 {velocity:.2f} px/帧" if velocity is not None else "，速度 N/A"
+                recovery = "；触发速度预测跨帧恢复" if event.inferred_gap else ""
+                self.events.append({"id": self.frames, "time": time.time(),
+                                    "track_id": event.track_id, "area_px": area,
+                                    "px_per_frame": velocity, "inferred_gap": event.inferred_gap,
+                                    "message": f"T{event.track_id} 越线计数，{details}{recovery}"})
             self.phase = "stopping" if self.stop.is_set() else "running"
             return replace(result, total_count=self.total)
+
+    @staticmethod
+    def _valid_velocity(value):
+        return isinstance(value, (int, float)) and math.isfinite(value) and value >= 0
 
     def set_phase(self, phase, message):
         with self.lock:
@@ -125,10 +155,19 @@ class LiveMonitorState:
             fresh = age is not None and age <= 5 and self.phase == "running"
             span = 0 if len(self.completed_times) < 2 else self.completed_times[-1] - self.completed_times[0]
             fps = (len(self.completed_times) - 1) / span if fresh and span > 0 else None
+            samples = [value for value in self.velocity_history if value is not None]
+            px_frame = (sum(samples) / len(samples) if fresh and samples
+                        and self.velocity_history[-1] is not None else None)
+            px_second = px_frame * fps if px_frame is not None and fps is not None else None
             verified = "frame_verified" if fresh else "unknown"
             telemetry = {"source": "pl_dma" if self.mode == "board" else "software", "mode": self.mode,
                          "phase": self.phase, "total_count": self.total, "detections": self.detections,
                          "frames_processed": self.frames, "processing_fps": fps,
+                         "px_per_frame": px_frame, "px_per_second": px_second,
+                         "cm_per_second": px_second * self.mm_per_pixel / 10 if px_second is not None else None,
+                         "mm_per_pixel": self.mm_per_pixel,
+                         "speed_kind": "observed-track frame means / completed-frame sliding window",
+                         "last_crossing_area_px": self.last_crossing_area_px,
                          "fps_kind": "completed-frame sliding window", "elapsed_seconds": now - self.started,
                          "last_frame_age_seconds": age, "stale": not fresh,
                          "camera": verified if self.mode == "board" else "disabled",

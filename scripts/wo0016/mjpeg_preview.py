@@ -200,7 +200,11 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                int(detection["x_max"]), int(detection["y_max"]))
         color = (50, 220, 130) if track.get("counted") else (255, 180, 0)
         cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), color, 1, lineType=cv2.LINE_8)
-        cv2.putText(frame, f"T{int(track.get('track_id', 0))}",
+        track_label = f"T{int(track.get('track_id', 0))}"
+        area = detection.get("area")
+        if isinstance(area, (int, np.integer)) and not isinstance(area, (bool, np.bool_)):
+            track_label += f" {int(area)}px"
+        cv2.putText(frame, track_label,
                     (box[0], max(10, box[1] - 3)), cv2.FONT_HERSHEY_SIMPLEX, 0.32,
                     color, 1, lineType=cv2.LINE_AA)
 

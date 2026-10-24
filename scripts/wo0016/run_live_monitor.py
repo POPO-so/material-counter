@@ -46,6 +46,8 @@ def parser():
     result.add_argument("--no-auth", action="store_true", help="enable same-origin live reset/view/stop without OTP")
     result.add_argument("--history-limit", type=int, default=120)
     result.add_argument("--mock-fps", type=float, default=30.0)
+    result.add_argument("--mm-per-pixel", type=float, default=0.75,
+                        help="assumed scale in mm/px for estimated conveyor speed (default: 0.75)")
     result.add_argument("--lock-path", default="/run/material-counter-live.lock")
     return result
 
@@ -251,6 +253,8 @@ class BoardSession:
 
 
 async def run_monitor(args, *, state=None, server_ready=None):
+    if not math.isfinite(args.mm_per_pixel) or args.mm_per_pixel <= 0:
+        raise ValueError("mm-per-pixel must be finite and positive")
     if args.counting_profile != "full-width-mixed":
         raise ValueError("live monitor requires --counting-profile full-width-mixed (X=160)")
     if args.history_limit < 2 or not math.isfinite(args.mock_fps) or args.mock_fps <= 0:
@@ -259,7 +263,9 @@ async def run_monitor(args, *, state=None, server_ready=None):
         raise ValueError("timeout-s must be finite and positive")
     if args.physical_calibration or args.wo0017_profile or args.capture_dir or args.no_consume_guard:
         raise ValueError("live monitor cannot use calibration, capture or formal permits")
-    state = state or LiveMonitorState(mode=args.mode, history_limit=args.history_limit)
+    state = state or LiveMonitorState(mode=args.mode, history_limit=args.history_limit,
+                                     mm_per_pixel=args.mm_per_pixel)
+    state.mm_per_pixel = args.mm_per_pixel
     config = finite.counting_configuration(args)
     counter = MaskCounter(**config, discard_finished_tracks=True)
     hub = MjpegFrameHub()
@@ -321,7 +327,8 @@ async def run_monitor(args, *, state=None, server_ready=None):
 def main(argv=None):
     args = parser().parse_args(argv)
     try:
-        state = LiveMonitorState(mode=args.mode, history_limit=args.history_limit)
+        state = LiveMonitorState(mode=args.mode, history_limit=args.history_limit,
+                                 mm_per_pixel=args.mm_per_pixel)
         with stop_signals(state.stop):
             summary = asyncio.run(run_monitor(args, state=state))
         print(json.dumps(summary, ensure_ascii=False), flush=True)
