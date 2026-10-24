@@ -36,7 +36,13 @@ htmlcov/
 *.mov
 # 大体积合成的数据可重生成，不入库（保留生成脚本与 config.json）
 data/synthetic/**/frames/
-data/recorded/
+# Keep recorded captures local except the three reviewed WO-0017 handoff runs.
+data/recorded/*
+!data/recorded/wo0017-touching-20261024/
+data/recorded/wo0017-touching-20261024/*
+!data/recorded/wo0017-touching-20261024/wo_touching_pair_motion_20261024_03/
+!data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_02/
+!data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_04/
 
 # ===== 实验产物例外 =====
 # ★ 实验产物（CSV/JSON/图）必须入库，这是证据

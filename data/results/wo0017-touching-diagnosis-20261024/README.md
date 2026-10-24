@@ -49,3 +49,15 @@ Attempt-5 Recovery-2 的 165 帧 `frame-results.json` SHA-256 为 `4c533b1b70a83
 第 0–55 帧看到目标，第 23–29 帧覆盖 X=160。仅对第 0–79 帧按相同的 Gray8 阈值 128 回放：旧拆分范围得到 1 次事件（第 27 帧），最终候选规则得到 3 次事件（第 25、28、28 帧）。用户现场确认三颗已通过计数带。该结果再次验证相机阈值离线计数，但不是 PL Binary8 或已部署板端程序的结果。
 
 将 `split_touching.py` 候选函数单独复制到当前 PYNQ-Z2，在本轮录像第 5–40 帧的 36 个目标轮廓上计时：拆分函数中位 4.776 ms，95 分位 4.910 ms，最大 6.805 ms；部分边缘帧只形成 2 个合格片段。计时不含摄像头解码、PL/DMA、完整 CCL、跟踪、显示或系统负载，因此不能据此推断整条流水线达到目标 FPS。
+
+## GitHub 原始数据交接
+
+应队友要求，仓库现将下列三个完整采集目录设为精确例外。每个目录实际只有 `camera_gray_only.npz` 与 `manifest.json` 两个文件；采集脚本没有生成独立日志或 PL Binary8。其他 `data/recorded/` 目录仍不入库。
+
+| 目录 | NPZ SHA-256 | 实物场景 |
+| --- | --- | --- |
+| [wo_touching_pair_motion_20261024_03](../../recorded/wo0017-touching-20261024/wo_touching_pair_motion_20261024_03/) | `0b55c6e1d5a43a4c69702dd89ef14be09c1673cdbc7b8d22b7bf5b8fbe40ce9e` | 两颗贴合 |
+| [wo_touching_three_motion_20261024_02](../../recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_02/) | `7edb8fcc077a0592b957f485ae6d5b99989bdf61b2d0c17cff7d71afaa2ad9fa` | 三颗紧邻，首次有效越线 |
+| [wo_touching_three_motion_20261024_04](../../recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_04/) | `c534ad4334afa725337a03d5ed849e5ae81857b5c8f5bf1c1686b465884ed59d` | 三颗紧邻，复测 |
+
+三个 NPZ 每个 138,277,036 字节，通过 Git LFS 存储。队友在仓库更新后运行 `git lfs install` 和 `git lfs pull`，再按各目录 `manifest.json` 的 `archive_sha256` 验证实际文件。只看到很小的 LFS 指针文件时，还没有取回录像字节。本报告中的计数仅为相机 Gray8 阈值回放；这些目录不提供 PL Binary8 或板端正式计数证据。
