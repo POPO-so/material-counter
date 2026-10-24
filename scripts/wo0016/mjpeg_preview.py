@@ -5,9 +5,11 @@ import os
 import json
 import ipaddress
 import socket
+import select
 import threading
 import time
-from collections import defaultdict
+from collections import defaultdict, deque
+from pathlib import Path
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Iterator
@@ -21,42 +23,6 @@ PREVIEW_FRAME_INTERVAL = 4
 PREVIEW_JPEG_QUALITY = 70
 
 
-_HTML_PAGE = """<!doctype html>
-<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">
-<title>WO-0017 · Industrial HUD Preview</title><style>
-:root{color-scheme:dark;--bg:#07111b;--panel:#101d29;--line:#213747;--cyan:#2ce0d0;--muted:#8fa4b7;--text:#e7f0f7}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0,#173044 0,transparent 42%),var(--bg);color:var(--text);font:15px system-ui,sans-serif}
-main{max-width:1240px;margin:30px auto;padding:0 20px}.top{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px;gap:18px}
-.eyebrow{color:var(--cyan);font:700 11px ui-monospace,monospace;letter-spacing:.16em}h1{margin:6px 0 0;font-size:25px;letter-spacing:.02em}
-.badge{border:1px solid #305267;border-radius:99px;padding:8px 12px;color:#a8c2d2;font:12px ui-monospace,monospace}
-.frame{background:#050a0e;border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 22px 70px #0008}.frame img{display:block;width:100%;height:auto;border-radius:9px}
-.footer{display:flex;justify-content:space-between;color:var(--muted);font:12px ui-monospace,monospace;margin:12px 4px 0;gap:12px}
-@media(max-width:650px){main{margin:16px auto;padding:0 10px}.top{align-items:start;flex-direction:column}h1{font-size:20px}}
-</style></head><body><main>
-<header class=\"top\"><div><div class=\"eyebrow\">POPO-SO / MATERIAL COUNTER / WO-0017</div><h1>Industrial HUD Preview</h1></div><span class=\"badge\">LIVE · MJPEG</span></header>
-<section class=\"frame\"><img src=\"/stream.mjpg\" alt=\"Camera image with labeled binary mask PIP\"></section>
-<footer class=\"footer\"><span>Read-only preview stream · no formal sampling</span><span>The frame HUD identifies the PIP source</span></footer>
-</main></body></html>""".encode("utf-8")
-
-_CALIBRATION_PANEL = b'''<section style="margin-top:18px"><h2>Live Calibration</h2>
-<pre id="metrics">Connecting...</pre>
-<label>Exposure <input id="exposure" type="number" min="50" max="10000" value="50"></label>
-<label>Brightness <input id="brightness" type="number" min="-64" max="64" value="0"></label>
-<button onclick="adjust(false)">Apply</button>
-<button onclick="adjust(true)">Restore exposure=50, brightness=0</button>
-<p id="control">Controls require calibration mode and a local SSH tunnel.</p></section>
-<script>
-async function refresh(){try{let s=await(await fetch('/state.json')).json();
-document.getElementById('metrics').textContent=JSON.stringify(s.calibration?{...s.calibration,memory_health:s.memory_health,memory_status:s.memory_health_status}:s,null,2);
-}catch(e){} } setInterval(refresh,1000);refresh();
-async function adjust(reset){try{let values=reset?{reset:true}:{exposure_time_absolute:Number(document.getElementById('exposure').value),brightness:Number(document.getElementById('brightness').value)};
-let r=await fetch('/api/calibration',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(values)});
-let result=await r.json();document.getElementById('control').textContent=JSON.stringify(result);
-if(r.ok){document.getElementById('exposure').value=result.exposure_time_absolute;document.getElementById('brightness').value=result.brightness;}
-}catch(e){document.getElementById('control').textContent=String(e);}}
-</script>'''
-
-
 class MjpegFrameHub:
     """Keep only the newest frame so a slow browser never queues stale video."""
 
@@ -66,6 +32,20 @@ class MjpegFrameHub:
         self._jpeg: bytes | None = None
         self._stream_clients = 0
         self._closed = False
+        self._published_times: deque[float] = deque(maxlen=60)
+        self._dimensions: tuple[int, int] | None = None
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._condition:
+            times = self._published_times
+            age = None if not times else max(0.0, time.monotonic() - times[-1])
+            span = times[-1] - times[0] if len(times) > 1 else 0
+            return {"sequence": self._sequence, "clients": self._stream_clients,
+                    "closed": self._closed, "age_seconds": age,
+                    "width": None if self._dimensions is None else self._dimensions[0],
+                    "height": None if self._dimensions is None else self._dimensions[1],
+                    "fps": ((len(times) - 1) / span
+                            if span > 0 and age <= 5 and not self._closed else None)}
 
     @property
     def closed(self) -> bool:
@@ -106,16 +86,27 @@ class MjpegFrameHub:
             )
             return self._stream_clients > 0
 
-    def publish(self, jpeg: bytes | bytearray | memoryview) -> int:
+    def publish(self, jpeg: bytes | bytearray | memoryview, *,
+                dimensions: tuple[int, int] | None = None) -> int:
         if not isinstance(jpeg, (bytes, bytearray, memoryview)) or not jpeg:
             raise ValueError("published JPEG must be non-empty bytes")
         with self._condition:
             if self._closed:
                 raise RuntimeError("frame hub is closed")
             self._jpeg = bytes(jpeg)
+            self._published_times.append(time.monotonic())
+            self._dimensions = dimensions
             self._sequence += 1
             self._condition.notify_all()
             return self._sequence
+
+    def clear(self) -> None:
+        """Drop the current image and its age metrics without rewinding sequence."""
+        with self._condition:
+            self._jpeg = None
+            self._published_times.clear()
+            self._dimensions = None
+            self._condition.notify_all()
 
     def wait_for_next(self, *, after_sequence: int, timeout_s: float = 1.0
                       ) -> tuple[int, bytes] | None:
@@ -199,6 +190,16 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                 cv2.line(frame, (x, boundary), (min(x + 4, image.shape[1] - 1), boundary),
                          (0, 210, 255), 1, lineType=cv2.LINE_8)
 
+    # Keep full area labels readable for adjacent split children and image edges.
+    # These rectangles reserve the count HUD and mask PIP drawn below.
+    occupied_labels = [(3, 4, 212, 34), (216, 4, 316, 97)]
+    if count_axis == "x":
+        x_label = min(line_x + 4, 270)
+        (text_width, text_height), baseline = cv2.getTextSize(
+            f"X={line_x}", cv2.FONT_HERSHEY_SIMPLEX, 0.35, 1)
+        occupied_labels.append((x_label - 2, 100 - text_height - 2,
+                                x_label + text_width + 2, 100 + baseline + 2))
+    track_labels = []
     for track in tracks:
         if track.get("finished") or track.get("missed", 0):
             continue
@@ -209,16 +210,47 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                int(detection["x_max"]), int(detection["y_max"]))
         color = (50, 220, 130) if track.get("counted") else (255, 180, 0)
         cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), color, 1, lineType=cv2.LINE_8)
-        cv2.putText(frame, f"T{int(track.get('track_id', 0))}",
-                    (box[0], max(10, box[1] - 3)), cv2.FONT_HERSHEY_SIMPLEX, 0.32,
-                    color, 1, lineType=cv2.LINE_AA)
-
+        track_label = f"T{int(track.get('track_id', 0))}"
+        area = detection.get("area")
+        if isinstance(area, (int, np.integer)) and not isinstance(area, (bool, np.bool_)):
+            track_label += f" {int(area)}px"
+        track_labels.append((box, color, track_label))
     for points in (track_trails or {}).values():
         if len(points) >= 2:
             polyline = np.asarray([(int(round(x)), int(round(y))) for x, y in points],
                                   dtype=np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [polyline], False, (255, 255, 0), 1, lineType=cv2.LINE_AA)
             cv2.circle(frame, tuple(polyline[-1, 0]), 2, (255, 255, 0), -1)
+    placed_labels = []
+    for box, color, track_label in track_labels:
+        (text_width, text_height), baseline = cv2.getTextSize(
+            track_label, cv2.FONT_HERSHEY_SIMPLEX, 0.32, 1)
+        label_x = max(2, min(box[0], image.shape[1] - text_width - 3))
+        label_y = max(text_height + 2, min(box[1] - 3, image.shape[0] - baseline - 3))
+        row_height = text_height + baseline + 6
+        rows = [label_y, *range(label_y - row_height, text_height + 1, -row_height),
+                *range(label_y + row_height, image.shape[0] - baseline - 2, row_height)]
+        for candidate_y in rows:
+            rectangle = (label_x - 2, candidate_y - text_height - 2,
+                         label_x + text_width + 2, candidate_y + baseline + 2)
+            if all(rectangle[2] <= other[0] or rectangle[0] >= other[2]
+                   or rectangle[3] <= other[1] or rectangle[1] >= other[3]
+                   for other in occupied_labels):
+                label_y = candidate_y
+                break
+        rectangle = (label_x - 2, label_y - text_height - 2,
+                     label_x + text_width + 2, label_y + baseline + 2)
+        occupied_labels.append(rectangle)
+        if (label_x, label_y) != (box[0], box[1] - 3):
+            cv2.line(frame, (box[0], box[1]), (label_x, label_y), color, 1,
+                     lineType=cv2.LINE_AA)
+        placed_labels.append((rectangle, label_x, label_y, color, track_label))
+    # Draw text last so another child's box, trail or connector cannot cross it.
+    for rectangle, label_x, label_y, color, track_label in placed_labels:
+        cv2.rectangle(frame, rectangle[:2], rectangle[2:], (12, 25, 35), -1)
+        cv2.putText(frame, track_label,
+                    (label_x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.32,
+                    color, 1, lineType=cv2.LINE_AA)
 
     cv2.rectangle(frame, (5, 6), (min(frame.shape[1] - 1, 210), 32), (12, 25, 35), -1)
     cv2.putText(frame, f"{label}  {int(total_count):03d}", (10, 24),
@@ -301,11 +333,20 @@ class PeriodicMjpegPublisher:
                  interval: int = PREVIEW_FRAME_INTERVAL,
                  quality: int = PREVIEW_JPEG_QUALITY, count_label: str = "TOTAL COUNT",
                  count_axis: str = "y", line_x: int = 160,
-                 hysteresis: float = 2.0, pip_label: str = "PL DMA MASK"):
+                 hysteresis: float = 2.0, pip_label: str = "PL DMA MASK",
+                 active_rows: tuple[int, int] | list[int] | None = None,
+                 history_limit: int | None = None,
+                 view_mode_provider=None):
         if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
             raise ValueError("preview interval must be a positive integer")
         if isinstance(quality, bool) or not isinstance(quality, int) or not 1 <= quality <= 100:
             raise ValueError("JPEG quality must be an integer in 1..100")
+        if history_limit is not None and (
+                isinstance(history_limit, bool) or not isinstance(history_limit, int)
+                or history_limit < 1):
+            raise ValueError("history_limit must be a positive integer or None")
+        if view_mode_provider is not None and not callable(view_mode_provider):
+            raise ValueError("view_mode_provider must be callable or None")
         self.hub = hub
         self.line_y = line_y
         if not isinstance(count_label, str) or not count_label.strip():
@@ -314,15 +355,24 @@ class PeriodicMjpegPublisher:
         self.count_axis = count_axis
         self.line_x = line_x
         self.hysteresis = float(hysteresis)
+        if active_rows is not None and (
+                not isinstance(active_rows, (tuple, list)) or len(active_rows) != 2
+                or any(isinstance(v, bool) or not isinstance(v, int) for v in active_rows)
+                or not 0 <= active_rows[0] < active_rows[1] <= 240):
+            raise ValueError("active_rows must be two row bounds inside the preview")
+        self.active_rows = None if active_rows is None else tuple(active_rows)
         if not isinstance(pip_label, str) or not pip_label.strip():
             raise ValueError("pip_label must be non-empty text")
         self.pip_label = pip_label
         self.interval = interval
         self.quality = quality
         self.encoded_frames = 0
-        self.handoff_timings_ms: list[float] = []
-        self.background_encode_timings_ms: list[float] = []
-        self.encode_errors: list[str] = []
+        self.history_limit = history_limit
+        self.view_mode_provider = view_mode_provider
+        self.handoff_timings_ms = (deque(maxlen=history_limit) if history_limit is not None else [])
+        self.background_encode_timings_ms = (
+            deque(maxlen=history_limit) if history_limit is not None else [])
+        self.encode_errors = deque(maxlen=history_limit) if history_limit is not None else []
         self._condition = threading.Condition()
         self._latest_mask = np.empty((240, 320), dtype=np.uint8)
         self._encode_mask = np.empty((240, 320), dtype=np.uint8)
@@ -335,6 +385,8 @@ class PeriodicMjpegPublisher:
         self._latest_metadata: tuple[int, int, int] | None = None
         self._snapshot_sequence = 0
         self._encoded_sequence = 0
+        self._epoch = 0
+        self._force_encode = False
         self._closing = False
         self._closed = False
         self._worker = threading.Thread(
@@ -349,8 +401,10 @@ class PeriodicMjpegPublisher:
         started = time.perf_counter()
         try:
             frame_id = int(result.frame_id)
-            if frame_id % self.interval:
-                return
+            with self._condition:
+                callback_epoch = self._epoch
+                if frame_id % self.interval and not self._force_encode:
+                    return
             image = np.asarray(mask)
             if image.dtype != np.uint8 or image.shape != (240, 320):
                 raise ValueError("preview snapshot must be a uint8 array with shape (240, 320)")
@@ -358,14 +412,20 @@ class PeriodicMjpegPublisher:
             if gray.dtype != np.uint8 or gray.shape != (240, 320):
                 raise ValueError("preview Gray8 snapshot must have shape (240, 320)")
             with self._condition:
-                if self._closing or self._closed:
+                if self._closing or self._closed or callback_epoch != self._epoch:
                     return
+                if frame_id % self.interval and not self._force_encode:
+                    return
+                self._force_encode = False
                 np.copyto(self._latest_mask, image, casting="no")
                 np.copyto(self._latest_gray, gray, casting="no")
                 self._latest_tracks = tuple(getattr(result, "tracks", ()))
                 self._latest_calibration = getattr(result, "calibration", None)
                 self._latest_roi = (int(getattr(result, "roi_top", 0)),
                                     int(getattr(result, "roi_bottom", 240)))
+                if self.active_rows is not None:
+                    self._latest_roi = (max(self._latest_roi[0], self.active_rows[0]),
+                                        min(self._latest_roi[1], self.active_rows[1]))
                 visible_ids = {int(track.get("track_id", 0)) for track in self._latest_tracks
                                if not track.get("finished") and not track.get("missed", 0)}
                 self._track_trails = defaultdict(list, {
@@ -386,6 +446,22 @@ class PeriodicMjpegPublisher:
                 self._condition.notify_all()
         finally:
             self.handoff_timings_ms.append((time.perf_counter() - started) * 1000.0)
+
+    def invalidate(self) -> None:
+        """Discard queued/in-flight preview work and require the next frame."""
+        with self._condition:
+            self._epoch += 1
+            self._encoded_sequence = self._snapshot_sequence
+            self._latest_metadata = None
+            self._latest_tracks = ()
+            self._track_trails.clear()
+            self._latest_calibration = None
+            self._latest_roi = (0, 240)
+            self._force_encode = True
+            # Keep sequence monotonic so connected clients cannot mistake a
+            # reset image for an already-consumed multipart frame.
+            self.hub.clear()
+            self._condition.notify_all()
 
     def _encode_pending(self) -> None:
         if hasattr(os, "setpriority") and hasattr(threading, "get_native_id"):
@@ -415,6 +491,7 @@ class PeriodicMjpegPublisher:
                     continue
                 sequence = self._snapshot_sequence
                 frame_id, total_count, line_y = self._latest_metadata
+                epoch = self._epoch
                 np.copyto(self._encode_mask, self._latest_mask, casting="no")
                 np.copyto(self._encode_gray, self._latest_gray, casting="no")
                 tracks = self._latest_tracks
@@ -426,6 +503,11 @@ class PeriodicMjpegPublisher:
 
             started = time.perf_counter()
             try:
+                view_mode = ("overlay" if self.view_mode_provider is None
+                             else self.view_mode_provider())
+                if view_mode not in ("overlay", "binary"):
+                    raise ValueError("preview view mode must be 'overlay' or 'binary'")
+                main_background = self._encode_mask if view_mode == "binary" else self._encode_gray
                 jpeg = render_preview_jpeg(
                     self._encode_mask,
                     total_count=total_count,
@@ -433,15 +515,19 @@ class PeriodicMjpegPublisher:
                     quality=self.quality,
                     count_label=self.count_label,
                     count_axis=self.count_axis, line_x=self.line_x,
-                    source_gray=self._encode_gray, hysteresis=self.hysteresis,
+                    source_gray=main_background, hysteresis=self.hysteresis,
                     pip_label=self.pip_label,
                     tracks=tracks, track_trails=trails,
                     **({"calibration": calibration} if calibration is not None else {}),
                     **({"roi_top": roi_top, "roi_bottom": roi_bottom}
                        if (roi_top, roi_bottom) != (0, 240) else {}),
                 )
-                self.hub.publish(jpeg)
-                self.encoded_frames += 1
+                with self._condition:
+                    if epoch != self._epoch or self._closing or self._closed:
+                        continue
+                    self.hub.publish(jpeg, dimensions=(self._encode_mask.shape[1],
+                                     self._encode_mask.shape[0] + (85 if calibration is not None else 0)))
+                    self.encoded_frames += 1
             except RuntimeError as exc:
                 if not self.hub.closed:
                     self.encode_errors.append(f"{type(exc).__name__}: {exc}")
@@ -549,14 +635,19 @@ class MjpegLoopbackClient:
                     frame = self._read_exactly(response, size)
                     if len(frame) != size:
                         break
+                    self._readline(response)  # Consume the MIME separator CRLF.
                     if "x-frame-sequence" in headers:
-                        self.frame_sequences.append(int(headers["x-frame-sequence"]))
+                        sequence = int(headers["x-frame-sequence"])
+                        if self.frame_sequences and sequence <= self.frame_sequences[-1]:
+                            # A legacy decoder-priming part is transport-only;
+                            # never count it as another delivered source frame.
+                            continue
+                        self.frame_sequences.append(sequence)
                     timestamp = time.perf_counter()
                     if self.first_frame_time is None:
                         self.first_frame_time = timestamp
                     self.last_frame_time = timestamp
                     self.frames_received += 1
-                    self._readline(response)  # Consume the MIME separator CRLF.
         except (OSError, RuntimeError, ValueError, KeyError) as exc:
             if not self._stop.is_set():
                 self.error = f"{type(exc).__name__}: {exc}"
@@ -581,7 +672,8 @@ class MjpegPreviewServer:
 
     def __init__(self, *, hub: MjpegFrameHub | None = None,
                  host: str = "0.0.0.0", port: int = 8080,
-                 state_provider=None, control_callback=None):
+                 state_provider=None, control_callback=None,
+                 live_control_callback=None):
         if not isinstance(host, str) or not host:
             raise ValueError("host must be non-empty text")
         if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
@@ -591,6 +683,7 @@ class MjpegPreviewServer:
         self.requested_port = port
         self.state_provider = state_provider
         self.control_callback = control_callback
+        self.live_control_callback = live_control_callback
         self._server: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
 
@@ -606,6 +699,8 @@ class MjpegPreviewServer:
         hub = self.hub
         state_provider = self.state_provider
         control_callback = self.control_callback
+        live_control_callback = self.live_control_callback
+        page = Path(__file__).with_name("dashboard.html").read_bytes()
 
         class Handler(BaseHTTPRequestHandler):
             protocol_version = "HTTP/1.1"
@@ -622,22 +717,86 @@ class MjpegPreviewServer:
                 self.end_headers()
                 self.wfile.write(body)
 
+            def _reject_post(self, code: int, payload: Any) -> None:
+                # Drain small rejected bodies before closing: unread request
+                # data can reset a Windows TCP connection before the 403 arrives.
+                # Never parse/execute the body or drain an unbounded request.
+                try:
+                    length = int(self.headers.get("Content-Length", "0"))
+                    if 0 < length <= 512:
+                        self.connection.settimeout(2.0)
+                        self.rfile.read(length)
+                except (OSError, ValueError):
+                    pass
+                self._json(code, payload)
+
+            def _is_local_request_host(self) -> bool:
+                header = self.headers.get("Host", "")
+                try:
+                    hostname = urlsplit("//" + header).hostname
+                except ValueError:
+                    return False
+                if not hostname:
+                    return False
+                hostname = hostname.rstrip(".").lower()
+                if hostname in ("localhost", "127.0.0.1", "::1"):
+                    return True
+                addresses = set()
+                names = set()
+                for address in (self.server.server_address[0],
+                                self.connection.getsockname()[0]):
+                    normalized = str(address).rstrip(".").lower()
+                    if normalized in ("0.0.0.0", "::", ""):
+                        continue
+                    try:
+                        addresses.add(ipaddress.ip_address(normalized))
+                    except ValueError:
+                        names.add(normalized)
+                if hostname in names:
+                    return True
+                try:
+                    request_ip = ipaddress.ip_address(hostname)
+                except ValueError:
+                    return False
+                return request_ip.is_loopback or request_ip in addresses
+
             def do_POST(self) -> None:
                 self.close_connection = True
-                if self.path != "/api/calibration" or control_callback is None:
-                    self._json(403, {"error": "calibration controls disabled"})
-                    return
-                if not ipaddress.ip_address(self.client_address[0]).is_loopback:
-                    self._json(403, {"error": "local API only: use an SSH tunnel"})
-                    return
-                origin = self.headers.get("Origin")
-                expected_origin = "http://" + self.headers.get("Host", "")
-                host = urlsplit(expected_origin).hostname
-                if host not in ("127.0.0.1", "localhost", "::1") or (origin and origin != expected_origin):
-                    self._json(403, {"error": "local same-origin access required"})
+                live_actions = {
+                    "/api/reset-count": "reset",
+                    "/api/view-mode": "view",
+                    "/api/stop": "stop",
+                }
+                if self.path == "/api/calibration":
+                    if control_callback is None:
+                        self._reject_post(403, {"error": "calibration controls disabled"})
+                        return
+                    if not ipaddress.ip_address(self.client_address[0]).is_loopback:
+                        self._reject_post(403, {"error": "local API only: use an SSH tunnel"})
+                        return
+                    origin = self.headers.get("Origin")
+                    expected_origin = "http://" + self.headers.get("Host", "")
+                    host = urlsplit(expected_origin).hostname
+                    if host not in ("127.0.0.1", "localhost", "::1") or (origin and origin != expected_origin):
+                        self._reject_post(403, {"error": "local same-origin access required"})
+                        return
+                elif self.path in live_actions:
+                    if live_control_callback is None:
+                        self._reject_post(403, {"error": "live controls disabled"})
+                        return
+                    if not self._is_local_request_host():
+                        self._reject_post(403, {"error": "local server Host required"})
+                        return
+                    origin = self.headers.get("Origin")
+                    expected_origin = "http://" + self.headers.get("Host", "")
+                    if origin is not None and origin != expected_origin:
+                        self._reject_post(403, {"error": "same-origin access required"})
+                        return
+                else:
+                    self._reject_post(403, {"error": "controls disabled"})
                     return
                 if self.headers.get_content_type() != "application/json":
-                    self._json(415, {"error": "application/json required"})
+                    self._reject_post(415, {"error": "application/json required"})
                     return
                 try:
                     length = int(self.headers.get("Content-Length", "0"))
@@ -645,7 +804,13 @@ class MjpegPreviewServer:
                         raise ValueError("JSON body must be 1..512 bytes")
                     self.connection.settimeout(2.0)
                     payload = json.loads(self.rfile.read(length))
-                    self._json(200, control_callback(payload))
+                    if not isinstance(payload, dict):
+                        raise ValueError("JSON body must be an object")
+                    if self.path == "/api/calibration":
+                        result = control_callback(payload)
+                    else:
+                        result = live_control_callback(live_actions[self.path], payload)
+                    self._json(200, result)
                 except PermissionError as exc:
                     self._json(403, {"error": str(exc)})
                 except (ValueError, TypeError) as exc:
@@ -654,13 +819,42 @@ class MjpegPreviewServer:
                     self._json(503, {"error": str(exc)})
 
             def do_GET(self) -> None:
+                if self.path == "/status.json":
+                    try:
+                        raw = state_provider() if state_provider is not None else {}
+                        if not isinstance(raw, dict):
+                            raise TypeError("state provider must return a dictionary")
+                        dashboard = raw.get("dashboard")
+                        phase = dashboard.get("phase") if isinstance(dashboard, dict) else None
+                        live_controls_enabled = (live_control_callback is not None
+                                                 and phase == "running")
+                        self._json(200, {
+                            "schema": 1,
+                            "telemetry": raw.get("dashboard"),
+                            "preview": hub.snapshot(),
+                            "runtime_status": raw.get("status"),
+                            "health": raw.get("resource_health"),
+                            "view_mode": raw.get("view_mode"),
+                            "camera_controls": raw.get("camera_controls"),
+                            "capabilities": {
+                                "start": False,
+                                "stop": live_controls_enabled,
+                                "reset": live_controls_enabled,
+                                "view_mode": live_controls_enabled,
+                                "calibration": (control_callback is not None
+                                                and raw.get("calibration_mode") is True),
+                            },
+                        })
+                    except Exception:
+                        self._json(503, {"error": "status unavailable"})
+                    return
                 if self.path == "/state.json" and state_provider is not None:
-                    self._json(200, state_provider())
+                    try:
+                        self._json(200, state_provider())
+                    except Exception:
+                        self._json(503, {"error": "state unavailable"})
                     return
                 if self.path in ("/", "/index.html"):
-                    page = _HTML_PAGE
-                    if state_provider is not None:
-                        page = page.replace(b"</main>", _CALIBRATION_PANEL + b"</main>")
                     self.send_response(200)
                     self.send_header("Content-Type", "text/html; charset=utf-8")
                     self.send_header("Content-Length", str(len(page)))
@@ -678,18 +872,38 @@ class MjpegPreviewServer:
                 self.send_header("Connection", "close")
                 self.end_headers()
                 sequence = 0
+                first_part = True
+                self.connection.settimeout(2.0)
                 try:
+                    self.wfile.write(b"--frame\r\n")
+                    self.wfile.flush()
                     with hub.streaming_client():
                         while not hub.closed:
                             item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0)
                             if item is None:
+                                # Detect a disconnected/hidden browser even when
+                                # the producer is idle; release its client lease.
+                                if select.select([self.connection], [], [], 0)[0]:
+                                    if not self.connection.recv(1, socket.MSG_PEEK):
+                                        return
                                 continue
                             sequence, jpeg = item
-                            header = (b"--frame\r\nContent-Type: image/jpeg\r\n"
+                            header = (b"Content-Type: image/jpeg\r\n"
                                       + f"Content-Length: {len(jpeg)}\r\nX-Frame-Sequence: {sequence}\r\n\r\n".encode("ascii"))
                             self.wfile.write(header)
                             self.wfile.write(jpeg)
-                            self.wfile.write(b"\r\n")
+                            self.wfile.write(b"\r\n--frame\r\n")
+                            # Chromium does not surface the first multipart JPEG
+                            # until it has consumed a following complete part.
+                            # Legacy preview servers have no reset control, so a
+                            # one-time duplicate safely primes that decoder. Live
+                            # Monitor servers provide controls and must only send
+                            # newly published frames, avoiding stale post-reset data.
+                            if first_part and live_control_callback is None:
+                                self.wfile.write(header)
+                                self.wfile.write(jpeg)
+                                self.wfile.write(b"\r\n--frame\r\n")
+                            first_part = False
                             self.wfile.flush()
                 except (BrokenPipeError, ConnectionResetError, OSError, RuntimeError):
                     return

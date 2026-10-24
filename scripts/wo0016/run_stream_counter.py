@@ -11,6 +11,7 @@ import asyncio
 from dataclasses import asdict
 import hashlib
 import hmac
+import itertools
 import json
 import math
 import os
@@ -46,6 +47,7 @@ import board_once
 import board_preflight as preflight
 from camera_adapter import gray320x240_to_rgb_packet
 from packet_encoder import gray320x240_to_rgb_packet_into
+from dashboard_state import DashboardState
 from mjpeg_preview import (
     PREVIEW_FRAME_INTERVAL,
     PREVIEW_JPEG_QUALITY,
@@ -513,7 +515,7 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
     return await asyncio.wait_for(completed, timeout=timeout_s)
 
 
-async def _camera_gray_frames_impl(device: str, *, max_frames: int,
+async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                                    cv2_module: Any = cv2,
                                    read_timeout_s: float = 5.0,
                                    stabilization_delay_s: float = 0.0,
@@ -526,15 +528,21 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
                                    capture_metadata: dict[str, Any] | None = None,
                                    include_capture_metadata: bool = False,
                                    source_frame_ids: tuple[int, ...] = (),
-                                   frame_mapping: str = "stretch"
+                                   frame_mapping: str = "stretch",
+                                   live_stop_requested: Callable[[], bool] | None = None
                                    ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Internal capture loop; board callers must use camera_gray_frames()."""
     geometry = frame_geometry(frame_mapping)
-    if isinstance(max_frames, bool) or not isinstance(max_frames, int) or max_frames < 1:
+    continuous = max_frames is None and callable(live_stop_requested)
+    if live_stop_requested is not None and not callable(live_stop_requested):
+        raise ValueError("live_stop_requested must be callable")
+    if not continuous and (isinstance(max_frames, bool)
+                           or not isinstance(max_frames, int) or max_frames < 1):
         raise ValueError("max_frames must be a positive integer")
     if (not isinstance(source_frame_ids, tuple)
             or any(isinstance(frame_id, bool) or not isinstance(frame_id, int)
-                   or not 0 <= frame_id < max_frames for frame_id in source_frame_ids)
+                   or max_frames is None or not 0 <= frame_id < max_frames
+                   for frame_id in source_frame_ids)
             or len(set(source_frame_ids)) != len(source_frame_ids)):
         raise ValueError("source_frame_ids must be unique integer indexes within max_frames")
     if (isinstance(read_timeout_s, bool) or not isinstance(read_timeout_s, (int, float))
@@ -745,7 +753,10 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
         if steady_start_time is not None:
             steady_start_time.clear()
 
-        for frame_index in range(max_frames):
+        frame_indexes = itertools.count() if continuous else range(max_frames)
+        for frame_index in frame_indexes:
+            if live_stop_requested is not None and live_stop_requested():
+                break
             if pending_waiter is None:
                 if frame_index == 0:
                     emit_milestone("FRAME_0_CAPTURE_START_FEED_NOW")
@@ -756,7 +767,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int,
              capture_wall_time_ns, source_gray) = await get_frame(warmup=False)
             if capture_timings_ms is not None:
                 capture_timings_ms.append(capture_ms)
-            if frame_index + 1 < max_frames:
+            if (continuous or frame_index + 1 < max_frames) and not (
+                    live_stop_requested is not None and live_stop_requested()):
                 prefetch(warmup=False, source_frame_id=frame_index + 1)
             if include_capture_metadata:
                 yield FrameInput(gray, frame_index, capture_monotonic_ns,
@@ -883,6 +895,7 @@ def validate_operator_gate_launcher_sha256(value: str | None,
 
 def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
+             "split_touching.py", "dashboard_state.py", "dashboard.html",
              "capture_dataset.py", "live_calibration.py",
              "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py",
              "physical_calibration_lock.py", "prepare_physical_calibration.py",
@@ -1391,6 +1404,8 @@ def execute_board_stream(args: argparse.Namespace, *,
         })
 
     api = board_once.PynqBoardAPI(plan, stage=WO16_STAGE, cma_ranges=admission.ranges)
+    dashboard = DashboardState(source="pl_dma")
+    runtime_state = {"status": "RUNNING"}
     tx_buffers: tuple[Any, ...] = ()
     rx_buffers: tuple[Any, ...] = ()
     stream: DoubleBufferStream | None = None
@@ -1501,12 +1516,17 @@ def execute_board_stream(args: argparse.Namespace, *,
         def allocate_with_watermark(*, shape: tuple[int, ...], dtype: Any) -> Any:
             if api.cma_free_kib() < CMA_WATERMARK_KIB:
                 raise preflight.PreflightError("CmaFree fell below watermark before a buffer allocation")
-            buffer = api.allocate(int(np.prod(shape)))
+
+            return api.allocate(int(np.prod(shape)))
+
+        def verify_allocation_watermark(_buffer: Any) -> None:
             if api.cma_free_kib() < CMA_WATERMARK_KIB:
                 raise preflight.PreflightError("CmaFree fell below watermark after a buffer allocation")
-            return buffer
 
-        tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocate_with_watermark)
+        tx_buffers, rx_buffers = allocate_ping_pong_buffers(
+            allocate_with_watermark, free=api.free,
+            after_allocate=verify_allocation_watermark,
+        )
         buffer_gates = []
         for index in range(2):
             tx_address = api.device_address(tx_buffers[index])
@@ -1617,7 +1637,10 @@ def execute_board_stream(args: argparse.Namespace, *,
                 slot.capture_metadata["packer_status"] = dict(packer_record)
 
         hub = MjpegFrameHub()
-        preview = MjpegPreviewServer(hub=hub, host=args.host, port=args.port).start()
+        preview = MjpegPreviewServer(
+            hub=hub, host=args.host, port=args.port,
+            state_provider=lambda: {**runtime_state, "dashboard": dashboard.snapshot()},
+        ).start()
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
             "capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
             "raw_capture_copy", "mjpeg_encode", "mjpeg_handoff",
@@ -1688,6 +1711,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             before_transfer=arm_frame,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
+            on_frame=dashboard.on_frame,
             preview_callback=preview_publisher,
             raw_capture_callback=(capture_writer.record_raw_frame
                                   if capture_writer is not None else None),
@@ -1727,6 +1751,8 @@ def execute_board_stream(args: argparse.Namespace, *,
             frame_mapping=preprocessing_configuration(args)["mapping"])))
         if not steady_start_time:
             raise RuntimeError("camera did not establish a steady-stream timing boundary")
+        dashboard.set_phase("complete", "实板计数会话已完成")
+        runtime_state["status"] = "COMPLETE"
         # Confirm the final hardware state before any potentially blocking writer drain.
         s2mm_status = api.read32(preflight.DMA_BASE, 0x34)
         mm2s_status = api.read32(preflight.DMA_BASE, 0x04)
@@ -1801,6 +1827,8 @@ def execute_board_stream(args: argparse.Namespace, *,
         _write_json_exclusive(Path(args.evidence_json), evidence)
         return evidence
     except BaseException as exc:
+        dashboard.set_phase("failed", f"计数失败：{type(exc).__name__}: {exc}")
+        runtime_state["status"] = "FAILED"
         dma_safe_to_release = _dma_buffers_safe_to_release(api, dma, stream)
         hold = not dma_safe_to_release
         evidence.update({

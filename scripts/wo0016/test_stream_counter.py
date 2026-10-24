@@ -106,6 +106,44 @@ def test_recorded_three_nut_cluster_counts_three_hole_centers():
     assert improved.total_count == 3
 
 
+def test_split_from_recorded_three_nut_frame_keeps_each_child_connected():
+    # Exact 38x47 thresholded component from camera-only recording frame 19.
+    # This frame previously produced a child mask with two 8-connected regions.
+    packed = bytes.fromhex(
+        "07fe0000003ff8000001fff000000fffe000003fff800001ffff000007e07c00003f81f00000fc03e00003f007c0000fc01f00003e007c3800fc01f7ff83f007dffe0fc03efffc3f81fffff8fe07ffffe1ffffff3f83fffff81f0fffffc07c1fffff00f03ffff803e07fffe00f80ffbf803f07ff7e00fc3ffff803e1fffff01f8fffffe0fc3fffff87f1fc3fffff87e03ffffc1f80fffff0fc01ffff83f007fffe0fc01fdff03f007e0000fc01f00003f007c0000fe01e00001fc0f800007f87e00000ffff000003fff8000007ffe000000fff0000001ff80000003fc0000000"
+    )
+    component = np.unpackbits(np.frombuffer(packed, dtype=np.uint8))[:47 * 38]
+    component = component.reshape(47, 38).astype(np.uint8)
+    assert int(np.count_nonzero(component)) == 891
+
+    pieces = split_touching_component(component)
+
+    assert len(pieces) == 3
+    assert all(cv2.connectedComponents(piece.astype(np.uint8), connectivity=8)[0] == 2
+               for piece in pieces)
+    np.testing.assert_array_equal(np.logical_or.reduce(pieces), component != 0)
+
+
+def test_counter_rejects_disconnected_split_children(monkeypatch):
+    import stream_counter
+
+    component = np.zeros((18, 18), dtype=np.uint8)
+    component[1:8, 1:8] = 255
+    component[10:17, 10:17] = 255
+    component[7:11, 7:11] = 255
+    disconnected = np.zeros_like(component, dtype=bool)
+    disconnected[1, 1] = True
+    disconnected[-2, -2] = True
+    monkeypatch.setattr(stream_counter, "split_touching_component",
+                        lambda *_args, **_kwargs: (disconnected, component != 0))
+
+    counter = MaskCounter(roi_mode="full", guarded_merge=True, max_split_area=900)
+    result = counter.update(0, np.pad(component, ((90, 132), (120, 182))))
+
+    assert len(result.raw_detections) == 1
+    assert result.raw_detections[0].area == int(np.count_nonzero(component))
+
+
 def _mask(center_y, *, center_x=80, size=5):
     mask = np.zeros((240, 320), dtype=np.uint8)
     half = size // 2
@@ -487,6 +525,58 @@ class MockAllocator:
         buffer = MockCmaBuffer(size, address)
         self.allocations.append((shape, np.dtype(dtype), buffer))
         return buffer
+
+
+class ExplicitFreeCmaBuffer(MockCmaBuffer):
+    def __init__(self, size, physical_address):
+        super().__init__(size, physical_address)
+        self.freed = False
+
+    def freebuffer(self):
+        self.freed = True
+
+
+def test_ping_pong_allocation_explicitly_frees_buffers_when_post_allocate_gate_fails():
+    buffers = []
+
+    def allocate(*, shape, dtype):
+        buffer = ExplicitFreeCmaBuffer(
+            int(np.prod(shape)), 0x10000000 + len(buffers) * 0x100000
+        )
+        buffers.append(buffer)
+        return buffer
+
+    def after_allocate(_buffer):
+        if len(buffers) == 2:
+            raise RuntimeError("CmaFree fell below watermark after allocation")
+
+    with pytest.raises(RuntimeError, match="watermark"):
+        allocate_ping_pong_buffers(
+            allocate, free=lambda buffer: buffer.freebuffer(),
+            after_allocate=after_allocate,
+        )
+
+    assert len(buffers) == 2
+    assert all(buffer.freed for buffer in buffers)
+
+
+def test_ping_pong_allocation_explicitly_frees_prior_buffers_when_allocator_fails():
+    buffers = []
+
+    def allocate(*, shape, dtype):
+        if len(buffers) == 2:
+            raise MemoryError("CMA exhausted during allocation")
+        buffer = ExplicitFreeCmaBuffer(
+            int(np.prod(shape)), 0x10000000 + len(buffers) * 0x100000
+        )
+        buffers.append(buffer)
+        return buffer
+
+    with pytest.raises(MemoryError, match="CMA exhausted"):
+        allocate_ping_pong_buffers(allocate, free=lambda buffer: buffer.freebuffer())
+
+    assert len(buffers) == 2
+    assert all(buffer.freed for buffer in buffers)
 
 
 def test_ping_pong_allocates_two_aligned_tx_rx_pairs_once():

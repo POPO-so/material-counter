@@ -6,6 +6,7 @@ import inspect
 import math
 import threading
 import time
+from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, AsyncIterable, Callable, Protocol
@@ -13,7 +14,7 @@ from typing import Any, AsyncIterable, Callable, Protocol
 import cv2
 import numpy as np
 
-from split_touching import split_touching_component
+from split_touching import is_single_connected_component, split_touching_component
 
 WIDTH = 320
 HEIGHT = 240
@@ -428,7 +429,16 @@ class MaskCounter:
             if (self.guarded_merge and self.single_intact_area < area <= self.max_split_area):
                 cropped = labels[y:y + box_height, x:x + box_width] == label
                 pieces = split_touching_component(cropped, min_child_area=self.min_area)
-                if 2 <= len(pieces) <= 3:
+                piece_masks = [np.asarray(piece) != 0 for piece in pieces]
+                valid_partition = (2 <= len(piece_masks) <= 3
+                                   and all(piece.shape == cropped.shape
+                                           and is_single_connected_component(piece)
+                                           for piece in piece_masks))
+                if valid_partition:
+                    coverage = np.sum(np.stack(piece_masks), axis=0)
+                    valid_partition = (np.array_equal(coverage > 0, cropped)
+                                       and not np.any(coverage > 1))
+                if valid_partition:
                     for piece in pieces:
                         ys, xs = np.nonzero(piece)
                         piece_area = len(xs)
@@ -844,18 +854,26 @@ def transfer_async(channel: Any, buffer: Any, nbytes: int) -> asyncio.Task:
     return asyncio.create_task(_wait_channel(channel))
 
 
-def allocate_ping_pong_buffers(allocate: Callable[..., Any]
+def allocate_ping_pong_buffers(allocate: Callable[..., Any], *,
+                               free: Callable[[Any], None] | None = None,
+                               after_allocate: Callable[[Any], None] | None = None
                                ) -> tuple[tuple[Any, Any], tuple[Any, Any]]:
-    """Allocate and validate two paired PYNQ CMA TX/RX slots exactly once."""
+    """Allocate and validate paired CMA slots, rolling back every partial allocation."""
     allocated = []
     tx_buffers = []
     rx_buffers = []
+
+    def allocate_tracked(*, shape: tuple[int, ...], dtype: Any) -> Any:
+        buffer = allocate(shape=shape, dtype=dtype)
+        allocated.append(buffer)
+        if after_allocate is not None:
+            after_allocate(buffer)
+        return buffer
+
     try:
         for _ in range(2):
-            tx = allocate(shape=(TX_BYTES,), dtype=np.uint8)
-            allocated.append(tx)
-            rx = allocate(shape=(RX_BYTES,), dtype=np.uint8)
-            allocated.append(rx)
+            tx = allocate_tracked(shape=(TX_BYTES,), dtype=np.uint8)
+            rx = allocate_tracked(shape=(RX_BYTES,), dtype=np.uint8)
             _validate_buffer(tx, TX_BYTES, 8, "TX")
             _validate_buffer(rx, RX_BYTES, 4, "RX")
             tx_buffers.append(tx)
@@ -870,12 +888,28 @@ def allocate_ping_pong_buffers(allocate: Callable[..., Any]
         for left, right in zip(spans, spans[1:]):
             if left[1] > right[0]:
                 raise ValueError("allocated DMA buffers overlap")
-    except BaseException:
-        # No DMA has started here, so partially allocated objects can be released.
-        for buffer in allocated:
-            close = getattr(buffer, "close", None)
-            if callable(close):
-                close()
+    except BaseException as primary_error:
+        # No DMA has started here, so every returned object is still ours to free.
+        for buffer in reversed(allocated):
+            try:
+                if free is not None:
+                    free(buffer)
+                else:
+                    release = getattr(buffer, "freebuffer", None)
+                    if not callable(release):
+                        release = getattr(buffer, "close", None)
+                    if callable(release):
+                        release()
+            except BaseException as cleanup_error:
+                note = f"CMA allocation rollback failed: {type(cleanup_error).__name__}: {cleanup_error}"
+                if hasattr(primary_error, "add_note"):
+                    primary_error.add_note(note)
+                else:
+                    errors = getattr(primary_error, "cleanup_errors", ())
+                    try:
+                        primary_error.cleanup_errors = tuple(errors) + (cleanup_error,)
+                    except Exception:
+                        pass
         raise
     return tuple(tx_buffers), tuple(rx_buffers)
 
@@ -910,7 +944,12 @@ class DoubleBufferStream:
                  source_capture_callback: Callable[[int, np.ndarray], None] | None = None,
                  capture_callback: Callable[[FrameResult, DmaBufferSlot], Any] | None = None,
                  stage_timings_ms: dict[str, list[float]] | None = None,
-                 transfer_timeout_s: float = 5.0):
+                 transfer_timeout_s: float = 5.0,
+                 history_limit: int | None = None):
+        if (history_limit is not None
+                and (isinstance(history_limit, bool)
+                     or not isinstance(history_limit, int) or history_limit < 1)):
+            raise ValueError("history_limit must be a positive integer or None")
         if len(tx_buffers) != 2 or len(rx_buffers) != 2:
             raise ValueError("exactly two TX and two RX buffers are required")
         for buffer in tx_buffers:
@@ -931,6 +970,13 @@ class DoubleBufferStream:
         self.source_capture_callback = source_capture_callback
         self.capture_callback = capture_callback
         self.stage_timings_ms = stage_timings_ms
+        self.history_limit = history_limit
+        if history_limit is not None and stage_timings_ms is not None:
+            for stage, samples in tuple(stage_timings_ms.items()):
+                if not isinstance(samples, (list, deque)):
+                    raise TypeError("stage timing histories must be lists or deques")
+                if not isinstance(samples, deque) or samples.maxlen != history_limit:
+                    stage_timings_ms[stage] = deque(samples, maxlen=history_limit)
         self._postprocess_ms: dict[int, float] = {}
         self.transfer_timeout_s = _positive_float(transfer_timeout_s, "transfer_timeout_s")
         self.slots = [
@@ -951,15 +997,33 @@ class DoubleBufferStream:
         for slot in self.slots:
             self._free_slots.put_nowait(slot)
         self._ready_slots: asyncio.Queue[DmaBufferSlot | None] = asyncio.Queue(maxsize=2)
-        self._results: list[FrameResult] = []
+        self._results = ([] if history_limit is None else deque(maxlen=history_limit))
+        self._last_result: FrameResult | None = None
+        self._frames_processed = 0
         self._pending_waits: list[asyncio.Task] = []
         self.held_slots: tuple[DmaBufferSlot, ...] = ()
         self.dma_may_be_active = False
         self._has_run = False
 
-    async def run(self, frames: AsyncIterable[np.ndarray | FrameInput]) -> tuple[FrameResult, ...]:
+    @staticmethod
+    def _packet_frame_id(frame_id: int, *, bounded: bool) -> int:
+        return frame_id & 0xFFFFFFFF if bounded else frame_id
+
+    @property
+    def frames_processed(self) -> int:
+        return self._frames_processed
+
+    @property
+    def last_result(self) -> FrameResult | None:
+        return self._last_result
+
+    async def run(self, frames: AsyncIterable[np.ndarray | FrameInput], *,
+                  stop_requested: Callable[[], bool] | None = None
+                  ) -> tuple[FrameResult, ...]:
         if self._has_run:
             raise RuntimeError("a DoubleBufferStream instance can run only once")
+        if stop_requested is not None and not callable(stop_requested):
+            raise TypeError("stop_requested must be callable or None")
         self._has_run = True
         consumer = asyncio.create_task(self._consume_ready_slots())
         frame_iterator = frames.__aiter__()
@@ -968,12 +1032,26 @@ class DoubleBufferStream:
         frame_id = 0
         try:
             while True:
+                if stop_requested is not None and stop_requested():
+                    break
                 if consumer.done():
                     consumer.result()
                 pending_source_task = asyncio.create_task(frame_iterator.__anext__())
-                done, _ = await asyncio.wait(
-                    (pending_source_task, consumer), return_when=asyncio.FIRST_COMPLETED
-                )
+                while True:
+                    done, _ = await asyncio.wait(
+                        (pending_source_task, consumer), return_when=asyncio.FIRST_COMPLETED,
+                        timeout=(0.05 if stop_requested is not None else None),
+                    )
+                    if done:
+                        break
+                    if stop_requested is not None and stop_requested():
+                        source_cleanup_error = await self._cancel_frame_read(pending_source_task)
+                        pending_source_task = None
+                        if source_cleanup_error is not None:
+                            raise source_cleanup_error
+                        break
+                if pending_source_task is None:
+                    break
                 if consumer in done:
                     source_error = await self._cancel_frame_read(pending_source_task)
                     pending_source_task = None
@@ -994,6 +1072,8 @@ class DoubleBufferStream:
                 if consumer.done():
                     consumer.result()
                 pending_source_task = None
+                if stop_requested is not None and stop_requested():
+                    break
                 frame_input = source_frame if isinstance(source_frame, FrameInput) else None
                 gray = np.asarray(frame_input.gray if frame_input is not None else source_frame)
                 if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
@@ -1040,10 +1120,13 @@ class DoubleBufferStream:
                         raise RuntimeError("preview callback has no per-slot Gray8 snapshot")
                     np.copyto(preview_gray, gray, casting="no")
                 encode_started = time.perf_counter()
+                packet_frame_id = self._packet_frame_id(
+                    frame_id, bounded=self.history_limit is not None
+                )
                 if self.packet_encoder_into is not None:
-                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=frame_id)
+                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=packet_frame_id)
                 else:
-                    packet = self.packet_encoder(gray, frame_id=frame_id)
+                    packet = self.packet_encoder(gray, frame_id=packet_frame_id)
                     if not isinstance(packet, (bytes, bytearray, memoryview)) or len(packet) != TX_BYTES:
                         raise ValueError(f"packet encoder must return exactly {TX_BYTES} bytes")
                     slot.tx_buffer[:] = np.frombuffer(packet, dtype=np.uint8)
@@ -1155,7 +1238,18 @@ class DoubleBufferStream:
                 return TimeoutError("frame source did not stop after cancellation")
         try:
             task.result()
-        except (asyncio.CancelledError, StopAsyncIteration):
+        except asyncio.CancelledError as exc:
+            cleanup_notes = tuple(getattr(exc, "__notes__", ()))
+            if cleanup_notes:
+                cleanup_error = RuntimeError("frame source cancellation cleanup failed")
+                if hasattr(cleanup_error, "add_note"):
+                    for note in cleanup_notes:
+                        cleanup_error.add_note(str(note))
+                else:
+                    cleanup_error.__notes__ = list(cleanup_notes)
+                return cleanup_error
+            return None
+        except StopAsyncIteration:
             return None
         except BaseException as exc:
             return exc
@@ -1230,6 +1324,8 @@ class DoubleBufferStream:
             postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
             self._record_timing("postprocess", postprocess_ms / 1000.0)
             self._results.append(result)
+            self._last_result = result
+            self._frames_processed += 1
             slot.state = BufferState.FREE
             slot.frame_id = None
             slot.capture_metadata = None
@@ -1239,7 +1335,12 @@ class DoubleBufferStream:
 
     def _record_timing(self, stage: str, elapsed_seconds: float) -> None:
         if self.stage_timings_ms is not None:
-            self.stage_timings_ms.setdefault(stage, []).append(elapsed_seconds * 1000.0)
+            samples = self.stage_timings_ms.get(stage)
+            if samples is None:
+                samples = ([] if self.history_limit is None else
+                           deque(maxlen=self.history_limit))
+                self.stage_timings_ms[stage] = samples
+            samples.append(elapsed_seconds * 1000.0)
 
     def _hold_nonfree_slots(self) -> None:
         held = []
