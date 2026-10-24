@@ -140,3 +140,22 @@ def test_sealed_300_frame_replay_matches_board_records_exactly():
             np.testing.assert_array_equal(left, right)
         assert len(original.rejected_contours) == len(cropped.rejected_contours)
     assert original.total_count == cropped.total_count == 12
+
+
+def test_integrated_split_options_preserve_sealed_manifest_config_bridge():
+    import inspect
+    import json
+    import run_stream_counter as runner
+    import verify_touching_split_replay as replay
+
+    path = Path(__file__).resolve().parents[2] / (
+        "data/results/wo0017-physical-calibration-20261023/"
+        "physical-calibration-20261023-10/capture/manifest.json")
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    recorded = {key: value for key, value in manifest["config"].items()
+                if key in inspect.signature(MaskCounter).parameters}
+    recorded["active_rows"] = [20, 220]
+    current = runner.counting_configuration(runner._parser().parse_args([
+        "--counting-profile", "full-width-mixed"]))
+    assert current["max_split_area"] == 900
+    assert replay._baseline_configuration(current) == recorded

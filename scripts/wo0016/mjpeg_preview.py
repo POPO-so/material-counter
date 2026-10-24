@@ -190,6 +190,16 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                 cv2.line(frame, (x, boundary), (min(x + 4, image.shape[1] - 1), boundary),
                          (0, 210, 255), 1, lineType=cv2.LINE_8)
 
+    # Keep full area labels readable for adjacent split children and image edges.
+    # These rectangles reserve the count HUD and mask PIP drawn below.
+    occupied_labels = [(3, 4, 212, 34), (216, 4, 316, 97)]
+    if count_axis == "x":
+        x_label = min(line_x + 4, 270)
+        (text_width, text_height), baseline = cv2.getTextSize(
+            f"X={line_x}", cv2.FONT_HERSHEY_SIMPLEX, 0.35, 1)
+        occupied_labels.append((x_label - 2, 100 - text_height - 2,
+                                x_label + text_width + 2, 100 + baseline + 2))
+    track_labels = []
     for track in tracks:
         if track.get("finished") or track.get("missed", 0):
             continue
@@ -204,16 +214,43 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
         area = detection.get("area")
         if isinstance(area, (int, np.integer)) and not isinstance(area, (bool, np.bool_)):
             track_label += f" {int(area)}px"
-        cv2.putText(frame, track_label,
-                    (box[0], max(10, box[1] - 3)), cv2.FONT_HERSHEY_SIMPLEX, 0.32,
-                    color, 1, lineType=cv2.LINE_AA)
-
+        track_labels.append((box, color, track_label))
     for points in (track_trails or {}).values():
         if len(points) >= 2:
             polyline = np.asarray([(int(round(x)), int(round(y))) for x, y in points],
                                   dtype=np.int32).reshape((-1, 1, 2))
             cv2.polylines(frame, [polyline], False, (255, 255, 0), 1, lineType=cv2.LINE_AA)
             cv2.circle(frame, tuple(polyline[-1, 0]), 2, (255, 255, 0), -1)
+    placed_labels = []
+    for box, color, track_label in track_labels:
+        (text_width, text_height), baseline = cv2.getTextSize(
+            track_label, cv2.FONT_HERSHEY_SIMPLEX, 0.32, 1)
+        label_x = max(2, min(box[0], image.shape[1] - text_width - 3))
+        label_y = max(text_height + 2, min(box[1] - 3, image.shape[0] - baseline - 3))
+        row_height = text_height + baseline + 6
+        rows = [label_y, *range(label_y - row_height, text_height + 1, -row_height),
+                *range(label_y + row_height, image.shape[0] - baseline - 2, row_height)]
+        for candidate_y in rows:
+            rectangle = (label_x - 2, candidate_y - text_height - 2,
+                         label_x + text_width + 2, candidate_y + baseline + 2)
+            if all(rectangle[2] <= other[0] or rectangle[0] >= other[2]
+                   or rectangle[3] <= other[1] or rectangle[1] >= other[3]
+                   for other in occupied_labels):
+                label_y = candidate_y
+                break
+        rectangle = (label_x - 2, label_y - text_height - 2,
+                     label_x + text_width + 2, label_y + baseline + 2)
+        occupied_labels.append(rectangle)
+        if (label_x, label_y) != (box[0], box[1] - 3):
+            cv2.line(frame, (box[0], box[1]), (label_x, label_y), color, 1,
+                     lineType=cv2.LINE_AA)
+        placed_labels.append((rectangle, label_x, label_y, color, track_label))
+    # Draw text last so another child's box, trail or connector cannot cross it.
+    for rectangle, label_x, label_y, color, track_label in placed_labels:
+        cv2.rectangle(frame, rectangle[:2], rectangle[2:], (12, 25, 35), -1)
+        cv2.putText(frame, track_label,
+                    (label_x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.32,
+                    color, 1, lineType=cv2.LINE_AA)
 
     cv2.rectangle(frame, (5, 6), (min(frame.shape[1] - 1, 210), 32), (12, 25, 35), -1)
     cv2.putText(frame, f"{label}  {int(total_count):03d}", (10, 24),

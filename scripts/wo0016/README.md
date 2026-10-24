@@ -45,6 +45,8 @@ python -m pytest -q scripts/wo0016
 python scripts/wo0016/run_stream_counter.py --mode mock --mock-frames 8
 ```
 
+Run the complete maintained source suite with `.venv\Scripts\python.exe -m pytest -q -rs` from the repository root. `pytest.ini` collects `python/` and `scripts/`; archived evidence, generated handoff checkouts, and third-party skill tests are outside that source suite. Run the skill tests explicitly when auditing that vendored package.
+
 The default CLI mode is Mock. It creates synthetic moving components, filters a small noise blob, runs the actual counter and JPEG renderer, and briefly serves the latest frame over a local ephemeral HTTP port. Output labels this as offline synthetic evidence and leaves `hardware_fps` unset.
 
 ## Board mode
@@ -61,7 +63,7 @@ For an isolated board deployment, place the required WO-0015 Python modules in a
 
 The WO-0016 runtime bundle must keep `split_touching.py` beside `stream_counter.py`; the counter imports that module directly. `formal_runtime_sha256()` includes both files so generated lock and permit identities bind the deployed splitter implementation.
 
-Touching-component splitting is experimental and defaults to off, independently of `guarded_merge`. Opt in with `--enable-touching-split`; `--min-split-area` defaults to 280 foreground pixels and must be at least 280. Both options enter `counting_configuration` and the existing runtime/lock identity. Old locks do not authorize the new sources or options. The conservative splitter also requires an elongated box, a solid narrow neck, and two connected children of at least half the configured split area. These gates protect small objects but do not establish physical object accuracy. Do not enable splitting for board sampling without separate authorization and independent labeled acceptance.
+Touching-component splitting is experimental and defaults to off, independently of `guarded_merge`. Opt in with `--enable-touching-split`; `--min-split-area` defaults to 280 foreground pixels and must be at least 280. The split candidate upper bound is 900 px, separately from the 260 px fragment merge cap. These settings enter `counting_configuration` and the existing runtime/lock identity. Old locks do not authorize the new sources or options. Two or three independently enclosed holes can identify children before the narrow-neck fallback, which requires an elongated silhouette. Every child must have at least half the configured minimum split area (140 px by default); hole-derived children must also meet the relative area and shape checks. Each child retains its own pixel area, centroid and bounding box, and siblings cannot merge back together during clustering. These gates do not establish physical object accuracy. Do not enable splitting for board sampling without separate authorization and independent labeled acceptance.
 
 The full-width profile still reports the original logical ROI `[0,240)` to counter consumers. The preview publisher separately receives the mapped active rows `[20,220)` for the green border; its red X=160 line and coordinate system are unchanged.
 

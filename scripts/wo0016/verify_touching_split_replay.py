@@ -28,6 +28,12 @@ RAW_SHA256 = "1cac1bdfe0c85677cb4f723757cd1609093dd93e00697c41f31b08d013e432aa"
 MANIFEST_SHA256 = "1eab3ebb7775cd4cdacc6a3b41213c1ce394c9c12636c1088f70b5676cfb66df"
 
 
+def _baseline_configuration(config):
+    """Compare sealed defaults without options absent in the historical source."""
+    return {key: value for key, value in config.items()
+            if key not in ("enable_touching_split", "min_split_area", "max_split_area")}
+
+
 def canonical(value):
     if is_dataclass(value):
         value = asdict(value)
@@ -82,8 +88,7 @@ def main():
               if key in inspect.signature(MaskCounter).parameters}
     config["active_rows"] = [20, 220]
     defaults = counting_configuration(_parser().parse_args(["--counting-profile", "full-width-mixed"]))
-    baseline_defaults = {key: value for key, value in defaults.items()
-                         if key not in ("enable_touching_split", "min_split_area")}
+    baseline_defaults = _baseline_configuration(defaults)
     if config != baseline_defaults:
         raise ValueError("sealed algorithm config differs from the full-width-mixed baseline")
     output.mkdir(parents=True, exist_ok=True)
