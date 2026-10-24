@@ -1,0 +1,15 @@
+{
+  "boot_id": "cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76",
+  "deployment_root": "/home/xilinx/wo0017/live-monitor-20261024-ee55267e",
+  "manifest": "/home/xilinx/wo0017/live-monitor-20261024-ee55267e/boot-cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76/run-manifest.json",
+  "manifest_sha256": "8e36403318041714d4d54c638957b32ad103ff55cebc7a47f7bbbd2cdc55125c",
+  "bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+  "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+  "clock_mhz": 50,
+  "stage1_output_dir": "/var/lib/material-counter-live/cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76/stage1",
+  "parent_manifest": "/home/xilinx/wo0017/physical-calibration-20261023-07/calibration-run-manifest.json",
+  "parent_manifest_sha256": "d02b04e495ad80f0256f35002cda474bcc6af16590b8085a8044f86f52e5f782",
+  "derivation": "new file; current boot and deployed executor hashes bound; paths made absolute; hardware/artifact hashes unchanged",
+  "static_validation": "PASS",
+  "board_accessed": false
+}

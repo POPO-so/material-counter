@@ -98,6 +98,31 @@ def test_preview_hud_labels_a_software_threshold_pip(monkeypatch):
     assert "SIM TH=128" in labels
 
 
+def test_preview_track_labels_include_each_detected_pixel_area(monkeypatch):
+    labels = []
+    original_put_text = preview_module.cv2.putText
+
+    def capture_label(image, text, *args, **kwargs):
+        labels.append(text)
+        return original_put_text(image, text, *args, **kwargs)
+
+    monkeypatch.setattr(preview_module.cv2, "putText", capture_label)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    tracks = (
+        {"track_id": 1, "detection": {"x_min": 20, "x_max": 34,
+                                        "y_min": 30, "y_max": 44, "area": 135}},
+        {"track_id": 2, "detection": {"x_min": 40, "x_max": 49,
+                                        "y_min": 30, "y_max": 39, "area": 52}},
+    )
+
+    frame = render_preview_frame(mask, total_count=0, line_y=120, tracks=tracks)
+
+    assert "T1 135px" in labels
+    assert "T2 52px" in labels
+    assert np.any(np.all(frame[30:45, 20:35] == (255, 180, 0), axis=2))
+    assert np.any(np.all(frame[30:40, 40:50] == (255, 180, 0), axis=2))
+
+
 def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkeypatch):
     import mjpeg_preview
 

@@ -1,0 +1,910 @@
+{
+  "url": "http://192.168.2.99:8080/",
+  "browser": "Microsoft Edge headless",
+  "js_errors": [],
+  "samples": [
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1571,
+        "processing_fps": 24.294468202364246,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 75.14774007300002,
+        "last_frame_age_seconds": 0.016298516999995627,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46388,
+        "rss_kib": 145428,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 24,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": null,
+        "width": null,
+        "height": null,
+        "fps": null
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46388,
+        "rss_kib": 145428,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1621,
+        "processing_fps": 24.376584042154427,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 77.18560706699998,
+        "last_frame_age_seconds": 0.02853653599993322,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 45928,
+        "rss_kib": 146148,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 37,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.17206304000001182,
+        "width": 320,
+        "height": 240,
+        "fps": 6.522587208567305
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 45928,
+        "rss_kib": 146148,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1671,
+        "processing_fps": 24.65357187183139,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 79.21135860800007,
+        "last_frame_age_seconds": 0.05079673200009438,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46112,
+        "rss_kib": 146024,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 50,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.05890152599999965,
+        "width": 320,
+        "height": 240,
+        "fps": 6.28343552234901
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46112,
+        "rss_kib": 146024,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1721,
+        "processing_fps": 24.576454251095893,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 81.23215347300004,
+        "last_frame_age_seconds": 0.01274889199999052,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46484,
+        "rss_kib": 145404,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 62,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.11913660900006562,
+        "width": 320,
+        "height": 240,
+        "fps": 6.229762812289041
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46484,
+        "rss_kib": 145404,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1769,
+        "processing_fps": 24.42039939684712,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 83.26432363000004,
+        "last_frame_age_seconds": 0.033775231000049644,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46032,
+        "rss_kib": 146136,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 74,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.12988107699993634,
+        "width": 320,
+        "height": 240,
+        "fps": 6.155219856681326
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46032,
+        "rss_kib": 146136,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1817,
+        "processing_fps": 23.762338964421286,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 85.30841742400003,
+        "last_frame_age_seconds": 0.006498049000015271,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 45912,
+        "rss_kib": 145556,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 86,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.11141291100000217,
+        "width": 320,
+        "height": 240,
+        "fps": 6.038687463084324
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 45912,
+        "rss_kib": 145556,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1867,
+        "processing_fps": 23.891832271161803,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 87.33702489799998,
+        "last_frame_age_seconds": 0.007843372999900566,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46116,
+        "rss_kib": 146104,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 99,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.002342184999974961,
+        "width": 320,
+        "height": 240,
+        "fps": 6.012061279339143
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46116,
+        "rss_kib": 146104,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1916,
+        "processing_fps": 24.372250457877332,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 89.37616795899999,
+        "last_frame_age_seconds": 0.023753525999950398,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46060,
+        "rss_kib": 145524,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 111,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.11063561800006028,
+        "width": 320,
+        "height": 240,
+        "fps": 6.0093781201958505
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46060,
+        "rss_kib": 145524,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 1967,
+        "processing_fps": 24.7735750099863,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 91.42568350099998,
+        "last_frame_age_seconds": 0.057071655999948234,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46288,
+        "rss_kib": 145848,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 124,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.033970013000043764,
+        "width": 320,
+        "height": 240,
+        "fps": 6.026081244664447
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46288,
+        "rss_kib": 145848,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 2019,
+        "processing_fps": 24.891542487405104,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 93.46846255000003,
+        "last_frame_age_seconds": 0.013591729000040687,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 45860,
+        "rss_kib": 145576,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 137,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.03186788899995463,
+        "width": 320,
+        "height": 240,
+        "fps": 6.2125980184254574
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 45860,
+        "rss_kib": 145576,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 2068,
+        "processing_fps": 24.624318790672515,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 95.52362326700006,
+        "last_frame_age_seconds": 0.02943201800007955,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46012,
+        "rss_kib": 146216,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 149,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.11031430100001671,
+        "width": 320,
+        "height": 240,
+        "fps": 6.168068866934641
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46012,
+        "rss_kib": 146216,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 2114,
+        "processing_fps": 24.004906181628364,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 97.55925666100006,
+        "last_frame_age_seconds": 0.0799423690000367,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46452,
+        "rss_kib": 145592,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 161,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.05433187699998143,
+        "width": 320,
+        "height": 240,
+        "fps": 6.081513790885991
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46452,
+        "rss_kib": 145592,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 2165,
+        "processing_fps": 23.994043902428864,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 99.61011690400005,
+        "last_frame_age_seconds": 0.03507691100003285,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 45916,
+        "rss_kib": 146276,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 173,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.192622842999981,
+        "width": 320,
+        "height": 240,
+        "fps": 6.111150491146223
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 45916,
+        "rss_kib": 146276,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 2215,
+        "processing_fps": 24.642732720649047,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 101.65174084600005,
+        "last_frame_age_seconds": 0.03692255999999361,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 46116,
+        "rss_kib": 145592,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 186,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.07247631999996429,
+        "width": 320,
+        "height": 240,
+        "fps": 6.0485395138106215
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 46116,
+        "rss_kib": 145592,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    },
+    {
+      "schema": 1,
+      "telemetry": {
+        "source": "pl_dma",
+        "mode": "board",
+        "phase": "running",
+        "total_count": 0,
+        "detections": 0,
+        "frames_processed": 2267,
+        "processing_fps": 24.688121742079378,
+        "fps_kind": "completed-frame sliding window",
+        "elapsed_seconds": 103.72180366100008,
+        "last_frame_age_seconds": 0.0007700550000890871,
+        "stale": false,
+        "camera": "frame_verified",
+        "fpga": "frame_verified",
+        "dma": "frame_verified",
+        "events": [],
+        "reset_sequence": 0,
+        "reset_pending": false,
+        "view_mode": "overlay",
+        "cma_free_kib": 45880,
+        "rss_kib": 146276,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "preview": {
+        "sequence": 199,
+        "clients": 1,
+        "closed": false,
+        "age_seconds": 0.04695125500006725,
+        "width": 320,
+        "height": 240,
+        "fps": 6.064886499879175
+      },
+      "runtime_status": "running",
+      "health": {
+        "cma_free_kib": 45880,
+        "rss_kib": 146276,
+        "dma_status": {
+          "mm2s": "0x00001002",
+          "s2mm": "0x00001002"
+        }
+      },
+      "view_mode": "overlay",
+      "camera_controls": null,
+      "capabilities": {
+        "start": false,
+        "stop": true,
+        "reset": true,
+        "view_mode": true,
+        "calibration": false
+      }
+    }
+  ],
+  "binary_view_status": {
+    "schema": 1,
+    "telemetry": {
+      "source": "pl_dma",
+      "mode": "board",
+      "phase": "running",
+      "total_count": 0,
+      "detections": 0,
+      "frames_processed": 1559,
+      "processing_fps": 24.643787864542098,
+      "fps_kind": "completed-frame sliding window",
+      "elapsed_seconds": 74.65047086100003,
+      "last_frame_age_seconds": 0.027450874000010117,
+      "stale": false,
+      "camera": "frame_verified",
+      "fpga": "frame_verified",
+      "dma": "frame_verified",
+      "events": [],
+      "reset_sequence": 0,
+      "reset_pending": false,
+      "view_mode": "binary",
+      "cma_free_kib": 46648,
+      "rss_kib": 145480,
+      "dma_status": {
+        "mm2s": "0x00001002",
+        "s2mm": "0x00001002"
+      }
+    },
+    "preview": {
+      "sequence": 21,
+      "clients": 1,
+      "closed": false,
+      "age_seconds": 0.05908182100006343,
+      "width": 320,
+      "height": 240,
+      "fps": 6.570974454334776
+    },
+    "runtime_status": "running",
+    "health": {
+      "cma_free_kib": 46648,
+      "rss_kib": 145480,
+      "dma_status": {
+        "mm2s": "0x00001002",
+        "s2mm": "0x00001002"
+      }
+    },
+    "view_mode": "binary",
+    "camera_controls": null,
+    "capabilities": {
+      "start": false,
+      "stop": true,
+      "reset": true,
+      "view_mode": true,
+      "calibration": false
+    }
+  },
+  "reset_not_performed": true,
+  "stop_not_requested": true,
+  "note": "Snapshot window only, no ground truth or hours-long stability acceptance",
+  "screenshots": {
+    "board-overlay.png": "393a48c29fc62f1a53891f0c12b3c8c89fc395b507f93aadd0612e7d1a7717ce",
+    "board-binary.png": "806d115e5a38983df200b1018da6489402a61006c75480f88f16f95bef75a705"
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "afi_snapshot": {
+    "access": "read-only",
+    "afi1_skip_reason": null,
+    "afi1_status": "READ",
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "raw_hex": "0x00000001",
+        "value": 1,
+        "width_bit0": 1,
+        "width_bits": 32
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "raw_hex": "0x00000f01",
+        "value": 3841,
+        "width_bit0": 1,
+        "width_bits": 32
+      },
+      "SLCR_FPGA0_CLK_CTRL": {
+        "address": "0xf8000170",
+        "raw_hex": "0x00400800",
+        "value": 4196352
+      },
+      "SLCR_FPGA_RST_CTRL": {
+        "address": "0xf8000240",
+        "raw_hex": "0x00000000",
+        "value": 0
+      }
+    },
+    "stage": "stage1-live-monitor"
+  },
+  "afi_sync": {
+    "fpga_rst_ctrl": 0,
+    "fpga_rst_ctrl_raw_hex": "0x00000000",
+    "hwh_hp1_data_width_bits": 32,
+    "hwh_path": "/home/xilinx/wo0015/wo15.hwh",
+    "hwh_sha256": "bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6",
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "before": 0,
+        "before_raw_hex": "0x00000000",
+        "readback": 1,
+        "readback_raw_hex": "0x00000001",
+        "width_bit0": 1,
+        "write_raw_hex": "0x00000001",
+        "write_value": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "before": 3840,
+        "before_raw_hex": "0x00000f00",
+        "readback": 3841,
+        "readback_raw_hex": "0x00000f01",
+        "width_bit0": 1,
+        "write_raw_hex": "0x00000f01",
+        "write_value": 3841
+      }
+    },
+    "stage": "overlay-only",
+    "status": "AFI1_HP1_32BIT_SYNC_PASS"
+  },
+  "boot_id": "cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76",
+  "buffers_allocated": false,
+  "cma_after_kib": {
+    "CmaFree": 61604,
+    "CmaTotal": 131072
+  },
+  "cma_before_kib": {
+    "CmaFree": 100992,
+    "CmaTotal": 131072
+  },
+  "dma_started": false,
+  "dma_status": {
+    "mm2s": "0x1",
+    "s2mm": "0x1"
+  },
+  "executor_sha256": "5025275627c5fbb25811039463039d099fca86572406e18ce2387025832d9a83",
+  "guard": "/var/lib/material-counter-live/cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76/stage1/consumed.json",
+  "manager_before": {
+    "flags": "0",
+    "state": "operating"
+  },
+  "manifest_sha256": "8e36403318041714d4d54c638957b32ad103ff55cebc7a47f7bbbd2cdc55125c",
+  "overlay_download_returned": true,
+  "post_audit": {
+    "boot_id_after": "cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76",
+    "boot_id_before": "cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76",
+    "dmesg_health": "PASS",
+    "dmesg_new_lines": [
+      "[  526.276007] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(1627), ret: 0",
+      "[  526.276129] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(1627)",
+      "[  526.276907] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(1627), ret: 0",
+      "[  526.284906] [drm] bitstream c7c0cbf6-2cc2-f670-f90e-9a26c466d36d locked, ref=1",
+      "[  526.285002] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(1627) add context Domain(65535) CU(0xffff) shared(true)",
+      "[  526.291939] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(1627) del context Domain(65535) CU(0xffff)",
+      "[  526.292011] [drm] bitstream c7c0cbf6-2cc2-f670-f90e-9a26c466d36d unlocked, ref=0",
+      "[  529.722598] fpga_manager fpga0: writing wo15.bin to Xilinx Zynq FPGA Manager",
+      "[  529.820477] [drm] Loading xclbin 691a25fe-b952-71a2-696a-01b2c995a49e to slot 0",
+      "[  529.820511] [drm] skip kind 29(AIE_RESOURCES) return code: -22",
+      "[  529.820547] [drm] skip kind 8(IP_LAYOUT) return code: -22",
+      "[  529.820564] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22",
+      "[  529.820579] [drm] skip kind 25(AIE_METADATA) return code: -22",
+      "[  529.820592] [drm] skip kind 7(CONNECTIVITY) return code: -22",
+      "[  529.820605] [drm] found kind 6(MEM_TOPOLOGY)",
+      "[  529.820760] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA",
+      "[  529.820825] [drm] zocl_xclbin_read_axlf 691a25fe-b952-71a2-696a-01b2c995a49e ret: 0",
+      "[  529.848685] [drm] bitstream 691a25fe-b952-71a2-696a-01b2c995a49e locked, ref=1",
+      "[  529.848791] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(1627) add context Domain(65535) CU(0xffff) shared(true)",
+      "[  529.848898] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(1627) del context Domain(65535) CU(0xffff)"
+    ],
+    "fpga_manager": {
+      "flags": "0",
+      "state": "operating"
+    },
+    "process_ownership": {
+      "denied": [],
+      "findings": [],
+      "scanned_proc": "/proc"
+    },
+    "pynq_state": {
+      "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+      "loaded_bit_path": "/home/xilinx/wo0015/wo15.bit",
+      "loaded_bit_sha1": "acb473c8c8dbae8b20a24aafb5d304b57c19845b",
+      "loaded_bit_sha256": "a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420",
+      "pl_state_status": "GLOBAL_STATE_PRESENT",
+      "shutdown_ips": {},
+      "shutdown_ips_empty": true
+    }
+  },
+  "receipt": "/var/lib/material-counter-live/cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76/stage1/overlay-pass.json",
+  "receipt_sha256": "d284fa0d1f669206bf7b7d9d2e65ff88e0f37aa86abcab6bddfe320682b84567",
+  "status": "STAGE1_PASS"
+}

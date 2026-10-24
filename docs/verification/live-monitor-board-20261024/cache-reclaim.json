@@ -1,0 +1,18 @@
+{
+  "action": "one sync and drop_caches=3",
+  "before": {
+    "MemAvailable": 384032,
+    "Cached": 298756,
+    "CmaTotal": 131072,
+    "CmaFree": 28424
+  },
+  "after": {
+    "MemAvailable": 384536,
+    "Cached": 49504,
+    "CmaTotal": 131072,
+    "CmaFree": 110272
+  },
+  "boot_id": "cf2ea1a2-f00e-4769-82bb-4f3e2a9e4d76",
+  "dma_started": false,
+  "overlay_loaded": false
+}
