@@ -55,6 +55,16 @@ git switch main
 
 当前不采用“独立双传送带差速机构”作为正式机械方案。摄像头的具体 HDMI、DVP 或其他接入路线仍需工具链和硬件验证，不得把候选路线写成已完成。
 
+### Zynq PS+PL 软硬件协同架构边界
+
+语言栏表示源码字节分布，不代表硬件工作量、加速比或验收完成度。当前可综合 RTL 使用 Verilog（`.v`）；SystemVerilog（`.sv`）主要用于测试台，Vivado Tcl 用于工程构建和复现。
+
+| 层次与代码位置 | 职责与已有实现 | 证据边界 |
+|---|---|---|
+| **PL 端：FPGA 硬件加速层** · Verilog / SystemVerilog + Vivado Tcl；`fpga/rtl/`、`fpga/experimental/`、`scripts/wo0015/*.tcl` | 像素级流处理由 PL 模块承担：RGB888→硬件灰度→阈值二值化；另有 3×3 腐蚀/膨胀及 ROI 裁剪、SOF/EOL 同步重建。WO-0015 提供帧打包与 AXI DMA S2MM 回传桥。 | [已验证 RGB 链路](docs/verification/wo-0014-offline-integration-20261014.md)不包含 ROI/形态学。[形态学](docs/morphology-verification-20261013.md)使用行缓冲和行接收/输出交替；这些模块尚未构成已验收的完整链路，也不能宣称全链路持续每周期一像素或零帧存延迟。ROI 的 `tlast` 表示行尾，S2MM 帧打包的 `tlast` 表示帧尾。 |
+| **PS 端：ARM 协同控制层** · Python / PYNQ Overlay；`scripts/wo0015/`、`scripts/wo0016/`、`python/refmodel/ps_reference/` | 分阶段 Overlay 加载与身份核验、AXI-Lite/DMA 寄存器控制及失败即停（`FAIL_STOPPED`）；对回传 Binary8 掩膜进行连通域提取、质心关联和越线计数；Live Monitor 提供实时图像、计数与状态看板。 | 持续运行入口要求预先加载并核验 Overlay；动态加载不是运行中任意重载。已有[板端样本记录](docs/verification/wo-0016-board-acceptance.md)不构成工业级可靠性或真实物料准确率验收；PS 仍有图像缩放、封包及显示处理，不能宣称全部像素操作 100% 由 PL 完成。 |
+| **工程验证体系：自动化回归与硬件仿真** · Python + Vivado XSim；`python/synth/`、`python/refmodel/tests/`、`fpga/sim/`、各实验测试脚本 | 包含 300+ 项自动化测试定义、H3 合成数据集与独立黄金比对；[WO-0014 记录](docs/verification/wo-0014-offline-integration-20261014.md)覆盖 15 项 XSim 场景、487 帧及 37,401,600 像素比对。 | 测试规模与历史通过记录不等于本次重新运行或整机验收。验证、合成数据、历史证据和辅助脚本通过 `.gitattributes` 标记为 vendored，排除出语言统计；文件仍保留，PS 业务运行时及安全依赖通过精确例外保留统计。 |
+
 ## 系统做什么
 
 | | 内容 |

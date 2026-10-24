@@ -85,3 +85,59 @@
 /data/recorded/wo0017-touching-20261024/wo_touching_pair_motion_20261024_03/camera_gray_only.npz filter=lfs diff=lfs merge=lfs -text
 /data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_02/camera_gray_only.npz filter=lfs diff=lfs merge=lfs -text
 /data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_04/camera_gray_only.npz filter=lfs diff=lfs merge=lfs -text
+
+# GitHub Linguist:maintained                                     hardware sources (independent of LFS/text rules).
+*.sv                                           linguist-detectable=true
+*.svh                                          linguist-detectable=true
+*.v                                            linguist-detectable=true
+*.vh                                           linguist-detectable=true
+*.tcl                                          linguist-detectable=true
+*.xdc                                          linguist-detectable=true linguist-language=Tcl
+
+# Verification, datasets, evidence copies and development helpers.
+tests/**                                       linguist-vendored
+test/**                                        linguist-vendored
+scripts/**                                     linguist-vendored
+tools/**                                       linguist-vendored
+benchmarks/**                                  linguist-vendored
+sim/**                                         linguist-vendored
+/fpga/sim/**                                   linguist-vendored
+/fpga/scripts/**                               linguist-vendored
+/python/boardtests/**                          linguist-vendored
+/python/synth/**                               linguist-vendored
+/python/refmodel/**                            linguist-vendored
+/data/**                                       linguist-vendored
+/.agents/**                                    linguist-vendored
+/skill/**                                      linguist-vendored
+/learning/**                                   linguist-vendored
+
+# PS business logic lives under scripts/ in this repository; keep its runtime
+# and safety dependencies visible, while diagnostics/replay/tests stay excluded.
+/python/refmodel/ps_reference/regions.py       -linguist-vendored
+/python/refmodel/ps_reference/tracking.py      -linguist-vendored
+/scripts/wo0015/board_once.py                  -linguist-vendored
+/scripts/wo0015/board_preflight.py             -linguist-vendored
+/scripts/wo0015/camera_adapter.py              -linguist-vendored
+/scripts/wo0015/prepare_vectors.py             -linguist-vendored
+/scripts/wo0016/calibration_runtime_gate.py    -linguist-vendored
+/scripts/wo0016/capture_dataset.py             -linguist-vendored
+/scripts/wo0016/dashboard.html                 -linguist-vendored
+/scripts/wo0016/dashboard_state.py             -linguist-vendored
+/scripts/wo0016/live_calibration.py            -linguist-vendored
+/scripts/wo0016/live_monitor_state.py          -linguist-vendored
+/scripts/wo0016/mjpeg_preview.py               -linguist-vendored
+/scripts/wo0016/packet_encoder.py              -linguist-vendored
+/scripts/wo0016/physical_calibration_lock.py   -linguist-vendored
+/scripts/wo0016/run_live_monitor.py            -linguist-vendored
+/scripts/wo0016/run_stream_counter.py          -linguist-vendored
+/scripts/wo0016/split_touching.py              -linguist-vendored
+/scripts/wo0016/stream_counter.py              -linguist-vendored
+
+**/conftest.py                                 linguist-vendored
+**/prepare_replay.py                           linguist-vendored
+**/test_*.py                                   linguist-vendored
+*.ipynb                                        linguist-vendored
+
+# Documentation is retained and classified separately from source code.
+docs/**                                        linguist-documentation
+*.md                                           linguist-documentation
