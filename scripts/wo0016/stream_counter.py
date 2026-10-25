@@ -129,7 +129,7 @@ class MaskCounter:
 
     def __init__(self, *, width: int = WIDTH, height: int = HEIGHT,
                  line_y: int = 120, roi_half_height: int = 24,
-                 roi_mode: str = "lane",
+                 roi_mode: str = "lane", roi_top: int = 0, roi_bottom: int | None = None,
                  min_area: int = 12, direction: int = 1,
                  hysteresis: float = 2.0, confirm_hits: int = 2,
                  max_missing: int = 1, max_step: float = 24.0,
@@ -142,7 +142,8 @@ class MaskCounter:
                  component_cluster_gap: float = 0.0,
                  guarded_merge: bool = False, single_intact_area: int = 95,
                  max_merge_area: int = 260, max_merged_span: int = 24,
-                 max_split_area: int | None = None,
+                 max_split_area: int | None = None, min_split_child_area: int | None = None,
+                 split_min_hole_area: int = 30,
                  strict_lateral_gate: bool = False,
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
@@ -156,6 +157,10 @@ class MaskCounter:
         if not isinstance(roi_mode, str) or roi_mode not in ("lane", "full"):
             raise ValueError("roi_mode must be lane or full")
         self.roi_mode = roi_mode
+        self.roi_top = _integer(roi_top, "roi_top", minimum=0)
+        self.roi_bottom = self.height if roi_bottom is None else _integer(roi_bottom, "roi_bottom", minimum=1)
+        if not 0 <= self.roi_top < self.roi_bottom <= self.height:
+            raise ValueError("ROI must satisfy 0 <= top < bottom <= frame height")
         self.min_area = _integer(min_area, "min_area", minimum=1)
         self.max_area = None if max_area is None else _integer(max_area, "max_area", minimum=self.min_area)
         self.max_bbox_width = _integer(max_bbox_width, "max_bbox_width", minimum=1)
@@ -194,6 +199,9 @@ class MaskCounter:
         self.max_merge_area = _integer(max_merge_area, "max_merge_area", minimum=1)
         self.max_split_area = (self.max_merge_area if max_split_area is None else
                                _integer(max_split_area, "max_split_area", minimum=1))
+        self.split_min_hole_area = _integer(split_min_hole_area, "split_min_hole_area", minimum=1)
+        self.min_split_child_area = (self.min_area if min_split_child_area is None else
+                                     _integer(min_split_child_area, "min_split_child_area", minimum=self.min_area))
         self.max_merged_span = _integer(max_merged_span, "max_merged_span", minimum=1)
         self.cooldown_frames = _integer(cooldown_frames, "cooldown_frames", minimum=0)
         self.cooldown_lateral = _nonnegative_float(cooldown_lateral, "cooldown_lateral")
@@ -358,9 +366,11 @@ class MaskCounter:
 
     def _roi_bounds(self) -> tuple[int, int]:
         if self.roi_mode == "full":
-            return 0, self.height
-        top = max(0, self.line_y - self.roi_half_height)
-        bottom = min(self.height, self.line_y + self.roi_half_height + 1)
+            return self.roi_top, self.roi_bottom
+        top = max(self.roi_top, self.line_y - self.roi_half_height)
+        bottom = min(self.roi_bottom, self.line_y + self.roi_half_height + 1)
+        if bottom <= top:
+            raise ValueError("counting lane does not intersect ROI")
         return top, bottom
 
     @staticmethod
@@ -428,7 +438,8 @@ class MaskCounter:
                 continue
             if (self.guarded_merge and self.single_intact_area < area <= self.max_split_area):
                 cropped = labels[y:y + box_height, x:x + box_width] == label
-                pieces = split_touching_component(cropped, min_child_area=self.min_area)
+                pieces = split_touching_component(cropped, min_child_area=self.min_split_child_area,
+                                                  min_hole_area=self.split_min_hole_area)
                 piece_masks = [np.asarray(piece) != 0 for piece in pieces]
                 valid_partition = (2 <= len(piece_masks) <= 3
                                    and all(piece.shape == cropped.shape

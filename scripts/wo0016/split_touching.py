@@ -57,7 +57,7 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
     return labels
 
 
-def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int
+def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_area: int = 30
                              ) -> tuple[np.ndarray, ...] | None:
     """Assign a joined cluster to two or three independently visible nut holes."""
     height, width = pixels.shape
@@ -65,9 +65,9 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int
     count, _, stats, centers = cv2.connectedComponentsWithStats(
         (~pixels).astype(np.uint8), connectivity=8
     )
-    min_hole_area = max(30, int(np.ceil(0.06 * area)))
+    hole_area_threshold = max(min_hole_area, int(np.ceil(0.06 * area)))
     holes = [index for index in range(1, count)
-             if stats[index, cv2.CC_STAT_AREA] >= min_hole_area
+             if stats[index, cv2.CC_STAT_AREA] >= hole_area_threshold
              and stats[index, cv2.CC_STAT_LEFT] > 0
              and stats[index, cv2.CC_STAT_TOP] > 0
              and stats[index, cv2.CC_STAT_LEFT] + stats[index, cv2.CC_STAT_WIDTH] < width
@@ -99,13 +99,16 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int
     return tuple(children)
 
 
-def split_touching_component(component: np.ndarray, *, min_child_area: int = 12
+def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
+                             min_hole_area: int = 30
                              ) -> tuple[np.ndarray, ...]:
     """Split two or three touching nuts when holes or a narrow neck are visible.
 
     A silhouette without distinct holes or a neck is ambiguous (for example
     flush rectangles), so it is left intact. Masks preserve the input union.
     """
+    if isinstance(min_hole_area, bool) or not isinstance(min_hole_area, (int, np.integer)) or min_hole_area < 1:
+        raise ValueError("min_hole_area must be a positive integer")
     pixels = np.asarray(component) != 0
     if pixels.ndim != 2:
         raise ValueError("component must be a 2D mask")
@@ -114,7 +117,7 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12
         return (pixels,)
     if not is_single_connected_component(pixels):
         return (pixels,)
-    hole_pieces = _split_by_enclosed_holes(pixels, min_child_area)
+    hole_pieces = _split_by_enclosed_holes(pixels, min_child_area, min_hole_area)
     if hole_pieces is not None:
         return hole_pieces
     candidates = []

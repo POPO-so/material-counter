@@ -1,0 +1,76 @@
+{
+  "timestamp": "2025-05-09T17:27:31.463296+00:00",
+  "frame_id": 24939,
+  "source": "CAMERA",
+  "params": {
+    "view_mode": "binary",
+    "binary_thresh": 100,
+    "overexp_thresh": 255,
+    "roi_top": 20,
+    "roi_bottom": 380,
+    "min_area": 60,
+    "exposure": 50,
+    "gamma": 100,
+    "gain": 0
+  },
+  "metrics": {
+    "bg_mean": 28.334635536555957,
+    "bg_std": 19.568702846183424,
+    "fg_mean": 215.924583031182,
+    "fg_max": 255,
+    "contrast": 187.58994749462605,
+    "overexp_pct": 0.09982638888888888,
+    "overexp_denominator": "roi_pixels",
+    "roi_pixels": 230400,
+    "foreground_pixels": 1379,
+    "background_pixels": 228075,
+    "left_bg": 16.5043743509865,
+    "center_bg": 46.72877412413422,
+    "right_bg": 22.384024517475222,
+    "uniformity_diff": 30.22439977314772,
+    "part_count": 3,
+    "parts": [
+      {
+        "x": 317,
+        "y": 248,
+        "width": 33,
+        "height": 31,
+        "area": 548.5,
+        "hole": true,
+        "hole_area": 180.0,
+        "fg": 212.87085514834206,
+        "touches_roi_edge": false
+      },
+      {
+        "x": 322,
+        "y": 193,
+        "width": 26,
+        "height": 27,
+        "area": 390.5,
+        "hole": true,
+        "hole_area": 142.0,
+        "fg": 235.63814180929094,
+        "touches_roi_edge": false
+      },
+      {
+        "x": 314,
+        "y": 141,
+        "width": 22,
+        "height": 24,
+        "area": 269.5,
+        "hole": true,
+        "hole_area": 98.0,
+        "fg": 215.47719298245613,
+        "touches_roi_edge": false
+      }
+    ],
+    "all_pass": false,
+    "status_bg": "PASS",
+    "status_fg": "PASS",
+    "status_overexp": "PASS",
+    "status_uniform": "UNEVEN",
+    "fps": 5.077117685973654
+  },
+  "hardware_applied": null,
+  "physical_calibration_status": "NOT_MEASURED"
+}

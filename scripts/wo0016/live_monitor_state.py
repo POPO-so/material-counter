@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import replace
+import lighting_profile
 from functools import lru_cache
 from pathlib import Path
 import os
@@ -124,11 +125,18 @@ class LiveMonitorState:
                 velocity = track.get("forward_velocity")
                 velocity = velocity if self._valid_velocity(velocity) else None
                 self.last_crossing_area_px = area
+                size_hint = (lighting_profile.classify_area(area) if getattr(self,"counting_profile",None) == "lighting-calibrated" else "unknown")
+                material_hint = (lighting_profile.classify_material_area(area)
+                                 if getattr(self,"counting_profile",None) == "lighting-calibrated" else None)
                 details = f"面积 {area}px" if area is not None else "面积 N/A"
                 details += f"，速度 {velocity:.2f} px/帧" if velocity is not None else "，速度 N/A"
+                if size_hint != "unknown":
+                    details += f"，尺寸 {size_hint}"
+                if material_hint:
+                    details += f"，候选物料 {material_hint}（面积区间暂定）"
                 recovery = "；触发速度预测跨帧恢复" if event.inferred_gap else ""
                 self.events.append({"id": self.frames, "time": time.time(),
-                                    "track_id": event.track_id, "area_px": area,
+                                    "track_id": event.track_id, "area_px": area, "area_size_hint": size_hint, "material_hint": material_hint,
                                     "px_per_frame": velocity, "inferred_gap": event.inferred_gap,
                                     "message": f"T{event.track_id} 越线计数，{details}{recovery}"})
             self.phase = "stopping" if self.stop.is_set() else "running"
@@ -167,6 +175,11 @@ class LiveMonitorState:
                          "cm_per_second": px_second * self.mm_per_pixel / 10 if px_second is not None else None,
                          "mm_per_pixel": self.mm_per_pixel,
                          "speed_kind": "observed-track frame means / completed-frame sliding window",
+                         "counting_profile": getattr(self,"counting_profile",None),
+                         "preprocessing_config": getattr(self,"preprocessing_config",None),
+                         "area_hints_provisional": getattr(self,"counting_profile",None) == "lighting-calibrated",
+                         "material_area_labels": lighting_profile.AREA_HINTS["material_labels"] if getattr(self,"counting_profile",None) == "lighting-calibrated" else None,
+                         "area_size_ranges": lighting_profile.AREA_HINTS["ranges"] if getattr(self,"counting_profile",None) == "lighting-calibrated" else None,
                          "last_crossing_area_px": self.last_crossing_area_px,
                          "fps_kind": "completed-frame sliding window", "elapsed_seconds": now - self.started,
                          "last_frame_age_seconds": age, "stale": not fresh,

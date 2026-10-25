@@ -1,0 +1,343 @@
+{
+  "kind": "offline; no physical accuracy claim",
+  "files": {
+    "data\\calibration\\lighting-20261025\\lighting_20250509T172731_2856b9c8ba9d4089af9c5bfdac1cb04e.json": "31b08e999fefea06f56f69c69cce5d012d08d1d03aceed6c5a4b8f1a920fde53",
+    "data\\calibration\\lighting-20261025\\lighting_20250509T172731_2856b9c8ba9d4089af9c5bfdac1cb04e.png": "8cce96b024735cf5ea5c95c1b02925d68df7ce87c0b342693cf4f80159f6d63f",
+    "data\\calibration\\lighting-20261025\\lighting_20250509T174438_72fe589d453c4f0c9bdf3e3f265b485d.json": "afc1e9121e91b2982fbd13c88cb755a11a92234cacc8f8517e0029a0864d77fe",
+    "data\\calibration\\lighting-20261025\\lighting_20250509T174438_72fe589d453c4f0c9bdf3e3f265b485d.png": "956453f1fdaf695ca810e0d6c61fbf4e2664e922b734385f57a3b31f7c74e70c"
+  },
+  "recordings": [
+    {
+      "legacy_count": 2,
+      "legacy_expected": 2,
+      "path": "data\\recorded\\wo0017-touching-20261024\\wo_touching_pair_motion_20261024_03\\camera_gray_only.npz",
+      "frames": 1800,
+      "shape": [
+        1800,
+        240,
+        320
+      ],
+      "count": 0,
+      "warnings": [],
+      "seconds": 3.265804099966772,
+      "limit": "Historical camera setup/optics; stored 320x240 Gray8 only, source net-area filtering cannot be reconstructed. Diagnostic only."
+    },
+    {
+      "legacy_count": 3,
+      "legacy_expected": 3,
+      "path": "data\\recorded\\wo0017-touching-20261024\\wo_touching_three_motion_20261024_02\\camera_gray_only.npz",
+      "frames": 1800,
+      "shape": [
+        1800,
+        240,
+        320
+      ],
+      "count": 0,
+      "warnings": [],
+      "seconds": 0.740649199928157,
+      "limit": "Historical camera setup/optics; stored 320x240 Gray8 only, source net-area filtering cannot be reconstructed. Diagnostic only."
+    },
+    {
+      "legacy_count": 3,
+      "legacy_expected": 3,
+      "path": "data\\recorded\\wo0017-touching-20261024\\wo_touching_three_motion_20261024_04\\camera_gray_only.npz",
+      "frames": 1800,
+      "shape": [
+        1800,
+        240,
+        320
+      ],
+      "count": 0,
+      "warnings": [],
+      "seconds": 0.7199438000097871,
+      "limit": "Historical camera setup/optics; stored 320x240 Gray8 only, source net-area filtering cannot be reconstructed. Diagnostic only."
+    }
+  ],
+  "counting_config": {
+    "count_axis": "x",
+    "line_x": 160,
+    "line_y": 120,
+    "direction": 1,
+    "min_area": 15,
+    "max_area": 540,
+    "max_bbox_width": 85,
+    "max_bbox_height": 85,
+    "max_step": 48.0,
+    "max_lateral_step": 10.0,
+    "hysteresis": 2.0,
+    "confirm_hits": 2,
+    "component_cluster_dx": 0.0,
+    "component_cluster_dy": 12.0,
+    "component_cluster_gap": 0.0,
+    "cooldown_frames": 0,
+    "cooldown_lateral": 15.0,
+    "edge_max_missing": 0,
+    "prediction_max_missing": 3,
+    "roi_mode": "full",
+    "guarded_merge": true,
+    "single_intact_area": 64,
+    "max_merge_area": 540,
+    "max_split_area": 540,
+    "max_merged_span": 48,
+    "strict_lateral_gate": true,
+    "max_missing": 3,
+    "backward_tolerance": 4.0,
+    "roi_top": 30,
+    "roi_bottom": 210,
+    "min_split_child_area": 60,
+    "split_min_hole_area": 16
+  },
+  "preprocessing_config": {
+    "mapping": "lighting-calibrated",
+    "source_resolution": [
+      640,
+      400
+    ],
+    "output_resolution": [
+      320,
+      240
+    ],
+    "source_roi_xyxy": [
+      0,
+      20,
+      640,
+      380
+    ],
+    "active_output_roi_xyxy": [
+      0,
+      30,
+      320,
+      210
+    ],
+    "belt_width_mm_nominal": 180.0,
+    "physical_calibration_status": "NOT_MEASURED",
+    "pixels_per_mm_y": null,
+    "binary_thresh": 100,
+    "threshold_comparison": ">",
+    "pl_threshold": 128,
+    "tx_intensity_mapping": "saturating +27; PL >=128 equals source >100",
+    "source_min_net_contour_area": 60,
+    "runtime_min_foreground_pixels": 15,
+    "coordinate_transform": "x_out=x_source/2; y_out=y_source/2+20"
+  },
+  "snapshot_output": [
+    {
+      "area": 80,
+      "centroid": [
+        162.15,
+        96.2375
+      ],
+      "size_hint": "small",
+      "material_hint": "M6平垫圈"
+    },
+    {
+      "area": 150,
+      "centroid": [
+        166.47333333333333,
+        151.41333333333333
+      ],
+      "size_hint": "large",
+      "material_hint": "M8螺母"
+    },
+    {
+      "area": 111,
+      "centroid": [
+        167.018018018018,
+        123.03603603603604
+      ],
+      "size_hint": "medium",
+      "material_hint": "M6螺母"
+    }
+  ],
+  "operator_confirmed_single_part_names": [
+    {
+      "pixels": 80,
+      "size_hint": "small",
+      "material": "M6平垫圈",
+      "area_band_provisional": true
+    },
+    {
+      "pixels": 111,
+      "size_hint": "medium",
+      "material": "M6螺母",
+      "area_band_provisional": true
+    },
+    {
+      "pixels": 150,
+      "size_hint": "large",
+      "material": "M8螺母",
+      "area_band_provisional": true
+    }
+  ],
+  "source_contours": [
+    {
+      "outer": 367.5,
+      "hole": 98.0,
+      "net": 269.5
+    },
+    {
+      "outer": 532.5,
+      "hole": 142.0,
+      "net": 390.5
+    },
+    {
+      "outer": 728.5,
+      "hole": 180.0,
+      "net": 548.5
+    }
+  ],
+  "touching_snapshot": {
+    "path": "data\\calibration\\lighting-20261025\\lighting_20250509T174438_72fe589d453c4f0c9bdf3e3f265b485d.png",
+    "source_contour_components": 6,
+    "output_raw_component_areas": [
+      156,
+      204,
+      240,
+      300,
+      339,
+      453
+    ],
+    "visible_annotation_count": 15,
+    "split_count": 15,
+    "groups": [
+      {
+        "output_y_range": [
+          45,
+          85
+        ],
+        "left_count": 3,
+        "right_count": 2
+      },
+      {
+        "output_y_range": [
+          90,
+          125
+        ],
+        "left_count": 3,
+        "right_count": 2
+      },
+      {
+        "output_y_range": [
+          130,
+          180
+        ],
+        "left_count": 3,
+        "right_count": 2
+      }
+    ],
+    "output_detections": [
+      {
+        "area": 78,
+        "centroid": [
+          113.94871794871794,
+          115.03846153846153
+        ]
+      },
+      {
+        "area": 161,
+        "centroid": [
+          114.68944099378882,
+          65.65838509316771
+        ]
+      },
+      {
+        "area": 76,
+        "centroid": [
+          115.30263157894737,
+          104.39473684210526
+        ]
+      },
+      {
+        "area": 86,
+        "centroid": [
+          116.56976744186046,
+          77.67441860465117
+        ]
+      },
+      {
+        "area": 204,
+        "centroid": [
+          120.77941176470588,
+          167.7549019607843
+        ]
+      },
+      {
+        "area": 86,
+        "centroid": [
+          123.83720930232558,
+          110.70930232558139
+        ]
+      },
+      {
+        "area": 147,
+        "centroid": [
+          125.48299319727892,
+          155.156462585034
+        ]
+      },
+      {
+        "area": 92,
+        "centroid": [
+          127.1195652173913,
+          67.48913043478261
+        ]
+      },
+      {
+        "area": 102,
+        "centroid": [
+          136.02941176470588,
+          166.51960784313727
+        ]
+      },
+      {
+        "area": 88,
+        "centroid": [
+          182.375,
+          69.75
+        ]
+      },
+      {
+        "area": 116,
+        "centroid": [
+          183.9655172413793,
+          57.172413793103445
+        ]
+      },
+      {
+        "area": 76,
+        "centroid": [
+          185.18421052631578,
+          108.78947368421052
+        ]
+      },
+      {
+        "area": 80,
+        "centroid": [
+          185.45,
+          97.9375
+        ]
+      },
+      {
+        "area": 139,
+        "centroid": [
+          186.0791366906475,
+          139.57553956834533
+        ]
+      },
+      {
+        "area": 161,
+        "centroid": [
+          186.65217391304347,
+          154.7826086956522
+        ]
+      }
+    ],
+    "foreground_pixels": 1692,
+    "partition_area": 1692,
+    "overexp_pct": 0.5846354166666666,
+    "status_overexp": "OVEREXP",
+    "status_uniform": "UNEVEN",
+    "hardware_applied": null,
+    "kind": "static image segmentation only; no physical counting accuracy claim"
+  }
+}

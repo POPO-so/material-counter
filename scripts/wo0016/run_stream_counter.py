@@ -71,6 +71,7 @@ from stream_counter import (
     MaskCounter,
     allocate_ping_pong_buffers,
 )
+import lighting_profile
 import physical_calibration_lock as calibration_lock
 from calibration_runtime_gate import DEFAULT_WORKER_PYTHON
 
@@ -134,7 +135,7 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
             positions = positions[::-1]
         for x in positions:
             mask = np.zeros((HEIGHT, WIDTH), np.uint8)
-            for y in (25, 65, 105, 155, 214):
+            for y in ((45,75,105,155,190) if counter.roi_top == 30 else (25,65,105,155,214)):
                 mask[y-5:y+6, x-5:x+6] = 255
             masks.append(mask)
     hub = MjpegFrameHub()
@@ -167,7 +168,7 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
         "pynq_imported": False,
         "frame_geometry": [HEIGHT, WIDTH],
         "line_y": line_y,
-        "min_area": min_area,
+        "min_area": counter.min_area,
         "frames_processed": len(results),
         "total_count": predicted,
         "ground_truth_count": ground_truth,
@@ -185,9 +186,10 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
         "note": "Synthetic Offline evidence only; it is not PYNQ, camera, conveyor, or board acceptance.",
     }
     if counter_config is not None:
-        summary.update({"counting_profile": "full-width-mixed",
+        profile = "lighting-calibrated" if counter.roi_top == 30 else "full-width-mixed"
+        summary.update({"counting_profile": profile,
                         "counting_config": dict(counter_config),
-                        "preprocessing_config": frame_geometry("letterbox")})
+                        "preprocessing_config": frame_geometry("lighting-calibrated" if profile == "lighting-calibrated" else "letterbox")})
     return summary
 
 
@@ -317,7 +319,7 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
               "cooldown_lateral": args.cooldown_lateral,
               "edge_max_missing": args.edge_max_missing,
               "prediction_max_missing": args.prediction_max_missing}
-    if getattr(args, "counting_profile", "legacy") == "full-width-mixed":
+    if getattr(args, "counting_profile", "legacy") in ("full-width-mixed", "lighting-calibrated"):
         config.update({"roi_mode": "full", "guarded_merge": True,
                        "single_intact_area": 95, "max_merge_area": 260,
                        "max_split_area": 900, "max_merged_span": 24,
@@ -327,13 +329,25 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
                        "component_cluster_gap": 14.0, "component_cluster_dx": 0.0,
                        "confirm_hits": 2, "prediction_max_missing": 3,
                        "edge_max_missing": 0, "cooldown_frames": 0})
+    if getattr(args, "counting_profile", "legacy") == "lighting-calibrated":
+        # Output pixel areas measured from the three isolated snapshot parts: 80/111/150.
+        # 64 = 80 * .8; prevent intact small parts being merged with each other.
+        config.update(roi_top=30, roi_bottom=210, min_area=15, min_split_child_area=60,
+                      split_min_hole_area=16,
+                      single_intact_area=64, max_merge_area=540, max_split_area=540,
+                      max_area=540, max_merged_span=48, component_cluster_gap=0.0)
     MaskCounter(**config)  # Validate before consuming the one-shot attempt.
     return config
 
 
 def preprocessing_configuration(args: argparse.Namespace) -> dict[str, Any]:
-    return frame_geometry("letterbox" if getattr(args, "counting_profile", "legacy")
-                          == "full-width-mixed" else "stretch")
+    profile = getattr(args, "counting_profile", "legacy")
+    return frame_geometry("lighting-calibrated" if profile == "lighting-calibrated" else
+                          "letterbox" if profile == "full-width-mixed" else "stretch")
+
+
+def effective_threshold(args):
+    return 100 if args.counting_profile == "lighting-calibrated" else STAGEB2_THRESHOLD
 
 
 def counting_roi_metadata(result: Any, counter: MaskCounter) -> dict[str, Any]:
@@ -626,6 +640,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height} "
                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
             )
+        if frame_mapping == "lighting-calibrated":
+            lighting_profile.apply_camera_controls(device)
         def read_gray_frame(*, warmup: bool,
                             source_frame_id: int | None = None
                             ) -> tuple[np.ndarray, float, int, int, np.ndarray | None]:
@@ -647,7 +663,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
             source_gray = (np.ascontiguousarray(image).copy()
                            if source_frame_id in source_frame_ids else None)
             mapping_started = time.perf_counter()
-            if frame_mapping == "letterbox":
+            if frame_mapping in ("letterbox", "lighting-calibrated"):
                 # A fresh buffer is required: the next read is prefetched before yield.
                 gray = np.empty((HEIGHT, WIDTH), np.uint8)
                 resize_monochrome_into(image, gray, mapping=frame_mapping)
@@ -728,6 +744,10 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
         for _ in range(warmup_frames):
             prefetch(warmup=True)
             await get_frame(warmup=True)
+        if frame_mapping == "lighting-calibrated":
+            controls = lighting_profile.verify_camera_controls(device)
+            if capture_metadata is not None:
+                capture_metadata["hardware_applied"] = controls
         if capture_metadata is not None:
             capture_metadata.update({
                 "camera_fps_requested": 60,
@@ -740,7 +760,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 "camera_output_width": WIDTH,
                 "camera_output_height": HEIGHT,
             })
-            if frame_mapping == "letterbox":
+            if frame_mapping in ("letterbox", "lighting-calibrated"):
                 capture_metadata["frame_geometry"] = geometry
         emit_milestone("CAMERA_OPEN_READY_FOR_OPERATOR")
         if operator_gate is not None:
@@ -857,7 +877,8 @@ async def camera_gray_frames(device: str, *, max_frames: int,
         raise ValueError("camera capture requires a live operator control server session")
     if source_frame_ids and not include_capture_metadata:
         raise ValueError("original source-frame retention requires capture metadata")
-    require_standard_camera_controls(device)
+    if frame_mapping != "lighting-calibrated":
+        require_standard_camera_controls(device)
     first_frame = True
     async for frame in _camera_gray_frames_impl(
             device, max_frames=max_frames, cv2_module=cv2_module,
@@ -872,7 +893,8 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             include_capture_metadata=include_capture_metadata,
             source_frame_ids=source_frame_ids, frame_mapping=frame_mapping):
         if first_frame:
-            require_standard_camera_controls(device)
+            (lighting_profile.verify_camera_controls if frame_mapping == "lighting-calibrated"
+             else require_standard_camera_controls)(device)
             first_frame = False
         yield frame
 
@@ -895,7 +917,7 @@ def validate_operator_gate_launcher_sha256(value: str | None,
 
 def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
-             "split_touching.py", "dashboard_state.py", "dashboard.html",
+             "split_touching.py", "lighting_profile.py", "dashboard_state.py", "dashboard.html",
              "capture_dataset.py", "live_calibration.py",
              "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py",
              "physical_calibration_lock.py", "prepare_physical_calibration.py",
@@ -945,8 +967,9 @@ def formal_capture_context(args: argparse.Namespace, plan: Any) -> dict[str, Any
     ready_path = formal_ready_path(plan.boot_id, profile, ready_id)
     if ready_id is not None:
         identity["ready_id"] = ready_id
-    if getattr(args, "counting_profile", "legacy") == "full-width-mixed":
+    if getattr(args, "counting_profile", "legacy") in ("full-width-mixed", "lighting-calibrated"):
         identity["preprocessing_config"] = preprocessing_configuration(args)
+        identity["threshold"] = effective_threshold(args)
     base = Path("/var/lib/wo0017") / plan.boot_id / profile
     return {"identity": identity, "receipt": receipt,
             "ready_path": ready_path, "attempt_root": base / "attempts",
@@ -1467,7 +1490,7 @@ def execute_board_stream(args: argparse.Namespace, *,
         "stabilization_delay_s": args.stabilization_delay_s,
         "operator_prearm_delay_s": (args.operator_prearm_delay_s
                                      if args.no_consume_guard else 0.0),
-        "threshold": STAGEB2_THRESHOLD,
+        "threshold": effective_threshold(args),
         "frames_processed": 0,
         "process_start_monotonic": process_start_monotonic,
         "overlay_ready_monotonic": None,
@@ -1556,7 +1579,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 config={
                     "algorithm": "baseline",
                     **counting_configuration(args),
-                    "threshold": STAGEB2_THRESHOLD,
+                    "threshold": effective_threshold(args),
                     "input_resolution": [WIDTH, HEIGHT],
                     "mask_resolution": [WIDTH, HEIGHT],
                     "roi_bounds_convention": "[top,bottom), clipped to image",
@@ -1681,7 +1704,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 },
                 "resolution": {"width": WIDTH, "height": HEIGHT,
                                "dtype": "uint8", "input": "Gray8", "mask": "Binary8"},
-                "threshold": STAGEB2_THRESHOLD,
+                "threshold": effective_threshold(args),
                 "algorithm_config": counting_configuration(args),
                 "roi": counting_roi_metadata(result, counter),
                 "raw_detections": [asdict(item) for item in result.raw_detections],
@@ -1706,8 +1729,10 @@ def execute_board_stream(args: argparse.Namespace, *,
             tx_buffers=tx_buffers,
             rx_buffers=rx_buffers,
             counter=counter,
-            packet_encoder=gray320x240_to_rgb_packet,
-            packet_encoder_into=gray320x240_to_rgb_packet_into,
+            packet_encoder=(lighting_profile.encode if args.counting_profile == "lighting-calibrated"
+                            else gray320x240_to_rgb_packet),
+            packet_encoder_into=(lighting_profile.encode_into if args.counting_profile == "lighting-calibrated"
+                                 else gray320x240_to_rgb_packet_into),
             before_transfer=arm_frame,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
@@ -2010,8 +2035,8 @@ def _nonnegative_count_argument(value: str) -> int:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0016 asynchronous double-buffer Binary8 counter")
     parser.add_argument("--mode", choices=("mock", "board"), default="mock")
-    parser.add_argument("--counting-profile", choices=("legacy", "full-width-mixed"), default="legacy",
-                        help="full-width-mixed selects full-height ROI, letterbox mapping and guarded merge/tracking defaults")
+    parser.add_argument("--counting-profile", choices=("legacy", "full-width-mixed", "lighting-calibrated"), default="legacy",
+                        help="lighting-calibrated uses camera-angle calibrated ROI/threshold/area settings; full-width-mixed retains the earlier full-frame profile")
     parser.add_argument("--wo0017-profile", choices=("b1", "b2"))
     parser.add_argument("--wo0017-ready-id",
                         help="new immutable READY record ID; omitting it retains the original ready.json")
@@ -2112,7 +2137,7 @@ def main(argv: list[str] | None = None, *,
                                          expected_count=args.ground_truth_count,
                                          material_label=args.material_label,
                                          counter_config=(counting_configuration(args)
-                                             if args.counting_profile == "full-width-mixed" else None))
+                                             if args.counting_profile in ("full-width-mixed", "lighting-calibrated") else None))
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 0 if result["status"] == "MOCK_PASS" else 1
         result = execute_board_stream(args, operator_gate_sha256=operator_gate_sha256,

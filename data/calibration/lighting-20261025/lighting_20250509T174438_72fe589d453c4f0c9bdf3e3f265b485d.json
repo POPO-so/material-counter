@@ -1,0 +1,109 @@
+{
+  "timestamp": "2025-05-09T17:44:38.179347+00:00",
+  "frame_id": 30197,
+  "source": "CAMERA",
+  "params": {
+    "view_mode": "binary",
+    "binary_thresh": 100,
+    "overexp_thresh": 255,
+    "roi_top": 20,
+    "roi_bottom": 380,
+    "min_area": 60,
+    "exposure": 50,
+    "gamma": 100,
+    "gain": 0
+  },
+  "metrics": {
+    "bg_mean": 26.553281317531447,
+    "bg_std": 19.012303366183083,
+    "fg_mean": 218.0676982591876,
+    "fg_max": 255,
+    "contrast": 191.51441694165615,
+    "overexp_pct": 0.5846354166666666,
+    "overexp_denominator": "roi_pixels",
+    "roi_pixels": 230400,
+    "foreground_pixels": 6721,
+    "background_pixels": 219805,
+    "left_bg": 15.795482866043614,
+    "center_bg": 44.890958613906335,
+    "right_bg": 21.557655190401668,
+    "uniformity_diff": 29.09547574786272,
+    "part_count": 6,
+    "parts": [
+      {
+        "x": 226,
+        "y": 255,
+        "width": 60,
+        "height": 61,
+        "area": 1642.0,
+        "hole": true,
+        "hole_area": 554.0,
+        "fg": 224.71918220084186,
+        "touches_roi_edge": false
+      },
+      {
+        "x": 357,
+        "y": 226,
+        "width": 32,
+        "height": 62,
+        "area": 1057.5,
+        "hole": true,
+        "hole_area": 364.5,
+        "fg": 209.85753424657534,
+        "touches_roi_edge": false
+      },
+      {
+        "x": 217,
+        "y": 158,
+        "width": 44,
+        "height": 43,
+        "area": 838.0,
+        "hole": true,
+        "hole_area": 295.5,
+        "fg": 231.9660023446659,
+        "touches_roi_edge": false
+      },
+      {
+        "x": 359,
+        "y": 145,
+        "width": 24,
+        "height": 44,
+        "area": 535.0,
+        "hole": true,
+        "hole_area": 202.5,
+        "fg": 220.2854578096948,
+        "touches_roi_edge": false
+      },
+      {
+        "x": 216,
+        "y": 73,
+        "width": 51,
+        "height": 53,
+        "area": 1195.0,
+        "hole": true,
+        "hole_area": 462.5,
+        "fg": 238.11092715231788,
+        "touches_roi_edge": false
+      },
+      {
+        "x": 352,
+        "y": 59,
+        "width": 30,
+        "height": 52,
+        "area": 713.0,
+        "hole": true,
+        "hole_area": 310.0,
+        "fg": 210.47902571041948,
+        "touches_roi_edge": false
+      }
+    ],
+    "all_pass": false,
+    "status_bg": "PASS",
+    "status_fg": "PASS",
+    "status_overexp": "OVEREXP",
+    "status_uniform": "UNEVEN",
+    "fps": 3.9899996086116687
+  },
+  "hardware_applied": null,
+  "physical_calibration_status": "NOT_MEASURED"
+}

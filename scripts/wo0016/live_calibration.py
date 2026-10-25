@@ -38,29 +38,42 @@ def monochrome_view(frame: np.ndarray) -> np.ndarray:
 
 
 def frame_geometry(mapping: str = "stretch") -> dict[str, Any]:
-    if mapping not in ("stretch", "letterbox"):
-        raise ValueError("frame mapping must be stretch or letterbox")
-    return {"mapping": mapping, "source_resolution": [640, 400],
+    if mapping not in ("stretch", "letterbox", "lighting-calibrated"):
+        raise ValueError("frame mapping must be stretch, letterbox or lighting-calibrated")
+    geometry = {"mapping": mapping, "source_resolution": [640, 400],
             "output_resolution": [320, 240], "source_roi_xyxy": [0, 0, 640, 400],
-            "active_output_roi_xyxy": ([0, 20, 320, 220] if mapping == "letterbox"
+            "active_output_roi_xyxy": ([0, 20, 320, 220] if mapping in ("letterbox", "lighting-calibrated")
                                        else [0, 0, 320, 240]),
             "belt_width_mm_nominal": 180.0, "physical_calibration_status": "NOT_MEASURED",
             "pixels_per_mm_y": None}
+    if mapping == "lighting-calibrated":
+        geometry.update(source_roi_xyxy=[0,20,640,380], active_output_roi_xyxy=[0,30,320,210],
+                        binary_thresh=100, threshold_comparison=">", pl_threshold=128,
+                        tx_intensity_mapping="saturating +27; PL >=128 equals source >100",
+                        source_min_net_contour_area=60, runtime_min_foreground_pixels=15,
+                        coordinate_transform="x_out=x_source/2; y_out=y_source/2+20")
+    return geometry
 
 
 def resize_monochrome_into(frame: np.ndarray, output: np.ndarray, *, mapping: str) -> None:
     """Preserve the source view extent; output ownership remains with the caller."""
-    if mapping not in ("stretch", "letterbox"):
-        raise ValueError("frame mapping must be stretch or letterbox")
+    if mapping not in ("stretch", "letterbox", "lighting-calibrated"):
+        raise ValueError("frame mapping must be stretch, letterbox or lighting-calibrated")
     source = monochrome_view(frame)
     if (output.dtype != np.uint8 or output.shape != (240, 320)
             or not output.flags.c_contiguous or not output.flags.writeable
             or np.shares_memory(source, output)):
         raise ValueError("output must be independent writable contiguous uint8 (240,320)")
-    if mapping == "letterbox":
+    if mapping == "lighting-calibrated":
+        from lighting_profile import filter_source_noise
+        source = filter_source_noise(source)
+    if mapping in ("letterbox", "lighting-calibrated"):
         output[:20].fill(0)
         output[220:].fill(0)
         np.copyto(output[20:220], source[::2, ::2])
+        if mapping == "lighting-calibrated":
+            output[:30].fill(0)
+            output[210:].fill(0)
     else:
         np.copyto(output[0::3], source[0::5, ::2])
         np.copyto(output[1::3], source[1::5, ::2])
@@ -79,7 +92,7 @@ class MonochromePreprocessor:
     def __call__(self, frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         # Strided copies avoid packing the full camera channel on the Zynq CPU.
         resize_monochrome_into(frame, self.gray, mapping=self.mapping)
-        cv2.threshold(self.gray, 128, 255, cv2.THRESH_BINARY, dst=self.binary)
+        cv2.threshold(self.gray, 100 if self.mapping == "lighting-calibrated" else 128, 255, cv2.THRESH_BINARY, dst=self.binary)
         return self.gray, self.binary
 
 

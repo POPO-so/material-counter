@@ -29,9 +29,9 @@ def parser():
     result = argparse.ArgumentParser(description=__doc__)
     # Reuse algorithm defaults, without exposing finite capture/permit switches.
     result.set_defaults(**vars(finite._parser().parse_args([])))
-    result.set_defaults(host="127.0.0.1", port=8080, counting_profile="full-width-mixed")
+    result.set_defaults(host="127.0.0.1", port=8080, counting_profile="lighting-calibrated")
     result.add_argument("--mode", choices=("mock", "board"), default="mock")
-    result.add_argument("--counting-profile", choices=("full-width-mixed",), default="full-width-mixed")
+    result.add_argument("--counting-profile", choices=("lighting-calibrated", "full-width-mixed"), default="lighting-calibrated")
     result.add_argument("--direction", type=int, choices=(-1, 1), default=1)
     result.add_argument("--hysteresis", type=float, default=2.0)
     result.add_argument("--host", default="127.0.0.1")
@@ -144,7 +144,8 @@ class BoardSession:
         pf.audit_process_ownership()
         pf.read_fpga_manager()
         finite._require_camera_device_unowned(args.camera)
-        finite.require_standard_camera_controls(args.camera)
+        if args.counting_profile != "lighting-calibrated":
+            finite.require_standard_camera_controls(args.camera)
         meminfo = pf.read_cma_meminfo()
         self._watermark(meminfo["CmaFree"])
         admission = pf.read_cma_admission(meminfo=meminfo)
@@ -219,8 +220,10 @@ class BoardSession:
         self.stream = DoubleBufferStream(
             recv_channel=self.dma.recvchannel, send_channel=self.dma.sendchannel,
             tx_buffers=self.tx, rx_buffers=self.rx, counter=counter,
-            packet_encoder=finite.gray320x240_to_rgb_packet,
-            packet_encoder_into=finite.gray320x240_to_rgb_packet_into,
+            packet_encoder=(finite.lighting_profile.encode if self.args.counting_profile == "lighting-calibrated"
+                            else finite.gray320x240_to_rgb_packet),
+            packet_encoder_into=(finite.lighting_profile.encode_into if self.args.counting_profile == "lighting-calibrated"
+                                 else finite.gray320x240_to_rgb_packet_into),
             before_transfer=self.arm_frame,
             before_rx_copy=lambda frame_id, slot: self.api.sync_from_device(slot.rx_buffer),
             after_transfer=self.verify_frame, preview_callback=publish,
@@ -229,7 +232,7 @@ class BoardSession:
         # continuous mode. The public finite camera/operator gate is unchanged.
         frames = finite._camera_gray_frames_impl(
             self.args.camera, max_frames=None, live_stop_requested=self.state.stop.is_set,
-            read_timeout_s=self.args.timeout_s, frame_mapping="letterbox")
+            read_timeout_s=self.args.timeout_s, frame_mapping=finite.preprocessing_configuration(self.args)["mapping"])
         await self.stream.run(frames, stop_requested=self.state.stop.is_set)
 
     def close(self):
@@ -251,8 +254,8 @@ class BoardSession:
 async def run_monitor(args, *, state=None, server_ready=None):
     if not math.isfinite(args.mm_per_pixel) or args.mm_per_pixel <= 0:
         raise ValueError("mm-per-pixel must be finite and positive")
-    if args.counting_profile != "full-width-mixed":
-        raise ValueError("live monitor requires --counting-profile full-width-mixed (X=160)")
+    if args.counting_profile not in ("full-width-mixed", "lighting-calibrated"):
+        raise ValueError("live monitor requires --counting-profile lighting-calibrated or full-width-mixed (X=160)")
     if args.history_limit < 2 or not math.isfinite(args.mock_fps) or args.mock_fps <= 0:
         raise ValueError("history-limit must be >=2 and mock-fps finite and positive")
     if not math.isfinite(args.timeout_s) or args.timeout_s <= 0:
@@ -262,15 +265,17 @@ async def run_monitor(args, *, state=None, server_ready=None):
     state = state or LiveMonitorState(mode=args.mode, history_limit=args.history_limit,
                                      mm_per_pixel=args.mm_per_pixel)
     state.mm_per_pixel = args.mm_per_pixel
+    state.counting_profile = args.counting_profile
+    state.preprocessing_config = finite.preprocessing_configuration(args)
     config = finite.counting_configuration(args)
     counter = MaskCounter(**config, discard_finished_tracks=True)
     hub = MjpegFrameHub()
     publisher = PeriodicMjpegPublisher(
         hub=hub, line_y=120, count_axis="x", line_x=160,
         interval=finite.PREVIEW_FRAME_INTERVAL if args.mode == "board" else 1,
-        active_rows=(20, 220), history_limit=args.history_limit,
+        active_rows=(counter.roi_top, counter.roi_bottom) if args.counting_profile == "lighting-calibrated" else (20,220), history_limit=args.history_limit,
         count_label="TOTAL COUNT" if args.mode == "board" else "DEMO COUNT",
-        pip_label="PL DMA MASK" if args.mode == "board" else "SYNTHETIC MASK",
+        pip_label="PL DMA MASK TH100" if args.mode == "board" and args.counting_profile == "lighting-calibrated" else "PL DMA MASK" if args.mode == "board" else "SYNTHETIC MASK",
         view_mode_provider=lambda: state.view_mode)
     state.invalidate_preview = publisher.invalidate
     server = MjpegPreviewServer(hub=hub, host=args.host, port=args.port,

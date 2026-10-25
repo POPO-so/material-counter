@@ -61,7 +61,7 @@ def test_entry_defaults_and_opt_in_before_any_board_access():
     live = importlib.import_module("run_live_monitor")
     args = live.parser().parse_args([])
     assert (args.mode, args.host, args.port, args.counting_profile) == (
-        "mock", "127.0.0.1", 8080, "full-width-mixed")
+        "mock", "127.0.0.1", 8080, "lighting-calibrated")
     with pytest.raises(ValueError, match="execute"):
         live.validate_board_options(args)
 
