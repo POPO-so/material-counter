@@ -32,6 +32,8 @@ def parser():
     result.set_defaults(host="127.0.0.1", port=8080, counting_profile="lighting-calibrated")
     result.add_argument("--mode", choices=("mock", "board"), default="mock")
     result.add_argument("--counting-profile", choices=("lighting-calibrated", "full-width-mixed"), default="lighting-calibrated")
+    result.add_argument("--lighting-area-filter", choices=("source", "output-roi"), default="source",
+                        help="output-roi skips full-resolution source contours and keeps the existing 320x180 >=15px count-area gate")
     result.add_argument("--direction", type=int, choices=(-1, 1), default=1)
     result.add_argument("--hysteresis", type=float, default=2.0)
     result.add_argument("--host", default="127.0.0.1")

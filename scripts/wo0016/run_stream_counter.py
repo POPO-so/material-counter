@@ -27,7 +27,9 @@ from typing import Any, AsyncIterator, Callable, Mapping
 
 import cv2
 import numpy as np
-from live_calibration import require_standard_camera_controls, frame_geometry, resize_monochrome_into
+from live_calibration import (LIGHTING_MAPPINGS, require_standard_camera_controls,
+                              frame_geometry, resize_monochrome_into,
+                              is_lighting_mapping)
 
 def resolve_wo15_dependency_dir(script_dir: Path) -> Path:
     """Prefer the isolated dependency bundle deployed alongside this runner."""
@@ -342,8 +344,17 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
 
 def preprocessing_configuration(args: argparse.Namespace) -> dict[str, Any]:
     profile = getattr(args, "counting_profile", "legacy")
-    return frame_geometry("lighting-calibrated" if profile == "lighting-calibrated" else
-                          "letterbox" if profile == "full-width-mixed" else "stretch")
+    if profile == "lighting-calibrated":
+        area_filter = getattr(args, "lighting_area_filter", "source")
+        if area_filter not in ("source", "output-roi"):
+            raise ValueError("lighting area filter must be source or output-roi")
+        mapping = ("lighting-calibrated" if area_filter == "source" else
+                   "lighting-calibrated-output-roi")
+    else:
+        if getattr(args, "lighting_area_filter", "source") != "source":
+            raise ValueError("--lighting-area-filter applies only to lighting-calibrated profile")
+        mapping = "letterbox" if profile == "full-width-mixed" else "stretch"
+    return frame_geometry(mapping)
 
 
 def effective_threshold(args):
@@ -644,7 +655,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
             )
         applied_camera_controls = None
-        if frame_mapping == "lighting-calibrated":
+        if is_lighting_mapping(frame_mapping):
             applied_camera_controls = lighting_profile.apply_camera_controls(device)
         def read_gray_frame(*, warmup: bool,
                             source_frame_id: int | None = None
@@ -667,7 +678,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
             source_gray = (np.ascontiguousarray(image).copy()
                            if source_frame_id in source_frame_ids else None)
             mapping_started = time.perf_counter()
-            if frame_mapping in ("letterbox", "lighting-calibrated"):
+            if frame_mapping in ("letterbox", *LIGHTING_MAPPINGS):
                 # A fresh buffer is required: the next read is prefetched before yield.
                 gray = np.empty((HEIGHT, WIDTH), np.uint8)
                 resize_monochrome_into(image, gray, mapping=frame_mapping)
@@ -748,7 +759,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
         for _ in range(warmup_frames):
             prefetch(warmup=True)
             await get_frame(warmup=True)
-        if frame_mapping == "lighting-calibrated":
+        if is_lighting_mapping(frame_mapping):
             controls = lighting_profile.verify_camera_controls(device)
             if applied_camera_controls is not None:
                 controls["gain"]["set_response"] = applied_camera_controls["gain"]["set_response"]
@@ -769,7 +780,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 "camera_output_width": WIDTH,
                 "camera_output_height": HEIGHT,
             })
-            if frame_mapping in ("letterbox", "lighting-calibrated"):
+            if frame_mapping in ("letterbox", *LIGHTING_MAPPINGS):
                 capture_metadata["frame_geometry"] = geometry
         emit_milestone("CAMERA_OPEN_READY_FOR_OPERATOR")
         if operator_gate is not None:
@@ -886,7 +897,7 @@ async def camera_gray_frames(device: str, *, max_frames: int,
         raise ValueError("camera capture requires a live operator control server session")
     if source_frame_ids and not include_capture_metadata:
         raise ValueError("original source-frame retention requires capture metadata")
-    if frame_mapping != "lighting-calibrated":
+    if not is_lighting_mapping(frame_mapping):
         require_standard_camera_controls(device)
     first_frame = True
     async for frame in _camera_gray_frames_impl(
@@ -902,7 +913,7 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             include_capture_metadata=include_capture_metadata,
             source_frame_ids=source_frame_ids, frame_mapping=frame_mapping):
         if first_frame:
-            (lighting_profile.verify_camera_controls if frame_mapping == "lighting-calibrated"
+            (lighting_profile.verify_camera_controls if is_lighting_mapping(frame_mapping)
              else require_standard_camera_controls)(device)
             first_frame = False
         yield frame
@@ -2046,6 +2057,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--mode", choices=("mock", "board"), default="mock")
     parser.add_argument("--counting-profile", choices=("legacy", "full-width-mixed", "lighting-calibrated"), default="legacy",
                         help="lighting-calibrated uses camera-angle calibrated ROI/threshold/area settings; full-width-mixed retains the earlier full-frame profile")
+    parser.add_argument("--lighting-area-filter", choices=("source", "output-roi"), default="source",
+                        help="source runs 640x360 RETR_CCOMP net-area filtering; output-roi skips it and uses the existing 320x180 connected-component >=15px gate")
     parser.add_argument("--wo0017-profile", choices=("b1", "b2"))
     parser.add_argument("--wo0017-ready-id",
                         help="new immutable READY record ID; omitting it retains the original ready.json")

@@ -22,6 +22,36 @@ def test_live_uses_calibrated_profile():
     assert config["split_min_hole_area"] == 16
     assert finite.preprocessing_configuration(args)["binary_thresh"] == 100
 
+
+def test_output_roi_area_filter_mode_is_explicit_and_keeps_calibrated_count_roi():
+    args = live.parser().parse_args(["--lighting-area-filter", "output-roi"])
+    geometry = finite.preprocessing_configuration(args)
+    assert geometry["mapping"] == "lighting-calibrated-output-roi"
+    assert geometry["active_output_roi_xyxy"] == [0, 30, 320, 210]
+    assert geometry["area_filter_mode"] == "output_roi_connected_components"
+    assert geometry["source_min_net_contour_area"] is None
+    assert geometry["source_min_net_contour_area_configured"] == 60
+    assert geometry["runtime_min_foreground_pixels"] == 15
+
+
+def test_output_roi_area_filter_skips_source_ccomp_and_keeps_15_pixel_gate():
+    source = np.zeros((400, 640), np.uint8)
+    source[100:108, 200:208] = 200  # source contour area 49; after 2x sampling: 16 px
+    full_filter = np.empty((240, 320), np.uint8)
+    output_roi_filter = np.empty_like(full_filter)
+    calibration.resize_monochrome_into(
+        source, full_filter, mapping="lighting-calibrated")
+    calibration.resize_monochrome_into(
+        source, output_roi_filter, mapping="lighting-calibrated-output-roi")
+    assert np.count_nonzero(full_filter[30:210]) == 0
+    assert np.count_nonzero(output_roi_filter[30:210]) == 16
+
+    binary = np.where(output_roi_filter > 100, 255, 0).astype(np.uint8)
+    counter = MaskCounter(roi_mode="full", roi_top=30, roi_bottom=210, min_area=15,
+                          count_axis="x", line_x=160, max_step=48)
+    result = counter.update(0, binary)
+    assert [detection.area for detection in result.detections] == [16]
+
 def test_roi_offsets_and_crossing_stay_in_output_frame():
     counter = MaskCounter(roi_mode="full", roi_top=30, roi_bottom=210, min_area=60,
                           count_axis="x", line_x=160, max_step=48)
@@ -73,7 +103,11 @@ def test_area_hints_are_provisional_and_reach_live_events():
     assert data["area_hints_provisional"] is True
 
 
-def test_capture_applies_and_rechecks_controls_before_delivering_frames(monkeypatch):
+@pytest.mark.parametrize("mapping", [
+    "lighting-calibrated",
+    "lighting-calibrated-output-roi",
+])
+def test_capture_applies_and_rechecks_controls_before_delivering_frames(monkeypatch, mapping):
     import asyncio
     from types import SimpleNamespace
     calls=[]
@@ -105,7 +139,7 @@ def test_capture_applies_and_rechecks_controls_before_delivering_frames(monkeypa
     callbacks=[]
     async def collect():
         return [frame async for frame in finite._camera_gray_frames_impl(
-            "/dev/fake",max_frames=1,cv2_module=fake,frame_mapping="lighting-calibrated",
+            "/dev/fake",max_frames=1,cv2_module=fake,frame_mapping=mapping,
             capture_metadata=capture_metadata,camera_controls_callback=callbacks.append)]
     frames=asyncio.run(collect())
     assert len(frames)==1

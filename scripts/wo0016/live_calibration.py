@@ -10,6 +10,12 @@ from typing import Any
 import cv2
 import numpy as np
 
+LIGHTING_MAPPINGS = ("lighting-calibrated", "lighting-calibrated-output-roi")
+
+
+def is_lighting_mapping(mapping: str) -> bool:
+    return mapping in LIGHTING_MAPPINGS
+
 
 def require_standard_camera_controls(device: str) -> None:
     """Independent read-only formal gate, including after a killed preview process."""
@@ -38,27 +44,33 @@ def monochrome_view(frame: np.ndarray) -> np.ndarray:
 
 
 def frame_geometry(mapping: str = "stretch") -> dict[str, Any]:
-    if mapping not in ("stretch", "letterbox", "lighting-calibrated"):
-        raise ValueError("frame mapping must be stretch, letterbox or lighting-calibrated")
+    if mapping not in ("stretch", "letterbox", *LIGHTING_MAPPINGS):
+        raise ValueError("frame mapping must be stretch, letterbox or a lighting-calibrated mode")
+    lighting_mapping = is_lighting_mapping(mapping)
+    source_area_filter = mapping == "lighting-calibrated"
     geometry = {"mapping": mapping, "source_resolution": [640, 400],
             "output_resolution": [320, 240], "source_roi_xyxy": [0, 0, 640, 400],
-            "active_output_roi_xyxy": ([0, 20, 320, 220] if mapping in ("letterbox", "lighting-calibrated")
+            "active_output_roi_xyxy": ([0, 20, 320, 220] if mapping in ("letterbox", *LIGHTING_MAPPINGS)
                                        else [0, 0, 320, 240]),
             "belt_width_mm_nominal": 180.0, "physical_calibration_status": "NOT_MEASURED",
             "pixels_per_mm_y": None}
-    if mapping == "lighting-calibrated":
+    if lighting_mapping:
         geometry.update(source_roi_xyxy=[0,20,640,380], active_output_roi_xyxy=[0,30,320,210],
                         binary_thresh=100, threshold_comparison=">", pl_threshold=128,
                         tx_intensity_mapping="saturating +27; PL >=128 equals source >100",
-                        source_min_net_contour_area=60, runtime_min_foreground_pixels=15,
+                        area_filter_mode=("source_retr_ccomp" if source_area_filter
+                                          else "output_roi_connected_components"),
+                        source_min_net_contour_area=(60 if source_area_filter else None),
+                        source_min_net_contour_area_configured=60,
+                        runtime_min_foreground_pixels=15,
                         coordinate_transform="x_out=x_source/2; y_out=y_source/2+20")
     return geometry
 
 
 def resize_monochrome_into(frame: np.ndarray, output: np.ndarray, *, mapping: str) -> None:
     """Preserve the source view extent; output ownership remains with the caller."""
-    if mapping not in ("stretch", "letterbox", "lighting-calibrated"):
-        raise ValueError("frame mapping must be stretch, letterbox or lighting-calibrated")
+    if mapping not in ("stretch", "letterbox", *LIGHTING_MAPPINGS):
+        raise ValueError("frame mapping must be stretch, letterbox or a lighting-calibrated mode")
     source = monochrome_view(frame)
     if (output.dtype != np.uint8 or output.shape != (240, 320)
             or not output.flags.c_contiguous or not output.flags.writeable
@@ -67,11 +79,11 @@ def resize_monochrome_into(frame: np.ndarray, output: np.ndarray, *, mapping: st
     if mapping == "lighting-calibrated":
         from lighting_profile import filter_source_noise
         source = filter_source_noise(source)
-    if mapping in ("letterbox", "lighting-calibrated"):
+    if mapping in ("letterbox", *LIGHTING_MAPPINGS):
         output[:20].fill(0)
         output[220:].fill(0)
         np.copyto(output[20:220], source[::2, ::2])
-        if mapping == "lighting-calibrated":
+        if is_lighting_mapping(mapping):
             output[:30].fill(0)
             output[210:].fill(0)
     else:
@@ -92,7 +104,7 @@ class MonochromePreprocessor:
     def __call__(self, frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         # Strided copies avoid packing the full camera channel on the Zynq CPU.
         resize_monochrome_into(frame, self.gray, mapping=self.mapping)
-        cv2.threshold(self.gray, 100 if self.mapping == "lighting-calibrated" else 128, 255, cv2.THRESH_BINARY, dst=self.binary)
+        cv2.threshold(self.gray, 100 if is_lighting_mapping(self.mapping) else 128, 255, cv2.THRESH_BINARY, dst=self.binary)
         return self.gray, self.binary
 
 
