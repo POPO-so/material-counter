@@ -98,3 +98,14 @@ JSON 参数：TH100、overexp255、ROI[20,380)、min_area60、exposure50/gamma10
 补充帧BG=26.5533、FG=218.0677；过曝比例0.584635%且status_overexp=OVEREXP，均匀性UNEVEN，all_pass=false；hardware_applied仍为null。以上原始光学状态完整保留，未调整告警门槛来使其通过。该帧timestamp仍为2025-05-09，原时间戳保持不变。
 
 新增回归：真实粘连快照15件、三行分组3/2、面积守恒、孔门限非法值拒绝。离线静态结果不能证明输送速度下的身份连续性、实际板端FPS或物理计数准确率；仍需相机角度调整后的连续运动样本及独立实物数量。
+
+## 阶段四板端准备记录（2026-10-25）
+
+- 本地阶段三checkpoint：commit `b55c53c073166f1dfbf7b72d3d54c71d7ece617a`。
+- 已将22个运行时代码文件同步到隔离目录 `/home/xilinx/lighting-calibrated-20261025-b55c53c0/`，没有覆盖原 WO-0015/WO-0016 目录或现有服务文件。板端 `SOURCE_SHA256SUMS.txt` SHA-256 为 `c30ff6a084c60af6dd4b3bd03f50059a7943512729c4215352331c3d32ffafb4`；远端 `sha256sum -c` 全部通过，本地源与远端22个文件逐一比对一致。摘要副本为 `data/results/lighting-calibration-20261025/deployment-SOURCE_SHA256SUMS.txt`。
+- 只读检查发现 `/home/xilinx/lighting-tuner-20261025/live_lighting_tuner.py` 的实例占用 `/dev/video0` 和8080。按用户要求对确认的调光台进程正常发送TERM后，摄像头无占用，8080/8081均无监听。`CmaFree` 从停止前18,020 KiB升至38,056 KiB；最近复读38,124 KiB，满足32,768 KiB门槛。
+- 相机为 `USB Camera: USB GS CAM`（`uvcvideo`）。在摄像头无进程占用时，实际写入并回读确认`auto_exposure=1`、`exposure_time_absolute=50`、`brightness=0`、`gamma=100`。驱动列出的控制中没有`gain`，查询`gain`返回`unknown control`，因此无法证明或锁定`gain=0`。没有启动实时监控或写入PL/DMA。
+- 当前Boot ID为`bb382d01-7bb2-4922-9a85-af6a24ef4d10`。仓库WO-0015门禁的`AUTHORIZED_BOOT_ID`仍为`f8b24aee-ed7e-430a-b3f3-d26056746bfd`；板端可用manifest及Stage 1回执也绑定此前Boot，不能用于当前启动。没有改写门禁、借用旧回执或启动实时链路。
+- 因此本轮无相机完整参数锁定、DMA回传、FPS/PS负载、动态投料、物理真值计数或运行前后CMA对比数据；这些指标保持“未测”。传送带未启动，等操作员确认动态轮次安排后再投料。
+
+继续上板前需要解决两项硬件门槛：为该UVC相机提供可读写的gain控制，或由用户确认相机固件已固定增益且允许将其作为明确例外；并为当前Boot ID重新完成审核的WO-0015 manifest与Stage 1回执。获得可用门禁后，再运行计数链路并收集动态轮次真值、FPS、PS及CMA证据。
