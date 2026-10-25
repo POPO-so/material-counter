@@ -1,200 +1,170 @@
-# material-counter
+# 高速小型物料智能视觉计数系统
 
-Agent 项目导航：[PROJECT_INDEX.md](PROJECT_INDEX.md)。
+面向螺母、垫圈等小型物料连续输送场景的 PYNQ-Z2 视觉计数原型，探索由 FPGA PL 承担流式像素变换、ARM PS 承担区域分析与跨帧计数的实现路径。
 
-**《高速小型物料智能视觉计数系统》**——面向全国大学生嵌入式芯片与系统设计竞赛 2026 FPGA 创新设计赛道（AMD 自主选题初级组）。
+> **当前状态：工程原型，尚未完成工业工况验收。** 已有板端图像流与 DMA 处理记录；最新 M6 螺母实测为 4/5（80%），计数准确率验收未通过。本文按代码和可追溯报告区分实现、离线验证、仿真与板端结果。
 
-平台：PYNQ-Z2（Zynq-7000 / XC7Z020）。开发环境：Vivado / Vitis / Vitis HLS 2026.1、Windows、VS Code。
+## 项目概述
 
-仓库名保持为 `material-counter`，不随作品正式名称变化而重命名。
+生产线上螺母、垫圈等小零件连续移动时，目标可能相互接近、短时粘连或漏检。项目以 PYNQ-Z2（Zynq-7000 / XC7Z020）为平台，研究怎样把像素级、规则明确的处理放到 PL 数据流中，再由 PS 完成较灵活的区域提取、目标关联和越线计数。
 
-## 换电脑继续开发（2026-10-23）
+目标应用基线是供料器、单条可调速输送带、摄像头、照明和 PYNQ-Z2。机械与相机的最终集成路线仍在验证；编码器测速目前属于计划功能。现阶段的板测是有限帧数的工程实验，不代表持续生产运行或通用物料准确率。
 
-队友需先获得此私有仓库的 GitHub 访问权限，再克隆并从 `main` 继续：
+## 核心技术特色
 
-```powershell
-git clone https://github.com/POPO-so/material-counter.git C:\mc
-cd C:\mc
-git switch main
+- **PL 流式图像前端：** AXI4-Stream RTL 实现 RGB888 灰度化和 Gray8 阈值二值化，处理有效像素及视频行/帧标记，并遵守下游反压。
+- **DMA 图像往返：** WO-0016 实验链路将 PS 准备的图像包经 MM2S 送入 PL，再通过 S2MM 把 Binary8 掩膜写回 PS 可访问的 DDR。
+- **PS 端目标计数：** Python、NumPy 和 OpenCV 处理回传掩膜，执行 ROI 区域分析、连通域筛选、候选粘连拆分、跨帧质心关联、轨迹确认和越线计数。
+- **模块级探索与验证：** ROI 裁剪、3×3 形态学等 RTL 模块有独立仿真或综合证据；它们尚未全部集成到本次板测数据通路。
+- **计数与预览解耦：** WO-0016 提供 HTTP/MJPEG 预览实现；计数处理和 JPEG 编码分开调度。浏览器实际显示帧率尚未测定。
+
+PL 流水线的工程价值在于可按像素顺序进行确定性处理，并有机会减少 PS 对每个像素执行重复运算的负担。当前没有同输入、同精度条件下的 CPU/PL 对比基准，因此不宣称已测得加速比或端到端性能优势。
+
+## 系统架构：当前实验数据通路
+
+下图描述 WO-0016 板测所用的实验路径，不代表摄像头路线或整机方案已经冻结。摄像头输入、解码、缩放和 RGB 封包都在 PS；PL 收到的是 PS 将 Gray8 强度复制到 R/G/B 三通道后形成的 RGB888 数据。
+
+```mermaid
+flowchart LR
+    CAM["V4L2 摄像头输入<br/>WO-0016 请求 MJPG 640×400"]
+    PSIN["ARM PS：读取解码帧<br/>取首通道并缩放为 320×240 Gray8"]
+    PACK["ARM PS：Y 复制到 R/G/B<br/>封装 RGB888 AXI-Stream 包"]
+    subgraph PL["PYNQ-Z2 FPGA PL"]
+        GRAY["RGB888 → Gray8"]
+        THRESH["阈值分割 → Binary8"]
+        GRAY --> THRESH
+    end
+    DDR["AXI DMA S2MM → DDR<br/>320×240 Binary8 掩膜"]
+    COUNT["ARM PS：ROI / 连通域<br/>目标关联与越线计数"]
+    VIEW["计数与状态<br/>HTTP/MJPEG 实验预览"]
+
+    CAM --> PSIN --> PACK
+    PACK -->|"AXI DMA MM2S"| GRAY
+    THRESH -->|"AXI DMA S2MM"| DDR
+    DDR --> COUNT --> VIEW
 ```
 
-截至本次交接，`main` 是推荐的当前开发基线。其余工作快照以独立分支保留，按需检出；它们是恢复点，不代表已合并到 `main`：
+axis_roi_crop 与 axis_morphology3x3 是独立 RTL 模块，不在上图的已验证 RGB→Gray→Binary8 板测流水线内。WO-0016 计数路径中的 ROI/连通域处理由 PS 执行。
 
-| 分支 | 内容与边界 |
+### PS 端计数流程
+
+```mermaid
+flowchart TD
+    MASK["DMA 回传 Binary8 掩膜"]
+    ROI["PS：选择计数 ROI"]
+    CCL["PS：提取并筛选连通域"]
+    SPLIT["PS：候选粘连拆分规则"]
+    TRACK["跨帧质心关联与轨迹确认"]
+    LINE["滞回越线判定与去重"]
+    RESULT["累计计数、逐帧状态与预览"]
+
+    MASK --> ROI --> CCL --> SPLIT --> TRACK --> LINE --> RESULT
+```
+
+当前粘连拆分规则是持续优化中的 PS 候选算法。最近的螺母录像分析使用相机 Gray8 在 PS 离线阈值化回放，不能等同于 PL Binary8 或已部署板端算法验收。
+
+## PL 与 PS 的职责
+
+| 层级 | 当前实现 | 边界 |
+|---|---|---|
+| **FPGA PL** | [axis_rgb2gray.v](fpga/rtl/axis_rgb2gray.v)、[axis_gray2binary.v](fpga/rtl/axis_gray2binary.v) 提供流式像素变换；[WO-0014 实验流水线](fpga/experimental/wo0014/axis_dma_image_pipeline.v) 串接 RGB 包适配、灰度、阈值和输出校验。另有 [ROI 裁剪](fpga/rtl/axis_roi_crop.v) 及 [3×3 形态学](fpga/rtl/axis_morphology3x3.v) RTL。 | RGB→Gray→Binary8 有 XSim 与独立黄金比对；ROI 和形态学有各自的模块级验证。后两者未接入 WO-0016 板测流水线，不能描述成整机已具备的 PL 功能。 |
+| **ARM PS** | [WO-0016 运行入口](scripts/wo0016/run_stream_counter.py)、[计数与 DMA 流处理](scripts/wo0016/stream_counter.py) 实现 V4L2 帧读取、缩放、Gray8→RGB888 封包、DMA 控制与同步，以及回传掩膜的 ROI、连通域、粘连候选拆分、跨帧跟踪、越线计数及预览。 | 图像采集和缩放、计数算法及显示处理不是 FPGA RTL；不能把 OpenCV、NumPy 或 Python 算法称为 PL 硬件模块。 |
+| **PS/PL 交互** | PS 通过 AXI DMA MM2S 发送图像包，PL 处理后由 S2MM 写回 Binary8 掩膜。 | 板测结果只适用于报告中绑定的 Overlay、软件和有限测试条件；不证明长期可靠性或其他位流配置。 |
+
+## 硬件组成与连接
+
+**板端实验路径：** PYNQ-Z2（XC7Z020）上运行 PS 端 Python/PYNQ 程序；V4L2 摄像头帧由 PS 读取和缩放；PS 经 DMA 向 PL 发送 RGB888 包；PL 输出经 S2MM 返回 DDR；PS 继续计数并提供实验预览。
+
+**目标应用设备：** 供料器、单条可调速输送带、摄像头、固定照明和 PYNQ-Z2。输送机构的生产工况、最终摄像头接入方案和照明标定尚未完成验收。编码器采集及带速参与计数目前未实现，不能将目标硬件清单视为已连接或已验证系统。
+
+## 软件、固件与开发环境
+
+| 项目 | 当前仓库内容 |
 |---|---|
-| `handoff/feat-pl-stream-skeleton-20261023` | 大型 `feat/pl-stream-skeleton` 工作区的源码基线；配套未跟踪工作文件放在下方 Release 压缩包中。 |
-| `handoff/pynq-exposure-buttons-20261023` | 曝光按钮 Proposed 候选；其中历史 WO-0017 编号与 `main` 当前的物理标定 WO-0017 重名。Vivado 构建和上板均未验证。 |
-| `handoff/wo0015-design-20261023` | WO-0015 隔离工作区快照；因凭据字段而排除了 `data/results/wo0014-coldboot-closure-20261015/`。 |
-| `handoff/wo0016-attempt6-analysis-20261023` | WO-0016 Attempt-6 的离线 Stage B 第一阶段分析与证据。 |
-| `handoff/wo0016-stageb-phase1-5-20261023` | WO-0016 Stage B phase 1–5 源码、脚本与结果记录。 |
+| PL RTL | Verilog AXI4-Stream 模块、实验链路及仿真测试台，主要位于 fpga/rtl/、fpga/experimental/、fpga/sim/。 |
+| PS 软件 | Python/PYNQ 运行脚本、计数器和参考模型，主要位于 scripts/wo0015/、scripts/wo0016/、python/refmodel/。 |
+| 离线依赖 | scripts/delivery/requirements.txt；生成数据与基础回归依赖见 python/synth/requirements.txt。 |
+| FPGA 工具 | XSim / Vivado Tcl 用于已记录的仿真和综合流程。当前工作环境未检测到 vivado 命令；运行完整 RTL 回放需配置 Vivado。 |
+| 板端环境 | PYNQ-Z2 Linux、匹配的 WO-0015 Overlay、V4L2 摄像头及足够的 CMA 内存；需按工单核对 Overlay 与软件哈希。 |
 
-大型工作区快照作为 GitHub Release 附件提供：[handoff-2026-10-23](https://github.com/POPO-so/material-counter/releases/tag/handoff-2026-10-23)，下载 `feat-pl-stream-skeleton-worktree-20261023.zip`。压缩包内的 `HANDOFF-RESTORE.txt` 说明恢复方式与排除项，`SHA256SUMS.txt` 用于核对文件完整性。解压前先检出 `handoff/feat-pl-stream-skeleton-20261023`。
+## 部署、运行与复现
 
-凭据和密码不会随快照上传。WO-0017 Attempt-02 的两份原始凭据日志未上传，GitHub 上只有脱敏版本；WO-0014 coldboot closure 原始目录在本次可用工作区中未找到，也没有放入交接快照，如队友需要请从另行保存的备份恢复。
+### 离线软件检查
 
-## 正式作品简介
+从仓库根目录创建 Python 环境并安装脚本依赖：
 
-本项目面向垫圈、螺母等小型物料连续输送过程中的高速计数需求，基于 PYNQ-Z2 搭建实时视觉处理系统。系统利用传送带单向运动、相邻帧目标位移较小以及编码器可获取实际带速等场景约束，目标是由 FPGA 侧完成图像采集、区域裁剪、滤波、二值化、形态学处理、轻量区域/连通域分析及目标特征提取，将原始图像转换为目标位置、面积和边界框等信息；处理器端根据相邻帧目标的位置变化建立跟踪关系，并结合运动方向、编码器带速、速度预测和目标状态管理实现稳定越线计数，减少重复计数和短时漏检。
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r scripts/delivery/requirements.txt
+```
 
-系统采用全局快门摄像头和固定光源降低高速运动造成的拖影，通过振动盘/供料器配合单条可调速主输送带实现连续供料，并通过供料节拍与输送速度形成不同物料密度工况。实时画面及计数结果计划通过显示屏输出，可同步显示累计数量、输送速度、处理帧率和当前运行状态。
+运行 WO-0016 软件回归和纯模拟入口：
 
-上面是目标系统口径，不代表所有模块已经实现。PR #1～#8 已于 2026-10-15 合并，PR #10 于 2026-10-18 合并到 `main`；后者包含 WO-0015 S2MM 帧回传和 WO-0016 Stage A。WO-0016 Stage B-2 随后完成一轮 165 帧样本，计数 4/5（80%），准确率验收未通过且不再重测。生产 PL 特征接口、持续物料计数和显示仍未形成闭环。具体证据与限制见下方“当前状态”。
+```powershell
+python -m pytest -q scripts/wo0016
+python scripts/wo0016/run_stream_counter.py --mode mock --mock-frames 8
+```
 
-## 系统主链路
+Mock 模式使用合成目标，不连接 PYNQ、DMA 或摄像头，结果不能作为硬件性能或计数准确率证据。
+
+### RTL 离线回放
+
+按照 [scripts/delivery/REPLAY.md](scripts/delivery/REPLAY.md) 在新的空输出目录准备 H3 输入，再使用本机 Vivado/XSim 执行回放及独立黄金比对。该入口不访问开发板，也不会生成板端验收结论。
+
+### 板端实验
+
+WO-0016 板端模式是有限帧、单次授权的实验入口，需要先完成同一开机周期的 Overlay 准备、Manifest 哈希核验、一次性许可和证据路径检查。请按 [scripts/wo0016/README.md](scripts/wo0016/README.md) 与 [scripts/wo0015/README-board.md](scripts/wo0015/README-board.md) 的门禁流程操作；不要把 Mock 命令改成板端命令后直接运行。现有证据不是通用即插即用部署指南。
+
+## 性能与验证状态
+
+状态标签表示证据类型；“板端链路完成”不代表物料计数准确率验收通过。
+
+| 状态 | 项目与结果 | 测量口径及限制 |
+|---|---|---|
+| **VERIFIED_ON_BOARD** | WO-0016 Stage A Attempt 8：30/30 帧完成；端到端吞吐 15.157 FPS（65.975 ms/帧）。 | 空载基线，0/0 目标不能证明物料准确率。49×320 计数带的 ROI 处理均值为 17.657 ms，高于 2.5 ms 目标；CCL 在 30/30 帧运行。 |
+| **VERIFIED_ON_BOARD** | WO-0016 Stage B-2 Attempt-5 Recovery-2：165/165 帧完成；5 颗 M6 螺母计数为 4，准确率 80%；端到端吞吐 22.132 FPS。 | DMA/帧处理链路完成，但少计 1 次，物料准确率验收失败；报告未确定具体漏计原因，且本轮不重测。 |
+| **VERIFIED_OFFLINE** | 2026-10-24 粘连候选诊断记录 pytest scripts/wo0016 为 288 passed、3 skipped。 | 这是报告中的离线测试记录，不是本次 README 修改后重跑的结果；见[诊断报告](data/results/wo0017-touching-diagnosis-20261024/README.md)。 |
+| **SIMULATION_ONLY** | WO-0014 RGB→Gray→Binary8：15 项 XSim 场景；487 帧、37,401,600 像素，独立黄金比对 0 mismatch。 | 仅离线 RTL 仿真和输出比对，不代表板端同规模像素比对或物料计数准确率。 |
+| **VERIFIED_OFFLINE** | WO-0014 实验链路 OOC 综合：668 Slice LUT、377 FF、0 BRAM、0 DSP；10 ns 寄存器间约束 WNS +2.354 ns、TNS 0。 | 仅该实验模块的综合后 OOC 结果；完整 Zynq 系统、布线后时序及板卡 100 MHz 运行未由此证明。 |
+| **SIMULATION_ONLY** | ROI 裁剪与 3×3 形态学 RTL 各有独立测试和综合记录。 | 模块证据不表示已接入或通过整机板测；具体用例见[ROI 验证](docs/verification/wo-0008-handoff.md)和[形态学验证](docs/morphology-verification-20261013.md)。 |
+| **NOT_VERIFIED** | 设计目标 320×240、≥30 FPS；最终摄像头路线、编码器带速、PL ROI/形态学整合、连续生产工况及浏览器显示帧率。 | 已记录的板端端到端吞吐为 15.157 FPS 和 22.132 FPS，均未达到 30 FPS 目标；目标清单不代表已实现或验收。 |
+
+## 已知限制与后续优化
+
+- **计数准确率仍需解决。** 板测样本为 4/5；目标间接近、粘连或分割变化可能导致少计，现有单轮证据不能建立通用准确率。
+- **近期算法改进仍属候选。** 2026-10-24 的两颗/三颗螺母录像用 Gray8 离线阈值回放比较拆分规则；部分样本从旧规则的 1 次事件变为 2 或 3 次。录像没有 PL Binary8，不能作为部署后结果。
+- **ROI 热路径需优化。** Stage A 的计数 ROI 平均耗时 17.657 ms，超过 2.5 ms 目标。
+- **模块尚未整合。** PL ROI 和形态学逻辑有独立实现，但未串入当前板测图像链路；视频源最终路线仍未冻结。
+- **系统级指标未齐。** 尚无已验收的输送带速度、生产照明、完整物料矩阵、持续运行可靠性或端到端 CPU/PL 对比数据；编码器测速也未实现。
+- **许可证未声明。** 仓库根目录当前没有 LICENSE 文件。若希望社区明确复用权限，需要维护者补充许可证。
+
+下一步建议围绕同步 Gray8/PL Binary8 采集和逐颗人工标注复现粘连问题，优化 PS ROI 计数耗时，再评估是否把 ROI/形态学接入 PL 链路，并以新一轮可追溯板测验证最终摄像头、DMA 和计数闭环。
+
+## 项目目录
 
 ```text
-振动盘/供料器
-  → 单条可调速主输送带 + 编码器
-  → 全局快门摄像头 + 固定光源
-  → PYNQ-Z2
-  → PL：图像采集 / ROI / 滤波 / 二值化 / 形态学 / 轻量区域特征提取
-  → PS：编码器带速 / 跨帧关联 / 运动方向 / 速度预测 / 目标状态管理
-  → 越线计数
-  → 显示实时画面、累计数量、输送速度、处理帧率和运行状态
+fpga/rtl/                 可复用 AXI4-Stream RTL 模块
+fpga/experimental/        Work Order 隔离的 PL 实验链路
+fpga/sim/                 仿真测试台与用例
+scripts/wo0015/           Overlay、DMA、相机适配与板端门禁
+scripts/wo0016/           双缓冲流计数、PS 算法与预览
+scripts/delivery/         离线回放、依赖和交付检查
+python/refmodel/          PS 参考模型、实验及离线测试
+docs/                     需求范围、接口、路线和验证报告
+data/results/             追溯性测试与验收证据
 ```
 
-当前不采用“独立双传送带差速机构”作为正式机械方案。摄像头的具体 HDMI、DVP 或其他接入路线仍需工具链和硬件验证，不得把候选路线写成已完成。
+## 文档索引
 
-### Zynq PS+PL 软硬件协同架构边界
+- [项目导航](PROJECT_INDEX.md)
+- [系统范围与目标](docs/00_scope.md) · [接口定义](docs/02_interfaces.md) · [路线状态](docs/07_routes.md)
+- [视频源路线 ADR](docs/adr/adr-0001-video-source.md)
+- [WO-0016 板端验收](docs/verification/wo-0016-board-acceptance.md)
+- [WO-0014 离线图像链路](docs/verification/wo-0014-offline-integration-20261014.md) · [OOC 时序优化](docs/verification/wo-0014-timing-acceptance-20261014.md)
+- [WO-0017 紧邻螺母离线诊断](data/results/wo0017-touching-diagnosis-20261024/README.md)
+- [WO-0016 运行说明](scripts/wo0016/README.md) · [离线 RTL 回放说明](scripts/delivery/REPLAY.md)
 
-语言栏表示源码字节分布，不代表硬件工作量、加速比或验收完成度。当前可综合 RTL 使用 Verilog（`.v`）；SystemVerilog（`.sv`）主要用于测试台，Vivado Tcl 用于工程构建和复现。
+---
 
-| 层次与代码位置 | 职责与已有实现 | 证据边界 |
-|---|---|---|
-| **PL 端：FPGA 硬件加速层** · Verilog / SystemVerilog + Vivado Tcl；`fpga/rtl/`、`fpga/experimental/`、`scripts/wo0015/*.tcl` | 像素级流处理由 PL 模块承担：RGB888→硬件灰度→阈值二值化；另有 3×3 腐蚀/膨胀及 ROI 裁剪、SOF/EOL 同步重建。WO-0015 提供帧打包与 AXI DMA S2MM 回传桥。 | [已验证 RGB 链路](docs/verification/wo-0014-offline-integration-20261014.md)不包含 ROI/形态学。[形态学](docs/morphology-verification-20261013.md)使用行缓冲和行接收/输出交替；这些模块尚未构成已验收的完整链路，也不能宣称全链路持续每周期一像素或零帧存延迟。ROI 的 `tlast` 表示行尾，S2MM 帧打包的 `tlast` 表示帧尾。 |
-| **PS 端：ARM 协同控制层** · Python / PYNQ Overlay；`scripts/wo0015/`、`scripts/wo0016/`、`python/refmodel/ps_reference/` | 分阶段 Overlay 加载与身份核验、AXI-Lite/DMA 寄存器控制及失败即停（`FAIL_STOPPED`）；对回传 Binary8 掩膜进行连通域提取、质心关联和越线计数；Live Monitor 提供实时图像、计数与状态看板。 | 持续运行入口要求预先加载并核验 Overlay；动态加载不是运行中任意重载。已有[板端样本记录](docs/verification/wo-0016-board-acceptance.md)不构成工业级可靠性或真实物料准确率验收；PS 仍有图像缩放、封包及显示处理，不能宣称全部像素操作 100% 由 PL 完成。 |
-| **工程验证体系：自动化回归与硬件仿真** · Python + Vivado XSim；`python/synth/`、`python/refmodel/tests/`、`fpga/sim/`、各实验测试脚本 | 包含 300+ 项自动化测试定义、H3 合成数据集与独立黄金比对；[WO-0014 记录](docs/verification/wo-0014-offline-integration-20261014.md)覆盖 15 项 XSim 场景、487 帧及 37,401,600 像素比对。 | 测试规模与历史通过记录不等于本次重新运行或整机验收。验证、合成数据、历史证据和辅助脚本通过 `.gitattributes` 标记为 vendored，排除出语言统计；文件仍保留，PS 业务运行时及安全依赖通过精确例外保留统计。 |
-
-## 系统做什么
-
-| | 内容 |
-|---|---|
-| **输入** | 连续运动物料的视频流 |
-| **主体处理** | PL 图像前端 → 目标区域/特征提取 → PS 跨帧关联与持续跟踪 → 编码器带速辅助 → 跨线计数 |
-| **主体输出** | 当前计数 · 目标轨迹 / ID 状态 · 位置 · 编码器带速 · 系统运行指标（帧率 / 端到端延迟 / FPGA 资源占用） |
-| **后期探索** | 利用实时运动状态进行送料停止时机预测与控制（见下 Exploratory 层） |
-
-**主体是“视觉感知 + 跟踪 + 计数”，不是简单的单帧检测加一。** 送料停止预测属于后续探索，不是 Core/MVP 的完成前提。
-
-## 功能层级
-
-| 层 | 内容 |
-|---|---|
-| **Core / MVP —— 必须完成** | ① 连续运动物料视觉感知 / 目标区域提取　② 跨帧关联　③ 持续目标跟踪　④ 跨线计数　⑤ 防止同一物料重复计数　⑥ 获取目标位置、速度等运动状态　⑦ 在 PYNQ-Z2 上形成完整可运行系统　⑧ 对计数准确率、处理帧率、端到端延迟、FPGA 资源占用进行实际测量 |
-| **Robustness —— 主体增强** | 验证：不同物料间距 / 不同运动速度 / 位置错位 / 相邻目标接近 / 有限程度的短时遮挡与临时合并 / 间歇漏帧。工作包线以 H5 实测为准；**"通用遮挡跟踪"不属于本项目的必须解决问题** |
-| **Exploratory / A2-lite —— 非主体硬要求** | 主体跟踪与计数稳定后，探索利用目标位置、速度、在途物料数量进行送料停止时机预测与控制，并与普通计数停止方式对比。**失败不影响主体项目成立** |
-
-详细边界见 [docs/00_scope.md](docs/00_scope.md)；层级映射见 MASTER_PLAN §3.0b。
-
-## 当前状态
-
-| 状态 | 内容 |
-|---|---|
-| **Implemented / Offline verified** | `python/synth/` 确定性合成数据与回归；`fpga/rtl/` 流骨架、RGB→Gray、Gray→Binary、ROI、3×3 形态学；`python/refmodel/ps_reference/` 区域/跟踪/越线参考；`fpga/experimental/wo0014/` RGB 包流水线。离线验证不等于上板验收。 |
-| **Board-tested / 有限通信证据** | WO-0013 单次 MM2S→PL Monitor 已通过；WO-0014 50 MHz 单帧及三帧聚合统计已取得板上证据，但三帧任务最终为 `FAIL_STOPPED`。没有逐像素回读或整机计数证据。 |
-| **WO-0016 / Stage B-2 Closeout** | Attempt-5 Recovery-2 完成 165/165 帧，计数 4/5（80%），端到端 22.132 FPS；板端流采集完成，物料准确率验收未通过，已确定不再重测。Stage A Attempt 8 为 15.157 FPS；ROI 平均计数耗时 17.657 ms，高于 2.5 ms 目标，CCL 实测运行 30/30 帧。详见 [WO-0016 板端验收记录](docs/verification/wo-0016-board-acceptance.md)。 |
-| **WO-0017 / Physical calibration** | 校准专用入口与一发式锁已实现；2026-10-23 Attempt-07 通过 worker 环境审计并到达待操作员启动的 READY。尚未开始采样，物理映射、样本分布和真实物料准确率均未测量。详见下方 [WO-0017 当前进展](#wo-0017-当前进展2026-10-23) 和[校准记录](data/results/wo0017-physical-calibration-20261023/attempt-07/README.md)。 |
-| **Synthesized / Implemented timing** | WO-0014 的 50/100 MHz 完整工程均有综合、布线时序及 BIT/HWH；100 MHz 板测为 `NOT_VERIFIED`。ROI、形态学的独立 OOC 综合不能当作完整系统时序闭合。 |
-| **Planned / Proposed** | 正式 PL 特征提取、PL→PS 回传与板上跟踪计数闭环、编码器实际带速、真实摄像头和显示。WO-0012 特征/序列化仍为候选草案。 |
-| **Exploratory** | 结合计数、在途量和实际带速进行送料停止时机预测与控制；失败不影响 Core/MVP。 |
-
-当前已完成若干隔离 POC，**Architecture / Route Not Frozen**。Route A、Route B、Hybrid 以及真实视频输入路线仍需正式决策；PR 合并不代表架构冻结或硬件验收。
-
-### WO-0017 当前进展（2026-10-23）
-
-- 已在 `scripts/wo0016/` 实现独立的物理标定准备与待机路径，限定 300 帧、`full-width-mixed` 配置、同步 Gray8/Binary8 原始数组，以及单独的 Boot-ID 标定锁；不读写或消耗正式验收 Permit/WO-0016 Guard。
-- Attempt-02 因 worker Python 环境缺少 `pynq` 而在开相机前失败；该次标定锁已消费，但相机未打开、DMA 未启动、帧数为 0，也没有签发或消费正式 Permit。Attempt-03/04 在准备阶段被拒绝。Attempt-05 到达待操作员启动的 READY，Attempt-06 标定锁已就绪但 standby 启动待完成。Attempt-07 使用 `/usr/local/share/pynq-venv/bin/python3` 通过依赖审计，随后只读状态核验通过并到达 loopback standby READY。板端证据和各次尝试见[标定记录目录](data/results/wo0017-physical-calibration-20261023/)；Attempt-02 的发布版日志脱敏说明见[发布记录](data/results/wo0017-physical-calibration-20261023/attempt-02/PUBLICATION-REDACTIONS.md)。
-- Attempt-07 readback：Boot ID 未变化；原始待机 JSON 记录 `CmaFree=67,184 KiB`；MM2S/S2MM DMASR 均为 `0x00000001`；摄像头为 640×400 MJPG、60 FPS、手动曝光 50、亮度 0；摄像头和 FPGA 设备均未被占用。环境审计本身返回 `board_accessed=false`、`mmio_opened=false`、`overlay_loaded=false`。
-- **采样未开始**：没有相机帧、DMA 传输或物理测量；活动视野映射、不同物料像素分布和计数准确率仍为 `NOT VERIFIED`。READY 只表示一次性标定入口已待机，不代表采样或验收通过。
-- Attempt-07 板端 payload 绑定到 `3e88de7f`。后续源码提交 `d2f0dee3` 增加了延迟落盘、DMASR 基线绑定及严格帧数参数检查；这些后续改动尚未部署到板端，也没有新的板测证据。
-
-### 合并范围与验证依据
-
-本节以合并后的源码及已有验收证据为准。PR #1 交付公共图像前端，#2 交付 ROI，#3 交付阈值回归与形态学，#4 交付 PS 参考与候选研究，#5 交付 WO-0013，#6/#7 交付 WO-0014 离线链路及硬件依赖/证据，#8 交付审计、复现入口和生成器非空输出目录保护。它们均已合入 `main`（本次核验基线 `4332ba9`）。
-
-[PR #10](https://github.com/POPO-so/material-counter/pull/10) 已于 2026-10-18 合入 `main`（merge commit `5926820`），交付 WO-0015 S2MM 收口和 WO-0016 Stage A Attempt 8；PR #10 的 Stage A 空载基线不代表物料准确率通过。WO-0016 的当前工单结论以 2026-10-21 Stage B-2 Closeout 为准：165/165 帧，4/5（80%），22.132 FPS，物料准确率验收未通过且不再重测。
-
-[提交进度核验](docs/verification/submission-status-20261015.md)、[ROI 交付说明](docs/verification/wo-0008-handoff.md)及 `PROJECT_INDEX.md` 中关于 PR 待合并、草稿链或 ROI 独立交付的文字是合并前快照；其中源码、哈希、测试和失败记录仍用于追溯，Git 合并状态以本节及 GitHub 记录为准。ROI 与 morphology 的历史 Work Order 都使用 WO-0008 编号，按文件名区分。
-
-| 模块 / 实验 | 已有证据 | 适用边界 |
-|---|---|---|
-| [公共前端](docs/verification/frontend-handoff.md) | 流骨架、RGB→Gray、Gray→Binary 的模块仿真、独立像素比对与综合；后续阈值回归见审计记录。 | 模块功能通过不代表真实摄像头输入或完整系统验收。 |
-| [ROI](docs/verification/wo-0008-handoff.md) | `axis_roi_crop.v` 实现真实裁剪、重建 SOF/EOL；24 组有效测试、8 组非法参数拒绝及 3 组联合入口检查，独立比对零差异，Lint/OOC 综合完成。 | 半开窗口、空 ROI 无输出；未接入 WO-0014 板测链，未上板或校准实物窗口，无完整系统时序证据。 |
-| [3×3 形态学](docs/morphology-verification-20261013.md) | `axis_morphology3x3.v` 支持旁路/腐蚀/膨胀、零背景边界；84/84 仿真用例、2,806,344 像素独立比对零差异，Lint/OOC 综合完成。 | 行接收/行输出交替，不能宣称持续每周期输入一像素；未串入 WO-0014 板测 BIT，无该模块板测或完整实现时序证据。 |
-| [PS 计数参考](docs/verification/wo-0010-ps-reference.md) | PC 离线 Binary8→8 连通区域→关联跟踪→越线去重。`[Measured: wo0010-reference-final-20261013]` 原 PNG 通路在 31 个可确认事件中 TP=19、FN=12，召回率 61.29%。 | 无缝接触导致的分割漏计仍存在；GT 身份不进入关联器。不是板端 DMA 接收服务，不能把 GT 几何诊断或精确率当作整机准确率。 |
-| [WO-0013 DMA](docs/verification/wo-0013-level2-accepted-20261014.md) | `[Measured: wo0013-pagemap-policy-20261014-120205]` PYNQ-Z2 单次发送 76,816 字节，PL 接受 19,204 拍、1 次 TLAST，首末字和校验和一致；测试后 Ping/SSH/Linux 健康检查通过。 | 仅 Binary8+元数据的 DDR→MM2S→Monitor，不是 RGB 图像处理；无 S2MM、无整帧回读、无持续运行或整机计数验收。使用记录中的 resetfix BIT/HWH，不可随意替换产物。 |
-| [WO-0014 离线链路](docs/verification/wo-0014-offline-integration-20261014.md)与[优化时序](docs/verification/wo-0014-timing-acceptance-20261014.md) | RGB 包→adapter→Gray→Binary→checker；15 项 XSim，487 帧、37,401,600 像素独立比对零差异，覆盖 7 种坏包及恢复；后续优化完成 OOC 时序验收。 | ROI/形态学未串入该链。错误帧前缀必须整帧作废；`packet_done` 不表示输出已排空，checker 不是通用异常帧守卫。 |
-| [WO-0014 完整实现](docs/verification/wo-0014-hw-integration-20261014.md)、[50 MHz 单帧板测](data/results/wo0014-pg021-ready-20261015/report.md)与[三帧收官](data/results/wo0014-closeout-20261015/report.md) | 50/100 MHz 完整实现时序通过，BIT/HWH 与源码有哈希绑定；50 MHz 单帧 PASS，另有三帧 DMA/checker/Golden 聚合统计 PASS。 | 三帧任务最终因 CMA 健康门为 `FAIL_STOPPED`；100 MHz 板测全部 `NOT_VERIFIED`。聚合统计不能替代逐像素回读；DRC 的 14 Warning、2 Advisory 及 LUTAR-1 methodology 风险仍保留。 |
-
-### DMA / Overlay 安全限制
-
-- 已有证据不授权再次执行硬件操作。Overlay、MMIO、DMA 均需新的明确批准，限定产物、板身份和单次范围；失败即停，不自动重试、reset 或 reload。Overlay 加载成功、一次寄存器读取与 DMA 完成是不同证据等级。
-- WO-0014 三帧任务外层状态必须保留为 `FAIL_STOPPED`。CMA 前后原始数值未持久化，既不能据此断言泄漏，也不能忽略健康门或宣称恢复准入。不得放宽 CMA 门、删除/更换 Guard 或绕过停止状态；只读 OS 取证也需单独批准。
-- WO-0013 通用 `python/boardtests/wo0013/dma_replay_verify.py` 会加载 Overlay 并在错误时 reset/re-arm，**不是已验收单次实验的入口**，不可用于禁止 reset/reload 的授权。一次成功不代表可重复安全运行。
-- [WO-0014 DMA 长度评估](docs/verification/wo-0014-dma-length-assessment-20261014.md)：320×240 RGB 实验包为 230,432 字节，硬件使用 18 位 DMA 长度字段，S2MM 未启用。输入包 TLAST 结束整个包，图像输出 TLAST=EOL；未经 EOF 回传桥设计，不能直接当作整帧 DMA 完成边界。
-
-### 离线完整性与复现
-
-从仓库根目录运行以下只读完整性检查（仅需 Python 标准库，不访问开发板）：
-
-```powershell
-python scripts/delivery/verify_delivery.py
-```
-
-它核对交付清单、关键源码/测试/产物哈希、受保护文件及 `FAIL_STOPPED` 状态，不能替代新仿真、综合或板测。跨目录离线输入准备、XSim 和独立比对步骤见 [scripts/delivery/REPLAY.md](scripts/delivery/REPLAY.md)，依赖快照见 [requirements.txt](scripts/delivery/requirements.txt)。生成输入及仿真输出必须使用新的目录，禁止覆盖已有数据或证据。
-
-## 术语纪律
-
-Route 尚未冻结。文档与代码中优先使用**视觉感知 / 目标区域提取 / 特征计算 / 跨帧关联**。
-**不预设** YOLO / CNN / 完整目标检测网络 / 特定 CCL 或 segmentation 实现。"检测"可作为功能层概念使用，但不得因此提前冻结实现方法。
-
-## 唯一权威文档
-
-**[MASTER_PLAN.md](MASTER_PLAN.md)** —— Master Plan v1.1 及后续 Controlled Errata，作为当前计划与边界的权威记录。
-本仓库的所有工作必须遵循该文件。它不在日常开发中被修改；如需勘误，走 Controlled Errata 流程并在本文档记录。
-
-## 仓库结构
-
-开发阶段使用当前结构；**最终提交前**需在本文档建立与官方推荐目录
-（`src/ sim/ build/ board/ data/ skill/ report/`）的对应关系表。
-
-```
-docs/        文档（scope / 接口契约 / 风险 / Route 记录 / ADR / AI 协作记录）
-python/      合成数据、图像参考模型、PS 离线计数参考及实验/测试
-fpga/        PL RTL、仿真、实验模块、约束与复现脚本
-scripts/     精选交付校验、离线复现与实验工程构建入口
-hw/          硬件平台（BOM / 接线 / 装配 / 标定 / 引脚预算）
-skill/       AI 协作 skill 候选池
-data/        数据集与实验证据（synthetic / recorded / labeled / results）
-```
-
-## 命名纪律
-
-目录名与文件名统一使用**英文小写字母、数字、`_`、`-`**；不使用中文、空格或特殊字符。
-**Python 包与模块用 `_`**（避免 `-` 造成 import 问题）。
-
-## 证据纪律
-
-所有性能数字必须带以下前缀之一，见 MASTER_PLAN「记号约定」：
-
-| 记号 | 用途 |
-|---|---|
-| `[Target]` | 工程目标，尚未验证 |
-| `[Hypothesis]` | 实验假设，未经本项目实测 |
-| `[Measured: <expid>]` | 实测结果，来自 `data/results/<expid>/` |
-| `pre-synthesis estimate` | 资源类数字，未综合 |
-
-**禁止提前把预期结果填成实际结果。** 论文 / PPT / 答辩只允许引用 `[Measured]`。
-
-## 角色
-
-- **Codex Manager**：确定任务范围与架构边界、处理歧义和风险，审查实际修改与验证结果，负责最终验收。
-- **Codex Worker**：在明确的任务和文件边界内完成定向检索、实现或验证；发现范围或设计问题时升级给 Manager，并简要报告修改、测试和遗留问题。
-
-## 运行现有合成数据测试
-
-在安装 `python/synth/requirements.txt` 后，从仓库根目录运行：
-
-```powershell
-python -m pytest python/synth/tests -v
-```
+本 README 面向竞赛评审、FPGA/SoC 开发者及复现人员；具体能力和限制以链接的源代码、工作包与验证报告为准。
