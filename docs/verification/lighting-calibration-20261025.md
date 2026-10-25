@@ -103,6 +103,7 @@ JSON 参数：TH100、overexp255、ROI[20,380)、min_area60、exposure50/gamma10
 
 - 本地阶段三checkpoint：commit `b55c53c073166f1dfbf7b72d3d54c71d7ece617a`。
 - 已将22个运行时代码文件同步到隔离目录 `/home/xilinx/lighting-calibrated-20261025-b55c53c0/`，没有覆盖原 WO-0015/WO-0016 目录或现有服务文件。板端 `SOURCE_SHA256SUMS.txt` SHA-256 为 `c30ff6a084c60af6dd4b3bd03f50059a7943512729c4215352331c3d32ffafb4`；远端 `sha256sum -c` 全部通过，本地源与远端22个文件逐一比对一致。摘要副本为 `data/results/lighting-calibration-20261025/deployment-SOURCE_SHA256SUMS.txt`。
+- 在板端PYNQ Python环境执行新部署的`run_live_monitor.py --help`成功，确认入口及其导入链可加载；这不启动相机、Overlay或DMA。
 - 只读检查发现 `/home/xilinx/lighting-tuner-20261025/live_lighting_tuner.py` 的实例占用 `/dev/video0` 和8080。按用户要求对确认的调光台进程正常发送TERM后，摄像头无占用，8080/8081均无监听。`CmaFree` 从停止前18,020 KiB升至38,056 KiB；最近复读38,124 KiB，满足32,768 KiB门槛。
 - 相机为 `USB Camera: USB GS CAM`（`uvcvideo`）。在摄像头无进程占用时，实际写入并回读确认`auto_exposure=1`、`exposure_time_absolute=50`、`brightness=0`、`gamma=100`。驱动列出的控制中没有`gain`，查询`gain`返回`unknown control`，因此无法证明或锁定`gain=0`。没有启动实时监控或写入PL/DMA。
 - 当前Boot ID为`bb382d01-7bb2-4922-9a85-af6a24ef4d10`。仓库WO-0015门禁的`AUTHORIZED_BOOT_ID`仍为`f8b24aee-ed7e-430a-b3f3-d26056746bfd`；板端可用manifest及Stage 1回执也绑定此前Boot，不能用于当前启动。没有改写门禁、借用旧回执或启动实时链路。
