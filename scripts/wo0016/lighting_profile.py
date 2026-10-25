@@ -7,6 +7,7 @@ captured/prepared Gray8 image remains available unchanged as evidence.
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from typing import Any
 
@@ -21,8 +22,9 @@ CAMERA_CONTROLS = {
     "exposure_time_absolute": 50,
     "brightness": 0,
     "gamma": 100,
-    "gain": 0,
 }
+OPTIONAL_CAMERA_CONTROLS = {"gain": 0}
+GAIN_UNVERIFIED_MESSAGE = "UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证"
 AREA_HINTS = {
     "ranges": {
         "small": (60, 95),
@@ -177,18 +179,32 @@ def _read_controls(stdout: str | None) -> dict[str, int]:
     return values
 
 
-def verify_camera_controls(device: os.PathLike[str] | str) -> dict[str, int]:
-    """Read all calibrated controls and fail unless every value matches exactly."""
-    device_path = _device_value(device)
-    command = [*_v4l2_prefix(), "--device", device_path,
-               "--get-ctrl", ",".join(CAMERA_CONTROLS)]
-    result = subprocess.run(
+def _run_control(device: str, action: str, value: str) -> subprocess.CompletedProcess[str]:
+    command = [*_v4l2_prefix(), "--device", device, action, value]
+    return subprocess.run(
         command,
         timeout=CAMERA_CONTROL_TIMEOUT_S,
         check=True,
         capture_output=True,
         text=True,
     )
+
+
+def _error_text(error: subprocess.CalledProcessError) -> str:
+    parts = (getattr(error, "stderr", None), getattr(error, "stdout", None), str(error))
+    return "\n".join(str(part) for part in parts if part).strip()
+
+
+def _is_unknown_gain(error: subprocess.CalledProcessError) -> bool:
+    return re.search(
+        r"\bunknown control\s+(?:'gain'|\"gain\"|gain)(?=\s|$|:)",
+        _error_text(error),
+        flags=re.IGNORECASE,
+    ) is not None
+
+
+def _verify_required_controls(device: str) -> dict[str, int]:
+    result = _run_control(device, "--get-ctrl", ",".join(CAMERA_CONTROLS))
     actual = _read_controls(result.stdout)
     for name, expected in CAMERA_CONTROLS.items():
         if name not in actual:
@@ -200,16 +216,71 @@ def verify_camera_controls(device: os.PathLike[str] | str) -> dict[str, int]:
     return {name: actual[name] for name in CAMERA_CONTROLS}
 
 
-def apply_camera_controls(device: os.PathLike[str] | str) -> dict[str, int]:
-    """Set calibrated controls, then confirm them with a fresh V4L2 readback."""
+def _verify_gain(device: str, *, set_response: str) -> dict[str, Any]:
+    requested = OPTIONAL_CAMERA_CONTROLS["gain"]
+    try:
+        result = _run_control(device, "--get-ctrl", "gain")
+    except subprocess.CalledProcessError as exc:
+        if not _is_unknown_gain(exc):
+            raise
+        return {
+            "requested": requested,
+            "value": None,
+            "status": "not_exposed",
+            "verification": "not_verified",
+            "message": GAIN_UNVERIFIED_MESSAGE,
+            "driver_response": _error_text(exc),
+            "set_response": set_response,
+        }
+
+    actual = _read_controls(result.stdout)
+    if "gain" not in actual:
+        raise RuntimeError("camera control gain is missing from V4L2 readback")
+    if actual["gain"] != requested:
+        raise RuntimeError(
+            f"camera control gain readback mismatch: expected {requested}, got {actual['gain']}"
+        )
+    if set_response.startswith("unknown control"):
+        raise RuntimeError("gain set returned unknown control but readback exposed a value")
+    return {
+        "requested": requested,
+        "value": actual["gain"],
+        "status": "verified",
+        "verification": "readback",
+        "message": None,
+        "driver_response": None,
+        "set_response": set_response,
+    }
+
+
+def _control_report(device: str, *, gain_set_response: str) -> dict[str, Any]:
+    required = _verify_required_controls(device)
+    gain = _verify_gain(device, set_response=gain_set_response)
+    return {
+        "required_controls_verified": True,
+        "required_controls": required,
+        "gain": gain,
+    }
+
+
+def verify_camera_controls(device: os.PathLike[str] | str) -> dict[str, Any]:
+    """Strictly read required controls and report the optional gain status."""
+    return _control_report(_device_value(device), gain_set_response="not_attempted")
+
+
+def apply_camera_controls(device: os.PathLike[str] | str) -> dict[str, Any]:
+    """Set required controls, attempt gain=0, and report exact readback status."""
     device_path = _device_value(device)
     settings = ",".join(f"{name}={value}" for name, value in CAMERA_CONTROLS.items())
-    command = [*_v4l2_prefix(), "--device", device_path, "--set-ctrl", settings]
-    subprocess.run(
-        command,
-        timeout=CAMERA_CONTROL_TIMEOUT_S,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return verify_camera_controls(device_path)
+    _run_control(device_path, "--set-ctrl", settings)
+
+    gain_value = OPTIONAL_CAMERA_CONTROLS["gain"]
+    try:
+        _run_control(device_path, "--set-ctrl", f"gain={gain_value}")
+    except subprocess.CalledProcessError as exc:
+        if not _is_unknown_gain(exc):
+            raise
+        gain_set_response = _error_text(exc)
+    else:
+        gain_set_response = "applied"
+    return _control_report(device_path, gain_set_response=gain_set_response)

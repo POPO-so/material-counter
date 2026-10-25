@@ -442,3 +442,30 @@ def test_missing_event_track_is_explicit_unknown_and_log_is_bounded():
     assert data["last_crossing_area_px"] is None
     assert "面积 N/A，速度 N/A" in data["events"][-1]["message"]
     assert "跨帧恢复" not in data["events"][-1]["message"]
+
+
+def test_camera_control_verification_and_gain_exception_are_in_monitor_json():
+    state = state_module().LiveMonitorState(mode="board")
+    report = {
+        "required_controls_verified": True,
+        "required_controls": {
+            "auto_exposure": 1,
+            "exposure_time_absolute": 50,
+            "brightness": 0,
+            "gamma": 100,
+        },
+        "gain": {
+            "requested": 0,
+            "value": None,
+            "status": "not_exposed",
+            "verification": "not_verified",
+            "message": "UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证",
+            "driver_response": "unknown control 'gain'",
+        },
+    }
+    state.set_camera_controls(report)
+
+    snapshot = state.snapshot()
+
+    assert snapshot["camera_controls"] == report
+    assert snapshot["dashboard"]["camera_controls"] == report

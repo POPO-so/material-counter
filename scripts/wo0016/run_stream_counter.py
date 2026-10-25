@@ -540,6 +540,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                                    mapping_timings_ms: list[float] | None = None,
                                    steady_start_time: list[float] | None = None,
                                    capture_metadata: dict[str, Any] | None = None,
+                                   camera_controls_callback: Callable[[dict[str, Any]], None] | None = None,
                                    include_capture_metadata: bool = False,
                                    source_frame_ids: tuple[int, ...] = (),
                                    frame_mapping: str = "stretch",
@@ -550,6 +551,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
     continuous = max_frames is None and callable(live_stop_requested)
     if live_stop_requested is not None and not callable(live_stop_requested):
         raise ValueError("live_stop_requested must be callable")
+    if camera_controls_callback is not None and not callable(camera_controls_callback):
+        raise ValueError("camera_controls_callback must be callable")
     if not continuous and (isinstance(max_frames, bool)
                            or not isinstance(max_frames, int) or max_frames < 1):
         raise ValueError("max_frames must be a positive integer")
@@ -640,8 +643,9 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height} "
                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
             )
+        applied_camera_controls = None
         if frame_mapping == "lighting-calibrated":
-            lighting_profile.apply_camera_controls(device)
+            applied_camera_controls = lighting_profile.apply_camera_controls(device)
         def read_gray_frame(*, warmup: bool,
                             source_frame_id: int | None = None
                             ) -> tuple[np.ndarray, float, int, int, np.ndarray | None]:
@@ -746,8 +750,13 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
             await get_frame(warmup=True)
         if frame_mapping == "lighting-calibrated":
             controls = lighting_profile.verify_camera_controls(device)
+            if applied_camera_controls is not None:
+                controls["gain"]["set_response"] = applied_camera_controls["gain"]["set_response"]
             if capture_metadata is not None:
-                capture_metadata["hardware_applied"] = controls
+                capture_metadata["hardware_applied"] = applied_camera_controls["required_controls"]
+                capture_metadata["camera_control_status"] = controls
+            if camera_controls_callback is not None:
+                camera_controls_callback(controls)
         if capture_metadata is not None:
             capture_metadata.update({
                 "camera_fps_requested": 60,

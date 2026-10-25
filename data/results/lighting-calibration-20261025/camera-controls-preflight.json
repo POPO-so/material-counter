@@ -1,0 +1,27 @@
+{
+  "captured_date": "2026-10-25",
+  "host": "192.168.2.99",
+  "boot_id": "bb382d01-7bb2-4922-9a85-af6a24ef4d10",
+  "device": "/dev/video0",
+  "camera": "USB Camera: USB GS CAM",
+  "v4l2_driver": "uvcvideo",
+  "cma_free_kib": 36720,
+  "cma_threshold_kib": 32768,
+  "control_list_command": "v4l2-ctl -d /dev/video0 --list-ctrls-menu",
+  "control_list_file": "data/calibration/lighting-20261025/v4l2-controls-20261025.txt",
+  "required_control_readback": {
+    "gamma": 100,
+    "brightness": 0,
+    "exposure_time_absolute": 50,
+    "auto_exposure": 1
+  },
+  "gain": {
+    "requested": 0,
+    "message": "UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证",
+    "driver_response": "unknown control 'gain'",
+    "verification": "not_verified",
+    "status": "not_exposed"
+  },
+  "camera_open": false,
+  "dma_started": false
+}

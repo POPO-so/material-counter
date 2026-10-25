@@ -34,7 +34,7 @@ JSON 参数：TH100、overexp255、ROI[20,380)、min_area60、exposure50/gamma10
 | `scripts/wo0015/prepare_vectors.py`、实验golden、`python/refmodel/ps_reference` | PL黄金阈值128；参考模型min16等 | 独立历史/合成参考，不是实时监控配置，不替换历史证据 |
 | `fpga/rtl/axis_gray2binary.v`、`fpga/experimental/wo0014/axis_dma_image_pipeline.v`、`fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v` | 综合参数THRESHOLD128、比较>=；无动态阈值寄存器 | 不伪造MMIO阈值写入；采用新profile专用TX补偿，位流不变 |
 | `scripts/live_lighting_tuner.py:DEFAULT_PARAMS` | binary95、overexp245；ROI20/380、min60 | 默认改100/255，其余保留；该脚本原已存在但尚未跟踪 |
-| 相机启动与旧只读gate | exposure50/brightness0；未要求gamma/gain | 新profile在格式协商后实际set并get核对manual exposure1、exposure50、brightness0、gamma100、gain0；warmup后再次只读核对 |
+| 相机启动与旧只读gate | exposure50/brightness0；未要求gamma/gain | 新profile格式协商后写入并严格读回四项必需值：manual exposure1、exposure50、brightness0、gamma100；独立尝试gain=0。仅`unknown control 'gain'`记录为未验证例外，其他set/readback失败仍阻断；warmup后再次核对并将结果写入监控JSON |
 
 `run_live_monitor.py` 现在默认使用新参数。`run_stream_counter.py` 是带历史工单/Permit的有限实验入口，**无参数时仍为legacy**；使用相机角度调整后的配置必须显式传 `--counting-profile lighting-calibrated`。旧physical-calibration模式仍要求full-width-mixed；不能复用旧READY/Permit作为本次硬件验证。
 
@@ -66,7 +66,7 @@ JSON 参数：TH100、overexp255、ROI[20,380)、min_area60、exposure50/gamma10
 
 最终命令：`.venv/Scripts/python.exe -m pytest -q scripts/wo0016 scripts/test_live_lighting_tuner.py`。
 
-阶段四本地checkpoint命令：`.venv/Scripts/python.exe -m pytest -q scripts/wo0016 scripts/test_live_lighting_tuner.py`，结果 **424 passed, 3 skipped**（91.63s），完整输出保存在 `data/results/lighting-calibration-20261025/pytest-checkpoint.log`。
+阶段三checkpoint命令：`.venv/Scripts/python.exe -m pytest -q scripts/wo0016 scripts/test_live_lighting_tuner.py`，结果 **424 passed, 3 skipped**（91.63s），完整输出保存在 `data/results/lighting-calibration-20261025/pytest-checkpoint.log`。阶段四更新后命令：`.venv/Scripts/python.exe -m pytest -q scripts/wo0016 scripts/wo0015 scripts/test_live_lighting_tuner.py`，结果 **610 passed, 4 skipped**（167.05s）。
 
 覆盖全部0..255阈值等价、源净面积边界/孔面积、ROI边界和y偏移、三物料快照保留、三件平移越线得到3、最小两件粘连拆分且面积守恒、漏一帧预测恢复得到1、V4L2命令/回读失败、相机格式协商→下发→warmup→回读顺序、旧配置回归和HTTP接口。开发期间调光台HTTP早期拒绝路径重复出现Windows 10053连接中止；定位为未消费正常请求体就关闭连接，已在路由/Origin/Content-Type早拒绝前有界预读1..4096字节、超时3秒，不解析/应用被拒请求。新增重复403/404/415回归并验证控件不变。另补新profile输出缓冲与原始相机帧重叠时必须拒绝的保护测试。
 
@@ -106,7 +106,9 @@ JSON 参数：TH100、overexp255、ROI[20,380)、min_area60、exposure50/gamma10
 - 在板端PYNQ Python环境执行新部署的`run_live_monitor.py --help`成功，确认入口及其导入链可加载；这不启动相机、Overlay或DMA。
 - 只读检查发现 `/home/xilinx/lighting-tuner-20261025/live_lighting_tuner.py` 的实例占用 `/dev/video0` 和8080。按用户要求对确认的调光台进程正常发送TERM后，摄像头无占用，8080/8081均无监听。`CmaFree` 从停止前18,020 KiB升至38,056 KiB；最近复读38,124 KiB，满足32,768 KiB门槛。
 - 相机为 `USB Camera: USB GS CAM`（`uvcvideo`）。在摄像头无进程占用时，实际写入并回读确认`auto_exposure=1`、`exposure_time_absolute=50`、`brightness=0`、`gamma=100`。驱动列出的控制中没有`gain`，查询`gain`返回`unknown control`，因此无法证明或锁定`gain=0`。没有启动实时监控或写入PL/DMA。
-- 当前Boot ID为`bb382d01-7bb2-4922-9a85-af6a24ef4d10`。仓库WO-0015门禁的`AUTHORIZED_BOOT_ID`仍为`f8b24aee-ed7e-430a-b3f3-d26056746bfd`；板端可用manifest及Stage 1回执也绑定此前Boot，不能用于当前启动。没有改写门禁、借用旧回执或启动实时链路。
-- 因此本轮无相机完整参数锁定、DMA回传、FPS/PS负载、动态投料、物理真值计数或运行前后CMA对比数据；这些指标保持“未测”。传送带未启动，等操作员确认动态轮次安排后再投料。
+- 用户随后明确授权当前Boot ID。`scripts/wo0015/board_preflight.py`已将批准值更新为`bb382d01-7bb2-4922-9a85-af6a24ef4d10`；当前源manifest仍绑定`2cc2ab91-2e3f-450e-b9e7-361ec38e2815`，旧Stage 1回执绑定`d9f65950-d59b-4ea4-bee4-b28656cb176f`，均不复用。为本启动生成新manifest与Stage 1回执仍待执行。
+- 用户确认本型号的UVC固件不暴露gain。`v4l2-ctl -d /dev/video0 --list-ctrls-menu`完整输出保存在`data/calibration/lighting-20261025/v4l2-controls-20261025.txt`（SHA-256 `7356e89dd717084668849b5eade446618990a87b6efe075f07e9204a565aac8f`）；结构化预检记录为`data/results/lighting-calibration-20261025/camera-controls-preflight.json`。输出包含brightness、gamma、auto_exposure、exposure_time_absolute及其菜单/范围；无gain。代码只豁免精确unknown-control错误，四项必需值保持严格门禁，并在运行JSON中记录用户指定的中文未验证说明。
+- 当前只读复查的CmaFree为34,828 KiB，仍满足门槛；摄像头无占用，8080/8081无监听。旧活动Stage 1 consumed guard SHA-256为`03cc64f337f54bf26ce9f8ea4f2cae2b99793a8526ab131c4c740e854f82ee3d`，旧PASS receipt SHA-256为`8c79ff081bca5a40cf7bacaa5ab095bdfc0382e16e05604e45b448e6814fd745`；两者均标记Boot d9f65950。旧terminal-failure marker不存在。将按授权流程原样归档这两份文件，再尝试一次当前Boot的Stage 1。
+- 实时监控、Overlay/DMA、空载误触发、FPS/PS、动态投料、物理真值计数及运行前后CMA变化仍未测。传送带未启动。
 
-继续上板前需要解决两项硬件门槛：为该UVC相机提供可读写的gain控制，或由用户确认相机固件已固定增益且允许将其作为明确例外；并为当前Boot ID重新完成审核的WO-0015 manifest与Stage 1回执。获得可用门禁后，再运行计数链路并收集动态轮次真值、FPS、PS及CMA证据。
+下一步按已授权范围为当前Boot生成审核manifest，归档旧Stage 1 guard/receipt，重新确认CmaFree后运行Stage 1。只有回执通过后才启动实时监控并执行空载基准；空载稳定后再通知用户投料。

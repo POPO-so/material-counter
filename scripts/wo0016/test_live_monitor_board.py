@@ -90,6 +90,55 @@ def test_successful_admission_orders_all_gates_before_dma_and_frees_once(admitte
     assert len(set(session.api.freed)) == len(session.api.freed) == 4
 
 
+def test_camera_warmup_control_report_reaches_live_monitor_json(monkeypatch):
+    args = live.parser().parse_args(["--mode", "board"])
+    state = LiveMonitorState(mode="board")
+    session = live.BoardSession(args, state)
+    session.dma = SimpleNamespace(recvchannel=object(), sendchannel=object())
+    report = {
+        "required_controls_verified": True,
+        "required_controls": {
+            "auto_exposure": 1,
+            "exposure_time_absolute": 50,
+            "brightness": 0,
+            "gamma": 100,
+        },
+        "gain": {
+            "requested": 0,
+            "value": None,
+            "status": "not_exposed",
+            "verification": "not_verified",
+            "message": "UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证",
+            "driver_response": "unknown control 'gain'",
+            "set_response": "unknown control 'gain'",
+        },
+    }
+
+    class FakeStream:
+        def __init__(self, **kwargs):
+            pass
+
+        async def run(self, frames, *, stop_requested):
+            async for _ in frames:
+                pass
+
+    async def camera_frames(*args, **kwargs):
+        callback = kwargs.get("camera_controls_callback")
+        if callback is not None:
+            callback(report)
+        yield np.zeros((240, 320), dtype=np.uint8)
+
+    monkeypatch.setattr(live, "DoubleBufferStream", FakeStream)
+    monkeypatch.setattr(live.finite, "_camera_gray_frames_impl", camera_frames)
+
+    asyncio.run(session.run(counter=object(), publish=lambda *args: None))
+
+    snapshot = state.snapshot()
+    assert snapshot["camera_controls"] == report
+    assert snapshot["dashboard"]["camera_controls"]["gain"]["message"] == (
+        "UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证")
+
+
 @pytest.mark.parametrize("failure", ["boot", "receipt-hash", "cma", "camera", "owner", "signature"])
 def test_admission_rejects_before_dma_driver(admitted, monkeypatch, failure):
     session, calls = admitted

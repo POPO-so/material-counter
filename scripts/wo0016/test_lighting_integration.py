@@ -90,15 +90,32 @@ def test_capture_applies_and_rechecks_controls_before_delivering_frames(monkeypa
         "CAP_V4L2","CAP_PROP_FOURCC","CAP_PROP_FRAME_WIDTH","CAP_PROP_FRAME_HEIGHT",
         "CAP_PROP_FPS","CAP_PROP_BUFFERSIZE","INTER_NEAREST","VideoWriter_fourcc","resize")})
     fake.VideoCapture=lambda *args:Capture()
-    monkeypatch.setattr(finite.lighting_profile,"apply_camera_controls",lambda d:calls.append("apply") or {})
-    monkeypatch.setattr(finite.lighting_profile,"verify_camera_controls",lambda d:calls.append("verify") or {})
+    required={"auto_exposure":1,"exposure_time_absolute":50,"brightness":0,"gamma":100}
+    applied={"required_controls_verified":True,"required_controls":required,
+             "gain":{"requested":0,"value":None,"status":"not_exposed",
+                     "verification":"not_verified","message":"UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证",
+                     "driver_response":"unknown control 'gain'","set_response":"unknown control 'gain'"}}
+    verified={"required_controls_verified":True,"required_controls":required,
+              "gain":{"requested":0,"value":None,"status":"not_exposed",
+                      "verification":"not_verified","message":"UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证",
+                      "driver_response":"unknown control 'gain'","set_response":"not_attempted"}}
+    monkeypatch.setattr(finite.lighting_profile,"apply_camera_controls",lambda d:calls.append("apply") or applied)
+    monkeypatch.setattr(finite.lighting_profile,"verify_camera_controls",lambda d:calls.append("verify") or dict(verified, gain=dict(verified["gain"])))
+    capture_metadata={}
+    callbacks=[]
     async def collect():
         return [frame async for frame in finite._camera_gray_frames_impl(
-            "/dev/fake",max_frames=1,cv2_module=fake,frame_mapping="lighting-calibrated")]
+            "/dev/fake",max_frames=1,cv2_module=fake,frame_mapping="lighting-calibrated",
+            capture_metadata=capture_metadata,camera_controls_callback=callbacks.append)]
     frames=asyncio.run(collect())
     assert len(frames)==1
     assert calls.index("mode") < calls.index("apply") < calls.index("read") < calls.index("verify")
     assert not frames[0][:30].any() and not frames[0][210:].any()
+    assert capture_metadata["hardware_applied"] == required
+    assert capture_metadata["camera_control_status"]["gain"]["message"] == (
+        "UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证")
+    assert capture_metadata["camera_control_status"]["gain"]["set_response"] == "unknown control 'gain'"
+    assert callbacks == [capture_metadata["camera_control_status"]]
     assert calls[-1]=="release"
 
 

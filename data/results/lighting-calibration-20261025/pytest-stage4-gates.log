@@ -1,0 +1,3 @@
+Stage 4 gate update and camera control exception regression suite
+Command: .venv\Scripts\python.exe -m pytest -q scripts/wo0016 scripts/wo0015 scripts/test_live_lighting_tuner.py
+Result: 610 passed, 4 skipped in 167.05s

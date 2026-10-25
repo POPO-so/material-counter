@@ -232,7 +232,9 @@ class BoardSession:
         # continuous mode. The public finite camera/operator gate is unchanged.
         frames = finite._camera_gray_frames_impl(
             self.args.camera, max_frames=None, live_stop_requested=self.state.stop.is_set,
-            read_timeout_s=self.args.timeout_s, frame_mapping=finite.preprocessing_configuration(self.args)["mapping"])
+            read_timeout_s=self.args.timeout_s,
+            frame_mapping=finite.preprocessing_configuration(self.args)["mapping"],
+            camera_controls_callback=self.state.set_camera_controls)
         await self.stream.run(frames, stop_requested=self.state.stop.is_set)
 
     def close(self):

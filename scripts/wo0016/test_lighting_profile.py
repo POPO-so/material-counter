@@ -24,8 +24,8 @@ def test_profile_constants_capture_the_calibrated_source_settings():
         "exposure_time_absolute": 50,
         "brightness": 0,
         "gamma": 100,
-        "gain": 0,
     }
+    assert profile.OPTIONAL_CAMERA_CONTROLS == {"gain": 0}
 
 
 @pytest.mark.parametrize(
@@ -186,6 +186,8 @@ def test_apply_camera_controls_sets_then_reads_back_exact_controls_as_root(monke
         assert check is True
         assert capture_output is True
         assert text is True
+        if command[-2:] == ["--get-ctrl", "gain"]:
+            return SimpleNamespace(stdout="gain: 0")
         return SimpleNamespace(stdout="" if "--set-ctrl" in command else readback)
 
     monkeypatch.setattr(profile.os, "geteuid", lambda: 0, raising=False)
@@ -198,9 +200,15 @@ def test_apply_camera_controls_sets_then_reads_back_exact_controls_as_root(monke
         f"{name}={value}" for name, value in profile.CAMERA_CONTROLS.items()
     )
     assert commands[0][2:] == ["/dev/video0", "--set-ctrl", controls_argument]
-    assert commands[1] == ["v4l2-ctl", "--device", "/dev/video0", "--get-ctrl",
+    assert commands[1] == ["v4l2-ctl", "--device", "/dev/video0", "--set-ctrl", "gain=0"]
+    assert commands[2] == ["v4l2-ctl", "--device", "/dev/video0", "--get-ctrl",
                            ",".join(profile.CAMERA_CONTROLS)]
-    assert result == profile.CAMERA_CONTROLS
+    assert commands[3] == ["v4l2-ctl", "--device", "/dev/video0", "--get-ctrl", "gain"]
+    assert result["required_controls_verified"] is True
+    assert result["required_controls"] == profile.CAMERA_CONTROLS
+    assert result["gain"]["status"] == "verified"
+    assert result["gain"]["value"] == 0
+    assert result["gain"]["set_response"] == "applied"
 
 
 def test_apply_camera_controls_uses_noninteractive_sudo_for_non_root(monkeypatch):
@@ -211,6 +219,8 @@ def test_apply_camera_controls_uses_noninteractive_sudo_for_non_root(monkeypatch
 
     def fake_run(command, **kwargs):
         commands.append(command)
+        if command[-2:] == ["--get-ctrl", "gain"]:
+            return SimpleNamespace(stdout="gain: 0")
         return SimpleNamespace(stdout="" if "--set-ctrl" in command else readback)
 
     monkeypatch.setattr(profile.os, "geteuid", lambda: 1000, raising=False)
@@ -219,7 +229,8 @@ def test_apply_camera_controls_uses_noninteractive_sudo_for_non_root(monkeypatch
     profile.apply_camera_controls("/dev/video2")
 
     assert commands[0][:4] == ["sudo", "-n", "v4l2-ctl", "--device"]
-    assert commands[1][:4] == ["sudo", "-n", "v4l2-ctl", "--device"]
+    assert all(command[:4] == ["sudo", "-n", "v4l2-ctl", "--device"]
+               for command in commands)
 
 
 def test_apply_camera_controls_propagates_v4l2_command_failure(monkeypatch):
@@ -234,15 +245,16 @@ def test_apply_camera_controls_propagates_v4l2_command_failure(monkeypatch):
 
 
 def test_apply_camera_controls_rejects_mismatched_readback(monkeypatch):
-    outputs = iter(("", "".join(
-        f"{name}: {999 if name == 'gain' else value}\n"
+    readback = "\n".join(
+        f"{name}: {999 if name == 'gamma' else value}"
         for name, value in profile.CAMERA_CONTROLS.items()
-    )))
+    )
+    outputs = iter(("", "", readback))
     monkeypatch.setattr(profile.os, "geteuid", lambda: 0, raising=False)
     monkeypatch.setattr(profile.subprocess, "run", lambda *args, **kwargs:
                         SimpleNamespace(stdout=next(outputs)))
 
-    with pytest.raises(RuntimeError, match="gain"):
+    with pytest.raises(RuntimeError, match="gamma"):
         profile.apply_camera_controls("/dev/video0")
 
 
@@ -251,10 +263,109 @@ def test_apply_camera_controls_rejects_missing_readback_control(monkeypatch):
         f"{name}: {value}" for name, value in profile.CAMERA_CONTROLS.items()
         if name != "gamma"
     )
-    outputs = iter(("", readback))
+    outputs = iter(("", "", readback))
     monkeypatch.setattr(profile.os, "geteuid", lambda: 0, raising=False)
     monkeypatch.setattr(profile.subprocess, "run", lambda *args, **kwargs:
                         SimpleNamespace(stdout=next(outputs)))
 
     with pytest.raises(RuntimeError, match="gamma"):
         profile.apply_camera_controls("/dev/video0")
+
+
+def test_apply_camera_controls_exempts_only_unexposed_gain(monkeypatch):
+    required = {
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "brightness": 0,
+        "gamma": 100,
+    }
+    commands = []
+
+    def fake_run(command, **kwargs):
+        commands.append(command)
+        if command[-2:] == ["--set-ctrl", "gain=0"] or command[-2:] == ["--get-ctrl", "gain"]:
+            raise subprocess.CalledProcessError(1, command, stderr="unknown control 'gain'")
+        if "--get-ctrl" in command:
+            return SimpleNamespace(stdout="\n".join(f"{key}: {value}" for key, value in required.items()))
+        return SimpleNamespace(stdout="")
+
+    monkeypatch.setattr(profile.os, "geteuid", lambda: 0, raising=False)
+    monkeypatch.setattr(profile.subprocess, "run", fake_run)
+
+    result = profile.apply_camera_controls("/dev/video0")
+
+    assert result["required_controls_verified"] is True
+    assert result["required_controls"] == required
+    assert {key: value for key, value in result["gain"].items()
+            if key not in ("driver_response", "set_response")} == {
+        "requested": 0,
+        "value": None,
+        "status": "not_exposed",
+        "verification": "not_verified",
+        "message": "UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证",
+    }
+    assert result["gain"]["driver_response"].startswith("unknown control 'gain'")
+    assert result["gain"]["set_response"].startswith("unknown control 'gain'")
+    assert any(command[-1] == "gain=0" for command in commands if "--set-ctrl" in command)
+    assert any(command[-1] == "gain" for command in commands if "--get-ctrl" in command)
+
+
+def test_gain_unknown_during_readback_is_explicit_but_other_errors_still_fail(monkeypatch):
+    required = {
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "brightness": 0,
+        "gamma": 100,
+    }
+    commands = []
+
+    def fake_run(command, **kwargs):
+        commands.append(command)
+        if command[-2:] == ["--get-ctrl", "gain"]:
+            raise subprocess.CalledProcessError(1, command, stderr="unknown control 'gain'")
+        return SimpleNamespace(stdout="\n".join(f"{key}: {value}" for key, value in required.items()))
+
+    monkeypatch.setattr(profile.os, "geteuid", lambda: 0, raising=False)
+    monkeypatch.setattr(profile.subprocess, "run", fake_run)
+    report = profile.verify_camera_controls("/dev/video0")
+    assert report["gain"]["status"] == "not_exposed"
+    assert report["required_controls_verified"] is True
+
+    def fail_other_control(command, **kwargs):
+        raise subprocess.CalledProcessError(1, command, stderr="unknown control 'gamma'")
+
+    monkeypatch.setattr(profile.subprocess, "run", fail_other_control)
+    with pytest.raises(subprocess.CalledProcessError) as exc_info:
+        profile.verify_camera_controls("/dev/video0")
+    assert exc_info.value.stderr == "unknown control 'gamma'"
+
+    def fail_gain_write(command, **kwargs):
+        if command[-2:] == ["--set-ctrl", "gain=0"]:
+            raise subprocess.CalledProcessError(1, command, stderr="permission denied")
+        if command[-2:] == ["--get-ctrl", "gain"]:
+            raise subprocess.CalledProcessError(1, command, stderr="unknown control 'gain'")
+        return SimpleNamespace(stdout="\n".join(f"{key}: {value}" for key, value in required.items()))
+
+    monkeypatch.setattr(profile.subprocess, "run", fail_gain_write)
+    with pytest.raises(subprocess.CalledProcessError) as gain_write_error:
+        profile.apply_camera_controls("/dev/video0")
+    assert gain_write_error.value.stderr == "permission denied"
+
+
+def test_exposed_gain_must_read_back_as_zero(monkeypatch):
+    required = {
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "brightness": 0,
+        "gamma": 100,
+    }
+
+    def fake_run(command, **kwargs):
+        if command[-2:] == ["--get-ctrl", "gain"]:
+            return SimpleNamespace(stdout="gain: 2")
+        return SimpleNamespace(stdout="\n".join(f"{key}: {value}" for key, value in required.items()))
+
+    monkeypatch.setattr(profile.os, "geteuid", lambda: 0, raising=False)
+    monkeypatch.setattr(profile.subprocess, "run", fake_run)
+    with pytest.raises(RuntimeError, match="gain readback mismatch"):
+        profile.verify_camera_controls("/dev/video0")

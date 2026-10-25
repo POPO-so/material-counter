@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import deque
+import copy
 from dataclasses import replace
 import lighting_profile
 from functools import lru_cache
@@ -72,6 +73,7 @@ class LiveMonitorState:
         self.view_mode = "overlay"
         self.phase = "waiting"
         self.health = {"cma_free_kib": None, "rss_kib": process_rss_kib(), "dma_status": None}
+        self.camera_controls = None
         self.invalidate_preview = lambda: None
 
     def control(self, action, payload):
@@ -156,6 +158,25 @@ class LiveMonitorState:
             self.health = {"cma_free_kib": cma_free_kib, "rss_kib": process_rss_kib(),
                            "dma_status": dma_status}
 
+    def set_camera_controls(self, report):
+        if not isinstance(report, dict) or report.get("required_controls_verified") is not True:
+            raise ValueError("camera report must confirm all required controls")
+        required = report.get("required_controls")
+        expected = lighting_profile.CAMERA_CONTROLS
+        if required != expected:
+            raise ValueError("camera report does not match calibrated required controls")
+        gain = report.get("gain")
+        if not isinstance(gain, dict) or gain.get("requested") != 0:
+            raise ValueError("camera report must include the requested gain=0 status")
+        if gain.get("status") == "not_exposed":
+            if (gain.get("verification") != "not_verified"
+                    or gain.get("message") != lighting_profile.GAIN_UNVERIFIED_MESSAGE):
+                raise ValueError("unexposed gain must carry the explicit V4L2 exception")
+        elif gain.get("status") != "verified" or gain.get("value") != 0:
+            raise ValueError("gain must be read back as zero or explicitly reported unexposed")
+        with self.lock:
+            self.camera_controls = copy.deepcopy(report)
+
     def snapshot(self):
         with self.lock:
             now = self.clock()
@@ -180,6 +201,7 @@ class LiveMonitorState:
                          "area_hints_provisional": getattr(self,"counting_profile",None) == "lighting-calibrated",
                          "material_area_labels": lighting_profile.AREA_HINTS["material_labels"] if getattr(self,"counting_profile",None) == "lighting-calibrated" else None,
                          "area_size_ranges": lighting_profile.AREA_HINTS["ranges"] if getattr(self,"counting_profile",None) == "lighting-calibrated" else None,
+                         "camera_controls": copy.deepcopy(self.camera_controls),
                          "last_crossing_area_px": self.last_crossing_area_px,
                          "fps_kind": "completed-frame sliding window", "elapsed_seconds": now - self.started,
                          "last_frame_age_seconds": age, "stale": not fresh,
@@ -190,4 +212,5 @@ class LiveMonitorState:
                          "reset_pending": self.reset_requested, "view_mode": self.view_mode,
                          **self.health}
             return {"dashboard": telemetry, "status": self.phase, "resource_health": dict(self.health),
+                    "camera_controls": copy.deepcopy(self.camera_controls),
                     "view_mode": self.view_mode}
