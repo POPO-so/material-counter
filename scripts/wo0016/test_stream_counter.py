@@ -48,6 +48,31 @@ def test_touching_split_keeps_hollow_nut_and_uniform_blob_intact():
     assert len(split_touching_component(np.ones((10, 20), np.uint8))) == 1
 
 
+def test_hollow_pair_uses_distance_transform_when_euclidean_children_are_connected(monkeypatch):
+    import split_touching as split_module
+
+    component = np.zeros((40, 56), dtype=np.uint8)
+    cv2.circle(component, (16, 20), 11, 255, thickness=-1)
+    cv2.circle(component, (39, 20), 11, 255, thickness=-1)
+    cv2.circle(component, (16, 20), 4, 0, thickness=-1)
+    cv2.circle(component, (39, 20), 4, 0, thickness=-1)
+
+    calls = []
+    distance_transform = cv2.distanceTransform
+
+    def counted_distance_transform(*args, **kwargs):
+        calls.append(1)
+        return distance_transform(*args, **kwargs)
+
+    monkeypatch.setattr(split_module.cv2, "distanceTransform", counted_distance_transform)
+    pieces = split_touching_component(component)
+
+    assert len(pieces) == 2
+    assert len(calls) == 2
+    assert all(split_module.is_single_connected_component(piece) for piece in pieces)
+    np.testing.assert_array_equal(np.logical_or.reduce(pieces), component != 0)
+
+
 def test_recorded_touching_pair_shape_counts_twice_after_split():
     # Thresholded component from camera-only capture frame 828, archive SHA256
     # 0b55c6e1d5a43a4c69702dd89ef14be09c1673cdbc7b8d22b7bf5b8fbe40ce9e.

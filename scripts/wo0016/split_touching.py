@@ -1,8 +1,6 @@
 """Conservative pixel-domain split for touching hollow nuts in Binary8."""
 from __future__ import annotations
 
-from collections import deque
-
 import cv2
 import numpy as np
 
@@ -20,17 +18,17 @@ def is_single_connected_component(mask: np.ndarray) -> bool:
 
 def _geodesic_hole_assignments(pixels: np.ndarray,
                                hole_centers: np.ndarray) -> np.ndarray | None:
-    """Flood the foreground from distinct hole-adjacent seeds.
+    """Assign foreground to hole seeds, validating connectivity before use.
 
-    Each pixel inherits the label of an already labeled 8-neighbor, which
-    makes every resulting label connected by construction.
+    Euclidean distance transforms handle ordinary hollow-piece clusters in
+    native code. If their Voronoi regions disconnect inside a concave shape,
+    a dilation-wave geodesic flood assigns each new pixel from an adjacent
+    label, keeping every child connected by construction.
     """
     ys, xs = np.nonzero(pixels)
     if not len(xs):
         return None
-    labels = np.full(pixels.shape, -1, dtype=np.int8)
-    queue: deque[tuple[int, int]] = deque()
-    seeds: set[tuple[int, int]] = set()
+    seeds: list[tuple[int, int]] = []
     for index, (center_x, center_y) in enumerate(hole_centers):
         distances = ((xs - center_x) ** 2 + (ys - center_y) ** 2)
         for candidate in np.argsort(distances):
@@ -39,21 +37,36 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
                 break
         else:
             return None
-        seeds.add(seed)
-        labels[seed] = index
-        queue.append(seed)
+        seeds.append(seed)
 
-    height, width = pixels.shape
-    while queue:
-        y, x = queue.popleft()
-        label = int(labels[y, x])
-        for neighbor_y in range(max(0, y - 1), min(height, y + 2)):
-            for neighbor_x in range(max(0, x - 1), min(width, x + 2)):
-                if pixels[neighbor_y, neighbor_x] and labels[neighbor_y, neighbor_x] < 0:
-                    labels[neighbor_y, neighbor_x] = label
-                    queue.append((neighbor_y, neighbor_x))
-    if np.any(pixels & (labels < 0)):
-        return None
+    distance_maps = []
+    for seed_y, seed_x in seeds:
+        distance_input = np.ones(pixels.shape, dtype=np.uint8)
+        distance_input[seed_y, seed_x] = 0
+        distance_maps.append(cv2.distanceTransform(distance_input, cv2.DIST_L2, 5))
+    labels = np.argmin(np.stack(distance_maps, axis=0), axis=0).astype(np.int8)
+    labels[~pixels] = -1
+    if all(is_single_connected_component(labels == index)
+           for index in range(len(seeds))):
+        return labels
+
+    labels.fill(-1)
+    for index, seed in enumerate(seeds):
+        labels[seed] = index
+    kernel = np.ones((3, 3), dtype=np.uint8)
+    while np.any(pixels & (labels < 0)):
+        unassigned = pixels & (labels < 0)
+        claims = []
+        for index in range(len(seeds)):
+            region = (labels == index).astype(np.uint8)
+            adjacent = cv2.dilate(region, kernel) != 0
+            claims.append(adjacent & unassigned)
+        claim_stack = np.stack(claims, axis=0)
+        claimed = np.any(claim_stack, axis=0)
+        if not np.any(claimed):
+            return None
+        owners = np.argmax(claim_stack, axis=0)
+        labels[claimed] = owners[claimed]
     return labels
 
 
