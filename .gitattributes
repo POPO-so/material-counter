@@ -86,14 +86,7 @@
 /data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_02/camera_gray_only.npz filter=lfs diff=lfs merge=lfs -text
 /data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_04/camera_gray_only.npz filter=lfs diff=lfs merge=lfs -text
 
-# GitHub Linguist:maintained                                     hardware sources (independent of LFS/text rules).
-*.sv                                           linguist-detectable=true
-*.svh                                          linguist-detectable=true
-*.v                                            linguist-detectable=true
-*.vh                                           linguist-detectable=true
-*.tcl                                          linguist-detectable=true
-*.xdc                                          linguist-detectable=true linguist-language=Tcl
-
+# GitHub Linguist: directory exclusions and PS runtime exceptions.
 # Verification, datasets, evidence copies and development helpers.
 tests/**                                       linguist-vendored
 test/**                                        linguist-vendored
@@ -121,7 +114,6 @@ sim/**                                         linguist-vendored
 /scripts/wo0015/prepare_vectors.py             -linguist-vendored
 /scripts/wo0016/calibration_runtime_gate.py    -linguist-vendored
 /scripts/wo0016/capture_dataset.py             -linguist-vendored
-/scripts/wo0016/dashboard.html                 -linguist-vendored
 /scripts/wo0016/dashboard_state.py             -linguist-vendored
 /scripts/wo0016/live_calibration.py            -linguist-vendored
 /scripts/wo0016/live_monitor_state.py          -linguist-vendored
@@ -136,8 +128,29 @@ sim/**                                         linguist-vendored
 **/conftest.py                                 linguist-vendored
 **/prepare_replay.py                           linguist-vendored
 **/test_*.py                                   linguist-vendored
+*.html                                         linguist-vendored
+*.css                                          linguist-vendored
+*.js                                           linguist-vendored
 *.ipynb                                        linguist-vendored
 
 # Documentation is retained and classified separately from source code.
 docs/**                                        linguist-documentation
 *.md                                           linguist-documentation
+
+# Exact Vivado-generated historical exports; retain bytes, exclude from stats.
+/data/results/wo0013-resetfix-20261014/export/wo0013_dma_recreate.tcl linguist-generated
+/data/results/wo0014-hw-50mhz-20261014/export/wo0014_image_recreate.tcl linguist-generated
+/data/results/wo0014-hw-100mhz-20261014/export/wo0014_image_recreate.tcl linguist-generated
+/data/results/wo0014-hw-50mhz-20261014/export/project_settings.tcl linguist-generated
+/data/results/wo0014-hw-100mhz-20261014/export/project_settings.tcl linguist-generated
+/data/results/wo0013-resetfix-20261014/reports/implemented_constraints.xdc linguist-generated
+/data/results/wo0014-hw-50mhz-20261014/reports/implemented-constraints.xdc linguist-generated
+/data/results/wo0014-hw-100mhz-20261014/reports/implemented-constraints.xdc linguist-generated
+
+# Hardware overrides must follow directory exclusions; generated stays excluded.
+*.v   linguist-vendored=false linguist-detectable=true
+*.vh  linguist-vendored=false linguist-detectable=true
+*.sv  linguist-vendored=false linguist-detectable=true
+*.svh linguist-vendored=false linguist-detectable=true
+*.tcl linguist-vendored=false linguist-detectable=true
+*.xdc linguist-vendored=false linguist-detectable=true linguist-language=Tcl
