@@ -193,7 +193,9 @@ class BoardSession:
 
     def arm_frame(self, frame_id, slot):
         api, board, pf = self.api, finite.board_once, finite.preflight
-        self._watermark(api.cma_free_kib())
+        # CMA is enforced while admitting and allocating the four persistent
+        # DMA buffers. Arming a frame only reuses those buffers; CmaFree may
+        # fluctuate afterward as Linux reclaims/borrows movable page-cache pages.
         status = api.read32(pf.CHECKER_BASE, board.PACKER_STATUS)
         if status & (board.PACKER_BUSY | board.PACKER_FAULT) or api.read32(pf.CHECKER_BASE, board.PACKER_ERROR_CODE):
             raise RuntimeError("Packer busy/fault before frame")

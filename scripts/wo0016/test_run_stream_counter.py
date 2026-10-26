@@ -52,6 +52,14 @@ def test_wo0017_runtime_binding_covers_raw_writer_and_camera_controls():
             "split_touching.py", "dashboard_state.py", "dashboard.html",
             "wo0015/board_preflight.py", "wo0015/board_once.py"} <= set(sources)
     assert all(len(value) == 64 for value in sources.values())
+
+
+def test_b2_raw_capture_defers_disk_writes_until_sampling_finishes():
+    args = runner._parser().parse_args(["--wo0017-profile", "b2"])
+    assert runner.defer_capture_writes_until_close(args, calibration_mode=False)
+    assert runner.defer_capture_writes_until_close(args, calibration_mode=True)
+    ordinary = runner._parser().parse_args([])
+    assert not runner.defer_capture_writes_until_close(ordinary, calibration_mode=False)
 from run_stream_counter import (  # noqa: E402
     build_synthetic_masks,
     claim_once_guard,

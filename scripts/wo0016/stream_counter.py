@@ -144,6 +144,7 @@ class MaskCounter:
                  max_merge_area: int = 260, max_merged_span: int = 24,
                  max_split_area: int | None = None, min_split_child_area: int | None = None,
                  split_min_hole_area: int = 30,
+                 split_recursive_item_area: int | None = None,
                  strict_lateral_gate: bool = False,
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
@@ -200,6 +201,10 @@ class MaskCounter:
         self.max_split_area = (self.max_merge_area if max_split_area is None else
                                _integer(max_split_area, "max_split_area", minimum=1))
         self.split_min_hole_area = _integer(split_min_hole_area, "split_min_hole_area", minimum=1)
+        self.split_recursive_item_area = (
+            None if split_recursive_item_area is None else
+            _integer(split_recursive_item_area, "split_recursive_item_area", minimum=1)
+        )
         self.min_split_child_area = (self.min_area if min_split_child_area is None else
                                      _integer(min_split_child_area, "min_split_child_area", minimum=self.min_area))
         self.max_merged_span = _integer(max_merged_span, "max_merged_span", minimum=1)
@@ -439,7 +444,8 @@ class MaskCounter:
             if (self.guarded_merge and self.single_intact_area < area <= self.max_split_area):
                 cropped = labels[y:y + box_height, x:x + box_width] == label
                 pieces = split_touching_component(cropped, min_child_area=self.min_split_child_area,
-                                                  min_hole_area=self.split_min_hole_area)
+                                                  min_hole_area=self.split_min_hole_area,
+                                                  recursive_item_area=self.split_recursive_item_area)
                 piece_masks = [np.asarray(piece) != 0 for piece in pieces]
                 valid_partition = (2 <= len(piece_masks) <= 3
                                    and all(piece.shape == cropped.shape

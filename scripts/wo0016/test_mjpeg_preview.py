@@ -71,12 +71,61 @@ def test_industrial_hud_uses_gray_camera_background_mask_pip_and_tracking_overla
     assert tuple(frame[80, 20]) == (72, 72, 72)
     # The top-right inset is rendered from this frame's DMA Binary8 mask.
     assert np.any(np.all(frame[34:82, 224:318] == (255, 255, 255), axis=2))
-    # The line and hysteresis band have distinct colors around the count axis.
-    assert tuple(frame[100, 160]) == (0, 0, 255)
+    # The center line remains a single pixel so both hysteresis edges stay visible.
+    assert tuple(frame[40, 160]) == (0, 0, 255)
+    assert tuple(frame[40, 159]) == (0, 0, 0)
+    assert tuple(frame[40, 161]) == (0, 0, 0)
     assert np.any(np.all(frame[:, 158:159] == (0, 210, 255), axis=2))
+    assert np.any(np.all(frame[:, 162:163] == (0, 210, 255), axis=2))
     # A track box and trail are visible without changing the underlying DMA mask.
     assert np.any(np.all(frame[108:123, 126:143] == (255, 180, 0), axis=2))
     assert np.any(np.all(frame[112:119, 118:131] == (255, 255, 0), axis=2))
+
+
+def test_x160_hud_label_has_a_high_contrast_backdrop_and_larger_type():
+    calls = []
+    original_put_text = preview_module.cv2.putText
+
+    def capture_label(image, text, origin, font, scale, color, thickness, *args, **kwargs):
+        if text == "X=160":
+            calls.append((origin, scale, color, thickness))
+        return original_put_text(image, text, origin, font, scale, color, thickness,
+                                 *args, **kwargs)
+
+    preview_module.cv2.putText = capture_label
+    try:
+        frame = render_preview_frame(np.zeros((240, 320), np.uint8), total_count=0,
+                                     line_y=120, count_axis="x", line_x=160,
+                                     source_gray=np.full((240, 320), 72, np.uint8))
+    finally:
+        preview_module.cv2.putText = original_put_text
+
+    assert len(calls) == 1
+    (x, baseline), scale, color, thickness = calls[0]
+    assert scale >= 0.55
+    assert tuple(color) == (255, 255, 255)
+    assert thickness >= 2
+    assert tuple(frame[baseline - 10, x - 3]) == (12, 25, 35)
+
+
+def test_x160_count_line_and_hysteresis_edges_remain_distinct_in_stream_jpeg():
+    gray = np.full((240, 320), 72, dtype=np.uint8)
+    encoded = render_preview_jpeg(np.zeros((240, 320), np.uint8), total_count=0,
+                                  line_y=120, quality=70, count_axis="x", line_x=160,
+                                  source_gray=gray, hysteresis=2.0)
+    frame = preview_module.cv2.imdecode(np.frombuffer(encoded, dtype=np.uint8),
+                                        preview_module.cv2.IMREAD_COLOR)
+
+    left_edge = frame[40, 158]
+    left_gap = frame[40, 159]
+    center = frame[40, 160]
+    right_gap = frame[40, 161]
+    right_edge = frame[40, 162]
+    assert left_edge[0] > 120 and left_edge[1] > 150
+    assert int(left_gap.max()) < 100
+    assert center[2] > center[1] + 50
+    assert int(right_gap.max()) < 100
+    assert right_edge[0] > 120 and right_edge[1] > 150
 
 
 def test_preview_hud_labels_a_software_threshold_pip(monkeypatch):

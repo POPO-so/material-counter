@@ -334,8 +334,9 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
     if getattr(args, "counting_profile", "legacy") == "lighting-calibrated":
         # Output pixel areas measured from the three isolated snapshot parts: 80/111/150.
         # 64 = 80 * .8; prevent intact small parts being merged with each other.
-        config.update(roi_top=30, roi_bottom=210, min_area=15, min_split_child_area=60,
+        config.update(roi_top=30, roi_bottom=210, min_area=15, min_split_child_area=48,
                       split_min_hole_area=16,
+                      split_recursive_item_area=80,
                       single_intact_area=64, max_merge_area=540, max_split_area=540,
                       max_area=540, max_merged_span=48, component_cluster_gap=0.0)
     MaskCounter(**config)  # Validate before consuming the one-shot attempt.
@@ -1277,11 +1278,21 @@ def manifest_validation_options(args: argparse.Namespace, *,
     return {}
 
 
+def defer_capture_writes_until_close(args: argparse.Namespace, *,
+                                     calibration_mode: bool = False) -> bool:
+    """Keep formal B-2 sampling free of per-frame filesystem latency."""
+    return (calibration_mode
+            or getattr(args, "wo0017_profile", None) == "b2")
+
+
 def execute_board_stream(args: argparse.Namespace, *,
                          operator_gate_sha256: str | None = None,
                          operator_gate: Any | None = None) -> dict[str, Any]:
     """Run one finite, guarded streaming session against the already-loaded WO-0015 BIT."""
     calibration_mode = bool(getattr(args, "physical_calibration", False))
+    deferred_capture_writes = defer_capture_writes_until_close(
+        args, calibration_mode=calibration_mode
+    )
     gate_launcher_sha256 = validate_operator_gate_launcher_sha256(
         operator_gate_sha256, operator_gate
     )
@@ -1607,7 +1618,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 },
                 max_bytes=capture_max_bytes,
                 queue_depth=2,
-                defer_writes_until_close=calibration_mode,
+                defer_writes_until_close=deferred_capture_writes,
                 source_frame_ids=(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS
                                   if calibration_mode else ()),
                 metadata={
@@ -1629,8 +1640,8 @@ def execute_board_stream(args: argparse.Namespace, *,
                 "binary_bytes": int(capture_writer.raw_binary8.nbytes),
                 "recording": "np.copyto after S2MM completion and frame-status validation",
                 "archive_written_after_sampling": True,
-                "write_mode": ("deferred_memory" if calibration_mode else "streaming_queue"),
-                "per_frame_files_written_during_sampling": not calibration_mode,
+                "write_mode": ("deferred_memory" if deferred_capture_writes else "streaming_queue"),
+                "per_frame_files_written_during_sampling": not deferred_capture_writes,
             }
 
         # Accessing the PYNQ DMA driver starts its channels; this is after all static,

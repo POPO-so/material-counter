@@ -90,6 +90,24 @@ def test_successful_admission_orders_all_gates_before_dma_and_frees_once(admitte
     assert len(set(session.api.freed)) == len(session.api.freed) == 4
 
 
+def test_arm_frame_ignores_post_allocation_cma_drift_and_still_arms_dma(admitted):
+    session, calls = admitted
+    session.open()
+    session.api.cma_free_kib = lambda: 1
+    session.api.sync_to_device = lambda buffer: calls.append(("sync", id(buffer)))
+    session.api.write32 = lambda base, offset, value: calls.append(("write", base, offset, value))
+    slot = SimpleNamespace(tx_buffer=session.tx[0], rx_buffer=session.rx[0])
+
+    try:
+        session.arm_frame(0, slot)
+    finally:
+        session.close()
+
+    assert [item[0] for item in calls if isinstance(item, tuple) and item[0] == "sync"] == [
+        "sync", "sync"]
+    assert any(item[0] == "write" and item[3] == 1 for item in calls if isinstance(item, tuple))
+
+
 def test_camera_warmup_control_report_reaches_live_monitor_json(monkeypatch):
     args = live.parser().parse_args(["--mode", "board"])
     state = LiveMonitorState(mode="board")
@@ -155,6 +173,28 @@ def test_admission_rejects_before_dma_driver(admitted, monkeypatch, failure):
             session.open()
         assert "dma-driver" not in calls
         assert "allocate" not in calls
+    finally:
+        session.close()
+
+
+def test_cma_watermark_still_aborts_and_frees_when_free_space_drops_during_allocation(
+        admitted, monkeypatch):
+    session, calls = admitted
+    api_factory = live.finite.board_once.PynqBoardAPI
+
+    def api_with_cma_drop(*args, **kwargs):
+        api = api_factory(*args, **kwargs)
+        readings = iter((65536, 1))
+        api.cma_free_kib = lambda: next(readings)
+        return api
+
+    monkeypatch.setattr(live.finite.board_once, "PynqBoardAPI", api_with_cma_drop)
+    try:
+        with pytest.raises(RuntimeError, match="CmaFree is below 32768 KiB"):
+            session.open()
+        assert calls.count("allocate") == 1
+        assert len(session.api.freed) == 1
+        assert "dma-driver" not in calls
     finally:
         session.close()
 

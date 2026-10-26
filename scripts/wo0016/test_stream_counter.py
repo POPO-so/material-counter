@@ -149,6 +149,97 @@ def test_split_from_recorded_three_nut_frame_keeps_each_child_connected():
     np.testing.assert_array_equal(np.logical_or.reduce(pieces), component != 0)
 
 
+def test_lighting_b2_mask_sequence_splits_small_three_nut_children_and_counts_five():
+    from run_stream_counter import _parser, counting_configuration
+
+    fixture = Path(__file__).resolve().parent / "fixtures" / "lighting_b2_m6_touch_masks.npz"
+    with np.load(fixture, allow_pickle=False) as sample:
+        frame_ids = sample["frame_ids"]
+        masks = sample["masks"]
+    assert masks.shape == (15, 240, 320)
+    args = _parser().parse_args(["--counting-profile", "lighting-calibrated"])
+    config = counting_configuration(args)
+    assert config["min_split_child_area"] == 48
+    assert config["split_recursive_item_area"] == 80
+
+    counter = MaskCounter(**config)
+    frame_52 = frame_53 = None
+    for frame_id, mask in zip(frame_ids, masks):
+        result = counter.update(int(frame_id), mask)
+        if frame_id == 52:
+            frame_52 = result
+        if frame_id == 53:
+            frame_53 = result
+
+    assert frame_52 is not None and len(frame_52.raw_detections) == 4
+    assert frame_53 is not None and len(frame_53.raw_detections) == 5
+    assert counter.total_count == 5
+
+
+def test_split_projection_neck_accepts_one_to_two_area_ratio():
+    component = np.zeros((26, 44), dtype=np.uint8)
+    # Two small enclosed cavities stay below the hole gate; two narrow bridges
+    # create a genuine projection neck with an approximately 1:2 area ratio.
+    component[6:20, 2:16] = 255
+    component[12:14, 8:10] = 0
+    component[2:24, 18:40] = 255
+    component[12:14, 27:29] = 0
+    component[10, 15:19] = 255
+    component[16, 15:19] = 255
+
+    pieces = split_touching_component(component, min_child_area=106,
+                                       min_hole_area=16)
+
+    assert len(pieces) == 2
+    assert min(int(piece.sum()) for piece in pieces) >= 106
+    np.testing.assert_array_equal(np.logical_or.reduce(pieces), component != 0)
+
+
+def test_calibrated_hole_threshold_is_capped_to_preserve_measured_small_holes():
+    import split_touching as split_module
+
+    assert split_module._hole_area_threshold(540, 16) == 16
+    assert split_module._hole_area_threshold(540, 30) == 30
+
+
+def test_recursive_three_item_split_retries_oversized_two_hole_child(monkeypatch):
+    import split_touching as split_module
+
+    component = np.ones((20, 30), dtype=np.uint8)
+    small = np.zeros_like(component, dtype=bool)
+    small[:, :8] = True
+    large = np.zeros_like(component, dtype=bool)
+    large[:, 8:] = True
+    split_calls = []
+
+    def two_hole_partition(pixels, _minimum, _hole_minimum):
+        split_calls.append(int(np.count_nonzero(pixels)))
+        if len(split_calls) == 1:
+            return small, large
+        return None
+
+    def neck_partition(pixels, _minimum):
+        if int(np.count_nonzero(pixels)) <= 250:
+            return None
+        first = np.zeros_like(pixels)
+        second = np.zeros_like(pixels)
+        first[:, :11] = pixels[:, :11]
+        second[:, 11:] = pixels[:, 11:]
+        return first, second
+
+    monkeypatch.setattr(split_module, "_split_by_enclosed_holes", two_hole_partition)
+    monkeypatch.setattr(split_module, "_split_by_projection_neck", neck_partition)
+
+    pieces = split_touching_component(component, min_child_area=48,
+                                       min_hole_area=16, recursive_item_area=80)
+
+    assert len(split_calls) >= 2
+    assert len(pieces) == 3
+    assert all(split_module.is_single_connected_component(piece) for piece in pieces)
+    np.testing.assert_array_equal(np.logical_or.reduce(pieces), component != 0)
+    assert not np.any(np.sum(np.stack(pieces), axis=0) > 1)
+
+
 def test_counter_rejects_disconnected_split_children(monkeypatch):
     import stream_counter
 

@@ -1,4 +1,4 @@
-# 2026-10-25 相机角度调整后的调光参数接入与离线验证
+# 2026-10-25 相机角度调整后的调光参数接入与验证
 
 本次标定背景是为了适应实际进料与工业应用而调整摄像头角度，所有配置和结论均基于图像证据。
 
@@ -53,8 +53,9 @@ JSON 参数：TH100、overexp255、ROI[20,380)、min_area60、exposure50/gamma10
 | 新profile参数 | 值 | 根据与限制 |
 |---|---:|---|
 | single_intact_area |64|0.8×最小单件实测80；作为候选拆分/合并保护基准 |
-| split_min_hole_area |16|补充粘连图的有效小孔为20–33像素；旧配置保持30，比例0.06不变 |
-| min_split_child_area |60|0.75×最小单件80；与允许小连通域/边缘碎片的15分开 |
+| split_min_hole_area |16|B-2观测合格孔17–34像素；相对0.06项封顶16，旧配置显式下限30仍保留 |
+| min_split_child_area |48|0.6×最小单件80；板端真实分区58/59像素需保留；与CCL下限15分开 |
+| split_recursive_item_area |80|最小物料面积下界；限定三件容量及过大子区递归，不代表M6螺母分类面积 |
 | max_merge_area/max_split_area/max_area |540|3×最大单件150×1.2；工程暂定容差 |
 | max_merged_span |48|最大单件16像素包围尺寸×3 |
 | component_cluster_gap |0|关闭旧14像素邻近分组，降低不同物料被并成一件的风险 |
@@ -111,4 +112,83 @@ JSON 参数：TH100、overexp255、ROI[20,380)、min_area60、exposure50/gamma10
 - 当前只读复查的CmaFree为34,828 KiB，仍满足门槛；摄像头无占用，8080/8081无监听。旧活动Stage 1 consumed guard SHA-256为`03cc64f337f54bf26ce9f8ea4f2cae2b99793a8526ab131c4c740e854f82ee3d`，旧PASS receipt SHA-256为`8c79ff081bca5a40cf7bacaa5ab095bdfc0382e16e05604e45b448e6814fd745`；两者均标记Boot d9f65950。旧terminal-failure marker不存在。将按授权流程原样归档这两份文件，再尝试一次当前Boot的Stage 1。
 - 实时监控、Overlay/DMA、空载误触发、FPS/PS、动态投料、物理真值计数及运行前后CMA变化仍未测。传送带未启动。
 
-下一步按已授权范围为当前Boot生成审核manifest，归档旧Stage 1 guard/receipt，重新确认CmaFree后运行Stage 1。只有回执通过后才启动实时监控并执行空载基准；空载稳定后再通知用户投料。
+以上状态记录截至当前Boot的Stage 1执行之前。Stage 1及实时空带基准的后续结果见下节。
+
+## 阶段四 Stage 1 与空带实时基准续记
+
+本节记录当前启动下实际完成的板端步骤。任务日期按客户端日期 **2026-10-25** 记录；板端系统时间仍返回 **2025-05-09**，因此原始JSON保留板端时间戳，不能把它当作本次任务日期。
+
+### CMA恢复与Stage 1
+
+- 当前Boot ID保持为 `bb382d01-7bb2-4922-9a85-af6a24ef4d10`，没有重启。
+- 按已授权流程执行 `sync` 与 `drop_caches=3` 后，`CmaFree` 从 **28,756 KiB** 回升至约 **109,868 KiB**。该内核没有 `/proc/sys/vm/compact_memory`，所以未能执行内存规整。
+- 当前Boot manifest SHA-256：`cc6cf803175972d9841f493e85e3f5f8a1ee80ea9113c15f1e39780daf8f960b`。Stage 1 `OVERLAY_LOAD_PASS` 回执SHA-256：`53f992770558ff20a5ee5fad70cc1e5cd3e7a7bd44e38d4fbba31f19dd3d8195`；Checker/Packer签名分别为 `1464807732` / `1464807733`，位流哈希匹配manifest。结果见 `data/results/lighting-calibration-20261025/board-approval/stage1-overlay-only-result.json`。
+- 完整V4L2控件清单保存在 `data/results/lighting-calibration-20261025/board-approval/v4l2-controls-stage1.txt`。暖机后 `auto_exposure=1`、`exposure_time_absolute=50`、`brightness=0`、`gamma=100` 均通过硬件回读；`gain`返回 `unknown control 'gain'`，按授权记为 **“UVC 驱动未暴露 gain 控件，未能通过 V4L2 验证”**，不宣称已锁定。
+
+### 实时空带观测
+
+- 阶段三性能优化已提交：`02dbb683`。粘连分割优先用OpenCV距离变换，若Voronoi子区不连通则回退向量化测地扩张。定向计数/光照集成测试64项通过，完整 `scripts/wo0016` 套件 **412 passed, 3 skipped**。本次代码及测试修改为 `scripts/wo0016/split_touching.py` 和 `scripts/wo0016/test_stream_counter.py`。
+- 已验证的空带运行采用 `--mode board --counting-profile lighting-calibrated --lighting-area-filter output-roi`，由 `/usr/local/share/pynq-venv/bin/python` 从原PYNQ加载路径启动，服务地址 `http://192.168.2.99:8080/`。服务通过PL AXI DMA Binary8回传；7个样本覆盖约60秒，结果全通过，原始采样见 `data/results/lighting-calibration-20261025/board-approval/empty-belt-baseline-output-roi.json`。
+
+| 指标 | 空带观测结果 |
+|---|---:|
+| 完成帧 FPS | 最低20.43，最高25.05，均值23.95 |
+| 误检测 / 计数 | 每个样本均为0 / 0 |
+| MM2S / S2MM状态 | 每个样本均为 `0x00001002` / `0x00001002` |
+| `CmaFree` | 45,720–46,300 KiB；观测期间未触发32,768 KiB保护线 |
+| 进程RSS | 143,268–144,004 KiB |
+| 进程CPU | 单逻辑核百分比110.4%–163.1%，均值153.1% |
+| 相机必需控件 | 四项回读通过；gain为未暴露豁免状态 |
+
+- 空带预览截图：`data/results/lighting-calibration-20261025/board-approval/empty-belt-preview.jpg`。更早的一帧曾看到留在画面中的15个静止物料；该轮6.4 FPS观察不作为空带基准，现场清空后重新完成了上表的60秒观测，清空前截图保留为 `scene-check-raw.png`。
+- `output-roi`模式跳过640×400源图 `RETR_CCOMP` 净面积60筛选，使用320×240输出中的ROI `[30,210)` 和15像素连通域下限；因此该次基准只验证空带实时链路与快速模式，不证明源图净面积路径或动态粘连场景达到同一FPS。默认源净面积模式在另一次空带启动中曾因运行时 `CmaFree` 低于32,768 KiB保护线而安全退出；未放宽保护线。恢复缓存后使用上方快速模式取得持续通过的基准。
+- 空带基准完成后服务曾在8080运行，操作者随后报告第一轮动态过料；对应状态快照与预览留存在 `data/results/lighting-calibration-20261025/board-approval/dynamic-round-01-status.json` 和 `dynamic-round-01-preview.jpg`。后续轮次与最终归档见本节续记。
+
+### 第一轮动态过料记录
+
+- 操作者报告本轮物理基数为 **54 件**；实时看板总计数为 **46**。最后另行随手放入的 **2 件**不属于该测试，因此测试段系统计数为 **44 件**，相对54件物理基数少计 **10 件**（计数比44/54=81.5%）。此比例仅描述本轮数量结果，不作为跨场景准确率结论。
+- 操作者未注明本轮物料组合及是否包含粘连件，故本记录不将其归类为单件连续、多件混合或粘连专项轮次。
+- 板端状态快照显示 `total_count=46`、`processing_fps=21.456`、预览输出FPS `5.514`、`frames_processed=17069`、DMA MM2S/S2MM 均为 `0x00001002`、状态接口 `CmaFree=46516 KiB`；四项必需相机控件回读仍通过。相邻SSH资源采样（板端时间 `2025-05-09T20:05:54+00:00`）为CPU `154%`、RSS `146344 KiB`、`CmaFree=46412 KiB`。这些均是采样时值，不是整轮平均值。实时预览帧图显示看板计数046，文件为 `dynamic-round-01-preview.jpg`。
+- 运行状态与操作者真值合并留档于 `dynamic-round-01-status.json`。板端时钟仍采用其系统时间；日期按客户端任务日期记录。
+
+### 后续动态复测与显示诊断
+
+- 操作者补充：有 **2 轮各50件**曾准确计数；之后的轮次无论快慢均出现漏记，但未提供这些后续轮次的物理总数和系统计数。另在独立粘连试验中，**3个M6螺母连在一起多次被计为1件**；**2个M6螺母粘连且连接轴平行于输送方向**时只有少数轮次成功。该补充记录于 `data/results/lighting-calibration-20261025/board-approval/dynamic-followup-operator-report.json`，不与前述54件/44件轮次合并计算。
+- 代码显示当前分割器只会在识别出2或3个满足面积与间距条件的内部孔时执行孔中心分配；否则才尝试满足狭颈、投影平衡等条件的二分，条件不满足会保留单个连通域。因此三只M6螺母出现“合为1件”与当前保守拒分路径相符，但没有失败时的原始Gray8输入和PL Binary8掩膜，尚不能确定是孔在二值化后消失/连通、面积门限拒绝，还是其他形态门限导致。当前可用的历史静态粘连快照不是这组M6失败样本。
+- 预览中重叠线条来自绘制设定：红色实线是计数轴 `x=160`；黄色虚线是迟滞边界 `x=158` 和 `x=162`（中心线两侧各2个输出像素）。本次将红色中心线显示为1像素，并在下方加3像素深色描边，令每侧留出1像素暗色间隔；`X=160` 标签改为较大白字和深色底框。迟滞边界仍显示真实的±2像素，不改变计数算法。JPEG质量70回归确认红线与黄色边界可辨，`test_mjpeg_preview.py` 12项通过；`pytest scripts/wo0016 -q` 最终414 passed、3 skipped。另修复HTTP接口对超限JSON体未做有界排空导致Windows回环连接重置的问题，拒绝请求体排空上限4096字节，定向用例和全套测试均通过。
+- 最新退出日志确认 `run_live_monitor.py` 在板端时间 `2025-05-09 21:19:38.809+00:00` 因 `CmaFree is below 32768 KiB` 安全退出，属于CMA门槛失败，不是超时。原始144字节日志已保存为 `data/results/lighting-calibration-20261025/board-approval/live-monitor-cma-exit.log`；同期dmesg仅见zocl客户端PID 17066销毁，没有OOM/segfault证据。此后板端Boot ID仍为 `bb382d01-7bb2-4922-9a85-af6a24ef4d10`。本次只读复查先见 `CmaFree=32924 KiB`，随后再次检查为32,556 KiB；按用户先前授权执行 `sync` 和 `drop_caches=3` 后升至109,052 KiB，没有重启，`compact_memory`接口不存在。8080/8081无监听，监控和计数进程均未运行。
+- 虽然本轮已获Stage B-2限帧原始采集授权，且清理缓存后CMA恢复至109,052 KiB，但当前Boot下缺少WO-0017 Stage 1专用回执、Stage B-2 READY guard和attempt permit；旧Boot记录不能复用。本次没有启动相机/DMA或采集，也没有生成灰度/掩膜样本。现有日志、历史静态快照不足以判定该组M6失败形态具体命中了哪个拒分条件。
+- 对`split_touching.py`的源码审阅给出待验证假设：已标注单件M6螺母输出净面积约111 px；三件简单相加约333 px时，`ceil(0.06*area)`约为20 px，高于当前16 px孔面积底限，实际重叠后应按失败掩膜量孔确认。若三件粘连只保留两个合格孔，孔分配路径只生成两个子区；其中包含两件的长子区若长宽比超过1.8会使整次孔拆分拒绝，未超过时也只返回两区。投影路径的面积比约0.333低于0.35，但只有在候选狭颈条`runs != 1`时才会因`elongated_pair`条件被拒。
+- 掩膜到手后的针对性方案：测量失败与成功M6样本的内部孔面积分布，将孔阈值改成由单件拓扑校准的绝对范围或有上限的面积比例；对“三件面积可容纳但只有两个孔”的组件，在拒绝1.8长宽比前尝试对过大的子区递归寻找第二个有效颈部/孔，并保持子件面积区间、连通性和前景并集守恒；仅当狭颈证据成立时再评估把投影子区比例扩至约0.25–0.75，不能单独放宽比例。当前没有应用算法阈值修改，需用本轮失败Gray8/PL Binary8样本写回归后再实施。
+- 后续定位需要保存失败轮次的逐帧Gray8输入与对应PL Binary8原始掩膜，并独立确认物理数量；仅凭JPEG预览无法区分二值化、分割拒绝及轨迹漏记。成功50件的两轮与已报告的漏记轮次都保留为不同观察，不外推一般准确率。
+
+
+## Stage B-2 真实掩膜诊断与拆分修复（2026-10-25）
+
+- 单次采集 `b2-m6touch-220-20261025-01` 在第188帧提交时出现 `bounded capture queue overflow`，目标220帧，落盘186组成对Gray8/PL Binary8；186条逐帧记录及372个数组全部通过哈希、尺寸和Binary8数值校验，状态保留为INCOMPLETE。板端在线累计3件。完整归档SHA-256：`cf9a0365464445764807475e56e3bd97ae7b929d3690516bccf01b4f48b05920`。
+- 活动物料位于帧48–62。板端Python 3.10.4 / OpenCV 4.5.4 / NumPy 1.21.5纯软件重放复现3件；第57帧三件组面积234 px，孔面积20/22/24 px，种子分区为64/58/112 px，58 px低于旧子区下限60导致整组拒分。本机OpenCV 5分区略有不同，旧配置重放可计5件，不能用本机重放替代板端图像库验证；源码和旧缓存字节码一致，排除旧缓存内容不匹配。
+- `lighting-calibrated`拆分子区下限改为48；孔面积相对项封顶16，仍服从显式孔下限；狭颈投影面积比例扩为0.25–0.75，并继续要求狭颈及连通性。递归仅由该配置显式启用，容量下界80取自最小物料输出面积，用于限制三件容量和过大子区重试，不是M6螺母实物分类基准。名称映射仍为80=M6平垫圈、111=M6螺母、150=M8螺母。现有静态15件与旧粘连双件回归均保持通过。
+- 正式B-2改用已有普通RAM数组保存采样期间帧与元数据，采样结束、DMA空闲后延迟写盘，避免采样期有界队列溢出；没有增加CMA帧缓冲。实时监控只在准入和四块DMA缓冲分配期间执行32768 KiB水位门禁，`arm_frame`复用缓冲时不再按CmaFree短时下降中止，DMA/Packer故障门禁保留。
+- 修复代码已同步至隔离目录 `/home/xilinx/lighting-calibrated-20261025-fa688f04/` 并核对SHA-256，旧源码及字节码备份于 `board-approval/pre-b2-fix-20261025-4dd7002a/`。板端OpenCV 4.5.4对同15帧纯离线重放恢复5件；该结论不等同于新一轮动态验收。上轮全量测试421 passed、3 skipped；回归掩膜夹具 `scripts/wo0016/fixtures/lighting_b2_m6_touch_masks.npz`。
+- 原始归档、拓扑测量、板端前后重放数据与Gray8/Binary8图集：`data/results/lighting-calibration-20261025/board-approval/stage1-currentboot/stageb2-currentboot-incomplete-capture/`。
+
+
+## Stage B-2 attempt-03 正式动态采集（2026-10-25）
+
+- 操作者重新摆放并确认物理真值：3只粘连M6螺母与2只沿输送方向平行粘连M6螺母，共5件。当前Boot `bb382d01-7bb2-4922-9a85-af6a24ef4d10`；新READY `ready-b2-m6touch-fix03.json` SHA-256 `6067f4c07d586ebe796f240cb4b8fbd8d25b314fbf6650160e7d2cbf8064bba8`；单次permit SHA-256 `61cebd86d59a4937abfa225a231cbad337a6dc89776f20f8777b88f23429208e`，已正常消耗。
+- attempt-02因启动命令误用系统Python，在加载PYNQ前报 `ModuleNotFoundError`，0帧、未打开相机和启动DMA；保留失败结果和许可，不覆盖。attempt-03改用 `/usr/local/share/pynq-venv/bin/python3`，启动前无硬件访问的运行环境审计通过，PYNQ 3.1.1 / pydantic 1.9.1 / Python 3.10.4。
+- 正式结果 `BOARD_STREAM_COMPLETE`，进程正常退出0，220/220帧，accepted=220、dropped=0、missing=0，在线5/5，5个计数事件位于帧79、79、80、81、81。deferred_memory延迟写盘完成，四块CMA缓冲已释放。保存的是320×240 FPGA输入Gray8和对应PL Binary8，完整640×400相机源帧不在本轮B-2归档范围。
+- 独立核验440个NPY数组、220条记录、完整NPZ与嵌入数组哈希一致。逐帧Packer和MM2S/S2MM状态220/220通过；全部16,896,000像素的PL掩膜与Gray8 `>100`比较差异0，验证TX饱和+27与固定PL128门限在本轮等价。暖机后auto_exposure=1、exposure_time_absolute=50、brightness=0、gamma=100回读通过；gain为not_exposed/not_verified，按UVC例外记录。
+- 有原始归档的正式采集吞吐12.24796 FPS，220帧流窗口17.96217秒；17个1秒资源样本CPU均值126.11%（21.65%–144.75%），RSS145,080–180,988 KiB。ROI CCL 29/220帧执行，调用时均值38.094 ms；计入全部帧CCL均值5.154 ms。此数值包含正式采集开销，持续实时模式需另测。
+- 本轮CmaFree：准入63,408 KiB，流窗口采样14,328–32,076 KiB，缓冲释放即时8,104 KiB；正常关闭后按既有授权sync/drop_caches恢复108,204 KiB。运行期只复用已分配DMA缓冲，准入和四次分配水位仍保留。
+- 本地证据：`data/results/lighting-calibration-20261025/board-approval/b2-attempt-03/`；归档SHA-256 `71a02fc58bedb5763451141bee472ab20a172aa2569e6d12787c9f66d68cdb9b`；原始NPZ SHA-256 `9ffd23907e9698932844c953f563ed2aa8ed6c6c93831cd96833de9c70c60363`；核验摘要`validation-summary.json`、资源摘要`resource-summary.json`。本轮证明指定5件形态通过一次完整动态采集，不外推多轮50件准确率。
+
+
+## 正式采集后的实时监控服务（2026-10-25）
+
+- B-2完成并释放设备后，使用正确PYNQ虚拟环境、`lighting-calibrated + output-roi`、无帧数上限和`--no-auth`启动 `run_live_monitor.py`。实时入口仍严格核对WO-0015 Overlay PASS回执；首次传入WO-0017专用回执被类型检查拒绝，未打开相机/DMA。随后以同Boot、同manifest已有的 `/var/lib/wo0015-s2mm/overlay-only-pass.json` 验证通过，SHA-256 `53f992770558ff20a5ee5fad70cc1e5cd3e7a7bd44e38d4fbba31f19dd3d8195`，未改写回执或降低门禁。
+- 看板 `http://192.168.2.99:8080/`，后台Python PID30008。25.13秒6个状态样本全部running、非stale，完成帧由690递增到1312，采样时均无检测、计数0；处理FPS 24.12–25.15，均值24.81；CmaFree 42,612–42,792 KiB。相机必需四项回读均通过；MM2S/S2MM持续0x00001002。
+- 单次ps资源快照CPU139%（进程生存期累计口径）、RSS146,152 KiB；后续CmaFree快照40,896 KiB。该CPU值不作为25秒区间平均。保留后台服务供操作者连续50件及粘连件复测，每轮需要独立清零和物理数量记录。
+- 状态序列、摘要和实际MJPEG预览帧分别为 `b2-attempt-03/live-status-observations.json`、`live-runtime-summary.json`、`live-preview-after-b2-03.jpg`；`capture-contact-sheet.png`为正式采集原始Gray8/PL Binary8生成的帧图集，所标计数取自采集元数据。所有文件均位于上述board-approval证据目录。
+
+- 收尾前再次只读核验：服务仍running且非stale，已处理3,388帧，计数0，最新滑动处理FPS23.25、CmaFree41,824 KiB，MM2S/S2MM均0x00001002；完整状态保存在 `b2-attempt-03/live-final-status.json`。

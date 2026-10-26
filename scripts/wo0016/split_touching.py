@@ -4,6 +4,15 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
+_MAX_RELATIVE_HOLE_AREA_THRESHOLD = 16
+
+
+def _hole_area_threshold(area: int, min_hole_area: int) -> int:
+    """Keep the relative gate below the smallest calibrated M6 hole (17 px)."""
+    relative = int(np.ceil(0.06 * area))
+    return max(min_hole_area,
+               min(relative, _MAX_RELATIVE_HOLE_AREA_THRESHOLD))
+
 
 def is_single_connected_component(mask: np.ndarray) -> bool:
     """Return whether a non-empty 2D mask is one 8-connected region."""
@@ -78,7 +87,7 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
     count, _, stats, centers = cv2.connectedComponentsWithStats(
         (~pixels).astype(np.uint8), connectivity=8
     )
-    hole_area_threshold = max(min_hole_area, int(np.ceil(0.06 * area)))
+    hole_area_threshold = _hole_area_threshold(area, min_hole_area)
     holes = [index for index in range(1, count)
              if stats[index, cv2.CC_STAT_AREA] >= hole_area_threshold
              and stats[index, cv2.CC_STAT_LEFT] > 0
@@ -112,27 +121,10 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
     return tuple(children)
 
 
-def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
-                             min_hole_area: int = 30
-                             ) -> tuple[np.ndarray, ...]:
-    """Split two or three touching nuts when holes or a narrow neck are visible.
-
-    A silhouette without distinct holes or a neck is ambiguous (for example
-    flush rectangles), so it is left intact. Masks preserve the input union.
-    """
-    if isinstance(min_hole_area, bool) or not isinstance(min_hole_area, (int, np.integer)) or min_hole_area < 1:
-        raise ValueError("min_hole_area must be a positive integer")
-    pixels = np.asarray(component) != 0
-    if pixels.ndim != 2:
-        raise ValueError("component must be a 2D mask")
+def _split_by_projection_neck(pixels: np.ndarray,
+                              min_child_area: int) -> tuple[np.ndarray, np.ndarray] | None:
+    """Return a connected two-way cut only when a narrow projected neck exists."""
     area = int(np.count_nonzero(pixels))
-    if area < 2 * min_child_area:
-        return (pixels,)
-    if not is_single_connected_component(pixels):
-        return (pixels,)
-    hole_pieces = _split_by_enclosed_holes(pixels, min_child_area, min_hole_area)
-    if hole_pieces is not None:
-        return hole_pieces
     candidates = []
     for axis in (0, 1):
         projection = np.count_nonzero(pixels, axis=axis)
@@ -155,13 +147,13 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
             # A round hollow nut can have two runs through its central hole.
             # Two touching round nuts form an elongated, balanced pair instead.
             elongated_pair = (max(pixels.shape) >= 1.65 * min(pixels.shape)
-                              and 0.35 <= left_area / area <= 0.65)
+                              and 0.25 <= left_area / area <= 0.75)
             if runs != 1 and not elongated_pair:
                 continue
             score = (neck / min(left_peak, right_peak), -min(left_area, right_area))
             candidates.append((score, axis, cut))
     if not candidates:
-        return (pixels,)
+        return None
     _, axis, cut = min(candidates)
     first = np.zeros_like(pixels)
     second = np.zeros_like(pixels)
@@ -172,5 +164,104 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
         first[:cut] = pixels[:cut]
         second[cut:] = pixels[cut:]
     if not all(is_single_connected_component(piece) for piece in (first, second)):
-        return (pixels,)
+        return None
     return first, second
+
+
+def _valid_partition(parent: np.ndarray, pieces: tuple[np.ndarray, ...]) -> bool:
+    if not 2 <= len(pieces) <= 3 or any(piece.shape != parent.shape for piece in pieces):
+        return False
+    if not all(is_single_connected_component(piece) for piece in pieces):
+        return False
+    coverage = np.sum(np.stack(pieces), axis=0)
+    return (np.array_equal(coverage > 0, parent)
+            and not np.any(coverage > 1))
+
+
+def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int,
+                     *, recursive_item_area: int | None,
+                     depth: int = 0) -> tuple[np.ndarray, ...]:
+    """Retry a large two-seed child so a visible 1+2 cluster can yield three."""
+    area = int(np.count_nonzero(pixels))
+    if depth >= 2 or area < 2 * min_child_area:
+        return (pixels,)
+
+    hole_pieces = _split_by_enclosed_holes(pixels, min_child_area, min_hole_area)
+    if hole_pieces is not None:
+        if (len(hole_pieces) == 3 or recursive_item_area is None
+                or area < (3 if depth == 0 else 2) * recursive_item_area):
+            return hole_pieces
+        if len(hole_pieces) == 2:
+            for index in sorted(range(2),
+                                key=lambda i: int(np.count_nonzero(hole_pieces[i])),
+                                reverse=True):
+                child = hole_pieces[index]
+                if (int(np.count_nonzero(child)) < 2 * min_child_area
+                        or recursive_item_area is None
+                        or int(np.count_nonzero(child)) < 2 * recursive_item_area):
+                    continue
+                nested = _split_recursive(child, min_child_area, min_hole_area,
+                                          recursive_item_area=recursive_item_area,
+                                          depth=depth + 1)
+                if len(nested) > 1 and len(nested) + 1 <= 3:
+                    candidate = tuple(hole_pieces[i] for i in range(2) if i != index) + nested
+                    if _valid_partition(pixels, candidate):
+                        return candidate
+            return hole_pieces
+
+    neck_pieces = _split_by_projection_neck(pixels, min_child_area)
+    if neck_pieces is None:
+        return (pixels,)
+    if (recursive_item_area is None
+            or area < (3 if depth == 0 else 2) * recursive_item_area):
+        return neck_pieces
+    for index in sorted(range(2),
+                        key=lambda i: int(np.count_nonzero(neck_pieces[i])),
+                        reverse=True):
+        child = neck_pieces[index]
+        if (int(np.count_nonzero(child)) < 2 * min_child_area
+                or int(np.count_nonzero(child)) < 2 * recursive_item_area):
+            continue
+        nested = _split_recursive(child, min_child_area, min_hole_area,
+                                  recursive_item_area=recursive_item_area,
+                                  depth=depth + 1)
+        if len(nested) > 1 and len(nested) + 1 <= 3:
+            candidate = tuple(neck_pieces[i] for i in range(2) if i != index) + nested
+            if _valid_partition(pixels, candidate):
+                return candidate
+    return neck_pieces
+
+
+def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
+                             min_hole_area: int = 30,
+                             recursive_item_area: int | None = None
+                             ) -> tuple[np.ndarray, ...]:
+    """Split two or three touching nuts when holes or a narrow neck are visible.
+
+    Two-hole partitions may contain an oversized joined child; that child is
+    retried so a three-item silhouette with one obscured hole can still split.
+    Ambiguous silhouettes stay intact, and accepted masks preserve the input
+    union without overlap.
+    """
+    if isinstance(min_child_area, bool) or not isinstance(min_child_area, (int, np.integer)) or min_child_area < 1:
+        raise ValueError("min_child_area must be a positive integer")
+    if isinstance(min_hole_area, bool) or not isinstance(min_hole_area, (int, np.integer)) or min_hole_area < 1:
+        raise ValueError("min_hole_area must be a positive integer")
+    if (recursive_item_area is not None
+            and (isinstance(recursive_item_area, bool)
+                 or not isinstance(recursive_item_area, (int, np.integer))
+                 or recursive_item_area < 1)):
+        raise ValueError("recursive_item_area must be a positive integer or None")
+    pixels = np.asarray(component) != 0
+    if pixels.ndim != 2:
+        raise ValueError("component must be a 2D mask")
+    if int(np.count_nonzero(pixels)) < 2 * min_child_area:
+        return (pixels,)
+    if not is_single_connected_component(pixels):
+        return (pixels,)
+    pieces = _split_recursive(
+        pixels, int(min_child_area), int(min_hole_area),
+        recursive_item_area=(None if recursive_item_area is None
+                             else int(recursive_item_area)),
+    )
+    return pieces if _valid_partition(pixels, pieces) else (pixels,)

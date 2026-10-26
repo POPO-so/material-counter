@@ -16,7 +16,7 @@ def test_live_uses_calibrated_profile():
     assert args.counting_profile == "lighting-calibrated"
     config = finite.counting_configuration(args)
     assert config["min_area"] == 15
-    assert config["min_split_child_area"] == 60
+    assert config["min_split_child_area"] == 48
     assert (config["roi_top"], config["roi_bottom"]) == (30, 210)
     assert config["single_intact_area"] == 64
     assert config["split_min_hole_area"] == 16

@@ -21,6 +21,7 @@ import numpy as np
 
 PREVIEW_FRAME_INTERVAL = 4
 PREVIEW_JPEG_QUALITY = 70
+MAX_REJECTED_BODY_DRAIN_BYTES = 4096
 
 
 class MjpegFrameHub:
@@ -170,12 +171,9 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                   (50, 220, 130), 1, lineType=cv2.LINE_8)
     start, end = (((line_x, 0), (line_x, image.shape[0]-1)) if count_axis == "x"
                   else ((0, int(line_y)), (image.shape[1]-1, int(line_y))))
+    cv2.line(frame, start, end, (0, 0, 0), 3, lineType=cv2.LINE_8)
     cv2.line(frame, start, end,
-             (0, 0, 255), 2, lineType=cv2.LINE_8)
-    if count_axis == "x":
-        cv2.putText(frame, f"X={line_x}", (min(line_x + 4, 270), 100),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1,
-                    lineType=cv2.LINE_AA)
+             (0, 0, 255), 1, lineType=cv2.LINE_8)
     boundary_values = (line_x - hysteresis, line_x + hysteresis) if count_axis == "x" else (
         line_y - hysteresis, line_y + hysteresis
     )
@@ -193,12 +191,21 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
     # Keep full area labels readable for adjacent split children and image edges.
     # These rectangles reserve the count HUD and mask PIP drawn below.
     occupied_labels = [(3, 4, 212, 34), (216, 4, 316, 97)]
+    x_axis_hud = None
     if count_axis == "x":
-        x_label = min(line_x + 4, 270)
+        x_label_text = f"X={line_x}"
+        x_label_scale = 0.55
+        x_label_thickness = 2
         (text_width, text_height), baseline = cv2.getTextSize(
-            f"X={line_x}", cv2.FONT_HERSHEY_SIMPLEX, 0.35, 1)
-        occupied_labels.append((x_label - 2, 100 - text_height - 2,
-                                x_label + text_width + 2, 100 + baseline + 2))
+            x_label_text, cv2.FONT_HERSHEY_SIMPLEX,
+            x_label_scale, x_label_thickness)
+        x_label = max(3, min(line_x + 7, image.shape[1] - text_width - 6))
+        x_baseline = 100
+        x_label_rect = (x_label - 3, x_baseline - text_height - 4,
+                        x_label + text_width + 3, x_baseline + baseline + 3)
+        occupied_labels.append(x_label_rect)
+        x_axis_hud = (x_label_text, x_label, x_baseline, x_label_rect,
+                      x_label_scale, x_label_thickness)
     track_labels = []
     for track in tracks:
         if track.get("finished") or track.get("missed", 0):
@@ -296,6 +303,11 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
             scale *= min(1.0, 310 / max(1, text_width))
             cv2.putText(frame, text, (5, 256 + 19*index), cv2.FONT_HERSHEY_SIMPLEX,
                         scale, color, 1, lineType=cv2.LINE_AA)
+    if x_axis_hud is not None:
+        text, x, baseline, rectangle, scale, thickness = x_axis_hud
+        cv2.rectangle(frame, rectangle[:2], rectangle[2:], (12, 25, 35), -1)
+        cv2.putText(frame, text, (x, baseline), cv2.FONT_HERSHEY_SIMPLEX,
+                    scale, (255, 255, 255), thickness, lineType=cv2.LINE_AA)
     return frame
 
 
@@ -718,12 +730,12 @@ class MjpegPreviewServer:
                 self.wfile.write(body)
 
             def _reject_post(self, code: int, payload: Any) -> None:
-                # Drain small rejected bodies before closing: unread request
-                # data can reset a Windows TCP connection before the 403 arrives.
+                # Drain bounded rejected bodies before closing: unread request
+                # data can reset a Windows TCP connection before the rejection arrives.
                 # Never parse/execute the body or drain an unbounded request.
                 try:
                     length = int(self.headers.get("Content-Length", "0"))
-                    if 0 < length <= 512:
+                    if 0 < length <= MAX_REJECTED_BODY_DRAIN_BYTES:
                         self.connection.settimeout(2.0)
                         self.rfile.read(length)
                 except (OSError, ValueError):
@@ -801,7 +813,8 @@ class MjpegPreviewServer:
                 try:
                     length = int(self.headers.get("Content-Length", "0"))
                     if not 0 < length <= 512:
-                        raise ValueError("JSON body must be 1..512 bytes")
+                        self._reject_post(400, {"error": "JSON body must be 1..512 bytes"})
+                        return
                     self.connection.settimeout(2.0)
                     payload = json.loads(self.rfile.read(length))
                     if not isinstance(payload, dict):
