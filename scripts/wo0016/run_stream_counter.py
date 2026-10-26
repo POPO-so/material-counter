@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 from dataclasses import asdict
-from functools import partial
 import hashlib
 import hmac
 import itertools
@@ -386,8 +385,7 @@ def packet_encoders(args):
     """Bind one photometric threshold to both packet encoder variants for a run."""
     if args.counting_profile == "lighting-calibrated":
         threshold = effective_threshold(args)
-        return (partial(lighting_profile.encode, threshold=threshold),
-                partial(lighting_profile.encode_into, threshold=threshold))
+        return lighting_profile.make_packet_encoders(threshold=threshold)
     return gray320x240_to_rgb_packet, gray320x240_to_rgb_packet_into
 
 

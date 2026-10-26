@@ -168,6 +168,43 @@ def encode(gray320x240: np.ndarray, *, frame_id: int = 0,
     return output
 
 
+def make_packet_encoders(threshold: int = THRESHOLD):
+    """Return ``(encode, encode_into)`` callables with private reusable scratch.
+
+    The pair shares one transformed Gray8 scratch matrix, so callers must invoke
+    both callables from a single serialized producer. Each factory call owns a
+    separate matrix. ``encode_into`` still writes every TX byte into its
+    caller-owned output slot and rejects source/output memory overlap.
+    """
+    lut = gray_to_pl_lut(threshold)
+    scratch = np.empty((HEIGHT, WIDTH), dtype=np.uint8)
+
+    def encode_into(gray320x240: np.ndarray, output: Any, *,
+                    frame_id: int = 0) -> None:
+        gray = np.asarray(gray320x240)
+        if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
+            raise ValueError(
+                f"expected a uint8 Gray8 matrix with shape {(HEIGHT, WIDTH)}"
+            )
+        destination = np.asarray(output)
+        if np.shares_memory(gray, destination):
+            raise ValueError("Gray8 input and TX output must not overlap")
+
+        # Match the legacy prepare-then-LUT pipeline: zeroed rows are LUT-mapped
+        # too, so their value is lut[0] (27 at the default threshold).
+        scratch.fill(lut[0])
+        top, bottom = OUTPUT_ROI
+        cv2.LUT(gray[top:bottom, :], lut, dst=scratch[top:bottom, :])
+        gray320x240_to_rgb_packet_into(scratch, output, frame_id=frame_id)
+
+    def encode(gray320x240: np.ndarray, *, frame_id: int = 0) -> np.ndarray:
+        output = np.empty(TX_BYTES, dtype=np.uint8)
+        encode_into(gray320x240, output, frame_id=frame_id)
+        return output
+
+    return encode, encode_into
+
+
 def _v4l2_prefix() -> list[str]:
     geteuid = getattr(os, "geteuid", lambda: 0)
     if geteuid() == 0:
