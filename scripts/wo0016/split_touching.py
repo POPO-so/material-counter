@@ -7,11 +7,14 @@ import numpy as np
 _MAX_RELATIVE_HOLE_AREA_THRESHOLD = 16
 
 
-def _hole_area_threshold(area: int, min_hole_area: int) -> int:
+def _hole_area_threshold(area: int, min_hole_area: int, *,
+                         relative_cap: int = _MAX_RELATIVE_HOLE_AREA_THRESHOLD) -> int:
     """Keep the relative gate below the smallest calibrated M6 hole (17 px)."""
+    if min_hole_area >= relative_cap:
+        return int(min_hole_area)
     relative = int(np.ceil(0.06 * area))
     return max(min_hole_area,
-               min(relative, _MAX_RELATIVE_HOLE_AREA_THRESHOLD))
+               min(relative, relative_cap))
 
 
 def is_single_connected_component(mask: np.ndarray) -> bool:
@@ -79,7 +82,8 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
     return labels
 
 
-def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_area: int = 30
+def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_area: int = 30,
+                             min_hole_distance: float = 10, hole_area_cap: int = 16
                              ) -> tuple[np.ndarray, ...] | None:
     """Assign a joined cluster to two or three independently visible nut holes."""
     height, width = pixels.shape
@@ -87,7 +91,7 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
     count, _, stats, centers = cv2.connectedComponentsWithStats(
         (~pixels).astype(np.uint8), connectivity=8
     )
-    hole_area_threshold = _hole_area_threshold(area, min_hole_area)
+    hole_area_threshold = _hole_area_threshold(area, min_hole_area, relative_cap=hole_area_cap)
     holes = [index for index in range(1, count)
              if stats[index, cv2.CC_STAT_AREA] >= hole_area_threshold
              and stats[index, cv2.CC_STAT_LEFT] > 0
@@ -99,7 +103,7 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
     hole_centers = centers[holes]
     separation = np.linalg.norm(hole_centers[:, None] - hole_centers[None, :],
                                 axis=2)
-    if np.any(separation[np.triu_indices(len(holes), 1)] < 10):
+    if np.any(separation[np.triu_indices(len(holes), 1)] < min_hole_distance):
         return None
     assignments = _geodesic_hole_assignments(pixels, hole_centers)
     if assignments is None:
@@ -132,14 +136,16 @@ def _split_by_projection_neck(pixels: np.ndarray,
         if length < 7:
             continue
         cumulative = np.cumsum(projection)
+        prefix_maximum = np.maximum.accumulate(projection)
+        suffix_maximum = np.maximum.accumulate(projection[::-1])[::-1]
         for cut in range(3, length - 3):
             left_area = int(cumulative[cut - 1])
             right_area = area - left_area
             if min(left_area, right_area) < min_child_area:
                 continue
             neck = min(projection[cut - 1], projection[cut])
-            left_peak = int(np.max(projection[:cut]))
-            right_peak = int(np.max(projection[cut:]))
+            left_peak = int(prefix_maximum[cut - 1])
+            right_peak = int(suffix_maximum[cut])
             if not 0 < neck <= 0.65 * min(left_peak, right_peak):
                 continue
             strip = pixels[:, cut - 1 if projection[cut - 1] < projection[cut] else cut] if axis == 0 else pixels[cut - 1 if projection[cut - 1] < projection[cut] else cut, :]
@@ -180,13 +186,19 @@ def _valid_partition(parent: np.ndarray, pieces: tuple[np.ndarray, ...]) -> bool
 
 def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int,
                      *, recursive_item_area: int | None,
+                     min_hole_distance: float = 10,
+                     hole_area_cap: int = 16,
                      depth: int = 0) -> tuple[np.ndarray, ...]:
     """Retry a large two-seed child so a visible 1+2 cluster can yield three."""
     area = int(np.count_nonzero(pixels))
     if depth >= 2 or area < 2 * min_child_area:
         return (pixels,)
 
-    hole_pieces = _split_by_enclosed_holes(pixels, min_child_area, min_hole_area)
+    hole_pieces = (_split_by_enclosed_holes(pixels, min_child_area, min_hole_area)
+                  if min_hole_distance == 10 and hole_area_cap == 16 else
+                  _split_by_enclosed_holes(pixels, min_child_area, min_hole_area,
+                                           min_hole_distance=min_hole_distance,
+                                           hole_area_cap=hole_area_cap))
     if hole_pieces is not None:
         if (len(hole_pieces) == 3 or recursive_item_area is None
                 or area < (3 if depth == 0 else 2) * recursive_item_area):
@@ -202,7 +214,8 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
                     continue
                 nested = _split_recursive(child, min_child_area, min_hole_area,
                                           recursive_item_area=recursive_item_area,
-                                          depth=depth + 1)
+                                          min_hole_distance=min_hole_distance,
+                                          hole_area_cap=hole_area_cap, depth=depth + 1)
                 if len(nested) > 1 and len(nested) + 1 <= 3:
                     candidate = tuple(hole_pieces[i] for i in range(2) if i != index) + nested
                     if _valid_partition(pixels, candidate):
@@ -224,7 +237,8 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
             continue
         nested = _split_recursive(child, min_child_area, min_hole_area,
                                   recursive_item_area=recursive_item_area,
-                                  depth=depth + 1)
+                                  min_hole_distance=min_hole_distance,
+                                  hole_area_cap=hole_area_cap, depth=depth + 1)
         if len(nested) > 1 and len(nested) + 1 <= 3:
             candidate = tuple(neck_pieces[i] for i in range(2) if i != index) + nested
             if _valid_partition(pixels, candidate):
@@ -234,7 +248,8 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
 
 def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
                              min_hole_area: int = 30,
-                             recursive_item_area: int | None = None
+                             recursive_item_area: int | None = None,
+                             min_hole_distance: float = 10, hole_area_cap: int = 16
                              ) -> tuple[np.ndarray, ...]:
     """Split two or three touching nuts when holes or a narrow neck are visible.
 
@@ -252,6 +267,13 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
                  or not isinstance(recursive_item_area, (int, np.integer))
                  or recursive_item_area < 1)):
         raise ValueError("recursive_item_area must be a positive integer or None")
+    if (isinstance(min_hole_distance, bool)
+            or not isinstance(min_hole_distance, (int, float, np.integer, np.floating))
+            or not np.isfinite(min_hole_distance) or min_hole_distance <= 0):
+        raise ValueError("min_hole_distance must be positive and finite")
+    if (isinstance(hole_area_cap, bool) or not isinstance(hole_area_cap, (int, np.integer))
+            or hole_area_cap < 1):
+        raise ValueError("hole_area_cap must be a positive integer")
     pixels = np.asarray(component) != 0
     if pixels.ndim != 2:
         raise ValueError("component must be a 2D mask")
@@ -263,5 +285,7 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
         pixels, int(min_child_area), int(min_hole_area),
         recursive_item_area=(None if recursive_item_area is None
                              else int(recursive_item_area)),
+        min_hole_distance=float(min_hole_distance),
+        hole_area_cap=int(hole_area_cap),
     )
     return pieces if _valid_partition(pixels, pieces) else (pixels,)

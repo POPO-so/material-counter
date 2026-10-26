@@ -9,6 +9,8 @@ from typing import Any
 
 import cv2
 import numpy as np
+from scale_parameters import (DEFAULT_THRESHOLD, PL_THRESHOLD, REFERENCE_AREA, SOURCE_MIN_NET_AREA,
+                              derive_lighting_parameters, threshold_offset, validate_threshold)
 
 LIGHTING_MAPPINGS = ("lighting-calibrated", "lighting-calibrated-output-roi")
 
@@ -43,7 +45,8 @@ def monochrome_view(frame: np.ndarray) -> np.ndarray:
     raise ValueError("camera frame must have shape (400,640), (400,640,1) or (400,640,3)")
 
 
-def frame_geometry(mapping: str = "stretch") -> dict[str, Any]:
+def frame_geometry(mapping: str = "stretch", *, reference_area: float = REFERENCE_AREA,
+                   threshold: int = DEFAULT_THRESHOLD) -> dict[str, Any]:
     if mapping not in ("stretch", "letterbox", *LIGHTING_MAPPINGS):
         raise ValueError("frame mapping must be stretch, letterbox or a lighting-calibrated mode")
     lighting_mapping = is_lighting_mapping(mapping)
@@ -55,19 +58,26 @@ def frame_geometry(mapping: str = "stretch") -> dict[str, Any]:
             "belt_width_mm_nominal": 180.0, "physical_calibration_status": "NOT_MEASURED",
             "pixels_per_mm_y": None}
     if lighting_mapping:
+        parameters = derive_lighting_parameters(reference_area)
+        threshold = validate_threshold(threshold)
+        offset = threshold_offset(threshold)
         geometry.update(source_roi_xyxy=[0,20,640,380], active_output_roi_xyxy=[0,30,320,210],
-                        binary_thresh=100, threshold_comparison=">", pl_threshold=128,
-                        tx_intensity_mapping="saturating +27; PL >=128 equals source >100",
+                        binary_thresh=threshold, threshold_comparison=">", pl_threshold=PL_THRESHOLD,
+                        tx_intensity_mapping=f"saturating {offset:+d}; PL >={PL_THRESHOLD} equals source >{threshold}",
                         area_filter_mode=("source_retr_ccomp" if source_area_filter
                                           else "output_roi_connected_components"),
-                        source_min_net_contour_area=(60 if source_area_filter else None),
-                        source_min_net_contour_area_configured=60,
-                        runtime_min_foreground_pixels=15,
+                        source_min_net_contour_area=(parameters["source_min_net_area"] if source_area_filter else None),
+                        source_min_net_contour_area_configured=parameters["source_min_net_area"],
+                        runtime_min_foreground_pixels=parameters["min_area"],
                         coordinate_transform="x_out=x_source/2; y_out=y_source/2+20")
+        if reference_area != REFERENCE_AREA:
+            geometry["reference_area"] = float(reference_area)
     return geometry
 
 
-def resize_monochrome_into(frame: np.ndarray, output: np.ndarray, *, mapping: str) -> None:
+def resize_monochrome_into(frame: np.ndarray, output: np.ndarray, *, mapping: str,
+                           threshold: int = DEFAULT_THRESHOLD,
+                           source_min_net_area: int = SOURCE_MIN_NET_AREA) -> None:
     """Preserve the source view extent; output ownership remains with the caller."""
     if mapping not in ("stretch", "letterbox", *LIGHTING_MAPPINGS):
         raise ValueError("frame mapping must be stretch, letterbox or a lighting-calibrated mode")
@@ -78,7 +88,7 @@ def resize_monochrome_into(frame: np.ndarray, output: np.ndarray, *, mapping: st
         raise ValueError("output must be independent writable contiguous uint8 (240,320)")
     if mapping == "lighting-calibrated":
         from lighting_profile import filter_source_noise
-        source = filter_source_noise(source)
+        source = filter_source_noise(source, threshold=threshold, min_net_area=source_min_net_area)
     if mapping in ("letterbox", *LIGHTING_MAPPINGS):
         output[:20].fill(0)
         output[220:].fill(0)
@@ -95,16 +105,20 @@ def resize_monochrome_into(frame: np.ndarray, output: np.ndarray, *, mapping: st
 class MonochromePreprocessor:
     """Reusable outputs; caller must snapshot them before processing another frame."""
 
-    def __init__(self, *, mapping: str = "stretch"):
-        frame_geometry(mapping)
+    def __init__(self, *, mapping: str = "stretch", reference_area: float = REFERENCE_AREA,
+                 threshold: int = DEFAULT_THRESHOLD):
+        geometry = frame_geometry(mapping, reference_area=reference_area, threshold=threshold)
         self.mapping = mapping
+        self.threshold = validate_threshold(threshold) if is_lighting_mapping(mapping) else 128
+        self.source_min_net_area = geometry.get("source_min_net_contour_area_configured", SOURCE_MIN_NET_AREA)
         self.gray = np.empty((240, 320), np.uint8)
         self.binary = np.empty_like(self.gray)
 
     def __call__(self, frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         # Strided copies avoid packing the full camera channel on the Zynq CPU.
-        resize_monochrome_into(frame, self.gray, mapping=self.mapping)
-        cv2.threshold(self.gray, 100 if is_lighting_mapping(self.mapping) else 128, 255, cv2.THRESH_BINARY, dst=self.binary)
+        resize_monochrome_into(frame, self.gray, mapping=self.mapping, threshold=self.threshold,
+                               source_min_net_area=self.source_min_net_area)
+        cv2.threshold(self.gray, self.threshold, 255, cv2.THRESH_BINARY, dst=self.binary)
         return self.gray, self.binary
 
 

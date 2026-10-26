@@ -6,7 +6,7 @@ import inspect
 import math
 import threading
 import time
-from collections import deque
+from collections import Counter, deque
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, AsyncIterable, Callable, Protocol
@@ -64,6 +64,7 @@ class DmaBufferSlot:
     capture_metadata: dict[str, Any] | None = None
     capture_source_gray: np.ndarray | None = None
     dma_complete_monotonic_ns: int | None = None
+    capture_monotonic_ns: int | None = None
 
 
 @dataclass(frozen=True)
@@ -118,6 +119,8 @@ class _Track:
     missed: int = 0
     finished: bool = False
     forward_velocity: float | None = None
+    capture_monotonic_ns: int | None = None
+    velocity_px_per_s: float | None = None
 
 
 class MaskCounter:
@@ -144,11 +147,14 @@ class MaskCounter:
                  max_merge_area: int = 260, max_merged_span: int = 24,
                  max_split_area: int | None = None, min_split_child_area: int | None = None,
                  split_min_hole_area: int = 30,
+                 split_min_hole_distance: float = 10,
+                 split_hole_area_cap: int = 16,
                  split_recursive_item_area: int | None = None,
                  strict_lateral_gate: bool = False,
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
-                 discard_finished_tracks: bool = False):
+                 discard_finished_tracks: bool = False,
+                 motion_timebase_s: float | None = None):
         self.width = _integer(width, "width", minimum=1)
         self.height = _integer(height, "height", minimum=1)
         self.line_y = _integer(line_y, "line_y", minimum=0)
@@ -201,6 +207,8 @@ class MaskCounter:
         self.max_split_area = (self.max_merge_area if max_split_area is None else
                                _integer(max_split_area, "max_split_area", minimum=1))
         self.split_min_hole_area = _integer(split_min_hole_area, "split_min_hole_area", minimum=1)
+        self.split_min_hole_distance = _positive_float(split_min_hole_distance, "split_min_hole_distance")
+        self.split_hole_area_cap = _integer(split_hole_area_cap, "split_hole_area_cap", minimum=1)
         self.split_recursive_item_area = (
             None if split_recursive_item_area is None else
             _integer(split_recursive_item_area, "split_recursive_item_area", minimum=1)
@@ -217,6 +225,9 @@ class MaskCounter:
         if not isinstance(discard_finished_tracks, bool):
             raise ValueError("discard_finished_tracks must be a bool")
         self.discard_finished_tracks = discard_finished_tracks
+        self.motion_timebase_s = (None if motion_timebase_s is None else
+                                  _positive_float(motion_timebase_s, "motion_timebase_s"))
+        self._last_capture_monotonic_ns = None
         self._recent_events: list[CountEvent] = []
         self.last_suppressed_events: list[CountEvent] = []
         self.total_count = 0
@@ -230,7 +241,8 @@ class MaskCounter:
         self.rejected_contours: tuple[np.ndarray, ...] = ()
         self._split_origins: dict[Detection, int] = {}
 
-    def update_detections(self, frame_id: int, detections: Any) -> FrameResult:
+    def update_detections(self, frame_id: int, detections: Any, *,
+                          capture_monotonic_ns: int | None = None) -> FrameResult:
         """Replay recorded qualified CCL detections through the live tracker.
 
         No masks are reconstructed and no segmentation claims are made here.
@@ -240,6 +252,7 @@ class MaskCounter:
         self._split_origins = {}
         if self.last_frame_id is not None and frame_id <= self.last_frame_id:
             raise ValueError("frame IDs must strictly increase")
+        timestamp = self._motion_timestamp(capture_monotonic_ns)
         accepted = []
         rejected = []
         for detection in detections:
@@ -265,7 +278,7 @@ class MaskCounter:
         raw_detections = tuple(accepted)
         accepted = self._cluster_components(accepted)
         self.last_frame_id = frame_id
-        events = self._associate_and_update(frame_id, accepted)
+        events = self._associate_and_update(frame_id, accepted, timestamp)
         top, bottom = self._roi_bounds()
         return FrameResult(frame_id, self.total_count, tuple(accepted), tuple(events),
                            top, bottom, (), (), raw_detections=raw_detections,
@@ -317,10 +330,22 @@ class MaskCounter:
         self.glare_area_px = sum(detection.area for detection in detections)
         self.rejected_contours = tuple(contours or ())
 
-    def update(self, frame_id: int, mask: np.ndarray) -> FrameResult:
+    def _motion_timestamp(self, timestamp: int | None) -> int | None:
+        """Require a monotonic host capture time only in the explicitly enabled mode."""
+        if self.motion_timebase_s is None:
+            return None
+        timestamp = _integer(timestamp, "capture_monotonic_ns", minimum=1)
+        if (self._last_capture_monotonic_ns is not None
+                and timestamp <= self._last_capture_monotonic_ns):
+            raise ValueError("capture_monotonic_ns must strictly increase")
+        return timestamp
+
+    def update(self, frame_id: int, mask: np.ndarray, *,
+               capture_monotonic_ns: int | None = None) -> FrameResult:
         frame_id = _integer(frame_id, "frame_id", minimum=0)
         if self.last_frame_id is not None and frame_id <= self.last_frame_id:
             raise ValueError("frame IDs must strictly increase")
+        timestamp = self._motion_timestamp(capture_monotonic_ns)
 
         validate_started = time.perf_counter()
         image = np.asarray(mask)
@@ -343,7 +368,7 @@ class MaskCounter:
 
         track_started = time.perf_counter()
         self.last_frame_id = frame_id
-        events = self._associate_and_update(frame_id, detections)
+        events = self._associate_and_update(frame_id, detections, timestamp)
         track_ms = (time.perf_counter() - track_started) * 1000.0
         return FrameResult(
             frame_id=frame_id,
@@ -445,7 +470,9 @@ class MaskCounter:
                 cropped = labels[y:y + box_height, x:x + box_width] == label
                 pieces = split_touching_component(cropped, min_child_area=self.min_split_child_area,
                                                   min_hole_area=self.split_min_hole_area,
-                                                  recursive_item_area=self.split_recursive_item_area)
+                                                  recursive_item_area=self.split_recursive_item_area,
+                                                  min_hole_distance=self.split_min_hole_distance,
+                                                  hole_area_cap=self.split_hole_area_cap)
                 piece_masks = [np.asarray(piece) != 0 for piece in pieces]
                 valid_partition = (2 <= len(piece_masks) <= 3
                                    and all(piece.shape == cropped.shape
@@ -660,7 +687,8 @@ class MaskCounter:
         return self.direction * position
 
     def _associate_and_update(self, frame_id: int,
-                              detections: list[Detection]) -> list[CountEvent]:
+                              detections: list[Detection],
+                              capture_monotonic_ns: int | None = None) -> list[CountEvent]:
         active = []
         self.last_associations = []
         self.last_suppressed_events = []
@@ -677,6 +705,13 @@ class MaskCounter:
         edges = []
         for track in active:
             dt = frame_id - track.last_frame
+            motion_dt = dt
+            velocity = track.forward_velocity
+            if self.motion_timebase_s is not None:
+                elapsed_s = (capture_monotonic_ns - track.capture_monotonic_ns) / 1e9
+                motion_dt = elapsed_s / self.motion_timebase_s
+                velocity = (None if track.velocity_px_per_s is None else
+                            track.velocity_px_per_s * self.motion_timebase_s)
             old = track.detection
             for index, detection in enumerate(detections):
                 dx = detection.centroid_x - old.centroid_x
@@ -702,9 +737,9 @@ class MaskCounter:
                 if missing_frames > self.max_missing:
                     velocity_ok = (
                         track.confirmed and track.armed and not track.counted
-                        and track.forward_velocity is not None
-                        and track.forward_velocity > 0
-                        and abs(forward - track.forward_velocity * dt) <= self.max_step
+                        and velocity is not None
+                        and velocity > 0
+                        and abs(forward - velocity * motion_dt) <= self.max_step
                     )
                     edge_recovery = (
                         self._edge(old) != 0
@@ -722,12 +757,14 @@ class MaskCounter:
                         continue
                 lateral_limit = (self.max_lateral_step if self.strict_lateral_gate
                                  else self.max_lateral_step * dt)
+                if self.motion_timebase_s is not None:
+                    lateral_limit = self.max_lateral_step * motion_dt
                 if (lateral <= lateral_limit
-                        and -self.backward_tolerance <= forward <= self.max_step * dt
+                        and -self.backward_tolerance <= forward <= self.max_step * motion_dt
                         and 0.25 <= area_ratio <= 4.0):
                     predicted_x, predicted_y = old.centroid_x, old.centroid_y
-                    if missing_frames and track.forward_velocity is not None:
-                        longitudinal_prediction = self.direction * track.forward_velocity * dt
+                    if missing_frames and velocity is not None:
+                        longitudinal_prediction = self.direction * velocity * motion_dt
                         if self.count_axis == "x":
                             predicted_x += longitudinal_prediction
                         else:
@@ -738,10 +775,10 @@ class MaskCounter:
 
         # An inferred gap must have a unique candidate in both directions.
         # Refuse nearest-neighbour guessing when more than one object fits.
-        ambiguous_tracks = {edge[1] for edge in edges
-                            if sum(e[1] == edge[1] for e in edges) > 1}
-        ambiguous_detections = {edge[2] for edge in edges
-                                if sum(e[2] == edge[2] for e in edges) > 1}
+        track_frequency = Counter(edge[1] for edge in edges)
+        detection_frequency = Counter(edge[2] for edge in edges)
+        ambiguous_tracks = {key for key, count in track_frequency.items() if count > 1}
+        ambiguous_detections = {key for key, count in detection_frequency.items() if count > 1}
 
         used_tracks: set[int] = set()
         used_detections: set[int] = set()
@@ -767,6 +804,10 @@ class MaskCounter:
             longitudinal = (detection.centroid_x-track.detection.centroid_x
                             if self.count_axis == "x" else detection.centroid_y-track.detection.centroid_y)
             track.forward_velocity = self.direction*longitudinal/dt
+            if self.motion_timebase_s is not None:
+                elapsed_s = (capture_monotonic_ns - track.capture_monotonic_ns) / 1e9
+                track.velocity_px_per_s = self.direction * longitudinal / elapsed_s
+                track.capture_monotonic_ns = capture_monotonic_ns
             track.last_frame = frame_id
             track.detection = detection
             track.armed = track.armed or self._side(detection) < -self.hysteresis
@@ -808,6 +849,7 @@ class MaskCounter:
                 armed=side < -self.hysteresis,
                 counted=born_after_arming_zone,
                 confirmed=self.confirm_hits <= 1,
+                capture_monotonic_ns=capture_monotonic_ns,
             )
             self._tracks[track.track_id] = track
             self.last_associations.append({"track_id": track.track_id, "detection_index": index,
@@ -817,6 +859,7 @@ class MaskCounter:
             for track_id in [track_id for track_id, track in self._tracks.items()
                              if track.finished]:
                 del self._tracks[track_id]
+        self._last_capture_monotonic_ns = capture_monotonic_ns
         return sorted(events, key=lambda event: event.track_id)
 
 
@@ -1102,6 +1145,8 @@ class DoubleBufferStream:
                 slot.frame_id = frame_id
                 slot.dma_complete_monotonic_ns = None
                 slot.capture_source_gray = None
+                slot.capture_monotonic_ns = (None if frame_input is None else
+                                             frame_input.capture_monotonic_ns)
                 if frame_input is not None and frame_input.source_sequence != frame_id:
                     raise ValueError("camera source sequence does not match DMA frame ID")
                 if frame_input is not None and frame_input.source_gray is not None:
@@ -1135,7 +1180,8 @@ class DoubleBufferStream:
                                     else slot.preview_gray)
                     if preview_gray is None:
                         raise RuntimeError("preview callback has no per-slot Gray8 snapshot")
-                    np.copyto(preview_gray, gray, casting="no")
+                    if preview_gray is not slot.capture_gray:
+                        np.copyto(preview_gray, gray, casting="no")
                 encode_started = time.perf_counter()
                 packet_frame_id = self._packet_frame_id(
                     frame_id, bounded=self.history_limit is not None
@@ -1304,7 +1350,11 @@ class DoubleBufferStream:
             frame_id = slot.frame_id
             postprocess_started = time.perf_counter()
             roi_started = time.perf_counter()
-            result = await asyncio.to_thread(self.counter.update, slot.frame_id, mask)
+            if self.counter.motion_timebase_s is None:
+                result = await asyncio.to_thread(self.counter.update, slot.frame_id, mask)
+            else:
+                result = await asyncio.to_thread(self.counter.update, slot.frame_id, mask,
+                                                capture_monotonic_ns=slot.capture_monotonic_ns)
             roi_seconds = time.perf_counter() - roi_started
             self._record_timing("roi_count", roi_seconds)
             if self.on_frame is not None:

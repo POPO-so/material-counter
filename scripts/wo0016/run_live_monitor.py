@@ -32,10 +32,16 @@ def parser():
     result.set_defaults(host="127.0.0.1", port=8080, counting_profile="lighting-calibrated")
     result.add_argument("--mode", choices=("mock", "board"), default="mock")
     result.add_argument("--counting-profile", choices=("lighting-calibrated", "full-width-mixed"), default="lighting-calibrated")
+    result.add_argument("--reference-area", type=float, default=finite.REFERENCE_AREA,
+                        help="flat isolated M6 nut area in output pixels (default 111)")
+    result.add_argument("--lighting-threshold", type=int, default=finite.DEFAULT_THRESHOLD,
+                        help="foreground Gray8 >T; encoded for the unchanged PL threshold")
+    result.add_argument("--motion-timebase-s", type=float,
+                        help="opt-in nominal frame period for host timestamp displacement gates")
     result.add_argument("--lighting-area-filter", choices=("source", "output-roi"), default="source",
                         help="output-roi skips full-resolution source contours and keeps the existing 320x180 >=15px count-area gate")
     result.add_argument("--direction", type=int, choices=(-1, 1), default=1)
-    result.add_argument("--hysteresis", type=float, default=2.0)
+    result.add_argument("--hysteresis", type=float, default=2.0, action=finite.PixelOverrideAction)
     result.add_argument("--host", default="127.0.0.1")
     result.add_argument("--port", type=int, default=8080)
     result.add_argument("--timeout-s", type=float, default=5.0)
@@ -221,13 +227,12 @@ class BoardSession:
             raise RuntimeError("Packer return frame validation failed")
 
     async def run(self, counter, publish):
+        packet_encoder, packet_encoder_into = finite.packet_encoders(self.args)
         self.stream = DoubleBufferStream(
             recv_channel=self.dma.recvchannel, send_channel=self.dma.sendchannel,
             tx_buffers=self.tx, rx_buffers=self.rx, counter=counter,
-            packet_encoder=(finite.lighting_profile.encode if self.args.counting_profile == "lighting-calibrated"
-                            else finite.gray320x240_to_rgb_packet),
-            packet_encoder_into=(finite.lighting_profile.encode_into if self.args.counting_profile == "lighting-calibrated"
-                                 else finite.gray320x240_to_rgb_packet_into),
+            packet_encoder=packet_encoder,
+            packet_encoder_into=packet_encoder_into,
             before_transfer=self.arm_frame,
             before_rx_copy=lambda frame_id, slot: self.api.sync_from_device(slot.rx_buffer),
             after_transfer=self.verify_frame, preview_callback=publish,
@@ -238,6 +243,9 @@ class BoardSession:
             self.args.camera, max_frames=None, live_stop_requested=self.state.stop.is_set,
             read_timeout_s=self.args.timeout_s,
             frame_mapping=finite.preprocessing_configuration(self.args)["mapping"],
+            binary_threshold=finite.effective_threshold(self.args),
+            reference_area=self.args.reference_area,
+            include_capture_metadata=self.args.motion_timebase_s is not None,
             camera_controls_callback=self.state.set_camera_controls)
         await self.stream.run(frames, stop_requested=self.state.stop.is_set)
 
@@ -281,7 +289,7 @@ async def run_monitor(args, *, state=None, server_ready=None):
         interval=finite.PREVIEW_FRAME_INTERVAL if args.mode == "board" else 1,
         active_rows=(counter.roi_top, counter.roi_bottom) if args.counting_profile == "lighting-calibrated" else (20,220), history_limit=args.history_limit,
         count_label="TOTAL COUNT" if args.mode == "board" else "DEMO COUNT",
-        pip_label="PL DMA MASK TH100" if args.mode == "board" and args.counting_profile == "lighting-calibrated" else "PL DMA MASK" if args.mode == "board" else "SYNTHETIC MASK",
+        pip_label=f"PL DMA MASK TH{finite.effective_threshold(args)}" if args.mode == "board" and args.counting_profile == "lighting-calibrated" else "PL DMA MASK" if args.mode == "board" else "SYNTHETIC MASK",
         view_mode_provider=lambda: state.view_mode)
     state.invalidate_preview = publisher.invalidate
     server = MjpegPreviewServer(hub=hub, host=args.host, port=args.port,
@@ -314,7 +322,9 @@ async def run_monitor(args, *, state=None, server_ready=None):
             while not state.stop.is_set():
                 started = time.monotonic()
                 gray, mask = synthetic_frame(frame_id, direction=args.direction)
-                publish(counter.update(frame_id, mask), mask, gray)
+                timing = ({} if counter.motion_timebase_s is None else
+                          {"capture_monotonic_ns": time.monotonic_ns()})
+                publish(counter.update(frame_id, mask, **timing), mask, gray)
                 frame_id += 1
                 await asyncio.sleep(max(0, 1 / args.mock_fps - (time.monotonic() - started)))
         state.set_phase("stopped", "监控已停止")

@@ -1,22 +1,24 @@
 """Camera-angle calibration profile for the measured source ROI and threshold.
 
-The PL threshold is fixed at 128. Saturating +27 on a private TX image maps
-source Gray8 values greater than 100 to PL values at least 128, while the
-captured/prepared Gray8 image remains available unchanged as evidence.
+The PL threshold stays fixed at 128. The private TX LUT uses offset
+128-(T+1), with saturation; default T=100 gives +27. Original Gray8 remains
+unchanged for evidence and preview.
 """
 from __future__ import annotations
 
 import os
 import re
 import subprocess
+from functools import lru_cache
 from typing import Any
 
 import cv2
 import numpy as np
+from scale_parameters import (DEFAULT_THRESHOLD, PL_THRESHOLD, SOURCE_MIN_NET_AREA,
+                              threshold_offset, validate_threshold)
 
-THRESHOLD = 100
+THRESHOLD = DEFAULT_THRESHOLD
 SOURCE_ROI = (20, 380)
-SOURCE_MIN_NET_AREA = 60
 CAMERA_CONTROLS = {
     "auto_exposure": 1,
     "exposure_time_absolute": 50,
@@ -45,9 +47,17 @@ HEIGHT = 240
 OUTPUT_ROI = (30, 210)
 CAMERA_CONTROL_TIMEOUT_S = 5
 TX_BYTES = 16 + WIDTH * HEIGHT * 3 + 16
-_GRAY_TO_PL_LUT = np.minimum(
-    np.arange(256, dtype=np.uint16) + 27, 255
-).astype(np.uint8)
+def gray_to_pl_lut(threshold: int = THRESHOLD) -> np.ndarray:
+    """Map Gray8 > T to the fixed PL >=128 comparison, including negative offsets."""
+    return _gray_to_pl_lut(validate_threshold(threshold))
+
+
+@lru_cache(maxsize=16)
+def _gray_to_pl_lut(threshold: int) -> np.ndarray:
+    result = np.clip(np.arange(256, dtype=np.int16) + threshold_offset(threshold),
+                     0, 255).astype(np.uint8)
+    result.flags.writeable = False
+    return result
 
 
 def classify_area(area: int | None) -> str:
@@ -61,7 +71,8 @@ def classify_area(area: int | None) -> str:
     return "unknown"
 
 
-def filter_source_noise(gray640x400: np.ndarray) -> np.ndarray:
+def filter_source_noise(gray640x400: np.ndarray, *, threshold: int = THRESHOLD,
+                        min_net_area: int = SOURCE_MIN_NET_AREA) -> np.ndarray:
     """Clear sub-60-net-contour foreground and rows outside the calibrated source ROI.
 
     Net area follows the lighting tuner convention: each external contour area
@@ -79,7 +90,7 @@ def filter_source_noise(gray640x400: np.ndarray) -> np.ndarray:
     filtered[bottom:].fill(0)
 
     source_roi = gray[top:bottom, :]
-    binary = np.ascontiguousarray(source_roi > THRESHOLD, dtype=np.uint8) * 255
+    binary = np.ascontiguousarray(source_roi > validate_threshold(threshold), dtype=np.uint8) * 255
     contours, hierarchy = cv2.findContours(
         binary, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
     )
@@ -98,7 +109,7 @@ def filter_source_noise(gray640x400: np.ndarray) -> np.ndarray:
             net_area -= float(cv2.contourArea(contours[child_index]))
             child_index = int(tree[child_index, 0])
 
-        if net_area >= SOURCE_MIN_NET_AREA:
+        if net_area >= min_net_area:
             continue
 
         component_mask = np.zeros(binary.shape, dtype=np.uint8)
@@ -137,17 +148,23 @@ def gray320x240_to_rgb_packet_into(gray: np.ndarray, output: Any, *,
     packet_encoder.gray320x240_to_rgb_packet_into(gray, output, frame_id=frame_id)
 
 
-def encode_into(gray320x240: np.ndarray, output: Any, *, frame_id: int = 0) -> None:
+def encode_into(gray320x240: np.ndarray, output: Any, *, frame_id: int = 0,
+                threshold: int = THRESHOLD) -> None:
     """Encode a compensated private copy; preserve caller Gray8 for evidence."""
     prepared = prepare_gray(gray320x240)
-    pl_input = _GRAY_TO_PL_LUT[prepared]
+    pl_input = gray_to_pl_lut(threshold)[prepared]
     gray320x240_to_rgb_packet_into(pl_input, output, frame_id=frame_id)
 
 
-def encode(gray320x240: np.ndarray, *, frame_id: int = 0) -> np.ndarray:
+def encode(gray320x240: np.ndarray, *, frame_id: int = 0,
+           threshold: int = THRESHOLD) -> np.ndarray:
     """Allocate and return one TX packet encoded with this lighting profile."""
+    threshold = validate_threshold(threshold)
     output = np.empty(TX_BYTES, dtype=np.uint8)
-    encode_into(gray320x240, output, frame_id=frame_id)
+    if threshold == THRESHOLD:
+        encode_into(gray320x240, output, frame_id=frame_id)
+    else:
+        encode_into(gray320x240, output, frame_id=frame_id, threshold=threshold)
     return output
 
 

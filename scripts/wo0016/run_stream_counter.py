@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 from dataclasses import asdict
+from functools import partial
 import hashlib
 import hmac
 import itertools
@@ -27,6 +28,8 @@ from typing import Any, AsyncIterator, Callable, Mapping
 
 import cv2
 import numpy as np
+from scale_parameters import (DEFAULT_THRESHOLD, REFERENCE_AREA, SOURCE_MIN_NET_AREA,
+                              derive_lighting_parameters, validate_threshold)
 from live_calibration import (LIGHTING_MAPPINGS, require_standard_camera_controls,
                               frame_geometry, resize_monochrome_into,
                               is_lighting_mapping)
@@ -125,7 +128,8 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
                         direction: int = 1, min_area: int = 12,
                         expected_count: int | None = None,
                         material_label: str | None = None,
-                        counter_config: Mapping[str, Any] | None = None) -> dict[str, Any]:
+                        counter_config: Mapping[str, Any] | None = None,
+                        preprocessing_config: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """Run synthetic Binary8 masks through the actual counter and JPEG renderer."""
     counter = (MaskCounter(**dict(counter_config)) if counter_config is not None else
                MaskCounter(line_y=line_y, direction=direction, min_area=min_area, max_step=24.0))
@@ -148,7 +152,9 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
     try:
         last_jpeg = None
         for frame_id, mask in enumerate(masks):
-            result = counter.update(frame_id, mask)
+            timing = ({} if counter.motion_timebase_s is None else
+                      {"capture_monotonic_ns": max(1, round((frame_id + 1) * counter.motion_timebase_s * 1e9))})
+            result = counter.update(frame_id, mask, **timing)
             last_jpeg = render_preview_jpeg(mask, total_count=result.total_count,
                                             line_y=counter.line_y, count_axis=counter.count_axis,
                                             line_x=counter.line_x, hysteresis=counter.hysteresis)
@@ -191,7 +197,8 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
         profile = "lighting-calibrated" if counter.roi_top == 30 else "full-width-mixed"
         summary.update({"counting_profile": profile,
                         "counting_config": dict(counter_config),
-                        "preprocessing_config": frame_geometry("lighting-calibrated" if profile == "lighting-calibrated" else "letterbox")})
+                        "preprocessing_config": (dict(preprocessing_config) if preprocessing_config is not None else
+                            frame_geometry("lighting-calibrated" if profile == "lighting-calibrated" else "letterbox"))})
     return summary
 
 
@@ -332,13 +339,24 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
                        "confirm_hits": 2, "prediction_max_missing": 3,
                        "edge_max_missing": 0, "cooldown_frames": 0})
     if getattr(args, "counting_profile", "legacy") == "lighting-calibrated":
-        # Output pixel areas measured from the three isolated snapshot parts: 80/111/150.
-        # 64 = 80 * .8; prevent intact small parts being merged with each other.
-        config.update(roi_top=30, roi_bottom=210, min_area=15, min_split_child_area=48,
-                      split_min_hole_area=16,
-                      split_recursive_item_area=80,
-                      single_intact_area=64, max_merge_area=540, max_split_area=540,
-                      max_area=540, max_merged_span=48, component_cluster_gap=0.0)
+        validate_threshold(getattr(args, "lighting_threshold", DEFAULT_THRESHOLD))
+        parameters = derive_lighting_parameters(getattr(args, "reference_area", REFERENCE_AREA))
+        parameters.pop("source_min_net_area")  # Source contours use their own area metric.
+        if parameters["split_min_hole_area"] != 16:
+            parameters["split_hole_area_cap"] = parameters["split_min_hole_area"]
+        # Preserve the exact recorded default dictionary; the splitter's API default is 10.
+        if parameters["split_min_hole_distance"] == 10:
+            parameters.pop("split_min_hole_distance")
+        # Explicit CLI pixel overrides retain their original meaning.
+        for key, default in (("max_bbox_width", 85), ("max_bbox_height", 85), ("hysteresis", 2.0)):
+            if getattr(args, key) != default or key in getattr(args, "_pixel_overrides", ()):
+                parameters[key] = getattr(args, key)
+        config.update(parameters, roi_top=30, roi_bottom=210, component_cluster_gap=0.0)
+    elif (getattr(args, "reference_area", REFERENCE_AREA) != REFERENCE_AREA
+          or getattr(args, "lighting_threshold", DEFAULT_THRESHOLD) != DEFAULT_THRESHOLD):
+        raise ValueError("reference area and lighting threshold require lighting-calibrated profile")
+    if getattr(args, "motion_timebase_s", None) is not None:
+        config["motion_timebase_s"] = args.motion_timebase_s
     MaskCounter(**config)  # Validate before consuming the one-shot attempt.
     return config
 
@@ -355,11 +373,22 @@ def preprocessing_configuration(args: argparse.Namespace) -> dict[str, Any]:
         if getattr(args, "lighting_area_filter", "source") != "source":
             raise ValueError("--lighting-area-filter applies only to lighting-calibrated profile")
         mapping = "letterbox" if profile == "full-width-mixed" else "stretch"
-    return frame_geometry(mapping)
+    return frame_geometry(mapping, reference_area=getattr(args, "reference_area", REFERENCE_AREA),
+                          threshold=getattr(args, "lighting_threshold", DEFAULT_THRESHOLD))
 
 
 def effective_threshold(args):
-    return 100 if args.counting_profile == "lighting-calibrated" else STAGEB2_THRESHOLD
+    return (validate_threshold(getattr(args, "lighting_threshold", DEFAULT_THRESHOLD))
+            if args.counting_profile == "lighting-calibrated" else STAGEB2_THRESHOLD)
+
+
+def packet_encoders(args):
+    """Bind one photometric threshold to both packet encoder variants for a run."""
+    if args.counting_profile == "lighting-calibrated":
+        threshold = effective_threshold(args)
+        return (partial(lighting_profile.encode, threshold=threshold),
+                partial(lighting_profile.encode_into, threshold=threshold))
+    return gray320x240_to_rgb_packet, gray320x240_to_rgb_packet_into
 
 
 def counting_roi_metadata(result: Any, counter: MaskCounter) -> dict[str, Any]:
@@ -556,10 +585,12 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                                    include_capture_metadata: bool = False,
                                    source_frame_ids: tuple[int, ...] = (),
                                    frame_mapping: str = "stretch",
+                                   binary_threshold: int = DEFAULT_THRESHOLD,
+                                   reference_area: float = REFERENCE_AREA,
                                    live_stop_requested: Callable[[], bool] | None = None
                                    ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Internal capture loop; board callers must use camera_gray_frames()."""
-    geometry = frame_geometry(frame_mapping)
+    geometry = frame_geometry(frame_mapping, reference_area=reference_area, threshold=binary_threshold)
     continuous = max_frames is None and callable(live_stop_requested)
     if live_stop_requested is not None and not callable(live_stop_requested):
         raise ValueError("live_stop_requested must be callable")
@@ -676,13 +707,15 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 image = image[:, :, 0]
             if image.dtype != np.uint8 or image.shape != (400, 640):
                 raise RuntimeError(f"camera frame geometry is {image.shape}; expected (400, 640)")
-            source_gray = (np.ascontiguousarray(image).copy()
+            source_gray = (np.array(image, copy=True, order="C")
                            if source_frame_id in source_frame_ids else None)
             mapping_started = time.perf_counter()
             if frame_mapping in ("letterbox", *LIGHTING_MAPPINGS):
                 # A fresh buffer is required: the next read is prefetched before yield.
                 gray = np.empty((HEIGHT, WIDTH), np.uint8)
-                resize_monochrome_into(image, gray, mapping=frame_mapping)
+                resize_monochrome_into(image, gray, mapping=frame_mapping,
+                                       threshold=binary_threshold,
+                                       source_min_net_area=geometry.get("source_min_net_contour_area_configured", SOURCE_MIN_NET_AREA))
             else:
                 gray = cv2_module.resize(
                     image, (WIDTH, HEIGHT), interpolation=cv2_module.INTER_NEAREST)
@@ -889,7 +922,9 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                              capture_metadata: dict[str, Any] | None = None,
                              include_capture_metadata: bool = False,
                              source_frame_ids: tuple[int, ...] = (),
-                             frame_mapping: str = "stretch"
+                             frame_mapping: str = "stretch",
+                             binary_threshold: int = DEFAULT_THRESHOLD,
+                             reference_area: float = REFERENCE_AREA
                              ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Yield camera frames only through a live, authenticated operator session."""
     import operator_gate_launcher
@@ -912,7 +947,8 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             steady_start_time=steady_start_time,
             capture_metadata=capture_metadata,
             include_capture_metadata=include_capture_metadata,
-            source_frame_ids=source_frame_ids, frame_mapping=frame_mapping):
+            source_frame_ids=source_frame_ids, frame_mapping=frame_mapping,
+            binary_threshold=binary_threshold, reference_area=reference_area):
         if first_frame:
             (lighting_profile.verify_camera_controls if is_lighting_mapping(frame_mapping)
              else require_standard_camera_controls)(device)
@@ -938,7 +974,7 @@ def validate_operator_gate_launcher_sha256(value: str | None,
 
 def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
-             "split_touching.py", "lighting_profile.py", "dashboard_state.py", "dashboard.html",
+             "split_touching.py", "lighting_profile.py", "scale_parameters.py", "dashboard_state.py", "dashboard.html",
              "capture_dataset.py", "live_calibration.py",
              "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py",
              "physical_calibration_lock.py", "prepare_physical_calibration.py",
@@ -1290,6 +1326,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                          operator_gate: Any | None = None) -> dict[str, Any]:
     """Run one finite, guarded streaming session against the already-loaded WO-0015 BIT."""
     calibration_mode = bool(getattr(args, "physical_calibration", False))
+    frozen_counting_config = counting_configuration(args)
     deferred_capture_writes = defer_capture_writes_until_close(
         args, calibration_mode=calibration_mode
     )
@@ -1395,7 +1432,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             operator_prearm_delay_s=args.operator_prearm_delay_s,
             runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             gate_launcher_sha256=gate_launcher_sha256,
-            counting_config=counting_configuration(args),
+            counting_config=frozen_counting_config,
             counter_sha256=hashlib.sha256(Path(__file__).with_name("stream_counter.py").read_bytes()).hexdigest(),
             capture_config=({
                 "enabled": True,
@@ -1510,11 +1547,11 @@ def execute_board_stream(args: argparse.Namespace, *,
         "camera_device": args.camera,
         "camera_mode": "MJPG 640x400 mapped to Gray8 320x240",
         "xilinx_xrt": os.environ.get("XILINX_XRT"),
-        "line_y": counting_configuration(args)["line_y"],
-        "counting_config": counting_configuration(args),
+        "line_y": frozen_counting_config["line_y"],
+        "counting_config": frozen_counting_config,
         "frame_geometry": preprocessing_configuration(args),
         "direction": args.direction,
-        "min_area": counting_configuration(args)["min_area"],
+        "min_area": frozen_counting_config["min_area"],
         "ground_truth_count": args.ground_truth_count,
         "expected_count": args.ground_truth_count,
         "material_label": args.material_label,
@@ -1609,7 +1646,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 expected_frames=args.max_frames,
                 config={
                     "algorithm": "baseline",
-                    **counting_configuration(args),
+                    **frozen_counting_config,
                     "threshold": effective_threshold(args),
                     "input_resolution": [WIDTH, HEIGHT],
                     "mask_resolution": [WIDTH, HEIGHT],
@@ -1700,9 +1737,9 @@ def execute_board_stream(args: argparse.Namespace, *,
             "raw_capture_copy", "mjpeg_encode", "mjpeg_handoff",
             "mjpeg_background_encode", "postprocess")}
         preview_publisher = PeriodicMjpegPublisher(
-            hub=hub, line_y=counting_configuration(args)["line_y"],
-            count_axis=counting_configuration(args)["count_axis"],
-            line_x=counting_configuration(args)["line_x"],
+            hub=hub, line_y=frozen_counting_config["line_y"],
+            count_axis=frozen_counting_config["count_axis"],
+            line_x=frozen_counting_config["line_x"],
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
             hysteresis=args.hysteresis,
         )
@@ -1717,7 +1754,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 timeout_s=min(1.0, args.timeout_s),
             ).start()
 
-        counter = MaskCounter(**counting_configuration(args))
+        counter = MaskCounter(**frozen_counting_config)
         def capture_frame(result: Any, slot: Any) -> None:
             if capture_writer is None or slot.capture_gray is None or slot.capture_mask is None:
                 raise CaptureError("capture writer or raw source/mask slot snapshot is unavailable")
@@ -1736,7 +1773,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 "resolution": {"width": WIDTH, "height": HEIGHT,
                                "dtype": "uint8", "input": "Gray8", "mask": "Binary8"},
                 "threshold": effective_threshold(args),
-                "algorithm_config": counting_configuration(args),
+                "algorithm_config": dict(frozen_counting_config),
                 "roi": counting_roi_metadata(result, counter),
                 "raw_detections": [asdict(item) for item in result.raw_detections],
                 "detections": [asdict(item) for item in result.detections],
@@ -1754,16 +1791,15 @@ def execute_board_stream(args: argparse.Namespace, *,
             }
             capture_writer.submit(result.frame_id, slot.capture_gray, slot.capture_mask, metadata)
 
+        packet_encoder, packet_encoder_into = packet_encoders(args)
         stream = DoubleBufferStream(
             recv_channel=dma.recvchannel,
             send_channel=dma.sendchannel,
             tx_buffers=tx_buffers,
             rx_buffers=rx_buffers,
             counter=counter,
-            packet_encoder=(lighting_profile.encode if args.counting_profile == "lighting-calibrated"
-                            else gray320x240_to_rgb_packet),
-            packet_encoder_into=(lighting_profile.encode_into if args.counting_profile == "lighting-calibrated"
-                                 else gray320x240_to_rgb_packet_into),
+            packet_encoder=packet_encoder,
+            packet_encoder_into=packet_encoder_into,
             before_transfer=arm_frame,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
@@ -1801,10 +1837,12 @@ def execute_board_stream(args: argparse.Namespace, *,
             mapping_timings_ms=stage_timings_ms["mapping"],
             steady_start_time=steady_start_time,
             capture_metadata=capture_metadata,
-            include_capture_metadata=(capture_writer is not None),
+            include_capture_metadata=(capture_writer is not None or counter.motion_timebase_s is not None),
             source_frame_ids=(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS
                               if calibration_mode else ()),
-            frame_mapping=preprocessing_configuration(args)["mapping"])))
+            frame_mapping=preprocessing_configuration(args)["mapping"],
+            binary_threshold=effective_threshold(args),
+            reference_area=getattr(args, "reference_area", REFERENCE_AREA))))
         if not steady_start_time:
             raise RuntimeError("camera did not establish a steady-stream timing boundary")
         dashboard.set_phase("complete", "实板计数会话已完成")
@@ -2063,11 +2101,27 @@ def _nonnegative_count_argument(value: str) -> int:
     return result
 
 
+class PixelOverrideAction(argparse.Action):
+    """Remember explicit pixel overrides even when they equal parser defaults."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+        selected = set(getattr(namespace, "_pixel_overrides", ()))
+        selected.add(self.dest)
+        namespace._pixel_overrides = tuple(sorted(selected))
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0016 asynchronous double-buffer Binary8 counter")
     parser.add_argument("--mode", choices=("mock", "board"), default="mock")
     parser.add_argument("--counting-profile", choices=("legacy", "full-width-mixed", "lighting-calibrated"), default="legacy",
                         help="lighting-calibrated uses camera-angle calibrated ROI/threshold/area settings; full-width-mixed retains the earlier full-frame profile")
+    parser.add_argument("--reference-area", type=float, default=REFERENCE_AREA,
+                        help="isolated flat M6 nut area in output pixels; 111 preserves the recorded profile")
+    parser.add_argument("--lighting-threshold", type=int, default=DEFAULT_THRESHOLD,
+                        help="lighting Gray8 foreground is >T; fixed PL threshold stays unchanged")
+    parser.add_argument("--motion-timebase-s", type=float,
+                        help="opt in to host capture-time displacement gates; nominal seconds per frame")
     parser.add_argument("--lighting-area-filter", choices=("source", "output-roi"), default="source",
                         help="source runs 640x360 RETR_CCOMP net-area filtering; output-roi skips it and uses the existing 320x180 connected-component >=15px gate")
     parser.add_argument("--wo0017-profile", choices=("b1", "b2"))
@@ -2096,11 +2150,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--line-x", type=int, default=160)
     parser.add_argument("--max-lateral-step", type=float, default=20.0)
     parser.add_argument("--max-area", type=int, default=900)
-    parser.add_argument("--max-bbox-width", type=int, default=85)
-    parser.add_argument("--max-bbox-height", type=int, default=85)
+    parser.add_argument("--max-bbox-width", type=int, default=85, action=PixelOverrideAction)
+    parser.add_argument("--max-bbox-height", type=int, default=85, action=PixelOverrideAction)
     parser.add_argument("--direction", type=int, choices=(-1, 1), default=1)
     parser.add_argument("--min-area", type=int, default=12)
-    parser.add_argument("--hysteresis", type=float, default=2.0)
+    parser.add_argument("--hysteresis", type=float, default=2.0, action=PixelOverrideAction)
     parser.add_argument("--confirm-hits", type=int, default=2)
     parser.add_argument("--max-step", type=float, default=24.0)
     parser.add_argument("--component-cluster-dx", type=float, default=0.0,
@@ -2170,7 +2224,8 @@ def main(argv: list[str] | None = None, *,
                                          expected_count=args.ground_truth_count,
                                          material_label=args.material_label,
                                          counter_config=(counting_configuration(args)
-                                             if args.counting_profile in ("full-width-mixed", "lighting-calibrated") else None))
+                                             if args.counting_profile in ("full-width-mixed", "lighting-calibrated") else None),
+                                         preprocessing_config=preprocessing_configuration(args))
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 0 if result["status"] == "MOCK_PASS" else 1
         result = execute_board_stream(args, operator_gate_sha256=operator_gate_sha256,
