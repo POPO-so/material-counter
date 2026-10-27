@@ -33,16 +33,81 @@ def require_standard_camera_controls(device: str) -> None:
             raise RuntimeError("standard camera controls required before formal sampling: " + output)
 
 
-def monochrome_view(frame: np.ndarray) -> np.ndarray:
-    """OV9281 decoded channels repeat monochrome samples: take a view, never BGR luma."""
+def monochrome_view(frame: np.ndarray, *, verify_repeated_channels: bool = False,
+                    expected_shape: tuple[int, int] | None = (400, 640)) -> np.ndarray:
+    """Return a Gray8 view; optionally prove the first decoded BGR sample is monochrome."""
     image = np.asarray(frame)
     if image.dtype != np.uint8:
         raise ValueError("camera frame must be uint8")
-    if image.shape in ((400, 640, 3), (400, 640, 1)):
-        return image[:, :, 0]
-    if image.shape == (400, 640):
-        return image
-    raise ValueError("camera frame must have shape (400,640), (400,640,1) or (400,640,3)")
+    if image.ndim == 2:
+        gray = image
+    elif image.ndim == 3 and image.shape[2] in (1, 3):
+        gray = image[:, :, 0]
+        if verify_repeated_channels and image.shape[2] == 3 and (
+                not np.array_equal(image[:, :, 0], image[:, :, 1])
+                or not np.array_equal(image[:, :, 0], image[:, :, 2])):
+            raise ValueError("decoded OV9281 B, G and R channels are not identical")
+    else:
+        raise ValueError("camera frame must be Gray8, Gray8x1 or BGR8")
+    if expected_shape is not None and gray.shape != expected_shape:
+        raise ValueError(f"camera frame geometry is {gray.shape}; expected {expected_shape}")
+    if gray.size == 0:
+        raise ValueError("camera frame cannot be empty")
+    return gray
+
+
+def request_native_monochrome(capture: Any, cv2_module: Any = cv2) -> bool:
+    """Ask OpenCV/V4L2 to skip color conversion; False means use its default decode."""
+    property_id = getattr(cv2_module, "CAP_PROP_CONVERT_RGB", None)
+    if property_id is None:
+        return False
+    try:
+        return bool(capture.set(property_id, 0))
+    except Exception:
+        return False
+
+
+def read_first_monochrome_frame(capture: Any, cv2_module: Any = cv2, *,
+                                native_conversion_requested: bool = False,
+                                expected_shape: tuple[int, int] | None = (400, 640)
+                                ) -> tuple[np.ndarray, str, bool]:
+    """Read and validate the first sensor frame, retrying with RGB decode if raw is unsupported."""
+    ok, frame = capture.read()
+    if not ok or frame is None:
+        raise RuntimeError("camera returned no frame during monochrome format negotiation")
+    image = np.asarray(frame)
+    try:
+        gray = monochrome_view(image, verify_repeated_channels=True,
+                               expected_shape=expected_shape)
+    except ValueError as first_error:
+        property_id = getattr(cv2_module, "CAP_PROP_CONVERT_RGB", None)
+        frame_shape = image.shape[:2] if image.ndim in (2, 3) else None
+        raw_layout_invalid = (image.ndim not in (2, 3)
+                              or (image.ndim == 3 and image.shape[2] not in (1, 3))
+                              or (expected_shape is not None
+                                  and frame_shape != expected_shape))
+        if not (native_conversion_requested and raw_layout_invalid and property_id is not None):
+            raise
+        try:
+            restored = bool(capture.set(property_id, 1))
+        except Exception:
+            restored = False
+        if not restored:
+            raise RuntimeError("native monochrome decode returned an unsupported frame and RGB fallback was rejected") from first_error
+        ok, frame = capture.read()
+        if not ok or frame is None:
+            raise RuntimeError("RGB fallback returned no camera frame") from first_error
+        gray = monochrome_view(frame, verify_repeated_channels=True,
+                               expected_shape=expected_shape)
+        fallback_image = np.asarray(frame)
+        fallback_format = ("GRAY8_NATIVE_FALLBACK" if fallback_image.ndim == 2
+                           or fallback_image.shape[2] == 1
+                           else "BGR8_MONO_REPEATED_FALLBACK")
+        return gray, fallback_format, True
+    image = np.asarray(frame)
+    pixel_format = ("GRAY8_NATIVE" if image.ndim == 2 or image.shape[2] == 1
+                    else "BGR8_MONO_REPEATED")
+    return gray, pixel_format, False
 
 
 def frame_geometry(mapping: str = "stretch", *, reference_area: float = REFERENCE_AREA,

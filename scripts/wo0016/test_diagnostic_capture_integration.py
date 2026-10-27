@@ -56,7 +56,9 @@ def test_birth_on_right_of_geometric_line_is_marked_even_within_hysteresis():
     counter = MaskCounter(count_axis='x', line_x=160, observability=True)
     result = counter.update_detections(0, [Detection(157, 165, 100, 108, 81, 161., 104.)])
     assert result.tracks[0]['born_past_line'] is True
-    assert result.tracks[0]['counted'] is True
+    assert result.tracks[0]['born_in_hysteresis_band'] is True
+    assert result.tracks[0]['counted'] is False
+    assert result.tracks[0]['born_counted_without_event'] is False
     assert result.events == ()
 
 

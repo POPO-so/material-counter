@@ -34,7 +34,9 @@ from scale_parameters import (DEFAULT_THRESHOLD, REFERENCE_AREA, SOURCE_MIN_NET_
                               derive_lighting_parameters, validate_threshold)
 from live_calibration import (LIGHTING_MAPPINGS, require_standard_camera_controls,
                               frame_geometry, resize_monochrome_into,
-                              is_lighting_mapping)
+                              is_lighting_mapping, monochrome_view,
+                              read_first_monochrome_frame,
+                              request_native_monochrome)
 
 PREVIEW_CLOSE_TIMEOUT_S = 2.0
 
@@ -917,7 +919,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                                    frame_mapping: str = "stretch",
                                    binary_threshold: int = DEFAULT_THRESHOLD,
                                    reference_area: float = REFERENCE_AREA,
-                                   live_stop_requested: Callable[[], bool] | None = None
+                                   live_stop_requested: Callable[[], bool] | None = None,
+                                   allow_direct_cli: bool = False
                                    ) -> AsyncIterator[np.ndarray | FrameInput]:
     """Internal capture loop; board callers must use camera_gray_frames()."""
     geometry = frame_geometry(frame_mapping, reference_area=reference_area, threshold=binary_threshold)
@@ -1001,6 +1004,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
         )
         if any(not capture.set(prop, value) for prop, value in requested):
             raise RuntimeError("V4L2 rejected the configured MJPG 640x400 60 FPS capture mode")
+        native_conversion_requested = request_native_monochrome(capture, cv2_module)
         buffer_size_property = getattr(cv2_module, "CAP_PROP_BUFFERSIZE", None)
         if (buffer_size_property is not None
                 and not capture.set(buffer_size_property, 1)):
@@ -1024,23 +1028,46 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
         applied_camera_controls = None
         if is_lighting_mapping(frame_mapping):
             applied_camera_controls = lighting_profile.apply_camera_controls(device)
+        monochrome_validated = False
+        monochrome_format = None
+        monochrome_conversion_fallback = False
         def read_gray_frame(*, warmup: bool,
                             source_frame_id: int | None = None
                             ) -> tuple[np.ndarray, float, int, int, np.ndarray | None]:
-            nonlocal resize_buffer_index
+            nonlocal resize_buffer_index, monochrome_validated
+            nonlocal monochrome_format, monochrome_conversion_fallback
             capture_started = time.perf_counter()
-            ok, frame = capture.read()
-            if not ok or frame is None:
-                prefix = "V4L2 warm-up" if warmup else "V4L2"
-                raise RuntimeError(f"{prefix} returned no camera frame")
+            if not monochrome_validated:
+                image, monochrome_format, monochrome_conversion_fallback = (
+                    read_first_monochrome_frame(
+                        capture, cv2_module,
+                        native_conversion_requested=native_conversion_requested,
+                    )
+                )
+                monochrome_validated = True
+                print(
+                    "CAMERA_PIXEL_PATH format=%s convert_rgb_request=%s fallback=%s"
+                    % (monochrome_format, native_conversion_requested,
+                       monochrome_conversion_fallback),
+                    flush=True,
+                )
+                if capture_metadata is not None:
+                    capture_metadata.update({
+                        "camera_input_pixel_format": monochrome_format,
+                        "camera_convert_rgb_requested": native_conversion_requested,
+                        "camera_convert_rgb_fallback": monochrome_conversion_fallback,
+                    })
+            else:
+                ok, frame = capture.read()
+                if not ok or frame is None:
+                    prefix = "V4L2 warm-up" if warmup else "V4L2"
+                    raise RuntimeError(f"{prefix} returned no camera frame")
+                image = monochrome_view(frame)
             capture_monotonic_ns = time.monotonic_ns() if include_capture_metadata else 0
             capture_wall_time_ns = time.time_ns() if include_capture_metadata else 0
-            image = np.asarray(frame)
             if warmup:
                 return (image, (time.perf_counter() - capture_started) * 1000.0,
                         capture_monotonic_ns, capture_wall_time_ns, None)
-            if image.ndim == 3 and image.shape[2] in (1, 3, 4):
-                image = image[:, :, 0]
             if image.dtype != np.uint8 or image.shape != (400, 640):
                 raise RuntimeError(f"camera frame geometry is {image.shape}; expected (400, 640)")
             source_gray = (np.array(image, copy=True, order="C")
@@ -1149,13 +1176,14 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 "camera_height": actual_height,
                 "camera_output_width": WIDTH,
                 "camera_output_height": HEIGHT,
+                "camera_convert_rgb_requested": native_conversion_requested,
             })
             if frame_mapping in ("letterbox", *LIGHTING_MAPPINGS):
                 capture_metadata["frame_geometry"] = geometry
         emit_milestone("CAMERA_OPEN_READY_FOR_OPERATOR")
         if operator_gate is not None:
             operator_gate.wait_for_operator()
-        elif operator_prearm_delay_s > 0:
+        elif operator_prearm_delay_s > 0 and not allow_direct_cli:
             raise RuntimeError("operator gate session is required before sampling")
         _countdown_wait(float(operator_prearm_delay_s), label="OPERATOR_PREARM")
         emit_milestone("CAMERA_OPEN_AND_STABILIZING_START")
@@ -1248,7 +1276,8 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
 
 
 async def camera_gray_frames(device: str, *, max_frames: int,
-                             operator_gate: Any,
+                             operator_gate: Any = None,
+                             allow_direct_cli: bool = False,
                              cv2_module: Any = cv2,
                              read_timeout_s: float = 5.0,
                              stabilization_delay_s: float = 0.0,
@@ -1264,11 +1293,15 @@ async def camera_gray_frames(device: str, *, max_frames: int,
                              binary_threshold: int = DEFAULT_THRESHOLD,
                              reference_area: float = REFERENCE_AREA
                              ) -> AsyncIterator[np.ndarray | FrameInput]:
-    """Yield camera frames only through a live, authenticated operator session."""
-    import operator_gate_launcher
-    if (not isinstance(operator_gate, operator_gate_launcher.OperatorGate)
-            or not operator_gate_launcher.is_registered_operator_gate_session(operator_gate)):
-        raise ValueError("camera capture requires a live operator control server session")
+    """Yield frames after an operator gate or the fully authorized direct CLI path."""
+    if operator_gate is None:
+        if not allow_direct_cli:
+            raise ValueError("camera capture requires an operator gate or authorized direct CLI mode")
+    else:
+        import operator_gate_launcher
+        if (not isinstance(operator_gate, operator_gate_launcher.OperatorGate)
+                or not operator_gate_launcher.is_registered_operator_gate_session(operator_gate)):
+            raise ValueError("camera capture requires a live operator control server session")
     if source_frame_ids and not include_capture_metadata:
         raise ValueError("original source-frame retention requires capture metadata")
     if not is_lighting_mapping(frame_mapping):
@@ -1286,7 +1319,8 @@ async def camera_gray_frames(device: str, *, max_frames: int,
             capture_metadata=capture_metadata,
             include_capture_metadata=include_capture_metadata,
             source_frame_ids=source_frame_ids, frame_mapping=frame_mapping,
-            binary_threshold=binary_threshold, reference_area=reference_area):
+            binary_threshold=binary_threshold, reference_area=reference_area,
+            allow_direct_cli=allow_direct_cli):
         if first_frame:
             (lighting_profile.verify_camera_controls if is_lighting_mapping(frame_mapping)
              else require_standard_camera_controls)(device)
@@ -1719,9 +1753,15 @@ def execute_board_stream(args: argparse.Namespace, *,
         args, calibration_mode=calibration_mode
     )
     deferred_capture_writes = capture_write_mode == "deferred_memory"
-    gate_launcher_sha256 = validate_operator_gate_launcher_sha256(
-        operator_gate_sha256, operator_gate
-    )
+    gate_required = (calibration_mode or probe_mode or bool(args.no_consume_guard)
+                     or bool(getattr(args, "wo0017_profile", None)))
+    direct_cli_mode = operator_gate is None and operator_gate_sha256 is None and not gate_required
+    if operator_gate is not None or operator_gate_sha256 is not None or gate_required:
+        gate_launcher_sha256 = validate_operator_gate_launcher_sha256(
+            operator_gate_sha256, operator_gate
+        )
+    else:
+        gate_launcher_sha256 = None
     require_board_opt_in(
         execute=args.execute,
         authorize_stage=args.authorize_stage,
@@ -1759,10 +1799,20 @@ def execute_board_stream(args: argparse.Namespace, *,
     probe_paths = validate_probe_options(args, plan) if probe_mode else None
     if probe_mode and capture_preflight is None:
         raise ValueError("diagnostic probe requires a capture preflight target")
-    stage1_receipt = (formal["receipt"] if formal else
-                      calibration["receipt"] if calibration else
-                      board_once.require_overlay_pass_receipt(
-                          board_once.OVERLAY_PASS_RECEIPT, plan))
+    automatic_stage1_preflight = False
+    if formal:
+        stage1_receipt = formal["receipt"]
+    elif calibration:
+        stage1_receipt = calibration["receipt"]
+    elif direct_cli_mode and not (board_once.OVERLAY_PASS_RECEIPT.exists()
+                                  or board_once.OVERLAY_PASS_RECEIPT.is_symlink()):
+        # No synthetic PASS receipt is written: the existing read-only runtime
+        # audit below verifies the loaded BIT, signatures, DMA state and CMA.
+        stage1_receipt = None
+        automatic_stage1_preflight = True
+    else:
+        stage1_receipt = board_once.require_overlay_pass_receipt(
+            board_once.OVERLAY_PASS_RECEIPT, plan)
     live_boot = preflight.read_boot_id()
     if live_boot != plan.boot_id:
         raise preflight.PreflightError("live boot_id does not match the pinned WO-0015 manifest")
@@ -1958,6 +2008,9 @@ def execute_board_stream(args: argparse.Namespace, *,
             }),
             "cma_admission": admission.as_evidence(),
             "stage1_overlay_pass_receipt": stage1_receipt,
+            "stage1_preflight_mode": ("AUTOMATIC_READ_ONLY_CHECK"
+                                      if automatic_stage1_preflight else
+                                      "REUSED_SAME_BOOT_RECEIPT"),
             "process_ownership": ownership,
             "fpga_manager": manager,
             "cma_free_before_kib": meminfo["CmaFree"],
@@ -2028,6 +2081,22 @@ def execute_board_stream(args: argparse.Namespace, *,
                 raise preflight.PreflightError(f"{label} DMA is already active")
         if api.cma_free_kib() < CMA_WATERMARK_KIB:
             raise preflight.PreflightError("CmaFree fell below watermark before allocation")
+        if automatic_stage1_preflight:
+            evidence["automatic_stage1_preflight"] = {
+                "status": "READ_ONLY_HARDWARE_PREFLIGHT_PASS",
+                "boot_id": audit["boot_id"],
+                "manifest_sha256": plan.manifest_sha256,
+                "bit_sha256": plan.bit_sha256,
+                "hwh_sha256": plan.hwh_sha256,
+                "checker_signature": f"0x{checker_signature:08x}",
+                "packer_signature": f"0x{packer_signature:08x}",
+                "dma_initial_status": {
+                    "mm2s": f"0x{api.read32(preflight.DMA_BASE, 0x04):08x}",
+                    "s2mm": f"0x{api.read32(preflight.DMA_BASE, 0x34):08x}",
+                },
+                "cma_free_kib": api.cma_free_kib(),
+                "overlay_downloaded": False,
+            }
 
         def allocate_with_watermark(*, shape: tuple[int, ...], dtype: Any) -> Any:
             if api.cma_free_kib() < CMA_WATERMARK_KIB:
@@ -2273,6 +2342,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             stabilization_delay_s=args.stabilization_delay_s,
             operator_prearm_delay_s=effective_operator_prearm_delay(args),
             operator_gate=operator_gate,
+            allow_direct_cli=direct_cli_mode,
             milestone_callback=record_camera_milestone,
             capture_timings_ms=stage_timings_ms["capture"],
             mapping_timings_ms=stage_timings_ms["mapping"],

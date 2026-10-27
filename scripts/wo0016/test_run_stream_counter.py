@@ -441,13 +441,27 @@ def test_stageb2_attempt_permit_rejects_wrong_attempt_and_unsafe_ids():
         )
 
 
-def test_board_mode_requires_operator_gate_launcher_before_preflight(capsys):
+def test_board_mode_requires_explicit_cli_authorization_before_preflight(capsys):
     result = runner.main(["--mode", "board"], operator_gate_sha256=None)
     payload = json.loads(capsys.readouterr().err)
 
     assert result == 2
     assert payload["status"] == "BOARD_STREAM_REJECTED"
-    assert "operator gate launcher" in payload["error"].lower()
+    assert "--execute --authorize-stage wo0016-stream --approve-once" in payload["error"]
+    assert payload["board_accessed"] is False
+    assert payload["pynq_imported"] is False
+
+
+def test_standard_board_cli_does_not_require_external_launcher(capsys, tmp_path):
+    result = runner.main([
+        "--mode", "board", "--execute", "--authorize-stage", "wo0016-stream",
+        "--approve-once", "--max-frames", "1",
+        "--evidence-json", str(tmp_path / "result.json"),
+    ])
+    payload = json.loads(capsys.readouterr().err)
+
+    assert result == 2
+    assert "reviewed SHA-256" in payload["error"]
     assert payload["board_accessed"] is False
     assert payload["pynq_imported"] is False
 
@@ -504,7 +518,7 @@ def test_public_camera_stream_rejects_missing_operator_gate_before_opening_devic
             operator_gate=None,
         )]
 
-    with pytest.raises(ValueError, match="live operator control server"):
+    with pytest.raises(ValueError, match="operator gate or authorized direct CLI"):
         asyncio.run(consume())
     assert opened == []
 
@@ -1049,8 +1063,8 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
                 assert milestones[-1][0] == "FRAME_0_CAPTURE_START_FEED_NOW"
             frame = np.empty((400, 640, 3), dtype=np.uint8)
             frame[:, :, 0] = 77
-            frame[:, :, 1] = 12
-            frame[:, :, 2] = 200
+            frame[:, :, 1] = 77
+            frame[:, :, 2] = 77
             return True, frame
 
         def release(self):
@@ -1123,6 +1137,9 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         "camera_height": 400,
         "camera_output_width": 320,
         "camera_output_height": 240,
+        "camera_input_pixel_format": "BGR8_MONO_REPEATED",
+        "camera_convert_rgb_requested": False,
+        "camera_convert_rgb_fallback": False,
         "camera_open_monotonic": capture_metadata["camera_open_monotonic"],
     }
     assert [name for name, _ in milestones] == [

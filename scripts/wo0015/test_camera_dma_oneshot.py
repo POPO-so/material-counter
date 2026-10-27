@@ -49,6 +49,15 @@ def test_gray_pgm_load_and_bilinear_resize_are_deterministic(tmp_path):
     assert resized[1, 1] == 128
 
 
+def test_nearest_resize_matches_camera_stream_mapping():
+    import cv2
+
+    source = np.array([[0, 80], [170, 255]], dtype=np.uint8)
+    resized = resize_gray8(source, width=5, height=3, interpolation="nearest")
+    expected = cv2.resize(source, (5, 3), interpolation=cv2.INTER_NEAREST)
+    np.testing.assert_array_equal(resized, expected)
+
+
 def test_numpy_and_png_inputs_are_loaded_as_grayscale(tmp_path):
     source = np.arange(24, dtype=np.uint8).reshape(4, 6)
     npy_path = tmp_path / "capture.npy"
@@ -78,7 +87,7 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
 
         def read(self):
             self.read_calls += 1
-            return True, np.full((800, 1280, 3), 73, dtype=np.uint8)
+            return True, np.full((400, 640, 3), 73, dtype=np.uint8)
 
         def release(self):
             self.released = True
@@ -88,6 +97,7 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
         CAP_PROP_FOURCC = 6
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_CONVERT_RGB = 5
         COLOR_BGR2GRAY = 6
         fourcc_calls = []
 
@@ -118,12 +128,60 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
         (cv2.CAP_PROP_FOURCC, 0x47504A4D),
         (cv2.CAP_PROP_FRAME_WIDTH, 640),
         (cv2.CAP_PROP_FRAME_HEIGHT, 400),
+        (cv2.CAP_PROP_CONVERT_RGB, 0),
     ]
     assert cv2.capture.read_calls == 1
     assert cv2.capture.released
-    assert cv2.cvt_color_calls == [((800, 1280, 3), cv2.COLOR_BGR2GRAY)]
-    assert captured.shape == (800, 1280)
+    assert cv2.cvt_color_calls == []
+    assert captured.shape == (400, 640)
     assert np.all(captured == 73)
+
+
+def test_v4l2_capture_retries_mjpg_rgb_decode_when_native_read_is_not_spatial_gray():
+    class FakeCapture:
+        def __init__(self):
+            self.set_calls = []
+            self.frames = [np.zeros((1, 64), dtype=np.uint8),
+                           np.full((400, 640, 3), 31, dtype=np.uint8)]
+            self.released = False
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            self.set_calls.append((prop, value))
+            return True
+
+        def read(self):
+            return True, self.frames.pop(0)
+
+        def release(self):
+            self.released = True
+
+    class FakeCV2:
+        CAP_V4L2 = 200
+        CAP_PROP_FOURCC = 6
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_CONVERT_RGB = 5
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return 0x47504A4D
+
+        def __init__(self):
+            self.capture = FakeCapture()
+
+        def VideoCapture(self, device, backend):
+            return self.capture
+
+    cv2 = FakeCV2()
+    captured = capture_v4l2_once("/dev/video0", cv2_module=cv2)
+    assert captured.shape == (400, 640)
+    assert np.all(captured == 31)
+    assert cv2.capture.set_calls[-2:] == [(cv2.CAP_PROP_CONVERT_RGB, 0),
+                                          (cv2.CAP_PROP_CONVERT_RGB, 1)]
+    assert cv2.capture.released
 
 
 def test_v4l2_capture_stops_if_supported_format_is_rejected():

@@ -28,6 +28,74 @@ def test_monochrome_channel_is_zero_copy_and_does_not_mix_channels(monkeypatch):
     assert np.all(mask == 255)
 
 
+def test_first_frame_requests_native_gray_and_checks_repeated_bgr_channels():
+    class Capture:
+        def __init__(self, frame):
+            self.frame = frame
+            self.properties = []
+
+        def set(self, prop, value):
+            self.properties.append((prop, value))
+            return True
+
+        def read(self):
+            return True, self.frame
+
+    class Cv2:
+        CAP_PROP_CONVERT_RGB = 17
+
+    native = np.full((400, 640), 91, np.uint8)
+    capture = Capture(native)
+    requested = calibration.request_native_monochrome(capture, Cv2)
+    gray, pixel_format, fallback = calibration.read_first_monochrome_frame(
+        capture, Cv2, native_conversion_requested=requested)
+    assert capture.properties == [(Cv2.CAP_PROP_CONVERT_RGB, 0)]
+    assert gray is native
+    assert pixel_format == "GRAY8_NATIVE"
+    assert not fallback
+
+    repeated = np.repeat(native[:, :, None], 3, axis=2)
+    gray, pixel_format, fallback = calibration.read_first_monochrome_frame(
+        Capture(repeated), Cv2)
+    assert np.shares_memory(gray, repeated)
+    assert pixel_format == "BGR8_MONO_REPEATED"
+    assert not fallback
+
+
+def test_first_frame_retries_rgb_decode_when_native_output_is_not_spatial_gray():
+    class Capture:
+        def __init__(self):
+            self.properties = []
+            self.frames = [np.zeros((1, 64), np.uint8),
+                           np.full((400, 640, 3), 22, np.uint8)]
+
+        def set(self, prop, value):
+            self.properties.append((prop, value))
+            return True
+
+        def read(self):
+            return True, self.frames.pop(0)
+
+    class Cv2:
+        CAP_PROP_CONVERT_RGB = 17
+
+    capture = Capture()
+    gray, pixel_format, fallback = calibration.read_first_monochrome_frame(
+        capture, Cv2, native_conversion_requested=True)
+    assert capture.properties == [(Cv2.CAP_PROP_CONVERT_RGB, 1)]
+    assert gray.shape == (400, 640)
+    assert np.all(gray == 22)
+    assert pixel_format == "BGR8_MONO_REPEATED_FALLBACK"
+    assert fallback
+
+
+def test_first_frame_rejects_non_monochrome_bgr_planes():
+    frame = np.zeros((400, 640, 3), np.uint8)
+    frame[:, :, 1] = 1
+    with pytest.raises(ValueError, match="B, G and R channels are not identical"):
+        calibration.monochrome_view(frame, verify_repeated_channels=True)
+
+
 def test_preprocessor_reuses_buffers_and_accepts_native_gray():
     processor = calibration.MonochromePreprocessor()
     frame = np.full((400, 640), 128, np.uint8)

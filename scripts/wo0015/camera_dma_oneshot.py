@@ -192,7 +192,7 @@ def load_gray_file(path: str | Path) -> np.ndarray:
 
 
 def capture_v4l2_once(device: str = "/dev/video0", *, cv2_module: Any = None) -> np.ndarray:
-    """Request the camera's MJPG 640x400 mode and read one grayscale frame."""
+    """Request monochrome decode and read one single-channel OV9281 frame."""
     if cv2_module is None:
         try:
             import cv2 as cv2_module
@@ -210,33 +210,90 @@ def capture_v4l2_once(device: str = "/dev/video0", *, cv2_module: Any = None) ->
         )
         if any(not capture.set(prop, value) for prop, value in requested_mode):
             raise RuntimeError("V4L2 rejected the supported MJPG 640x400 capture mode")
+        convert_rgb_property = getattr(cv2_module, "CAP_PROP_CONVERT_RGB", None)
+        native_conversion_requested = False
+        if convert_rgb_property is not None:
+            try:
+                native_conversion_requested = bool(capture.set(convert_rgb_property, 0))
+            except Exception:
+                native_conversion_requested = False
         ok, frame = capture.read()
         if not ok or frame is None or not np.asarray(frame).size:
             raise RuntimeError("V4L2 returned no frame on its single capture attempt")
         image = np.asarray(frame)
-        if image.ndim == 3:
-            if image.shape[2] == 1:
-                image = image[:, :, 0]
-            elif image.shape[2] in (3, 4):
-                code = (cv2_module.COLOR_BGRA2GRAY if image.shape[2] == 4
-                        else cv2_module.COLOR_BGR2GRAY)
-                image = cv2_module.cvtColor(image, code)
-            else:
-                raise ValueError("V4L2 frame has an unsupported channel count")
+        fallback = False
+        try:
+            image = _camera_monochrome_view(
+                image, verify_repeated_channels=True, expected_shape=(400, 640))
+        except ValueError as first_error:
+            frame_shape = image.shape[:2] if image.ndim in (2, 3) else None
+            raw_layout_invalid = (image.ndim not in (2, 3)
+                                  or (image.ndim == 3 and image.shape[2] not in (1, 3, 4))
+                                  or frame_shape != (400, 640))
+            if not (native_conversion_requested and raw_layout_invalid
+                    and convert_rgb_property is not None):
+                raise
+            try:
+                restored = bool(capture.set(convert_rgb_property, 1))
+            except Exception:
+                restored = False
+            if not restored:
+                raise RuntimeError("native monochrome decode was unsupported and RGB fallback was rejected") from first_error
+            ok, frame = capture.read()
+            if not ok or frame is None:
+                raise RuntimeError("RGB fallback returned no V4L2 frame") from first_error
+            image = _camera_monochrome_view(
+                frame, verify_repeated_channels=True, expected_shape=(400, 640))
+            fallback = True
+        mode = ("GRAY8_NATIVE" if np.asarray(frame).ndim == 2 or
+                (np.asarray(frame).ndim == 3 and np.asarray(frame).shape[2] == 1)
+                else "BGR8_MONO_REPEATED")
+        print("CAMERA_PIXEL_PATH format=%s convert_rgb_request=%s fallback=%s" % (
+            mode, native_conversion_requested, fallback), flush=True)
         return _normalize_gray8(image)
     finally:
         capture.release()
 
 
+def _camera_monochrome_view(image: Any, *, verify_repeated_channels: bool = False,
+                            expected_shape: tuple[int, int] | None = (400, 640)) -> np.ndarray:
+    """Return a view of a single-channel frame and optionally check repeated BGR planes."""
+    source = np.asarray(image)
+    if source.dtype != np.uint8 or source.size == 0:
+        raise ValueError("V4L2 camera frame must be a nonempty uint8 image")
+    if source.ndim == 2:
+        gray = source
+    elif source.ndim == 3 and source.shape[2] == 1:
+        gray = source[:, :, 0]
+    elif source.ndim == 3 and source.shape[2] in (3, 4):
+        if verify_repeated_channels and (
+                not np.array_equal(source[:, :, 0], source[:, :, 1])
+                or not np.array_equal(source[:, :, 0], source[:, :, 2])):
+            raise ValueError("decoded OV9281 B, G and R channels are not identical")
+        gray = source[:, :, 0]
+    else:
+        raise ValueError("V4L2 frame has an unsupported channel layout")
+    if expected_shape is not None and gray.shape != expected_shape:
+        raise ValueError(f"V4L2 frame geometry is {gray.shape}; expected {expected_shape}")
+    return gray
+
+
 def resize_gray8(image: Any, *, width: int = preflight.WIDTH,
-                 height: int = preflight.HEIGHT) -> np.ndarray:
-    """Bilinearly resize a grayscale image to an exact uint8 geometry."""
+                 height: int = preflight.HEIGHT,
+                 interpolation: str = "linear") -> np.ndarray:
+    """Resize Gray8 to an exact geometry using the selected linear or nearest mapping."""
     source = _normalize_gray8(image)
     if (type(width) is not int or type(height) is not int
             or width <= 0 or height <= 0):
         raise ValueError("resize width and height must be positive integers")
+    if interpolation not in ("linear", "nearest"):
+        raise ValueError("interpolation must be 'linear' or 'nearest'")
     if source.shape == (height, width):
         return source.copy()
+    if interpolation == "nearest":
+        import cv2
+
+        return cv2.resize(source, (width, height), interpolation=cv2.INTER_NEAREST)
     source_height, source_width = source.shape
     y = np.linspace(0, source_height - 1, height, dtype=np.float64)
     x = np.linspace(0, source_width - 1, width, dtype=np.float64)
@@ -295,7 +352,9 @@ def prepare_camera_bundle(*, template_manifest_path: str | Path,
         source_file_sha256 = None
         capture_kind = "v4l2-single-frame"
 
-    resized = resize_gray8(source_gray)
+    resized = resize_gray8(source_gray,
+                           interpolation="nearest" if capture_kind == "v4l2-single-frame"
+                           else "linear")
     output_root = Path(output_root).expanduser().resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     run_dir = output_root / f"camera-{uuid.uuid4().hex}"

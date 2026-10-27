@@ -19,6 +19,8 @@ _PREVIEW_MODULE_DIR = (
 )
 sys.path.insert(0, str(_PREVIEW_MODULE_DIR))
 import mjpeg_preview  # noqa: E402
+from live_calibration import (monochrome_view, read_first_monochrome_frame,
+                              request_native_monochrome)
 
 
 BOOT = "6f13f0f0-4433-445f-a023-fa403685aeee"
@@ -58,15 +60,10 @@ def _fps_metrics(
 
 
 def _pipeline_gray8(frame: np.ndarray) -> np.ndarray:
-    image = np.asarray(frame)
-    if image.dtype != np.uint8 or image.shape[:2] != (SOURCE_HEIGHT, SOURCE_WIDTH):
-        raise RuntimeError(
-            f"camera frame is {image.dtype} {image.shape}; expected uint8 640x400"
-        )
-    if image.ndim == 3 and image.shape[2] in (1, 3, 4):
-        image = image[:, :, 0]
-    if image.ndim != 2 or image.shape != (400, 640):
-        raise RuntimeError(f"camera Gray8 source has unexpected geometry: {image.shape}")
+    try:
+        image = monochrome_view(frame)
+    except ValueError as exc:
+        raise RuntimeError(f"camera Gray8 source has unexpected format: {exc}") from exc
     gray = cv2.resize(image, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)
     if gray.dtype != np.uint8 or gray.shape != (HEIGHT, WIDTH):
         raise RuntimeError(f"resized Gray8 has unexpected format: {gray.dtype} {gray.shape}")
@@ -121,6 +118,7 @@ def _camera() -> Any:
         )
         if any(not capture.set(prop, value) for prop, value in requested):
             raise RuntimeError("camera rejected MJPG 640x400 at 60 FPS")
+        native_conversion_requested = request_native_monochrome(capture, cv2)
         fourcc = int(round(capture.get(cv2.CAP_PROP_FOURCC)))
         actual_fourcc = "".join(chr((fourcc >> (8 * i)) & 255) for i in range(4))
         actual_mode = (
@@ -130,10 +128,14 @@ def _camera() -> Any:
         )
         if actual_mode != ("MJPG", SOURCE_WIDTH, SOURCE_HEIGHT):
             raise RuntimeError(f"preview negotiated unexpected camera mode: {actual_mode}")
-        for _ in range(2):
-            ok, _ = capture.read()
-            if not ok:
-                raise RuntimeError("camera warm-up returned no frame")
+        _, pixel_format, fallback = read_first_monochrome_frame(
+            capture, cv2, native_conversion_requested=native_conversion_requested)
+        ok, warmup = capture.read()
+        if not ok or warmup is None:
+            raise RuntimeError("camera warm-up returned no frame")
+        monochrome_view(warmup)
+        print("CAMERA_PIXEL_PATH format=%s convert_rgb_request=%s fallback=%s" % (
+            pixel_format, native_conversion_requested, fallback), flush=True)
         return capture
     except BaseException:
         capture.release()

@@ -13,8 +13,10 @@
 .Xil/
 *.xpr
 *.pbx
+xvlog.pb
 *.xsa
 *.hdf
+output/
 
 # 不提交 Vivado 工程目录与生成的 IP
 # ✅ 提交：rtl/ + xdc + scripts/build.tcl（任何人 clone 后跑一条 tcl 就能重建工程）
@@ -66,6 +68,12 @@ data/results/**/*.vcd
 data/results/**/*.fst
 data/results/**/*.fsdb
 data/results/**/*.vpd
+# Raw per-frame NPY files are redundant with packaged NPZ/TAR evidence.
+data/results/**/*.npy
+# Disposable local debug/output trees; reviewed manifests and reports stay visible.
+data/results/**/tmp/
+data/results/**/temp/
+data/results/**/debug-output/
 .vivado-ai/
 
 # ===== 编辑器 / 系统 =====

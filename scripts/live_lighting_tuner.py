@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import sys
 import threading
 import time
 from urllib.parse import urlparse
@@ -19,6 +20,12 @@ import uuid
 
 import cv2
 import numpy as np
+
+_WO16_DIR = Path(__file__).resolve().parent / 'wo0016'
+if str(_WO16_DIR) not in sys.path:
+    sys.path.insert(0, str(_WO16_DIR))
+from live_calibration import (monochrome_view, read_first_monochrome_frame,
+                              request_native_monochrome)
 
 DEFAULT_PARAMS = dict(view_mode='assist', binary_thresh=100, overexp_thresh=255,
                       roi_top=20, roi_bottom=380, min_area=60,
@@ -32,7 +39,12 @@ def analyze_frame(frame, params):
     Holes are threshold topology hints, not a diagnosis of shadow or part type.
     Unavailable populations stay null rather than borrowing another zone's mean.
     """
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) if frame.ndim == 3 else frame.copy()
+    if frame.ndim == 2:
+        gray = frame
+    elif frame.ndim == 3 and frame.shape[2] in (1, 3, 4):
+        gray = frame[:, :, 0]
+    else:
+        raise ValueError('Expected a uint8 grayscale or monochrome-channel frame')
     if gray.dtype != np.uint8 or gray.ndim != 2 or min(gray.shape) < 3:
         raise ValueError('Expected a uint8 grayscale or BGR frame at least 3x3')
     h, w = gray.shape
@@ -321,6 +333,8 @@ def observe_camera_loop(state):
 def capture_loop(state):
     cap = None
     try:
+        monochrome_validated = False
+        native_conversion_requested = False
         if not state.demo:
             source = int(state.device) if state.device.isdigit() else state.device
             cap = cv2.VideoCapture(source)
@@ -330,6 +344,7 @@ def capture_loop(state):
             cap.set(cv2.CAP_PROP_FRAME_WIDTH, state.width)
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT, state.height)
             cap.set(cv2.CAP_PROP_FPS, state.fps)
+            native_conversion_requested = request_native_monochrome(cap, cv2)
             if state.controls:
                 state.update_controls({key: state.params[key] for key in HARDWARE_KEYS})
         while not state.stop.is_set():
@@ -341,9 +356,21 @@ def capture_loop(state):
                     cv2.circle(frame, center, radius, 200, -1)
                     cv2.circle(frame, center, max(1, radius // 2), 32, -1)
                 else:
-                    ok, frame = cap.read()
-                    if not ok or frame is None:
-                        raise RuntimeError('Camera frame read failed; capture stopped')
+                    if not monochrome_validated:
+                        frame, pixel_format, fallback = read_first_monochrome_frame(
+                            cap, cv2,
+                            native_conversion_requested=native_conversion_requested,
+                            expected_shape=(state.height, state.width),
+                        )
+                        monochrome_validated = True
+                        print('CAMERA_PIXEL_PATH format=%s convert_rgb_request=%s fallback=%s' % (
+                            pixel_format, native_conversion_requested, fallback), flush=True)
+                    else:
+                        ok, frame = cap.read()
+                        if not ok or frame is None:
+                            raise RuntimeError('Camera frame read failed; capture stopped')
+                        frame = monochrome_view(
+                            frame, expected_shape=(state.height, state.width))
                 state.publish(frame)
             state.stop.wait(1 / state.fps if state.demo else .001)
     except Exception as error:

@@ -12,39 +12,41 @@
 
 ## 核心技术特色
 
-- **PL 流式图像前端：** AXI4-Stream RTL 实现 RGB888 灰度化和 Gray8 阈值二值化，处理有效像素及视频行/帧标记，并遵守下游反压。
-- **DMA 图像往返：** WO-0016 实验链路将 PS 准备的图像包经 MM2S 送入 PL，再通过 S2MM 把 Binary8 掩膜写回 PS 可访问的 DDR。
+- **PL 流式图像前端（ADR-0004 活动基线）：** PS 发送 76,832 B Gray8 包；PL 解包后直接阈值化为 Binary8，不经过 RGB2Gray。
+- **DMA 图像往返：** WO-0015/0016 路径将 Gray8 包经 MM2S 送入 PL，再通过 S2MM 把 76,800 B Binary8 掩膜写回 PS 可访问的 DDR。
 - **PS 端目标计数：** Python、NumPy 和 OpenCV 处理回传掩膜，执行 ROI 区域分析、连通域筛选、候选粘连拆分、跨帧质心关联、轨迹确认和越线计数。
-- **模块级探索与验证：** ROI 裁剪、3×3 形态学等 RTL 模块有独立仿真或综合证据；它们尚未全部集成到本次板测数据通路。
+- **模块级探索与验证：** `axis_rgb2gray` 保留在旧 RGB 位流和历史证据中；`axis_roi_crop`、`axis_morphology3x3` 有独立验证，但三者均不在当前 Gray8 位流中。
 - **计数与预览解耦：** WO-0016 提供 HTTP/MJPEG 预览实现；计数处理和 JPEG 编码分开调度。浏览器实际显示帧率尚未测定。
 
 PL 流水线的工程价值在于可按像素顺序进行确定性处理，并有机会减少 PS 对每个像素执行重复运算的负担。当前没有同输入、同精度条件下的 CPU/PL 对比基准，因此不宣称已测得加速比或端到端性能优势。
 
 ## 系统架构：当前实验数据通路
 
-下图描述 WO-0016 板测所用的实验路径，不代表摄像头路线或整机方案已经冻结。摄像头输入、解码、缩放和 RGB 封包都在 PS；PL 收到的是 PS 将 Gray8 强度复制到 R/G/B 三通道后形成的 RGB888 数据。
+下图描述 ADR-0004 冻结的 Gray8 接口 A 与 WO-0016 PS 计数路径；摄像头输入路线仍开放。PS 将相机帧映射为 320×240 Gray8，并加上 16 B Header 和 16 B Footer；PL 收到的是 76,832 B Gray8 包。
 
 ```mermaid
 flowchart LR
     CAM["V4L2 摄像头输入<br/>WO-0016 请求 MJPG 640×400"]
     PSIN["ARM PS：读取解码帧<br/>取首通道并缩放为 320×240 Gray8"]
-    PACK["ARM PS：Y 复制到 R/G/B<br/>封装 RGB888 AXI-Stream 包"]
+    PACK["ARM PS：封装 Gray8<br/>16 B Header + 76,800 B + 16 B Footer"]
     subgraph PL["PYNQ-Z2 FPGA PL"]
-        GRAY["RGB888 → Gray8"]
-        THRESH["阈值分割 → Binary8"]
-        GRAY --> THRESH
+        UNPACK["axis_dma_gray_adapter<br/>校验并解包 Gray8"]
+        THRESH["axis_gray2binary<br/>Gray8 → Binary8"]
+        UNPACK --> THRESH
     end
     DDR["AXI DMA S2MM → DDR<br/>320×240 Binary8 掩膜"]
     COUNT["ARM PS：ROI / 连通域<br/>目标关联与越线计数"]
     VIEW["计数与状态<br/>HTTP/MJPEG 实验预览"]
 
     CAM --> PSIN --> PACK
-    PACK -->|"AXI DMA MM2S"| GRAY
+    PACK -->|"AXI DMA MM2S · 76,832 B"| UNPACK
     THRESH -->|"AXI DMA S2MM"| DDR
     DDR --> COUNT --> VIEW
 ```
 
-axis_roi_crop 与 axis_morphology3x3 是独立 RTL 模块，不在上图的已验证 RGB→Gray→Binary8 板测流水线内。WO-0016 计数路径中的 ROI/连通域处理由 PS 执行。
+当前 Gray8 build 的六个 RTL 源为 `fpga/rtl/axis_gray2binary.v`、`fpga/experimental/wo0014/axis_dma_gray_adapter.v`、`fpga/experimental/wo0014/axis_binary_output_checker.v`、`fpga/experimental/wo0014/axis_dma_image_pipeline.v`、`fpga/experimental/wo0015/axis_s2mm_frame_packer.v` 和 `fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v`（清单见 `scripts/wo0015/create_s2mm_bd.tcl`）。`axis_rgb2gray`、`axis_roi_crop`、`axis_morphology3x3` 不在该 Gray8 位流中；其中 `axis_rgb2gray` 曾属于旧 RGB 位流。WO-0016 的计数 ROI 和连通域分析在 PS 执行。
+
+2026-10-27 Gray8 BIT/HWH 已完成离线 Vivado build/implementation 和 XSim 验证，但该包**尚未下载或验收于板端**。历史板端记录绑定的是旧 RGB BIT/HWH，不能作为 Gray8 板端证据。
 
 ### PS 端计数流程
 
@@ -67,13 +69,13 @@ flowchart TD
 
 | 层级 | 当前实现 | 边界 |
 |---|---|---|
-| **FPGA PL** | [axis_rgb2gray.v](fpga/rtl/axis_rgb2gray.v)、[axis_gray2binary.v](fpga/rtl/axis_gray2binary.v) 提供流式像素变换；[WO-0014 实验流水线](fpga/experimental/wo0014/axis_dma_image_pipeline.v) 串接 RGB 包适配、灰度、阈值和输出校验。另有 [ROI 裁剪](fpga/rtl/axis_roi_crop.v) 及 [3×3 形态学](fpga/rtl/axis_morphology3x3.v) RTL。 | RGB→Gray→Binary8 有 XSim 与独立黄金比对；ROI 和形态学有各自的模块级验证。后两者未接入 WO-0016 板测流水线，不能描述成整机已具备的 PL 功能。 |
-| **ARM PS** | [WO-0016 运行入口](scripts/wo0016/run_stream_counter.py)、[计数与 DMA 流处理](scripts/wo0016/stream_counter.py) 实现 V4L2 帧读取、缩放、Gray8→RGB888 封包、DMA 控制与同步，以及回传掩膜的 ROI、连通域、粘连候选拆分、跨帧跟踪、越线计数及预览。 | 图像采集和缩放、计数算法及显示处理不是 FPGA RTL；不能把 OpenCV、NumPy 或 Python 算法称为 PL 硬件模块。 |
+| **FPGA PL** | 当前 Gray8 build 使用六个 RTL 源：`axis_gray2binary.v`、`axis_dma_gray_adapter.v`、`axis_binary_output_checker.v`、`axis_dma_image_pipeline.v`、`axis_s2mm_frame_packer.v`、`axis_dma_s2mm_pipeline_bd.v`。前两项构成 Gray8 解包与阈值路径，S2MM 返回 Binary8。 | 当前位流不含 `axis_rgb2gray`、`axis_roi_crop` 或 `axis_morphology3x3`；RGB2Gray 曾在旧 RGB 位流中。ROI/形态学独立仿真或综合不代表当前位流已集成。 |
+| **ARM PS** | [WO-0016 运行入口](scripts/wo0016/run_stream_counter.py)、[计数与 DMA 流处理](scripts/wo0016/stream_counter.py) 实现 V4L2 帧读取、缩放、Gray8 封包、DMA 控制与同步，以及回传掩膜的 ROI、连通域、粘连候选拆分、跨帧跟踪、越线计数及预览。 | 图像采集和缩放、计数算法及显示处理不是 FPGA RTL；不能把 OpenCV、NumPy 或 Python 算法称为 PL 硬件模块。 |
 | **PS/PL 交互** | PS 通过 AXI DMA MM2S 发送图像包，PL 处理后由 S2MM 写回 Binary8 掩膜。 | 板测结果只适用于报告中绑定的 Overlay、软件和有限测试条件；不证明长期可靠性或其他位流配置。 |
 
 ## 硬件组成与连接
 
-**板端实验路径：** PYNQ-Z2（XC7Z020）上运行 PS 端 Python/PYNQ 程序；V4L2 摄像头帧由 PS 读取和缩放；PS 经 DMA 向 PL 发送 RGB888 包；PL 输出经 S2MM 返回 DDR；PS 继续计数并提供实验预览。
+**当前接口基线：** PS 经 MM2S 发送 76,832 B Gray8 包，PL 解包后直接阈值化，S2MM 返回 76,800 B Binary8；PS 再执行计数与预览。2026-10-27 Gray8 包已构建但未上板；历史板端实验使用旧 RGB 位流。
 
 **目标应用设备：** 供料器、单条可调速输送带、摄像头、固定照明和 PYNQ-Z2。输送机构的生产工况、最终摄像头接入方案和照明标定尚未完成验收。编码器采集及带速参与计数目前未实现，不能将目标硬件清单视为已连接或已验证系统。
 
@@ -124,18 +126,21 @@ WO-0016 板端模式是有限帧、单次授权的实验入口，需要先完成
 |---|---|---|
 | **VERIFIED_ON_BOARD** | WO-0016 Stage A Attempt 8：30/30 帧完成；端到端吞吐 15.157 FPS（65.975 ms/帧）。 | 空载基线，0/0 目标不能证明物料准确率。49×320 计数带的 ROI 处理均值为 17.657 ms，高于 2.5 ms 目标；CCL 在 30/30 帧运行。 |
 | **VERIFIED_ON_BOARD** | WO-0016 Stage B-2 Attempt-5 Recovery-2：165/165 帧完成；5 颗 M6 螺母计数为 4，准确率 80%；端到端吞吐 22.132 FPS。 | DMA/帧处理链路完成，但少计 1 次，物料准确率验收失败；报告未确定具体漏计原因，且本轮不重测。 |
+| **VERIFIED_OFFLINE** | 2026-10-27 Gray8 Active Baseline：XSim bit-exact；Vivado build/implementation 完成。 | 对应 `wo0015-gray8-baseline-20261027` BIT/HWH；尚未进行板端下载、DMA 或计数验收。 |
 | **VERIFIED_OFFLINE** | 2026-10-24 粘连候选诊断记录 pytest scripts/wo0016 为 288 passed、3 skipped。 | 这是报告中的离线测试记录，不是本次 README 修改后重跑的结果；见[诊断报告](data/results/wo0017-touching-diagnosis-20261024/README.md)。 |
 | **SIMULATION_ONLY** | WO-0014 RGB→Gray→Binary8：15 项 XSim 场景；487 帧、37,401,600 像素，独立黄金比对 0 mismatch。 | 仅离线 RTL 仿真和输出比对，不代表板端同规模像素比对或物料计数准确率。 |
 | **VERIFIED_OFFLINE** | WO-0014 实验链路 OOC 综合：668 Slice LUT、377 FF、0 BRAM、0 DSP；10 ns 寄存器间约束 WNS +2.354 ns、TNS 0。 | 仅该实验模块的综合后 OOC 结果；完整 Zynq 系统、布线后时序及板卡 100 MHz 运行未由此证明。 |
 | **SIMULATION_ONLY** | ROI 裁剪与 3×3 形态学 RTL 各有独立测试和综合记录。 | 模块证据不表示已接入或通过整机板测；具体用例见[ROI 验证](docs/verification/wo-0008-handoff.md)和[形态学验证](docs/morphology-verification-20261013.md)。 |
 | **NOT_VERIFIED** | 设计目标 320×240、≥30 FPS；最终摄像头路线、编码器带速、PL ROI/形态学整合、连续生产工况及浏览器显示帧率。 | 已记录的板端端到端吞吐为 15.157 FPS 和 22.132 FPS，均未达到 30 FPS 目标；目标清单不代表已实现或验收。 |
 
+上述 WO-0016 板端帧率和计数记录绑定旧 RGB BIT/HWH；2026-10-27 Gray8 build 是不同的工件，板端状态仍为未运行。不能将历史板端结果移记为 Gray8 路径结果。
+
 ## 已知限制与后续优化
 
 - **计数准确率仍需解决。** 板测样本为 4/5；目标间接近、粘连或分割变化可能导致少计，现有单轮证据不能建立通用准确率。
 - **近期算法改进仍属候选。** 2026-10-24 的两颗/三颗螺母录像用 Gray8 离线阈值回放比较拆分规则；部分样本从旧规则的 1 次事件变为 2 或 3 次。录像没有 PL Binary8，不能作为部署后结果。
 - **ROI 热路径需优化。** Stage A 的计数 ROI 平均耗时 17.657 ms，超过 2.5 ms 目标。
-- **模块尚未整合。** PL ROI 和形态学逻辑有独立实现，但未串入当前板测图像链路；视频源最终路线仍未冻结。
+- **模块尚未整合。** `axis_roi_crop` 和 `axis_morphology3x3` 有独立实现，但未串入当前 Gray8 位流；`axis_rgb2gray` 仅属于旧 RGB 路径。视频源最终路线仍未冻结。
 - **系统级指标未齐。** 尚无已验收的输送带速度、生产照明、完整物料矩阵、持续运行可靠性或端到端 CPU/PL 对比数据；编码器测速也未实现。
 - **许可证未声明。** 仓库根目录当前没有 LICENSE 文件。若希望社区明确复用权限，需要维护者补充许可证。
 

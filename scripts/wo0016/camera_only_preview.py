@@ -29,7 +29,9 @@ import mjpeg_preview
 from dashboard_state import DashboardState
 from stream_counter import MaskCounter
 from live_calibration import (MonochromePreprocessor, monochrome_view,
-                              optical_metrics, CalibrationControls)
+                              optical_metrics, CalibrationControls,
+                              read_first_monochrome_frame,
+                              request_native_monochrome)
 
 EXPECTED_BOOT = "35983d66-bb1d-4a8a-85e5-802170825515"
 WO_ROOT = Path("/home/xilinx/wo0017")
@@ -176,11 +178,10 @@ def read_frame(capture: Any) -> np.ndarray:
     if not ok or frame is None:
         raise RuntimeError("camera returned no preview frame")
     try:
-        monochrome_view(frame)
+        return monochrome_view(frame)
     except ValueError:
         raise RuntimeError("camera frame has unexpected shape/dtype: %r %r" %
                            (frame.shape, frame.dtype))
-    return frame
 
 
 def write_state(path: Path, value: dict[str, Any]) -> None:
@@ -355,6 +356,8 @@ def main(argv: list[str] | None = None) -> int:
         state["opencv_set_results"] = set_results
         if not all(set_results.values()):
             raise RuntimeError("V4L2 rejected preview mode or single-frame buffer setting")
+        native_conversion_requested = request_native_monochrome(capture, cv2)
+        state["opencv_convert_rgb_off_requested"] = native_conversion_requested
         state["opencv_properties_after_set"] = {
             "fourcc": int(round(capture.get(cv2.CAP_PROP_FOURCC))),
             "width": int(round(capture.get(cv2.CAP_PROP_FRAME_WIDTH))),
@@ -367,7 +370,12 @@ def main(argv: list[str] | None = None) -> int:
         if live_boot_id() != EXPECTED_BOOT:
             raise RuntimeError("Boot ID changed before the first preview frame")
 
-        first_frame = read_frame(capture)
+        first_frame, pixel_format, fallback = read_first_monochrome_frame(
+            capture, cv2, native_conversion_requested=native_conversion_requested)
+        print("CAMERA_PIXEL_PATH format=%s convert_rgb_request=%s fallback=%s" % (
+            pixel_format, native_conversion_requested, fallback), flush=True)
+        state["camera_input_pixel_format"] = pixel_format
+        state["camera_convert_rgb_fallback"] = fallback
         state["first_frame_shape"] = list(first_frame.shape)
         state["first_frame_dtype"] = str(first_frame.dtype)
         after_first = query_v4l2()

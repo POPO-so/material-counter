@@ -2,6 +2,41 @@
 
 This package adds a host-testable two-slot Binary8 DMA consumer, ROI crossing counter, and MJPEG preview to the WO-0015 320×240 frame path.
 
+Interface A follows ADR-0004: MM2S sends a 76,832-byte packet (16-byte header + 76,800-byte Gray8 payload + 16-byte footer); PL unpacks Gray8 and thresholds it directly; S2MM returns a 76,800-byte Binary8 frame.
+
+## Board launch quickstart
+
+Use this one-shot command only for a standard WO-0016 stream against an already-loaded, hash-matching WO-0015 Gray8 50 MHz Overlay. The 2026-10-27 Gray8 package has offline build/implementation evidence but has not been downloaded to or accepted on the board. Historical WO-0016 board results used the older RGB BIT/HWH pair and do not establish Gray8 board behavior.
+
+Before running, verify the BIT/HWH and run-manifest hashes, and confirm the manifest Boot ID matches the target's current Boot ID. Set a finite approved frame limit and a new absolute evidence path. The explicit `--approved-boot-id` below is recommended; if omitted, remove that option while keeping the reviewed manifest SHA-256. The standard CLI consumes its one-time guard; do not reuse a consumed attempt or evidence path.
+
+```bash
+WO=/home/xilinx/wo0016
+PY=/usr/local/share/pynq-venv/bin/python3
+MANIFEST="$WO/wo0015/run-manifest.json"
+MANIFEST_SHA256=REPLACE_WITH_REVIEWED_MANIFEST_SHA256
+APPROVED_BOOT_ID=REPLACE_WITH_CURRENT_BOOT_ID
+MAX_FRAMES=REPLACE_WITH_FINITE_APPROVED_FRAME_LIMIT
+CAMERA=/dev/video0
+EVIDENCE_JSON=/home/xilinx/wo0016/evidence/REPLACE_WITH_UNIQUE_RUN_NAME.json
+
+sudo -n env XILINX_XRT=/usr "$PY" "$WO/run_stream_counter.py" \
+  --mode board \
+  --manifest "$MANIFEST" \
+  --manifest-sha256 "$MANIFEST_SHA256" \
+  --approved-boot-id "$APPROVED_BOOT_ID" \
+  --max-frames "$MAX_FRAMES" \
+  --camera "$CAMERA" \
+  --evidence-json "$EVIDENCE_JSON" \
+  --execute --authorize-stage wo0016-stream --approve-once
+```
+
+If the standard Stage 1 Overlay PASS receipt is absent, the runner performs a read-only runtime check of the loaded BIT/HWH identity, Checker/Packer signatures, DMA state, and CMA before starting the stream. It attaches with `Overlay(download=False)`: it does not download the Overlay or create a synthetic PASS receipt. An existing receipt must match the current boot and reviewed artifacts or the run fails closed. See [WO-0015 board package](../wo0015/README-board.md) and [WO-0016 board acceptance](../../docs/verification/wo-0016-board-acceptance.md).
+
+This quickstart is not for WO-0017 capture profiles, M8 diagnostic probes, physical calibration, or Stage B-2 attempts; those workflows retain their constrained authorization gates and additional receipts/permits.
+
+The current Gray8 PL build comprises six RTL sources: `fpga/rtl/axis_gray2binary.v`, `fpga/experimental/wo0014/axis_dma_gray_adapter.v`, `fpga/experimental/wo0014/axis_binary_output_checker.v`, `fpga/experimental/wo0014/axis_dma_image_pipeline.v`, `fpga/experimental/wo0015/axis_s2mm_frame_packer.v`, and `fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v`. `axis_rgb2gray`, `axis_roi_crop`, and `axis_morphology3x3` are absent from the current Gray8 bitstream; `axis_rgb2gray` was used in the older RGB build.
+
 ## Offline use
 
 From the repository root:
@@ -15,13 +50,9 @@ The default CLI mode is Mock. It creates synthetic moving components, filters a 
 
 ## Board mode
 
-Board mode is a finite, one-shot operation against the already loaded WO-0015 50 MHz Overlay. It requires a manifest whose BIT/HWH hashes are reviewed, a same-boot WO-0015 Stage 1 Overlay PASS receipt, the manifest SHA-256, a new absolute evidence JSON path, camera device, and all three explicit opt-in flags:
+Standard board mode is a finite, one-shot operation against the already loaded WO-0015 Gray8 50 MHz Overlay. It requires a reviewed BIT/HWH pair and run manifest, the manifest SHA-256, a new absolute evidence JSON path, a finite frame limit, a camera device, and `--execute --authorize-stage wo0016-stream --approve-once`. The approved Boot ID is optional but recommended. If the standard Stage 1 receipt is absent, the read-only runtime validation described above runs automatically; special workflows still require their dedicated gates.
 
-```text
---mode board --execute --authorize-stage wo0016-stream --approve-once
-```
-
-The runner defaults to `data/results/wo0015-gray8-baseline-20261027/board-package/run-manifest.json`; optionally override it with `--manifest`. Still supply the separately reviewed `--manifest-sha256`, `--max-frames`, and `--evidence-json` (or `--output-json`). The runner reuses the already loaded BIT with `Overlay(download=False)` and requires live AFI1 readbacks of exactly RD `0x00000001` and WR `0x00000F01` before creating the DMA driver. The `CmaFree` admission watermark is 32,768 KiB before and after each buffer allocation. Never reuse a consumed guard or evidence path. The program does not load/reload the Overlay, reset or retry DMA, or free buffers if DMA ownership is uncertain. It binds the MJPEG server to `0.0.0.0:8080` by default; override `--host`/`--port` when the network setup requires it.
+In a source checkout, the runner defaults to `data/results/wo0015-gray8-baseline-20261027/board-package/run-manifest.json`. In a deployed bundle, `board_preflight.py` prefers `run-manifest.json` beside the bundled `wo0015/` helpers, then the WO-0016 package root; override either location with `--manifest`. The manifest SHA-256 is required. When supplied, `--approved-boot-id` must match the manifest and live Boot ID. The runner reuses the already loaded BIT with `Overlay(download=False)` and requires live AFI1 readbacks of exactly RD `0x00000001` and WR `0x00000F01` before creating the DMA driver. The `CmaFree` admission watermark is 32,768 KiB before and after each buffer allocation. Never reuse a consumed guard or evidence path. The program does not load/reload the Overlay, reset or retry DMA, or free buffers if DMA ownership is uncertain. It binds the MJPEG server to `0.0.0.0:8080` by default; override `--host`/`--port` when the network setup requires it.
 
 For an isolated board deployment, place the required WO-0015 Python modules in a sibling `wo0015/` directory inside the package directory. The runner prefers that bundle and falls back to the repository's `scripts/wo0015/` while running from source. Required modules: `board_once.py`, `board_preflight.py`, `camera_dma_oneshot.py`, `camera_adapter.py`, and `prepare_vectors.py`. Preserve the exact executor hashes bound by the selected WO-0015 manifest: do not edit or patch `board_preflight.py` to bypass its boot check. This keeps deployed helpers isolated without replacing the board's existing WO-0015 files.
 
@@ -61,8 +92,8 @@ qualified pixel components became fewer observations; a changed count is not
 an accuracy result without independent object annotations. The command only
 reads a complete, hash-verified capture dataset and does not access the board.
 
-For a temporary optical check before the current board has a valid PL Binary8
-capture path, `capture_touching_camera_only.py` records Gray8 from `/dev/video0`
+For a temporary optical check that does not depend on the untested Gray8 PL
+baseline, `capture_touching_camera_only.py` records Gray8 from `/dev/video0`
 without accessing FPGA or DMA. Use a new absolute output directory for each run.
 `--compact` keeps only 320×240 Gray8 and permits up to 1800 frames, enough to
 cover conveyor startup. Its manifest explicitly marks the result

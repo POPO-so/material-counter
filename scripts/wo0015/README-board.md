@@ -2,16 +2,29 @@
 
 This package implements the PS half of the WO-0015 S2MM Binary8 frame-return loop. It is offline-first: `board_preflight.py`, `--mode offline`, `--mode mock`, and `--help` do not import PYNQ or touch MMIO. Only an explicitly authorized board stage imports PYNQ.
 
-The source tree uses the **Frozen / Active Baseline Gray8 packet ABI** defined by ADR-0004. The matching BIT/HWH pair is stored under `data/results/wo0015-gray8-baseline-20261027/export/`; its build manifest uses repository-relative paths. The offline implementation is not board-tested.
+The source tree uses the **Frozen / Active Baseline Gray8 packet ABI** defined by ADR-0004. The matching BIT/HWH pair is stored under `data/results/wo0015-gray8-baseline-20261027/export/`; the pair manifest marks it `implemented_offline` and `board_tested=false`. This 2026-10-27 package has not been downloaded to or accepted on the board. The last archived WO-0016 board results use the older RGB BIT/HWH pair (BIT SHA-256 `a2f642f884f6b9c883ab70ea9e9b7a225292dfe3c5794785764362daaac21420`; HWH SHA-256 `bf82d299912f816c3502e2628c83d957366ef2d8a89d3cc4fe660ad136d4f1d6`) and are not Gray8 board evidence.
 
-The live executor accepts a reviewed manifest containing three frames. The source-tree default is `data/results/wo0015-gray8-baseline-20261027/board-package/run-manifest.json`; a copied board package resolves its local `run-manifest.json`. Board access still requires a separately reviewed manifest SHA-256 and the existing boot, stage, one-shot, and CMA checks. S2MM remains 32-bit memory / 32-bit stream with an 18-bit length field and returns 76,800 bytes / 19,200 beats. Gray8 MM2S sends a 76,800-byte payload in a 76,832-byte packet (19,208 stream beats).
+The live executor accepts a reviewed manifest containing three frames. The source-tree default is `data/results/wo0015-gray8-baseline-20261027/board-package/run-manifest.json`; a copied board package resolves its local `run-manifest.json`. Board access still requires a separately reviewed manifest SHA-256 and the existing boot, stage, one-shot, and CMA checks. MM2S is a 76,832-byte packet: 16-byte header, 76,800-byte Gray8 payload, and 16-byte footer (19,208 32-bit beats). PL directly thresholds the unpacked Gray8 pixels. S2MM remains Binary8: 76,800 bytes / 19,200 32-bit beats.
+
+## Frozen ABI and current PL source set
+
+The current Gray8 bitstream uses the six RTL sources listed by `scripts/wo0015/create_s2mm_bd.tcl`:
+
+- `fpga/rtl/axis_gray2binary.v`
+- `fpga/experimental/wo0014/axis_dma_gray_adapter.v`
+- `fpga/experimental/wo0014/axis_binary_output_checker.v`
+- `fpga/experimental/wo0014/axis_dma_image_pipeline.v`
+- `fpga/experimental/wo0015/axis_s2mm_frame_packer.v`
+- `fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v`
+
+`axis_rgb2gray`, `axis_roi_crop`, and `axis_morphology3x3` are absent from this Gray8 bitstream. `axis_rgb2gray` was used in the older RGB bitstream associated with the historical board results above; this statement is specific to the current Gray8 build. ROI crop and morphology remain independently verified modules and are not part of the current PS/PL image path.
 
 ## Manifest inputs
 
 The CLI defaults to the repository Gray8 run manifest. For board access, review the exact manifest digest and the deployment boot identity before authorizing a stage. Place the following together in one directory, or use paths relative to the manifest:
 
 - `wo15.bit` and its same-basename `wo15.hwh`.
-- Exactly three packet files. Each Gray8 candidate packet is 76,832 bytes (16-byte header + 76,800-byte Gray8 payload + 16-byte footer).
+- Exactly three packet files. Each Gray8 packet is 76,832 bytes (16-byte header + 76,800-byte Gray8 payload + 16-byte footer).
 - Three independently generated Binary8 goldens, each exactly 76,800 bytes, containing only `0x00` and `0xFF`.
 - `wo0015-manifest.json` with this exact top-level shape:
 
@@ -128,11 +141,11 @@ Live stages put these files beside their evidence JSON in a `<stage>-diagnostics
 
 ## Offline Gray8 camera adapter
 
-`camera_adapter.py` exposes `gray320x240_to_gray_packet(gray, frame_id=0)`. It accepts a `uint8` 320×240 matrix and emits the Gray8 bytes unchanged inside a 76,832-byte packet. `camera_dma_oneshot.py` adds offline `.npy` / `.pgm` / `.png` loading, one-read V4L2 capture, bilinear resize, independent threshold-128 Golden generation, and a separate camera-only DMA guard. Capture/preparation never imports PYNQ or touches MMIO. Its live stage attaches to the existing Overlay and reuses `board_once.run_frames`, AFI1 synchronization, CMA allocation checks and cache synchronization. The existing same-boot `DMA_THREE_PASS` approval is bound to the previous RGB ABI and cannot authorize this candidate. A new BIT/HWH, current SHA-bound manifest, and separately reviewed board authorization are required before any Gray8 live stage. It saves source/resized Gray8 PGM images, the packet/Golden, PL Binary8 bytes and a PL output PGM. The generated three-entry camera manifest sends only its first frame; the other two consecutive frame IDs are reserved and unrun to satisfy the shared runner's fixed manifest shape.
+`camera_adapter.py` exposes `gray320x240_to_gray_packet(gray, frame_id=0)`. It accepts a `uint8` 320×240 matrix and emits the Gray8 bytes unchanged inside a 76,832-byte packet. `camera_dma_oneshot.py` adds offline `.npy` / `.pgm` / `.png` loading, one-read V4L2 capture, independent threshold-128 Golden generation, and a separate camera-only DMA guard. V4L2 capture requests `CAP_PROP_CONVERT_RGB=0`; the first decoded frame is checked as native single-channel or repeated monochrome BGR, then the BGR path uses a first-channel view and nearest-neighbor resizing. Offline file input retains bilinear resizing. Capture/preparation never imports PYNQ or touches MMIO. Its live stage attaches to the existing Overlay and reuses `board_once.run_frames`, AFI1 synchronization, CMA allocation checks and cache synchronization. The existing same-boot `DMA_THREE_PASS` approval is bound to the older RGB ABI and cannot authorize the active Gray8 baseline. Gray8 board execution still requires the reviewed BIT/HWH pair, current SHA-bound manifest, and separately authorized stage. It saves source/resized Gray8 PGM images, the packet/Golden, PL Binary8 bytes and a PL output PGM. The generated three-entry camera manifest sends only its first frame; the other two consecutive frame IDs are reserved and unrun to satisfy the shared runner's fixed manifest shape.
 
 ### OV9281 camera bridge command sequence
 
-Deploy the reviewed `camera_dma_oneshot.py` and `camera_adapter.py` beside the already verified `board_once.py`, `board_preflight.py`, and `wo0015-manifest.json` under `/home/xilinx/wo0015`. The V4L2 capture explicitly requests the camera-supported MJPG 640×400 mode, converts OpenCV's decoded frame to grayscale, leaves camera controls unchanged, and expects `ov9281-init.service` to have established the 5.0 ms exposure.
+Deploy the reviewed `camera_dma_oneshot.py` and `camera_adapter.py` beside the already verified `board_once.py`, `board_preflight.py`, and `wo0015-manifest.json` under `/home/xilinx/wo0015`. The V4L2 capture explicitly requests the camera-supported MJPG 640×400 mode and `CAP_PROP_CONVERT_RGB=0`. If the backend returns three repeated monochrome channels, the first frame validates B=G=R and the capture path uses a single-channel view without weighted grayscale conversion. Camera controls are unchanged; `ov9281-init.service` is expected to establish the 5.0 ms exposure.
 
 First, capture and prepare one image without running DMA:
 
@@ -195,4 +208,4 @@ If the live board's `/proc/sys/kernel/random/boot_id` changed, read the new valu
 $boot = (ssh xilinx@<PYNQ_IP> 'cat /proc/sys/kernel/random/boot_id').Trim(); $bundle = & python scripts/wo0015/prepare_board_bundle.py --out data/results/wo0015-gray8-baseline-20261027/board-package --replace-existing --boot-id $boot | ConvertFrom-Json; $bundle.manifest_sha256
 ```
 
-Pass both `--approved-boot-id $boot` and the printed `--manifest-sha256` to `board_preflight.py`, `board_once.py`, and `run_stream_counter.py`. The reviewed manifest digest is mandatory whenever a dynamic Boot ID is supplied. Run a fresh current-boot Stage 1 Overlay PASS before the stream runner; old one-shot receipts do not carry over to the new boot.
+Pass both `--approved-boot-id $boot` and the printed `--manifest-sha256` to `board_preflight.py`, `board_once.py`, and `run_stream_counter.py`. The reviewed manifest digest is mandatory whenever a dynamic Boot ID is supplied. WO-0015 `board_once.py` stages and specialized WO-0016 capture/probe/calibration flows still require their current-boot Stage 1 receipt or dedicated authorization. For the standard finite WO-0016 stream, a missing Stage 1 receipt triggers the runner's read-only runtime checks of the already-loaded BIT/HWH, Checker/Packer signatures, DMA state, and CMA; an existing receipt must match the current boot and reviewed artifacts or the run fails closed. Old one-shot receipts do not carry over to a new boot.

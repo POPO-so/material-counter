@@ -160,10 +160,12 @@ def test_observability_distinguishes_near_line_birth_from_past_line_birth():
     track = result.tracks[0]
     association = result.diagnostics["associations"][-1]
     assert track["born_past_line"] is False
-    assert track["born_counted_without_event"] is True
-    assert track["counted"] is True
+    assert track["born_in_hysteresis_band"] is True
+    assert track["born_counted_without_event"] is False
+    assert track["counted"] is False
     assert association["born_past_line"] is False
-    assert association["born_counted_without_event"] is True
+    assert association["born_counted_without_event"] is False
+    assert association["born_in_hysteresis_band"] is True
 
 
 def test_observability_retains_lost_tracks_when_finished_tracks_are_discarded():

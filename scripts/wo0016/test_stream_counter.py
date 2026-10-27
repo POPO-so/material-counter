@@ -569,6 +569,23 @@ def test_top_to_bottom_track_counts_once_after_confirmation_and_hysteresis():
     assert counts == [0, 0, 1, 1]
 
 
+def test_high_speed_track_born_inside_hysteresis_band_counts_after_forward_exit():
+    counter = MaskCounter(line_y=120, hysteresis=2, confirm_hits=2, max_step=24)
+
+    first = counter.update(0, _mask(119))
+    crossing = counter.update(1, _mask(140))
+    after = counter.update(2, _mask(143))
+
+    assert first.events == ()
+    assert first.tracks[0]["born_in_hysteresis_band"] is True
+    assert first.tracks[0]["counted"] is False
+    assert len(crossing.events) == 1
+    assert crossing.events[0].frame_id == 1
+    assert crossing.total_count == 1
+    assert after.events == ()
+    assert after.total_count == 1
+
+
 def test_two_separated_objects_can_cross_on_the_same_frame():
     counter = MaskCounter(line_y=120, hysteresis=2, confirm_hits=2, max_step=12)
     totals = []

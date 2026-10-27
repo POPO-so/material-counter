@@ -13,6 +13,8 @@ import time
 
 import cv2
 import numpy as np
+from live_calibration import (monochrome_view, read_first_monochrome_frame,
+                              request_native_monochrome)
 
 
 def _sha256(path: Path) -> str:
@@ -44,6 +46,7 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 400)
         camera.set(cv2.CAP_PROP_FPS, 60)
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        native_conversion_requested = request_native_monochrome(camera, cv2)
         mode = {
             "width": int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
             "height": int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)),
@@ -57,9 +60,14 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
         monotonic_ns = np.empty(frames, dtype=np.int64)
         wall_ns = np.empty(frames, dtype=np.int64)
         read_ms = np.empty(frames, dtype=np.float32)
-        for _ in range(2):
-            if not camera.read()[0]:
-                raise RuntimeError("camera warmup failed")
+        _, pixel_format, fallback = read_first_monochrome_frame(
+            camera, cv2, native_conversion_requested=native_conversion_requested)
+        ok, warmup = camera.read()
+        if not ok or warmup is None:
+            raise RuntimeError("camera warmup failed")
+        monochrome_view(warmup)
+        print("CAMERA_PIXEL_PATH format=%s convert_rgb_request=%s fallback=%s" % (
+            pixel_format, native_conversion_requested, fallback), flush=True)
         print(f"CAMERA_READY {mode}; initial delay {start_delay_s:g} seconds", flush=True)
         time.sleep(start_delay_s)
         waited_s = 0.0
@@ -71,7 +79,7 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
                 ok, frame = camera.read()
                 if not ok or frame is None or frame.shape[:2] != (400, 640):
                     raise RuntimeError("camera read failed while waiting for object")
-                sample = cv2.resize(frame[:, :, 0], (320, 240),
+                sample = cv2.resize(monochrome_view(frame), (320, 240),
                                     interpolation=cv2.INTER_NEAREST)
                 consecutive = (consecutive + 1 if
                                np.count_nonzero(sample[:, :160] >= 128) >= 100
@@ -92,7 +100,7 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
             read_ms[index] = (time.perf_counter_ns() - read_started) / 1e6
             monotonic_ns[index] = time.monotonic_ns()
             wall_ns[index] = time.time_ns()
-            gray = frame[:, :, 0]
+            gray = monochrome_view(frame)
             if source is not None:
                 source[index] = gray
             resized[index] = cv2.resize(gray, (320, 240),
