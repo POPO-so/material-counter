@@ -1,0 +1,4 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/experimental/wo0015/axis_s2mm_frame_packer.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_s2mm_frame_packer
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/sim/wo0015/tb_axis_s2mm_frame_packer.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_axis_s2mm_frame_packer

@@ -1,0 +1,1 @@
+"tb_axis_s2mm_frame_packer" -s "wo15_packer" -log "C:/fpga/material-counter/output/wo0015-gray8-toolchain-20261027/xsim-final/xsim/elaborate-packer.log"

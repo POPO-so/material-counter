@@ -1,0 +1,4 @@
+kind	frame	accepted_pixels	sent_beats	eof	fault	error_code
+FRAME	0	76800	19200	1	0	0
+FRAME	1	76800	19200	1	0	0
+FRAME	2	76800	19200	1	0	0

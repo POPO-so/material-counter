@@ -1,0 +1,14 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/rtl/axis_gray2binary.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_gray2binary
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/experimental/wo0014/axis_dma_gray_adapter.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_gray_adapter
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/experimental/wo0014/axis_binary_output_checker.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_binary_output_checker
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/experimental/wo0014/axis_dma_image_pipeline.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_image_pipeline
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/experimental/wo0015/axis_s2mm_frame_packer.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_s2mm_frame_packer
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_s2mm_pipeline_bd
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/material-counter/fpga/sim/wo0015/tb_axis_dma_s2mm_pipeline.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_axis_dma_s2mm_pipeline

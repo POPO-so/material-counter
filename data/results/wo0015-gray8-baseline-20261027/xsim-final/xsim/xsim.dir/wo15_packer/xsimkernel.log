@@ -1,0 +1,7 @@
+Running: xsim.dir/wo15_packer/xsimk.exe -runall -simmode gui -wdb wo15_packer.wdb -simrunnum 0 -socket 55107
+Design successfully loaded
+Design Loading Memory Usage: 19212 KB (Peak: 19212 KB)
+Design Loading CPU Usage: 46 ms
+Simulation completed
+Simulation Memory Usage: 19704 KB (Peak: 19704 KB)
+Simulation CPU Usage: 62 ms

@@ -1,0 +1,17 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Tue Oct 27 18:42:45 2026
+| Host         : BWIN running 64-bit major release  (build 9200)
+| Command      : report_timing -delay_type min -slack_lesser_than 0.000 -max_paths 100 -file C:/g8b/data/results/wo0015-hw-50mhz-20261015/reports/hold-failing-paths.rpt
+| Design       : wo15_wrapper
+| Device       : 7z020-clg400
+| Speed File   : -1  PRODUCTION 1.12 2019-11-22
+| Design State : Routed
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Timing Report
+
+No timing paths found.
+
+

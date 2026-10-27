@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "clock_mhz": 50,
+  "bit_sha256": "dfe50c82731139c59f71b22386187bf39012ff1dd2ccd2efe1f5d9489e486d56",
+  "hwh_sha256": "844af1c52c5f5b4a290501952206ce1d2e52157c9447aca8ed8cf1c97a9f2cb7",
+  "hwh_contract": "PASS",
+  "hwh_bus_links": "PASS",
+  "hp1_auto_converter_readback": "PASS",
+  "implemented_timing": {
+    "wns_ns": 8.16,
+    "tns_ns": 0.0,
+    "setup_failing_endpoints": 0,
+    "setup_total_endpoints": 9976,
+    "whs_ns": 0.014,
+    "ths_ns": 0.0,
+    "hold_failing_endpoints": 0,
+    "hold_total_endpoints": 9976,
+    "wpws_ns": 8.75,
+    "tpws_ns": 0.0,
+    "pulse_width_failing_endpoints": 0,
+    "pulse_width_total_endpoints": 3673
+  },
+  "drc_severity_counts": {
+    "Error": 0,
+    "Critical Warning": 0,
+    "Warning": 4,
+    "Advisory": 2
+  },
+  "methodology_severity_counts": {
+    "Error": 0,
+    "Critical Warning": 0,
+    "Warning": 1,
+    "Advisory": 0
+  },
+  "board_tested": false,
+  "pair_manifest": "data/results/wo0015-gray8-baseline-20261027/export/pair-manifest.json"
+}

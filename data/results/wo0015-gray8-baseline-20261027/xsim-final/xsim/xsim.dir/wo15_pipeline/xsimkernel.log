@@ -1,0 +1,7 @@
+Running: xsim.dir/wo15_pipeline/xsimk.exe -runall -simmode gui -testplusarg INPUT=C:/fpga/material-counter/output/wo0015-gray8-toolchain-20261027/xsim-final/vectors/D_reset/beats.hex -testplusarg GOLDEN=C:/fpga/material-counter/output/wo0015-gray8-toolchain-20261027/xsim-final/vectors/D_reset/golden.hex -testplusarg ACTUAL=C:/fpga/material-counter/output/wo0015-gray8-toolchain-20261027/xsim-final/xsim/D_reset-actual.hex -testplusarg METRICS=C:/fpga/material-counter/output/wo0015-gray8-toolchain-20261027/xsim-final/xsim/D_reset-metrics.tsv -testplusarg MODE=3 -testplusarg FRAMES=1 -testplusarg SEED=1 -testplusarg CASE=D_reset -wdb wo15_pipeline.wdb -simrunnum 0 -socket 54791
+Design successfully loaded
+Design Loading Memory Usage: 20528 KB (Peak: 20528 KB)
+Design Loading CPU Usage: 77 ms
+Simulation completed
+Simulation Memory Usage: 22304 KB (Peak: 22304 KB)
+Simulation CPU Usage: 108 ms

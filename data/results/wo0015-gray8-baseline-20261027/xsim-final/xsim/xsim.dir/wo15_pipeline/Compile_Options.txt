@@ -1,0 +1,1 @@
+"tb_axis_dma_s2mm_pipeline" -s "wo15_pipeline" -log "C:/fpga/material-counter/output/wo0015-gray8-toolchain-20261027/xsim-final/xsim/elaborate-pipeline.log"

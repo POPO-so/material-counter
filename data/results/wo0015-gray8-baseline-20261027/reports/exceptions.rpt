@@ -1,0 +1,23 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Tue Oct 27 18:42:50 2026
+| Host         : BWIN running 64-bit major release  (build 9200)
+| Command      : report_exceptions -file C:/g8b/data/results/wo0015-hw-50mhz-20261015/reports/exceptions.rpt
+| Design       : wo15_wrapper
+| Device       : 7z020-clg400
+| Speed File   : -1  PRODUCTION 1.12 2019-11-22
+| Design State : Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Exceptions Report
+
+Position  From            Through                                                         To                                  Setup           Hold            Status           
+--------  --------------  --------------------------------------------------------------  ----------------------------------  --------------  --------------  -----------------
+3         *               [get_ports -scoped_to_current_instance -no_traverse src_arst]   *                                   false           false           
+4         *               [get_ports -scoped_to_current_instance -no_traverse src_arst]   *                                   false           false           
+5         *               [get_ports -scoped_to_current_instance -no_traverse src_arst]   *                                   false           false           
+8         *               *                                                               [get_cells {syncstages_ff_reg[0]}]  false           false           
+9         *               *                                                               [get_cells {syncstages_ff_reg[0]}]  false           false           
+10        *               *                                                               [get_cells {syncstages_ff_reg[0]}]  false           false           
+

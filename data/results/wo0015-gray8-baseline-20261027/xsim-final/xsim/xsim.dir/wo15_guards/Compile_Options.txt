@@ -1,0 +1,1 @@
+"tb_axis_s2mm_guards" -s "wo15_guards" -log "C:/fpga/material-counter/output/wo0015-gray8-toolchain-20261027/xsim-final/xsim/elaborate-guards.log"

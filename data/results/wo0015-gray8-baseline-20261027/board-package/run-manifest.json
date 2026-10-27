@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "work_order": "WO-0015",
+  "stage": "S2MM_BINARY8_FRAME_RETURN",
+  "build_id": "wo0015-hw-50mhz-20261015",
+  "boot_id": "bb382d01-7bb2-4922-9a85-af6a24ef4d10",
+  "part": "xc7z020clg400-1",
+  "clock_mhz": 50,
+  "bit_path": "wo15.bit",
+  "bit_sha256": "dfe50c82731139c59f71b22386187bf39012ff1dd2ccd2efe1f5d9489e486d56",
+  "hwh_path": "wo15.hwh",
+  "hwh_sha256": "844af1c52c5f5b4a290501952206ce1d2e52157c9447aca8ed8cf1c97a9f2cb7",
+  "dma_base": 1077936128,
+  "checker_base": 1136787456,
+  "contract": {
+    "dma_mode": "simple",
+    "include_mm2s": true,
+    "include_s2mm": true,
+    "include_sg": false,
+    "micro_dma": false,
+    "dma_length_width_bits": 18,
+    "dma_addr_width_bits": 32,
+    "mm2s_memory_width_bits": 64,
+    "mm2s_stream_width_bits": 32,
+    "s2mm_memory_width_bits": 32,
+    "s2mm_stream_width_bits": 32,
+    "mm2s_dre": false,
+    "s2mm_dre": false,
+    "hp0_enabled": true,
+    "hp1_enabled": true,
+    "hp0_data_width_bits": 64,
+    "hp1_data_width_bits": 32,
+    "hp0_range": [
+      0,
+      536870912
+    ],
+    "hp1_range": [
+      0,
+      536870912
+    ],
+    "checker_signature": 1464807732,
+    "packer_signature": 1464807733
+  },
+  "executor_sha256": {
+    "board_once.py": "9375cec4bff6d4bb258b6b415136bc8bab8bda727df87d26c2f1f7586c028721",
+    "board_preflight.py": "1938f20f3c4f90e2b3de1cb0c00d0710673ab0cdca1c0c39514e8bc869fc1129"
+  },
+  "ready_for_board": true,
+  "frames": [
+    {
+      "frame_id": 0,
+      "packet_path": "frame-0.gray8.bin",
+      "packet_sha256": "f80318626547a17088aa6d56440226e5247cc7757de16d9f235755ac26f3c084",
+      "binary_path": "frame-0.binary.bin",
+      "binary_sha256": "174164ae33086f8606b83113f43ebd5a52470f8640bde1c489e51e76f411a60e"
+    },
+    {
+      "frame_id": 1,
+      "packet_path": "frame-1.gray8.bin",
+      "packet_sha256": "98e5577b0ed36c44978705d897ca11a8c0a25a58df736579187be0018a3700db",
+      "binary_path": "frame-1.binary.bin",
+      "binary_sha256": "662c75a3c6c0e79a71261e591854eaf9cbbfb36242c854ee6e264010e29ab3fa"
+    },
+    {
+      "frame_id": 2,
+      "packet_path": "frame-2.gray8.bin",
+      "packet_sha256": "4421ae73ce18495a7d37acc99f11ea1e059b196d031f414ad5dc6e4fa44550e5",
+      "binary_path": "frame-2.binary.bin",
+      "binary_sha256": "91bca142ff7d216872510df597f8e1667621542ad8cb58377e881d502ee878a7"
+    }
+  ]
+}
