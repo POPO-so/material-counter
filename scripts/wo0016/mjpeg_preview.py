@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import json
 import ipaddress
+import math
 import socket
 import select
 import threading
@@ -22,6 +23,15 @@ import numpy as np
 PREVIEW_FRAME_INTERVAL = 4
 PREVIEW_JPEG_QUALITY = 70
 MAX_REJECTED_BODY_DRAIN_BYTES = 4096
+DEFAULT_HISTORY_LIMIT = 2000
+DEFAULT_PUBLISHER_CLOSE_TIMEOUT_S = 2.0
+
+
+def _close_timeout_seconds(value: float) -> float:
+    if (isinstance(value, bool) or not isinstance(value, (int, float))
+            or not math.isfinite(value) or value < 0):
+        raise ValueError("close timeout must be a finite nonnegative number")
+    return float(value)
 
 
 class MjpegFrameHub:
@@ -35,6 +45,8 @@ class MjpegFrameHub:
         self._closed = False
         self._published_times: deque[float] = deque(maxlen=60)
         self._dimensions: tuple[int, int] | None = None
+        self._frame_id: int | None = None
+        self._total_count: int | None = None
 
     def snapshot(self) -> dict[str, Any]:
         with self._condition:
@@ -43,6 +55,7 @@ class MjpegFrameHub:
             span = times[-1] - times[0] if len(times) > 1 else 0
             return {"sequence": self._sequence, "clients": self._stream_clients,
                     "closed": self._closed, "age_seconds": age,
+                    "frame_id": self._frame_id, "total_count": self._total_count,
                     "width": None if self._dimensions is None else self._dimensions[0],
                     "height": None if self._dimensions is None else self._dimensions[1],
                     "fps": ((len(times) - 1) / span
@@ -88,15 +101,24 @@ class MjpegFrameHub:
             return self._stream_clients > 0
 
     def publish(self, jpeg: bytes | bytearray | memoryview, *,
-                dimensions: tuple[int, int] | None = None) -> int:
+                dimensions: tuple[int, int] | None = None,
+                frame_id: int | None = None, total_count: int | None = None) -> int:
         if not isinstance(jpeg, (bytes, bytearray, memoryview)) or not jpeg:
             raise ValueError("published JPEG must be non-empty bytes")
+        if (frame_id is None) != (total_count is None):
+            raise ValueError("frame_id and total_count must be provided together")
+        for name, value in (("frame_id", frame_id), ("total_count", total_count)):
+            if value is not None and (isinstance(value, bool) or not isinstance(value, int)
+                                      or value < 0):
+                raise ValueError(f"{name} must be a nonnegative integer or None")
         with self._condition:
             if self._closed:
                 raise RuntimeError("frame hub is closed")
             self._jpeg = bytes(jpeg)
             self._published_times.append(time.monotonic())
             self._dimensions = dimensions
+            self._frame_id = frame_id
+            self._total_count = total_count
             self._sequence += 1
             self._condition.notify_all()
             return self._sequence
@@ -107,10 +129,19 @@ class MjpegFrameHub:
             self._jpeg = None
             self._published_times.clear()
             self._dimensions = None
+            self._frame_id = None
+            self._total_count = None
             self._condition.notify_all()
 
     def wait_for_next(self, *, after_sequence: int, timeout_s: float = 1.0
                       ) -> tuple[int, bytes] | None:
+        record = self.wait_for_next_record(after_sequence=after_sequence,
+                                            timeout_s=timeout_s)
+        return None if record is None else (record["sequence"], record["jpeg"])
+
+    def wait_for_next_record(self, *, after_sequence: int, timeout_s: float = 1.0
+                             ) -> dict[str, Any] | None:
+        """Return JPEG and its identity from the same locked publication."""
         if after_sequence < 0 or timeout_s < 0:
             raise ValueError("sequence and timeout must be nonnegative")
         with self._condition:
@@ -120,7 +151,8 @@ class MjpegFrameHub:
             )
             if not ready or self._jpeg is None or self._sequence <= after_sequence:
                 return None
-            return self._sequence, self._jpeg
+            return {"sequence": self._sequence, "jpeg": self._jpeg,
+                    "frame_id": self._frame_id, "total_count": self._total_count}
 
     def close(self) -> None:
         with self._condition:
@@ -136,7 +168,8 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                          tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
                          track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None,
                          calibration: dict | None = None,
-                         roi_top: int = 0, roi_bottom: int = 240
+                         roi_top: int = 0, roi_bottom: int = 240,
+                         preview_overlay: str = "standard", frame_id: int | None = None
                          ) -> np.ndarray:
     """Render the Gray8 camera frame with tracking HUD and Binary8 DMA-mask PIP."""
     image = np.asarray(mask)
@@ -152,6 +185,12 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
         raise ValueError("label must be non-empty text")
     if not isinstance(pip_label, str) or not pip_label.strip():
         raise ValueError("pip_label must be non-empty text")
+    if preview_overlay not in ("standard", "compact"):
+        raise ValueError("preview_overlay must be 'standard' or 'compact'")
+    if frame_id is not None and (isinstance(frame_id, bool)
+                                 or not isinstance(frame_id, (int, np.integer))
+                                 or frame_id < 0):
+        raise ValueError("frame_id must be a nonnegative integer or None")
     if (isinstance(hysteresis, bool) or not isinstance(hysteresis, (int, float))
             or not np.isfinite(hysteresis) or hysteresis < 0):
         raise ValueError("hysteresis must be a finite nonnegative number")
@@ -192,7 +231,7 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
     # These rectangles reserve the count HUD and mask PIP drawn below.
     occupied_labels = [(3, 4, 212, 34), (216, 4, 316, 97)]
     x_axis_hud = None
-    if count_axis == "x":
+    if count_axis == "x" and preview_overlay == "standard":
         x_label_text = f"X={line_x}"
         x_label_scale = 0.55
         x_label_thickness = 2
@@ -259,22 +298,39 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                     (label_x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.32,
                     color, 1, lineType=cv2.LINE_AA)
 
-    cv2.rectangle(frame, (5, 6), (min(frame.shape[1] - 1, 210), 32), (12, 25, 35), -1)
-    cv2.putText(frame, f"{label}  {int(total_count):03d}", (10, 24),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.48, (255, 255, 255), 1, lineType=cv2.LINE_AA)
+    count_text = f"{label}  {int(total_count):03d}"
+    if frame_id is not None:
+        count_text += f" F{int(frame_id)}"
+    hud_width = 260 if preview_overlay == "compact" else 210
+    cv2.rectangle(frame, (5, 6), (min(frame.shape[1] - 1, hud_width), 32),
+                  (12, 25, 35), -1)
+    cv2.putText(frame, count_text, (10, 24), cv2.FONT_HERSHEY_SIMPLEX,
+                0.42 if preview_overlay == "compact" else 0.48,
+                (255, 255, 255), 1, lineType=cv2.LINE_AA)
 
-    pip_x, pip_y, pip_width, pip_height = 220, 8, 92, 70
-    cv2.rectangle(frame, (pip_x - 2, pip_y - 2),
-                  (pip_x + pip_width + 2, pip_y + pip_height + 17), (12, 25, 35), -1)
-    cv2.putText(frame, pip_label, (pip_x + 2, pip_y + 11),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.31, (44, 224, 208), 1, lineType=cv2.LINE_AA)
-    pip = cv2.resize(image, (pip_width, pip_height), interpolation=cv2.INTER_NEAREST)
-    pip = cv2.cvtColor(pip, cv2.COLOR_GRAY2BGR)
-    frame[pip_y + 15:pip_y + 15 + pip_height,
-          pip_x:pip_x + pip_width] = pip
-    cv2.rectangle(frame, (pip_x, pip_y + 15),
-                  (pip_x + pip_width - 1, pip_y + 15 + pip_height - 1),
-                  (44, 224, 208), 1, lineType=cv2.LINE_8)
+    if preview_overlay == "standard":
+        pip_x, pip_y, pip_width, pip_height = 220, 8, 92, 70
+        cv2.rectangle(frame, (pip_x - 2, pip_y - 2),
+                      (pip_x + pip_width + 2, pip_y + pip_height + 17), (12, 25, 35), -1)
+        cv2.putText(frame, pip_label, (pip_x + 2, pip_y + 11),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.31, (44, 224, 208), 1, lineType=cv2.LINE_AA)
+        pip = cv2.resize(image, (pip_width, pip_height), interpolation=cv2.INTER_NEAREST)
+        pip = cv2.cvtColor(pip, cv2.COLOR_GRAY2BGR)
+        frame[pip_y + 15:pip_y + 15 + pip_height,
+              pip_x:pip_x + pip_width] = pip
+        cv2.rectangle(frame, (pip_x, pip_y + 15),
+                      (pip_x + pip_width - 1, pip_y + 15 + pip_height - 1),
+                      (44, 224, 208), 1, lineType=cv2.LINE_8)
+    elif count_axis == "x":
+        compact_text = f"X={line_x}"
+        (width, height), baseline = cv2.getTextSize(
+            compact_text, cv2.FONT_HERSHEY_SIMPLEX, 0.32, 1)
+        x = min(line_x + 5, frame.shape[1] - width - 4)
+        y = frame.shape[0] - 4
+        cv2.rectangle(frame, (x - 2, y - height - 2),
+                      (x + width + 2, y + baseline + 1), (12, 25, 35), -1)
+        cv2.putText(frame, compact_text, (x, y), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.32, (255, 255, 255), 1, lineType=cv2.LINE_AA)
     if calibration is not None:
         for contour in calibration.get("glare_contours", ()):
             points = np.asarray(contour, dtype=np.float64).reshape(-1, 2)
@@ -319,7 +375,8 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
                         tracks: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
                         track_trails: dict[int, tuple[tuple[float, float], ...]] | None = None,
                         calibration: dict | None = None,
-                        roi_top: int = 0, roi_bottom: int = 240
+                        roi_top: int = 0, roi_bottom: int = 240,
+                        preview_overlay: str = "standard", frame_id: int | None = None
                         ) -> bytes:
     if isinstance(quality, bool) or not isinstance(quality, (int, np.integer)) or not 1 <= quality <= 100:
         raise ValueError("JPEG quality must be an integer in 1..100")
@@ -330,7 +387,8 @@ def render_preview_jpeg(mask: np.ndarray, *, total_count: int, line_y: int,
                                  pip_label=pip_label,
                                  tracks=tracks, track_trails=track_trails,
                                  **({"calibration": calibration} if calibration is not None else {}),
-                                 roi_top=roi_top, roi_bottom=roi_bottom)
+                                 roi_top=roi_top, roi_bottom=roi_bottom,
+                                 preview_overlay=preview_overlay, frame_id=frame_id)
     encoded, payload = cv2.imencode(".jpg", frame,
                                     [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
     if not encoded:
@@ -347,18 +405,23 @@ class PeriodicMjpegPublisher:
                  count_axis: str = "y", line_x: int = 160,
                  hysteresis: float = 2.0, pip_label: str = "PL DMA MASK",
                  active_rows: tuple[int, int] | list[int] | None = None,
-                 history_limit: int | None = None,
-                 view_mode_provider=None):
+                 history_limit: int | None = DEFAULT_HISTORY_LIMIT,
+                 view_mode_provider=None,
+                 preview_overlay: str = "standard"):
         if isinstance(interval, bool) or not isinstance(interval, int) or interval < 1:
             raise ValueError("preview interval must be a positive integer")
         if isinstance(quality, bool) or not isinstance(quality, int) or not 1 <= quality <= 100:
             raise ValueError("JPEG quality must be an integer in 1..100")
-        if history_limit is not None and (
+        if history_limit is None:
+            history_limit = DEFAULT_HISTORY_LIMIT
+        if (
                 isinstance(history_limit, bool) or not isinstance(history_limit, int)
                 or history_limit < 1):
             raise ValueError("history_limit must be a positive integer or None")
         if view_mode_provider is not None and not callable(view_mode_provider):
             raise ValueError("view_mode_provider must be callable or None")
+        if preview_overlay not in ("standard", "compact"):
+            raise ValueError("preview_overlay must be 'standard' or 'compact'")
         self.hub = hub
         self.line_y = line_y
         if not isinstance(count_label, str) or not count_label.strip():
@@ -380,11 +443,21 @@ class PeriodicMjpegPublisher:
         self.quality = quality
         self.encoded_frames = 0
         self.history_limit = history_limit
+        self.total_handoff_samples = 0
+        self.total_handoff_ms = 0.0
+        self.min_handoff_ms: float | None = None
+        self.max_handoff_ms: float | None = None
+        self.total_background_encode_samples = 0
+        self.total_background_encode_ms = 0.0
+        self.min_background_encode_ms: float | None = None
+        self.max_background_encode_ms: float | None = None
+        self.total_encode_errors = 0
+        self._stats_lock = threading.Lock()
         self.view_mode_provider = view_mode_provider
-        self.handoff_timings_ms = (deque(maxlen=history_limit) if history_limit is not None else [])
-        self.background_encode_timings_ms = (
-            deque(maxlen=history_limit) if history_limit is not None else [])
-        self.encode_errors = deque(maxlen=history_limit) if history_limit is not None else []
+        self.preview_overlay = preview_overlay
+        self.handoff_timings_ms = deque(maxlen=history_limit)
+        self.background_encode_timings_ms = deque(maxlen=history_limit)
+        self.encode_errors = deque(maxlen=history_limit)
         self._condition = threading.Condition()
         self._latest_mask = np.empty((240, 320), dtype=np.uint8)
         self._encode_mask = np.empty((240, 320), dtype=np.uint8)
@@ -457,7 +530,31 @@ class PeriodicMjpegPublisher:
                 self._snapshot_sequence += 1
                 self._condition.notify_all()
         finally:
-            self.handoff_timings_ms.append((time.perf_counter() - started) * 1000.0)
+            self._record_handoff_timing((time.perf_counter() - started) * 1000.0)
+
+    def _record_handoff_timing(self, elapsed_ms: float) -> None:
+        elapsed_ms = float(elapsed_ms)
+        with self._stats_lock:
+            self.handoff_timings_ms.append(elapsed_ms)
+            self.total_handoff_samples += 1
+            self.total_handoff_ms += elapsed_ms
+            self.min_handoff_ms = (elapsed_ms if self.min_handoff_ms is None
+                                   else min(self.min_handoff_ms, elapsed_ms))
+            self.max_handoff_ms = (elapsed_ms if self.max_handoff_ms is None
+                                   else max(self.max_handoff_ms, elapsed_ms))
+
+    def _record_background_encode_timing(self, elapsed_ms: float) -> None:
+        elapsed_ms = float(elapsed_ms)
+        with self._stats_lock:
+            self.background_encode_timings_ms.append(elapsed_ms)
+            self.total_background_encode_samples += 1
+            self.total_background_encode_ms += elapsed_ms
+            self.min_background_encode_ms = (
+                elapsed_ms if self.min_background_encode_ms is None
+                else min(self.min_background_encode_ms, elapsed_ms))
+            self.max_background_encode_ms = (
+                elapsed_ms if self.max_background_encode_ms is None
+                else max(self.max_background_encode_ms, elapsed_ms))
 
     def invalidate(self) -> None:
         """Discard queued/in-flight preview work and require the next frame."""
@@ -533,34 +630,52 @@ class PeriodicMjpegPublisher:
                     **({"calibration": calibration} if calibration is not None else {}),
                     **({"roi_top": roi_top, "roi_bottom": roi_bottom}
                        if (roi_top, roi_bottom) != (0, 240) else {}),
+                    preview_overlay=self.preview_overlay, frame_id=frame_id,
                 )
                 with self._condition:
                     if epoch != self._epoch or self._closing or self._closed:
                         continue
                     self.hub.publish(jpeg, dimensions=(self._encode_mask.shape[1],
-                                     self._encode_mask.shape[0] + (85 if calibration is not None else 0)))
+                                     self._encode_mask.shape[0] + (85 if calibration is not None else 0)),
+                                    frame_id=frame_id, total_count=total_count)
                     self.encoded_frames += 1
             except RuntimeError as exc:
                 if not self.hub.closed:
                     self.encode_errors.append(f"{type(exc).__name__}: {exc}")
+                    with self._stats_lock:
+                        self.total_encode_errors += 1
                     continue
                 return
             except Exception as exc:
                 self.encode_errors.append(f"{type(exc).__name__}: {exc}")
+                with self._stats_lock:
+                    self.total_encode_errors += 1
             finally:
-                self.background_encode_timings_ms.append(
-                    (time.perf_counter() - started) * 1000.0
-                )
+                self._record_background_encode_timing(
+                    (time.perf_counter() - started) * 1000.0)
 
-    def close(self) -> None:
+    @property
+    def worker_alive(self) -> bool:
+        return self._worker.is_alive()
+
+    def close(self, *, timeout_s: float = DEFAULT_PUBLISHER_CLOSE_TIMEOUT_S
+              ) -> tuple[str, ...]:
+        """Request shutdown and return names of workers still alive at timeout.
+
+        A caller may release a blocked encoder and call close again. A live
+        thread is deliberately not reported as closed.
+        """
+        timeout_s = _close_timeout_seconds(timeout_s)
         with self._condition:
-            if self._closed:
-                return
             self._closing = True
             self._condition.notify_all()
-        self._worker.join()
+        if self._worker.ident is not None:
+            self._worker.join(timeout=timeout_s)
+        survivors = (self._worker.name,) if self._worker.is_alive() else ()
         with self._condition:
-            self._closed = True
+            if not survivors:
+                self._closed = True
+        return survivors
 
 
 class MjpegLoopbackClient:
@@ -574,7 +689,7 @@ class MjpegLoopbackClient:
         self.url = url
         self.timeout_s = float(timeout_s)
         self.frames_received = 0
-        self.frame_sequences: list[int] = []
+        self.frame_sequences: deque[int] = deque(maxlen=DEFAULT_HISTORY_LIMIT)
         self.first_frame_time: float | None = None
         self.last_frame_time: float | None = None
         self.error: str | None = None
@@ -600,6 +715,10 @@ class MjpegLoopbackClient:
             raise RuntimeError("loopback preview client is already running")
         self._thread.start()
         return self
+
+    @property
+    def worker_alive(self) -> bool:
+        return self._thread.is_alive()
 
     def _readline(self, response: Any) -> bytes | None:
         while not self._stop.is_set():
@@ -667,16 +786,18 @@ class MjpegLoopbackClient:
             with self._lock:
                 self._response = None
 
-    def close(self) -> None:
+    def close(self, *, timeout_s: float = DEFAULT_PUBLISHER_CLOSE_TIMEOUT_S
+              ) -> tuple[str, ...]:
+        """Stop reading and return the client worker name if it outlives timeout."""
+        timeout_s = _close_timeout_seconds(timeout_s)
         self._stop.set()
         with self._lock:
             response = self._response
         if response is not None:
             response.close()
         if self._thread.ident is not None:
-            self._thread.join(timeout=max(1.0, self.timeout_s * 3))
-            if self._thread.is_alive():
-                raise RuntimeError("loopback preview client did not stop")
+            self._thread.join(timeout=timeout_s)
+        return (self._thread.name,) if self._thread.is_alive() else ()
 
 
 class MjpegPreviewServer:
@@ -698,12 +819,35 @@ class MjpegPreviewServer:
         self.live_control_callback = live_control_callback
         self._server: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
+        self._shutdown_thread: threading.Thread | None = None
+        self._shutdown_error: str | None = None
 
     @property
     def port(self) -> int:
         if self._server is None:
             return self.requested_port
         return int(self._server.server_address[1])
+
+    @property
+    def worker_threads_alive(self) -> tuple[str, ...]:
+        return tuple(thread.name for thread in (self._shutdown_thread, self._thread)
+                     if thread is not None and thread.is_alive())
+
+    @property
+    def shutdown_error(self) -> str | None:
+        return self._shutdown_error
+
+    def _shutdown_server(self, server: ThreadingHTTPServer) -> None:
+        try:
+            server.shutdown()
+        except Exception as exc:
+            self._shutdown_error = f"{type(exc).__name__}: {exc}"
+        finally:
+            try:
+                server.server_close()
+            except Exception as exc:
+                if self._shutdown_error is None:
+                    self._shutdown_error = f"{type(exc).__name__}: {exc}"
 
     def start(self) -> "MjpegPreviewServer":
         if self._server is not None:
@@ -892,7 +1036,7 @@ class MjpegPreviewServer:
                     self.wfile.flush()
                     with hub.streaming_client():
                         while not hub.closed:
-                            item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0)
+                            item = hub.wait_for_next_record(after_sequence=sequence, timeout_s=1.0)
                             if item is None:
                                 # Detect a disconnected/hidden browser even when
                                 # the producer is idle; release its client lease.
@@ -900,9 +1044,13 @@ class MjpegPreviewServer:
                                     if not self.connection.recv(1, socket.MSG_PEEK):
                                         return
                                 continue
-                            sequence, jpeg = item
+                            sequence, jpeg = item["sequence"], item["jpeg"]
                             header = (b"Content-Type: image/jpeg\r\n"
-                                      + f"Content-Length: {len(jpeg)}\r\nX-Frame-Sequence: {sequence}\r\n\r\n".encode("ascii"))
+                                      + f"Content-Length: {len(jpeg)}\r\nX-Frame-Sequence: {sequence}\r\n".encode("ascii"))
+                            if item["frame_id"] is not None:
+                                header += (f"X-Frame-ID: {item['frame_id']}\r\n"
+                                           f"X-Total-Count: {item['total_count']}\r\n").encode("ascii")
+                            header += b"\r\n"
                             self.wfile.write(header)
                             self.wfile.write(jpeg)
                             self.wfile.write(b"\r\n--frame\r\n")
@@ -923,21 +1071,43 @@ class MjpegPreviewServer:
 
         self._server = ThreadingHTTPServer((self.host, self.requested_port), Handler)
         self._server.daemon_threads = True
+        self._server.block_on_close = False
         self._thread = threading.Thread(target=self._server.serve_forever,
                                         name="wo0016-mjpeg", daemon=True)
         self._thread.start()
         return self
 
-    def close(self) -> None:
+    def close(self, *, timeout_s: float = DEFAULT_PUBLISHER_CLOSE_TIMEOUT_S
+              ) -> tuple[str, ...]:
+        """Close the hub/server within timeout and return surviving worker names.
+
+        HTTP handlers remain daemon workers and are never joined here. Server
+        shutdown runs in its own daemon thread so its internal wait is bounded
+        from the caller's perspective.
+        """
+        timeout_s = _close_timeout_seconds(timeout_s)
         self.hub.close()
-        if self._server is None:
-            return
-        self._server.shutdown()
-        self._server.server_close()
-        if self._thread is not None:
-            self._thread.join(timeout=2.0)
-        self._server = None
-        self._thread = None
+        server = self._server
+        if server is not None and self._shutdown_thread is None:
+            self._shutdown_thread = threading.Thread(
+                target=self._shutdown_server,
+                args=(server,),
+                name="wo0016-mjpeg-shutdown",
+                daemon=True,
+            )
+            self._shutdown_thread.start()
+
+        deadline = time.monotonic() + timeout_s
+        for thread in (self._shutdown_thread, self._thread):
+            if thread is not None and thread.ident is not None:
+                thread.join(timeout=max(0.0, deadline - time.monotonic()))
+
+        survivors = self.worker_threads_alive
+        if not survivors:
+            self._server = None
+            self._thread = None
+            self._shutdown_thread = None
+        return survivors
 
     def __enter__(self) -> "MjpegPreviewServer":
         return self.start()

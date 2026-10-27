@@ -15,6 +15,104 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_stream_counter as runner  # noqa: E402
 
 
+def test_rolling_history_bounds_memory_and_keeps_cumulative_statistics():
+    history = runner.RollingHistory(maxlen=3)
+    for sample in (1.0, 2.0, 3.0, 4.0):
+        history.append(sample)
+
+    assert list(history) == [2.0, 3.0, 4.0]
+    assert history.total_count == 4
+    assert history.total_sum == 10.0
+    assert history.min_seen == 1.0
+    assert history.max_seen == 4.0
+
+
+def test_stage_summary_uses_cumulative_mean_and_extrema_with_rolling_percentiles():
+    history = runner.RollingHistory(maxlen=3)
+    for sample in (1.0, 2.0, 3.0, 4.0):
+        history.append(sample)
+
+    summary = runner.summarize_stage_timings_ms({"capture": history})
+
+    assert summary["avg_capture_ms"] == 2.5
+    assert summary["capture_timing_samples"] == 4
+    assert summary["capture_retained_samples"] == 3
+    assert summary["min_capture_ms"] == 1.0
+    assert summary["max_capture_ms"] == 4.0
+    assert summary["p50_capture_ms"] == 3.0
+    assert summary["capture_includes_mapping"] is True
+
+
+def test_stage_summary_accepts_online_stats_for_background_preview_history():
+    history = runner.RollingHistory(maxlen=2)
+    for sample in (2.0, 8.0, 10.0):
+        history.append(sample)
+
+    summary = runner.summarize_stage_timings_ms(
+        {"mjpeg_handoff": history},
+        cumulative_stats={"mjpeg_handoff": {
+            "total_count": 10, "total_sum": 50.0,
+            "min_seen": 1.0, "max_seen": 10.0,
+        }},
+    )
+
+    assert summary["mjpeg_handoff_timing_samples"] == 10
+    assert summary["avg_mjpeg_handoff_ms"] == 5.0
+    assert summary["min_mjpeg_handoff_ms"] == 1.0
+    assert summary["max_mjpeg_handoff_ms"] == 10.0
+    assert summary["mjpeg_handoff_retained_samples"] == 2
+    assert summary["p50_mjpeg_handoff_ms"] == 9.0
+
+
+def test_preview_shutdown_reports_live_worker_names_and_can_be_retried():
+    release = threading.Event()
+    worker = threading.Thread(target=release.wait, name="test-stuck-preview-worker")
+    worker.start()
+
+    class Resource:
+        def close(self, *, timeout_s):
+            worker.join(timeout_s)
+            return (worker.name,) if worker.is_alive() else ()
+
+    try:
+        live, errors = runner.close_preview_workers(
+            publisher=Resource(), loopback_client=None, preview=None, timeout_s=0.01
+        )
+        assert live == ("test-stuck-preview-worker",)
+        assert errors == ()
+        release.set()
+        live, errors = runner.close_preview_workers(
+            publisher=Resource(), loopback_client=None, preview=None, timeout_s=0.5
+        )
+        assert live == ()
+        assert errors == ()
+    finally:
+        release.set()
+        worker.join(1.0)
+
+
+def test_runner_defaults_to_the_gray8_active_baseline_manifest():
+    args = runner._parser().parse_args([])
+    assert Path(args.manifest).resolve() == runner.preflight.DEFAULT_RUN_MANIFEST.resolve()
+    assert runner.preflight.DEFAULT_RUN_MANIFEST.is_file()
+
+
+def test_standard_board_manifest_can_be_rebound_to_explicit_boot_id():
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    args = runner._parser().parse_args(["--approved-boot-id", boot])
+    assert runner.manifest_validation_options(args) == {"approved_boot_id": boot}
+
+
+def test_specialized_run_boot_id_remains_authoritative_over_rebind_option():
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    args = runner._parser().parse_args([
+        "--approved-boot-id", boot, "--expected-boot-id",
+        "7fb41533-a11d-49d0-a783-19762ce3f21d", "--wo0017-profile", "b1",
+    ])
+    with pytest.raises(ValueError, match="conflicts"):
+        runner.manifest_validation_options(args)
+
+
 def test_physical_calibration_manifest_validation_pins_the_approved_boot():
     from types import SimpleNamespace
 
@@ -476,10 +574,12 @@ def test_camera_stream_waits_for_operator_gate_before_first_sample(monkeypatch):
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
         @staticmethod
-        def resize(_image, size, interpolation):
+        def resize(_image, size, dst=None, interpolation=None):
             assert size == (320, 240)
             assert interpolation == FakeCv2.INTER_NEAREST
-            return np.zeros((240, 320), dtype=np.uint8)
+            assert dst is not None
+            dst.fill(0)
+            return dst
 
     def on_milestone(name, _at):
         if name == "FRAME_0_CAPTURE_START_FEED_NOW":
@@ -975,9 +1075,12 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
         @staticmethod
-        def resize(gray, dimensions, interpolation):
-            resize_calls.append((gray.ndim, dimensions, interpolation, int(gray[0, 0])))
-            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+        def resize(gray, dimensions, dst=None, interpolation=None):
+            resize_calls.append((gray.ndim, dimensions, interpolation,
+                                 int(gray[0, 0]), id(dst)))
+            assert dst is not None
+            dst.fill(gray[0, 0])
+            return dst
 
     capture_timings_ms = []
 
@@ -1004,7 +1107,11 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         (FakeCv2.CAP_PROP_FPS, 60),
         (FakeCv2.CAP_PROP_BUFFERSIZE, 1),
     ]
-    assert resize_calls == [(2, (320, 240), FakeCv2.INTER_NEAREST, 77)] * 2
+    assert [call[:4] for call in resize_calls] == [
+        (2, (320, 240), FakeCv2.INTER_NEAREST, 77),
+        (2, (320, 240), FakeCv2.INTER_NEAREST, 77),
+    ]
+    assert len({call[4] for call in resize_calls}) == 2
     assert len(steady_start_time) == 1
     assert capture_metadata == {
         "camera_fps_requested": 60,
@@ -1092,8 +1199,10 @@ def test_camera_prefetches_next_ordered_frame_and_joins_before_release():
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
         @staticmethod
-        def resize(gray, dimensions, interpolation):
-            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+        def resize(gray, dimensions, dst=None, interpolation=None):
+            assert dst is not None
+            dst.fill(gray[0, 0])
+            return dst
 
     async def consume_two():
         frames = _camera_gray_frames_impl("/dev/video-test", max_frames=2,
@@ -1172,8 +1281,10 @@ def test_camera_close_joins_an_inflight_prefetch_before_releasing_device():
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
 
         @staticmethod
-        def resize(gray, dimensions, interpolation):
-            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+        def resize(gray, dimensions, dst=None, interpolation=None):
+            assert dst is not None
+            dst.fill(gray[0, 0])
+            return dst
 
     async def close_after_first_frame():
         frames = _camera_gray_frames_impl("/dev/video-test", max_frames=2,
@@ -1252,7 +1363,7 @@ def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
         "postprocess": [],
     })
 
-    assert summary == {
+    expected_legacy_fields = {
         "avg_capture_ms": 2.0, "capture_timing_samples": 2,
         "avg_mapping_ms": 1.0, "mapping_timing_samples": 2,
         "avg_encode_ms": 2.0, "encode_timing_samples": 1,
@@ -1267,6 +1378,10 @@ def test_stage_timing_summary_reports_per_frame_ms_and_sample_counts():
         "mjpeg_background_encode_timing_samples": 0,
         "avg_postprocess_ms": None, "postprocess_timing_samples": 0,
     }
+    assert {key: summary[key] for key in expected_legacy_fields} == expected_legacy_fields
+    assert summary["p50_capture_ms"] == 2.0
+    assert summary["p95_capture_ms"] == 2.9
+    assert summary["max_capture_ms"] == 3.0
 
 
 # Attempt 5 regressions: actual counting remains independent of expected_count.
@@ -1417,6 +1532,7 @@ def test_replay_uses_raw_ccl_to_avoid_reclustering_merged_observations():
     assert repeated['frame_totals'][0]['accepted_components'] == 2
 
 def test_optional_camera_capture_metadata_identifies_sequence_and_host_timestamps():
+    resize_targets = []
     class Capture:
         def __init__(self):
             self.reads = 0
@@ -1449,20 +1565,29 @@ def test_optional_camera_capture_metadata_identifies_sequence_and_host_timestamp
         def VideoWriter_fourcc(*chars):
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
         @staticmethod
-        def resize(gray, dimensions, interpolation):
-            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+        def resize(gray, dimensions, dst=None, interpolation=None):
+            assert dst is not None
+            resize_targets.append(dst)
+            dst.fill(gray[0, 0])
+            return dst
 
     from stream_counter import FrameInput
     async def collect():
-        return [frame async for frame in runner._camera_gray_frames_impl(
-            "/dev/video-capture-test", max_frames=2, cv2_module=FakeCv2,
-            include_capture_metadata=True)]
+        frames = []
+        async for frame in runner._camera_gray_frames_impl(
+                "/dev/video-capture-test", max_frames=3, cv2_module=FakeCv2,
+                include_capture_metadata=True):
+            frames.append((frame, frame.gray.copy()))
+        return frames
     frames = asyncio.run(collect())
-    assert all(isinstance(frame, FrameInput) for frame in frames)
-    assert [frame.source_sequence for frame in frames] == [0, 1]
-    assert [int(frame.gray[0, 0]) for frame in frames] == [43, 44]
+    assert all(isinstance(frame, FrameInput) for frame, _snapshot in frames)
+    assert [frame.source_sequence for frame, _snapshot in frames] == [0, 1, 2]
+    assert [int(snapshot[0, 0]) for _frame, snapshot in frames] == [43, 44, 45]
+    assert len(resize_targets) == 3
+    assert resize_targets[0] is resize_targets[2]
+    assert resize_targets[0] is not resize_targets[1]
     assert all(frame.capture_monotonic_ns > 0 and frame.capture_wall_time_ns > 0
-               and frame.camera_read_ms >= 0 for frame in frames)
+               and frame.camera_read_ms >= 0 for frame, _snapshot in frames)
 
 
 def test_capture_cli_is_disabled_by_default():

@@ -422,3 +422,36 @@ def test_host_argument_defaults_to_loopback_and_accepts_explicit_override():
 
     assert default.host == "127.0.0.1"
     assert override.host == "0.0.0.0"
+
+
+def test_probe_health_failure_aborts_operator_wait_without_starting_sampling():
+    gate = OperatorGate()
+    def unhealthy():
+        raise RuntimeError('diagnostic sampler lost during operator wait')
+    gate.probe_health_check = unhealthy
+    try:
+        gate.wait_for_operator(timeout_s=0.01)
+    except RuntimeError as error:
+        assert 'diagnostic sampler lost' in str(error)
+    else:
+        raise AssertionError('health failure must abort the probe handoff')
+    assert not gate._start_event.is_set()
+
+
+def test_probe_launcher_pins_control_surface_and_attempt_directory(tmp_path):
+    from types import SimpleNamespace
+    from operator_gate_launcher import validate_probe_launcher_options
+    run = SimpleNamespace(evidence_json=str(tmp_path / 'result.json'))
+    args = SimpleNamespace(host='127.0.0.1', control_port=8081, handoff_timeout_s=300,
+                           standby_before_preflight=False, attempt_dir=tmp_path)
+    validate_probe_launcher_options(args, run)
+    for name, value in [('host', '0.0.0.0'), ('control_port', 8082),
+                        ('handoff_timeout_s', 301), ('standby_before_preflight', True),
+                        ('attempt_dir', tmp_path / 'other')]:
+        changed = SimpleNamespace(**{**vars(args), name: value})
+        try:
+            validate_probe_launcher_options(changed, run)
+        except ValueError as error:
+            assert 'diagnostic launcher' in str(error)
+        else:
+            raise AssertionError('probe launcher option drift was accepted')

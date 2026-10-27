@@ -143,7 +143,21 @@ def test_status_exposes_runtime_health_and_view_mode_without_reinterpreting_valu
         assert status["view_mode"] == "binary"
 
 
-def test_publisher_uses_optional_bounded_histories_and_preserves_legacy_lists():
+def test_status_reports_preview_and_latest_state_frame_identities_separately():
+    hub = MjpegFrameHub()
+    hub.publish(b"preview-frame", frame_id=17, total_count=4)
+    raw = {"dashboard": {"frame_id": 20, "total_count": 5}}
+    with MjpegPreviewServer(host="127.0.0.1", port=0, hub=hub,
+                            state_provider=lambda: raw) as server:
+        status = get_json(server)
+    assert status["preview"]["frame_id"] == 17
+    assert status["preview"]["total_count"] == 4
+    assert status["telemetry"]["frame_id"] == 20
+    assert status["telemetry"]["total_count"] == 5
+    hub.close()
+
+
+def test_publisher_uses_bounded_histories_for_explicit_and_default_limits():
     bounded = PeriodicMjpegPublisher(
         hub=MjpegFrameHub(), line_y=120, interval=1, history_limit=2,
     )
@@ -166,9 +180,9 @@ def test_publisher_uses_optional_bounded_histories_and_preserves_legacy_lists():
 
     legacy = PeriodicMjpegPublisher(hub=MjpegFrameHub(), line_y=120)
     try:
-        assert isinstance(legacy.handoff_timings_ms, list)
-        assert isinstance(legacy.background_encode_timings_ms, list)
-        assert isinstance(legacy.encode_errors, list)
+        assert legacy.handoff_timings_ms.maxlen == mjpeg_preview.DEFAULT_HISTORY_LIMIT
+        assert legacy.background_encode_timings_ms.maxlen == mjpeg_preview.DEFAULT_HISTORY_LIMIT
+        assert legacy.encode_errors.maxlen == mjpeg_preview.DEFAULT_HISTORY_LIMIT
     finally:
         legacy.close()
         legacy.hub.close()
@@ -266,7 +280,8 @@ def test_browser_decoder_priming_does_not_inflate_unique_delivery_metrics():
             assert wait_until(lambda: client.frames_received >= 1)
             time.sleep(0.1)
             assert client.frames_received == 1
-            assert client.frame_sequences == [1]
+            assert list(client.frame_sequences) == [1]
+            assert client.frame_sequences.maxlen == mjpeg_preview.DEFAULT_HISTORY_LIMIT
         finally:
             client.close()
 

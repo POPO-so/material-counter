@@ -55,6 +55,7 @@ class OperatorGate:
         self.deadline = None
         self.frame_zero = None
         self.result = None
+        self.probe_health_check = None
 
     def mark_ready(self):
         with self.lock:
@@ -86,7 +87,22 @@ class OperatorGate:
             self.audit_callback("WAITING_FOR_BROWSER_OPERATOR_CLICK")
         print("[OPERATOR_GATE] CAMERA_READY_WAITING_FOR_BROWSER_CLICK", flush=True)
         self.mark_ready()
-        if not self._start_event.wait(timeout):
+        if self.probe_health_check is None:
+            started = self._start_event.wait(timeout)
+        else:
+            # Probe only: observe sampler failure while waiting for the click.
+            # A callback deadline does not promise a hard timeout for hardware cleanup.
+            deadline = self.clock() + timeout
+            while True:
+                self.probe_health_check()
+                remaining = deadline - self.clock()
+                if remaining <= 0:
+                    started = False
+                    break
+                if self._start_event.wait(min(1.0, remaining)):
+                    started = True
+                    break
+        if not started:
             with self.lock:
                 self.phase = "TIMED_OUT"
             raise RuntimeError("operator start was not received before the handoff timeout")
@@ -349,11 +365,24 @@ def _parser():
     return parser
 
 
+def validate_probe_launcher_options(args, run_options):
+    """Probe-only fixed control surface, also bound in execution contract v2."""
+    if (args.host != '127.0.0.1' or args.control_port != 8081
+            or args.handoff_timeout_s != 300 or args.standby_before_preflight
+            or not run_options.evidence_json
+            or Path(args.attempt_dir).resolve(strict=False)
+            != Path(run_options.evidence_json).resolve(strict=False).parent):
+        raise ValueError('diagnostic launcher requires loopback:8081, 300s handoff, '
+                         'no preflight standby and attempt-dir equal to evidence parent')
+
+
 def main(argv=None):
     args = _parser().parse_args(argv)
     runner_args = args.runner_args[1:] if args.runner_args[:1] == ["--"] else args.runner_args
     import run_stream_counter as runner
     run_options = runner._parser().parse_args(runner_args)
+    if getattr(run_options, 'diagnostic_probe', False):
+        validate_probe_launcher_options(args, run_options)
     physical_calibration = bool(getattr(run_options, "physical_calibration", False))
     if physical_calibration:
         if os.path.abspath(run_options.worker_python) != os.path.abspath(sys.executable):
@@ -368,7 +397,8 @@ def main(argv=None):
         countdown_s=(float(run_options.operator_prearm_delay_s)
                      + float(run_options.stabilization_delay_s)),
         require_permit_sha256=bool(
-            run_options.mode == "board" and run_options.no_consume_guard
+            run_options.mode == "board" and (run_options.no_consume_guard
+                                            or getattr(run_options, "diagnostic_probe", False))
         ),
         require_control_binding=bool(
             run_options.mode == "board" and physical_calibration

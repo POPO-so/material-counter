@@ -11,9 +11,9 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "wo0015"))
 
-from camera_adapter import gray320x240_to_rgb_packet
+from camera_adapter import gray320x240_to_gray_packet
 from mjpeg_preview import MjpegFrameHub, PeriodicMjpegPublisher
-from packet_encoder import gray320x240_to_rgb_packet_into
+from packet_encoder import gray320x240_to_gray_packet_into
 from stream_counter import (
     BufferState,
     Detection,
@@ -796,7 +796,7 @@ def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
         rx_buffers=rx_buffers,
         counter=MaskCounter(),
         packet_encoder=lambda gray, *, frame_id: pytest.fail("bytes encoder should not run"),
-        packet_encoder_into=gray320x240_to_rgb_packet_into,
+        packet_encoder_into=gray320x240_to_gray_packet_into,
         stage_timings_ms={"encode": [], "dma": [], "packer_check": [],
                           "roi_count": [], "postprocess": []},
     )
@@ -805,13 +805,84 @@ def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
 
     assert results[0].frame_id == 0
     assert send.nbytes == TX_BYTES
-    assert np.asarray(send.buffer).tobytes() == gray320x240_to_rgb_packet(
+    assert np.asarray(send.buffer).tobytes() == gray320x240_to_gray_packet(
         np.zeros((240, 320), dtype=np.uint8), frame_id=0
     )
     assert len(stream.stage_timings_ms["encode"]) == 1
     assert len(stream.stage_timings_ms["dma"]) == 1
     assert len(stream.stage_timings_ms["roi_count"]) == 1
     assert len(stream.stage_timings_ms["postprocess"]) == 1
+
+
+def test_async_stream_defaults_to_bounded_result_and_timing_histories():
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+
+    class ImmediateChannel:
+        def transfer(self, buffer, *, nbytes):
+            self.buffer = buffer
+
+        async def wait_async(self):
+            return None
+
+    recv = ImmediateChannel()
+    send = ImmediateChannel()
+    timings = {"encode": [], "dma": []}
+    stream = DoubleBufferStream(
+        recv_channel=recv,
+        send_channel=send,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=MaskCounter(),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        stage_timings_ms=timings,
+    )
+
+    results = asyncio.run(stream.run(_frames(1)))
+
+    assert results[0].frame_id == 0
+    assert stream.history_limit == 2000
+    assert stream._results.maxlen == 2000
+    assert timings["encode"].maxlen == 2000
+    assert timings["dma"].maxlen == 2000
+
+
+def test_timed_out_dma_wait_reports_the_live_worker_thread():
+    release = threading.Event()
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+
+    class HungRx:
+        def transfer(self, buffer, *, nbytes):
+            return None
+
+        def wait(self):
+            release.wait()
+
+    class ImmediateTx:
+        def transfer(self, buffer, *, nbytes):
+            return None
+
+        async def wait_async(self):
+            return None
+
+    stream = DoubleBufferStream(
+        recv_channel=HungRx(),
+        send_channel=ImmediateTx(),
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=MaskCounter(),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        transfer_timeout_s=0.01,
+    )
+
+    try:
+        with pytest.raises(asyncio.TimeoutError):
+            asyncio.run(stream.run(_frames(1)))
+        assert stream.live_dma_wait_threads == ("wo0016-dma-wait",)
+        assert stream.dma_may_be_active is True
+    finally:
+        release.set()
 
 
 class MockRxChannel:
@@ -1488,6 +1559,49 @@ def test_discard_finished_tracks_bounds_long_run_history_without_changing_counts
     assert preview_counter.tracking_snapshot() == ()
     assert len(default_counter.tracking_snapshot()) == 30
     assert all(track["finished"] for track in default_counter.tracking_snapshot())
+
+
+def test_completed_track_history_is_bounded_and_keeps_cumulative_count_and_active_tracking():
+    counter = MaskCounter(count_axis="x", line_x=160, max_step=40,
+                          max_missing=1, confirm_hits=2,
+                          max_completed_tracks=3)
+
+    def nut(x):
+        return Detection(x - 5, x + 5, 110, 120, 121, float(x), 115.0)
+
+    for cycle in range(10):
+        first_frame = cycle * 7
+        for offset, x in ((0, 130), (1, 142), (2, 174)):
+            result = counter.update_detections(first_frame + offset, [nut(x)])
+        for offset in (3, 4, 5, 6):
+            result = counter.update_detections(first_frame + offset, [])
+
+    assert result.total_count == 10
+    snapshot = counter.tracking_snapshot()
+    assert len(snapshot) == 3
+    assert all(track["finished"] for track in snapshot)
+    assert [track["track_id"] for track in snapshot] == [8, 9, 10]
+
+    # A fresh active track must continue to associate after old completions
+    # have been evicted from the display snapshot.
+    counter.update_detections(70, [nut(130)])
+    counter.update_detections(71, [nut(142)])
+    result = counter.update_detections(72, [nut(174)])
+    assert result.total_count == 11
+    assert result.events[0].track_id == 11
+    assert len([track for track in counter.tracking_snapshot()
+                if not track["finished"]]) == 1
+
+
+def test_completed_track_history_default_capacity_is_bounded():
+    counter = MaskCounter()
+    assert counter.max_completed_tracks == 128
+
+
+@pytest.mark.parametrize("capacity", [0, -1, True, 1.5, None])
+def test_completed_track_capacity_rejects_invalid_values(capacity):
+    with pytest.raises(ValueError):
+        MaskCounter(max_completed_tracks=capacity)
 
 
 def test_hysteresis_band_requires_observation_beyond_positive_boundary():

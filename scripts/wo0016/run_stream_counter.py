@@ -8,10 +8,13 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from collections import deque
+from contextlib import contextmanager
 from dataclasses import asdict
 import hashlib
 import hmac
 import itertools
+import inspect
 import json
 import math
 import os
@@ -33,6 +36,52 @@ from live_calibration import (LIGHTING_MAPPINGS, require_standard_camera_control
                               frame_geometry, resize_monochrome_into,
                               is_lighting_mapping)
 
+PREVIEW_CLOSE_TIMEOUT_S = 2.0
+
+
+class OnlineFrameStats:
+    """Cumulative non-image stream counters that must survive result eviction."""
+
+    def __init__(self) -> None:
+        self.frames_processed = 0
+        self.split_calls_total = 0
+
+    def observe(self, result: Any) -> None:
+        self.frames_processed += 1
+        self.split_calls_total += int(result.stage_timings_ms.get("split_calls", 0))
+
+
+def close_preview_workers(*, publisher: Any | None, loopback_client: Any | None,
+                          preview: Any | None,
+                          timeout_s: float = PREVIEW_CLOSE_TIMEOUT_S
+                          ) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Boundedly close preview workers and return surviving names and errors."""
+    if isinstance(timeout_s, bool) or not isinstance(timeout_s, (int, float)) \
+            or not math.isfinite(float(timeout_s)) or timeout_s <= 0:
+        raise ValueError("preview worker close timeout must be finite and positive")
+    survivors: set[str] = set()
+    errors: list[str] = []
+    for label, component in (("publisher", publisher),
+                             ("loopback_client", loopback_client),
+                             ("preview_server", preview)):
+        if component is None:
+            continue
+        try:
+            remaining = component.close(timeout_s=float(timeout_s))
+            if remaining:
+                survivors.update(str(name) for name in remaining)
+        except BaseException as exc:
+            errors.append(f"{label}: {type(exc).__name__}: {exc}")
+        if getattr(component, "worker_alive", False):
+            thread = getattr(component, "_worker", None) or getattr(component, "_thread", None)
+            survivors.add(getattr(thread, "name", label))
+        survivors.update(getattr(component, "worker_threads_alive", ()))
+        shutdown_error = getattr(component, "shutdown_error", None)
+        if shutdown_error:
+            errors.append(f"{label}: {shutdown_error}")
+    return tuple(sorted(survivors)), tuple(errors)
+
+
 def resolve_wo15_dependency_dir(script_dir: Path) -> Path:
     """Prefer the isolated dependency bundle deployed alongside this runner."""
     bundled = script_dir / "wo0015"
@@ -49,8 +98,8 @@ for _path in (SCRIPT_DIR, WO15_DIR):
 
 import board_once
 import board_preflight as preflight
-from camera_adapter import gray320x240_to_rgb_packet
-from packet_encoder import gray320x240_to_rgb_packet_into
+from camera_adapter import gray320x240_to_gray_packet
+from packet_encoder import gray320x240_to_gray_packet_into
 from dashboard_state import DashboardState
 from mjpeg_preview import (
     PREVIEW_FRAME_INTERVAL,
@@ -65,6 +114,7 @@ from capture_dataset import (
     CaptureError, CaptureWriter, DEFAULT_MAX_BYTES, preflight_capture_target,
 )
 from stream_counter import (
+    DEFAULT_STREAM_HISTORY_LIMIT,
     HEIGHT,
     RX_BYTES,
     TX_BYTES,
@@ -73,9 +123,12 @@ from stream_counter import (
     DoubleBufferStream,
     FrameInput,
     MaskCounter,
+    RollingHistory,
     allocate_ping_pong_buffers,
 )
+DEFAULT_HISTORY_LIMIT = DEFAULT_STREAM_HISTORY_LIMIT
 import lighting_profile
+import m8_probe_profile
 import physical_calibration_lock as calibration_lock
 from calibration_runtime_gate import DEFAULT_WORKER_PYTHON
 
@@ -156,8 +209,9 @@ def run_mock_simulation(*, frame_count: int = 8, line_y: int = 120,
             result = counter.update(frame_id, mask, **timing)
             last_jpeg = render_preview_jpeg(mask, total_count=result.total_count,
                                             line_y=counter.line_y, count_axis=counter.count_axis,
-                                            line_x=counter.line_x, hysteresis=counter.hysteresis)
-            hub.publish(last_jpeg)
+                                            line_x=counter.line_x, hysteresis=counter.hysteresis,
+                                            frame_id=frame_id)
+            hub.publish(last_jpeg, frame_id=frame_id, total_count=result.total_count)
             results.append(result)
     finally:
         preview.close()
@@ -356,8 +410,52 @@ def counting_configuration(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("reference area and lighting threshold require lighting-calibrated profile")
     if getattr(args, "motion_timebase_s", None) is not None:
         config["motion_timebase_s"] = args.motion_timebase_s
+    if getattr(args, "count_observability", False):
+        config["observability"] = True
     MaskCounter(**config)  # Validate before consuming the one-shot attempt.
     return config
+
+
+def effective_configuration(args: argparse.Namespace) -> dict[str, Any]:
+    """Resolve constructor defaults locally; never a board-state readback."""
+    config = {name: parameter.default for name, parameter in
+              inspect.signature(MaskCounter).parameters.items()
+              if parameter.default is not inspect.Parameter.empty}
+    config.update(counting_configuration(args))
+    counter = MaskCounter(**config)
+    # Resolve aliases and ROI defaults that the constructor normalizes.
+    for name in config:
+        if hasattr(counter, name):
+            config[name] = getattr(counter, name)
+    return {
+        "schema_version": 1, "board_accessed": False,
+        "verification": "LOCAL_RESOLVED_CONFIGURATION_NOT_DEPLOYMENT_READBACK",
+        "counting_profile": args.counting_profile,
+        "reference_area": args.reference_area,
+        "threshold": effective_threshold(args),
+        "counter_config": config,
+        "preprocessing_config": preprocessing_configuration(args),
+        "camera_controls_requested": dict(lighting_profile.CAMERA_CONTROLS),
+        "camera_controls_optional": dict(lighting_profile.OPTIONAL_CAMERA_CONTROLS),
+        "runtime_options": {
+            "capture_write_mode": getattr(args, "capture_write_mode", "auto"),
+            "capture_max_bytes": getattr(args, "capture_max_bytes", DEFAULT_MAX_BYTES),
+            "max_frames": args.max_frames,
+            "preview_overlay": getattr(args, "preview_overlay", "standard"),
+        },
+        "split_conditions": {
+            "source": "split_touching.py; constants audited 2026-10-26",
+            "holes_required": [2, 3], "holes_must_be_enclosed": True,
+            "hole_threshold": "min_hole_area if min_hole_area >= hole_area_cap else max(min_hole_area, min(ceil(0.06 * area), hole_area_cap))",
+            "child_area_min": "max(min_child_area, int(0.16 * parent_area)) for hole partitions",
+            "child_aspect_ratio_max": 1.8, "recursion_depth_limit": 2,
+            "neck_projection_length_min": 7, "neck_cut_margin": 3,
+            "neck_peak_ratio_max": 0.65, "elongated_pair_aspect_min": 1.65,
+            "elongated_pair_balance_range": [0.25, 0.75],
+            "neck_strip_runs": "1, unless elongated balanced pair",
+            "partition": "2..3 connected, shape-matched, nonoverlapping children exactly cover parent",
+        },
+    }
 
 
 def preprocessing_configuration(args: argparse.Namespace) -> dict[str, Any]:
@@ -382,11 +480,11 @@ def effective_threshold(args):
 
 
 def packet_encoders(args):
-    """Bind one photometric threshold to both packet encoder variants for a run."""
+    """Bind one photometric threshold to both Gray8 packet encoders for a run."""
     if args.counting_profile == "lighting-calibrated":
         threshold = effective_threshold(args)
         return lighting_profile.make_packet_encoders(threshold=threshold)
-    return gray320x240_to_rgb_packet, gray320x240_to_rgb_packet_into
+    return gray320x240_to_gray_packet, gray320x240_to_gray_packet_into
 
 
 def counting_roi_metadata(result: Any, counter: MaskCounter) -> dict[str, Any]:
@@ -467,6 +565,231 @@ def validate_stageb2_attempt_permit(path: str | Path,
     return {"permit": permit, "sha256": hashlib.sha256(raw).hexdigest()}
 
 
+def effective_operator_prearm_delay(args: argparse.Namespace) -> float:
+    return (args.operator_prearm_delay_s if args.no_consume_guard
+            or getattr(args, 'diagnostic_probe', False) else 0.0)
+
+
+def canonical_probe_options(*, capture_max_bytes: int = DEFAULT_MAX_BYTES) -> argparse.Namespace:
+    """One offline-resolvable diagnostic workload; never a runtime approval."""
+    args = _parser().parse_args([])
+    values = dict(mode="board", diagnostic_probe=True, max_frames=100,
+                  ground_truth_count=0, material_label=m8_probe_profile.PROBE_MATERIAL_LABEL,
+                  stabilization_delay_s=3.0, operator_prearm_delay_s=15.0,
+                  counting_profile="lighting-calibrated", lighting_area_filter="output-roi",
+                  reference_area=111.0, lighting_threshold=100, capture_write_mode="deferred",
+                  capture_max_bytes=capture_max_bytes, count_observability=True,
+                  preview_overlay="compact", host="127.0.0.1")
+    for name, value in values.items():
+        setattr(args, name, value)
+    return args
+
+
+def probe_execution_contract(args: argparse.Namespace) -> dict[str, Any]:
+    """Freeze all behavioral CLI arguments, plus the resolved counter defaults."""
+    canonical = canonical_probe_options(capture_max_bytes=args.capture_max_bytes)
+    # These inputs are separately bound by permit identity or board opt-in checks.
+    separate = {"manifest", "manifest_sha256", "expected_boot_id", "approved_boot_id", "stage1_receipt",
+                "stage1_receipt_sha256", "attempt_id", "capture_dir", "evidence_json",
+                "execute", "approve_once", "authorize_stage"}
+    arguments = {}
+    for name, expected in vars(canonical).items():
+        if name in separate:
+            continue
+        actual = getattr(args, name, None)
+        if actual != expected:
+            raise ValueError(f"diagnostic execution requires pinned {name}={expected!r}")
+        arguments[name] = sorted(actual) if isinstance(actual, set) else actual
+    return {
+        "schema": 2, "execution_arguments": arguments,
+        "effective_configuration": effective_configuration(args),
+        "worker_python": DEFAULT_WORKER_PYTHON, "sampler_interval_s": 1.0,
+        "operator_gate_config": {"host": "127.0.0.1", "control_port": 8081,
+                                 "handoff_timeout_s": 300.0, "standby_before_preflight": False,
+                                 "attempt_directory": "parent_of_permit_bound_evidence"},
+        "startup_policy": m8_probe_profile.PROBE_STARTUP_POLICY,
+        "abort_policy": m8_probe_profile.PROBE_ABORT_POLICY,
+        "memory_model": {"system_reserve_kib": 122880, "rss_proxy_kib": 144208,
+                         "frame_pair_kib": 150, "metadata_kib_per_frame": 128,
+                         "cma_preflight_min_kib": 36864, "cma_runtime_min_kib": 32768},
+    }
+
+
+def probe_run_identity(args: argparse.Namespace, plan: Any, *,
+                       gate_launcher_sha256: str, capture_path: str,
+                       capture_max_bytes: int) -> dict[str, Any]:
+    """Rebuild the exact identity the issuer pinned into the probe permit."""
+    runtime = formal_runtime_sha256()
+    return m8_probe_profile.probe_permit_identity(
+        boot_id=plan.boot_id,
+        manifest_sha256=plan.manifest_sha256,
+        bit_sha256=plan.bit_sha256,
+        hwh_sha256=plan.hwh_sha256,
+        stage1_receipt_sha256=args.stage1_receipt_sha256,
+        attempt_id=args.attempt_id,
+        counting_profile=args.counting_profile,
+        area_filter=args.lighting_area_filter,
+        reference_area=args.reference_area,
+        lighting_threshold=args.lighting_threshold,
+        capture_path=capture_path,
+        evidence_path=str(Path(args.evidence_json).expanduser().resolve(strict=False)),
+        capture_max_bytes=capture_max_bytes,
+        runtime_sha256=runtime,
+        counter_sha256=runtime["stream_counter.py"],
+        runner_sha256=runtime["run_stream_counter.py"],
+        probe_module_sha256=hashlib.sha256(
+            (SCRIPT_DIR / "m8_probe_profile.py").read_bytes()).hexdigest(),
+        gate_launcher_sha256=gate_launcher_sha256,
+        execution_contract=probe_execution_contract(args),
+        diagnostic_runtime_sha256={name: hashlib.sha256((SCRIPT_DIR / name).read_bytes()).hexdigest()
+                                  for name in m8_probe_profile.PROBE_RUNTIME_FILES},
+    )
+
+
+def validate_probe_permit(path: str | Path, identity: Mapping[str, Any], *,
+                          expected_uid: int = 0) -> dict[str, Any]:
+    """Read and verify the private, unconsumed M8 probe permit."""
+    if not isinstance(identity, Mapping) or not identity:
+        raise ValueError("M8 probe permit identity must be non-empty")
+    permit, raw = _read_private_json_record(
+        path, label="M8 probe permit", expected_uid=expected_uid
+    )
+    expected = {**dict(identity), "permit_status": "AUTHORIZED", "consumed": False}
+    if permit != expected:
+        raise RuntimeError("M8 probe permit identity/status does not match this run")
+    return {"permit": permit, "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def validate_probe_receipt(path: str | Path, sha256: str, *,
+                           pinned: str | Path = board_once.OVERLAY_PASS_RECEIPT) -> None:
+    """Require the pinned WO-0015 Stage 1 receipt and its reviewed digest."""
+    receipt_path = Path(path)
+    pinned_path = Path(pinned)
+    if receipt_path.resolve(strict=False) != pinned_path.resolve(strict=False):
+        raise ValueError(f"diagnostic probe Stage 1 receipt must be {pinned_path}")
+    if hashlib.sha256(receipt_path.read_bytes()).hexdigest() != sha256:
+        raise ValueError("diagnostic probe Stage 1 receipt SHA-256 does not match")
+
+
+def validate_probe_options(args: argparse.Namespace, plan: Any) -> dict[str, Path]:
+    """Fail-closed option, receipt and one-shot checks for the 100-frame probe."""
+    if args.mode != "board":
+        raise ValueError("diagnostic probe requires --mode board")
+    if (getattr(args, "wo0017_profile", None) or getattr(args, "no_consume_guard", False)
+            or getattr(args, "physical_calibration", False)):
+        raise ValueError(
+            "diagnostic probe cannot be combined with WO-0017 profiles, physical "
+            "calibration or --no-consume-guard"
+        )
+    if not getattr(args, "capture_dir", None):
+        raise ValueError("diagnostic probe requires --capture-dir")
+    if not getattr(args, "attempt_id", None):
+        raise ValueError("diagnostic probe requires --attempt-id")
+    if not args.expected_boot_id or not args.stage1_receipt or not args.stage1_receipt_sha256:
+        raise ValueError("diagnostic probe requires explicit Boot and hash-pinned Stage 1 receipt")
+    if plan.boot_id != args.expected_boot_id:
+        raise ValueError("diagnostic probe approved Boot does not match manifest")
+    m8_probe_profile.validate_pinned_arguments(
+        max_frames=args.max_frames,
+        expected_count=args.ground_truth_count,
+        material_label=args.material_label,
+        stabilization_delay_s=args.stabilization_delay_s,
+        operator_prearm_delay_s=args.operator_prearm_delay_s,
+        counting_profile=args.counting_profile,
+        area_filter=getattr(args, "lighting_area_filter", None),
+        reference_area=args.reference_area,
+        lighting_threshold=args.lighting_threshold,
+        capture_write_mode=getattr(args, "capture_write_mode", "auto"),
+    )
+    validate_probe_receipt(args.stage1_receipt, args.stage1_receipt_sha256)
+    paths = m8_probe_profile.probe_guard_paths(plan.boot_id)
+    if paths["consumed"].exists() or paths["consumed"].is_symlink():
+        raise ValueError("the one-shot M8 probe for this Boot is already consumed")
+    return paths
+
+
+def claim_probe_with_diagnostics(args: argparse.Namespace, plan: Any, paths: Mapping[str, Path],
+                                 *, gate_launcher_sha256: str, capture_path: str,
+                                 operator_gate: Any = None) -> dict[str, Any]:
+    """Probe-only READY/full-RAM checks, then one-shot consumption; no hardware."""
+    import m8_probe_runtime
+    session = None
+    try:
+        identity = probe_run_identity(args, plan, gate_launcher_sha256=gate_launcher_sha256,
+                                      capture_path=capture_path, capture_max_bytes=args.capture_max_bytes)
+        permit = validate_probe_permit(paths['permit'], identity)
+        evidence_path = Path(args.evidence_json)
+        sample_path = evidence_path.with_suffix('.memory-samples.jsonl')
+        if any(p.exists() or p.is_symlink() for p in (evidence_path, sample_path)):
+            raise FileExistsError('diagnostic evidence or sampler path already exists')
+        if operator_gate is not None:
+            operator_gate.bind_permit_sha256(permit['sha256'])
+        output = Path(args.evidence_json).with_suffix('.memory-samples.jsonl')
+        output.parent.mkdir(parents=True, exist_ok=True)
+        session, admission = m8_probe_runtime.prepare_probe(
+            output, boot_id=plan.boot_id, timeout_s=args.timeout_s)
+        if evidence_path.exists() or evidence_path.is_symlink():
+            raise FileExistsError('diagnostic evidence path changed before consumption')
+        guard = claim_once_guard(paths['consumed'], {
+            'schema': 2, 'work_order': 'M8-PROBE', 'stage': m8_probe_profile.PROBE_STAGE,
+            'boot_id': plan.boot_id, 'attempt_id': args.attempt_id,
+            'permit_sha256': permit['sha256'],
+            'execution_contract_sha256': identity['execution_contract_sha256'],
+            'startup_policy': m8_probe_profile.PROBE_STARTUP_POLICY,
+            'abort_policy': m8_probe_profile.PROBE_ABORT_POLICY,
+            'diagnostic_ram_admission': admission,
+            'sampler_pid': session.process.pid,
+            'memory_samples': str(output),
+        })
+        if operator_gate is not None:
+            operator_gate.probe_health_check = lambda: session.checkpoint('waiting_for_operator')
+        return {'identity': identity, 'permit': permit, 'sampler': session,
+                'admission': admission, 'guard': guard}
+    except BaseException as exc:
+        sampling = session.abandon() if session is not None else None
+        if not Path(args.evidence_json).exists():
+            try:
+                _write_json_exclusive(Path(args.evidence_json), {
+                    'status': 'M8_PROBE_PREHARDWARE_REJECTED', 'board_accessed': False,
+                    'error': f'{type(exc).__name__}: {exc}', 'memory_sampler': sampling,
+                    'consumed_marker_exists': paths['consumed'].exists(),
+                    'acceptance_claim': False})
+            except OSError:
+                pass
+        raise
+
+
+@contextmanager
+def probe_preparation_guard(args: argparse.Namespace, plan: Any, sampler: Any,
+                            consumed_path: Path):
+    """Cover consumed-but-prehardware initialization, including allocation errors."""
+    try:
+        yield
+    except BaseException as exc:
+        if sampler is not None:
+            try:
+                measurement = sampler.abandon()
+            except BaseException as stop_error:
+                measurement = {'status': 'NOT VERIFIED', 'error': str(stop_error)}
+            try:
+                _write_json_exclusive(Path(args.evidence_json), {
+                    'status': 'M8_PROBE_POSTCONSUMPTION_REJECTED', 'board_accessed': False,
+                    'error': f'{type(exc).__name__}: {exc}', 'memory_sampler': measurement,
+                    'boot_id': plan.boot_id, 'acceptance_claim': False,
+                    'consumed_marker_exists': consumed_path.exists(),
+                    'capture_status': 'NOT VERIFIED'})
+            except Exception:
+                # Severe OOM/storage failure may also defeat best-effort evidence.
+                pass
+        raise
+
+
+def probe_board_api(args: argparse.Namespace, plan: Any, admission: Any,
+                    sampler: Any, consumed_path: Path) -> Any:
+    with probe_preparation_guard(args, plan, sampler, consumed_path):
+        return board_once.PynqBoardAPI(plan, stage=WO16_STAGE, cma_ranges=admission.ranges)
+
+
 def _emit_milestone(name: str, monotonic_value: float, log_path: str | Path, *,
                     boot_id: str) -> dict[str, Any]:
     """Write a flushed operator-visible marker and durable JSONL timestamp."""
@@ -521,8 +844,9 @@ def require_board_opt_in(*, execute: bool, authorize_stage: str | None,
                          approve_once: bool, manifest: str | None,
                          manifest_sha256: str | None, max_frames: int,
                          evidence_json: str | None,
-                         calibration: bool = False) -> None:
-    expected_stage = WO17_CALIBRATION_STAGE if calibration else WO16_STAGE
+                         calibration: bool = False,
+                         stage: str | None = None) -> None:
+    expected_stage = stage or (WO17_CALIBRATION_STAGE if calibration else WO16_STAGE)
     if execute is not True or approve_once is not True or authorize_stage != expected_stage:
         raise ValueError(
             f"board mode requires --execute --authorize-stage {expected_stage} --approve-once"
@@ -564,8 +888,16 @@ async def _daemon_call_with_timeout(function: Any, *, timeout_s: float,
             except RuntimeError:
                 pass
 
-    threading.Thread(target=invoke, name=thread_name, daemon=True).start()
-    return await asyncio.wait_for(completed, timeout=timeout_s)
+    worker = threading.Thread(target=invoke, name=thread_name, daemon=True)
+    worker.start()
+    try:
+        return await asyncio.wait_for(completed, timeout=timeout_s)
+    except asyncio.TimeoutError as exc:
+        if worker.is_alive():
+            raise TimeoutError(
+                f"blocking worker {worker.name!r} is still alive after {timeout_s:.3f}s"
+            ) from exc
+        raise
 
 
 async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
@@ -633,6 +965,11 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
     worker: threading.Thread | None = None
     pending_waiter: asyncio.Future | None = None
     stop_worker = object()
+    resize_buffers = (
+        np.empty((HEIGHT, WIDTH), dtype=np.uint8),
+        np.empty((HEIGHT, WIDTH), dtype=np.uint8),
+    )
+    resize_buffer_index = 0
 
     async def release_camera() -> BaseException | None:
         nonlocal released, release_attempted
@@ -690,6 +1027,7 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
         def read_gray_frame(*, warmup: bool,
                             source_frame_id: int | None = None
                             ) -> tuple[np.ndarray, float, int, int, np.ndarray | None]:
+            nonlocal resize_buffer_index
             capture_started = time.perf_counter()
             ok, frame = capture.read()
             if not ok or frame is None:
@@ -708,15 +1046,15 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
             source_gray = (np.array(image, copy=True, order="C")
                            if source_frame_id in source_frame_ids else None)
             mapping_started = time.perf_counter()
+            gray = resize_buffers[resize_buffer_index]
+            resize_buffer_index = (resize_buffer_index + 1) % len(resize_buffers)
             if frame_mapping in ("letterbox", *LIGHTING_MAPPINGS):
-                # A fresh buffer is required: the next read is prefetched before yield.
-                gray = np.empty((HEIGHT, WIDTH), np.uint8)
                 resize_monochrome_into(image, gray, mapping=frame_mapping,
                                        threshold=binary_threshold,
                                        source_min_net_area=geometry.get("source_min_net_contour_area_configured", SOURCE_MIN_NET_AREA))
             else:
-                gray = cv2_module.resize(
-                    image, (WIDTH, HEIGHT), interpolation=cv2_module.INTER_NEAREST)
+                cv2_module.resize(image, (WIDTH, HEIGHT), dst=gray,
+                                  interpolation=cv2_module.INTER_NEAREST)
             if mapping_timings_ms is not None:
                 mapping_timings_ms.append((time.perf_counter() - mapping_started) * 1000.0)
             gray = np.asarray(gray)
@@ -885,7 +1223,9 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                     cleanup_errors.append(f"camera release failed: {release_error}")
                 await asyncio.to_thread(worker.join, float(read_timeout_s))
             if worker.is_alive():
-                cleanup_errors.append("camera prefetch worker did not stop after bounded release")
+                cleanup_errors.append(
+                    f"camera prefetch worker did not stop after bounded release: {worker.name!r}"
+                )
 
         if pending_waiter is not None and pending_waiter.done():
             try:
@@ -1032,8 +1372,9 @@ def formal_capture_context(args: argparse.Namespace, plan: Any) -> dict[str, Any
 
 
 def require_formal_xrt_environment(args: argparse.Namespace) -> None:
-    if getattr(args, "wo0017_profile", None) and os.environ.get("XILINX_XRT") != "/usr":
-        raise ValueError("WO-0017 requires XILINX_XRT=/usr in the launch process before READY or Permit consumption")
+    if ((getattr(args, "wo0017_profile", None) or getattr(args, "diagnostic_probe", False))
+            and os.environ.get("XILINX_XRT") != "/usr"):
+        raise ValueError("WO-0017 and M8 probe runs require XILINX_XRT=/usr in the launch process before READY or Permit consumption")
 
 
 def calibration_initial_dmasr(args: argparse.Namespace) -> int:
@@ -1304,19 +1645,66 @@ def validate_formal_prelaunch(args: argparse.Namespace, launcher_sha256: str) ->
 def manifest_validation_options(args: argparse.Namespace, *,
                                calibration_mode: bool = False) -> dict[str, str]:
     """Pass the approved Boot ID for WO-0017 and independent calibration runs."""
-    if calibration_mode or getattr(args, "wo0017_profile", None):
+    explicit_approved_boot = getattr(args, "approved_boot_id", None)
+    if (calibration_mode or getattr(args, "wo0017_profile", None)
+            or getattr(args, "diagnostic_probe", False)):
         approved_boot_id = getattr(args, "expected_boot_id", None)
         if not approved_boot_id:
             raise ValueError("board run requires an explicit approved Boot ID")
+        if explicit_approved_boot is not None and explicit_approved_boot != approved_boot_id:
+            raise ValueError("--approved-boot-id conflicts with the specialized run boot binding")
         return {"approved_boot_id": approved_boot_id}
-    return {}
+    return ({} if explicit_approved_boot is None else
+            {"approved_boot_id": explicit_approved_boot})
 
 
 def defer_capture_writes_until_close(args: argparse.Namespace, *,
                                      calibration_mode: bool = False) -> bool:
     """Keep formal B-2 sampling free of per-frame filesystem latency."""
-    return (calibration_mode
+    return (getattr(args, "capture_write_mode", "auto") == "deferred" or calibration_mode
             or getattr(args, "wo0017_profile", None) == "b2")
+
+
+def resolve_capture_write_mode(args: argparse.Namespace, *,
+                               calibration_mode: bool = False) -> str:
+    """Resolve explicit experimental storage without overriding signed contracts."""
+    if getattr(args, "capture_write_mode", "auto") == "bounded_stream":
+        if (getattr(args, "mode", None) == "board"
+                or getattr(args, "authorize_stage", None) == WO16_STAGE):
+            raise ValueError("bounded_stream is not authorized for wo0016-stream or other "
+                             "formal board stages; a new explicit contract and Manager "
+                             "approval are required")
+        if (calibration_mode or getattr(args, "physical_calibration", False)
+                or getattr(args, "wo0017_profile", None)
+                or getattr(args, "diagnostic_probe", False)):
+            raise ValueError("bounded_stream is not authorized for existing formal, "
+                             "calibration and probe profiles; a separately approved "
+                             "capture contract is required")
+        return "bounded_stream"
+    return ("deferred_memory" if defer_capture_writes_until_close(
+        args, calibration_mode=calibration_mode) else "streaming_queue")
+
+
+def capture_storage_evidence(writer: CaptureWriter, *, write_mode: str) -> dict[str, Any]:
+    bounded = write_mode == "bounded_stream"
+    evidence = {
+        "memory_kind": "ordinary NumPy process RAM; not PYNQ/CMA allocation",
+        "array_shape": ([writer.ring_depth, HEIGHT, WIDTH] if bounded
+                        else list(writer.raw_gray8.shape)),
+        "dtype": "uint8",
+        "gray_bytes": (writer.ring_depth * HEIGHT * WIDTH if bounded
+                       else int(writer.raw_gray8.nbytes)),
+        "binary_bytes": (writer.ring_depth * HEIGHT * WIDTH if bounded
+                         else int(writer.raw_binary8.nbytes)),
+        "recording": ("continuity callback; submit copies into fixed pool before slot reuse"
+                      if bounded else "np.copyto after S2MM completion and frame-status validation"),
+        "archive_written_after_sampling": True,
+        "write_mode": write_mode,
+        "per_frame_files_written_during_sampling": write_mode != "deferred_memory",
+    }
+    if bounded:
+        evidence["ring_depth"] = writer.ring_depth
+    return evidence
 
 
 def execute_board_stream(args: argparse.Namespace, *,
@@ -1324,10 +1712,13 @@ def execute_board_stream(args: argparse.Namespace, *,
                          operator_gate: Any | None = None) -> dict[str, Any]:
     """Run one finite, guarded streaming session against the already-loaded WO-0015 BIT."""
     calibration_mode = bool(getattr(args, "physical_calibration", False))
+    probe_mode = bool(getattr(args, "diagnostic_probe", False))
     frozen_counting_config = counting_configuration(args)
-    deferred_capture_writes = defer_capture_writes_until_close(
+    resolved_local_config = effective_configuration(args)
+    capture_write_mode = resolve_capture_write_mode(
         args, calibration_mode=calibration_mode
     )
+    deferred_capture_writes = capture_write_mode == "deferred_memory"
     gate_launcher_sha256 = validate_operator_gate_launcher_sha256(
         operator_gate_sha256, operator_gate
     )
@@ -1340,6 +1731,7 @@ def execute_board_stream(args: argparse.Namespace, *,
         max_frames=args.max_frames,
         evidence_json=args.evidence_json,
         calibration=calibration_mode,
+        stage=(m8_probe_profile.PROBE_STAGE if probe_mode else None),
     )
     require_formal_xrt_environment(args)
     if calibration_mode and os.environ.get("XILINX_XRT") != "/usr":
@@ -1364,6 +1756,9 @@ def execute_board_stream(args: argparse.Namespace, *,
         raise preflight.PreflightError("WO-0016 is locked to the WO-0015 50 MHz image")
     formal = formal_capture_context(args, plan)
     calibration = physical_calibration_context(args, plan) if calibration_mode else None
+    probe_paths = validate_probe_options(args, plan) if probe_mode else None
+    if probe_mode and capture_preflight is None:
+        raise ValueError("diagnostic probe requires a capture preflight target")
     stage1_receipt = (formal["receipt"] if formal else
                       calibration["receipt"] if calibration else
                       board_once.require_overlay_pass_receipt(
@@ -1396,6 +1791,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 f"calibration initial DMASR must remain exactly 0x{calibration_initial_dmasr(args):08x} after operator click"
             )
     guard_dir = (formal["ready_path"].parent if formal else
+                 probe_paths["base"] if probe_mode else
                  calibration["lock_path"].parent if calibration else WO16_GUARD.parent)
     if guard_dir.is_symlink():
         raise preflight.PreflightError("WO-0016 guard directory must not be a symlink")
@@ -1405,6 +1801,9 @@ def execute_board_stream(args: argparse.Namespace, *,
         raise preflight.PreflightError("WO-0016 guard directory must be root-owned and mode 0700")
     stageb2_ready_guard = None
     stageb2_attempt_permit = None
+    probe_permit = None
+    probe_sampler = None
+    probe_diagnostics = None
     attempt_path = None
     calibration_lock_record = None
     if args.no_consume_guard:
@@ -1470,6 +1869,14 @@ def execute_board_stream(args: argparse.Namespace, *,
             "stabilization_delay_s": args.stabilization_delay_s,
             "operator_prearm_delay_s": args.operator_prearm_delay_s,
         })
+    elif probe_mode:
+        probe_diagnostics = claim_probe_with_diagnostics(
+            args, plan, probe_paths, gate_launcher_sha256=gate_launcher_sha256,
+            capture_path=capture_preflight['path'], operator_gate=operator_gate)
+        probe_permit = probe_diagnostics['permit']
+        probe_sampler = probe_diagnostics['sampler']
+        attempt_path = probe_paths["consumed"]
+        guard = probe_diagnostics['guard']
     elif calibration_mode:
         ready_lock = calibration_lock.validate_ready_calibration_lock(
             calibration["lock_path"], calibration["identity"])
@@ -1492,79 +1899,99 @@ def execute_board_stream(args: argparse.Namespace, *,
             "max_frames": args.max_frames,
         })
 
-    api = board_once.PynqBoardAPI(plan, stage=WO16_STAGE, cma_ranges=admission.ranges)
-    dashboard = DashboardState(source="pl_dma")
-    runtime_state = {"status": "RUNNING"}
-    tx_buffers: tuple[Any, ...] = ()
-    rx_buffers: tuple[Any, ...] = ()
-    stream: DoubleBufferStream | None = None
-    capture_writer: CaptureWriter | None = None
-    preview: MjpegPreviewServer | None = None
-    preview_publisher: PeriodicMjpegPublisher | None = None
-    loopback_client: MjpegLoopbackClient | None = None
-    dma = None
-    released_buffer_ids: set[int] = set()
-    evidence: dict[str, Any] = {
-        "schema": 1,
-        "work_order": "WO-0017" if formal else "WO-0016",
-        "stage": "physical-calibration" if calibration_mode else None,
-        "status": "WO0017_PHYSICAL_CALIBRATION_RUNNING" if calibration_mode else "WO0016_RUNNING",
-        "board_accessed": False,
-        "boot_id": plan.boot_id,
-        "manifest_sha256": plan.manifest_sha256,
-        "bit_sha256": plan.bit_sha256,
-        "hwh_sha256": plan.hwh_sha256,
-        "clock_mhz": 50,
-        "guard": guard,
-        "guard_mode": ("independent calibration lock consumed-once" if calibration_mode else
-                       "READY Guard validate-only; attempt permit consumed-once"
-                       if args.no_consume_guard else "consume-once"),
-        "calibration_lock": (None if calibration is None else {
-            "path": str(calibration["lock_path"]),
-            "sha256": hashlib.sha256(calibration_lock._json_bytes({
-                **calibration["identity"], "lock_status": "READY", "consumed": False
-            })).hexdigest(),
-            "consumed_marker_path": str(calibration["consumed_path"]),
-            "consumed_marker": calibration_lock_record,
-        }),
-        "formal_acceptance_permit": None if calibration_mode else None,
-        "stageb2_ready_guard": stageb2_ready_guard,
-        "stageb2_attempt_id": args.attempt_id if args.no_consume_guard else None,
-        "stageb2_attempt_permit": stageb2_attempt_permit,
-        "attempt_marker_path": str(attempt_path) if attempt_path is not None else None,
-        "cma_admission": admission.as_evidence(),
-        "stage1_overlay_pass_receipt": stage1_receipt,
-        "process_ownership": ownership,
-        "fpga_manager": manager,
-        "cma_free_before_kib": meminfo["CmaFree"],
-        "cma_watermark_kib": CMA_WATERMARK_KIB,
-        "camera_profile_pre_start": calibration_camera_profile,
-        "camera_ownership_pre_start": calibration_camera_owner,
-        "dma_status_pre_pynq": calibration_dma_status,
-        "max_frames": args.max_frames,
-        "camera_device": args.camera,
-        "camera_mode": "MJPG 640x400 mapped to Gray8 320x240",
-        "xilinx_xrt": os.environ.get("XILINX_XRT"),
-        "line_y": frozen_counting_config["line_y"],
-        "counting_config": frozen_counting_config,
-        "frame_geometry": preprocessing_configuration(args),
-        "direction": args.direction,
-        "min_area": frozen_counting_config["min_area"],
-        "ground_truth_count": args.ground_truth_count,
-        "expected_count": args.ground_truth_count,
-        "material_label": args.material_label,
-        "stabilization_delay_s": args.stabilization_delay_s,
-        "operator_prearm_delay_s": (args.operator_prearm_delay_s
-                                     if args.no_consume_guard else 0.0),
-        "threshold": effective_threshold(args),
-        "frames_processed": 0,
-        "process_start_monotonic": process_start_monotonic,
-        "overlay_ready_monotonic": None,
-        "camera_open_monotonic": None,
-        "frame_0_start_monotonic": None,
-        "milestone_log": str(milestone_path),
-    }
+    api = (probe_board_api(args, plan, admission, probe_sampler, attempt_path) if probe_mode else
+           board_once.PynqBoardAPI(plan, stage=WO16_STAGE, cma_ranges=admission.ranges))
+    with probe_preparation_guard(args, plan, probe_sampler, attempt_path):
+        dashboard = DashboardState(source="pl_dma")
+        runtime_state = {"status": "RUNNING"}
+        tx_buffers: tuple[Any, ...] = ()
+        rx_buffers: tuple[Any, ...] = ()
+        stream: DoubleBufferStream | None = None
+        capture_writer: CaptureWriter | None = None
+        preview: MjpegPreviewServer | None = None
+        preview_publisher: PeriodicMjpegPublisher | None = None
+        loopback_client: MjpegLoopbackClient | None = None
+        preview_shutdown_done = False
+        dma = None
+        released_buffer_ids: set[int] = set()
+        evidence: dict[str, Any] = {
+            "schema": 1,
+            "work_order": ("M8-PROBE" if probe_mode else
+                           "WO-0017" if formal else "WO-0016"),
+            "stage": (m8_probe_profile.PROBE_STAGE if probe_mode else
+                      "physical-calibration" if calibration_mode else None),
+            "status": "WO0017_PHYSICAL_CALIBRATION_RUNNING" if calibration_mode else "WO0016_RUNNING",
+            "board_accessed": False,
+            "boot_id": plan.boot_id,
+            "manifest_sha256": plan.manifest_sha256,
+            "bit_sha256": plan.bit_sha256,
+            "hwh_sha256": plan.hwh_sha256,
+            "clock_mhz": 50,
+            "guard": guard,
+            "guard_mode": ("one-shot M8 probe permit; consumed-once per Boot" if probe_mode else
+                           "independent calibration lock consumed-once" if calibration_mode else
+                           "READY Guard validate-only; attempt permit consumed-once"
+                           if args.no_consume_guard else "consume-once"),
+            "calibration_lock": (None if calibration is None else {
+                "path": str(calibration["lock_path"]),
+                "sha256": hashlib.sha256(calibration_lock._json_bytes({
+                    **calibration["identity"], "lock_status": "READY", "consumed": False
+                })).hexdigest(),
+                "consumed_marker_path": str(calibration["consumed_path"]),
+                "consumed_marker": calibration_lock_record,
+            }),
+            "formal_acceptance_permit": None if calibration_mode else None,
+            "stageb2_ready_guard": stageb2_ready_guard,
+            "stageb2_attempt_id": args.attempt_id if args.no_consume_guard else None,
+            "stageb2_attempt_permit": stageb2_attempt_permit,
+            "attempt_marker_path": str(attempt_path) if attempt_path is not None else None,
+            "probe": (None if not probe_mode else {
+                "kind": "m8-memory-probe",
+                "permit_path": str(probe_paths["permit"]),
+                "permit_sha256": probe_permit["sha256"],
+                "acceptance_claim": False,
+                "execution_contract_sha256": probe_diagnostics['identity']['execution_contract_sha256'],
+                "startup_policy": m8_probe_profile.PROBE_STARTUP_POLICY,
+                "abort_policy": m8_probe_profile.PROBE_ABORT_POLICY,
+                "diagnostic_ram_admission": probe_diagnostics['admission'],
+                "memory_samples": probe_sampler.output,
+            }),
+            "cma_admission": admission.as_evidence(),
+            "stage1_overlay_pass_receipt": stage1_receipt,
+            "process_ownership": ownership,
+            "fpga_manager": manager,
+            "cma_free_before_kib": meminfo["CmaFree"],
+            "cma_watermark_kib": CMA_WATERMARK_KIB,
+            "camera_profile_pre_start": calibration_camera_profile,
+            "camera_ownership_pre_start": calibration_camera_owner,
+            "dma_status_pre_pynq": calibration_dma_status,
+            "max_frames": args.max_frames,
+            "camera_device": args.camera,
+            "camera_mode": "MJPG 640x400 mapped to Gray8 320x240",
+            "xilinx_xrt": os.environ.get("XILINX_XRT"),
+            "line_y": frozen_counting_config["line_y"],
+            "counting_config": frozen_counting_config,
+            "frame_geometry": preprocessing_configuration(args),
+            "direction": args.direction,
+            "min_area": frozen_counting_config["min_area"],
+            "ground_truth_count": args.ground_truth_count,
+            "expected_count": args.ground_truth_count,
+            "material_label": args.material_label,
+            "stabilization_delay_s": args.stabilization_delay_s,
+            "operator_prearm_delay_s": effective_operator_prearm_delay(args),
+            "threshold": effective_threshold(args),
+            "frames_processed": 0,
+            "frame_history_limit": DEFAULT_HISTORY_LIMIT,
+            "worker_shutdown": {"status": "PENDING", "live_threads": [], "errors": []},
+            "process_start_monotonic": process_start_monotonic,
+            "overlay_ready_monotonic": None,
+            "camera_open_monotonic": None,
+            "frame_0_start_monotonic": None,
+            "milestone_log": str(milestone_path),
+        }
     try:
+        if probe_sampler is not None:
+            probe_sampler.checkpoint('before_hardware')
         _emit_milestone("PROCESS_START", process_start_monotonic,
                         milestone_path, boot_id=plan.boot_id)
         audit = api.audit_environment(require_empty_shutdown=False, require_loaded_bit=True)
@@ -1645,6 +2072,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 config={
                     "algorithm": "baseline",
                     **frozen_counting_config,
+                    "counter_config": dict(resolved_local_config["counter_config"]),
                     "threshold": effective_threshold(args),
                     "input_resolution": [WIDTH, HEIGHT],
                     "mask_resolution": [WIDTH, HEIGHT],
@@ -1654,6 +2082,8 @@ def execute_board_stream(args: argparse.Namespace, *,
                 max_bytes=capture_max_bytes,
                 queue_depth=2,
                 defer_writes_until_close=deferred_capture_writes,
+                **({"write_mode": "bounded_stream", "ring_depth": 4,
+                    "submit_timeout_s": 1.0} if capture_write_mode == "bounded_stream" else {}),
                 source_frame_ids=(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS
                                   if calibration_mode else ()),
                 metadata={
@@ -1667,17 +2097,8 @@ def execute_board_stream(args: argparse.Namespace, *,
             )
             evidence["capture_directory"] = capture_preflight["path"]
             evidence["capture_status"] = "IN_PROGRESS"
-            evidence["raw_capture_storage"] = {
-                "memory_kind": "ordinary NumPy process RAM; not PYNQ/CMA allocation",
-                "array_shape": list(capture_writer.raw_gray8.shape),
-                "dtype": "uint8",
-                "gray_bytes": int(capture_writer.raw_gray8.nbytes),
-                "binary_bytes": int(capture_writer.raw_binary8.nbytes),
-                "recording": "np.copyto after S2MM completion and frame-status validation",
-                "archive_written_after_sampling": True,
-                "write_mode": ("deferred_memory" if deferred_capture_writes else "streaming_queue"),
-                "per_frame_files_written_during_sampling": not deferred_capture_writes,
-            }
+            evidence["raw_capture_storage"] = capture_storage_evidence(
+                capture_writer, write_mode=capture_write_mode)
 
         # Accessing the PYNQ DMA driver starts its channels; this is after all static,
         # process, Overlay identity, CMA and physical-span gates have passed.
@@ -1695,12 +2116,16 @@ def execute_board_stream(args: argparse.Namespace, *,
             api.sync_to_device(slot.rx_buffer)
             api.write32(preflight.CHECKER_BASE, board_once.PACKER_ARM, 1)
 
-        frame_dma_status: list[dict[str, Any]] = []
-        packer_frame_status: list[dict[str, Any]] = []
+        frame_dma_status = deque(maxlen=DEFAULT_HISTORY_LIMIT)
+        packer_frame_status = deque(maxlen=DEFAULT_HISTORY_LIMIT)
+        frame_dma_status_total = 0
+        packer_frame_status_total = 0
 
         def verify_frame(frame_id: int, slot: Any) -> None:
+            nonlocal frame_dma_status_total, packer_frame_status_total
             if int(dma.recvchannel.transferred) != RX_BYTES:
                 raise RuntimeError(f"frame {frame_id} S2MM transferred length is not {RX_BYTES}")
+            frame_dma_status_total += 1
             verify_frame_dmasr(api, frame_id, frame_dma_status)
             dma_record = dict(frame_dma_status[-1])
             if slot.capture_metadata is not None:
@@ -1722,6 +2147,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                 "validation": "PASS",
             }
             packer_frame_status.append(packer_record)
+            packer_frame_status_total += 1
             if slot.capture_metadata is not None:
                 slot.capture_metadata["packer_status"] = dict(packer_record)
 
@@ -1730,7 +2156,8 @@ def execute_board_stream(args: argparse.Namespace, *,
             hub=hub, host=args.host, port=args.port,
             state_provider=lambda: {**runtime_state, "dashboard": dashboard.snapshot()},
         ).start()
-        stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
+        stage_timings_ms: dict[str, RollingHistory] = {
+            stage: RollingHistory(maxlen=DEFAULT_HISTORY_LIMIT) for stage in (
             "capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
             "raw_capture_copy", "mjpeg_encode", "mjpeg_handoff",
             "mjpeg_background_encode", "postprocess")}
@@ -1740,6 +2167,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             line_x=frozen_counting_config["line_x"],
             interval=PREVIEW_FRAME_INTERVAL, quality=PREVIEW_JPEG_QUALITY,
             hysteresis=args.hysteresis,
+            preview_overlay=getattr(args, "preview_overlay", "standard"),
         )
         stage_timings_ms["mjpeg_encode"] = preview_publisher.background_encode_timings_ms
         stage_timings_ms["mjpeg_background_encode"] = (
@@ -1753,7 +2181,16 @@ def execute_board_stream(args: argparse.Namespace, *,
             ).start()
 
         counter = MaskCounter(**frozen_counting_config)
+        online_frame_stats = OnlineFrameStats()
+
+        def record_frame_result(result: Any, mask: np.ndarray) -> None:
+            dashboard.on_frame(result, mask)
+            online_frame_stats.observe(result)
+
         def capture_frame(result: Any, slot: Any) -> None:
+            if probe_sampler is not None:
+                probe_sampler.checkpoint(f'completed_frame_{result.frame_id}')
+            submission_started_ns = time.perf_counter_ns()
             if capture_writer is None or slot.capture_gray is None or slot.capture_mask is None:
                 raise CaptureError("capture writer or raw source/mask slot snapshot is unavailable")
             metadata = {
@@ -1771,7 +2208,12 @@ def execute_board_stream(args: argparse.Namespace, *,
                 "resolution": {"width": WIDTH, "height": HEIGHT,
                                "dtype": "uint8", "input": "Gray8", "mask": "Binary8"},
                 "threshold": effective_threshold(args),
-                "algorithm_config": dict(frozen_counting_config),
+                "algorithm_config": dict(resolved_local_config["counter_config"]),
+                "diagnostics": dict(result.diagnostics),
+                "stage_timings_ms": dict(result.stage_timings_ms),
+                **{key: list(result.diagnostics.get(key, [])) for key in (
+                    "rejected_components", "split_attempts", "ambiguous_associations", "lost_tracks")
+                   if key in result.diagnostics},
                 "roi": counting_roi_metadata(result, counter),
                 "raw_detections": [asdict(item) for item in result.raw_detections],
                 "detections": [asdict(item) for item in result.detections],
@@ -1787,7 +2229,8 @@ def execute_board_stream(args: argparse.Namespace, *,
                     "ccl_executed": result.ccl_executed,
                 },
             }
-            capture_writer.submit(result.frame_id, slot.capture_gray, slot.capture_mask, metadata)
+            capture_writer.submit(result.frame_id, slot.capture_gray, slot.capture_mask, metadata,
+                                  submission_started_ns=submission_started_ns)
 
         packet_encoder, packet_encoder_into = packet_encoders(args)
         stream = DoubleBufferStream(
@@ -1801,7 +2244,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             before_transfer=arm_frame,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
-            on_frame=dashboard.on_frame,
+            on_frame=record_frame_result,
             preview_callback=preview_publisher,
             raw_capture_callback=(capture_writer.record_raw_frame
                                   if capture_writer is not None else None),
@@ -1809,6 +2252,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                                      if capture_writer is not None and calibration_mode else None),
             capture_callback=(capture_frame if capture_writer is not None else None),
             stage_timings_ms=stage_timings_ms,
+            history_limit=DEFAULT_HISTORY_LIMIT,
             transfer_timeout_s=args.timeout_s,
         )
         steady_start_time: list[float] = []
@@ -1827,8 +2271,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             args.camera, max_frames=args.max_frames, cv2_module=cv2,
             read_timeout_s=args.timeout_s,
             stabilization_delay_s=args.stabilization_delay_s,
-            operator_prearm_delay_s=(args.operator_prearm_delay_s
-                                     if args.no_consume_guard else 0.0),
+            operator_prearm_delay_s=effective_operator_prearm_delay(args),
             operator_gate=operator_gate,
             milestone_callback=record_camera_milestone,
             capture_timings_ms=stage_timings_ms["capture"],
@@ -1852,13 +2295,34 @@ def execute_board_stream(args: argparse.Namespace, *,
             if status & board_once.DMA_ERROR_MASK or not status & board_once.DMA_IDLE:
                 raise RuntimeError(f"{label} is not error-free and idle at normal shutdown")
         elapsed = max(time.perf_counter() - steady_start_time[0], 1e-9)
-        total_count = results[-1].total_count if results else 0
+        live_dma_wait_threads = stream.live_dma_wait_threads
+        if live_dma_wait_threads:
+            raise RuntimeError(
+                "DMA wait worker threads did not stop: " + ", ".join(live_dma_wait_threads)
+            )
+        live_preview_threads, preview_close_errors = close_preview_workers(
+            publisher=preview_publisher,
+            loopback_client=loopback_client,
+            preview=preview,
+            timeout_s=PREVIEW_CLOSE_TIMEOUT_S,
+        )
+        preview_shutdown_done = True
+        evidence["worker_shutdown"] = {
+            "status": "FAILED" if live_preview_threads or preview_close_errors else "PASS",
+            "live_threads": list(live_preview_threads),
+            "errors": list(preview_close_errors),
+        }
+        if live_preview_threads or preview_close_errors:
+            raise RuntimeError(
+                "preview worker shutdown incomplete: "
+                + ", ".join((*live_preview_threads, *preview_close_errors))
+            )
+        total_count = counter.total_count
         accuracy = _count_accuracy(total_count, args.ground_truth_count)
         accuracy_fraction = _count_accuracy_fraction(total_count, args.ground_truth_count)
-        preview_publisher.close()
-        if loopback_client is not None:
-            loopback_client.close()
         if capture_writer is not None:
+            if probe_sampler is not None:
+                probe_sampler.checkpoint('before_capture_close')
             capture_result = capture_writer.close()
             evidence["capture"] = capture_result
             evidence["capture_status"] = capture_result["status"]
@@ -1872,7 +2336,11 @@ def execute_board_stream(args: argparse.Namespace, *,
             "status": ("PHYSICAL_CALIBRATION_COMPLETE" if calibration_mode
                        else "BOARD_STREAM_COMPLETE"),
             "board_accessed": True,
-            "frames_processed": len(results),
+            "frames_processed": stream.frames_processed,
+            "retained_frame_results": len(results),
+            "frame_history_limit": DEFAULT_HISTORY_LIMIT,
+            "worker_shutdown": evidence["worker_shutdown"],
+            "dma_wait_threads_alive": [],
             "total_count": total_count,
             "ground_truth_count": args.ground_truth_count,
             "expected_count": args.ground_truth_count,
@@ -1882,15 +2350,43 @@ def execute_board_stream(args: argparse.Namespace, *,
             "accuracy_percent": accuracy,
             "accuracy": accuracy_fraction,
             "elapsed_seconds": elapsed,
-            "throughput_fps": len(results) / elapsed,
-            "hardware_fps": len(results) / elapsed,
-            **summarize_stage_timings_ms(stage_timings_ms),
+            "throughput_fps": stream.frames_processed / elapsed,
+            "hardware_fps": stream.frames_processed / elapsed,
+            **summarize_stage_timings_ms(
+                stage_timings_ms,
+                cumulative_stats={
+                    "mjpeg_handoff": {
+                        "total_count": preview_publisher.total_handoff_samples,
+                        "total_sum": preview_publisher.total_handoff_ms,
+                        "min_seen": preview_publisher.min_handoff_ms,
+                        "max_seen": preview_publisher.max_handoff_ms,
+                    },
+                    "mjpeg_encode": {
+                        "total_count": preview_publisher.total_background_encode_samples,
+                        "total_sum": preview_publisher.total_background_encode_ms,
+                        "min_seen": preview_publisher.min_background_encode_ms,
+                        "max_seen": preview_publisher.max_background_encode_ms,
+                    },
+                    "mjpeg_background_encode": {
+                        "total_count": preview_publisher.total_background_encode_samples,
+                        "total_sum": preview_publisher.total_background_encode_ms,
+                        "min_seen": preview_publisher.min_background_encode_ms,
+                        "max_seen": preview_publisher.max_background_encode_ms,
+                    },
+                },
+            ),
             "roi_subtimings_ms": summarize_roi_subtimings_ms(results),
+            "roi_subtiming_history_frames": len(results),
+            "split_calls_total": online_frame_stats.split_calls_total,
+            "resolved_local_configuration": resolved_local_config,
             **capture_metadata,
             "preview_frame_interval": preview_publisher.interval,
             "preview_jpeg_quality": preview_publisher.quality,
             "preview_jpeg_frames_encoded": preview_publisher.encoded_frames,
             "preview_encode_errors": tuple(preview_publisher.encode_errors),
+            "preview_encode_error_total": preview_publisher.total_encode_errors,
+            "preview_handoff_samples_total": preview_publisher.total_handoff_samples,
+            "preview_background_encode_samples_total": preview_publisher.total_background_encode_samples,
             "preview_client_frames_received": (None if loopback_client is None
                                                 else loopback_client.frames_received),
             "preview_client_fps": (None if loopback_client is None
@@ -1902,8 +2398,10 @@ def execute_board_stream(args: argparse.Namespace, *,
             "camera_profile_final": final_camera_profile,
             "camera_ownership_final": final_camera_ownership,
             "frame_dma_status": frame_dma_status,
+            "frame_dma_status_total": frame_dma_status_total,
             "packer_frame_status": packer_frame_status,
-            "packer_output_frames_verified": len(results),
+            "packer_frame_status_total": packer_frame_status_total,
+            "packer_output_frames_verified": packer_frame_status_total,
             "pynq_imported": True,
             "accuracy_formula": (None if calibration_mode else
                                  "1 - abs(total_count - expected_count) / max(expected_count, 1)"),
@@ -1916,6 +2414,8 @@ def execute_board_stream(args: argparse.Namespace, *,
         evidence["cma_free_delta_kib"] = (evidence["cma_free_after_release_kib"]
                                              - evidence["cma_free_before_kib"])
         evidence["buffers_released"] = True
+        if probe_sampler is not None:
+            evidence['probe']['memory_measurement'] = probe_sampler.finish('post_close_and_release')
         _write_json_exclusive(Path(args.evidence_json), evidence)
         return evidence
     except BaseException as exc:
@@ -1932,7 +2432,11 @@ def execute_board_stream(args: argparse.Namespace, *,
                             if hold else None),
             "error": f"{type(exc).__name__}: {exc}",
         })
+        live_dma_wait_threads = (stream.live_dma_wait_threads if stream is not None else ())
+        evidence["dma_wait_threads_alive"] = list(live_dma_wait_threads)
         if hold:
+            if probe_sampler is not None:
+                evidence['probe']['memory_measurement'] = probe_sampler.abandon(wait=False)
             if capture_writer is not None and not capture_writer._closed:
                 evidence["capture_status"] = "INCOMPLETE_FAIL_HOLD"
                 evidence["capture_error"] = (
@@ -1950,12 +2454,32 @@ def execute_board_stream(args: argparse.Namespace, *,
             except BaseException as capture_error:
                 evidence["capture_status"] = "INCOMPLETE"
                 evidence["capture_error"] = f"{type(capture_error).__name__}: {capture_error}"
-        if preview_publisher is not None:
-            preview_publisher.close()
-        if loopback_client is not None:
-            loopback_client.close()
-        if preview is not None:
-            preview.close()
+        if not preview_shutdown_done:
+            live_preview_threads, preview_close_errors = close_preview_workers(
+                publisher=preview_publisher,
+                loopback_client=loopback_client,
+                preview=preview,
+                timeout_s=PREVIEW_CLOSE_TIMEOUT_S,
+            )
+            preview_shutdown_done = True
+            evidence["worker_shutdown"] = {
+                "status": "FAILED" if live_preview_threads or preview_close_errors else "PASS",
+                "live_threads": list(live_preview_threads),
+                "errors": list(preview_close_errors),
+            }
+            if not hold and (live_preview_threads or preview_close_errors):
+                evidence["status"] = "BOARD_STREAM_FAILED"
+                evidence["error"] += "; preview shutdown incomplete: " + ", ".join(
+                    (*live_preview_threads, *preview_close_errors)
+                )
+        else:
+            live_preview_threads = tuple(evidence["worker_shutdown"]["live_threads"])
+            preview_close_errors = tuple(evidence["worker_shutdown"]["errors"])
+        if live_dma_wait_threads and not hold:
+            evidence["status"] = "BOARD_STREAM_FAILED"
+            evidence["error"] += "; DMA wait workers still alive: " + ", ".join(
+                live_dma_wait_threads
+            )
         if tx_buffers or rx_buffers:
             _release_buffers(api, tx_buffers + rx_buffers, released_buffer_ids)
             evidence["buffers_released"] = True
@@ -1966,15 +2490,32 @@ def execute_board_stream(args: argparse.Namespace, *,
             except BaseException:
                 evidence["cma_free_after_release_kib"] = None
         if not Path(args.evidence_json).exists():
+            if probe_sampler is not None:
+                try:
+                    evidence['probe']['memory_measurement'] = probe_sampler.finish('failed_cleanup')
+                except BaseException as sampler_error:
+                    evidence['probe']['memory_measurement'] = probe_sampler.abandon()
+                    evidence['probe']['memory_measurement_error'] = str(sampler_error)
             _write_json_exclusive(Path(args.evidence_json), evidence)
         raise
     finally:
-        if preview_publisher is not None:
-            preview_publisher.close()
-        if loopback_client is not None:
-            loopback_client.close()
-        if preview is not None:
-            preview.close()
+        if probe_sampler is not None and not probe_sampler.closed:
+            probe_sampler.abandon()
+        if not preview_shutdown_done:
+            live_preview_threads, preview_close_errors = close_preview_workers(
+                publisher=preview_publisher,
+                loopback_client=loopback_client,
+                preview=preview,
+                timeout_s=PREVIEW_CLOSE_TIMEOUT_S,
+            )
+            evidence["worker_shutdown"] = {
+                "status": "FAILED" if live_preview_threads or preview_close_errors else "PASS",
+                "live_threads": list(live_preview_threads),
+                "errors": list(preview_close_errors),
+            }
+            if not hold and (live_preview_threads or preview_close_errors):
+                evidence["status"] = "BOARD_STREAM_FAILED"
+            preview_shutdown_done = True
 
 
 def _release_buffers(api: Any, buffers: tuple[Any, ...], released: set[int] | None = None) -> None:
@@ -2076,16 +2617,40 @@ def summarize_roi_subtimings_ms(results: tuple[Any, ...] | list[Any]) -> dict[st
     return summary
 
 
-def summarize_stage_timings_ms(timings: Mapping[str, list[float]]) -> dict[str, Any]:
-    """Return per-frame average stage durations and sample counts in milliseconds."""
+def summarize_stage_timings_ms(
+        timings: Mapping[str, Any], *,
+        cumulative_stats: Mapping[str, Mapping[str, Any]] | None = None) -> dict[str, Any]:
+    """Summarize all-run aggregates and percentiles over the bounded recent window."""
     result: dict[str, Any] = {}
-    for stage in ("capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
-                  "mjpeg_encode", "mjpeg_handoff", "mjpeg_background_encode", "postprocess"):
+    cumulative_stats = cumulative_stats or {}
+    stages = ("capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
+              "mjpeg_encode", "mjpeg_handoff", "mjpeg_background_encode", "postprocess",
+              "t_acquire_preprocess", "t_ccl", "t_split", "t_track", "t_preview_sink")
+    for stage in dict.fromkeys((*stages, *timings)):
         samples = timings.get(stage, [])
+        retained = list(samples)
+        online = cumulative_stats.get(stage, {})
+        total_count = int(online.get("total_count", getattr(samples, "total_count", len(retained))))
+        total_sum = float(online.get("total_sum", getattr(samples, "total_sum", sum(retained))))
+        min_seen = online.get("min_seen", getattr(samples, "min_seen", min(retained, default=None)))
+        max_seen = online.get("max_seen", getattr(samples, "max_seen", max(retained, default=None)))
         result[f"avg_{stage}_ms"] = (
-            round(sum(samples) / len(samples), 3) if samples else None
+            round(total_sum / total_count, 3) if total_count else None
         )
-        result[f"{stage}_timing_samples"] = len(samples)
+        result[f"{stage}_timing_samples"] = total_count
+        result[f"{stage}_retained_samples"] = len(retained)
+        result[f"min_{stage}_ms"] = round(float(min_seen), 3) if min_seen is not None else None
+        result[f"max_{stage}_ms"] = round(float(max_seen), 3) if max_seen is not None else None
+        for label, percentile in (("p50", 50), ("p95", 95)):
+            result[f"{label}_{stage}_ms"] = (
+                round(float(np.percentile(retained, percentile)), 3) if retained else None
+            )
+    result["capture_includes_mapping"] = True
+    result["timing_relationships"] = {
+        "capture": "includes camera read and mapping; mapping is a subset, do not add both",
+        "percentiles": f"computed over the most recent {DEFAULT_HISTORY_LIMIT} samples per stage",
+        "count_average_extrema": "computed cumulatively over the full run",
+    }
     return result
 
 
@@ -2171,11 +2736,15 @@ def _parser() -> argparse.ArgumentParser:
                         type=_nonnegative_count_argument)
     parser.add_argument("--material-label")
     parser.add_argument("--measure-preview-client", action="store_true")
+    parser.add_argument("--preview-overlay", choices=("standard", "compact"), default="standard")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8080)
     parser.add_argument("--timeout-s", type=float, default=5.0)
-    parser.add_argument("--manifest")
+    parser.add_argument("--manifest", default=preflight.DEFAULT_RUN_MANIFEST,
+                        help="reviewed WO-0015 run manifest (defaults to the Gray8 active baseline)")
     parser.add_argument("--manifest-sha256")
+    parser.add_argument("--approved-boot-id",
+                        help="explicit current board Boot ID; requires --manifest-sha256")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--authorize-stage")
     parser.add_argument("--approve-once", action="store_true")
@@ -2183,6 +2752,8 @@ def _parser() -> argparse.ArgumentParser:
                         help="validate the current Stage B-2 READY guard without modifying it; a separate single-attempt record is still consumed")
     parser.add_argument("--attempt-id",
                         help="unique Stage B-2 permit identity, such as attempt-2")
+    parser.add_argument("--diagnostic-probe", action="store_true",
+                        help="run the single 100-frame empty-belt M8 memory probe under its own one-shot permit")
     parser.add_argument("--operator-prearm-delay-s", type=float,
                         default=STAGEB2_OPERATOR_PREARM_DELAY_S,
                         help="flushed operator countdown after camera warm-up and before the 3-second stabilization")
@@ -2191,6 +2762,12 @@ def _parser() -> argparse.ArgumentParser:
                         help="opt-in lossless Gray8 input + raw Binary8 mask dataset directory")
     parser.add_argument("--capture-max-bytes", type=int, default=DEFAULT_MAX_BYTES,
                         help="maximum total bytes for the optional evidence dataset")
+    parser.add_argument("--count-observability", action="store_true",
+                        help="record extra diagnostic components without changing counter decisions")
+    parser.add_argument("--capture-write-mode", choices=("auto", "deferred", "bounded_stream"), default="auto",
+                        help="deferred retains the full run in RAM; bounded_stream uses four slots and writes during sampling")
+    parser.add_argument("--export-effective-config", type=Path,
+                        help="write resolved local configuration and exit without hardware access")
     return parser
 
 
@@ -2202,10 +2779,17 @@ def main(argv: list[str] | None = None, *,
     args = parser.parse_args(argv)
     args.process_start_monotonic = process_start_monotonic
     try:
+        if args.export_effective_config:
+            resolved = effective_configuration(args)
+            _write_json_exclusive(args.export_effective_config, resolved)
+            print(json.dumps(resolved, ensure_ascii=False, indent=2, sort_keys=True))
+            return 0
         if args.physical_calibration:
             validate_calibration_options(args)
         if args.no_consume_guard and args.mode != "board":
             raise ValueError("--no-consume-guard is only valid in explicitly authorized board mode")
+        if args.diagnostic_probe and args.mode != "board":
+            raise ValueError("--diagnostic-probe is only valid in explicitly authorized board mode")
         if args.no_consume_guard and not args.attempt_id:
             raise ValueError("--no-consume-guard requires a unique --attempt-id")
         if (args.no_consume_guard

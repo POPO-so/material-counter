@@ -20,7 +20,38 @@ WIDTH = 320
 HEIGHT = 240
 PIXELS = WIDTH * HEIGHT
 RX_BYTES = PIXELS
-TX_BYTES = 16 + PIXELS * 3 + 16
+PAYLOAD_BYTES = PIXELS
+TX_BYTES = 16 + PAYLOAD_BYTES + 16
+DEFAULT_STREAM_HISTORY_LIMIT = 2000
+DMA_WAIT_THREAD_JOIN_S = 0.02
+
+
+class RollingHistory(deque):
+    """Fixed-size recent sample window with cumulative count, sum and extrema."""
+
+    def __init__(self, iterable=(), *, maxlen: int = DEFAULT_STREAM_HISTORY_LIMIT):
+        if isinstance(maxlen, bool) or not isinstance(maxlen, int) or maxlen < 1:
+            raise ValueError("rolling history maxlen must be a positive integer")
+        super().__init__(maxlen=maxlen)
+        self.total_count = 0
+        self.total_sum = 0.0
+        self.min_seen: float | None = None
+        self.max_seen: float | None = None
+        self.extend(iterable)
+
+    def append(self, value: float) -> None:
+        sample = float(value)
+        if not math.isfinite(sample):
+            raise ValueError("rolling history samples must be finite")
+        super().append(sample)
+        self.total_count += 1
+        self.total_sum += sample
+        self.min_seen = sample if self.min_seen is None else min(self.min_seen, sample)
+        self.max_seen = sample if self.max_seen is None else max(self.max_seen, sample)
+
+    def extend(self, values) -> None:
+        for value in values:
+            self.append(value)
 
 
 class PacketEncoder(Protocol):
@@ -65,6 +96,7 @@ class DmaBufferSlot:
     capture_source_gray: np.ndarray | None = None
     dma_complete_monotonic_ns: int | None = None
     capture_monotonic_ns: int | None = None
+    frame_timings_ms: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -105,6 +137,8 @@ class FrameResult:
     tracks: tuple[dict[str, Any], ...] = ()
     glare_rejected_count: int = 0
     glare_area_px: int = 0
+    diagnostics: dict[str, Any] = field(default_factory=dict, compare=False)
+    stage_timings_ms: dict[str, float] = field(default_factory=dict, compare=False)
 
 
 @dataclass
@@ -121,6 +155,8 @@ class _Track:
     forward_velocity: float | None = None
     capture_monotonic_ns: int | None = None
     velocity_px_per_s: float | None = None
+    born_past_line: bool = False
+    born_counted_without_event: bool = False
 
 
 class MaskCounter:
@@ -154,7 +190,9 @@ class MaskCounter:
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
                  discard_finished_tracks: bool = False,
-                 motion_timebase_s: float | None = None):
+                 max_completed_tracks: int = 128,
+                 motion_timebase_s: float | None = None,
+                 observability: bool = False):
         self.width = _integer(width, "width", minimum=1)
         self.height = _integer(height, "height", minimum=1)
         self.line_y = _integer(line_y, "line_y", minimum=0)
@@ -225,6 +263,12 @@ class MaskCounter:
         if not isinstance(discard_finished_tracks, bool):
             raise ValueError("discard_finished_tracks must be a bool")
         self.discard_finished_tracks = discard_finished_tracks
+        self.max_completed_tracks = _integer(
+            max_completed_tracks, "max_completed_tracks", minimum=1
+        )
+        if not isinstance(observability, bool):
+            raise ValueError("observability must be a bool")
+        self.observability = observability
         self.motion_timebase_s = (None if motion_timebase_s is None else
                                   _positive_float(motion_timebase_s, "motion_timebase_s"))
         self._last_capture_monotonic_ns = None
@@ -233,6 +277,7 @@ class MaskCounter:
         self.total_count = 0
         self.last_frame_id: int | None = None
         self._tracks: dict[int, _Track] = {}
+        self._completed_tracks: deque[_Track] = deque(maxlen=self.max_completed_tracks)
         self._next_track_id = 1
         self.last_associations: list[dict[str, Any]] = []
         self.glare_rejected_count = 0
@@ -240,6 +285,141 @@ class MaskCounter:
         self.rejected_detections: tuple[Detection, ...] = ()
         self.rejected_contours: tuple[np.ndarray, ...] = ()
         self._split_origins: dict[Detection, int] = {}
+        self.last_lost_tracks: list[dict[str, Any]] = []
+        self._frame_diagnostics: dict[str, list[dict[str, Any]]] = {}
+        self._last_t_ccl_ms = 0.0
+        self._last_t_split_ms = 0.0
+        self._last_t_diagnostic_ccl_ms = 0.0
+        self._last_split_calls = 0
+
+    def _begin_frame_observability(self) -> None:
+        self.last_lost_tracks = []
+        self._last_t_ccl_ms = 0.0
+        self._last_t_split_ms = 0.0
+        self._last_t_diagnostic_ccl_ms = 0.0
+        self._last_split_calls = 0
+        self._frame_diagnostics = ({
+            "rejected_components": [],
+            "split_attempts": [],
+            "ambiguous_associations": [],
+            "association_candidates": [],
+            "boundary_observations": [],
+            "lost_tracks": [],
+            "associations": [],
+        } if self.observability else {})
+
+    def _detection_record(self, detection: Detection) -> dict[str, Any]:
+        record = {
+            "x_min": detection.x_min,
+            "x_max": detection.x_max,
+            "y_min": detection.y_min,
+            "y_max": detection.y_max,
+            "area": detection.area,
+            "centroid_x": detection.centroid_x,
+            "centroid_y": detection.centroid_y,
+        }
+        clipped_edges = []
+        if detection.x_min <= 0:
+            clipped_edges.append("left")
+        if detection.x_max >= self.width - 1:
+            clipped_edges.append("right")
+        if detection.y_min <= 0:
+            clipped_edges.append("top")
+        if detection.y_max >= self.height - 1:
+            clipped_edges.append("bottom")
+        if clipped_edges:
+            record["frame_clipped_edges"] = clipped_edges
+        return record
+
+    def _record_rejected_component(self, detection: Detection, reason: str,
+                                   *, rejected: bool = True,
+                                   **details: Any) -> None:
+        if self.observability:
+            self._frame_diagnostics["rejected_components"].append({
+                "detection": self._detection_record(detection),
+                "reason": reason,
+                "rejected": rejected,
+                **details,
+            })
+
+    def _record_outside_roi_components(self, image: np.ndarray,
+                                      top: int, bottom: int) -> None:
+        """Run opt-in full-frame CCL to expose components clipped by the active ROI."""
+        if not self.observability:
+            return
+        started = time.perf_counter()
+        count, _, stats, centroids = cv2.connectedComponentsWithStats(
+            image, connectivity=8, ltype=cv2.CV_16U
+        )
+        self._last_t_diagnostic_ccl_ms += (time.perf_counter() - started) * 1000.0
+        for label in range(1, count):
+            x, y, box_width, box_height, area = (int(value) for value in stats[label])
+            y_max = y + box_height - 1
+            x_max = x + box_width - 1
+            frame_clipped_edges = []
+            if x <= 0:
+                frame_clipped_edges.append("left")
+            if x_max >= self.width - 1:
+                frame_clipped_edges.append("right")
+            if y <= 0:
+                frame_clipped_edges.append("top")
+            if y_max >= self.height - 1:
+                frame_clipped_edges.append("bottom")
+            roi_clipped_edges = []
+            if y < top:
+                roi_clipped_edges.append("top")
+            if y_max >= bottom:
+                roi_clipped_edges.append("bottom")
+            if not roi_clipped_edges and not frame_clipped_edges:
+                continue
+            detection = Detection(
+                x, x_max, y, y_max, area,
+                float(centroids[label, 0]), float(centroids[label, 1]),
+            )
+            intersects_roi = y < bottom and y_max >= top
+            if roi_clipped_edges:
+                reason = ("partially_outside_roi" if intersects_roi
+                          else "outside_roi")
+                self._record_rejected_component(
+                    detection, reason, source="full_frame_ccl",
+                    clipped_edges=roi_clipped_edges,
+                    rejected=reason == "outside_roi",
+                    partial_crop_only=reason == "partially_outside_roi",
+                )
+            if frame_clipped_edges:
+                self._frame_diagnostics["boundary_observations"].append({
+                    "detection": self._detection_record(detection),
+                    "frame_clipped_edges": frame_clipped_edges,
+                    "roi_clipped_edges": roi_clipped_edges,
+                    "visible_in_roi": intersects_roi,
+                })
+
+    def _record_small_roi_components(self, roi: np.ndarray, top: int) -> None:
+        """Diagnose components skipped by the foreground-count early return."""
+        if not self.observability:
+            return
+        started = time.perf_counter()
+        count, _, stats, centroids = cv2.connectedComponentsWithStats(
+            roi, connectivity=8, ltype=cv2.CV_16U
+        )
+        self._last_t_diagnostic_ccl_ms += (time.perf_counter() - started) * 1000.0
+        for label in range(1, count):
+            x, y, box_width, box_height, area = (int(value) for value in stats[label])
+            if area >= self.min_area:
+                continue
+            detection = Detection(
+                x, x + box_width - 1, y + top, y + top + box_height - 1, area,
+                float(centroids[label, 0]), float(centroids[label, 1] + top),
+            )
+            self._record_rejected_component(
+                detection, "below_min_area", source="roi_ccl",
+            )
+
+    def _diagnostics_snapshot(self) -> dict[str, Any]:
+        if not self.observability:
+            return {}
+        return {name: [dict(item) for item in records]
+                for name, records in self._frame_diagnostics.items()}
 
     def update_detections(self, frame_id: int, detections: Any, *,
                           capture_monotonic_ns: int | None = None) -> FrameResult:
@@ -249,6 +429,7 @@ class MaskCounter:
         Area filtering is identical to the live CCL path.
         """
         frame_id = _integer(frame_id, "frame_id", minimum=0)
+        self._begin_frame_observability()
         self._split_origins = {}
         if self.last_frame_id is not None and frame_id <= self.last_frame_id:
             raise ValueError("frame IDs must strictly increase")
@@ -264,6 +445,8 @@ class MaskCounter:
                     or detection.area > (detection.x_max-detection.x_min+1)*(detection.y_max-detection.y_min+1)):
                 raise ValueError("invalid recorded component geometry")
             if detection.area < self.min_area:
+                self._record_rejected_component(detection, "below_min_area",
+                                                source="recorded_detection")
                 continue
             if self._component_exceeds_limits(
                 detection.area,
@@ -271,6 +454,15 @@ class MaskCounter:
                 detection.y_max - detection.y_min + 1,
             ):
                 rejected.append(detection)
+                reason = self._component_rejection_reason(
+                    detection.area,
+                    detection.x_max - detection.x_min + 1,
+                    detection.y_max - detection.y_min + 1,
+                )
+                self._record_rejected_component(
+                    detection, reason or "component_limit",
+                    source="recorded_detection",
+                )
             else:
                 accepted.append(detection)
         self._set_rejected_components(rejected)
@@ -278,28 +470,33 @@ class MaskCounter:
         raw_detections = tuple(accepted)
         accepted = self._cluster_components(accepted)
         self.last_frame_id = frame_id
+        track_started = time.perf_counter()
         events = self._associate_and_update(frame_id, accepted, timestamp)
+        track_ms = (time.perf_counter() - track_started) * 1000.0
+        if self.observability:
+            self._frame_diagnostics["associations"] = [
+                dict(association) for association in self.last_associations
+            ]
         top, bottom = self._roi_bounds()
+        diagnostics = self._diagnostics_snapshot()
         return FrameResult(frame_id, self.total_count, tuple(accepted), tuple(events),
                            top, bottom, (), (), raw_detections=raw_detections,
                            suppressed_events=tuple(self.last_suppressed_events),
                            tracks=self.tracking_snapshot(),
                            glare_rejected_count=self.glare_rejected_count,
-                           glare_area_px=self.glare_area_px)
+                           glare_area_px=self.glare_area_px,
+                           diagnostics=diagnostics,
+                           stage_timings_ms={
+                               "t_ccl": 0.0,
+                               "t_split": 0.0,
+                               "t_track": track_ms,
+                               "split_calls": 0,
+                           })
 
-    def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
-        """Return serializable track state without mutating tracker behavior."""
-        return tuple({
+    def _track_record(self, track: _Track) -> dict[str, Any]:
+        return {
             "track_id": track.track_id,
-            "detection": {
-                "x_min": track.detection.x_min,
-                "x_max": track.detection.x_max,
-                "y_min": track.detection.y_min,
-                "y_max": track.detection.y_max,
-                "area": track.detection.area,
-                "centroid_x": track.detection.centroid_x,
-                "centroid_y": track.detection.centroid_y,
-            },
+            "detection": self._detection_record(track.detection),
             "last_frame": track.last_frame,
             "streak": track.streak,
             "confirmed": track.confirmed,
@@ -308,7 +505,25 @@ class MaskCounter:
             "missed": track.missed,
             "finished": track.finished,
             "forward_velocity": track.forward_velocity,
-        } for track in sorted(self._tracks.values(), key=lambda item: item.track_id))
+            "born_past_line": track.born_past_line,
+            "born_counted_without_event": track.born_counted_without_event,
+        }
+
+    def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
+        """Return active and most-recent completed tracks in stable ID order."""
+        retained = (*self._completed_tracks, *self._tracks.values())
+        return tuple(self._track_record(track) for track in
+                     sorted(retained, key=lambda item: item.track_id))
+
+    def _finish_track(self, track: _Track, reason: str) -> None:
+        if track.finished:
+            return
+        track.finished = True
+        if self.observability:
+            lost = self._track_record(track)
+            lost["lost_reason"] = reason
+            self.last_lost_tracks.append(lost)
+            self._frame_diagnostics["lost_tracks"].append(dict(lost))
 
     def _area_allowed(self, area: int) -> bool:
         return area >= self.min_area and (self.max_area is None or area <= self.max_area)
@@ -319,6 +534,16 @@ class MaskCounter:
             or box_width > self.max_bbox_width
             or box_height > self.max_bbox_height
         )
+
+    def _component_rejection_reason(self, area: int, box_width: int,
+                                    box_height: int) -> str | None:
+        if self.max_area is not None and area > self.max_area:
+            return "max_area"
+        if box_width > self.max_bbox_width:
+            return "bbox_width"
+        if box_height > self.max_bbox_height:
+            return "bbox_height"
+        return None
 
     def _set_rejected_components(
         self,
@@ -352,10 +577,14 @@ class MaskCounter:
         if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (self.height, self.width):
             raise ValueError(f"mask must be a uint8 array with shape {(self.height, self.width)}")
         roi_top, roi_bottom = self._roi_bounds()
+        self._begin_frame_observability()
         roi = image[roi_top:roi_bottom, :]
         if np.any((roi != 0) & (roi != 0xFF)):
             raise ValueError("mask values must be Binary8 0x00 or 0xFF")
         validate_ms = (time.perf_counter() - validate_started) * 1000.0
+
+        if self.observability:
+            self._record_outside_roi_components(image, roi_top, roi_bottom)
 
         projection_started = time.perf_counter()
         row_projection, column_projection, foreground_pixels = self._project_roi(roi)
@@ -370,6 +599,11 @@ class MaskCounter:
         self.last_frame_id = frame_id
         events = self._associate_and_update(frame_id, detections, timestamp)
         track_ms = (time.perf_counter() - track_started) * 1000.0
+        if self.observability:
+            self._frame_diagnostics["associations"] = [
+                dict(association) for association in self.last_associations
+            ]
+        diagnostics = self._diagnostics_snapshot()
         return FrameResult(
             frame_id=frame_id,
             total_count=self.total_count,
@@ -392,6 +626,15 @@ class MaskCounter:
             tracks=self.tracking_snapshot(),
             glare_rejected_count=self.glare_rejected_count,
             glare_area_px=self.glare_area_px,
+            diagnostics=diagnostics,
+            stage_timings_ms={
+                "t_ccl": self._last_t_ccl_ms,
+                "t_split": self._last_t_split_ms,
+                "t_track": track_ms,
+                "split_calls": self._last_split_calls,
+                **({"t_diagnostic_ccl": self._last_t_diagnostic_ccl_ms}
+                   if self.observability else {}),
+            },
         )
 
     def _roi_bounds(self) -> tuple[int, int]:
@@ -422,12 +665,17 @@ class MaskCounter:
                         foreground_pixels: int) -> list[Detection]:
         self._set_rejected_components([])
         self._split_origins = {}
+        self._last_t_ccl_ms = 0.0
+        self._last_t_split_ms = 0.0
+        self._last_split_calls = 0
         if foreground_pixels < self.min_area:
+            self._record_small_roi_components(roi, top)
             return []
         if not roi.flags.c_contiguous:
             roi = np.ascontiguousarray(roi)
         fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
         fast_algorithm = getattr(cv2, "CCL_GRANA", None)
+        ccl_started = time.perf_counter()
         if callable(fast_ccl) and fast_algorithm is not None:
             count, labels, stats, centroids = fast_ccl(
                 roi, 8, cv2.CV_16U, fast_algorithm
@@ -436,6 +684,23 @@ class MaskCounter:
             count, labels, stats, centroids = cv2.connectedComponentsWithStats(
                 roi, connectivity=8, ltype=cv2.CV_16U
             )
+        self._last_t_ccl_ms = (time.perf_counter() - ccl_started) * 1000.0
+        if self.observability:
+            for label in range(1, count):
+                x, y, box_width, box_height, area = (
+                    int(value) for value in stats[label]
+                )
+                if area >= self.min_area:
+                    continue
+                self._record_rejected_component(
+                    Detection(
+                        x_min=x, x_max=x + box_width - 1,
+                        y_min=y + top, y_max=y + top + box_height - 1,
+                        area=area, centroid_x=float(centroids[label, 0]),
+                        centroid_y=float(centroids[label, 1] + top),
+                    ),
+                    "below_min_area", source="roi_ccl",
+                )
         qualified_labels = np.flatnonzero(
             stats[1:count, cv2.CC_STAT_AREA] >= self.min_area
         ) + 1
@@ -457,6 +722,12 @@ class MaskCounter:
             )
             if self._component_exceeds_limits(area, box_width, box_height):
                 rejected.append(detection)
+                self._record_rejected_component(
+                    detection,
+                    self._component_rejection_reason(area, box_width, box_height)
+                    or "component_limit",
+                    source="roi_ccl",
+                )
                 component_mask = cv2.compare(labels, int(label), cv2.CMP_EQ)
                 contours, _ = cv2.findContours(
                     component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -466,13 +737,25 @@ class MaskCounter:
                     full_frame_contour[:, 0, 1] += top
                     rejected_contours.append(full_frame_contour)
                 continue
-            if (self.guarded_merge and self.single_intact_area < area <= self.max_split_area):
+            split_eligible = (self.guarded_merge and area > self.single_intact_area)
+            if split_eligible and area > self.max_split_area:
+                if self.observability:
+                    self._frame_diagnostics["split_attempts"].append({
+                        "detection": self._detection_record(detection),
+                        "split_attempted": False,
+                        "split_rejected_reason": "above_max_split_area",
+                        "accepted": False,
+                        "children": [],
+                    })
+            if split_eligible and area <= self.max_split_area:
                 cropped = labels[y:y + box_height, x:x + box_width] == label
+                split_started = time.perf_counter()
                 pieces = split_touching_component(cropped, min_child_area=self.min_split_child_area,
                                                   min_hole_area=self.split_min_hole_area,
                                                   recursive_item_area=self.split_recursive_item_area,
                                                   min_hole_distance=self.split_min_hole_distance,
                                                   hole_area_cap=self.split_hole_area_cap)
+                self._last_split_calls += 1
                 piece_masks = [np.asarray(piece) != 0 for piece in pieces]
                 valid_partition = (2 <= len(piece_masks) <= 3
                                    and all(piece.shape == cropped.shape
@@ -482,23 +765,56 @@ class MaskCounter:
                     coverage = np.sum(np.stack(piece_masks), axis=0)
                     valid_partition = (np.array_equal(coverage > 0, cropped)
                                        and not np.any(coverage > 1))
+                children = []
                 if valid_partition:
                     for piece in pieces:
                         ys, xs = np.nonzero(piece)
                         piece_area = len(xs)
-                        child = Detection(
+                        children.append(Detection(
                             x_min=x + int(xs.min()), x_max=x + int(xs.max()),
                             y_min=top + y + int(ys.min()),
                             y_max=top + y + int(ys.max()), area=piece_area,
                             centroid_x=x + float(np.mean(xs)),
                             centroid_y=top + y + float(np.mean(ys)),
-                        )
+                        ))
+                if self.observability:
+                    diagnostic_children = children
+                    if not valid_partition:
+                        for piece in pieces:
+                            ys, xs = np.nonzero(piece)
+                            if len(xs):
+                                diagnostic_children.append(Detection(
+                                    x_min=x + int(xs.min()), x_max=x + int(xs.max()),
+                                    y_min=top + y + int(ys.min()),
+                                    y_max=top + y + int(ys.max()), area=len(xs),
+                                    centroid_x=x + float(np.mean(xs)),
+                                    centroid_y=top + y + float(np.mean(ys)),
+                                ))
+                    split_rejected_reason = (
+                        None if valid_partition else
+                        "no_valid_partition" if len(piece_masks) < 2 else
+                        "invalid_partition"
+                    )
+                    self._frame_diagnostics["split_attempts"].append({
+                        "detection": self._detection_record(detection),
+                        "split_attempted": True,
+                        "split_rejected_reason": split_rejected_reason,
+                        "accepted": bool(valid_partition),
+                        "candidate_piece_count": len(piece_masks),
+                        "children": [self._detection_record(child)
+                                     for child in diagnostic_children],
+                    })
+                self._last_t_split_ms += (time.perf_counter() - split_started) * 1000.0
+                if valid_partition:
+                    for child in children:
                         detections.append(child)
                         self._split_origins[child] = int(label)
                     continue
             detections.append(detection)
         self._set_rejected_components(rejected, rejected_contours)
         detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
+        self._last_t_ccl_ms = max(0.0, (time.perf_counter() - ccl_started) * 1000.0
+                                 - self._last_t_split_ms)
         return detections
 
     def _extract_roi_detections(
@@ -690,15 +1006,18 @@ class MaskCounter:
                               detections: list[Detection],
                               capture_monotonic_ns: int | None = None) -> list[CountEvent]:
         active = []
+        finished_tracks: list[_Track] = []
         self.last_associations = []
         self.last_suppressed_events = []
         self._recent_events = [event for event in self._recent_events
                                if frame_id-event.frame_id <= self.cooldown_frames]
         for track in self._tracks.values():
             if track.finished:
+                finished_tracks.append(track)
                 continue
             if frame_id - track.last_frame > self._missing_budget(track) + 1:
-                track.finished = True
+                self._finish_track(track, "association_gap_exceeded")
+                finished_tracks.append(track)
             else:
                 active.append(track)
 
@@ -734,6 +1053,47 @@ class MaskCounter:
                     area_ratio *= old_box/new_box
                 missing_frames = max(0, dt - 1)
                 gap = missing_frames > 0
+                candidate_record = None
+                if self.observability:
+                    candidate_predicted_x = old.centroid_x
+                    candidate_predicted_y = old.centroid_y
+                    if missing_frames and velocity is not None:
+                        candidate_prediction = self.direction * velocity * motion_dt
+                        if self.count_axis == "x":
+                            candidate_predicted_x += candidate_prediction
+                        else:
+                            candidate_predicted_y += candidate_prediction
+                    candidate_record = {
+                        "track_id": track.track_id,
+                        "detection_index": index,
+                        "dt_frames": dt,
+                        "missing_frames": missing_frames,
+                        "inferred_gap": gap,
+                        "dx_px": dx,
+                        "dy_px": dy,
+                        "forward_px": forward,
+                        "lateral_px": lateral,
+                        "area_ratio": area_ratio,
+                        "max_lateral_px": None,
+                        "min_forward_px": -self.backward_tolerance,
+                        "max_forward_px": self.max_step * motion_dt,
+                        "min_area_ratio": 0.25,
+                        "max_area_ratio": 4.0,
+                        "predicted_centroid": {
+                            "x": candidate_predicted_x,
+                            "y": candidate_predicted_y,
+                        },
+                        "prediction_distance_squared": (
+                            (detection.centroid_x-candidate_predicted_x) ** 2
+                            + (detection.centroid_y-candidate_predicted_y) ** 2
+                        ),
+                        "eligible": False,
+                        "selected": False,
+                        "rejection_reasons": [],
+                    }
+                    self._frame_diagnostics["association_candidates"].append(
+                        candidate_record
+                    )
                 if missing_frames > self.max_missing:
                     velocity_ok = (
                         track.confirmed and track.armed and not track.counted
@@ -754,11 +1114,20 @@ class MaskCounter:
                         missing_frames <= self.prediction_max_missing and velocity_ok
                     )
                     if not (edge_recovery or predicted_recovery):
+                        if candidate_record is not None:
+                            candidate_record["velocity_ok"] = velocity_ok
+                            candidate_record["edge_recovery"] = edge_recovery
+                            candidate_record["predicted_recovery"] = predicted_recovery
+                            candidate_record["rejection_reasons"].append(
+                                "missing_frames_exceed_recovery_budget"
+                            )
                         continue
                 lateral_limit = (self.max_lateral_step if self.strict_lateral_gate
                                  else self.max_lateral_step * dt)
                 if self.motion_timebase_s is not None:
                     lateral_limit = self.max_lateral_step * motion_dt
+                if candidate_record is not None:
+                    candidate_record["max_lateral_px"] = lateral_limit
                 if (lateral <= lateral_limit
                         and -self.backward_tolerance <= forward <= self.max_step * motion_dt
                         and 0.25 <= area_ratio <= 4.0):
@@ -771,7 +1140,27 @@ class MaskCounter:
                             predicted_y += longitudinal_prediction
                     prediction_distance = ((detection.centroid_x-predicted_x) ** 2
                                            + (detection.centroid_y-predicted_y) ** 2)
+                    if candidate_record is not None:
+                        candidate_record["predicted_centroid"] = {
+                            "x": predicted_x, "y": predicted_y,
+                        }
+                        candidate_record["prediction_distance_squared"] = prediction_distance
+                        candidate_record["eligible"] = True
                     edges.append((prediction_distance, track.track_id, index, gap))
+                elif candidate_record is not None:
+                    if lateral > lateral_limit:
+                        candidate_record["rejection_reasons"].append(
+                            "lateral_step_exceeded"
+                        )
+                    if not (-self.backward_tolerance <= forward
+                            <= self.max_step * motion_dt):
+                        candidate_record["rejection_reasons"].append(
+                            "forward_step_out_of_range"
+                        )
+                    if not 0.25 <= area_ratio <= 4.0:
+                        candidate_record["rejection_reasons"].append(
+                            "area_ratio_out_of_range"
+                        )
 
         # An inferred gap must have a unique candidate in both directions.
         # Refuse nearest-neighbour guessing when more than one object fits.
@@ -783,14 +1172,56 @@ class MaskCounter:
         used_tracks: set[int] = set()
         used_detections: set[int] = set()
         events = []
-        for _, track_id, index, gap in sorted(edges):
+        for prediction_distance, track_id, index, gap in sorted(edges):
             if gap and (track_id in ambiguous_tracks or index in ambiguous_detections):
+                if self.observability:
+                    reasons = []
+                    if track_id in ambiguous_tracks:
+                        reasons.append("track_has_multiple_candidates")
+                    if index in ambiguous_detections:
+                        reasons.append("detection_matches_multiple_tracks")
+                    candidate = next((item for item in self._frame_diagnostics[
+                        "association_candidates"]
+                        if item["track_id"] == track_id
+                        and item["detection_index"] == index), None)
+                    if candidate is not None:
+                        candidate["rejection_reasons"].append("ambiguous_gap_match")
+                    self._frame_diagnostics["ambiguous_associations"].append({
+                        "track_id": track_id,
+                        "detection_index": index,
+                        "inferred_gap": True,
+                        "prediction_distance_squared": prediction_distance,
+                        "predicted_centroid": (None if candidate is None else
+                                                candidate["predicted_centroid"]),
+                        "track_candidate_count": track_frequency[track_id],
+                        "detection_candidate_count": detection_frequency[index],
+                        "reason": "ambiguous_gap_match",
+                        "ambiguity_reasons": reasons,
+                    })
                 continue
             if track_id in used_tracks or index in used_detections:
+                if self.observability:
+                    candidate = next((item for item in self._frame_diagnostics[
+                        "association_candidates"]
+                        if item["track_id"] == track_id
+                        and item["detection_index"] == index), None)
+                    if candidate is not None:
+                        candidate["rejection_reasons"].append("association_conflict")
                 continue
             track = self._tracks[track_id]
             detection = detections[index]
             dt = frame_id - track.last_frame
+            if self.observability:
+                candidate = next((item for item in self._frame_diagnostics[
+                    "association_candidates"]
+                    if item["track_id"] == track_id
+                    and item["detection_index"] == index), None)
+                if candidate is not None:
+                    candidate["selected"] = True
+                    candidate["selected_kind"] = (
+                        "edge_gap_inferred" if gap and self._edge(track.detection)
+                        else "predicted_gap_inferred" if gap else "matched"
+                    )
             self.last_associations.append({"track_id": track_id, "detection_index": index,
                                            "previous_frame": track.last_frame,
                                            "kind": ("edge_gap_inferred" if gap and self._edge(track.detection)
@@ -835,7 +1266,8 @@ class MaskCounter:
                 track.missed = frame_id - track.last_frame
                 track.streak = 0
                 if track.missed > self._missing_budget(track):
-                    track.finished = True
+                    self._finish_track(track, "missed_frame_budget_exceeded")
+                    finished_tracks.append(track)
 
         for index, detection in enumerate(detections):
             if index in used_detections:
@@ -850,20 +1282,26 @@ class MaskCounter:
                 counted=born_after_arming_zone,
                 confirmed=self.confirm_hits <= 1,
                 capture_monotonic_ns=capture_monotonic_ns,
+                born_past_line=side >= 0,
+                born_counted_without_event=born_after_arming_zone,
             )
             self._tracks[track.track_id] = track
             self.last_associations.append({"track_id": track.track_id, "detection_index": index,
-                                           "previous_frame": None, "kind": "new", "dx": None, "dy": None})
+                                           "previous_frame": None, "kind": "new", "dx": None, "dy": None,
+                                           "born_past_line": track.born_past_line,
+                                           "born_counted_without_event": born_after_arming_zone})
             self._next_track_id += 1
-        if self.discard_finished_tracks:
-            for track_id in [track_id for track_id, track in self._tracks.items()
-                             if track.finished]:
-                del self._tracks[track_id]
+        for track in finished_tracks:
+            retained = self._tracks.pop(track.track_id, None)
+            if retained is not None and not self.discard_finished_tracks:
+                self._completed_tracks.append(retained)
         self._last_capture_monotonic_ns = capture_monotonic_ns
         return sorted(events, key=lambda event: event.track_id)
 
 
-async def _wait_channel(channel: Any) -> None:
+async def _wait_channel(channel: Any, *,
+                       wait_thread_callback: Callable[[threading.Thread, bool], None] | None = None
+                       ) -> None:
     wait = getattr(channel, "wait", None)
     if callable(wait):
         loop = asyncio.get_running_loop()
@@ -889,8 +1327,16 @@ async def _wait_channel(channel: Any) -> None:
                 # A timed-out DMA wait may finish after the fail-hold loop closes.
                 pass
 
-        threading.Thread(target=blocking_wait, name="wo0016-dma-wait", daemon=True).start()
-        await completed
+        worker = threading.Thread(target=blocking_wait, name="wo0016-dma-wait", daemon=True)
+        if wait_thread_callback is not None:
+            wait_thread_callback(worker, True)
+        worker.start()
+        try:
+            await completed
+        finally:
+            worker.join(timeout=DMA_WAIT_THREAD_JOIN_S)
+            if wait_thread_callback is not None:
+                wait_thread_callback(worker, worker.is_alive())
         return
 
     wait_async = getattr(channel, "wait_async", None)
@@ -902,7 +1348,9 @@ async def _wait_channel(channel: Any) -> None:
     await result
 
 
-def transfer_async(channel: Any, buffer: Any, nbytes: int) -> asyncio.Task:
+def transfer_async(channel: Any, buffer: Any, nbytes: int, *,
+                   wait_thread_callback: Callable[[threading.Thread, bool], None] | None = None
+                   ) -> asyncio.Task:
     """Start PYNQ's non-blocking transfer and return an async completion task.
 
     PYNQ's ``transfer`` starts the operation and returns ``None``; completion
@@ -911,7 +1359,9 @@ def transfer_async(channel: Any, buffer: Any, nbytes: int) -> asyncio.Task:
     """
     nbytes = _integer(nbytes, "nbytes", minimum=1)
     channel.transfer(buffer, nbytes=nbytes)
-    return asyncio.create_task(_wait_channel(channel))
+    return asyncio.create_task(
+        _wait_channel(channel, wait_thread_callback=wait_thread_callback)
+    )
 
 
 def allocate_ping_pong_buffers(allocate: Callable[..., Any], *,
@@ -1005,7 +1455,9 @@ class DoubleBufferStream:
                  capture_callback: Callable[[FrameResult, DmaBufferSlot], Any] | None = None,
                  stage_timings_ms: dict[str, list[float]] | None = None,
                  transfer_timeout_s: float = 5.0,
-                 history_limit: int | None = None):
+                 history_limit: int | None = DEFAULT_STREAM_HISTORY_LIMIT):
+        if history_limit is None:
+            history_limit = DEFAULT_STREAM_HISTORY_LIMIT
         if (history_limit is not None
                 and (isinstance(history_limit, bool)
                      or not isinstance(history_limit, int) or history_limit < 1)):
@@ -1036,7 +1488,7 @@ class DoubleBufferStream:
                 if not isinstance(samples, (list, deque)):
                     raise TypeError("stage timing histories must be lists or deques")
                 if not isinstance(samples, deque) or samples.maxlen != history_limit:
-                    stage_timings_ms[stage] = deque(samples, maxlen=history_limit)
+                    stage_timings_ms[stage] = RollingHistory(samples, maxlen=history_limit)
         self._postprocess_ms: dict[int, float] = {}
         self.transfer_timeout_s = _positive_float(transfer_timeout_s, "transfer_timeout_s")
         self.slots = [
@@ -1061,6 +1513,7 @@ class DoubleBufferStream:
         self._last_result: FrameResult | None = None
         self._frames_processed = 0
         self._pending_waits: list[asyncio.Task] = []
+        self._dma_wait_threads: set[threading.Thread] = set()
         self.held_slots: tuple[DmaBufferSlot, ...] = ()
         self.dma_may_be_active = False
         self._has_run = False
@@ -1072,6 +1525,21 @@ class DoubleBufferStream:
     @property
     def frames_processed(self) -> int:
         return self._frames_processed
+
+    @property
+    def live_dma_wait_threads(self) -> tuple[str, ...]:
+        """Names of blocking DMA wait workers that have not exited yet."""
+        self._dma_wait_threads = {thread for thread in self._dma_wait_threads
+                                  if thread.is_alive()}
+        return tuple(sorted({thread.name for thread in self._dma_wait_threads}))
+
+    def _track_dma_wait_thread(self, thread: threading.Thread, alive: bool) -> None:
+        self._dma_wait_threads = {current for current in self._dma_wait_threads
+                                  if current.is_alive()}
+        if alive:
+            self._dma_wait_threads.add(thread)
+        else:
+            self._dma_wait_threads.discard(thread)
 
     @property
     def last_result(self) -> FrameResult | None:
@@ -1096,6 +1564,7 @@ class DoubleBufferStream:
                     break
                 if consumer.done():
                     consumer.result()
+                source_started = time.perf_counter()
                 pending_source_task = asyncio.create_task(frame_iterator.__anext__())
                 while True:
                     done, _ = await asyncio.wait(
@@ -1143,6 +1612,9 @@ class DoubleBufferStream:
                     raise RuntimeError("buffer pool returned a slot that is not free")
                 slot.state = BufferState.CPU_OWNED
                 slot.frame_id = frame_id
+                slot.frame_timings_ms = {"t_acquire_preprocess": (
+                    float(frame_input.camera_read_ms) if frame_input is not None else
+                    (time.perf_counter() - source_started) * 1000.0)}
                 slot.dma_complete_monotonic_ns = None
                 slot.capture_source_gray = None
                 slot.capture_monotonic_ns = (None if frame_input is None else
@@ -1202,10 +1674,16 @@ class DoubleBufferStream:
 
                 self.dma_may_be_active = True
                 slot.state = BufferState.DMA_OWNED
-                rx_wait = transfer_async(self.recv_channel, slot.rx_buffer, RX_BYTES)
+                rx_wait = transfer_async(
+                    self.recv_channel, slot.rx_buffer, RX_BYTES,
+                    wait_thread_callback=self._track_dma_wait_thread,
+                )
                 self._pending_waits.append(rx_wait)
                 try:
-                    tx_wait = transfer_async(self.send_channel, slot.tx_buffer, TX_BYTES)
+                    tx_wait = transfer_async(
+                        self.send_channel, slot.tx_buffer, TX_BYTES,
+                        wait_thread_callback=self._track_dma_wait_thread,
+                    )
                 except BaseException:
                     self._hold_nonfree_slots()
                     raise
@@ -1357,6 +1835,7 @@ class DoubleBufferStream:
                                                 capture_monotonic_ns=slot.capture_monotonic_ns)
             roi_seconds = time.perf_counter() - roi_started
             self._record_timing("roi_count", roi_seconds)
+            result.stage_timings_ms.update(slot.frame_timings_ms)
             if self.on_frame is not None:
                 if inspect.iscoroutinefunction(self.on_frame):
                     await self.on_frame(result, mask)
@@ -1364,6 +1843,7 @@ class DoubleBufferStream:
                     callback_result = await asyncio.to_thread(self.on_frame, result, mask)
                     if inspect.isawaitable(callback_result):
                         await callback_result
+            sink_started = time.perf_counter()
             if self.preview_callback is not None:
                 preview_gray = (slot.capture_gray if slot.capture_gray is not None
                                 else slot.preview_gray)
@@ -1377,6 +1857,7 @@ class DoubleBufferStream:
                     )
                     if inspect.isawaitable(callback_result):
                         await callback_result
+            result.stage_timings_ms["t_preview_sink"] = (time.perf_counter() - sink_started) * 1000.0
             if self.capture_callback is not None:
                 if (slot.capture_gray is None or slot.capture_mask is None
                         or slot.capture_metadata is None):
@@ -1387,6 +1868,10 @@ class DoubleBufferStream:
                     capture_result = await asyncio.to_thread(self.capture_callback, result, slot)
                     if inspect.isawaitable(capture_result):
                         await capture_result
+            result.stage_timings_ms["t_preview_sink"] = (time.perf_counter() - sink_started) * 1000.0
+            for name, elapsed_ms in result.stage_timings_ms.items():
+                if name.startswith("t_"):
+                    self._record_timing(name, elapsed_ms / 1000.0)
             postprocess_ms = self._postprocess_ms.pop(frame_id, 0.0)
             postprocess_ms += (time.perf_counter() - postprocess_started) * 1000.0
             self._record_timing("postprocess", postprocess_ms / 1000.0)
@@ -1405,7 +1890,7 @@ class DoubleBufferStream:
             samples = self.stage_timings_ms.get(stage)
             if samples is None:
                 samples = ([] if self.history_limit is None else
-                           deque(maxlen=self.history_limit))
+                           RollingHistory(maxlen=self.history_limit))
                 self.stage_timings_ms[stage] = samples
             samples.append(elapsed_seconds * 1000.0)
 
