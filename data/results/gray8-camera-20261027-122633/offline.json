@@ -1,0 +1,11 @@
+{
+  "status": "OFFLINE_ARTIFACTS_VALID",
+  "protocol": "GRAY8_PACKET_V1",
+  "manifest_sha256": "b81e6ea09cba48d643b3f09ae88b9ea784176c81ebc53799f1af38aedb0cd484",
+  "mode": "offline",
+  "tx_bytes": 76832,
+  "rx_bytes": 76800,
+  "count_accuracy": "NOT_MEASURED",
+  "verify_pixels": true,
+  "frames_requested": 30
+}

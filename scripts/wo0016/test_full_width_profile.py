@@ -64,12 +64,15 @@ def test_letterbox_camera_prefetch_does_not_overwrite_previous_frame():
         def get(self, key): return self.props[key]
         def read(self):
             self.reads += 1
-            return True, np.full((400, 640, 3), self.reads, np.uint8)
+            ok, encoded = cv2.imencode(".jpg", np.full((400, 640), self.reads, np.uint8))
+            assert ok
+            return True, encoded.reshape(-1)
         def release(self): self.released = True
     capture = Capture()
     class FakeCV:
         def __getattr__(self, key): return getattr(cv2, key)
         def VideoCapture(self, *args): return capture
+        def imdecode(self, packet, flags): return cv2.imdecode(packet, flags)
     metadata = {}
     mapping_timings = []
     async def consume():

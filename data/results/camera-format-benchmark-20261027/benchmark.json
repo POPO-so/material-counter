@@ -1,0 +1,977 @@
+{
+  "schema_version": 1,
+  "evidence": "CAMERA_ONLY_NOT_COUNTER_FPS",
+  "utc": "2025-05-04T04:57:27.877737+00:00",
+  "host": {
+    "system": "Linux",
+    "node": "pynq",
+    "release": "6.6.10-xilinx-v2024.1-g3c0eca68c652",
+    "version": "#1 SMP PREEMPT Sat Apr 27 05:22:24 UTC 2024",
+    "machine": "armv7l"
+  },
+  "python": "3.10.4 (main, Apr  2 2022, 09:04:19) [GCC 11.2.0]",
+  "opencv": "4.5.4",
+  "enumeration": "ioctl: VIDIOC_ENUM_FMT\n\tType: Video Capture\n\n\t[0]: 'MJPG' (Motion-JPEG, compressed)\n\t\tSize: Discrete 640x400\n\t\t\tInterval: Discrete 0.005s (210.000 fps)\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\t\tInterval: Discrete 0.017s (60.000 fps)\n\t\tSize: Discrete 160x120\n\t\t\tInterval: Discrete 0.005s (210.000 fps)\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\t\tInterval: Discrete 0.017s (60.000 fps)\n\t\tSize: Discrete 176x144\n\t\t\tInterval: Discrete 0.005s (210.000 fps)\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\t\tInterval: Discrete 0.017s (60.000 fps)\n\t\tSize: Discrete 320x240\n\t\t\tInterval: Discrete 0.005s (210.000 fps)\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\t\tInterval: Discrete 0.017s (60.000 fps)\n\t\tSize: Discrete 352x288\n\t\t\tInterval: Discrete 0.005s (210.000 fps)\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\t\tInterval: Discrete 0.017s (60.000 fps)\n\t\tSize: Discrete 424x240\n\t\t\tInterval: Discrete 0.005s (210.000 fps)\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\t\tInterval: Discrete 0.017s (60.000 fps)\n\t\tSize: Discrete 640x360\n\t\t\tInterval: Discrete 0.005s (210.000 fps)\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\t\tInterval: Discrete 0.017s (60.000 fps)\n\t\tSize: Discrete 960x540\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\tSize: Discrete 1280x720\n\t\t\tInterval: Discrete 0.008s (120.000 fps)\n\t\t\tInterval: Discrete 0.017s (60.000 fps)\n\t[1]: 'YUYV' (YUYV 4:2:2)\n\t\tSize: Discrete 640x400\n\t\t\tInterval: Discrete 0.033s (30.000 fps)\n\t\tSize: Discrete 1280x720\n\t\t\tInterval: Discrete 0.100s (10.000 fps)\n",
+  "modes": [
+    {
+      "fourcc": "MJPG",
+      "width": 640,
+      "height": 400,
+      "fps": 210.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 640,
+      "height": 400,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 640,
+      "height": 400,
+      "fps": 60.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 160,
+      "height": 120,
+      "fps": 210.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 160,
+      "height": 120,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 160,
+      "height": 120,
+      "fps": 60.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 176,
+      "height": 144,
+      "fps": 210.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 176,
+      "height": 144,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 176,
+      "height": 144,
+      "fps": 60.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 320,
+      "height": 240,
+      "fps": 210.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 320,
+      "height": 240,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 320,
+      "height": 240,
+      "fps": 60.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 352,
+      "height": 288,
+      "fps": 210.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 352,
+      "height": 288,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 352,
+      "height": 288,
+      "fps": 60.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 424,
+      "height": 240,
+      "fps": 210.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 424,
+      "height": 240,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 424,
+      "height": 240,
+      "fps": 60.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 640,
+      "height": 360,
+      "fps": 210.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 640,
+      "height": 360,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 640,
+      "height": 360,
+      "fps": 60.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 960,
+      "height": 540,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 1280,
+      "height": 720,
+      "fps": 120.0
+    },
+    {
+      "fourcc": "MJPG",
+      "width": 1280,
+      "height": 720,
+      "fps": 60.0
+    },
+    {
+      "fourcc": "YUYV",
+      "width": 640,
+      "height": 400,
+      "fps": 30.0
+    },
+    {
+      "fourcc": "YUYV",
+      "width": 1280,
+      "height": 720,
+      "fps": 10.0
+    }
+  ],
+  "results": [
+    {
+      "status": "ok",
+      "requested": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "negotiated": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "purpose": "CAMERA_ONLY",
+      "processing_path": "raw-gray",
+      "controls_before": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "driver_format_readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+      "raw_layout": {
+        "shape": [
+          1,
+          12468
+        ],
+        "strides": [
+          12468,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "frames": 298,
+      "elapsed_s": 5.011493837999296,
+      "pipeline_fps": 59.463307674936395,
+      "cpu_ms_per_frame": 8.88940570134228,
+      "process_cpu_percent": 52.85934662662497,
+      "read_wall_ms": {
+        "mean": 8.258196379097324,
+        "median": 9.26962750054372,
+        "p95": 9.792196549824439
+      },
+      "decode_or_luma_wall_ms": {
+        "mean": 7.156391741657429,
+        "median": 7.080723498802399,
+        "p95": 7.547952798631741
+      },
+      "resize_wall_ms": {
+        "mean": 1.3360797751521272,
+        "median": 1.3104550016578287,
+        "p95": 1.417185500577034
+      },
+      "decode_or_luma_cpu_ms": {
+        "mean": 7.153010154362412,
+        "median": 7.082009500000375,
+        "p95": 7.54962300000015
+      },
+      "resize_cpu_ms": {
+        "mean": 1.3276400906040036,
+        "median": 1.3069415000002138,
+        "p95": 1.407483349999383
+      },
+      "mean_payload_bytes": 11084.375838926175,
+      "image_mean": 28.96002734375,
+      "image_std": 30.075697334484236,
+      "controls_after": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "backend_stderr": "",
+      "repeat": 0,
+      "test_kind": "matched"
+    },
+    {
+      "status": "ok",
+      "requested": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "negotiated": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "purpose": "CAMERA_ONLY",
+      "processing_path": "opencv-bgr",
+      "controls_before": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "driver_format_readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+      "raw_layout": {
+        "shape": [
+          400,
+          640,
+          3
+        ],
+        "strides": [
+          1920,
+          3,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "frames": 179,
+      "elapsed_s": 5.015170306996879,
+      "pipeline_fps": 35.69170916295094,
+      "cpu_ms_per_frame": 25.75691907821229,
+      "process_cpu_percent": 91.93084646732156,
+      "read_wall_ms": {
+        "mean": 22.525146078231696,
+        "median": 22.869464999530464,
+        "p95": 24.958161000176915
+      },
+      "decode_or_luma_wall_ms": {
+        "mean": 0.6078400223303909,
+        "median": 0.6043450011929963,
+        "p95": 0.6674207983451197
+      },
+      "resize_wall_ms": {
+        "mean": 4.800159620277534,
+        "median": 4.781550000188872,
+        "p95": 4.911786100274185
+      },
+      "decode_or_luma_cpu_ms": {
+        "mean": 0.6008002513965365,
+        "median": 0.5980369999996071,
+        "p95": 0.6612893999997205
+      },
+      "resize_cpu_ms": {
+        "mean": 4.801722318435781,
+        "median": 4.787796999998761,
+        "p95": 4.908295399999751
+      },
+      "mean_payload_bytes": 768000,
+      "image_mean": 14.606046875,
+      "image_std": 15.654881307368724,
+      "controls_after": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "backend_stderr": "",
+      "repeat": 0,
+      "test_kind": "matched"
+    },
+    {
+      "status": "ok",
+      "requested": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "negotiated": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "purpose": "CAMERA_ONLY",
+      "processing_path": "opencv-bgr",
+      "controls_before": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "driver_format_readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+      "raw_layout": {
+        "shape": [
+          400,
+          640,
+          3
+        ],
+        "strides": [
+          1920,
+          3,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "frames": 179,
+      "elapsed_s": 5.016265876001853,
+      "pipeline_fps": 35.683913976001115,
+      "cpu_ms_per_frame": 25.390751145251397,
+      "process_cpu_percent": 90.60413796532026,
+      "read_wall_ms": {
+        "mean": 22.546750050225565,
+        "median": 23.358413000096334,
+        "p95": 25.08312489844684
+      },
+      "decode_or_luma_wall_ms": {
+        "mean": 0.6169912569488557,
+        "median": 0.6050890006008558,
+        "p95": 0.6981616006669354
+      },
+      "resize_wall_ms": {
+        "mean": 4.759769095014423,
+        "median": 4.769796996697551,
+        "p95": 4.942193201350165
+      },
+      "decode_or_luma_cpu_ms": {
+        "mean": 0.6087725418994503,
+        "median": 0.5984500000000281,
+        "p95": 0.68611019999949
+      },
+      "resize_cpu_ms": {
+        "mean": 4.7683517932961355,
+        "median": 4.776295000000985,
+        "p95": 4.948564800000099
+      },
+      "mean_payload_bytes": 768000,
+      "image_mean": 14.5139140625,
+      "image_std": 15.539427982518042,
+      "controls_after": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "backend_stderr": "",
+      "repeat": 1,
+      "test_kind": "matched"
+    },
+    {
+      "status": "ok",
+      "requested": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "negotiated": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "purpose": "CAMERA_ONLY",
+      "processing_path": "raw-gray",
+      "controls_before": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "driver_format_readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+      "raw_layout": {
+        "shape": [
+          1,
+          13252
+        ],
+        "strides": [
+          13252,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "frames": 298,
+      "elapsed_s": 5.017501327998616,
+      "pipeline_fps": 59.39211183405235,
+      "cpu_ms_per_frame": 8.775666755033557,
+      "process_cpu_percent": 52.12053813333283,
+      "read_wall_ms": {
+        "mean": 8.407567604020084,
+        "median": 9.550889000820462,
+        "p95": 9.761097397858975
+      },
+      "decode_or_luma_wall_ms": {
+        "mean": 6.944575241370647,
+        "median": 6.924692499524099,
+        "p95": 7.140310349495849
+      },
+      "resize_wall_ms": {
+        "mean": 1.4171258390955541,
+        "median": 1.3681265008926857,
+        "p95": 1.6192244012927401
+      },
+      "decode_or_luma_cpu_ms": {
+        "mean": 6.950521852348989,
+        "median": 6.929123499999967,
+        "p95": 7.1435130500001165
+      },
+      "resize_cpu_ms": {
+        "mean": 1.411337939597371,
+        "median": 1.3641665000001524,
+        "p95": 1.6041891500002678
+      },
+      "mean_payload_bytes": 11103.476510067114,
+      "image_mean": 32.66141015625,
+      "image_std": 33.08220586960549,
+      "controls_after": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "backend_stderr": "",
+      "repeat": 1,
+      "test_kind": "matched"
+    },
+    {
+      "status": "ok",
+      "requested": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "negotiated": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "purpose": "CAMERA_ONLY",
+      "processing_path": "raw-gray",
+      "controls_before": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "driver_format_readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+      "raw_layout": {
+        "shape": [
+          1,
+          13660
+        ],
+        "strides": [
+          13660,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "frames": 298,
+      "elapsed_s": 5.017771309001546,
+      "pipeline_fps": 59.388916243633496,
+      "cpu_ms_per_frame": 8.872340409395974,
+      "process_cpu_percent": 52.69186814586224,
+      "read_wall_ms": {
+        "mean": 8.304460764966219,
+        "median": 9.330467999461689,
+        "p95": 9.789204700246046
+      },
+      "decode_or_luma_wall_ms": {
+        "mean": 7.151854671180915,
+        "median": 7.08638499963854,
+        "p95": 7.560460549939307
+      },
+      "resize_wall_ms": {
+        "mean": 1.3177229597716866,
+        "median": 1.2942094981553964,
+        "p95": 1.491484249891073
+      },
+      "decode_or_luma_cpu_ms": {
+        "mean": 7.153224268456321,
+        "median": 7.088852000000312,
+        "p95": 7.561616799999715
+      },
+      "resize_cpu_ms": {
+        "mean": 1.3118808322147681,
+        "median": 1.2911169999991756,
+        "p95": 1.4357426499997934
+      },
+      "mean_payload_bytes": 11110.255033557047,
+      "image_mean": 35.71038671875,
+      "image_std": 35.27610341014968,
+      "controls_after": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "backend_stderr": "",
+      "repeat": 2,
+      "test_kind": "matched"
+    },
+    {
+      "status": "ok",
+      "requested": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "negotiated": {
+        "fourcc": "MJPG",
+        "width": 640,
+        "height": 400,
+        "fps": 60.0
+      },
+      "purpose": "CAMERA_ONLY",
+      "processing_path": "opencv-bgr",
+      "controls_before": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "driver_format_readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 60.000 (60/1)\n\tRead buffers     : 0\n",
+      "raw_layout": {
+        "shape": [
+          400,
+          640,
+          3
+        ],
+        "strides": [
+          1920,
+          3,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "frames": 176,
+      "elapsed_s": 5.016249475997029,
+      "pipeline_fps": 35.085974260683734,
+      "cpu_ms_per_frame": 25.882101545454553,
+      "process_cpu_percent": 90.8098748636221,
+      "read_wall_ms": {
+        "mean": 22.80520594877089,
+        "median": 22.914323499207967,
+        "p95": 25.05783674769191
+      },
+      "decode_or_luma_wall_ms": {
+        "mean": 0.6948581422172786,
+        "median": 0.60700900030497,
+        "p95": 0.6220909999683499
+      },
+      "resize_wall_ms": {
+        "mean": 4.842035494241579,
+        "median": 4.793080001036287,
+        "p95": 5.223326000304951
+      },
+      "decode_or_luma_cpu_ms": {
+        "mean": 0.611248931818202,
+        "median": 0.6006734999997043,
+        "p95": 0.6158935000000199
+      },
+      "resize_cpu_ms": {
+        "mean": 4.81703767045458,
+        "median": 4.797464500000181,
+        "p95": 4.946704749999586
+      },
+      "mean_payload_bytes": 768000,
+      "image_mean": 24.5542265625,
+      "image_std": 26.348535836549235,
+      "controls_after": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "backend_stderr": "",
+      "repeat": 2,
+      "test_kind": "matched"
+    },
+    {
+      "status": "error",
+      "requested": {
+        "fourcc": "YUYV",
+        "width": 640,
+        "height": 400,
+        "fps": 30.0
+      },
+      "negotiated": {
+        "fourcc": "YUYV",
+        "width": 640,
+        "height": 400,
+        "fps": 30.0
+      },
+      "purpose": "CAMERA_ONLY",
+      "processing_path": "raw-gray",
+      "controls_before": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "driver_format_readback": "Format Video Capture:\n\tWidth/Height      : 640/400\n\tPixel Format      : 'YUYV' (YUYV 4:2:2)\n\tField             : None\n\tBytes per Line    : 1280\n\tSize Image        : 512000\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Limited Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 30.000 (30/1)\n\tRead buffers     : 0\n",
+      "error": "Warmup read failed",
+      "backend_stderr": "[ WARN:0] global ./modules/videoio/src/cap_v4l.cpp (1001) tryIoctl VIDEOIO(V4L2:/dev/video0): select() timeout.\n",
+      "repeat": 0,
+      "test_kind": "sweep"
+    },
+    {
+      "status": "ok",
+      "requested": {
+        "fourcc": "YUYV",
+        "width": 1280,
+        "height": 720,
+        "fps": 10.0
+      },
+      "negotiated": {
+        "fourcc": "YUYV",
+        "width": 1280,
+        "height": 720,
+        "fps": 10.0
+      },
+      "purpose": "CAMERA_ONLY",
+      "processing_path": "raw-gray",
+      "controls_before": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "driver_format_readback": "Format Video Capture:\n\tWidth/Height      : 1280/720\n\tPixel Format      : 'YUYV' (YUYV 4:2:2)\n\tField             : None\n\tBytes per Line    : 2560\n\tSize Image        : 1843200\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Limited Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 10.000 (10/1)\n\tRead buffers     : 0\n",
+      "raw_layout": {
+        "shape": [
+          720,
+          1280,
+          2
+        ],
+        "strides": [
+          2560,
+          2,
+          1
+        ],
+        "dtype": "uint8"
+      },
+      "frames": 31,
+      "elapsed_s": 5.1436335560028965,
+      "pipeline_fps": 6.026867906214147,
+      "cpu_ms_per_frame": 33.46915477419351,
+      "process_cpu_percent": 20.171417475670083,
+      "read_wall_ms": {
+        "mean": 150.65755287134616,
+        "median": 152.43246700265445,
+        "p95": 153.39246149960672
+      },
+      "decode_or_luma_wall_ms": {
+        "mean": 1.3882318704535495,
+        "median": 1.2541169999167323,
+        "p95": 2.086154499920667
+      },
+      "resize_wall_ms": {
+        "mean": 13.425115806673984,
+        "median": 13.412867003353313,
+        "p95": 13.606979002361186
+      },
+      "decode_or_luma_cpu_ms": {
+        "mean": 1.379939387096674,
+        "median": 1.2494889999992154,
+        "p95": 2.044150999999772
+      },
+      "resize_cpu_ms": {
+        "mean": 13.407806741935453,
+        "median": 13.38219699999943,
+        "p95": 13.567471000000442
+      },
+      "mean_payload_bytes": 1843200,
+      "image_mean": 20.752354600694446,
+      "image_std": 7.06868137573193,
+      "controls_after": {
+        "brightness": 0,
+        "contrast": 50,
+        "saturation": 50,
+        "hue": 0,
+        "white_balance_automatic": 0,
+        "gamma": 100,
+        "power_line_frequency": 1,
+        "white_balance_temperature": 4600,
+        "sharpness": 50,
+        "backlight_compensation": 0,
+        "auto_exposure": 1,
+        "exposure_time_absolute": 50,
+        "exposure_dynamic_framerate": 0,
+        "focus_automatic_continuous": 0
+      },
+      "backend_stderr": "",
+      "repeat": 0,
+      "test_kind": "sweep"
+    }
+  ],
+  "comparisons": [],
+  "limitations": [
+    "Processed-frame FPS is not physical sensor FPS or verified unique-frame FPS.",
+    "read wall time includes waiting, USB, driver and backend overhead.",
+    "CPU time covers this single-threaded process, not kernel/system CPU.",
+    "No FPGA/DMA/tracker/preview; percentages are not whole-counter gains.",
+    "Same controls do not prove identical JPEG/YUV image quality."
+  ],
+  "original_mode": {
+    "width": 640,
+    "height": 400,
+    "fourcc": "MJPG",
+    "fps": 210.0
+  },
+  "controls_initial": {
+    "brightness": 0,
+    "contrast": 50,
+    "saturation": 50,
+    "hue": 0,
+    "white_balance_automatic": 0,
+    "gamma": 100,
+    "power_line_frequency": 1,
+    "white_balance_temperature": 4600,
+    "sharpness": 50,
+    "backlight_compensation": 0,
+    "auto_exposure": 1,
+    "exposure_time_absolute": 50,
+    "exposure_dynamic_framerate": 0,
+    "focus_automatic_continuous": 0
+  },
+  "mjpeg_decode_comparisons": [
+    {
+      "comparability": "matched",
+      "fps_gain_percent": 66.60257821629085,
+      "cpu_reduction_percent": 65.48730974248467,
+      "repeat": 0,
+      "interpretation": "SAME_MJPEG_MODE_GRAY_DECODE_VS_BGR_DECODE"
+    },
+    {
+      "comparability": "matched",
+      "fps_gain_percent": 66.43945469097355,
+      "cpu_reduction_percent": 65.43754572351519,
+      "repeat": 1,
+      "interpretation": "SAME_MJPEG_MODE_GRAY_DECODE_VS_BGR_DECODE"
+    },
+    {
+      "comparability": "matched",
+      "fps_gain_percent": 69.26682953815791,
+      "cpu_reduction_percent": 65.72017000314202,
+      "repeat": 2,
+      "interpretation": "SAME_MJPEG_MODE_GRAY_DECODE_VS_BGR_DECODE"
+    }
+  ],
+  "mode_change_comparisons": [],
+  "restored_mode": {
+    "width": 640,
+    "height": 400,
+    "fourcc": "MJPG",
+    "fps": 210.0
+  },
+  "restoration_ok": true,
+  "controls_final": {
+    "brightness": 0,
+    "contrast": 50,
+    "saturation": 50,
+    "hue": 0,
+    "white_balance_automatic": 0,
+    "gamma": 100,
+    "power_line_frequency": 1,
+    "white_balance_temperature": 4600,
+    "sharpness": 50,
+    "backlight_compensation": 0,
+    "auto_exposure": 1,
+    "exposure_time_absolute": 50,
+    "exposure_dynamic_framerate": 0,
+    "focus_automatic_continuous": 0
+  }
+}

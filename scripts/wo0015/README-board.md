@@ -1,5 +1,11 @@
 # WO-0015 PS board executor
 
+> **Current protocol notice (2026-10-27):** helper module names and historical stage records are retained, but the active production packet protocol has migrated to the unique `GRAY8_PACKET_V1` path in [`scripts/gray8/README.md`](../gray8/README.md). Current TX/RX sizes are 76,832/76,800 bytes. The old RGB packet sizes, signatures, and manifests described below are historical and cannot be used with the current code. There is no RGB runtime fallback. The new BIT passed a 3/3 synthetic board self-test with full Binary8 pixel comparison. A camera attempt failed before DMA because no `/dev/video*` device was enumerated; no buffer was held. No FPS or accuracy result is established by that test.
+
+The remainder of this file preserves the original WO-0015 stage instructions and evidence context. Treat its RGB-specific examples and prior boot identities as archival, not as current deployment instructions.
+
+## Historical WO-0015 RGB-era board contract
+
 This package implements the PS half of the WO-0015 S2MM Binary8 frame-return loop. It is offline-first: `board_preflight.py`, `--mode offline`, `--mode mock`, and `--help` do not import PYNQ or touch MMIO. Only an explicitly authorized board stage imports PYNQ.
 
 The live executor accepts a single reviewed manifest containing three frames. The original source-tree default bound every stage to historical boot ID `cb087bbb-932d-4a6e-9600-98dd1c7e5f8d`; prior reauthorizations used their own pinned packages, including Retry 3 `822a9c29-37c0-438c-81c4-da998d57073b`. The Stage 4 lighting-calibrated authorization now pins this checkout to Boot ID `bb382d01-7bb2-4922-9a85-af6a24ef4d10`; its manifest must bind the same boot, the current `board_once.py` and `board_preflight.py` hashes, the BIT/HWH hashes, and the exact packet and Binary8 golden hashes. S2MM is 32-bit memory / 32-bit stream with an 18-bit length field; each return frame is 76,800 bytes / 19,200 beats. MM2S remains 64-bit memory / 32-bit stream and sends 230,432 bytes.

@@ -126,12 +126,17 @@ def test_continuous_camera_stops_and_releases_without_frame_archive():
             return {cv2.CAP_PROP_FOURCC: cv2.VideoWriter_fourcc(*"MJPG"),
                     cv2.CAP_PROP_FRAME_WIDTH: 640, cv2.CAP_PROP_FRAME_HEIGHT: 400,
                     cv2.CAP_PROP_FPS: 60}.get(prop, 1)
-        def read(self): return True, np.zeros((400, 640), np.uint8)
+        def read(self):
+            ok, encoded = cv2.imencode(".jpg", np.zeros((400, 640), np.uint8))
+            assert ok
+            return True, encoded.reshape(-1)
         def release(self): closed.append(True)
     fake = SimpleNamespace(**{name: getattr(cv2, name) for name in (
         "CAP_V4L2", "CAP_PROP_FOURCC", "CAP_PROP_FRAME_WIDTH", "CAP_PROP_FRAME_HEIGHT",
-        "CAP_PROP_FPS", "CAP_PROP_BUFFERSIZE", "INTER_NEAREST", "VideoWriter_fourcc", "resize")})
+        "CAP_PROP_FPS", "CAP_PROP_BUFFERSIZE", "CAP_PROP_CONVERT_RGB", "IMREAD_GRAYSCALE",
+        "INTER_NEAREST", "VideoWriter_fourcc", "resize")})
     fake.VideoCapture = lambda *args: Capture()
+    fake.imdecode = cv2.imdecode
     async def collect():
         count = 0
         async for _ in finite._camera_gray_frames_impl(

@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "total_frames": 963,
+  "camera_frames": 960,
+  "pixels_verified": 73958400,
+  "source_files_matched": 23,
+  "final_dma_idle": true,
+  "no_active_test_runner": true,
+  "document_links_exist": true
+}

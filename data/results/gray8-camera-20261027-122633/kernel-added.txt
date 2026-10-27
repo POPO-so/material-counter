@@ -1,0 +1,68 @@
+[ 2679.270833] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4614), ret: 0
+[ 2679.270953] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4614)
+[ 2679.271634] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4614), ret: 0
+[ 2679.274826] [drm] bitstream 0af3c6c1-50aa-d844-d21b-e62e29c86799 locked, ref=1
+[ 2679.274917] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(4614) add context Domain(65535) CU(0xffff) shared(true)
+[ 2679.277321] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(4614) del context Domain(65535) CU(0xffff)
+[ 2679.277384] [drm] bitstream 0af3c6c1-50aa-d844-d21b-e62e29c86799 unlocked, ref=0
+[ 2682.526089] fpga_manager fpga0: writing gray8.bin to Xilinx Zynq FPGA Manager
+[ 2682.606459] [drm] Loading xclbin 380196b9-5b33-29bc-dba1-6643c5bc3c0f to slot 0
+[ 2682.606493] [drm] skip kind 29(AIE_RESOURCES) return code: -22
+[ 2682.606530] [drm] skip kind 8(IP_LAYOUT) return code: -22
+[ 2682.606548] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22
+[ 2682.606562] [drm] skip kind 25(AIE_METADATA) return code: -22
+[ 2682.606576] [drm] skip kind 7(CONNECTIVITY) return code: -22
+[ 2682.606589] [drm] found kind 6(MEM_TOPOLOGY)
+[ 2682.606747] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA
+[ 2682.606808] [drm] zocl_xclbin_read_axlf 380196b9-5b33-29bc-dba1-6643c5bc3c0f ret: 0
+[ 2682.634297] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f locked, ref=1
+[ 2682.634404] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(4614) add context Domain(65535) CU(0xffff) shared(true)
+[ 2682.634512] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(4614) del context Domain(65535) CU(0xffff)
+[ 2682.634563] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f unlocked, ref=0
+[ 2684.211640] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4614)
+[ 2719.984854] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4713), ret: 0
+[ 2719.984974] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4713)
+[ 2719.985665] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4713), ret: 0
+[ 2719.988916] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f locked, ref=1
+[ 2719.989009] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(4713) add context Domain(65535) CU(0xffff) shared(true)
+[ 2719.991913] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(4713) del context Domain(65535) CU(0xffff)
+[ 2719.991989] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f unlocked, ref=0
+[ 2726.219247] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4713)
+[ 2775.749560] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4912), ret: 0
+[ 2775.749682] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4912)
+[ 2775.750379] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(4912), ret: 0
+[ 2775.753673] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f locked, ref=1
+[ 2775.753763] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(4912) add context Domain(65535) CU(0xffff) shared(true)
+[ 2775.756158] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(4912) del context Domain(65535) CU(0xffff)
+[ 2775.756222] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f unlocked, ref=0
+[ 2781.925320] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(4912)
+[ 2800.640534] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(5040), ret: 0
+[ 2800.640654] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(5040)
+[ 2800.641342] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(5040), ret: 0
+[ 2800.644617] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f locked, ref=1
+[ 2800.644718] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(5040) add context Domain(65535) CU(0xffff) shared(true)
+[ 2800.647138] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(5040) del context Domain(65535) CU(0xffff)
+[ 2800.647201] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f unlocked, ref=0
+[ 2824.215380] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(5040)
+[ 2843.063341] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(5722), ret: 0
+[ 2843.063460] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(5722)
+[ 2843.064161] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(5722), ret: 0
+[ 2843.067424] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f locked, ref=1
+[ 2843.067522] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(5722) add context Domain(65535) CU(0xffff) shared(true)
+[ 2843.070195] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(5722) del context Domain(65535) CU(0xffff)
+[ 2843.070265] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f unlocked, ref=0
+[ 2866.545669] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(5722)
+[ 2885.423055] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(6421), ret: 0
+[ 2885.423176] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(6421)
+[ 2885.423873] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(6421), ret: 0
+[ 2885.427163] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f locked, ref=1
+[ 2885.427262] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(6421) add context Domain(65535) CU(0xffff) shared(true)
+[ 2885.429957] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(6421) del context Domain(65535) CU(0xffff)
+[ 2885.430029] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f unlocked, ref=0
+[ 2908.220942] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(6421)
+[ 3003.156211] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(7245), ret: 0
+[ 3003.156333] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(7245)
+[ 3003.156956] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(7245), ret: 0
+[ 3003.160265] [drm] bitstream 380196b9-5b33-29bc-dba1-6643c5bc3c0f locked, ref=1
+[ 3003.160361] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(7245) add context Domain(65535) CU(0xffff) shared(true)
+[ 3003.161494] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(7245) del context Domain(65535) CU(0xffff)

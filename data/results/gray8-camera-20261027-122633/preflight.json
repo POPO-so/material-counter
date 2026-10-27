@@ -1,0 +1,76 @@
+{
+  "boot_id": "442a249b-1a20-41a1-bbc6-46debb0f4af8",
+  "cma": {
+    "CmaTotal": 131072,
+    "CmaFree": 82620
+  },
+  "fpga_manager": {
+    "state": "operating",
+    "flags": "0"
+  },
+  "hash_match": {
+    "scripts/gray8/finalize_build.py": true,
+    "scripts/gray8/hardware_checks.py": true,
+    "scripts/gray8/packet_codec.py": true,
+    "scripts/gray8/run_gray8_counter.py": true,
+    "scripts/wo0015/board_once.py": true,
+    "scripts/wo0015/board_preflight.py": true,
+    "scripts/wo0016/calibration_runtime_gate.py": true,
+    "scripts/wo0016/capture_dataset.py": true,
+    "scripts/wo0016/dashboard_state.py": true,
+    "scripts/wo0016/lighting_profile.py": true,
+    "scripts/wo0016/live_calibration.py": true,
+    "scripts/wo0016/mjpeg_preview.py": true,
+    "scripts/wo0016/operator_gate_launcher.py": true,
+    "scripts/wo0016/packet_encoder.py": true,
+    "scripts/wo0016/physical_calibration_lock.py": true,
+    "scripts/wo0016/run_stream_counter.py": true,
+    "scripts/wo0016/scale_parameters.py": true,
+    "scripts/wo0016/split_touching.py": true,
+    "scripts/wo0016/stream_counter.py": true,
+    "scripts/wo0016/wo0017_capture_profile.py": true,
+    "export/gray8.bit": true,
+    "export/gray8.hwh": true,
+    "export/manifest.json": true
+  },
+  "global_state": {
+    "pl_state_status": "COLD_BOOT_NO_GLOBAL_STATE",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "loaded_bit_path": null,
+    "loaded_bit_sha1": null,
+    "loaded_bit_sha256": null
+  },
+  "clock": {
+    "stage": "camera-preflight",
+    "access": "read-only",
+    "afi1_status": "READ",
+    "afi1_skip_reason": null,
+    "registers": {
+      "SLCR_FPGA0_CLK_CTRL": {
+        "address": "0xf8000170",
+        "value": 2098432,
+        "raw_hex": "0x00200500"
+      },
+      "SLCR_FPGA_RST_CTRL": {
+        "address": "0xf8000240",
+        "value": 0,
+        "raw_hex": "0x00000000"
+      },
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "value": 0,
+        "raw_hex": "0x00000000",
+        "width_bit0": 0,
+        "width_bits": 64
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "value": 3840,
+        "raw_hex": "0x00000f00",
+        "width_bit0": 0,
+        "width_bits": 64
+      }
+    }
+  }
+}

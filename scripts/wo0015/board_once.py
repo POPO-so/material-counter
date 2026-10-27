@@ -358,7 +358,7 @@ def _require_clean_start(api: Any, plan: preflight.ValidatedRun,
     packer_signature = api.read32(preflight.CHECKER_BASE, PACKER_SIGNATURE)
     if checker_signature != preflight.PACKET_MAGIC:
         raise ExecutionFailure(
-            f"Checker signature 0x{checker_signature:08x} does not match WO-0014",
+            f"Checker signature 0x{checker_signature:08x} does not match Gray8",
             transfer_started=False,
         )
     if packer_signature != preflight.PACKER_SIGNATURE:
@@ -1194,7 +1194,7 @@ class MockBoardAPI:
             return
         if offset == DMA_MM2S_LENGTH:
             if value != preflight.TX_BYTES:
-                raise AssertionError("MM2S length is not 230432 bytes")
+                raise AssertionError(f"MM2S length is not {preflight.TX_BYTES} bytes")
             self._dma[offset] = value
             self._complete_mock_frame()
             return

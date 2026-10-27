@@ -1,0 +1,88 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Tue Oct 27 03:10:56 2026
+# Process ID         : 740
+# Current directory  : C:/Users/14173/Documents/material-counter/data/results/gray8-cleanup-20261027
+# Command line       : vivado.exe -mode batch -notrace -nojournal -log C:/Users/14173/Documents/material-counter/data/results/gray8-cleanup-20261027/simulation.log -source C:/Users/14173/Documents/material-counter/data/results/gray8-cleanup-20261027/run-sim.tcl
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/gray8-cleanup-20261027/simulation.log
+# Journal file       : 
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 13854 MB
+#-----------------------------------------------------------
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source C:/Users/14173/Documents/material-counter/data/results/gray8-cleanup-20261027/run-sim.tcl -notrace
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Tue Oct 27 03:11:08 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/gray8_pipeline/xsim_script.tcl
+# xsim {gray8_pipeline} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+GRAY8_ADAPTER_PASS pixels=15
+$finish called at time : 5555 ns : File "C:/Users/14173/Documents/material-counter/fpga/sim/gray8/tb_axis_dma_gray_adapter.sv" Line 100
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Oct 27 03:11:10 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Tue Oct 27 03:11:10 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/gray8_wrapper_default/xsim_script.tcl
+# xsim {gray8_wrapper_default} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+GRAY8_WRAPPER_320X240_PASS beats=19200
+$finish called at time : 768355 ns : File "C:/Users/14173/Documents/material-counter/fpga/sim/gray8/tb_axis_dma_gray_wrapper.sv" Line 43
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Oct 27 03:11:12 2026...
+GRAY8_XSIM_PASS output=C:/Users/14173/Documents/material-counter/data/results/gray8-cleanup-20261027
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Tue Oct 27 03:11:12 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/gray8_guards/xsim_script.tcl
+# xsim {gray8_guards} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+STAGE direct packer bad SOF
+GUARD_PACKER_FAULT_PASS case=1 code=3 eof=0
+STAGE direct packer bad EOL
+GUARD_PACKER_FAULT_PASS case=2 code=4 eof=0
+STAGE direct packer non-binary value
+GUARD_PACKER_FAULT_PASS case=3 code=5 eof=0
+STAGE wrapper arm and start valid packet
+STAGE wrapper busy ARM during output stall
+WO0015_GUARDS_PASS bad_sof=1 bad_eol=1 bad_value=1 busy_arm_slverr=1 transfer_preserved=1
+$finish called at time : 1180 ns : File "C:/Users/14173/Documents/material-counter/fpga/sim/wo0015/tb_axis_s2mm_guards.sv" Line 459
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Oct 27 03:11:14 2026...
+GRAY8_GUARDS_PASS
+INFO: [Common 17-206] Exiting Vivado at Tue Oct 27 03:11:14 2026...

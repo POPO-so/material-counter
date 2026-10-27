@@ -1,5 +1,9 @@
 # WO-0014 isolated RGB DMA replay contract
 
+> **Historical design baseline:** the RGB packet/RTL/replay code described below has been removed from the active implementation. The user authorized `GRAY8_PACKET_V1` as the sole current runtime path; there is no RGB fallback. Keep existing WO-0014 test and result records as evidence for their original configuration only. Current protocol, build and board-validation state are documented in [`scripts/gray8/README.md`](../../../scripts/gray8/README.md) and [`PLAN.md`](../../../PLAN.md).
+
+## Archived RGB packet and RTL contract
+
 Offline-only route-independent experiment. Production RTL/formal interfaces remain unchanged. Reuse axis_rgb2gray and axis_gray2binary; morphology is regressed but not inserted in this requested chain. WO0013's 76816-byte Binary8+metadata fixture is NOT RGB888 and is never reused as image bytes.
 
 ## Packet contract

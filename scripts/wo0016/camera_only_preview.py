@@ -172,15 +172,23 @@ def software_gray_binary(frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 def read_frame(capture: Any) -> np.ndarray:
-    ok, frame = capture.read()
-    if not ok or frame is None:
+    ok, packet = capture.read()
+    if not ok or packet is None:
         raise RuntimeError("camera returned no preview frame")
-    try:
-        monochrome_view(frame)
-    except ValueError:
-        raise RuntimeError("camera frame has unexpected shape/dtype: %r %r" %
-                           (frame.shape, frame.dtype))
-    return frame
+    raw = np.asarray(packet)
+    if (raw.dtype != np.uint8 or raw.ndim not in (1, 2)
+            or (raw.ndim == 2 and raw.shape[0] != 1)):
+        raise RuntimeError("camera backend did not return a raw uint8 MJPEG packet")
+    raw = np.ascontiguousarray(raw).reshape(-1)
+    if raw.size < 4 or tuple(raw[:2]) != (0xFF, 0xD8):
+        raise RuntimeError("camera preview packet has no JPEG SOI marker")
+    gray = cv2.imdecode(raw, cv2.IMREAD_GRAYSCALE)
+    if gray is None or gray.dtype != np.uint8 or gray.shape != (SOURCE_HEIGHT, SOURCE_WIDTH):
+        shape = None if gray is None else gray.shape
+        dtype = None if gray is None else gray.dtype
+        raise RuntimeError("camera preview MJPEG decode returned %s %s; expected Gray8 640x400"
+                           % (dtype, shape))
+    return gray
 
 
 def write_state(path: Path, value: dict[str, Any]) -> None:
@@ -351,6 +359,7 @@ def main(argv: list[str] | None = None) -> int:
             "height_400": bool(capture.set(cv2.CAP_PROP_FRAME_HEIGHT, SOURCE_HEIGHT)),
             "fps_60": bool(capture.set(cv2.CAP_PROP_FPS, SOURCE_FPS)),
             "buffer_size_1": bool(capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)),
+            "convert_rgb_disabled": bool(capture.set(cv2.CAP_PROP_CONVERT_RGB, 0)),
         }
         state["opencv_set_results"] = set_results
         if not all(set_results.values()):

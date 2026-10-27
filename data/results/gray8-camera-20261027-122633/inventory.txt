@@ -1,0 +1,7 @@
+442a249b-1a20-41a1-bbc6-46debb0f4af8
+Bus 001 Device 002: ID 0edc:2076 HSK USB Camera
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+crw-rw---- 1 root video 81, 0 May  4 12:50 /dev/video0
+crw-rw---- 1 root video 81, 1 May  4 12:50 /dev/video1
+Failed to open /dev/video0: Permission denied
+Failed to open /dev/video0: Permission denied

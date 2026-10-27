@@ -43,14 +43,17 @@ def resolve_wo15_dependency_dir(script_dir: Path) -> Path:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 WO15_DIR = resolve_wo15_dependency_dir(SCRIPT_DIR)
-for _path in (SCRIPT_DIR, WO15_DIR):
+GRAY8_DIR = SCRIPT_DIR.parent / "gray8"
+if not (GRAY8_DIR / "packet_codec.py").is_file():
+    GRAY8_DIR = SCRIPT_DIR / "gray8"
+for _path in (SCRIPT_DIR, WO15_DIR, GRAY8_DIR):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 
 import board_once
 import board_preflight as preflight
-from camera_adapter import gray320x240_to_rgb_packet
-from packet_encoder import gray320x240_to_rgb_packet_into
+from packet_encoder import (gray320x240_to_gray_packet,
+                            gray320x240_to_gray_packet_into)
 from dashboard_state import DashboardState
 from mjpeg_preview import (
     PREVIEW_FRAME_INTERVAL,
@@ -386,7 +389,7 @@ def packet_encoders(args):
     if args.counting_profile == "lighting-calibrated":
         threshold = effective_threshold(args)
         return lighting_profile.make_packet_encoders(threshold=threshold)
-    return gray320x240_to_rgb_packet, gray320x240_to_rgb_packet_into
+    return gray320x240_to_gray_packet, gray320x240_to_gray_packet_into
 
 
 def counting_roi_metadata(result: Any, counter: MaskCounter) -> dict[str, Any]:
@@ -684,6 +687,11 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height} "
                 f"fps {actual_fps}; at least 50 fps is required for the steady stream"
             )
+        convert_rgb_property = getattr(cv2_module, "CAP_PROP_CONVERT_RGB", None)
+        if convert_rgb_property is None or not capture.set(convert_rgb_property, 0):
+            raise RuntimeError(
+                "V4L2 rejected CAP_PROP_CONVERT_RGB=0; raw MJPEG capture is required"
+            )
         applied_camera_controls = None
         if is_lighting_mapping(frame_mapping):
             applied_camera_controls = lighting_profile.apply_camera_controls(device)
@@ -697,12 +705,32 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 raise RuntimeError(f"{prefix} returned no camera frame")
             capture_monotonic_ns = time.monotonic_ns() if include_capture_metadata else 0
             capture_wall_time_ns = time.time_ns() if include_capture_metadata else 0
-            image = np.asarray(frame)
+            raw_mjpeg = np.asarray(frame)
+            if (raw_mjpeg.dtype != np.uint8
+                    or raw_mjpeg.ndim not in (1, 2)
+                    or (raw_mjpeg.ndim == 2 and raw_mjpeg.shape[0] != 1)):
+                raise RuntimeError(
+                    "camera backend did not return a raw uint8 MJPEG packet; "
+                    f"got {raw_mjpeg.dtype} {raw_mjpeg.shape}"
+                )
+            raw_mjpeg = np.ascontiguousarray(raw_mjpeg).reshape(-1)
+            if raw_mjpeg.size < 4 or tuple(raw_mjpeg[:2]) != (0xFF, 0xD8):
+                raise RuntimeError("camera backend returned data without a JPEG SOI marker")
+            try:
+                image = cv2_module.imdecode(raw_mjpeg, cv2_module.IMREAD_GRAYSCALE)
+            except Exception as exc:
+                raise RuntimeError(f"raw MJPEG grayscale decode failed: {exc}") from exc
+            if (image is None or image.dtype != np.uint8
+                    or image.shape != (400, 640)):
+                shape = None if image is None else image.shape
+                dtype = None if image is None else image.dtype
+                raise RuntimeError(
+                    "raw MJPEG grayscale decode returned "
+                    f"{dtype} {shape}; expected uint8 {(400, 640)}"
+                )
             if warmup:
                 return (image, (time.perf_counter() - capture_started) * 1000.0,
                         capture_monotonic_ns, capture_wall_time_ns, None)
-            if image.ndim == 3 and image.shape[2] in (1, 3, 4):
-                image = image[:, :, 0]
             if image.dtype != np.uint8 or image.shape != (400, 640):
                 raise RuntimeError(f"camera frame geometry is {image.shape}; expected (400, 640)")
             source_gray = (np.array(image, copy=True, order="C")
@@ -809,6 +837,9 @@ async def _camera_gray_frames_impl(device: str, *, max_frames: int | None,
                 "camera_prefetch_depth": 1,
                 "camera_width": actual_width,
                 "camera_height": actual_height,
+                "camera_pixel_format": actual_format,
+                "camera_decode_format": "Gray8",
+                "camera_convert_rgb": False,
                 "camera_output_width": WIDTH,
                 "camera_output_height": HEIGHT,
             })
@@ -978,6 +1009,7 @@ def formal_runtime_sha256() -> dict[str, str]:
              "physical_calibration_lock.py", "prepare_physical_calibration.py",
              "calibration_runtime_gate.py", "start_physical_calibration_standby.py")
     paths = {name: SCRIPT_DIR / name for name in names}
+    paths["gray8/packet_codec.py"] = GRAY8_DIR / "packet_codec.py"
     paths.update({"wo0015/" + name: WO15_DIR / name
                   for name in ("board_once.py", "board_preflight.py", "camera_adapter.py",
                                "prepare_vectors.py")})
@@ -1658,7 +1690,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                                   if calibration_mode else ()),
                 metadata={
                     "work_order": "WO-0017 Phase 1B",
-                    "input_stage": "decoded first camera channel mapped to FPGA Gray8 input; geometry recorded in config",
+                    "input_stage": "MJPEG compressed frame decoded directly to Gray8 and mapped to FPGA Gray8 input; geometry recorded in config",
                     "camera_requested_mode": "MJPG 640x400 60 FPS; actual negotiated mode recorded in runner evidence",
                     "mask_source": "same S2MM RX DMA slot and software Frame ID as MM2S input",
                     "mask_frame_id_echoed_by_hardware": False,

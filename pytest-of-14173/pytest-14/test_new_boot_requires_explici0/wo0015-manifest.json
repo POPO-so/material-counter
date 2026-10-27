@@ -1,0 +1,72 @@
+{
+  "bit_path": "wo0015.bit",
+  "bit_sha256": "4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa",
+  "boot_id": "35983d66-bb1d-4a8a-85e5-802170825515",
+  "build_id": "wo0015-fixture-build",
+  "checker_base": 1136787456,
+  "clock_mhz": 50,
+  "contract": {
+    "checker_signature": 1196579128,
+    "dma_addr_width_bits": 32,
+    "dma_length_width_bits": 18,
+    "dma_mode": "simple",
+    "hp0_data_width_bits": 64,
+    "hp0_enabled": true,
+    "hp0_range": [
+      0,
+      536870912
+    ],
+    "hp1_data_width_bits": 32,
+    "hp1_enabled": true,
+    "hp1_range": [
+      0,
+      536870912
+    ],
+    "include_mm2s": true,
+    "include_s2mm": true,
+    "include_sg": false,
+    "micro_dma": false,
+    "mm2s_dre": false,
+    "mm2s_memory_width_bits": 64,
+    "mm2s_stream_width_bits": 32,
+    "packer_signature": 1464807733,
+    "s2mm_dre": false,
+    "s2mm_memory_width_bits": 32,
+    "s2mm_stream_width_bits": 32
+  },
+  "dma_base": 1077936128,
+  "executor_sha256": {
+    "board_once.py": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9",
+    "board_preflight.py": "071dc9e7cdac74705e6428c43a4170ed01c27fccd547295da16dab7ff5080e17"
+  },
+  "frames": [
+    {
+      "binary_path": "frame-1.bin",
+      "binary_sha256": "213c2a878e3c1c5221415c4f97a6d7a6bcf806172e75ab523cc517e6e368898e",
+      "frame_id": 1,
+      "packet_path": "frame-1.packet",
+      "packet_sha256": "df8991940697517825528787b6e80850e29ee12bc65fefbf22c360c900fdb12b"
+    },
+    {
+      "binary_path": "frame-2.bin",
+      "binary_sha256": "fbe1a8fb47ae7a0c774e5c8ad4490f1002b7963eb0f66a75c87708e5aa43f49e",
+      "frame_id": 2,
+      "packet_path": "frame-2.packet",
+      "packet_sha256": "eb72fd0473e0bd5ce7e74338d8c6a334446eb2b8cceaf7c053700757d1874224"
+    },
+    {
+      "binary_path": "frame-3.bin",
+      "binary_sha256": "213c2a878e3c1c5221415c4f97a6d7a6bcf806172e75ab523cc517e6e368898e",
+      "frame_id": 3,
+      "packet_path": "frame-3.packet",
+      "packet_sha256": "df57df79f84e4b1ac794b817f05eee84e1e2cecc13ed6078520c259cdb9291ed"
+    }
+  ],
+  "hwh_path": "wo0015.hwh",
+  "hwh_sha256": "24a7d1399cfb00c11543b36f5eac76757dd8ed0fbf211587ddd5bbb3aedcd356",
+  "part": "xc7z020clg400-1",
+  "ready_for_board": true,
+  "schema": 1,
+  "stage": "S2MM_BINARY8_FRAME_RETURN",
+  "work_order": "WO-0015"
+}

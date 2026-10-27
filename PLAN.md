@@ -1,0 +1,28 @@
+# Gray8 唯一运行链路实施状态
+
+用户于 2026-10-27 明确批准移除当前生产路径中的 Gray→RGB→Gray。当前运行入口统一使用 `GRAY8_PACKET_V1`；旧 RGB 编码器、RGB AXI-Stream RTL、旧 RGB 构建入口及对应回放代码已从活动实现删除，不保留运行期 RGB 回退。历史 `data/results/` 和旧设计说明作为原始证据保留，不改写成 Gray8 结果。
+
+该授权只确定当前实现采用 Gray8 输入协议，不代表算法 Route、摄像头/机械路线、项目接口正式冻结或验收签字已完成。
+
+## 当前协议和安全边界
+
+- 320×240 Gray8，MM2S TX 为 76,832 字节：四个小端头字（`0x47525938`、`(H<<16)|W`、像素数、frame ID）、逐像素 Gray8 payload、四个小端尾字（`0x454e4438`、frame ID、payload sum、`0xc0dec018`）。S2MM RX 为 76,800 字节 Binary8。
+- 唯一硬件实现和构建入口在 `fpga/experimental/gray8/`、`fpga/sim/gray8/` 与 `scripts/gray8/`。复用 50 MHz PS、DMA、HP0/HP1 拓扑及现有 Binary8 Packer、PS MaskCounter。旧 RGB 位流与 Gray8 包不兼容。
+- 相机采集读取 raw MJPEG 并直接 `imdecode(IMREAD_GRAYSCALE)`；不把 Gray8 复制成 RGB，也不提供 RGB 运行期回退。照明 LUT 仍在发送前处理 Gray8 强度，阈值仍由 PL 执行。
+- 每帧板端运行会做 Binary8 逐像素验证；带该验证的报告 FPS 包含启动/预热、校验与 PS 计数，不是纯 DMA/FPGA性能值。本次相机图像无前景物料，未验证物料准确率或 YOLO 收益。
+- 发生 DMA 所有权不确定时可能进入 `FAIL_HOLD`，保留 CMA 缓冲区并等待操作员恢复；不自动重试或复位。
+
+## 已完成与剩余验收
+
+- [x] 用户授权 Gray8 唯一当前实现；保存旧结果但不再把旧 RGB 入口作为运行回退。
+- [x] WO-0016、WO-0015 当前运行代码迁移到 `GRAY8_PACKET_V1`；活动编码使用唯一 `scripts/gray8/packet_codec.py`，缓冲区默认 TX 76,832、RX 76,800。
+- [x] XSim adapter、320×240 wrapper、S2MM guards 三项通过。
+- [x] Vivado 50 MHz Gray8 BIT/HWH 构建完成，`scripts/delivery/verify_delivery.py` 离线验证通过。
+- [x] 新 BIT 已加载到 PYNQ-Z2。首次 DMA 启动检查曾误判状态值 0；修正后 `self-test-clean-3.json` 退出码为 0，3/3 合成 Gray8 帧的 Binary8 全像素比对通过，缓冲区安全释放。
+- [x] 旧的较宽软件/离线套件记录：706 passed、8 skipped、2 个已知失败。失败分别为 ablation 仓库内临时路径断言与预览抗锯齿纯白像素断言；不能表述为全套全绿。当前 108 项相关软件集在 sandbox 外运行：108 passed、4.14 s，详见相机板测报告。
+- [x] 同一板卡启动周期完成 30 帧相机短测、30 帧预热与三轮 300 帧实测；加上 3 帧合成测试共 963 帧，Binary8 全像素验证全部通过，DMA 空闲、fault=0、buffers 已释放。
+- [x] 三轮 300 帧的吞吐为 19.1063、19.3684、20.1920 FPS；900 帧加权 19.5448 FPS。该值包括启动/预热、逐像素校验和 PS 计数。本次相机二值掩膜全黑、未检出前景，CCL执行0帧；它不是有目标场景吞吐或准确率结果。
+- [ ] 使用有实物目标及人工真值的数据评估计数准确率，并测量目标密集/粘连场景的吞吐；不与旧 RGB 整机历史 FPS 直接比较，不声称 YOLO 收益。
+- [ ] 按项目接口流程进行正式签核。当前 Route、机械/视频输入路线及接口冻结状态仍以 `docs/07_routes.md`、本 ADR 状态及正式审批记录为准。
+
+清理范围、首次状态检查误判和合成测试见 [Gray8 清理记录](data/results/gray8-cleanup-20261027/README.md)。最新 boot ID 下的真实相机运行、像素校验、FPS、分阶段计时及限制见 [相机板测记录](data/results/gray8-camera-20261027-122633/README.md)。首次构建时序/资源见 [构建记录](data/results/gray8-dma-20261027/README.md)。历史 RGB 板测和仿真记录保持原样，仅作为其当时配置下的历史证据。

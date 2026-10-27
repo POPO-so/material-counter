@@ -369,13 +369,12 @@ axis = {
 }
 
 expected_sources = {
-    "axis_rgb2gray.v": "fpga/rtl/axis_rgb2gray.v",
     "axis_gray2binary.v": "fpga/rtl/axis_gray2binary.v",
-    "axis_dma_rgb_adapter.v": "fpga/experimental/wo0014/axis_dma_rgb_adapter.v",
     "axis_binary_output_checker.v": "fpga/experimental/wo0014/axis_binary_output_checker.v",
-    "axis_dma_image_pipeline.v": "fpga/experimental/wo0014/axis_dma_image_pipeline.v",
+    "axis_dma_gray_adapter.v": "fpga/experimental/gray8/axis_dma_gray_adapter.v",
+    "axis_dma_gray_image_pipeline.v": "fpga/experimental/gray8/axis_dma_gray_image_pipeline.v",
     "axis_s2mm_frame_packer.v": "fpga/experimental/wo0015/axis_s2mm_frame_packer.v",
-    "axis_dma_s2mm_pipeline_bd.v": "fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v",
+    "axis_dma_gray_s2mm_pipeline_bd.v": "fpga/experimental/gray8/axis_dma_gray_s2mm_pipeline_bd.v",
 }
 staged = {path.name: path for path in (out / "rtl").glob("*.v")}
 require(set(staged) == set(expected_sources), "Staged RTL set differs from the approved WO-0015 source list")
@@ -386,9 +385,9 @@ for filename, relative in expected_sources.items():
     require(source_path.is_file() and staged_path.is_file(), f"RTL source missing: {relative}")
     source_hashes[relative] = sha256(source_path)
     require(sha256(staged_path) == source_hashes[relative], f"Staged RTL differs from repository source: {relative}")
-wrapper_text = (repo / expected_sources["axis_dma_s2mm_pipeline_bd.v"]).read_text(encoding="utf-8", errors="replace").lower()
-require("8'h04: s_axi_rdata <= magic" in wrapper_text and "32'h574f3134" in wrapper_text,
-        "WO-0014-compatible register signature at offset 0x04 is absent")
+wrapper_text = (repo / expected_sources["axis_dma_gray_s2mm_pipeline_bd.v"]).read_text(encoding="utf-8", errors="replace").lower()
+require("8'h04: s_axi_rdata <= magic" in wrapper_text and "32'h47525938" in wrapper_text,
+        "Gray8 register signature at offset 0x04 is absent")
 require("8'h60: s_axi_rdata <= 32'h574f3135" in wrapper_text,
         "WO-0015 signature at AXI-Lite offset 0x60 is absent")
 

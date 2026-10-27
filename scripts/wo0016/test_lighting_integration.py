@@ -118,12 +118,18 @@ def test_capture_applies_and_rechecks_controls_before_delivering_frames(monkeypa
             return {cv2.CAP_PROP_FOURCC:cv2.VideoWriter_fourcc(*"MJPG"),
                     cv2.CAP_PROP_FRAME_WIDTH:640,cv2.CAP_PROP_FRAME_HEIGHT:400,
                     cv2.CAP_PROP_FPS:60}.get(prop,1)
-        def read(self): calls.append("read"); return True,np.full((400,640),101,np.uint8)
+        def read(self):
+            calls.append("read")
+            ok, encoded = cv2.imencode(".jpg", np.full((400,640),101,np.uint8))
+            assert ok
+            return True, encoded.reshape(-1)
         def release(self): calls.append("release")
     fake=SimpleNamespace(**{name:getattr(cv2,name) for name in (
         "CAP_V4L2","CAP_PROP_FOURCC","CAP_PROP_FRAME_WIDTH","CAP_PROP_FRAME_HEIGHT",
-        "CAP_PROP_FPS","CAP_PROP_BUFFERSIZE","INTER_NEAREST","VideoWriter_fourcc","resize")})
+        "CAP_PROP_FPS","CAP_PROP_BUFFERSIZE","CAP_PROP_CONVERT_RGB","IMREAD_GRAYSCALE",
+        "INTER_NEAREST","VideoWriter_fourcc","resize")})
     fake.VideoCapture=lambda *args:Capture()
+    fake.imdecode=cv2.imdecode
     required={"auto_exposure":1,"exposure_time_absolute":50,"brightness":0,"gamma":100}
     applied={"required_controls_verified":True,"required_controls":required,
              "gain":{"requested":0,"value":None,"status":"not_exposed",

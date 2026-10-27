@@ -20,11 +20,11 @@ import numpy as np
 
 try:
     from . import board_once, board_preflight as preflight
-    from .camera_adapter import gray320x240_to_rgb_packet
+    from .camera_adapter import gray320x240_to_gray_packet
 except ImportError:  # pragma: no cover - direct script execution on PYNQ
     import board_once
     import board_preflight as preflight
-    from camera_adapter import gray320x240_to_rgb_packet
+    from camera_adapter import gray320x240_to_gray_packet
 
 
 STEP3_MANIFEST_SHA256 = "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b"
@@ -192,7 +192,7 @@ def load_gray_file(path: str | Path) -> np.ndarray:
 
 
 def capture_v4l2_once(device: str = "/dev/video0", *, cv2_module: Any = None) -> np.ndarray:
-    """Request the camera's MJPG 640x400 mode and read one grayscale frame."""
+    """Read one raw MJPEG frame and decode it directly to 640x400 Gray8."""
     if cv2_module is None:
         try:
             import cv2 as cv2_module
@@ -207,23 +207,26 @@ def capture_v4l2_once(device: str = "/dev/video0", *, cv2_module: Any = None) ->
             (cv2_module.CAP_PROP_FOURCC, fourcc),
             (cv2_module.CAP_PROP_FRAME_WIDTH, 640),
             (cv2_module.CAP_PROP_FRAME_HEIGHT, 400),
+            (cv2_module.CAP_PROP_CONVERT_RGB, 0),
         )
         if any(not capture.set(prop, value) for prop, value in requested_mode):
             raise RuntimeError("V4L2 rejected the supported MJPG 640x400 capture mode")
         ok, frame = capture.read()
         if not ok or frame is None or not np.asarray(frame).size:
             raise RuntimeError("V4L2 returned no frame on its single capture attempt")
-        image = np.asarray(frame)
-        if image.ndim == 3:
-            if image.shape[2] == 1:
-                image = image[:, :, 0]
-            elif image.shape[2] in (3, 4):
-                code = (cv2_module.COLOR_BGRA2GRAY if image.shape[2] == 4
-                        else cv2_module.COLOR_BGR2GRAY)
-                image = cv2_module.cvtColor(image, code)
-            else:
-                raise ValueError("V4L2 frame has an unsupported channel count")
-        return _normalize_gray8(image)
+        raw_image = np.asarray(frame)
+        if raw_image.dtype != np.uint8:
+            raise ValueError("V4L2 raw MJPEG frame must be an 8-bit byte buffer")
+        raw = np.ascontiguousarray(raw_image).reshape(-1)
+        if raw.size < 4 or raw[:2].tobytes() != b"\xff\xd8" or raw[-2:].tobytes() != b"\xff\xd9":
+            raise ValueError("V4L2 raw frame is not a complete JPEG (missing SOI/EOI markers)")
+        decoded = cv2_module.imdecode(raw, cv2_module.IMREAD_GRAYSCALE)
+        if decoded is None:
+            raise RuntimeError("OpenCV failed to decode the raw MJPEG frame")
+        image = np.asarray(decoded)
+        if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (400, 640):
+            raise ValueError("decoded MJPEG frame must be a 640x400 uint8 grayscale image")
+        return np.ascontiguousarray(image)
     finally:
         capture.release()
 
@@ -310,12 +313,12 @@ def prepare_camera_bundle(*, template_manifest_path: str | Path,
     frame_files: list[dict[str, Any]] = []
     for offset in range(3):
         current_id = first_frame_id + offset
-        packet = gray320x240_to_rgb_packet(resized, frame_id=current_id)
+        packet = gray320x240_to_gray_packet(resized, frame_id=current_id)
         golden = preflight._expected_binary(packet)
         threshold_golden = np.where(resized >= 128, 0xFF, 0x00).astype(np.uint8).tobytes()
         if golden != threshold_golden or len(packet) != preflight.TX_BYTES or len(golden) != preflight.RX_BYTES:
             raise AssertionError("camera packet and independent Binary8 Golden disagree")
-        packet_path = run_dir / f"frame-{current_id}.rgb.bin"
+        packet_path = run_dir / f"frame-{current_id}.gray8.bin"
         golden_path = run_dir / f"frame-{current_id}.binary.bin"
         _write_exclusive(packet_path, packet)
         _write_exclusive(golden_path, golden)
@@ -358,7 +361,7 @@ def prepare_camera_bundle(*, template_manifest_path: str | Path,
         "resized_gray_file_sha256": preflight.sha256_file(resized_image_path),
         "threshold": 128,
         "resize": "bilinear, endpoint-aligned, round-to-nearest",
-        "channel_mapping": "R=G=B=Y",
+        "channel_mapping": "Gray8 single-channel (1 byte per pixel)",
         "manifest_path": str(manifest_path.resolve()),
         "manifest_sha256": manifest_sha256,
         "template_manifest_path": str(template.manifest_path),
@@ -634,7 +637,7 @@ def _write_camera_result(plan: preflight.ValidatedRun, sidecar: Mapping[str, Any
             "resized_gray_sha256": sidecar["resized_gray_sha256"],
             "packet_sha256": plan.frames[0].packet_sha256,
             "software_golden_sha256": plan.frames[0].binary_sha256,
-            "channel_mapping": "R=G=B=Y",
+            "channel_mapping": "Gray8 single-channel (1 byte per pixel)",
             "threshold": 128,
         },
         "pl_output": {

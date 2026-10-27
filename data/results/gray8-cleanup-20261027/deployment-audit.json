@@ -1,0 +1,17 @@
+{
+  "verified_files": 23,
+  "removed_stale_software": [
+    "scripts/wo0015/finalize_build.py",
+    "scripts/wo0015/camera_dma_oneshot.py",
+    "scripts/wo0015/camera_adapter.py",
+    "scripts/wo0015/check_sim.py",
+    "scripts/wo0015/prepare_board_bundle.py",
+    "scripts/wo0015/prepare_vectors.py",
+    "scripts/wo0016/benchmark_monochrome.py",
+    "scripts/wo0016/benchmark_packet_encoder.py",
+    "scripts/wo0016/ablate_split_datasets.py",
+    "scripts/wo0016/benchmark_tx_scratch.py",
+    "scripts/wo0016/camera_only_preview.py"
+  ],
+  "hardware_actions": 0
+}

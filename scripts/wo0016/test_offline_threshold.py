@@ -24,7 +24,7 @@ def test_cpu_threshold_matches_pl_comparison_and_preserves_gray(threshold):
 
 def test_cpu_threshold_accepts_strided_gray_and_rejects_alias():
     from offline_threshold import software_binary8
-    gray = np.arange(240 * 320 * 3, dtype=np.uint8).reshape(240, 320, 3)[:, :, 0]
+    gray = np.arange(240 * 640, dtype=np.uint8).reshape(240, 640)[:, ::2]
     assert not gray.flags.c_contiguous
     assert software_binary8(gray).shape == (240, 320)
     with pytest.raises(ValueError, match="contiguous"):

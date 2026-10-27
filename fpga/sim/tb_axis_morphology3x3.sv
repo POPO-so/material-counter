@@ -114,16 +114,14 @@ module tb_axis_morphology3x3 #(
     wire morph_tready;
 
     generate
-        if (CHAIN != 0) begin : g_rgb_gray_binary_morph
-            axis_rgb2gray rgb2gray (
-                .aclk(aclk), .aresetn(aresetn),
-                .s_tdata(source_rgb_data),
-                .s_tuser(source_user_bus), .s_tlast(source_last_bus),
-                .s_tvalid(source_valid_bus), .s_tready(source_ready_bus),
-                .m_tdata(gray_tdata),
-                .m_tuser(gray_tuser), .m_tlast(gray_tlast),
-                .m_tvalid(gray_tvalid), .m_tready(gray_tready)
-            );
+        if (CHAIN != 0) begin : g_retired_source_mode
+            // RGB input mode was retired; direct Gray8/Binary8 tests remain available.
+            initial $fatal(1, "CHAIN=1 input mode retired; use direct Gray8/Binary8 CHAIN=0");
+            assign source_ready_bus = 1'b0;
+            assign gray_tdata = 8'd0;
+            assign gray_tuser = 1'b0;
+            assign gray_tlast = 1'b0;
+            assign gray_tvalid = 1'b0;
 
             axis_gray2binary #(.THRESHOLD(128)) gray2binary (
                 .aclk(aclk), .aresetn(aresetn),

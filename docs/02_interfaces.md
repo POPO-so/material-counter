@@ -1,7 +1,8 @@
 # 02 · 接口契约（唯一真理）
 
-> **★ 本文件是唯一真理。任何接口变更必须走 PR + 三人确认 + 一次 ADR。**
-> 来源：MASTER_PLAN.md v1.1 §2.4 及当前 Controlled Errata。冻结于 Day 0，**三人签字后生效**。
+> **本文件记录正式接口定义与签核状态。任何正式接口冻结仍须走 PR + 三人确认 + 一次 ADR。**
+> 下方 Interface A/B 是较早的计划性接口基线，尚未签核；不要将它们当作当前运行包格式。
+> 用户于 2026-10-27 已明确授权 Gray8 作为当前唯一运行实现。该实现不自动冻结本文件中的正式项目接口。
 
 ## 状态
 
@@ -9,11 +10,24 @@
 |---|---|
 | 起草 | Day 0 |
 | 三人签字 | **待完成 —— G0（Day 2）判据** |
-| 接口 A 的最终冻结 | **待 C2（HDMI IN 接入判定）结论** |
+| 正式接口签核 | **待 PR／三人确认** |
+| 视频源和算法 Route | **未冻结；按 `docs/07_routes.md` 和各 ADR 的状态判断** |
+
+## 当前运行实现：GRAY8_PACKET_V1（已授权，板端验收待完成）
+
+此节记录当前代码实际使用的 Gray8 DMA 协议，不代表正式接口已签核：
+
+- 输入为 320×240 Gray8，一像素一字节；raw MJPEG 直接解码为 Gray8，不复制 RGB，也无 RGB 回退。
+- MM2S TX 长度为 **76,832 字节**。16 字节小端头含 `0x47525938`、`(H<<16)|W`、payload 长度和 frame ID；其后是 Gray8 payload；16 字节小端尾含 `0x454e4438`、frame ID、payload sum 和 `0xc0dec018`。
+- S2MM 输出为 320×240 Binary8，**76,800 字节**。PL threshold 生成掩膜，PS 逐像素校验后复用 MaskCounter。
+- Gray8 adapter、320×240 wrapper、S2MM guards 的 XSim 已通过；新 BIT 已加载，3/3 合成帧已在板端 DMA 并通过 Binary8 全像素校验。真实相机测试因板卡只枚举 USB root hub、未出现 `/dev/video*`，在 DMA 前失败且未留置 buffers。合成帧结果不作为帧率或准确率结论；当前没有 Gray8 性能或 YOLO 收益数据。
+- 旧 RGB RTL、编码、构建及回放代码已从当前实现移除；历史报告仍保留原结果，不能充当 Gray8 板测证据。
+
+详情见 [ADR-0004](adr/adr-0004-gray8-dma-input.md)、[Gray8 运行说明](../scripts/gray8/README.md) 和 [实施状态](../PLAN.md)。
 
 ---
 
-## 接口 A · 视频流（源 → PL 流水线）
+## 接口 A · 视频流（历史设计基线；当前实现已改为 Gray8 packet）
 
 | 信号 | 宽度 | 含义 |
 |---|---|---|

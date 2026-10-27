@@ -1,0 +1,91 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Tue Oct 27 02:44:53 2026
+| Host         : JiA running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file C:/Users/14173/Documents/material-counter/data/results/gray8-dma-20261027/reports/utilization-hierarchical.rpt
+| Design       : gray8_wrapper
+| Device       : xc7z020clg400-1
+| Speed File   : -1
+| Design State : Routed
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++-------------------------------------------------------------------+--------------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+|                              Instance                             |                                        Module                                        | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs | RAMB36 | RAMB18 | DSP Blocks |
++-------------------------------------------------------------------+--------------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+| gray8_wrapper                                                     |                                                                                (top) |       2777 |       2662 |      18 |   97 | 3470 |      2 |      1 |          0 |
+|   gray8_i                                                         |                                                                                gray8 |       2777 |       2662 |      18 |   97 | 3470 |      2 |      1 |          0 |
+|     image_pipeline                                                |                                                               gray8_image_pipeline_0 |        812 |        812 |       0 |    0 |  755 |      0 |      0 |          0 |
+|       inst                                                        |                                gray8_image_pipeline_0_axis_dma_gray_s2mm_pipeline_bd |        812 |        812 |       0 |    0 |  755 |      0 |      0 |          0 |
+|         (inst)                                                    |                                gray8_image_pipeline_0_axis_dma_gray_s2mm_pipeline_bd |        135 |        135 |       0 |    0 |  397 |      0 |      0 |          0 |
+|         frame_packer                                              |                                        gray8_image_pipeline_0_axis_s2mm_frame_packer |         96 |         96 |       0 |    0 |   64 |      0 |      0 |          0 |
+|         image_pipeline                                            |                                  gray8_image_pipeline_0_axis_dma_gray_image_pipeline |        582 |        582 |       0 |    0 |  294 |      0 |      0 |          0 |
+|           packet_adapter                                          |                                         gray8_image_pipeline_0_axis_dma_gray_adapter |        385 |        385 |       0 |    0 |  183 |      0 |      0 |          0 |
+|           output_checker                                          |                                    gray8_image_pipeline_0_axis_binary_output_checker |        180 |        180 |       0 |    0 |  107 |      0 |      0 |          0 |
+|     axi_dma_0                                                     |                                                                    gray8_axi_dma_0_0 |       1335 |       1231 |       8 |   96 | 1930 |      2 |      1 |          0 |
+|       U0                                                          |                                                            gray8_axi_dma_0_0_axi_dma |       1335 |       1231 |       8 |   96 | 1930 |      2 |      1 |          0 |
+|         INCLUDE_MM2S_SOF_EOF_GENERATOR.I_MM2S_DMA_MNGR            |                                                  gray8_axi_dma_0_0_axi_dma_mm2s_mngr |         13 |         13 |       0 |    0 |   68 |      0 |      0 |          0 |
+|           GEN_MM2S_DMA_CONTROL.GEN_SIMPLE_DMA_MODE.I_MM2S_SMPL_SM |                                                gray8_axi_dma_0_0_axi_dma_smple_sm_20 |         10 |         10 |       0 |    0 |   57 |      0 |      0 |          0 |
+|         INCLUDE_S2MM_SOF_EOF_GENERATOR.I_S2MM_DMA_MNGR            |                                                  gray8_axi_dma_0_0_axi_dma_s2mm_mngr |         23 |         23 |       0 |    0 |   88 |      0 |      0 |          0 |
+|           GEN_S2MM_DMA_CONTROL.GEN_SIMPLE_DMA_MODE.I_S2MM_SMPL_SM |                                                   gray8_axi_dma_0_0_axi_dma_smple_sm |         10 |         10 |       0 |    0 |   57 |      0 |      0 |          0 |
+|         I_AXI_DMA_REG_MODULE                                      |                                                 gray8_axi_dma_0_0_axi_dma_reg_module |        151 |        151 |       0 |    0 |  249 |      0 |      0 |          0 |
+|           GEN_AXI_LITE_IF.AXI_LITE_IF_I                           |                                                    gray8_axi_dma_0_0_axi_dma_lite_if |        112 |        112 |       0 |    0 |   85 |      0 |      0 |          0 |
+|           GEN_MM2S_REGISTERS.I_MM2S_DMA_REGISTER                  |                                                   gray8_axi_dma_0_0_axi_dma_register |         22 |         22 |       0 |    0 |   82 |      0 |      0 |          0 |
+|           GEN_S2MM_REGISTERS.I_S2MM_DMA_REGISTER                  |                                              gray8_axi_dma_0_0_axi_dma_register_s2mm |         17 |         17 |       0 |    0 |   82 |      0 |      0 |          0 |
+|         I_PRMRY_DATAMOVER                                         |                                                      gray8_axi_dma_0_0_axi_datamover |       1134 |       1030 |       8 |   96 | 1487 |      2 |      1 |          0 |
+|           GEN_MM2S_FULL.I_MM2S_FULL_WRAPPER                       |                                       gray8_axi_dma_0_0_axi_datamover_mm2s_full_wrap |        422 |        385 |       0 |   37 |  491 |      1 |      1 |          0 |
+|             ENABLE_AXIS_SKID.I_MM2S_SKID_BUF                      |                                           gray8_axi_dma_0_0_axi_datamover_skid_buf_8 |          7 |          7 |       0 |    0 |   81 |      0 |      0 |          0 |
+|             GEN_INCLUDE_MM2S_SF.I_RD_SF                           |                                                gray8_axi_dma_0_0_axi_datamover_rd_sf |        119 |        118 |       0 |    1 |   60 |      1 |      1 |          0 |
+|               I_DATA_FIFO                                         |                                         gray8_axi_dma_0_0_axi_datamover_sfifo_autord |        106 |        106 |       0 |    0 |   47 |      1 |      1 |          0 |
+|                 (I_DATA_FIFO)                                     |                                         gray8_axi_dma_0_0_axi_datamover_sfifo_autord |         50 |         50 |       0 |    0 |    0 |      0 |      0 |          0 |
+|                 BLK_MEM.I_SYNC_FIFOGEN_FIFO                       |                                                      gray8_axi_dma_0_0_xpm_fifo_sync |         56 |         56 |       0 |    0 |   47 |      1 |      1 |          0 |
+|                   xpm_fifo_base_inst                              |                                                      gray8_axi_dma_0_0_xpm_fifo_base |         56 |         56 |       0 |    0 |   47 |      1 |      1 |          0 |
+|             I_CMD_STATUS                                          |                                           gray8_axi_dma_0_0_axi_datamover_cmd_status |         10 |         10 |       0 |    0 |   63 |      0 |      0 |          0 |
+|               I_CMD_FIFO                                          |                                              gray8_axi_dma_0_0_axi_datamover_fifo_10 |          3 |          3 |       0 |    0 |   57 |      0 |      0 |          0 |
+|             I_MSTR_PCC                                            |                                                  gray8_axi_dma_0_0_axi_datamover_pcc |        183 |        183 |       0 |    0 |  174 |      0 |      0 |          0 |
+|           GEN_S2MM_FULL.I_S2MM_FULL_WRAPPER                       |                                       gray8_axi_dma_0_0_axi_datamover_s2mm_full_wrap |        712 |        645 |       8 |   59 |  996 |      1 |      0 |          0 |
+|             ENABLE_AXIS_SKID.I_S2MM_STRM_SKID_BUF                 |                                             gray8_axi_dma_0_0_axi_datamover_skid_buf |         43 |         43 |       0 |    0 |   80 |      0 |      0 |          0 |
+|             GEN_ENABLE_INDET_BTT_SF.I_INDET_BTT                   |                                            gray8_axi_dma_0_0_axi_datamover_indet_btt |        161 |        153 |       8 |    0 |  193 |      1 |      0 |          0 |
+|               I_XD_FIFO                                           |                         gray8_axi_dma_0_0_axi_datamover_sfifo_autord__parameterized0 |         70 |         62 |       8 |    0 |   54 |      0 |      0 |          0 |
+|                 NON_BLK_MEM.I_SYNC_FIFOGEN_FIFO                   |                                      gray8_axi_dma_0_0_xpm_fifo_sync__parameterized1 |         44 |         36 |       8 |    0 |   54 |      0 |      0 |          0 |
+|                   xpm_fifo_base_inst                              |                                      gray8_axi_dma_0_0_xpm_fifo_base__parameterized0 |         44 |         36 |       8 |    0 |   54 |      0 |      0 |          0 |
+|               ENABLE_AXIS_SKID.I_INDET_BTT_SKID_BUF               |                             gray8_axi_dma_0_0_axi_datamover_skid_buf__parameterized0 |         44 |         44 |       0 |    0 |   86 |      0 |      0 |          0 |
+|             GEN_INCLUDE_IBTTCC.I_S2MM_MSTR_IBTTCC                 |                                               gray8_axi_dma_0_0_axi_datamover_ibttcc |        130 |        130 |       0 |    0 |  227 |      0 |      0 |          0 |
+|             GEN_INCLUDE_REALIGNER.I_S2MM_REALIGNER                |                                         gray8_axi_dma_0_0_axi_datamover_s2mm_realign |        179 |        161 |       0 |   18 |  173 |      0 |      0 |          0 |
+|               GEN_INCLUDE_SCATTER.I_S2MM_SCATTER                  |                                         gray8_axi_dma_0_0_axi_datamover_s2mm_scatter |        152 |        147 |       0 |    5 |  160 |      0 |      0 |          0 |
+|                 (GEN_INCLUDE_SCATTER.I_S2MM_SCATTER)              |                                         gray8_axi_dma_0_0_axi_datamover_s2mm_scatter |         59 |         59 |       0 |    0 |   55 |      0 |      0 |          0 |
+|                 I_MSSAI_SKID_BUF                                  |                                       gray8_axi_dma_0_0_axi_datamover_mssai_skid_buf |         58 |         58 |       0 |    0 |   83 |      0 |      0 |          0 |
+|             I_CMD_STATUS                                          |                           gray8_axi_dma_0_0_axi_datamover_cmd_status__parameterized0 |         19 |         19 |       0 |    0 |   83 |      0 |      0 |          0 |
+|               I_CMD_FIFO                                          |                                                 gray8_axi_dma_0_0_axi_datamover_fifo |          5 |          5 |       0 |    0 |   57 |      0 |      0 |          0 |
+|             I_S2MM_MMAP_SKID_BUF                                  |                                          gray8_axi_dma_0_0_axi_datamover_skid2mm_buf |         39 |         39 |       0 |    0 |   77 |      0 |      0 |          0 |
+|     control_fabric                                                |                                                               gray8_control_fabric_0 |        404 |        404 |       0 |    0 |  451 |      0 |      0 |          0 |
+|       inst                                                        |                                                       gray8_control_fabric_0_bd_663e |        404 |        404 |       0 |    0 |  451 |      0 |      0 |          0 |
+|         sc_ul                                                     |                                               gray8_control_fabric_0_bd_663e_sc_ul_0 |        404 |        404 |       0 |    0 |  451 |      0 |      0 |          0 |
+|           inst                                                    |                                       gray8_control_fabric_0_sc_ultralite_v1_0_1_top |        404 |        404 |       0 |    0 |  451 |      0 |      0 |          0 |
+|             gen_axi_full_nxm.sasd_inst                            |                                 gray8_control_fabric_0_sc_ultralite_v1_0_1_sasd_lite |        404 |        404 |       0 |    0 |  449 |      0 |      0 |          0 |
+|               (gen_axi_full_nxm.sasd_inst)                        |                                 gray8_control_fabric_0_sc_ultralite_v1_0_1_sasd_lite |        143 |        143 |       0 |    0 |  270 |      0 |      0 |          0 |
+|               gen_read.arctrl_mux                                 |                   gray8_control_fabric_0_sc_ultralite_v1_0_1_mux_hot__parameterized5 |         84 |         84 |       0 |    0 |    8 |      0 |      0 |          0 |
+|               gen_read.rdata_mux                                  |                  gray8_control_fabric_0_sc_ultralite_v1_0_1_mux_hot__parameterized10 |         58 |         58 |       0 |    0 |   32 |      0 |      0 |          0 |
+|     hp0_protocol                                                  |                                                                 gray8_hp0_protocol_0 |         44 |         42 |       2 |    0 |   89 |      0 |      0 |          0 |
+|       inst                                                        |           gray8_hp0_protocol_0_axi_protocol_converter_v2_1_38_axi_protocol_converter |         44 |         42 |       2 |    0 |   89 |      0 |      0 |          0 |
+|         gen_axi4_axi3.axi3_conv_inst                              |                        gray8_hp0_protocol_0_axi_protocol_converter_v2_1_38_axi3_conv |         44 |         42 |       2 |    0 |   89 |      0 |      0 |          0 |
+|           (USE_READ.USE_SPLIT_R.read_addr_inst)                   |                      gray8_hp0_protocol_0_axi_protocol_converter_v2_1_38_a_axi3_conv |          6 |          6 |       0 |    0 |   51 |      0 |      0 |          0 |
+|     hp1_fabric                                                    |                                                                   gray8_hp1_fabric_0 |        166 |        158 |       8 |    0 |  208 |      0 |      0 |          0 |
+|       s00_couplers                                                |                                                             s00_couplers_imp_1YH7X65 |        166 |        158 |       8 |    0 |  208 |      0 |      0 |          0 |
+|         auto_pc                                                   |                                                       gray8_hp1_fabric_imp_auto_pc_0 |        166 |        158 |       8 |    0 |  208 |      0 |      0 |          0 |
+|           inst                                                    | gray8_hp1_fabric_imp_auto_pc_0_axi_protocol_converter_v2_1_38_axi_protocol_converter |        166 |        158 |       8 |    0 |  208 |      0 |      0 |          0 |
+|             gen_axi4_axi3.axi3_conv_inst                          |              gray8_hp1_fabric_imp_auto_pc_0_axi_protocol_converter_v2_1_38_axi3_conv |        166 |        158 |       8 |    0 |  208 |      0 |      0 |          0 |
+|               (USE_WRITE.write_addr_inst)                         |            gray8_hp1_fabric_imp_auto_pc_0_axi_protocol_converter_v2_1_38_a_axi3_conv |         73 |         73 |       0 |    0 |  102 |      0 |      0 |          0 |
++-------------------------------------------------------------------+--------------------------------------------------------------------------------------+------------+------------+---------+------+------+--------+--------+------------+
+* Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
+
+

@@ -1,4 +1,4 @@
-"""Package checked offline artifacts for review. Never connects to a board."""
+"""Package the current Gray8 bitstream and Gray8 input frames offline."""
 from __future__ import annotations
 
 import argparse
@@ -10,95 +10,133 @@ import struct
 import zipfile
 
 import board_preflight as preflight
+from prepare_vectors import (NORMAL_CASES, REPO_ROOT, binary8_from_gray,
+                             make_packet, read_gray_png, resolve_inputs,
+                             validate_source_manifest)
+
 
 ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_BUILD = ROOT / "data/results/gray8-dma-20261027/export"
+DEFAULT_XSIM = ROOT / "data/results/gray8-dma-20261027/final/xsim"
+RTL_SOURCES = {
+    "axis_binary_output_checker.v": ROOT / "fpga/experimental/wo0014/axis_binary_output_checker.v",
+    "axis_dma_gray_adapter.v": ROOT / "fpga/experimental/gray8/axis_dma_gray_adapter.v",
+    "axis_dma_gray_image_pipeline.v": ROOT / "fpga/experimental/gray8/axis_dma_gray_image_pipeline.v",
+    "axis_dma_gray_s2mm_pipeline_bd.v": ROOT / "fpga/experimental/gray8/axis_dma_gray_s2mm_pipeline_bd.v",
+    "axis_gray2binary.v": ROOT / "fpga/rtl/axis_gray2binary.v",
+    "axis_s2mm_frame_packer.v": ROOT / "fpga/experimental/wo0015/axis_s2mm_frame_packer.v",
+}
 
 
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def prepare(destination: Path) -> dict:
-    pair_path = ROOT / "data/results/wo0015-hw-50mhz-20261015/export/pair-manifest.json"
-    pair = json.loads(pair_path.read_text(encoding="utf-8"))
-    if pair["implementation_status"] != "implemented_offline" or pair["clock_mhz"] != 50:
-        raise RuntimeError("Checked 50 MHz build manifest required")
-    for name in ("bit", "hwh"):
-        if sha(Path(pair[name]["path"])) != pair[name]["sha256"]:
-            raise RuntimeError(f"Changed build artifact: {name}")
-    xsim_path = ROOT / "data/results/wo0015-offline-20261015/xsim-summary.json"
-    xsim = json.loads(xsim_path.read_text(encoding="utf-8"))
-    if xsim["status"] != "PASS" or len(xsim["cases"]) != 10:
-        raise RuntimeError("Required independent XSim comparisons are incomplete")
-    for rel, digest in xsim["rtl_sha256"].items():
-        if sha(ROOT / rel) != digest:
-            raise RuntimeError(f"Simulation source changed after acceptance: {rel}")
-    replay_path = ROOT / "data/results/wo0015-xsim-replay-20261015/replay-summary.json"
-    replay = json.loads(replay_path.read_text(encoding="utf-8"))
-    if replay["suite_status"] != "PASS":
-        raise RuntimeError("Final delivered simulation entrypoint did not pass")
-    for rel, digest in replay["source_sha256"].items():
-        if sha(ROOT / rel) != digest:
-            raise RuntimeError(f"Replay source changed after acceptance: {rel}")
+def prepare(destination: Path, *, build_dir: Path = DEFAULT_BUILD,
+            xsim_dir: Path = DEFAULT_XSIM, source_root: Path | None = None,
+            source_manifest: Path | None = None) -> dict:
+    build_manifest_path = build_dir / "manifest.json"
+    build = json.loads(build_manifest_path.read_text(encoding="utf-8"))
+    expected = {
+        "protocol": "GRAY8_PACKET_V1", "checker_signature": preflight.PACKET_MAGIC,
+        "packer_signature": preflight.PACKER_SIGNATURE, "width": preflight.WIDTH,
+        "height": preflight.HEIGHT, "tx_bytes": preflight.TX_BYTES,
+        "rx_bytes": preflight.RX_BYTES, "threshold": 128,
+        "clock_mhz": 50, "part": preflight.EXPECTED_PART,
+    }
+    for key, value in expected.items():
+        if build.get(key) != value:
+            raise RuntimeError(f"Gray8 build manifest {key} is {build.get(key)!r}; expected {value!r}")
+    if build.get("build_evidence") != "ROUTED_NOT_BOARD_VERIFIED":
+        raise RuntimeError("Build evidence status is not the expected routed, not board-verified state")
+    for artifact_key, expected_name in (("bit_path", "gray8.bit"), ("hwh_path", "gray8.hwh")):
+        path = build_dir / build[artifact_key]
+        digest_key = "bit_sha256" if artifact_key == "bit_path" else "hwh_sha256"
+        if path.name != expected_name or sha(path) != build[digest_key]:
+            raise RuntimeError(f"Gray8 build artifact changed or has an unexpected name: {path}")
+    bit_path, hwh_path = build_dir / build["bit_path"], build_dir / build["hwh_path"]
+    preflight.validate_hwh(hwh_path)
+
+    rtl_hashes = build.get("rtl_snapshot_sha256")
+    if not isinstance(rtl_hashes, dict) or set(Path(name).name for name in rtl_hashes) != set(RTL_SOURCES):
+        raise RuntimeError("Gray8 manifest RTL snapshot list is incomplete or unexpected")
+    for relative, digest in rtl_hashes.items():
+        source = RTL_SOURCES.get(Path(relative).name)
+        if source is None or sha(source) != digest:
+            raise RuntimeError(f"Gray8 RTL source differs from the routed snapshot: {relative}")
+
+    adapter_log = xsim_dir / "sim.log"
+    wrapper_log = xsim_dir / "wrapper-sim.log"
+    if "GRAY8_ADAPTER_PASS" not in adapter_log.read_text(encoding="utf-8", errors="replace"):
+        raise RuntimeError("Gray8 adapter/pipeline XSim PASS evidence is missing")
+    if "GRAY8_WRAPPER_320X240_PASS" not in wrapper_log.read_text(encoding="utf-8", errors="replace"):
+        raise RuntimeError("Gray8 320x240 wrapper XSim PASS evidence is missing")
+    h3_root, source_manifest_path = resolve_inputs(
+        (source_root or REPO_ROOT).resolve(), source_root, source_manifest
+    )
+    _, records = validate_source_manifest(h3_root, source_manifest_path)
+    selected = [records[index] for index in NORMAL_CASES["B"]]
+
+    if destination.exists():
+        raise FileExistsError(f"destination already exists: {destination}")
     destination.mkdir(parents=True, exist_ok=False)
-    for filename in ("board_once.py", "board_preflight.py"):
+    shutil.copyfile(bit_path, destination / "gray8.bit")
+    shutil.copyfile(hwh_path, destination / "gray8.hwh")
+    shutil.copyfile(build_manifest_path, destination / "gray8-build-manifest.json")
+    shutil.copyfile(adapter_log, destination / "gray8-adapter-xsim.log")
+    shutil.copyfile(wrapper_log, destination / "gray8-wrapper-xsim.log")
+    for filename in ("board_once.py", "board_preflight.py", "camera_adapter.py"):
         shutil.copyfile(Path(__file__).parent / filename, destination / filename)
-    shutil.copyfile(Path(pair["bit"]["path"]), destination / "wo15.bit")
-    shutil.copyfile(Path(pair["hwh"]["path"]), destination / "wo15.hwh")
-    shutil.copyfile(pair_path, destination / "build-pair-manifest.json")
-    shutil.copyfile(replay_path, destination / "xsim-replay-summary.json")
-    case_root = ROOT / "data/results/wo0015-offline-20261015/vectors/B"
-    case = json.loads((case_root / "case.json").read_text(encoding="utf-8"))
-    records = [int(line, 16) for line in (case_root / "beats.hex").read_text().splitlines()]
-    packed = bytearray()
-    for i, word in enumerate(records):
-        if (word >> 32) & 15 != 15 or ((word >> 36) & 1) != ((i + 1) % preflight.TX_BEATS == 0):
-            raise RuntimeError("Unexpected input record framing/KEEP")
-        packed.extend(struct.pack("<I", word & 0xffffffff))
-    golden = (case_root / "golden.bin").read_bytes()
-    if len(packed) != 3 * preflight.TX_BYTES or len(golden) != 3 * preflight.RX_BYTES:
-        raise RuntimeError("Expected three complete simulation frames")
+    codec_dir = destination / "gray8"
+    codec_dir.mkdir()
+    shutil.copyfile(ROOT / "scripts/gray8/packet_codec.py", codec_dir / "packet_codec.py")
+
     frames = []
-    for i, record in enumerate(case["source_frames"]):
-        packet_path = destination / f"frame-{i}.rgb.bin"
-        binary_path = destination / f"frame-{i}.binary.bin"
-        packet_path.write_bytes(packed[i * preflight.TX_BYTES:(i + 1) * preflight.TX_BYTES])
-        binary_path.write_bytes(golden[i * preflight.RX_BYTES:(i + 1) * preflight.RX_BYTES])
-        if sha(binary_path) != record["golden_sha256"]:
-            raise RuntimeError("Per-frame simulation golden hash differs")
-        frames.append({"frame_id": record["frame_id"], "packet_path": packet_path.name,
+    for frame_id, source in enumerate(selected):
+        gray = read_gray_png(source)
+        beats = make_packet(gray, preflight.WIDTH, preflight.HEIGHT, frame_id)
+        packet = b"".join(struct.pack("<I", beat.data) for beat in beats)
+        golden = binary8_from_gray(gray)
+        if len(packet) != preflight.TX_BYTES or len(golden) != preflight.RX_BYTES:
+            raise RuntimeError("Generated Gray8 packet or Binary8 golden has an invalid length")
+        preflight._validate_packet(packet, frame_id)
+        packet_path = destination / f"frame-{frame_id}.gray8.bin"
+        binary_path = destination / f"frame-{frame_id}.binary.bin"
+        packet_path.write_bytes(packet)
+        binary_path.write_bytes(golden)
+        frames.append({"frame_id": frame_id, "packet_path": packet_path.name,
                        "packet_sha256": sha(packet_path), "binary_path": binary_path.name,
                        "binary_sha256": sha(binary_path)})
+
     manifest = {
         "schema": 1, "work_order": "WO-0015", "stage": "S2MM_BINARY8_FRAME_RETURN",
-        "build_id": pair["build_id"], "boot_id": preflight.AUTHORIZED_BOOT_ID,
+        "build_id": destination.name, "boot_id": preflight.AUTHORIZED_BOOT_ID,
         "part": preflight.EXPECTED_PART, "clock_mhz": 50,
-        "bit_path": "wo15.bit", "bit_sha256": sha(destination / "wo15.bit"),
-        "hwh_path": "wo15.hwh", "hwh_sha256": sha(destination / "wo15.hwh"),
+        "bit_path": "gray8.bit", "bit_sha256": sha(destination / "gray8.bit"),
+        "hwh_path": "gray8.hwh", "hwh_sha256": sha(destination / "gray8.hwh"),
         "dma_base": preflight.DMA_BASE, "checker_base": preflight.CHECKER_BASE,
         "contract": dict(preflight._CONTRACT_VALUES),
-        "executor_sha256": {n: sha(destination / n) for n in ("board_once.py", "board_preflight.py")},
+        "executor_sha256": {name: sha(destination / name)
+                             for name in ("board_once.py", "board_preflight.py")},
         "ready_for_board": True, "frames": frames,
     }
     manifest_path = destination / "run-manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     plan = preflight.validate_manifest(manifest_path, sha(manifest_path))
-    # The board controller uses the explicit deployment name while offline
-    # validators retain the run-manifest name; bind both identical copies.
     shutil.copyfile(manifest_path, destination / "wo0015-manifest.json")
-    (destination / "SHA256SUMS.json").write_text(json.dumps(
-        {p.name: sha(p) for p in sorted(destination.iterdir()) if p.is_file()}, indent=2) + "\n", encoding="utf-8")
+    sums = {path.name: sha(path) for path in sorted(destination.iterdir()) if path.is_file()}
+    (destination / "SHA256SUMS.json").write_text(json.dumps(sums, indent=2) + "\n", encoding="utf-8")
     archive_path = destination.with_suffix(".zip")
-    if archive_path.exists():
-        raise FileExistsError(archive_path)
     with zipfile.ZipFile(archive_path, "x", compression=zipfile.ZIP_DEFLATED) as archive:
-        for p in sorted(destination.iterdir()):
-            archive.write(p, p.name)
-    result = {"status": "OFFLINE_BUNDLE_VALIDATED", "board_accessed": False,
-              "ready_for_board_means": "offline eligibility only; requires separate human authorization",
+        for path in sorted(destination.iterdir()):
+            if path.is_file():
+                archive.write(path, path.name)
+    result = {"status": "OFFLINE_GRAY8_BUNDLE_VALIDATED", "board_accessed": False,
+              "ready_for_board_means": "offline Gray8 eligibility only; requires separate human authorization",
               "directory": str(destination), "manifest_sha256": plan.manifest_sha256,
               "archive": str(archive_path), "archive_sha256": sha(archive_path),
-              "bit_sha256": plan.bit_sha256, "hwh_sha256": plan.hwh_sha256}
+              "bit_sha256": plan.bit_sha256, "hwh_sha256": plan.hwh_sha256,
+              "board_tested": False}
     (destination.parent / (destination.name + "-receipt.json")).write_text(
         json.dumps(result, indent=2) + "\n", encoding="utf-8")
     return result
@@ -107,5 +145,11 @@ def prepare(destination: Path) -> dict:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True, help="new local directory, never a board path")
+    parser.add_argument("--build-dir", type=Path, default=DEFAULT_BUILD)
+    parser.add_argument("--xsim-dir", type=Path, default=DEFAULT_XSIM)
+    parser.add_argument("--source-root", type=Path)
+    parser.add_argument("--source-manifest", type=Path)
     args = parser.parse_args()
-    print(json.dumps(prepare(args.out.resolve()), indent=2))
+    print(json.dumps(prepare(args.out.resolve(), build_dir=args.build_dir.resolve(),
+                             xsim_dir=args.xsim_dir.resolve(), source_root=args.source_root,
+                             source_manifest=args.source_manifest), indent=2))

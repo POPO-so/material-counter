@@ -1,0 +1,60 @@
+--- board/scripts/gray8/packet_codec.py
++++ workspace/scripts/gray8/packet_codec.py
+@@ -39,15 +39,16 @@
+ def gray320x240_to_gray_packet_into(gray: Any, output: Any, *, frame_id: int = 0) -> None:
+     array = _gray_array(gray)
+     frame_id = _frame_id(frame_id)
++    if not isinstance(output, (bytearray, memoryview, np.ndarray)):
++        raise TypeError("output must be writable bytearray, memoryview, or ndarray")
+     try:
+-        packet = np.asarray(output)
+-    except Exception as exc:
+-        raise TypeError("output must expose writable contiguous uint8 storage") from exc
+-    if (packet.dtype != np.uint8 or packet.nbytes != TX_BYTES
+-            or not packet.flags.c_contiguous or not packet.flags.writeable):
+-        raise ValueError(
+-            f"output must be writable contiguous uint8 storage of {TX_BYTES} bytes")
+-    view = memoryview(packet.reshape(-1)).cast("B")
++        view = memoryview(output).cast("B")
++    except (TypeError, ValueError) as exc:
++        raise TypeError("output must expose a contiguous writable byte buffer") from exc
++    if view.readonly:
++        raise TypeError("output must be writable")
++    if view.nbytes != TX_BYTES:
++        raise ValueError(f"output must be exactly {TX_BYTES} bytes")
+     _WORD.pack_into(view, 0, HEADER_MAGIC, (HEIGHT << 16) | WIDTH, PIXELS, frame_id)
+     payload = memoryview(np.ascontiguousarray(array)).cast("B")
+     view[HEADER_BYTES:HEADER_BYTES + PIXELS] = payload
+--- board/scripts/wo0016/live_calibration.py
++++ workspace/scripts/wo0016/live_calibration.py
+@@ -34,15 +34,15 @@
+ 
+ 
+ def monochrome_view(frame: np.ndarray) -> np.ndarray:
+-    """OV9281 decoded channels repeat monochrome samples: take a view, never BGR luma."""
++    """Return a view of a decoded Gray8 frame; reject color camera buffers."""
+     image = np.asarray(frame)
+     if image.dtype != np.uint8:
+         raise ValueError("camera frame must be uint8")
+-    if image.shape in ((400, 640, 3), (400, 640, 1)):
++    if image.shape == (400, 640, 1):
+         return image[:, :, 0]
+     if image.shape == (400, 640):
+         return image
+-    raise ValueError("camera frame must have shape (400,640), (400,640,1) or (400,640,3)")
++    raise ValueError("camera frame must have Gray8 shape (400,640) or (400,640,1)")
+ 
+ 
+ def frame_geometry(mapping: str = "stretch", *, reference_area: float = REFERENCE_AREA,
+--- board/scripts/wo0016/stream_counter.py
++++ workspace/scripts/wo0016/stream_counter.py
+@@ -1194,7 +1194,8 @@
+                     frame_id, bounded=self.history_limit is not None
+                 )
+                 if self.packet_encoder_into is not None:
+-                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=packet_frame_id)
++                    self.packet_encoder_into(
++                        gray, np.asarray(slot.tx_buffer), frame_id=packet_frame_id)
+                 else:
+                     packet = self.packet_encoder(gray, frame_id=packet_frame_id)
+                     if (not isinstance(packet, (bytes, bytearray, memoryview))

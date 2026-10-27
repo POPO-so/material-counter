@@ -1,0 +1,345 @@
+{
+  "artifacts": {
+    "bit_matches_manifest": true,
+    "bit_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-14\\test_mock_run_reports_cma_use_0\\wo0015.bit",
+    "bit_sha256": "4302392da55e57409e1ebe887a0526f7390122920bd1bc2e9a668698599026fa",
+    "hwh_matches_manifest": true,
+    "hwh_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-14\\test_mock_run_reports_cma_use_0\\wo0015.hwh",
+    "hwh_sha256": "24a7d1399cfb00c11543b36f5eac76757dd8ed0fbf211587ddd5bbb3aedcd356"
+  },
+  "byte_count": 76800,
+  "capture_status": "SAVED",
+  "captured_before_release": true,
+  "context": {
+    "accepted_pixels": 76800,
+    "afi1_after_dma": {
+      "access": "read-only",
+      "afi1_skip_reason": null,
+      "afi1_status": "READ",
+      "registers": {
+        "AFI1_RDCHAN_CTRL": {
+          "address": "0xf8009000",
+          "raw_hex": "0x00000000",
+          "value": 0,
+          "width_bit0": 0,
+          "width_bits": 64
+        },
+        "AFI1_WRCHAN_CTRL": {
+          "address": "0xf8009014",
+          "raw_hex": "0x00000f00",
+          "value": 3840,
+          "width_bit0": 0,
+          "width_bits": 64
+        },
+        "SLCR_FPGA0_CLK_CTRL": {
+          "address": "0xf8000170",
+          "raw_hex": "0x0001a00a",
+          "value": 106506
+        },
+        "SLCR_FPGA_RST_CTRL": {
+          "address": "0xf8000240",
+          "raw_hex": "0x00000000",
+          "value": 0
+        }
+      },
+      "stage": "after_dma_frame_0"
+    },
+    "afi1_before_dma": {
+      "access": "read-only",
+      "afi1_skip_reason": null,
+      "afi1_status": "READ",
+      "registers": {
+        "AFI1_RDCHAN_CTRL": {
+          "address": "0xf8009000",
+          "raw_hex": "0x00000000",
+          "value": 0,
+          "width_bit0": 0,
+          "width_bits": 64
+        },
+        "AFI1_WRCHAN_CTRL": {
+          "address": "0xf8009014",
+          "raw_hex": "0x00000f00",
+          "value": 3840,
+          "width_bit0": 0,
+          "width_bits": 64
+        },
+        "SLCR_FPGA0_CLK_CTRL": {
+          "address": "0xf8000170",
+          "raw_hex": "0x0001a00a",
+          "value": 106506
+        },
+        "SLCR_FPGA_RST_CTRL": {
+          "address": "0xf8000240",
+          "raw_hex": "0x00000000",
+          "value": 0
+        }
+      },
+      "stage": "before_dma_frame_0"
+    },
+    "boot_id": "bb382d01-7bb2-4922-9a85-af6a24ef4d10",
+    "checker_after": {
+      "eols": 240,
+      "error_code": 0,
+      "frame_id": 1,
+      "input_beats": 19208,
+      "input_bytes": 76832,
+      "input_checksum": 9793806,
+      "input_first_word": 1196579128,
+      "input_last_word": 3235823640,
+      "input_tlast": 1,
+      "output_checksum": 9792000,
+      "output_stalls": 0,
+      "output_total": 76800,
+      "packet_done_count": 1,
+      "packet_error_count": 0,
+      "pixels": 76800,
+      "sofs": 1,
+      "status": 9
+    },
+    "checker_before": {
+      "eols": 0,
+      "error_code": 0,
+      "frame_id": 0,
+      "input_beats": 0,
+      "input_bytes": 0,
+      "input_checksum": 0,
+      "input_first_word": 0,
+      "input_last_word": 0,
+      "input_tlast": 0,
+      "output_checksum": 0,
+      "output_stalls": 0,
+      "output_total": 0,
+      "packet_done_count": 0,
+      "packet_error_count": 0,
+      "pixels": 0,
+      "sofs": 0,
+      "status": 0
+    },
+    "frame_id": 1,
+    "frame_index": 0,
+    "manifest_sha256": "9fdfb8fd1abe97f626c96c1785b028030f7c4cdf9e0146e5548072810e4a9650",
+    "mm2s_dmasr": 4098,
+    "packer_error": 0,
+    "packer_status": 2,
+    "physical_gate": {
+      "mm2s_physical_range": [
+        268435456,
+        268512288
+      ],
+      "permitted_buffer_ranges": [
+        [
+          0,
+          536870912
+        ]
+      ],
+      "rx_actual_bytes": 76800,
+      "s2mm_physical_range": [
+        268513280,
+        268590080
+      ],
+      "status": "POST_ALLOC_PHYSICAL_GATE_PASS",
+      "tx_actual_bytes": 76832
+    },
+    "s2mm_actual_length": 76800,
+    "s2mm_dmasr": 4098,
+    "sent_beats": 19200
+  },
+  "diagnostics_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-14\\test_mock_run_reports_cma_use_0\\mismatch-diagnostics\\step2_frame00_id0000000001_diagnostics.json",
+  "expected_golden_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-14\\test_mock_run_reports_cma_use_0\\mismatch-diagnostics\\step2_frame00_id0000000001_expected_golden.bin",
+  "expected_golden_sha256": "213c2a878e3c1c5221415c4f97a6d7a6bcf806172e75ab523cc517e6e368898e",
+  "first_64_bytes_words": [
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 0,
+      "parity": "even",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 0
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 4,
+      "parity": "odd",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 1
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 8,
+      "parity": "even",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 2
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 12,
+      "parity": "odd",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 3
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 16,
+      "parity": "even",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 4
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 20,
+      "parity": "odd",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 5
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 24,
+      "parity": "even",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 6
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 28,
+      "parity": "odd",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 7
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 32,
+      "parity": "even",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 8
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 36,
+      "parity": "odd",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 9
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 40,
+      "parity": "even",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 10
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 44,
+      "parity": "odd",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 11
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 48,
+      "parity": "even",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 12
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 52,
+      "parity": "odd",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 13
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 56,
+      "parity": "even",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 14
+    },
+    {
+      "golden_hex": "00ff00ff",
+      "golden_u32_le": 4278255360,
+      "mismatch_bytes": 0,
+      "offset": 60,
+      "parity": "odd",
+      "rx_hex": "00ff00ff",
+      "rx_u32_le": 4278255360,
+      "word_index": 15
+    }
+  ],
+  "first_mismatch": null,
+  "first_mismatches": [],
+  "golden_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-14\\test_mock_run_reports_cma_use_0\\mismatch-diagnostics\\step2_frame00_id0000000001_expected_golden.bin",
+  "golden_sha256": "213c2a878e3c1c5221415c4f97a6d7a6bcf806172e75ab523cc517e6e368898e",
+  "mismatch_bytes": 0,
+  "parity": {
+    "even": {
+      "golden_match_bytes": 38400,
+      "mismatch_bytes": 0,
+      "poison_word_bytes": 0,
+      "poison_words": 0,
+      "word_count": 9600,
+      "zero_word_bytes": 0,
+      "zero_words": 0
+    },
+    "odd": {
+      "golden_match_bytes": 38400,
+      "mismatch_bytes": 0,
+      "poison_word_bytes": 0,
+      "poison_words": 0,
+      "word_count": 9600,
+      "zero_word_bytes": 0,
+      "zero_words": 0
+    }
+  },
+  "poison_byte": 165,
+  "poison_u32": 2779096485,
+  "rx_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-14\\test_mock_run_reports_cma_use_0\\mismatch-diagnostics\\step2_frame00_id0000000001_rx_raw.bin",
+  "rx_sha256": "213c2a878e3c1c5221415c4f97a6d7a6bcf806172e75ab523cc517e6e368898e",
+  "schema": 1,
+  "tx_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-14\\test_mock_run_reports_cma_use_0\\mismatch-diagnostics\\step2_frame00_id0000000001_tx_raw.bin",
+  "tx_sha256": "df8991940697517825528787b6e80850e29ee12bc65fefbf22c360c900fdb12b",
+  "word_bytes": 4
+}

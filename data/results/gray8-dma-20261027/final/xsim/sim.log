@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Tue Oct 27 02:36:17 2026
+# Process ID         : 2920
+# Current directory  : C:/Users/14173/Documents/material-counter/data/results/gray8-dma-20261027/final/xsim
+# Command line       : xsim.exe -log C:/Users/14173/Documents/material-counter/data/results/gray8-dma-20261027/final/xsim/sim.log -mode tcl -source {xsim.dir/gray8_pipeline/xsim_script.tcl}
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/gray8-dma-20261027/final/xsim/sim.log
+# Journal file       : C:/Users/14173/Documents/material-counter/data/results/gray8-dma-20261027/final/xsim\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 15985 MB
+#-----------------------------------------------------------
+source xsim.dir/gray8_pipeline/xsim_script.tcl
+# xsim {gray8_pipeline} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+GRAY8_ADAPTER_PASS pixels=15
+$finish called at time : 5555 ns : File "C:/Users/14173/Documents/material-counter/fpga/sim/gray8/tb_axis_dma_gray_adapter.sv" Line 100
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Oct 27 02:36:20 2026...

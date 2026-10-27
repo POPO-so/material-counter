@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\14173\Documents\material-counter\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\14173\Documents\material-counter
+collecting ... collected 108 items
+
+scripts/gray8/test_finalize_build.py::test_manifest_requires_new_gray8_hwh_and_rejects_tampered_artifact PASSED [  0%]
+scripts/gray8/test_finalize_build.py::test_old_rgb_hwh_is_never_admitted_as_gray8 PASSED [  1%]
+scripts/gray8/test_gray8_entrypoint.py::test_lighting_compensation_keeps_gray8_and_source_threshold_semantics PASSED [  2%]
+scripts/gray8/test_gray8_entrypoint.py::test_gray8_cli_does_not_import_the_legacy_finalizer_by_name PASSED [  3%]
+scripts/gray8/test_gray8_only.py::test_default_runtime_protocol_is_gray8_without_triplicated_payload PASSED [  4%]
+scripts/gray8/test_gray8_only.py::test_retired_encoder_and_pl_modules_are_absent_from_active_graph PASSED [  5%]
+scripts/gray8/test_hardware_checks.py::test_wrong_overlay_is_rejected_before_arm_or_dma PASSED [  6%]
+scripts/gray8/test_hardware_checks.py::test_dma_busy_or_error_is_rejected_before_driver_or_transfer_start PASSED [  7%]
+scripts/gray8/test_hardware_checks.py::test_completion_checks_actual_gray_payload_and_every_output_pixel PASSED [  8%]
+scripts/gray8/test_hardware_checks.py::test_fresh_started_dma_is_allowed_only_before_any_programmed_transfer PASSED [  9%]
+scripts/gray8/test_packet_codec.py::test_gray8_packet_round_trip_has_expected_little_endian_words_and_checksum PASSED [ 10%]
+scripts/gray8/test_packet_codec.py::test_gray8_packet_into_checks_output_and_packet_validation_rejects_corruption PASSED [ 11%]
+scripts/gray8/test_packet_codec.py::test_gray8_packet_rejects_invalid_image_or_frame_id[gray0-0] PASSED [ 12%]
+scripts/gray8/test_packet_codec.py::test_gray8_packet_rejects_invalid_image_or_frame_id[gray1-0] PASSED [ 12%]
+scripts/gray8/test_packet_codec.py::test_gray8_packet_rejects_invalid_image_or_frame_id[gray2--1] PASSED [ 13%]
+scripts/gray8/test_packet_codec.py::test_gray8_packet_rejects_invalid_image_or_frame_id[gray3-4294967296] PASSED [ 14%]
+scripts/gray8/test_packet_codec.py::test_binary_golden_threshold_is_independent_and_inclusive PASSED [ 15%]
+scripts/gray8/test_stream_tx_size.py::test_gray8_tx_size_allocates_validates_encodes_and_transfers_exact_length  
+
+Session interrupted with Ctrl+C by manager instruction. The running test had produced no completion output after 30 seconds. The full suite did not complete; collected 108 items, 17 observed PASS before the single test above stalled.
+
+Command:
+.venv/Scripts/python.exe -m pytest scripts/gray8 scripts/wo0016/test_packet_encoder.py scripts/wo0016/test_stream_counter.py scripts/wo0016/test_tx_scratch.py scripts/wo0016/test_tx_factory_slots.py scripts/wo0016/test_live_calibration.py -vv --basetemp .pytest_cache/gray8-camera-validation-direct

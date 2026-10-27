@@ -34,15 +34,15 @@ def require_standard_camera_controls(device: str) -> None:
 
 
 def monochrome_view(frame: np.ndarray) -> np.ndarray:
-    """OV9281 decoded channels repeat monochrome samples: take a view, never BGR luma."""
+    """Return a view of a decoded Gray8 frame; reject color camera buffers."""
     image = np.asarray(frame)
     if image.dtype != np.uint8:
         raise ValueError("camera frame must be uint8")
-    if image.shape in ((400, 640, 3), (400, 640, 1)):
+    if image.shape == (400, 640, 1):
         return image[:, :, 0]
     if image.shape == (400, 640):
         return image
-    raise ValueError("camera frame must have shape (400,640), (400,640,1) or (400,640,3)")
+    raise ValueError("camera frame must have Gray8 shape (400,640) or (400,640,1)")
 
 
 def frame_geometry(mapping: str = "stretch", *, reference_area: float = REFERENCE_AREA,

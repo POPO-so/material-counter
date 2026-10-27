@@ -12,15 +12,33 @@ from camera_only_preview import profile_matches, software_gray_binary  # noqa: E
 
 def test_camera_preview_generates_same_threshold_128_binary_pip():
     for value, expected in ((127, 0), (128, 0), (129, 255)):
-        camera_bgr = np.full((400, 640, 3), value, dtype=np.uint8)
+        camera_gray = np.full((400, 640), value, dtype=np.uint8)
 
-        gray, mask = software_gray_binary(camera_bgr)
+        gray, mask = software_gray_binary(camera_gray)
 
         assert gray.shape == (240, 320)
         assert gray.dtype == np.uint8
         assert mask.shape == (240, 320)
         assert mask.dtype == np.uint8
         assert np.all(mask == expected)
+
+
+def test_preview_reader_decodes_raw_mjpeg_directly_to_gray_and_rejects_bgr():
+    gray = np.full((400, 640), 137, dtype=np.uint8)
+    ok, encoded = preview.cv2.imencode(".jpg", gray)
+    assert ok
+
+    class Capture:
+        def __init__(self, packet):
+            self.packet = packet
+        def read(self):
+            return True, self.packet
+
+    decoded = preview.read_frame(Capture(encoded.reshape(-1)))
+    assert decoded.shape == (400, 640) and decoded.dtype == np.uint8
+    assert np.max(np.abs(decoded.astype(np.int16) - 137)) <= 2
+    with pytest.raises(RuntimeError, match="raw uint8 MJPEG"):
+        preview.read_frame(Capture(np.zeros((400, 640, 3), dtype=np.uint8)))
 
 
 def test_camera_preview_requires_exact_live_manual_v4l2_profile():

@@ -8,12 +8,12 @@ import numpy as np
 import pytest
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR.parent / "gray8"))
 sys.path.insert(0, str(SCRIPT_DIR))
-sys.path.insert(0, str(SCRIPT_DIR.parent / "wo0015"))
 
 import lighting_profile as profile
 import packet_encoder
-from camera_adapter import gray320x240_to_rgb_packet as legacy_packet
+from packet_encoder import gray320x240_to_gray_packet
 
 
 def _reference_gray(gray: np.ndarray, threshold: int) -> np.ndarray:
@@ -25,11 +25,11 @@ def _reference_gray(gray: np.ndarray, threshold: int) -> np.ndarray:
 
 
 def _reference_packet(gray: np.ndarray, threshold: int, frame_id: int) -> bytes:
-    return legacy_packet(_reference_gray(gray, threshold), frame_id=frame_id)
+    return gray320x240_to_gray_packet(_reference_gray(gray, threshold), frame_id=frame_id)
 
 
 @pytest.mark.parametrize("frame_id", [0, 1, 0x12345678, 0xFFFFFFFF])
-def test_factory_packet_matches_frozen_reference_including_header_trailer_and_checksum(frame_id):
+def test_factory_packet_matches_gray8_reference_including_header_trailer_and_checksum(frame_id):
     gray = np.random.default_rng(frame_id).integers(0, 256, (240, 320), dtype=np.uint8)
     original = gray.copy()
     encode, _encode_into = profile.make_packet_encoders(threshold=100)
@@ -37,8 +37,9 @@ def test_factory_packet_matches_frozen_reference_including_header_trailer_and_ch
     packet = encode(gray, frame_id=frame_id)
 
     assert packet.dtype == np.uint8
-    assert packet.nbytes == 230432
+    assert packet.nbytes == 76832
     assert packet.tobytes() == _reference_packet(gray, 100, frame_id)
+    np.testing.assert_array_equal(packet[16:-16], _reference_gray(gray, 100).reshape(-1))
     assert np.array_equal(gray, original)
 
 
@@ -52,7 +53,7 @@ def test_every_threshold_and_intensity_matches_reference_packet_bytes():
         frame_id = frame_ids[threshold % len(frame_ids)]
         expected_gray = _reference_gray(gray, threshold)
         expected = np.empty(packet_encoder.TX_BYTES, dtype=np.uint8)
-        packet_encoder.gray320x240_to_rgb_packet_into(
+        packet_encoder.gray320x240_to_gray_packet_into(
             expected_gray, expected, frame_id=frame_id
         )
         encode, encode_into = profile.make_packet_encoders(threshold=threshold)

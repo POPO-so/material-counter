@@ -23,14 +23,14 @@ from typing import Any, Mapping
 WIDTH = 320
 HEIGHT = 240
 PIXEL_COUNT = WIDTH * HEIGHT
-RGB_PAYLOAD_BYTES = PIXEL_COUNT * 3
-TX_BYTES = 230432
+GRAY_PAYLOAD_BYTES = PIXEL_COUNT
+TX_BYTES = 76832
 RX_BYTES = PIXEL_COUNT
 TX_BEATS = TX_BYTES // 4
 RX_BEATS = RX_BYTES // 4
-PACKET_MAGIC = 0x574F3134
-TRAILER_MAGIC = 0x454E4434
-TRAILER_END = 0xC0DEC014
+PACKET_MAGIC = 0x47525938
+TRAILER_MAGIC = 0x454E4438
+TRAILER_END = 0xC0DEC018
 PACKER_SIGNATURE = 0x574F3135
 EXPECTED_PART = "xc7z020clg400-1"
 AUTHORIZED_BOOT_ID = "bb382d01-7bb2-4922-9a85-af6a24ef4d10"
@@ -291,6 +291,10 @@ def validate_hwh(path: str | Path) -> None:
     _require_parameter(hp1_params, "hp1_fabric", "NUM_SI", "1")
     _require_parameter(hp1_params, "hp1_fabric", "NUM_MI", "1")
     pipeline = _find_module(root, "image_pipeline")
+    if pipeline.attrib.get("MODTYPE") != "axis_dma_gray_s2mm_pipeline_bd":
+        raise PreflightError(
+            "HWH image_pipeline is not the Gray8 wrapper; refusing legacy or unknown bitstream"
+        )
     for module, instance, interface in (
             (hp1, "hp1_fabric", "S00_AXI"),
             (hp1, "hp1_fabric", "M00_AXI"),
@@ -321,14 +325,8 @@ def validate_hwh(path: str | Path) -> None:
 
 
 def _expected_binary(packet: bytes) -> bytes:
-    payload = packet[16:16 + RGB_PAYLOAD_BYTES]
-    binary = bytearray(PIXEL_COUNT)
-    for pixel in range(PIXEL_COUNT):
-        offset = pixel * 3
-        red, green, blue = payload[offset:offset + 3]
-        gray = (77 * red + 150 * green + 29 * blue) // 256
-        binary[pixel] = 0xFF if gray >= 128 else 0x00
-    return bytes(binary)
+    payload = packet[16:16 + GRAY_PAYLOAD_BYTES]
+    return bytes(0xFF if gray >= 128 else 0x00 for gray in payload)
 
 
 def _validate_packet(packet: bytes, frame_id: int) -> int:
@@ -339,17 +337,17 @@ def _validate_packet(packet: bytes, frame_id: int) -> int:
         raise PreflightError(f"frame {frame_id} packet header magic is invalid")
     if geometry != (HEIGHT << 16) | WIDTH:
         raise PreflightError(f"frame {frame_id} packet geometry is not 320x240")
-    if payload_length != RGB_PAYLOAD_BYTES:
-        raise PreflightError(f"frame {frame_id} packet RGB payload length is invalid")
+    if payload_length != GRAY_PAYLOAD_BYTES:
+        raise PreflightError(f"frame {frame_id} packet Gray8 payload length is invalid")
     if packet_frame_id != frame_id:
         raise PreflightError(f"frame {frame_id} packet header ID does not match manifest")
     trailer_magic, trailer_id, payload_sum, end_marker = struct.unpack_from(
-        "<IIII", packet, 16 + RGB_PAYLOAD_BYTES)
-    payload = packet[16:16 + RGB_PAYLOAD_BYTES]
+        "<IIII", packet, 16 + GRAY_PAYLOAD_BYTES)
+    payload = packet[16:16 + GRAY_PAYLOAD_BYTES]
     if trailer_magic != TRAILER_MAGIC or trailer_id != frame_id or end_marker != TRAILER_END:
         raise PreflightError(f"frame {frame_id} packet trailer is invalid")
     if payload_sum != sum(payload) & 0xFFFFFFFF:
-        raise PreflightError(f"frame {frame_id} packet RGB checksum is invalid")
+        raise PreflightError(f"frame {frame_id} packet Gray8 checksum is invalid")
     return sum(packet) & 0xFFFFFFFF
 
 
@@ -379,7 +377,7 @@ def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tu
 def validate_manifest(path: str | Path,
                       expected_manifest_sha256: str | None = None, *,
                       approved_boot_id: str | None = None) -> ValidatedRun:
-    """Validate one or three fixed RGB→Binary8 frames and all bound artifacts."""
+    """Validate one or three fixed Gray8→Binary8 frames and all bound artifacts."""
     manifest_path = Path(path).expanduser().resolve()
     try:
         raw = manifest_path.read_bytes()

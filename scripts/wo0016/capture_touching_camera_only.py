@@ -23,6 +23,26 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _read_mjpeg_gray(camera: cv2.VideoCapture) -> np.ndarray:
+    ok, packet = camera.read()
+    if not ok or packet is None:
+        raise RuntimeError("camera read failed")
+    raw = np.asarray(packet)
+    if (raw.dtype != np.uint8 or raw.ndim not in (1, 2)
+            or (raw.ndim == 2 and raw.shape[0] != 1)):
+        raise RuntimeError("camera backend did not return raw uint8 MJPEG")
+    raw = np.ascontiguousarray(raw).reshape(-1)
+    if raw.size < 4 or tuple(raw[:2]) != (0xFF, 0xD8):
+        raise RuntimeError("camera packet has no JPEG SOI marker")
+    gray = cv2.imdecode(raw, cv2.IMREAD_GRAYSCALE)
+    if gray is None or gray.dtype != np.uint8 or gray.shape != (400, 640):
+        shape = None if gray is None else gray.shape
+        dtype = None if gray is None else gray.dtype
+        raise RuntimeError("MJPEG grayscale decode returned %s %s; expected Gray8 640x400"
+                           % (dtype, shape))
+    return gray
+
+
 def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
             compact: bool = False, wait_for_object_s: float = 0.0) -> dict:
     limit = 1800 if compact else 300
@@ -44,6 +64,8 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 400)
         camera.set(cv2.CAP_PROP_FPS, 60)
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        if not camera.set(cv2.CAP_PROP_CONVERT_RGB, 0):
+            raise RuntimeError("V4L2 rejected CAP_PROP_CONVERT_RGB=0; raw MJPEG required")
         mode = {
             "width": int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
             "height": int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)),
@@ -58,8 +80,7 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
         wall_ns = np.empty(frames, dtype=np.int64)
         read_ms = np.empty(frames, dtype=np.float32)
         for _ in range(2):
-            if not camera.read()[0]:
-                raise RuntimeError("camera warmup failed")
+            _read_mjpeg_gray(camera)
         print(f"CAMERA_READY {mode}; initial delay {start_delay_s:g} seconds", flush=True)
         time.sleep(start_delay_s)
         waited_s = 0.0
@@ -68,10 +89,8 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
             wait_started = time.monotonic()
             consecutive = 0
             while time.monotonic() - wait_started < wait_for_object_s:
-                ok, frame = camera.read()
-                if not ok or frame is None or frame.shape[:2] != (400, 640):
-                    raise RuntimeError("camera read failed while waiting for object")
-                sample = cv2.resize(frame[:, :, 0], (320, 240),
+                frame = _read_mjpeg_gray(camera)
+                sample = cv2.resize(frame, (320, 240),
                                     interpolation=cv2.INTER_NEAREST)
                 consecutive = (consecutive + 1 if
                                np.count_nonzero(sample[:, :160] >= 128) >= 100
@@ -86,13 +105,12 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
         started_ns = time.monotonic_ns()
         for index in range(frames):
             read_started = time.perf_counter_ns()
-            ok, frame = camera.read()
-            if not ok or frame is None or frame.shape[:2] != (400, 640):
+            gray = _read_mjpeg_gray(camera)
+            if gray.shape != (400, 640):
                 raise RuntimeError(f"camera read failed at frame {index}")
             read_ms[index] = (time.perf_counter_ns() - read_started) / 1e6
             monotonic_ns[index] = time.monotonic_ns()
             wall_ns[index] = time.time_ns()
-            gray = frame[:, :, 0]
             if source is not None:
                 source[index] = gray
             resized[index] = cv2.resize(gray, (320, 240),
@@ -118,7 +136,7 @@ def capture(output_dir: Path, *, frames: int = 300, start_delay_s: float = 8.0,
         "compact": compact,
         "wait_for_object_s": wait_for_object_s,
         "waited_s": waited_s,
-        "resize": "first decoded channel; nearest 640x400 to 320x240",
+        "resize": "raw MJPEG decoded directly to Gray8; nearest 640x400 to 320x240",
         "elapsed_s": elapsed_s, "effective_fps": frames / elapsed_s,
         "archive": archive.name, "archive_sha256": _sha256(archive),
         "archive_bytes": archive.stat().st_size,

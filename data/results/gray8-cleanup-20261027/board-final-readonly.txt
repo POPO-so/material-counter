@@ -1,0 +1,2 @@
+1b08e489-d2dc-41e2-9639-aa46f7f5fbca
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub

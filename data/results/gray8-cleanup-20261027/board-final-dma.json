@@ -1,0 +1,15 @@
+{
+  "dma_status": {
+    "mm2s": 4098,
+    "s2mm": 4098
+  },
+  "packet_count": 3,
+  "input_bytes": 230496,
+  "packer_status": 2,
+  "faults": [
+    0,
+    0,
+    0
+  ],
+  "both_idle": true
+}

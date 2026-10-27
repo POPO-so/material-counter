@@ -1,5 +1,7 @@
 # WO-0015 isolated Vivado build
 
+> **Historical build baseline:** this file documents the earlier WO-0015 build project and its RGB-era constraints/output paths. Current production code no longer contains the old RGB build/replay path; the unique current `GRAY8_PACKET_V1` build is `scripts/gray8/run_sim.tcl` → `create_bd.tcl` → `build.tcl` → `export.tcl`, with details in [`scripts/gray8/README.md`](../gray8/README.md). Existing WO-0015 results remain historical evidence and are not relabeled.
+
 These scripts build a fresh 50 MHz PYNQ-Z2 project for the Binary8 S2MM return path. The project short name is `wo15_50m`, its Block Design is `wo15`, and outputs are restricted to `data/results/wo0015-hw-50mhz-20261015/`. `create_s2mm_bd.tcl` creates the project, configures and audits the BD, snapshots the seven RTL inputs, and generates the BD wrapper. It does not launch synthesis.
 
 The DMA keeps MM2S at memory64/stream32 through the existing HP0 path. S2MM is enabled in direct-register mode with memory32/stream32, 18-bit length, 32-bit address, no DRE and no Micro DMA. Its AXI4 master reaches PS HP1 through the new 1x1 `axi_interconnect`; HP1 is configured as 32-bit AXI3. Vivado's AXI Interconnect performs the AXI4-to-AXI3 protocol conversion. The generated HWH finalizer checks the endpoints and interface properties instead of assuming conversion succeeded.

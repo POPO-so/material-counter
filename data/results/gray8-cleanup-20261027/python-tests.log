@@ -1,0 +1,55 @@
+........................................................................ [ 10%]
+................................................................s....... [ 20%]
+........................................s..F............................ [ 30%]
+........................................................................ [ 40%]
+........................................................................ [ 50%]
+...............F........................................................ [ 60%]
+........................................................................ [ 70%]
+.....................s.................................................. [ 80%]
+........................................................................ [ 90%]
+.................................sss..............................       [100%]
+================================== FAILURES ===================================
+_____________ test_ablation_rejects_any_existing_output_directory _____________
+
+tmp_path = WindowsPath('C:/Users/14173/Documents/material-counter/.pytest_cache/gray8-cleanup-final/test_ablation_rejects_any_exis0')
+
+    def test_ablation_rejects_any_existing_output_directory(tmp_path):
+        with pytest.raises(FileExistsError):
+>           ablation.run(SimpleNamespace(output_dir=str(tmp_path)))
+
+scripts\wo0016\test_ablation_output_safety.py:14: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = namespace(output_dir='C:\\Users\\14173\\Documents\\material-counter\\.pytest_cache\\gray8-cleanup-final\\test_ablation_rejects_any_exis0')
+
+    def run(args: argparse.Namespace) -> Path:
+        output_dir = Path(args.output_dir).expanduser().resolve()
+        if output_dir.is_relative_to(REPO_ROOT.resolve()):
+>           raise ValueError("ablation output must be outside the repository")
+E           ValueError: ablation output must be outside the repository
+
+scripts\wo0016\ablate_split_datasets.py:992: ValueError
+______ test_preview_draws_red_virtual_line_and_count_text_on_binary_mask ______
+
+    def test_preview_draws_red_virtual_line_and_count_text_on_binary_mask():
+        mask = np.zeros((240, 320), dtype=np.uint8)
+        mask[100:110, 40:50] = 0xFF
+    
+        preview = render_preview_frame(mask, total_count=7, line_y=120)
+    
+        assert preview.shape == (240, 320, 3)
+        assert tuple(int(value) for value in preview[120, 10]) == (0, 0, 255)
+>       assert np.any(np.all(preview[18:30, 8:230] == (255, 255, 255), axis=2))
+E       assert np.False_
+E        +  where np.False_ = <function any at 0x000001BC3B3CDE70>(array([[False, False, False, ..., False, False, False],\n       [False, False, False, ..., False, False, False],\n      ...lse, False, False, ..., False, False, False],\n       [False, False, False, ..., False, False, False]], shape=(12, 222)))
+E        +    where <function any at 0x000001BC3B3CDE70> = np.any
+E        +    and   array([[False, False, False, ..., False, False, False],\n       [False, False, False, ..., False, False, False],\n      ...lse, False, False, ..., False, False, False],\n       [False, False, False, ..., False, False, False]], shape=(12, 222)) = <function all at 0x000001BC3B3CE130>(array([[[ 12,..., dtype=uint8) == (255, 255, 255)
+E        +      where <function all at 0x000001BC3B3CE130> = np.all
+E             
+E             Use -v to get more diff, axis=2)
+
+scripts\wo0016\test_mjpeg_preview.py:30: AssertionError
+=========================== short test summary info ===========================
+FAILED scripts/wo0016/test_ablation_output_safety.py::test_ablation_rejects_any_existing_output_directory
+FAILED scripts/wo0016/test_mjpeg_preview.py::test_preview_draws_red_virtual_line_and_count_text_on_binary_mask
+2 failed, 706 passed, 8 skipped in 50.99s

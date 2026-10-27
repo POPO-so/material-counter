@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-// Full-chain offline self-check: RGB packet -> Gray/Binary8 -> S2MM packer.
+// Full-chain offline self-check: Gray8 packet -> Binary8 -> S2MM packer.
 // Input beats are 40-bit hex records {3'b0, TLAST, TKEEP, TDATA}; golden.hex
 // contains one Binary8 byte per line. No AXI DMA IP or board is modeled here.
 module tb_axis_dma_s2mm_pipeline #(
@@ -100,7 +100,7 @@ module tb_axis_dma_s2mm_pipeline #(
     reg [31:0] frame_checksum = 0;
     reg [8*128-1:0] case_label = 0;
 
-    axis_dma_s2mm_pipeline_bd #(
+    axis_dma_gray_s2mm_pipeline_bd #(
         .WIDTH(WIDTH), .HEIGHT(HEIGHT), .THRESHOLD(THRESHOLD)
     ) dut (
         .aclk(aclk), .aresetn(aresetn),
@@ -491,7 +491,7 @@ module tb_axis_dma_s2mm_pipeline #(
             aresetn = 1'b1;
             repeat (2) @(posedge aclk);
             axi_read(32'h00000004, read_value);
-            if (read_value != 32'h574f3134)
+            if (read_value != 32'h47525938)
                 $fatal(1, "legacy signature 0x04=0x%08x", read_value);
             axi_write(32'h00000000, 32'h00000001);
             axi_read(32'h00000000, read_value);

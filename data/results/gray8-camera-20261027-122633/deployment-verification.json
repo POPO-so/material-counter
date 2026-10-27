@@ -1,0 +1,29 @@
+{
+  "root": "/home/xilinx/gray8-camera-20261027-122633",
+  "match": {
+    "scripts/gray8/finalize_build.py": true,
+    "scripts/gray8/hardware_checks.py": true,
+    "scripts/gray8/packet_codec.py": true,
+    "scripts/gray8/run_gray8_counter.py": true,
+    "scripts/wo0015/board_once.py": true,
+    "scripts/wo0015/board_preflight.py": true,
+    "scripts/wo0016/calibration_runtime_gate.py": true,
+    "scripts/wo0016/capture_dataset.py": true,
+    "scripts/wo0016/dashboard_state.py": true,
+    "scripts/wo0016/lighting_profile.py": true,
+    "scripts/wo0016/live_calibration.py": true,
+    "scripts/wo0016/mjpeg_preview.py": true,
+    "scripts/wo0016/operator_gate_launcher.py": true,
+    "scripts/wo0016/packet_encoder.py": true,
+    "scripts/wo0016/physical_calibration_lock.py": true,
+    "scripts/wo0016/run_stream_counter.py": true,
+    "scripts/wo0016/scale_parameters.py": true,
+    "scripts/wo0016/split_touching.py": true,
+    "scripts/wo0016/stream_counter.py": true,
+    "scripts/wo0016/wo0017_capture_profile.py": true,
+    "export/gray8.bit": true,
+    "export/gray8.hwh": true,
+    "export/manifest.json": true
+  },
+  "all_match": true
+}

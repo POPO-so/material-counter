@@ -16,9 +16,8 @@ import live_calibration as calibration
 import mjpeg_preview as preview
 
 
-def test_monochrome_channel_is_zero_copy_and_does_not_mix_channels(monkeypatch):
-    frame = np.zeros((400, 640, 3), np.uint8)
-    frame[:, :, 0] = 139
+def test_gray8_view_is_zero_copy_and_rejects_color_camera_buffers(monkeypatch):
+    frame = np.full((400, 640), 139, np.uint8)
     monkeypatch.setattr(cv2, "cvtColor", lambda *a, **k: pytest.fail("redundant conversion"))
     gray = calibration.monochrome_view(frame)
     assert np.shares_memory(gray, frame)
@@ -26,6 +25,8 @@ def test_monochrome_channel_is_zero_copy_and_does_not_mix_channels(monkeypatch):
     output, mask = camera.software_gray_binary(frame)
     assert np.all(output == 139)
     assert np.all(mask == 255)
+    with pytest.raises(ValueError, match="Gray8 shape"):
+        calibration.monochrome_view(np.zeros((400, 640, 3), np.uint8))
 
 
 def test_preprocessor_reuses_buffers_and_accepts_native_gray():
@@ -43,8 +44,8 @@ def test_preprocessor_reuses_buffers_and_accepts_native_gray():
 
 
 def test_fixed_geometry_resize_matches_opencv_nearest_without_strided_opencv_copy(monkeypatch):
-    frame = np.random.RandomState(17).randint(0,256,(400,640,3),dtype=np.uint8)
-    expected = cv2.resize(frame[:,:,0], (320,240), interpolation=cv2.INTER_NEAREST)
+    frame = np.random.RandomState(17).randint(0,256,(400,640),dtype=np.uint8)
+    expected = cv2.resize(frame, (320,240), interpolation=cv2.INTER_NEAREST)
     monkeypatch.setattr(cv2, "resize", lambda *a, **k: pytest.fail("strided OpenCV copy is too slow on ARM"))
     gray, mask = calibration.MonochromePreprocessor()(frame)
     assert np.array_equal(gray, expected)

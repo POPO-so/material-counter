@@ -1,0 +1,50 @@
+{
+  "afi1_snapshots": [],
+  "afi1_sync": {},
+  "board_accessed": false,
+  "boot_id": "bb382d01-7bb2-4922-9a85-af6a24ef4d10",
+  "byte_mismatches": 0,
+  "camera_dma_script_sha256": "1992bbdb255ac96409210cdd000d298d8486ddba443017164df1cff61f83969a",
+  "camera_input": {
+    "channel_mapping": "Gray8 single-channel (1 byte per pixel)",
+    "packet_sha256": "5e1209e01f548d732807cb9df34493844b9f182f76eee25b549fbad572dd1c55",
+    "resized_gray_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-13\\test_camera_result_writer_enco0\\camera-runs\\camera-0001c76c2f1f405580c8d3bc10fb668c\\camera-gray-320x240.pgm",
+    "resized_gray_sha256": "7e10939d95e441951a873bf0aee7a43cccc656d97f659ecf41e4d12d3d1cb9a8",
+    "software_golden_sha256": "7e10939d95e441951a873bf0aee7a43cccc656d97f659ecf41e4d12d3d1cb9a8",
+    "source_gray_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-13\\test_camera_result_writer_enco0\\camera-runs\\camera-0001c76c2f1f405580c8d3bc10fb668c\\camera-source-gray.pgm",
+    "source_gray_sha256": "7e10939d95e441951a873bf0aee7a43cccc656d97f659ecf41e4d12d3d1cb9a8",
+    "threshold": 128
+  },
+  "frame_id": 4,
+  "frames": [
+    {
+      "byte_mismatches": 0,
+      "raw_capture": {
+        "rx_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-13\\test_camera_result_writer_enco0\\camera-runs\\camera-0001c76c2f1f405580c8d3bc10fb668c\\frame-4.binary.bin",
+        "rx_sha256": "7e10939d95e441951a873bf0aee7a43cccc656d97f659ecf41e4d12d3d1cb9a8"
+      }
+    }
+  ],
+  "manifest_sha256": "351db70951302bd207bfeee154ac382ea07e3b635d57c173b9259ef7c2d75400",
+  "pl_output": {
+    "binary_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-13\\test_camera_result_writer_enco0\\camera-runs\\camera-0001c76c2f1f405580c8d3bc10fb668c\\pl-binary8-output.bin",
+    "binary_sha256": "7e10939d95e441951a873bf0aee7a43cccc656d97f659ecf41e4d12d3d1cb9a8",
+    "byte_mismatches": 0,
+    "bytes": 76800,
+    "pgm_path": "C:\\Users\\14173\\Documents\\material-counter\\pytest-of-14173\\pytest-13\\test_camera_result_writer_enco0\\camera-runs\\camera-0001c76c2f1f405580c8d3bc10fb668c\\pl-binary8-output.pgm",
+    "pgm_sha256": "95a96210f3ab29e609b51af98cce2b38e8cdb1222ef3d4e4c47da4c923ebfcc0"
+  },
+  "post_stage_audit": {},
+  "runtime_preflight": {},
+  "stage": "camera-dma-single",
+  "status": "CAMERA_DMA_SINGLE_PASS",
+  "step3_manifest_sha256": "c430a88e077dcbfc29f1d8ced7032e4f4ecddf807e7593e941ee745dad2703bc",
+  "unexpected_binary_metadata": {
+    "sample": {
+      "byte_length": 2,
+      "data": "00fe",
+      "encoding": "hex",
+      "type": "bytes"
+    }
+  }
+}

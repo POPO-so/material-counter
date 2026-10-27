@@ -8,12 +8,12 @@ import cv2
 import numpy as np
 import pytest
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "gray8"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "wo0015"))
 
-from camera_adapter import gray320x240_to_rgb_packet
 from mjpeg_preview import MjpegFrameHub, PeriodicMjpegPublisher
-from packet_encoder import gray320x240_to_rgb_packet_into
+from packet_encoder import (gray320x240_to_gray_packet,
+                            gray320x240_to_gray_packet_into)
 from stream_counter import (
     BufferState,
     Detection,
@@ -771,7 +771,7 @@ def test_s2mm_mask_is_copied_before_pack_check_and_roi_uses_cached_storage():
     assert rx_buffers[0].array_reads == 1
 
 
-def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
+def test_default_stream_sends_single_channel_gray8_packet_with_keyword_frame_id():
     allocator = MockAllocator()
     tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
 
@@ -796,7 +796,7 @@ def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
         rx_buffers=rx_buffers,
         counter=MaskCounter(),
         packet_encoder=lambda gray, *, frame_id: pytest.fail("bytes encoder should not run"),
-        packet_encoder_into=gray320x240_to_rgb_packet_into,
+        packet_encoder_into=gray320x240_to_gray_packet_into,
         stage_timings_ms={"encode": [], "dma": [], "packer_check": [],
                           "roi_count": [], "postprocess": []},
     )
@@ -804,10 +804,11 @@ def test_async_stream_calls_real_camera_encoder_with_keyword_frame_id():
     results = asyncio.run(stream.run(_frames(1)))
 
     assert results[0].frame_id == 0
-    assert send.nbytes == TX_BYTES
-    assert np.asarray(send.buffer).tobytes() == gray320x240_to_rgb_packet(
-        np.zeros((240, 320), dtype=np.uint8), frame_id=0
-    )
+    gray = np.zeros((240, 320), dtype=np.uint8)
+    assert TX_BYTES == send.nbytes == 76832
+    actual_packet = np.asarray(send.buffer).tobytes()
+    assert actual_packet == gray320x240_to_gray_packet(gray, frame_id=0)
+    assert actual_packet[16:-16] == gray.tobytes()
     assert len(stream.stage_timings_ms["encode"]) == 1
     assert len(stream.stage_timings_ms["dma"]) == 1
     assert len(stream.stage_timings_ms["roi_count"]) == 1

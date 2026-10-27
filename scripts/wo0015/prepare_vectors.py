@@ -1,4 +1,4 @@
-"""Build bounded WO-0015 RGB packet and independent Binary8 vectors.
+"""Build bounded WO-0015 Gray8 packet and independent Binary8 vectors.
 
 The script only reads the H3 PNG set and its WO-0014 source-hash manifest.
 All generated files go under the required --out directory; the source data is
@@ -25,9 +25,9 @@ HEIGHT = 240
 PIXELS = WIDTH * HEIGHT
 THRESHOLD = 128
 EXPECTED_PNGS = 487
-MAGIC = 0x574F3134
-TRAILER_MAGIC = 0x454E4434
-TRAILER_END = 0xC0DEC014
+MAGIC = 0x47525938
+TRAILER_MAGIC = 0x454E4438
+TRAILER_END = 0xC0DEC018
 DEFAULT_MANIFEST_REL = Path("scripts/wo0015/fixtures/wo0014-h3-source-manifest.json")
 NORMAL_CASES = {
     "A": (0,),
@@ -55,39 +55,30 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def gray_from_rgb(red: int, green: int, blue: int) -> int:
-    return (77 * red + 150 * green + 29 * blue) >> 8
-
-
-def binary8_from_rgb(red: int, green: int, blue: int,
-                     threshold: int = THRESHOLD) -> int:
-    return 0xFF if gray_from_rgb(red, green, blue) >= threshold else 0x00
-
-
 def binary8_from_gray(gray: bytes, threshold: int = THRESHOLD) -> bytes:
     if not 0 <= threshold <= 255:
         raise ValueError("threshold must be in [0,255]")
     return bytes(0xFF if value >= threshold else 0x00 for value in gray)
 
 
-def make_packet(rgb: bytes, width: int = WIDTH, height: int = HEIGHT,
+def make_packet(gray: bytes, width: int = WIDTH, height: int = HEIGHT,
                 frame_id: int = 0) -> list[Beat]:
-    if width < 1 or height < 1 or len(rgb) != 3 * width * height:
-        raise ValueError("RGB payload size must equal 3*width*height")
+    if width < 1 or height < 1 or len(gray) != width * height:
+        raise ValueError("Gray8 payload size must equal width*height")
     if not 0 <= frame_id <= 0xFFFFFFFF:
         raise ValueError("frame_id must fit 32 bits")
     words = [
         Beat(MAGIC),
         Beat(((height & 0xFFFF) << 16) | (width & 0xFFFF)),
-        Beat(len(rgb)),
+        Beat(len(gray)),
         Beat(frame_id),
     ]
-    for offset in range(0, len(rgb), 4):
-        chunk = rgb[offset:offset + 4]
+    for offset in range(0, len(gray), 4):
+        chunk = gray[offset:offset + 4]
         words.append(Beat(int.from_bytes(chunk.ljust(4, b"\0"), "little"),
                           (1 << len(chunk)) - 1))
     words.extend((Beat(TRAILER_MAGIC), Beat(frame_id),
-                  Beat(sum(rgb) & 0xFFFFFFFF), Beat(TRAILER_END, 0xF, 1)))
+                  Beat(sum(gray) & 0xFFFFFFFF), Beat(TRAILER_END, 0xF, 1)))
     return words
 
 
@@ -173,19 +164,16 @@ def read_gray_png(record: dict) -> bytes:
 def frame_vectors(gray: bytes, frame_id: int) -> tuple[list[Beat], bytes, dict]:
     if len(gray) != PIXELS:
         raise ValueError(f"expected {PIXELS} Gray8 pixels, found {len(gray)}")
-    rgb = b"".join(bytes((value, value, value)) for value in gray)
-    # Compute through the independent RGB contract, not by reading a saved Binary8 file.
-    golden = bytes(binary8_from_rgb(rgb[offset], rgb[offset+1], rgb[offset+2])
-                   for offset in range(0, len(rgb), 3))
-    packet = make_packet(rgb, WIDTH, HEIGHT, frame_id)
+    golden = binary8_from_gray(gray)
+    packet = make_packet(gray, WIDTH, HEIGHT, frame_id)
     stats = {
         "frame_id": frame_id,
         "source_pixels_sha256": sha256_bytes(gray),
-        "rgb_payload_sha256": sha256_bytes(rgb),
+        "gray8_payload_sha256": sha256_bytes(gray),
         "golden_sha256": sha256_bytes(golden),
         "foreground_pixels": golden.count(0xFF),
         "background_pixels": golden.count(0x00),
-        "payload_bytes": len(rgb),
+        "payload_bytes": len(gray),
         "packet_beats": len(packet),
     }
     return packet, golden, stats
@@ -204,7 +192,7 @@ def write_case(out_root: Path, name: str, selected: Sequence[tuple[int, dict]],
         if malformed:
             if len(selected) != 1:
                 raise ValueError("malformed cases contain exactly one frame")
-            payload_words = (3 * PIXELS + 3) // 4
+            payload_words = (PIXELS + 3) // 4
             payload_start = 4
             if malformed == "short":
                 cutoff = payload_start + payload_words // 2
@@ -316,7 +304,7 @@ def generate(out_dir: Path, root: Path = REPO_ROOT,
         "source_manifest_h3_packet_sha256": source_manifest["h3"]["input_sha256"],
         "source_manifest_h3_binary_sha256": source_manifest["h3"]["expected_sha256"],
         "geometry": {"width": WIDTH, "height": HEIGHT, "pixels": PIXELS},
-        "gray_formula": "(77*R+150*G+29*B)>>8",
+        "input_format": "row-major Gray8, one byte per pixel",
         "binary_rule": "0xff if gray>=128 else 0x00",
         "cases": generated_cases,
     }

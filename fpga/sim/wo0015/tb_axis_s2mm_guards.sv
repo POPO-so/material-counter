@@ -7,6 +7,7 @@ module tb_axis_s2mm_guards;
     localparam integer HEIGHT = 2;
     localparam integer PIXELS = WIDTH * HEIGHT;
     localparam integer FRAME_BEATS = PIXELS / 4;
+    localparam integer PACKET_WORDS = 8 + FRAME_BEATS;
     localparam [31:0] FRAME_ID = 32'h000015a5;
 
     reg aclk = 1'b0;
@@ -74,7 +75,7 @@ module tb_axis_s2mm_guards;
     wire m_axis_tvalid;
     reg m_axis_tready = 0;
 
-    axis_dma_s2mm_pipeline_bd #(
+    axis_dma_gray_s2mm_pipeline_bd #(
         .WIDTH(WIDTH), .HEIGHT(HEIGHT), .THRESHOLD(128)
     ) guard_wrapper (
         .aclk(aclk), .aresetn(aresetn),
@@ -94,7 +95,7 @@ module tb_axis_s2mm_guards;
         .m_axis_tvalid(m_axis_tvalid), .m_axis_tready(m_axis_tready)
     );
 
-    reg [31:0] packet [0:19];
+    reg [31:0] packet [0:PACKET_WORDS-1];
     reg [7:0] expected_pixels [0:PIXELS-1];
     reg [31:0] expected_words [0:FRAME_BEATS-1];
     integer output_beats = 0;
@@ -289,36 +290,33 @@ module tb_axis_s2mm_guards;
 
     task automatic build_packet;
         integer i;
-        integer channel;
         integer byte_index;
         integer checksum;
         integer word_index;
         reg [7:0] pixel_value;
         begin
-            for (i = 0; i < 20; i = i + 1) packet[i] = 32'd0;
-            packet[0] = 32'h574f3134;
+            for (i = 0; i < PACKET_WORDS; i = i + 1) packet[i] = 32'd0;
+            packet[0] = 32'h47525938;
             packet[1] = (HEIGHT << 16) | WIDTH;
-            packet[2] = PIXELS * 3;
+            packet[2] = PIXELS;
             packet[3] = FRAME_ID;
             checksum = 0;
             for (i = 0; i < PIXELS; i = i + 1) begin
                 pixel_value = ((i % 3) == 0) ? 8'hff : 8'h00;
                 expected_pixels[i] = pixel_value;
-                checksum = checksum + pixel_value * 3;
-                for (channel = 0; channel < 3; channel = channel + 1) begin
-                    byte_index = i * 3 + channel;
-                    word_index = byte_index / 4;
-                    packet[4 + word_index] = packet[4 + word_index] |
-                        ({24'd0,pixel_value} << ((byte_index % 4) * 8));
-                end
+                checksum = checksum + pixel_value;
+                byte_index = i;
+                word_index = byte_index / 4;
+                packet[4 + word_index] = packet[4 + word_index] |
+                    ({24'd0,pixel_value} << ((byte_index % 4) * 8));
             end
             for (i = 0; i < FRAME_BEATS; i = i + 1)
                 expected_words[i] = {expected_pixels[i*4+3], expected_pixels[i*4+2],
                                      expected_pixels[i*4+1], expected_pixels[i*4]};
-            packet[16] = 32'h454e4434;
-            packet[17] = FRAME_ID;
-            packet[18] = checksum;
-            packet[19] = 32'hc0dec014;
+            packet[4 + FRAME_BEATS] = 32'h454e4438;
+            packet[5 + FRAME_BEATS] = FRAME_ID;
+            packet[6 + FRAME_BEATS] = checksum;
+            packet[7 + FRAME_BEATS] = 32'hc0dec018;
         end
     endtask
 
@@ -328,11 +326,11 @@ module tb_axis_s2mm_guards;
         integer timeout;
         begin
             source_done = 0;
-            for (index = 0; index < 20; index = index + 1) begin
+            for (index = 0; index < PACKET_WORDS; index = index + 1) begin
                 @(negedge aclk);
                 s_axis_tdata = packet[index];
                 s_axis_tkeep = 4'hf;
-                s_axis_tlast = (index == 19);
+                s_axis_tlast = (index == PACKET_WORDS-1);
                 s_axis_tvalid = 1'b1;
                 accepted = 0;
                 timeout = 0;

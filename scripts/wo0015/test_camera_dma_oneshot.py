@@ -78,7 +78,7 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
 
         def read(self):
             self.read_calls += 1
-            return True, np.full((800, 1280, 3), 73, dtype=np.uint8)
+            return True, np.frombuffer(b"\xff\xd8fixture-jpeg\xff\xd9", dtype=np.uint8)
 
         def release(self):
             self.released = True
@@ -88,7 +88,8 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
         CAP_PROP_FOURCC = 6
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
-        COLOR_BGR2GRAY = 6
+        CAP_PROP_CONVERT_RGB = 16
+        IMREAD_GRAYSCALE = 0
         fourcc_calls = []
 
         @classmethod
@@ -99,15 +100,15 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
         def __init__(self):
             self.capture = FakeCapture()
             self.calls = []
-            self.cvt_color_calls = []
+            self.decode_calls = []
 
         def VideoCapture(self, device, backend):
             self.calls.append((device, backend))
             return self.capture
 
-        def cvtColor(self, frame, code):
-            self.cvt_color_calls.append((frame.shape, code))
-            return frame[:, :, 0]
+        def imdecode(self, frame, mode):
+            self.decode_calls.append((bytes(frame), mode))
+            return np.full((400, 640), 73, dtype=np.uint8)
 
     cv2 = FakeCV2()
     captured = capture_v4l2_once("/dev/video0", cv2_module=cv2)
@@ -118,11 +119,12 @@ def test_v4l2_capture_reads_exactly_one_frame_and_releases_device():
         (cv2.CAP_PROP_FOURCC, 0x47504A4D),
         (cv2.CAP_PROP_FRAME_WIDTH, 640),
         (cv2.CAP_PROP_FRAME_HEIGHT, 400),
+        (cv2.CAP_PROP_CONVERT_RGB, 0),
     ]
     assert cv2.capture.read_calls == 1
     assert cv2.capture.released
-    assert cv2.cvt_color_calls == [((800, 1280, 3), cv2.COLOR_BGR2GRAY)]
-    assert captured.shape == (800, 1280)
+    assert cv2.decode_calls == [(b"\xff\xd8fixture-jpeg\xff\xd9", cv2.IMREAD_GRAYSCALE)]
+    assert captured.shape == (400, 640)
     assert np.all(captured == 73)
 
 
@@ -149,6 +151,7 @@ def test_v4l2_capture_stops_if_supported_format_is_rejected():
         CAP_PROP_FOURCC = 6
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_CONVERT_RGB = 16
 
         @staticmethod
         def VideoWriter_fourcc(*chars):
@@ -165,6 +168,36 @@ def test_v4l2_capture_stops_if_supported_format_is_rejected():
         capture_v4l2_once("/dev/video0", cv2_module=cv2)
 
     assert cv2.capture.read_calls == 0
+    assert cv2.capture.released
+
+
+@pytest.mark.parametrize("raw,decoded,match", [
+    (b"not-jpeg", np.zeros((400, 640), dtype=np.uint8), "JPEG"),
+    (b"\xff\xd8bad\xff\xd9", None, "decode"),
+    (b"\xff\xd8bad\xff\xd9", np.zeros((240, 320), dtype=np.uint8), "640x400"),
+])
+def test_v4l2_capture_rejects_invalid_raw_jpeg_or_decoded_geometry(raw, decoded, match):
+    class Capture:
+        def isOpened(self): return True
+        def set(self, _prop, _value): return True
+        def read(self): return True, np.frombuffer(raw, dtype=np.uint8)
+        def release(self): self.released = True
+
+    class CV2:
+        CAP_V4L2 = 200
+        CAP_PROP_FOURCC = 6
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_CONVERT_RGB = 16
+        IMREAD_GRAYSCALE = 0
+        def __init__(self): self.capture = Capture()
+        def VideoCapture(self, _device, _backend): return self.capture
+        def VideoWriter_fourcc(self, *_chars): return 0x47504A4D
+        def imdecode(self, _raw, _mode): return decoded
+
+    cv2 = CV2()
+    with pytest.raises((RuntimeError, ValueError), match=match):
+        capture_v4l2_once("/dev/video0", cv2_module=cv2)
     assert cv2.capture.released
 
 
@@ -196,7 +229,9 @@ def test_prepare_bundle_emits_valid_manifest_packet_golden_and_viewable_pgm(tmp_
     assert Path(prepared["packet_path"]).stat().st_size == preflight.TX_BYTES
     assert Path(prepared["golden_path"]).stat().st_size == preflight.RX_BYTES
     assert prepared["reserved_unrun_frame_ids"] == [5, 6]
-    assert json.loads(Path(prepared["camera_run_path"]).read_text())["manifest_sha256"] == prepared["manifest_sha256"]
+    sidecar = json.loads(Path(prepared["camera_run_path"]).read_text())
+    assert sidecar["manifest_sha256"] == prepared["manifest_sha256"]
+    assert sidecar["channel_mapping"] == "Gray8 single-channel (1 byte per pixel)"
 
 
 def test_prior_step3_evidence_requires_three_zero_mismatch_frames(tmp_path):
@@ -354,3 +389,4 @@ def test_camera_result_writer_encodes_nested_bytes_losslessly(tmp_path):
         "data": "00fe",
     }
     assert saved["byte_mismatches"] == 0
+    assert saved["camera_input"]["channel_mapping"] == "Gray8 single-channel (1 byte per pixel)"

@@ -25,8 +25,11 @@ def file_sha256(path: Path) -> str:
 
 
 def _module(root: ET.Element, name: str, params: dict[str, str] | None = None,
-            interfaces: dict[str, str] | None = None) -> None:
-    module = ET.SubElement(root, "MODULE", {"INSTANCE": name})
+            interfaces: dict[str, str] | None = None, *, modtype: str = "") -> None:
+    attributes = {"INSTANCE": name}
+    if modtype:
+        attributes["MODTYPE"] = modtype
+    module = ET.SubElement(root, "MODULE", attributes)
     if params:
         parameters = ET.SubElement(module, "PARAMETERS")
         for key, value in params.items():
@@ -47,7 +50,8 @@ def _add_bus_params(module: ET.Element, interface: str, **params: str) -> None:
         ET.SubElement(bus, "PARAMETER", {"NAME": name, "VALUE": value})
 
 
-def _hwh_bytes(*, include_s2mm: str = "1") -> bytes:
+def _hwh_bytes(*, include_s2mm: str = "1",
+               pipeline_modtype: str = "axis_dma_gray_s2mm_pipeline_bd") -> bytes:
     root = ET.Element("SYSTEM")
     dma = {
         "C_INCLUDE_MM2S": "1",
@@ -72,7 +76,8 @@ def _hwh_bytes(*, include_s2mm: str = "1") -> bytes:
     _module(root, "hp0_protocol", interfaces={"S_AXI": "dma_mm2s", "M_AXI": "hp0"})
     _module(root, "hp1_fabric", {"NUM_SI": "1", "NUM_MI": "1"},
             {"S00_AXI": "dma_s2mm", "M00_AXI": "hp1"})
-    _module(root, "image_pipeline", interfaces={"m_axis": "stream_s2mm"})
+    _module(root, "image_pipeline", interfaces={"m_axis": "stream_s2mm"},
+            modtype=pipeline_modtype)
     _module(root, "ps7", {
         "PCW_FPGA0_PERIPHERAL_FREQMHZ": "50",
         "PCW_USE_S_AXI_HP0": "1",
@@ -110,7 +115,7 @@ def _packet(frame_id: int, *, checkerboard: bool = True) -> tuple[bytes, bytes]:
     for index in range(pixels):
         white = checkerboard and ((index + frame_id) & 1) == 0
         value = 255 if white else 0
-        payload.extend((value, value, value))
+        payload.append(value)
         binary.append(value)
     header = struct.pack("<IIII", preflight.PACKET_MAGIC,
                          (preflight.HEIGHT << 16) | preflight.WIDTH,
@@ -207,7 +212,7 @@ def test_valid_manifest_checks_bit_hwh_packet_golden_and_1_or_3_frame_contract(t
     assert plan.dma_base == 0x40400000
     assert plan.checker_base == 0x43C20000
     assert [frame.frame_id for frame in plan.frames] == [1, 2, 3]
-    assert all(len(frame.packet) == 230432 for frame in plan.frames)
+    assert all(len(frame.packet) == preflight.TX_BYTES == 76832 for frame in plan.frames)
     assert all(len(frame.binary) == 76800 for frame in plan.frames)
 
 
@@ -245,7 +250,7 @@ def test_s2mm_disabled_in_hwh_is_rejected_even_when_hwh_hash_matches(tmp_path):
         preflight.validate_manifest(manifest_path)
 
 
-def test_binary_golden_must_match_independent_rgb_conversion(tmp_path):
+def test_binary_golden_must_match_independent_gray8_threshold(tmp_path):
     manifest_path, manifest = make_manifest(tmp_path, frame_count=1)
     binary_path = tmp_path / manifest["frames"][0]["binary_path"]
     corrupted = bytearray(binary_path.read_bytes())
@@ -256,6 +261,24 @@ def test_binary_golden_must_match_independent_rgb_conversion(tmp_path):
 
     with pytest.raises(preflight.PreflightError, match="independent Binary8 golden"):
         preflight.validate_manifest(manifest_path)
+
+
+def test_legacy_rgb_wrapper_hwh_is_rejected(tmp_path):
+    manifest_path, manifest = make_manifest(tmp_path, frame_count=1)
+    hwh_path = tmp_path / manifest["hwh_path"]
+    hwh_path.write_bytes(_hwh_bytes(pipeline_modtype="axis_dma_s2mm_pipeline_bd"))
+    manifest["hwh_sha256"] = file_sha256(hwh_path)
+    _write_manifest(manifest_path, manifest)
+    with pytest.raises(preflight.PreflightError, match="not the Gray8 wrapper"):
+        preflight.validate_manifest(manifest_path)
+
+
+def test_legacy_rgb_packet_is_rejected_by_gray8_admission():
+    legacy = struct.pack("<IIII", 0x574F3134, (240 << 16) | 320,
+                         320 * 240 * 3, 1) + bytes(320 * 240 * 3) + struct.pack(
+                             "<IIII", 0x454E4434, 1, 0, 0xC0DEC014)
+    with pytest.raises(preflight.PreflightError, match="exactly 76832 bytes"):
+        preflight._validate_packet(legacy, 1)
 
 
 def test_only_one_or_three_strictly_increasing_frames_are_accepted(tmp_path):
@@ -407,10 +430,18 @@ def test_kernel_log_delta_requires_continuity_and_rejects_new_health_errors():
         preflight.kernel_log_delta(before, ["different"] * 20)
 
 
-def test_real_generated_wo15_hwh_passes_offline_when_present():
+def test_historical_rgb_hwh_is_rejected_offline_when_present():
     path = (HERE.parents[1] / "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh")
     if not path.is_file():
         pytest.skip("real generated HWH is not included in this checkout")
+    with pytest.raises(preflight.PreflightError, match="not the Gray8 wrapper"):
+        preflight.validate_hwh(path)
+
+
+def test_current_gray8_hwh_passes_offline_when_present():
+    path = HERE.parents[1] / "data/results/gray8-dma-20261027/export/gray8.hwh"
+    if not path.is_file():
+        pytest.skip("Gray8 build HWH is not included in this checkout")
     preflight.validate_hwh(path)
 
 

@@ -15,6 +15,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_stream_counter as runner  # noqa: E402
 
 
+def _test_mjpeg(gray):
+    ok, encoded = runner.cv2.imencode(".jpg", np.asarray(gray, dtype=np.uint8))
+    assert ok
+    return encoded.reshape(-1)
+
+
+def _test_mjpeg_decode(packet, flags):
+    return runner.cv2.imdecode(packet, flags)
+
+
 def test_physical_calibration_manifest_validation_pins_the_approved_boot():
     from types import SimpleNamespace
 
@@ -453,7 +463,7 @@ def test_camera_stream_waits_for_operator_gate_before_first_sample(monkeypatch):
 
         def read(self):
             read_count[0] += 1
-            return True, np.zeros((400, 640), dtype=np.uint8)
+            return True, _test_mjpeg(np.zeros((400, 640), dtype=np.uint8))
 
         def release(self):
             return None
@@ -465,6 +475,8 @@ def test_camera_stream_waits_for_operator_gate_before_first_sample(monkeypatch):
         CAP_PROP_FRAME_HEIGHT = 4
         CAP_PROP_FPS = 5
         CAP_PROP_BUFFERSIZE = 6
+        CAP_PROP_CONVERT_RGB = 16
+        IMREAD_GRAYSCALE = 0
         INTER_NEAREST = 0
 
         @staticmethod
@@ -474,6 +486,8 @@ def test_camera_stream_waits_for_operator_gate_before_first_sample(monkeypatch):
         @staticmethod
         def VideoWriter_fourcc(*chars):
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        imdecode = staticmethod(_test_mjpeg_decode)
 
         @staticmethod
         def resize(_image, size, interpolation):
@@ -778,6 +792,7 @@ def test_camera_read_timeout_returns_without_waiting_for_a_stuck_v4l2_thread():
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
         CAP_PROP_FPS = 5
+        CAP_PROP_CONVERT_RGB = 16
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -837,6 +852,7 @@ def test_camera_timeout_is_bounded_when_release_cannot_unblock_native_read():
         CAP_PROP_FRAME_HEIGHT = 4
         CAP_PROP_FPS = 5
         CAP_PROP_BUFFERSIZE = 6
+        CAP_PROP_CONVERT_RGB = 16
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -894,6 +910,7 @@ def test_camera_mode_fails_closed_when_v4l2_negotiates_another_format():
         CAP_PROP_FRAME_WIDTH = 3
         CAP_PROP_FRAME_HEIGHT = 4
         CAP_PROP_FPS = 5
+        CAP_PROP_CONVERT_RGB = 16
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -947,11 +964,7 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
             else:
                 assert len(steady_start_time) == 1
                 assert milestones[-1][0] == "FRAME_0_CAPTURE_START_FEED_NOW"
-            frame = np.empty((400, 640, 3), dtype=np.uint8)
-            frame[:, :, 0] = 77
-            frame[:, :, 1] = 12
-            frame[:, :, 2] = 200
-            return True, frame
+            return True, _test_mjpeg(np.full((400, 640), 77, dtype=np.uint8))
 
         def release(self):
             released.append(True)
@@ -964,6 +977,8 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         CAP_PROP_FPS = 5
         INTER_NEAREST = 6
         CAP_PROP_BUFFERSIZE = 7
+        CAP_PROP_CONVERT_RGB = 16
+        IMREAD_GRAYSCALE = 0
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -973,6 +988,8 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         @staticmethod
         def VideoWriter_fourcc(*chars):
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        imdecode = staticmethod(_test_mjpeg_decode)
 
         @staticmethod
         def resize(gray, dimensions, interpolation):
@@ -1003,6 +1020,7 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         (FakeCv2.CAP_PROP_FRAME_HEIGHT, 400),
         (FakeCv2.CAP_PROP_FPS, 60),
         (FakeCv2.CAP_PROP_BUFFERSIZE, 1),
+        (FakeCv2.CAP_PROP_CONVERT_RGB, 0),
     ]
     assert resize_calls == [(2, (320, 240), FakeCv2.INTER_NEAREST, 77)] * 2
     assert len(steady_start_time) == 1
@@ -1014,6 +1032,9 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         "camera_prefetch_depth": 1,
         "camera_width": 640,
         "camera_height": 400,
+        "camera_pixel_format": "MJPG",
+        "camera_decode_format": "Gray8",
+        "camera_convert_rgb": False,
         "camera_output_width": 320,
         "camera_output_height": 240,
         "camera_open_monotonic": capture_metadata["camera_open_monotonic"],
@@ -1025,6 +1046,157 @@ def test_camera_handle_is_opened_once_and_capture_timing_covers_each_frame():
         "FRAME_0_CAPTURE_START_FEED_NOW",
     ]
     assert milestones[0][1] <= milestones[-1][1]
+
+
+def test_camera_decodes_raw_mjpeg_directly_to_gray_and_records_source_format():
+    opened = []
+    set_calls = []
+    decode_flags = []
+    capture_metadata = {}
+
+    class Capture:
+        def __init__(self):
+            self.properties = {}
+
+        def isOpened(self):
+            return True
+
+        def set(self, prop, value):
+            set_calls.append((prop, value))
+            self.properties[prop] = value
+            return True
+
+        def get(self, prop):
+            return {
+                FakeCv2.CAP_PROP_FOURCC: FakeCv2.VideoWriter_fourcc(*"MJPG"),
+                FakeCv2.CAP_PROP_FRAME_WIDTH: 640,
+                FakeCv2.CAP_PROP_FRAME_HEIGHT: 400,
+                FakeCv2.CAP_PROP_FPS: 60.0,
+            }.get(prop, self.properties.get(prop, 0))
+
+        def read(self):
+            gray = np.full((400, 640), 77, dtype=np.uint8)
+            ok, encoded = runner.cv2.imencode(".jpg", gray)
+            assert ok
+            return True, encoded.reshape(-1)
+
+        def release(self):
+            pass
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        CAP_PROP_BUFFERSIZE = 6
+        CAP_PROP_CONVERT_RGB = 7
+        IMREAD_GRAYSCALE = 0
+        INTER_NEAREST = 8
+
+        @staticmethod
+        def VideoCapture(device, backend):
+            opened.append((device, backend))
+            return Capture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        @staticmethod
+        def imdecode(packet, flags):
+            decode_flags.append(flags)
+            return runner.cv2.imdecode(packet, flags)
+
+        @staticmethod
+        def resize(gray, dimensions, interpolation):
+            assert gray.ndim == 2
+            return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)
+
+    async def consume():
+        return [frame async for frame in _camera_gray_frames_impl(
+            "/dev/video-test", max_frames=1, cv2_module=FakeCv2,
+            capture_metadata=capture_metadata,
+        )]
+
+    frames = asyncio.run(consume())
+    assert opened == [("/dev/video-test", FakeCv2.CAP_V4L2)]
+    assert (FakeCv2.CAP_PROP_CONVERT_RGB, 0) in set_calls
+    assert decode_flags == [FakeCv2.IMREAD_GRAYSCALE] * 3
+    assert len(frames) == 1 and frames[0].shape == (240, 320)
+    assert frames[0].dtype == np.uint8 and np.all(frames[0] == 77)
+    assert capture_metadata["camera_pixel_format"] == "MJPG"
+    assert capture_metadata["camera_decode_format"] == "Gray8"
+
+
+@pytest.mark.parametrize("failure", ["convert-rgb-rejected", "non-jpeg", "decode-none", "wrong-size"])
+def test_camera_fails_closed_when_raw_mjpeg_cannot_be_decoded(failure):
+    released = []
+
+    class Capture:
+        def isOpened(self):
+            return True
+
+        def set(self, prop, _value):
+            return not (failure == "convert-rgb-rejected"
+                        and prop == FakeCv2.CAP_PROP_CONVERT_RGB)
+
+        def get(self, prop):
+            return {
+                FakeCv2.CAP_PROP_FOURCC: FakeCv2.VideoWriter_fourcc(*"MJPG"),
+                FakeCv2.CAP_PROP_FRAME_WIDTH: 640,
+                FakeCv2.CAP_PROP_FRAME_HEIGHT: 400,
+                FakeCv2.CAP_PROP_FPS: 60.0,
+            }.get(prop, 0)
+
+        def read(self):
+            if failure == "non-jpeg":
+                return True, np.zeros(32, dtype=np.uint8)
+            return True, _test_mjpeg(np.zeros((400, 640), dtype=np.uint8))
+
+        def release(self):
+            released.append(True)
+
+    class FakeCv2:
+        CAP_V4L2 = 1
+        CAP_PROP_FOURCC = 2
+        CAP_PROP_FRAME_WIDTH = 3
+        CAP_PROP_FRAME_HEIGHT = 4
+        CAP_PROP_FPS = 5
+        CAP_PROP_CONVERT_RGB = 16
+        CAP_PROP_BUFFERSIZE = 6
+        IMREAD_GRAYSCALE = 0
+
+        @staticmethod
+        def VideoCapture(_device, _backend):
+            return Capture()
+
+        @staticmethod
+        def VideoWriter_fourcc(*chars):
+            return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        @staticmethod
+        def imdecode(packet, flags):
+            if failure == "decode-none":
+                return None
+            if failure == "wrong-size":
+                return np.zeros((400, 639), dtype=np.uint8)
+            return _test_mjpeg_decode(packet, flags)
+
+    async def consume():
+        async for _ in _camera_gray_frames_impl(
+                "/dev/video-test", max_frames=1, cv2_module=FakeCv2):
+            pytest.fail("invalid raw MJPEG input must not yield a frame")
+
+    expected = {
+        "convert-rgb-rejected": "CAP_PROP_CONVERT_RGB=0",
+        "non-jpeg": "JPEG SOI marker",
+        "decode-none": "expected uint8 \\(400, 640\\)",
+        "wrong-size": "expected uint8 \\(400, 640\\)",
+    }[failure]
+    with pytest.raises(RuntimeError, match=expected):
+        asyncio.run(consume())
+    assert released == [True]
 
 
 def test_camera_prefetches_next_ordered_frame_and_joins_before_release():
@@ -1064,8 +1236,7 @@ def test_camera_prefetches_next_ordered_frame_and_joins_before_release():
                     next_read_started.set()
                     if not allow_next_read_to_finish.wait(timeout=1.0):
                         return False, None
-                frame = np.full((400, 640, 3), read_number, dtype=np.uint8)
-                return True, frame
+                return True, _test_mjpeg(np.full((400, 640), read_number, dtype=np.uint8))
             finally:
                 with read_lock:
                     active_reads -= 1
@@ -1082,6 +1253,8 @@ def test_camera_prefetches_next_ordered_frame_and_joins_before_release():
         CAP_PROP_FPS = 5
         INTER_NEAREST = 6
         CAP_PROP_BUFFERSIZE = 7
+        CAP_PROP_CONVERT_RGB = 16
+        IMREAD_GRAYSCALE = 0
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -1090,6 +1263,8 @@ def test_camera_prefetches_next_ordered_frame_and_joins_before_release():
         @staticmethod
         def VideoWriter_fourcc(*chars):
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        imdecode = staticmethod(_test_mjpeg_decode)
 
         @staticmethod
         def resize(gray, dimensions, interpolation):
@@ -1147,7 +1322,7 @@ def test_camera_close_joins_an_inflight_prefetch_before_releasing_device():
                 if read_number == 4:
                     next_read_started.set()
                     assert allow_next_read_to_finish.wait(timeout=1.0)
-                return True, np.full((400, 640, 3), read_number, dtype=np.uint8)
+                return True, _test_mjpeg(np.full((400, 640), read_number, dtype=np.uint8))
             finally:
                 active_reads -= 1
 
@@ -1162,6 +1337,8 @@ def test_camera_close_joins_an_inflight_prefetch_before_releasing_device():
         CAP_PROP_FPS = 5
         INTER_NEAREST = 6
         CAP_PROP_BUFFERSIZE = 7
+        CAP_PROP_CONVERT_RGB = 16
+        IMREAD_GRAYSCALE = 0
 
         @staticmethod
         def VideoCapture(device, backend):
@@ -1170,6 +1347,8 @@ def test_camera_close_joins_an_inflight_prefetch_before_releasing_device():
         @staticmethod
         def VideoWriter_fourcc(*chars):
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        imdecode = staticmethod(_test_mjpeg_decode)
 
         @staticmethod
         def resize(gray, dimensions, interpolation):
@@ -1430,7 +1609,7 @@ def test_optional_camera_capture_metadata_identifies_sequence_and_host_timestamp
             return {2: fourcc, 3: 640, 4: 400, 5: 60.0}.get(prop, 1)
         def read(self):
             self.reads += 1
-            return True, np.full((400, 640), 40 + self.reads, dtype=np.uint8)
+            return True, _test_mjpeg(np.full((400, 640), 40 + self.reads, dtype=np.uint8))
         def release(self):
             return None
 
@@ -1441,6 +1620,8 @@ def test_optional_camera_capture_metadata_identifies_sequence_and_host_timestamp
         CAP_PROP_FRAME_HEIGHT = 4
         CAP_PROP_FPS = 5
         CAP_PROP_BUFFERSIZE = 6
+        CAP_PROP_CONVERT_RGB = 16
+        IMREAD_GRAYSCALE = 0
         INTER_NEAREST = 7
         @staticmethod
         def VideoCapture(device, backend):
@@ -1448,6 +1629,8 @@ def test_optional_camera_capture_metadata_identifies_sequence_and_host_timestamp
         @staticmethod
         def VideoWriter_fourcc(*chars):
             return sum(ord(char) << (8 * index) for index, char in enumerate(chars))
+
+        imdecode = staticmethod(_test_mjpeg_decode)
         @staticmethod
         def resize(gray, dimensions, interpolation):
             return np.full((dimensions[1], dimensions[0]), gray[0, 0], dtype=np.uint8)

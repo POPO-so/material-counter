@@ -20,7 +20,10 @@ WIDTH = 320
 HEIGHT = 240
 PIXELS = WIDTH * HEIGHT
 RX_BYTES = PIXELS
-TX_BYTES = 16 + PIXELS * 3 + 16
+try:
+    from packet_encoder import TX_BYTES
+except ImportError:  # pragma: no cover - package-style import support
+    from .packet_encoder import TX_BYTES
 
 
 class PacketEncoder(Protocol):
@@ -916,9 +919,11 @@ def transfer_async(channel: Any, buffer: Any, nbytes: int) -> asyncio.Task:
 
 def allocate_ping_pong_buffers(allocate: Callable[..., Any], *,
                                free: Callable[[Any], None] | None = None,
-                               after_allocate: Callable[[Any], None] | None = None
+                               after_allocate: Callable[[Any], None] | None = None,
+                               tx_bytes: int = TX_BYTES
                                ) -> tuple[tuple[Any, Any], tuple[Any, Any]]:
     """Allocate and validate paired CMA slots, rolling back every partial allocation."""
+    tx_bytes = _integer(tx_bytes, "tx_bytes", minimum=1)
     allocated = []
     tx_buffers = []
     rx_buffers = []
@@ -932,14 +937,14 @@ def allocate_ping_pong_buffers(allocate: Callable[..., Any], *,
 
     try:
         for _ in range(2):
-            tx = allocate_tracked(shape=(TX_BYTES,), dtype=np.uint8)
+            tx = allocate_tracked(shape=(tx_bytes,), dtype=np.uint8)
             rx = allocate_tracked(shape=(RX_BYTES,), dtype=np.uint8)
-            _validate_buffer(tx, TX_BYTES, 8, "TX")
+            _validate_buffer(tx, tx_bytes, 8, "TX")
             _validate_buffer(rx, RX_BYTES, 4, "RX")
             tx_buffers.append(tx)
             rx_buffers.append(rx)
         spans = []
-        for kind, buffers, size in (("TX", tx_buffers, TX_BYTES),
+        for kind, buffers, size in (("TX", tx_buffers, tx_bytes),
                                     ("RX", rx_buffers, RX_BYTES)):
             for index, buffer in enumerate(buffers):
                 start = int(buffer.physical_address)
@@ -1004,8 +1009,10 @@ class DoubleBufferStream:
                  source_capture_callback: Callable[[int, np.ndarray], None] | None = None,
                  capture_callback: Callable[[FrameResult, DmaBufferSlot], Any] | None = None,
                  stage_timings_ms: dict[str, list[float]] | None = None,
+                 tx_bytes: int = TX_BYTES,
                  transfer_timeout_s: float = 5.0,
                  history_limit: int | None = None):
+        self.tx_bytes = _integer(tx_bytes, "tx_bytes", minimum=1)
         if (history_limit is not None
                 and (isinstance(history_limit, bool)
                      or not isinstance(history_limit, int) or history_limit < 1)):
@@ -1013,7 +1020,7 @@ class DoubleBufferStream:
         if len(tx_buffers) != 2 or len(rx_buffers) != 2:
             raise ValueError("exactly two TX and two RX buffers are required")
         for buffer in tx_buffers:
-            _validate_buffer(buffer, TX_BYTES, 8, "TX")
+            _validate_buffer(buffer, self.tx_bytes, 8, "TX")
         for buffer in rx_buffers:
             _validate_buffer(buffer, RX_BYTES, 4, "RX")
         self.recv_channel = recv_channel
@@ -1187,11 +1194,14 @@ class DoubleBufferStream:
                     frame_id, bounded=self.history_limit is not None
                 )
                 if self.packet_encoder_into is not None:
-                    self.packet_encoder_into(gray, slot.tx_buffer, frame_id=packet_frame_id)
+                    self.packet_encoder_into(
+                        gray, np.asarray(slot.tx_buffer), frame_id=packet_frame_id)
                 else:
                     packet = self.packet_encoder(gray, frame_id=packet_frame_id)
-                    if not isinstance(packet, (bytes, bytearray, memoryview)) or len(packet) != TX_BYTES:
-                        raise ValueError(f"packet encoder must return exactly {TX_BYTES} bytes")
+                    if (not isinstance(packet, (bytes, bytearray, memoryview))
+                            or len(packet) != self.tx_bytes):
+                        raise ValueError(
+                            f"packet encoder must return exactly {self.tx_bytes} bytes")
                     slot.tx_buffer[:] = np.frombuffer(packet, dtype=np.uint8)
                 self._record_timing("encode", time.perf_counter() - encode_started)
                 dma_started = time.perf_counter()
@@ -1205,7 +1215,7 @@ class DoubleBufferStream:
                 rx_wait = transfer_async(self.recv_channel, slot.rx_buffer, RX_BYTES)
                 self._pending_waits.append(rx_wait)
                 try:
-                    tx_wait = transfer_async(self.send_channel, slot.tx_buffer, TX_BYTES)
+                    tx_wait = transfer_async(self.send_channel, slot.tx_buffer, self.tx_bytes)
                 except BaseException:
                     self._hold_nonfree_slots()
                     raise

@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "protocol": "GRAY8_PACKET_V1",
+  "checker_signature": 1196579128,
+  "packer_signature": 1464807733,
+  "width": 320,
+  "height": 240,
+  "tx_bytes": 76832,
+  "rx_bytes": 76800,
+  "threshold": 128,
+  "clock_mhz": 50,
+  "part": "xc7z020clg400-1",
+  "dma_base": 1077936128,
+  "checker_base": 1136787456,
+  "bit_path": "gray8.bit",
+  "hwh_path": "gray8.hwh",
+  "bit_sha256": "feadeae19058e23c6bfb443e4f25aade48a90d19c8b64bbbc7fe3219ebcea926",
+  "hwh_sha256": "4ab3f7cf4aa11c614b0a8a2740454dc2148e8246e5019f8d99bb3feb532ab5d4",
+  "rtl_snapshot_sha256": {
+    "rtl/axis_binary_output_checker.v": "8a6f46c6add51a29c801499ddbf63c52d65f5a1e91dab4b60316aecbddf54a75",
+    "rtl/axis_dma_gray_adapter.v": "9d77eca1e1da34face37026254290abdebd71f389b05a8cb8c603ed73db1f1f6",
+    "rtl/axis_dma_gray_image_pipeline.v": "8895d7d2cfdd528a3d8c575441de88b0805c19d1ec6d53f2716263f9cd2dc7cf",
+    "rtl/axis_dma_gray_s2mm_pipeline_bd.v": "19c5402ddef5e7ff00e8420c77b27263d7750f44edfe105d71e5271c0f8a14ad",
+    "rtl/axis_gray2binary.v": "27fe7cdaea8973efa3db79febc868f9b0ccaaedb6636a134c72c8df715f7fa83",
+    "rtl/axis_s2mm_frame_packer.v": "59c40c423742fab09233a0758795c1c1279ce8036b51d57d265f3b989f08b695"
+  },
+  "build_evidence": "ROUTED_NOT_BOARD_VERIFIED"
+}
