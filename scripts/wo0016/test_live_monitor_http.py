@@ -248,7 +248,7 @@ def test_dashboard_has_live_controls_health_fields_and_mock_label():
     page = (Path(__file__).resolve().parent / "dashboard.html").read_text(encoding="utf-8")
     for expected in (
         "api/reset-count", "api/view-mode", "api/stop", "view_mode",
-        "cma_free_kib", "rss_kib", "dma_status", "mode==='mock'", "合成",
+        "cma_free_kib", "cma_total_kib", "memory_total_kib", "cpu_percent", "mode==='mock'", "合成",
         "completed-frame sliding window", "fps-note", "stopping:'正在停止监控'",
         "fail_hold:'DMA 故障保持'", "合成 Binary8",
     ):
@@ -324,3 +324,26 @@ def test_mjpeg_primes_legacy_single_frame_browser_without_replaying_live_frames(
                             live_control_callback=lambda action, payload: {}) as server:
         response = read_stream(server, b"live-jpeg", expected_parts=1)
         assert response.count(b"Content-Type: image/jpeg") == 1
+
+
+def test_resource_control_is_independent_and_exposes_confirmed_state():
+    class Monitor:
+        def __init__(self):
+            self.enabled = False
+            self.mode = 'normal'
+        def control(self, enabled, mode):
+            self.enabled, self.mode = enabled, mode
+            return self.snapshot()
+        def snapshot(self):
+            return {'enabled': self.enabled, 'mode': self.mode, 'metrics': {}}
+    monitor = Monitor()
+    with MjpegPreviewServer(host='127.0.0.1', port=0, resource_monitor=monitor) as server:
+        assert get_json(server)['resource_monitor']['enabled'] is False
+        with post_json(server, '/api/resource-monitor', {'enabled': True, 'mode': 'detail'}) as response:
+            assert json.load(response)['enabled'] is True
+        assert get_json(server)['resource_monitor']['mode'] == 'detail'
+        with post_json(server, '/api/resource-monitor', {'enabled': False, 'mode': 'normal'}) as response:
+            assert json.load(response)['enabled'] is False
+        with pytest.raises(HTTPError) as error:
+            post_json(server, '/api/resource-monitor', {'enabled': True, 'mode': 'normal'}, origin='https://attacker.invalid')
+        assert error.value.code == 403

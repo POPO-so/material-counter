@@ -685,7 +685,7 @@ class MjpegPreviewServer:
     def __init__(self, *, hub: MjpegFrameHub | None = None,
                  host: str = "0.0.0.0", port: int = 8080,
                  state_provider=None, control_callback=None,
-                 live_control_callback=None):
+                 live_control_callback=None, resource_monitor=None):
         if not isinstance(host, str) or not host:
             raise ValueError("host must be non-empty text")
         if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
@@ -696,6 +696,7 @@ class MjpegPreviewServer:
         self.state_provider = state_provider
         self.control_callback = control_callback
         self.live_control_callback = live_control_callback
+        self.resource_monitor = resource_monitor
         self._server: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
 
@@ -712,6 +713,7 @@ class MjpegPreviewServer:
         state_provider = self.state_provider
         control_callback = self.control_callback
         live_control_callback = self.live_control_callback
+        resource_monitor = self.resource_monitor
         page = Path(__file__).with_name("dashboard.html").read_bytes()
 
         class Handler(BaseHTTPRequestHandler):
@@ -792,8 +794,8 @@ class MjpegPreviewServer:
                     if host not in ("127.0.0.1", "localhost", "::1") or (origin and origin != expected_origin):
                         self._reject_post(403, {"error": "local same-origin access required"})
                         return
-                elif self.path in live_actions:
-                    if live_control_callback is None:
+                elif self.path in live_actions or self.path == "/api/resource-monitor":
+                    if (self.path == "/api/resource-monitor" and resource_monitor is None) or (self.path in live_actions and live_control_callback is None):
                         self._reject_post(403, {"error": "live controls disabled"})
                         return
                     if not self._is_local_request_host():
@@ -821,6 +823,10 @@ class MjpegPreviewServer:
                         raise ValueError("JSON body must be an object")
                     if self.path == "/api/calibration":
                         result = control_callback(payload)
+                    elif self.path == "/api/resource-monitor":
+                        if set(payload) != {"enabled", "mode"}:
+                            raise ValueError("expected enabled and mode")
+                        result = resource_monitor.control(payload["enabled"], payload["mode"])
                     else:
                         result = live_control_callback(live_actions[self.path], payload)
                     self._json(200, result)
@@ -847,6 +853,7 @@ class MjpegPreviewServer:
                             "preview": hub.snapshot(),
                             "runtime_status": raw.get("status"),
                             "health": raw.get("resource_health"),
+                            "resource_monitor": resource_monitor.snapshot() if resource_monitor is not None else None,
                             "view_mode": raw.get("view_mode"),
                             "camera_controls": raw.get("camera_controls"),
                             "capabilities": {

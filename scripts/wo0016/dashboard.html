@@ -20,6 +20,8 @@ dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);bord
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .view-mode-control{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:14px;color:var(--muted)}.view-mode-control select{min-height:44px;min-width:190px;padding:8px 34px 8px 10px;border:1px solid #a6b9d0;border-radius:6px;color:var(--ink);background:white}.view-mode-control select:disabled{color:#66758b;background:#e9eef5;border-color:#d4deea}.view-mode-control select:focus-visible{outline:3px solid #ed9800;outline-offset:4px}.health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:0 22px 20px}.health-item{min-width:0;padding:12px;border:1px solid var(--line);border-radius:8px;background:#f8fbff}.health-item span,.health-item small{display:block;color:var(--muted);font-size:12px}.health-item strong{display:block;margin:4px 0;font:700 18px/1.35 "Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.health-item code{font:600 13px/1.4 ui-monospace,Consolas,monospace}.health-note{margin:-6px 22px 18px;color:var(--muted);font-size:12px}
 .view-mode-control select{font:inherit}@media(max-width:600px){.health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0 22px 18px}.resource{text-align:center;border:1px solid var(--line);border-radius:9px;background:#f8fbff;padding:14px 8px}.resource h3{font-size:14px;margin:0 0 10px;color:var(--ink)}.resource-ring{--percent:0%;width:90px;height:90px;margin:auto;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--blue) var(--percent),#dce7f3 0);position:relative}.resource-ring::before{content:"";position:absolute;inset:10px;border-radius:50%;background:#f8fbff}.resource-ring strong{position:relative;font:700 18px/1.2 "Segoe UI",sans-serif;font-variant-numeric:tabular-nums}.resource p{font-size:12px;color:var(--muted);margin:10px 0 0;overflow-wrap:anywhere}@media(max-width:380px){.resource-grid{grid-template-columns:1fr}.resource-ring{width:82px;height:82px}}
+.resource-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 22px 16px}.resource-controls button,.resource-controls select{font:inherit;min-height:40px;border:1px solid #a6b9d0;border-radius:7px;padding:7px 12px;background:white;color:var(--ink)}.resource-controls button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:white}.resource-status{font-size:13px;color:var(--muted)}.resource-details{padding:0 22px 18px}.resource-details h3{font-size:15px;margin:12px 0}.resource-table{width:100%;border-collapse:collapse;font-size:13px}.resource-table th,.resource-table td{text-align:left;border-bottom:1px solid var(--line);padding:7px 4px}.resource-table th{color:var(--muted);font-weight:500}.resource-bar{height:7px;background:#dce7f3;border-radius:8px;overflow:hidden;margin-top:4px}.resource-bar span{display:block;height:100%;background:var(--blue)}.resource-detail-note{color:var(--muted);font-size:12px;margin:10px 0}.resource-grid{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:520px){.resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -62,9 +64,18 @@ dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);bord
 <section class="card metric"><svg class="icon" aria-hidden="true"><use href="#clock"/></svg><div><h2>运行时长</h2><span id="elapsed" class="value">--</span><small>从首个完成帧开始</small></div></section>
 <section class="card metric"><svg class="icon" aria-hidden="true"><use href="#check"/></svg><div><h2>当前状态</h2><span id="phase" class="state-value">未连接</span><small id="frame-age">等待采集状态</small></div></section>
 </div>
-<section class="card" aria-labelledby="health-title"><div class="card-head"><h2 id="health-title"><svg class="icon" aria-hidden="true"><use href="#check"/></svg>DMA 与内存健康</h2><span class="small">最近状态快照</span></div><div class="health-grid">
-<div class="health-item"><span>CMA 可用</span><strong id="cma-free">--</strong><small>KiB</small></div><div class="health-item"><span>进程 RSS</span><strong id="rss">--</strong><small>KiB</small></div>
-<div class="health-item"><span>MM2S DMASR</span><strong><code id="dma-mm2s">--</code></strong><small>最近读取</small></div><div class="health-item"><span>S2MM DMASR</span><strong><code id="dma-s2mm">--</code></strong><small>最近读取</small></div></div><p class="health-note">显示服务端最近报告的数据；“--”表示尚未提供。</p></section>
+<section class="card" aria-labelledby="health-title"><div class="card-head"><h2 id="health-title"><svg class="icon" aria-hidden="true"><use href="#chip"/></svg>板端资源监视</h2><span class="small">独立采样 · 默认关闭</span></div>
+<div class="resource-controls"><button id="resource-toggle" type="button" aria-pressed="false" disabled>开启监视</button><label for="resource-mode">显示模式</label><select id="resource-mode" disabled><option value="normal">正常模式</option><option value="detail">详细模式</option></select><span id="resource-status" class="resource-status" role="status">等待服务连接</span></div>
+<div id="resource-content" hidden><div class="resource-grid">
+<div class="resource"><h3>CPU 总体</h3><div class="resource-ring" id="cpu-ring"><strong id="cpu-value">--</strong></div><p>采样区间繁忙时间</p></div>
+<div class="resource"><h3>系统内存</h3><div class="resource-ring" id="memory-ring"><strong id="memory-value">--</strong></div><p id="memory-detail">已用 / 总量：--</p></div>
+<div class="resource"><h3>CMA 内存池</h3><div class="resource-ring" id="cma-ring"><strong id="cma-value">--</strong></div><p id="cma-detail">已用 / 总量：--</p></div>
+<div class="resource"><h3>MicroSD 文件系统</h3><div class="resource-ring" id="disk-ring"><strong id="disk-value">--</strong></div><p id="disk-detail">已用 / 总量：--</p></div>
+<div class="resource"><h3>以太网接收</h3><div class="resource-ring" id="rx-ring"><strong id="rx-value">--</strong></div><p id="rx-detail">速率：--</p></div>
+<div class="resource"><h3>以太网发送</h3><div class="resource-ring" id="tx-ring"><strong id="tx-value">--</strong></div><p id="tx-detail">速率：--</p></div>
+</div><p class="health-note">内存按可用量估算；CMA 是系统内存的一部分。网络圆环以链路速率为分母，数据不可用时显示 --。</p>
+<div id="resource-details" class="resource-details" hidden><h3>FPGA 位流资源</h3><p class="resource-detail-note">实现后静态资源占用，不代表运行时负载；仅显示与当前已核验位流匹配的报告；PL I/O 不含 PS 固定引脚。</p><table class="resource-table"><tbody id="fpga-resources"></tbody></table>
+<h3>运行状态与其他指标</h3><table class="resource-table"><tbody id="resource-extra"></tbody></table><p class="resource-detail-note">DMA 是最近完成帧的寄存器状态；DDR 带宽、流水线负载和未接入的指标显示不可用。</p></div></div></section>
 <section class="card" aria-labelledby="controls-title"><div class="card-head"><h2 id="controls-title"><svg class="icon" aria-hidden="true"><use href="#chip"/></svg>监控操作</h2><span class="small">按服务端能力启用</span></div><div class="controls">
 <div class="view-mode-control"><label for="view-mode">画面显示</label><select id="view-mode" disabled aria-describedby="control-note"><option value="overlay">原图与叠加层</option><option id="binary-option" value="binary">FPGA Binary8</option></select></div>
 <div class="actions"><button class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#play"/></svg>开始采集</button><button id="stop-monitor" class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#stop"/></svg>停止监控</button><button id="reset-count" class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#trash"/></svg>计数清零</button></div>
@@ -85,6 +96,7 @@ const integer = value => numeric(value) && Number.isSafeInteger(value);
 const fmt = new Intl.NumberFormat('zh-CN');
 const clock = new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
 let paused=false, connected=false, polling=false, pending=false, timer=null, request=null;
+let resourceBusy=false;
 let countAnimation=null;
 let snapshot=null, streamFailed=false, retryAfter=0, lastCount=null, eventSignature='', viewModeAccepted='overlay';
 function text(id,value){const node=$(id),next=String(value);if(node.textContent!==next)node.textContent=next;}
@@ -155,11 +167,7 @@ function render(data){
   device('system','系统',phase);
   text('resolution',integer(p.width)&&p.width>0&&integer(p.height)&&p.height>0?p.width+' × '+p.height:'--');
   text('preview-fps',numeric(p.fps)?p.fps.toFixed(1):'--');
-  const health=data.health&&typeof data.health==='object'?data.health:{};
-  text('cma-free',integer(health.cma_free_kib)?fmt.format(health.cma_free_kib):'--');
-  text('rss',integer(health.rss_kib)?fmt.format(health.rss_kib):'--');
-  const dma=health.dma_status&&typeof health.dma_status==='object'?health.dma_status:{};
-  text('dma-mm2s',formatDma(dma.mm2s));text('dma-s2mm',formatDma(dma.s2mm));
+  renderResources(data.resource_monitor);
   if(!pending&&['overlay','binary'].includes(data.view_mode)){viewModeAccepted=data.view_mode;$('view-mode').value=viewModeAccepted;}
   text('control-note',data.capabilities?.reset===true?'计数清零会重置本次显示基准；停止会结束当前监控服务。':'停止和清零只在当前服务明确提供对应控制时启用。');
   if(integer(p.width)&&p.width>0&&integer(p.height)&&p.height>0){$('stream').width=p.width;$('stream').height=p.height;}
@@ -174,13 +182,31 @@ function render(data){
   }
   disableCalibration();preview();
 }
+function resource(id,value){const valid=numeric(value)&&value>=0&&value<=100;$(id+'-ring').style.setProperty('--percent',valid?value+'%':'0%');text(id+'-value',valid?value.toFixed(1)+'%':'--');}
+function resourceMemory(id,total,available){const valid=integer(total)&&total>0&&integer(available)&&available>=0&&available<=total;resource(id,valid?(total-available)*100/total:null);text(id+'-detail',valid?'已用 / 总量：'+fmt.format(total-available)+' / '+fmt.format(total)+' KiB':'已用 / 总量：--');}
+function dmaDescription(value){const code=formatDma(value);if(code==='--')return '未提供';const n=parseInt(code,16);return (n&0x4070?'故障':n&1?'停止':n&2?'空闲':'运行中')+'（'+code+'）';}
+function rate(value){return numeric(value)?(value*8/1000000).toFixed(2)+' Mbps':'--';}
+function netResource(id,value,link,iface){const mbps=numeric(value)?value*8/1000000:null;resource(id,numeric(mbps)&&numeric(link)&&link>0&&mbps<=link?mbps/link*100:null);text(id+'-detail',(iface||'网络接口未知')+' · '+rate(value)+(numeric(link)&&link>0?' / '+link+' Mbps':''));}
+function row(host,label,value,percent){const tr=document.createElement('tr'),th=document.createElement('th'),td=document.createElement('td');th.textContent=label;td.textContent=value;if(numeric(percent)&&percent<=100){const bar=document.createElement('div'),fill=document.createElement('span');bar.className='resource-bar';fill.style.width=percent+'%';bar.append(fill);td.append(bar);}tr.append(th,td);host.append(tr);}
+function renderResources(data){
+  const available=data&&typeof data.enabled==='boolean';const enabled=available&&data.enabled;const mode=available&&data.mode==='detail'?'detail':'normal';
+  $('resource-toggle').disabled=!connected||!available||resourceBusy;$('resource-mode').disabled=!connected||!available||resourceBusy;$('resource-toggle').setAttribute('aria-pressed',String(enabled));text('resource-toggle',enabled?'关闭监视':'开启监视');if(!resourceBusy)$('resource-mode').value=mode;
+  text('resource-status',!available?'资源监视不可用':enabled?'正在采样':'采样已停止');$('resource-content').hidden=!enabled;$('resource-details').hidden=!enabled||mode!=='detail';if(!enabled)return;
+  const m=data.metrics||{};resource('cpu',m.cpu_percent);resourceMemory('memory',m.memory_total_kib,m.memory_available_kib);resourceMemory('cma',m.cma_total_kib,m.cma_free_kib);
+  resourceMemory('disk',integer(m.rootfs_total_bytes)?Math.floor(m.rootfs_total_bytes/1024):null,integer(m.rootfs_total_bytes)&&integer(m.rootfs_used_bytes)?Math.floor((m.rootfs_total_bytes-m.rootfs_used_bytes)/1024):null);
+  netResource('rx',m.network_rx_bytes_per_second,m.network_link_mbps,m.network_interface);netResource('tx',m.network_tx_bytes_per_second,m.network_link_mbps,m.network_interface);
+  const d=data.detail||{}, fpga=d.fpga||{}, host=$('fpga-resources');host.replaceChildren();for(const [key,label] of [['lut','LUT'],['ff','FF 寄存器'],['bram','BRAM Tile'],['dsp','DSP'],['lutram','LUT 存储'],['iob','PL I/O'],['bufg','BUFG 时钟'],['mmcm','MMCM'],['pll','PLL']]){const values=fpga[key];const valid=Array.isArray(values)&&numeric(values[0])&&numeric(values[1])&&values[1]>0;const pct=valid?values[0]/values[1]*100:null;row(host,label,valid?values[0]+' / '+values[1]+' · '+pct.toFixed(2)+'%':'未提供',pct);}
+  const extra=$('resource-extra');extra.replaceChildren();const dma=d.dma_status||{};row(extra,'DMA MM2S / S2MM',dmaDescription(dma.mm2s)+' / '+dmaDescription(dma.s2mm));row(extra,'DDR 读写带宽','未接入计数器');row(extra,'流水线',integer(d.frames)?'完成 '+fmt.format(d.frames)+' 帧 · '+(numeric(d.processing_fps)?d.processing_fps.toFixed(1)+' FPS':'帧率 --')+' · 故障计数：未提供':'未提供');row(extra,'USB 相机',d.camera?(d.camera+' · 分辨率 / 输入帧率 / 错误：未提供'):'未提供');row(extra,'SD 卡读 / 写',rate(m.sd_read_bytes_per_second)+' / '+rate(m.sd_write_bytes_per_second));row(extra,'SoC 温度',numeric(m.soc_temperature_c)?m.soc_temperature_c.toFixed(1)+' °C':'未提供');row(extra,'供电','未接入传感器');
+}
+async function setResourceMonitor(enabled,mode){if(!connected||resourceBusy)return;resourceBusy=true;renderResources(snapshot?.resource_monitor);text('resource-status','正在等待后端确认…');const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);try{const response=await fetch('/api/resource-monitor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled,mode}),signal:controller.signal});const data=await response.json();if(!response.ok)throw new Error(data.error||'请求失败');if(data.enabled!==enabled||data.mode!==mode)throw new Error('后端状态不匹配');if(snapshot)snapshot.resource_monitor=data;}catch(error){text('resource-status',error.name==='AbortError'?'请求超时，状态待确认':'操作失败：'+error.message);}finally{clearTimeout(timeout);resourceBusy=false;poll();}}
+$('resource-toggle').addEventListener('click',()=>{const r=snapshot?.resource_monitor;if(r)setResourceMonitor(!r.enabled,$('resource-mode').value);});$('resource-mode').addEventListener('change',()=>{const r=snapshot?.resource_monitor;if(r)setResourceMonitor(r.enabled,$('resource-mode').value);});
 function offline(){
   connected=false;snapshot=null;lastCount=null;text('connection','状态未连接 · 请检查服务与网络');text('updated','--');text('mode','');
   for(const id of ['count','detections','processing-fps','elapsed','preview-fps','resolution','conveyor-speed'])text(id,'--');
   for(const id of ['camera','fpga','dma'])device(id,id==='camera'?'相机':id.toUpperCase(),'unknown');device('system','系统','unknown');
   text('last-crossing-area','最近越线面积：--');text('speed-note','等待轨迹速度与标定比例');
   text('phase','未连接');text('frame-age','无法获取当前状态');text('count-hint','状态接口未连接');text('count-freshness','等待重新连接');text('source','图像来源未确认');
-  for(const id of ['cma-free','rss','dma-mm2s','dma-s2mm'])text(id,'--');
+  renderResources(null);
   disableCalibration();preview();
 }
 async function poll(){

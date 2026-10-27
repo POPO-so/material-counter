@@ -21,6 +21,7 @@ import numpy as np
 
 import run_stream_counter as finite
 from live_monitor_state import LiveMonitorState
+from resource_monitor import ResourceMonitor
 from mjpeg_preview import MjpegFrameHub, MjpegPreviewServer, PeriodicMjpegPublisher
 from stream_counter import DoubleBufferStream, MaskCounter, TX_BYTES, RX_BYTES, allocate_ping_pong_buffers
 
@@ -111,6 +112,7 @@ class BoardSession:
         self.lock_fd = None
         self.driver_uncertain = False
         self.latest_dma = None
+        self.admitted = False
 
     def open(self):
         args = self.args
@@ -120,6 +122,7 @@ class BoardSession:
         self.plan = plan = pf.validate_manifest(args.manifest, args.manifest_sha256,
                                                 approved_boot_id=args.expected_boot_id)
         self.admit_and_allocate(plan)
+        self.admitted = True
 
     def acquire_runtime_lock(self):
         args = self.args
@@ -292,19 +295,38 @@ async def run_monitor(args, *, state=None, server_ready=None):
         pip_label=f"PL DMA MASK TH{finite.effective_threshold(args)}" if args.mode == "board" and args.counting_profile == "lighting-calibrated" else "PL DMA MASK" if args.mode == "board" else "SYNTHETIC MASK",
         view_mode_provider=lambda: state.view_mode)
     state.invalidate_preview = publisher.invalidate
+    board = BoardSession(args, state) if args.mode == "board" else None
+    resources = ResourceMonitor(source=args.mode)
+
+    class ResourceView:
+        def control(self, enabled, mode):
+            return resources.control(enabled=enabled, mode=mode)
+
+        def snapshot(self):
+            result = resources.snapshot()
+            if not result["enabled"] or result["mode"] != "detail":
+                return result
+            telemetry = state.snapshot()["dashboard"]
+            detail = {"dma_status": board.latest_dma if board else None,
+                      "frames": telemetry.get("frames_processed") if board and board.admitted else None,
+                      "processing_fps": telemetry.get("processing_fps") if board and board.admitted else None,
+                      "camera": args.camera if board else None,
+                      "fpga": None}
+            # Values are from the routed report for this exact admitted bitstream.
+            if board and board.admitted and board.plan and board.plan.manifest.get("bit_sha256") == "feadeae19058e23c6bfb443e4f25aade48a90d19c8b64bbbc7fe3219ebcea926":
+                detail["fpga"] = {"source": "Gray8 路由报告（静态）", "bit_sha256": board.plan.manifest["bit_sha256"],
+                                  "lut": [2777, 53200], "ff": [3470, 106400],
+                                  "bram": [2.5, 140], "dsp": [0, 220], "lutram": [115, 17400],
+                                  "iob": [0, 125], "bufg": [1, 32], "mmcm": [0, 4], "pll": [0, 4]}
+            result["detail"] = detail
+            return result
+
     server = MjpegPreviewServer(hub=hub, host=args.host, port=args.port,
                                 state_provider=state.snapshot,
-                                live_control_callback=state.control if args.no_auth else None)
-    board = BoardSession(args, state) if args.mode == "board" else None
-    last_health = -math.inf
+                                live_control_callback=state.control if args.no_auth else None,
+                                resource_monitor=ResourceView())
 
     def publish(result, mask, gray):
-        nonlocal last_health
-        now = time.monotonic()
-        if now - last_health >= 1:
-            cma = None if board is None else board.api.cma_free_kib()
-            state.update_health(cma_free_kib=cma, dma_status=None if board is None else board.latest_dma)
-            last_health = now
         displayed = state.complete_frame(result)
         publisher(displayed, mask, gray)
 
@@ -332,6 +354,7 @@ async def run_monitor(args, *, state=None, server_ready=None):
         state.set_phase("failed", f"{type(exc).__name__}: {exc}")
         raise
     finally:
+        resources.close()
         # FAIL_HOLD blocks here with owner references retained; never unwind
         # through CMA destructors while hardware ownership is uncertain.
         if board is not None:
