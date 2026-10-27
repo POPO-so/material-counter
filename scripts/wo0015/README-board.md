@@ -2,14 +2,16 @@
 
 This package implements the PS half of the WO-0015 S2MM Binary8 frame-return loop. It is offline-first: `board_preflight.py`, `--mode offline`, `--mode mock`, and `--help` do not import PYNQ or touch MMIO. Only an explicitly authorized board stage imports PYNQ.
 
-The live executor accepts a single reviewed manifest containing three frames. The original source-tree default bound every stage to historical boot ID `cb087bbb-932d-4a6e-9600-98dd1c7e5f8d`; prior reauthorizations used their own pinned packages, including Retry 3 `822a9c29-37c0-438c-81c4-da998d57073b`. The Stage 4 lighting-calibrated authorization now pins this checkout to Boot ID `bb382d01-7bb2-4922-9a85-af6a24ef4d10`; its manifest must bind the same boot, the current `board_once.py` and `board_preflight.py` hashes, the BIT/HWH hashes, and the exact packet and Binary8 golden hashes. S2MM is 32-bit memory / 32-bit stream with an 18-bit length field; each return frame is 76,800 bytes / 19,200 beats. MM2S remains 64-bit memory / 32-bit stream and sends 230,432 bytes.
+The source tree uses the **Frozen / Active Baseline Gray8 packet ABI** defined by ADR-0004. The matching BIT/HWH pair is stored under `data/results/wo0015-gray8-baseline-20261027/export/`; its build manifest uses repository-relative paths. The offline implementation is not board-tested.
+
+The live executor accepts a reviewed manifest containing three frames. The source-tree default is `data/results/wo0015-gray8-baseline-20261027/board-package/run-manifest.json`; a copied board package resolves its local `run-manifest.json`. Board access still requires a separately reviewed manifest SHA-256 and the existing boot, stage, one-shot, and CMA checks. S2MM remains 32-bit memory / 32-bit stream with an 18-bit length field and returns 76,800 bytes / 19,200 beats. Gray8 MM2S sends a 76,800-byte payload in a 76,832-byte packet (19,208 stream beats).
 
 ## Manifest inputs
 
-The example below shows the historical source-tree default. For an actual deployment, use its reviewed manifest and source hashes rather than copying the example boot identity. Place the following together in one directory, or use paths relative to the manifest:
+The CLI defaults to the repository Gray8 run manifest. For board access, review the exact manifest digest and the deployment boot identity before authorizing a stage. Place the following together in one directory, or use paths relative to the manifest:
 
 - `wo15.bit` and its same-basename `wo15.hwh`.
-- Exactly three packet files. Each packet is the fixed 230,432-byte WO-0014 RGB packet.
+- Exactly three packet files. Each Gray8 candidate packet is 76,832 bytes (16-byte header + 76,800-byte Gray8 payload + 16-byte footer).
 - Three independently generated Binary8 goldens, each exactly 76,800 bytes, containing only `0x00` and `0xFF`.
 - `wo0015-manifest.json` with this exact top-level shape:
 
@@ -120,13 +122,13 @@ The DMA sequence arms S2MM before MM2S for every frame. RX memory is filled with
 
 ## Step 2 capture and RX mismatch diagnostics
 
-After the `dma-single` Step 2 transfer passes DMA/Checker/Packer completion checks, the runner saves the complete MM2S TX packet (230,432 bytes), complete S2MM RX frame (76,800 bytes), expected Golden (76,800 bytes), and a JSON diagnostic before either buffer is freed, on both PASS and mismatch. A `dma-three` run saves a frame capture when that frame mismatches. Files use a stage/frame-specific name and exclusive creation; existing evidence is never overwritten. The JSON includes SHA-256 values, the loaded BIT/HWH paths and current hashes (plus whether they still match the reviewed manifest), both AFI1/SLCR DMA snapshots, the first 64 RX bytes as sixteen 32-bit RX/Golden words, the first 32 byte mismatches, and even/odd 32-bit word counts with poison-word bytes, zero-word bytes, Golden-matching bytes and mismatching bytes. It also preserves the frame completion registers and Checker snapshots.
+After the `dma-single` Step 2 transfer passes DMA/Checker/Packer completion checks, the runner saves the complete MM2S TX packet (76,832 bytes), complete S2MM RX frame (76,800 bytes), expected Golden (76,800 bytes), and a JSON diagnostic before either buffer is freed, on both PASS and mismatch. A `dma-three` run saves a frame capture when that frame mismatches. Files use a stage/frame-specific name and exclusive creation; existing evidence is never overwritten. The JSON includes SHA-256 values, the loaded BIT/HWH paths and current hashes (plus whether they still match the reviewed manifest), both AFI1/SLCR DMA snapshots, the first 64 RX bytes as sixteen 32-bit RX/Golden words, the first 32 byte mismatches, and even/odd 32-bit word counts with poison-word bytes, zero-word bytes, Golden-matching bytes and mismatching bytes. It also preserves the frame completion registers and Checker snapshots.
 
 Live stages put these files beside their evidence JSON in a `<stage>-diagnostics` directory. Direct `run_frames` callers can pass `diagnostic_dir`; otherwise the manifest's directory gets `mismatch-diagnostics`. Complete TX, RX, Golden and JSON files are flushed, fsynced and readback-hashed before cleanup. If persistence fails, completed buffers are retained in a separate evidence HOLD: the record keeps `dma_may_be_active=false` rather than calling an idle DMA active. No retry, reset or free is allowed until the evidence failure is resolved by an authorized operator. This is distinct from the existing uncertain-DMA HOLD.
 
 ## Offline Gray8 camera adapter
 
-`camera_adapter.py` exposes `gray320x240_to_rgb_packet(gray, frame_id=0)`. It accepts a `uint8` 320×240 matrix, copies `R=G=B=Y`, and reuses `prepare_vectors.make_packet` to emit the existing 230,432-byte packet. `camera_dma_oneshot.py` adds offline `.npy` / `.pgm` / `.png` loading, one-read V4L2 capture, bilinear resize, independent threshold-128 Golden generation, and a separate camera-only DMA guard. Capture/preparation never imports PYNQ or touches MMIO. Its live stage attaches to the existing Overlay and reuses `board_once.run_frames`, AFI1 synchronization, CMA allocation checks and cache synchronization. It requires a matching same-boot `DMA_THREE_PASS` result and exactly one `--execute --authorize-stage camera-dma-single --approve-once` invocation. It saves source/resized Gray8 PGM images, the packet/Golden, PL Binary8 bytes and a PL output PGM. The generated three-entry camera manifest sends only its first frame; the other two consecutive frame IDs are reserved and unrun to satisfy the shared runner's fixed manifest shape.
+`camera_adapter.py` exposes `gray320x240_to_gray_packet(gray, frame_id=0)`. It accepts a `uint8` 320×240 matrix and emits the Gray8 bytes unchanged inside a 76,832-byte packet. `camera_dma_oneshot.py` adds offline `.npy` / `.pgm` / `.png` loading, one-read V4L2 capture, bilinear resize, independent threshold-128 Golden generation, and a separate camera-only DMA guard. Capture/preparation never imports PYNQ or touches MMIO. Its live stage attaches to the existing Overlay and reuses `board_once.run_frames`, AFI1 synchronization, CMA allocation checks and cache synchronization. The existing same-boot `DMA_THREE_PASS` approval is bound to the previous RGB ABI and cannot authorize this candidate. A new BIT/HWH, current SHA-bound manifest, and separately reviewed board authorization are required before any Gray8 live stage. It saves source/resized Gray8 PGM images, the packet/Golden, PL Binary8 bytes and a PL output PGM. The generated three-entry camera manifest sends only its first frame; the other two consecutive frame IDs are reserved and unrun to satisfy the shared runner's fixed manifest shape.
 
 ### OV9281 camera bridge command sequence
 
@@ -184,3 +186,13 @@ The original source-tree and Retry 3 boot bindings remain historical evidence. T
 ```
 
 These tests cover manifest/HWH gates, the real HWH export when present, RX sentinels and cache synchronization, one/three-frame register ordering, CMA range/overlap guards, stage receipts and one-shot guards, process/manager/PYNQ/dmesg audits, and failures with uncertain versus completed DMA state. They do not exercise a physical board or validate a synchronous MMIO call's wall-clock bound.
+
+## Rebind after a board reboot
+
+If the live board's `/proc/sys/kernel/random/boot_id` changed, read the new value and rebuild the offline package so both manifest copies, their package hashes, and the ZIP receipt bind that exact UUID. The command below prints the new `run-manifest.json` SHA-256:
+
+```powershell
+$boot = (ssh xilinx@<PYNQ_IP> 'cat /proc/sys/kernel/random/boot_id').Trim(); $bundle = & python scripts/wo0015/prepare_board_bundle.py --out data/results/wo0015-gray8-baseline-20261027/board-package --replace-existing --boot-id $boot | ConvertFrom-Json; $bundle.manifest_sha256
+```
+
+Pass both `--approved-boot-id $boot` and the printed `--manifest-sha256` to `board_preflight.py`, `board_once.py`, and `run_stream_counter.py`. The reviewed manifest digest is mandatory whenever a dynamic Boot ID is supplied. Run a fresh current-boot Stage 1 Overlay PASS before the stream runner; old one-shot receipts do not carry over to the new boot.

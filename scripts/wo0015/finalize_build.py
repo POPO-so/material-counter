@@ -103,6 +103,15 @@ repo = args.repo.resolve()
 out = args.out.resolve()
 require(out == repo / "data" / "results" / "wo0015-hw-50mhz-20261015",
         "Output path must be the dedicated WO-0015 50 MHz results directory")
+
+
+def repo_relative(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(repo).as_posix()
+    except ValueError as exc:
+        raise RuntimeError(f"Build evidence path must be inside the repository: {path}") from exc
+
+
 reports = out / "reports"
 export = out / "export"
 project = out / "project"
@@ -212,7 +221,10 @@ require(readback_root.get("schema_version") == "1" and "data" in readback_root,
         "Unsupported IP configuration readback evidence schema")
 readback = parse_tcl_dict(readback_root["data"], "data")
 for name, wanted in {
-    "clock_mhz": "50", "packet_bytes": "76800", "packet_beats": "19200",
+    "clock_mhz": "50",
+    "mm2s_payload_bytes": "76800", "mm2s_packet_bytes": "76832",
+    "mm2s_packet_beats": "19208",
+    "s2mm_binary_bytes": "76800", "s2mm_binary_beats": "19200",
     "hp0_memory_width_bits": "64", "hp1_memory_width_bits": "32",
 }.items():
     require(readback.get(name) == wanted,
@@ -369,9 +381,8 @@ axis = {
 }
 
 expected_sources = {
-    "axis_rgb2gray.v": "fpga/rtl/axis_rgb2gray.v",
     "axis_gray2binary.v": "fpga/rtl/axis_gray2binary.v",
-    "axis_dma_rgb_adapter.v": "fpga/experimental/wo0014/axis_dma_rgb_adapter.v",
+    "axis_dma_gray_adapter.v": "fpga/experimental/wo0014/axis_dma_gray_adapter.v",
     "axis_binary_output_checker.v": "fpga/experimental/wo0014/axis_binary_output_checker.v",
     "axis_dma_image_pipeline.v": "fpga/experimental/wo0014/axis_dma_image_pipeline.v",
     "axis_s2mm_frame_packer.v": "fpga/experimental/wo0015/axis_s2mm_frame_packer.v",
@@ -422,7 +433,7 @@ manifest = {
               "memory_master_interfaces": memory_master_interfaces},
     "hp1_fabric_parameters": fabric_parameters,
     "ip_config_readback": {
-        "path": str(readback_file), "bytes": readback_file.stat().st_size,
+        "path": repo_relative(readback_file), "bytes": readback_file.stat().st_size,
         "sha256": sha256(readback_file), "hp1_auto_pc_interfaces": hp1_auto_pc_readback,
     },
     "hwh_axi_interfaces": axi_interfaces,
@@ -431,9 +442,9 @@ manifest = {
     "hwh_clock_connections": clock_connections,
     "hwh_reset_connections": reset_connections,
     "hwh_axis_interfaces": axis,
-    "bit": {"path": str(bit), "bytes": bit.stat().st_size, "sha256": sha256(bit)},
-    "hwh": {"path": str(hwh), "bytes": hwh.stat().st_size, "sha256": sha256(hwh)},
-    "vivado_native_log": {"path": str(native_log), "bytes": native_log.stat().st_size,
+    "bit": {"path": repo_relative(bit), "bytes": bit.stat().st_size, "sha256": sha256(bit)},
+    "hwh": {"path": repo_relative(hwh), "bytes": hwh.stat().st_size, "sha256": sha256(hwh)},
+    "vivado_native_log": {"path": repo_relative(native_log), "bytes": native_log.stat().st_size,
                           "sha256": sha256(native_log)},
     "implemented_timing": timing_values,
     "drc_severity_counts": drc_severity,
@@ -458,7 +469,7 @@ summary = {
     "drc_severity_counts": drc_severity,
     "methodology_severity_counts": methodology_severity,
     "board_tested": False,
-    "pair_manifest": str(manifest_path),
+    "pair_manifest": repo_relative(manifest_path),
 }
 summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 print(json.dumps(summary, indent=2))

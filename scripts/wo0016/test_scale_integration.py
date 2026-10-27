@@ -50,8 +50,8 @@ def test_all_gray_values_match_fixed_pl_at_configured_threshold(threshold):
     gray = np.zeros((240, 320), np.uint8)
     gray[40, :256] = values
     packet = lighting.encode(gray, threshold=threshold)
-    pixels = packet[16:-16].reshape(240, 320, 3)
-    np.testing.assert_array_equal(pixels[40, :256, 0] >= 128, values > threshold)
+    pixels = packet[16:-16].reshape(240, 320)
+    np.testing.assert_array_equal(pixels[40, :256] >= 128, values > threshold)
     np.testing.assert_array_equal(gray[40, :256], values)
 
 
@@ -76,7 +76,7 @@ def test_runtime_packet_encoders_bind_one_threshold_without_global_mutation():
     output = np.empty_like(packet)
     encode_into(gray, output)
     np.testing.assert_array_equal(packet, output)
-    np.testing.assert_array_equal(packet[16:-16].reshape(240, 320, 3)[40, :256, 0] >= 128,
+    np.testing.assert_array_equal(packet[16:-16].reshape(240, 320)[40, :256] >= 128,
                                   np.arange(256) > 180)
     assert lighting.THRESHOLD == 100
 

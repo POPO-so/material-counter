@@ -1194,7 +1194,7 @@ class MockBoardAPI:
             return
         if offset == DMA_MM2S_LENGTH:
             if value != preflight.TX_BYTES:
-                raise AssertionError("MM2S length is not 230432 bytes")
+                raise AssertionError(f"MM2S length is not {preflight.TX_BYTES} bytes")
             self._dma[offset] = value
             self._complete_mock_frame()
             return
@@ -1627,10 +1627,13 @@ def _post_stage_audit(api: Any, plan: preflight.ValidatedRun,
 
 
 def _runtime_preflight(plan: preflight.ValidatedRun, *, boot_id_path: str,
-                       meminfo_path: str, reserved_memory_path: str, stage: str
+                       meminfo_path: str, reserved_memory_path: str, stage: str,
+                       approved_boot_id: str | None = None
                        ) -> tuple[str, dict[str, int], tuple[tuple[int, int], ...], dict[str, Any]]:
     live_boot_id = preflight.read_boot_id(boot_id_path)
-    if live_boot_id != plan.boot_id or live_boot_id != preflight.AUTHORIZED_BOOT_ID:
+    approved = (preflight.AUTHORIZED_BOOT_ID if approved_boot_id is None else
+                preflight._require_boot_id(approved_boot_id, "approved boot_id"))
+    if live_boot_id != plan.boot_id or live_boot_id != approved:
         raise preflight.PreflightError("live boot_id differs from the manifest and approved WO-0015 boot")
     meminfo = preflight.read_cma_meminfo(meminfo_path)
     cma_admission = preflight.read_cma_admission(reserved_memory_path, meminfo=meminfo)
@@ -1662,8 +1665,11 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0015 offline-first one-shot PS executor")
     parser.add_argument("--mode", choices=("offline", "mock", "overlay-only", "dma-single", "dma-three"),
                         default="offline")
-    parser.add_argument("--manifest", required=True, help="reviewed WO-0015 run manifest")
+    parser.add_argument("--manifest", default=preflight.DEFAULT_RUN_MANIFEST,
+                        help="reviewed WO-0015 run manifest (defaults to the Gray8 active baseline)")
     parser.add_argument("--manifest-sha256", help="separately reviewed manifest SHA-256")
+    parser.add_argument("--approved-boot-id",
+                        help="explicit current board Boot ID; requires a reviewed manifest SHA-256")
     parser.add_argument("--execute", action="store_true", help="required for real board access")
     parser.add_argument("--authorize-stage", choices=preflight.BOARD_STAGES,
                         help="name the exact authorized stage: overlay-only, dma-single, or dma-three")
@@ -1676,16 +1682,19 @@ def _parser() -> argparse.ArgumentParser:
 
 def _overlay_stage(plan: preflight.ValidatedRun, live_boot_id: str,
                    evidence_path: str | None,
-                   runtime_snapshot: Mapping[str, Any] | None = None) -> dict[str, Any]:
+                   runtime_snapshot: Mapping[str, Any] | None = None, *,
+                   approved_boot_id: str | None = None) -> dict[str, Any]:
     _assert_no_terminal_failure()
-    preflight.validate_manifest(plan.manifest_path, plan.manifest_sha256)
+    preflight.validate_manifest(plan.manifest_path, plan.manifest_sha256,
+                                approved_boot_id=approved_boot_id)
     api = PynqBoardAPI(plan, stage="overlay-only")
     before = dict(runtime_snapshot or api.audit_environment(
         require_empty_shutdown=True, require_loaded_bit=False))
     if before.get("boot_id") != live_boot_id or live_boot_id != plan.boot_id:
         raise preflight.PreflightError("overlay stage boot_id differs from its audited run identity")
     preflight.claim_once_guard(_guard_path("overlay-only"), boot_id=live_boot_id,
-                               manifest_sha256=plan.manifest_sha256, stage="overlay-only")
+                               manifest_sha256=plan.manifest_sha256, stage="overlay-only",
+                               approved_boot_id=approved_boot_id)
     try:
         afi_before = read_afi1_snapshot(api, "before_overlay_load")
         api.load_overlay()
@@ -1728,14 +1737,16 @@ def _overlay_stage(plan: preflight.ValidatedRun, live_boot_id: str,
 def _dma_stage(plan: preflight.ValidatedRun, live_boot_id: str, stage: str,
                evidence_path: str | None, timeout_s: float,
                cma_ranges: tuple[tuple[int, int], ...] | None = None,
-               runtime_snapshot: Mapping[str, Any] | None = None) -> dict[str, Any]:
+               runtime_snapshot: Mapping[str, Any] | None = None, *,
+               approved_boot_id: str | None = None) -> dict[str, Any]:
     _validate_timeout(timeout_s)
     _assert_no_terminal_failure()
     if stage not in ("dma-single", "dma-three"):
         raise preflight.PreflightError(f"invalid DMA stage {stage!r}")
     if len(plan.frames) != 3:
         raise preflight.PreflightError("DMA stages require the shared three-frame manifest")
-    preflight.validate_manifest(plan.manifest_path, plan.manifest_sha256)
+    preflight.validate_manifest(plan.manifest_path, plan.manifest_sha256,
+                                approved_boot_id=approved_boot_id)
     require_overlay_pass_receipt(OVERLAY_PASS_RECEIPT, plan)
     if stage == "dma-three":
         require_dma_single_pass_receipt(DMA_SINGLE_PASS_RECEIPT, plan)
@@ -1747,7 +1758,8 @@ def _dma_stage(plan: preflight.ValidatedRun, live_boot_id: str, stage: str,
     if before.get("boot_id") != live_boot_id or live_boot_id != plan.boot_id:
         raise preflight.PreflightError(f"{stage} boot_id differs from its audited run identity")
     preflight.claim_once_guard(_guard_path(stage), boot_id=live_boot_id,
-                               manifest_sha256=plan.manifest_sha256, stage=stage)
+                               manifest_sha256=plan.manifest_sha256, stage=stage,
+                               approved_boot_id=approved_boot_id)
     try:
         api.open_mmio()  # Attach to the already loaded BIT; never construct/download Overlay here.
         afi1_snapshots = [read_afi1_snapshot(api, "pre_dma_afi1_sync")]
@@ -1846,7 +1858,8 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
         _validate_timeout(args.timeout_s)
-        plan = preflight.validate_manifest(args.manifest, args.manifest_sha256)
+        plan = preflight.validate_manifest(args.manifest, args.manifest_sha256,
+                                           approved_boot_id=args.approved_boot_id)
         if args.mode == "offline":
             _emit({
                 "task": "WO-0015", "status": "OFFLINE_PREFLIGHT_PASS",
@@ -1881,6 +1894,7 @@ def main(argv: list[str] | None = None) -> int:
             expected_manifest_sha256=args.manifest_sha256,
             boot_id=plan.boot_id,
             ready_for_board=plan.ready_for_board,
+            approved_boot_id=args.approved_boot_id,
         )
         _assert_no_terminal_failure()
         live_boot_id, meminfo, cma_ranges, runtime_snapshot = _runtime_preflight(
@@ -1889,19 +1903,22 @@ def main(argv: list[str] | None = None) -> int:
             meminfo_path="/proc/meminfo",
             reserved_memory_path="/proc/device-tree/reserved-memory",
             stage=args.mode,
+            approved_boot_id=args.approved_boot_id,
         )
         if meminfo["CmaFree"] < preflight.MIN_CMA_KIB:
             raise preflight.PreflightError(
                 "CmaFree is below the static two-buffer CMA minimum before this stage"
             )
         if args.mode == "overlay-only":
-            _overlay_stage(plan, live_boot_id, args.evidence_json, runtime_snapshot)
+            _overlay_stage(plan, live_boot_id, args.evidence_json, runtime_snapshot,
+                           approved_boot_id=args.approved_boot_id)
             return 0
         if args.mode in ("dma-single", "dma-three"):
             result = _dma_stage(plan, live_boot_id, args.mode,
                                 args.evidence_json, args.timeout_s,
                                 cma_ranges=cma_ranges,
-                                runtime_snapshot=runtime_snapshot)
+                                runtime_snapshot=runtime_snapshot,
+                                approved_boot_id=args.approved_boot_id)
             expected_status = "DMA_SINGLE_PASS" if args.mode == "dma-single" else "DMA_THREE_PASS"
             return 0 if result["status"] == expected_status else 2
         raise preflight.PreflightError(f"unsupported mode {args.mode!r}")

@@ -18,6 +18,54 @@ import board_once as runner
 from test_board_preflight import make_manifest, sha256
 
 
+def test_board_once_defaults_to_the_gray8_active_baseline():
+    args = runner._parser().parse_args([])
+    assert Path(args.manifest).resolve() == preflight.DEFAULT_RUN_MANIFEST.resolve()
+    assert preflight.DEFAULT_RUN_MANIFEST.is_file()
+
+
+def test_board_once_parser_exposes_explicit_approved_boot_id():
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    args = runner._parser().parse_args(["--approved-boot-id", boot])
+    assert args.approved_boot_id == boot
+
+
+def test_runtime_preflight_requires_explicit_rebound_boot(monkeypatch, tmp_path):
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    plan, _ = _plan(tmp_path)
+    plan_values = vars(plan).copy()
+    plan_values["boot_id"] = boot
+    plan = types.SimpleNamespace(**plan_values)
+    meminfo = {"CmaFree": preflight.MIN_CMA_KIB, "CmaTotal": 131072}
+    admission = types.SimpleNamespace(ranges=((0x100000, 0x20000000),),
+                                      as_evidence=lambda: {"status": "test"})
+
+    class API:
+        def __init__(self, *args, **kwargs):
+            pass
+        def audit_environment(self, **kwargs):
+            return {"boot_id": boot}
+
+    monkeypatch.setattr(preflight, "read_boot_id", lambda _path: boot)
+    monkeypatch.setattr(preflight, "read_cma_meminfo", lambda _path: meminfo)
+    monkeypatch.setattr(preflight, "read_cma_admission", lambda _path, *, meminfo: admission)
+    monkeypatch.setattr(preflight, "validate_runtime_cma", lambda *args: None)
+    monkeypatch.setattr(runner, "PynqBoardAPI", API)
+
+    with pytest.raises(preflight.PreflightError, match="approved WO-0015 boot"):
+        runner._runtime_preflight(
+            plan, boot_id_path="boot", meminfo_path="meminfo",
+            reserved_memory_path="reserved", stage="overlay-only",
+        )
+
+    result = runner._runtime_preflight(
+        plan, boot_id_path="boot", meminfo_path="meminfo",
+        reserved_memory_path="reserved", stage="overlay-only",
+        approved_boot_id=boot,
+    )
+    assert result[0] == boot
+
+
 def test_readonly_dma_status_addresses_are_whitelisted_without_write_access():
     values = {
         preflight.DMA_BASE + runner.DMA_MM2S_DMASR: 0x1,

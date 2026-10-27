@@ -115,12 +115,11 @@ try {
     if {$wo15_board_paths_changed} {set_param board.repoPaths $wo15_board_paths_before}
 }
 
-# These are the five WO-0014 processing RTL sources plus the WO-0015 packer
-# and wrapper. The old WO-0014 BD wrapper is deliberately excluded.
+# These are the Gray8 WO-0014 processing RTL sources plus the WO-0015 packer
+# and wrapper. The old WO-0014 BD wrapper and RGB2Gray stage are excluded.
 set wo15_sources {
-    fpga/rtl/axis_rgb2gray.v
     fpga/rtl/axis_gray2binary.v
-    fpga/experimental/wo0014/axis_dma_rgb_adapter.v
+    fpga/experimental/wo0014/axis_dma_gray_adapter.v
     fpga/experimental/wo0014/axis_binary_output_checker.v
     fpga/experimental/wo0014/axis_dma_image_pipeline.v
     fpga/experimental/wo0015/axis_s2mm_frame_packer.v
@@ -252,7 +251,9 @@ foreach {name width protocol} {
 dict set interface_readback image_pipeline/m_axis [wo15_check_axis_interface image_pipeline/m_axis 4]
 dict set interface_readback axi_dma_0/S_AXIS_S2MM [wo15_check_axis_interface axi_dma_0/S_AXIS_S2MM 4]
 
-set readback [dict create clock_mhz 50 packet_bytes 76800 packet_beats 19200 \
+set readback [dict create clock_mhz 50 \
+    mm2s_payload_bytes 76800 mm2s_packet_bytes 76832 mm2s_packet_beats 19208 \
+    s2mm_binary_bytes 76800 s2mm_binary_beats 19200 \
     hp0_memory_width_bits 64 hp1_memory_width_bits 32 dma_params [dict create]]
 foreach key {c_include_sg c_include_mm2s c_include_s2mm c_micro_dma c_sg_length_width c_addr_width \
              c_m_axi_mm2s_data_width c_m_axis_mm2s_tdata_width c_include_mm2s_dre c_mm2s_burst_size \

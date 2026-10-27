@@ -1,35 +1,50 @@
 # 02 · 接口契约（唯一真理）
 
-> **★ 本文件是唯一真理。任何接口变更必须走 PR + 三人确认 + 一次 ADR。**
-> 来源：MASTER_PLAN.md v1.1 §2.4 及当前 Controlled Errata。冻结于 Day 0，**三人签字后生效**。
+> **★ 本文件是接口定义的唯一真理。后续接口变更仍须走 PR + 三人确认 + 一次 ADR。**
+> 接口 A 本次 Gray8 冻结依据项目负责人于 2026-10-27 的明确批准，详见 ADR-0004。
 
 ## 状态
 
 | 项 | 状态 |
 |---|---|
 | 起草 | Day 0 |
-| 三人签字 | **待完成 —— G0（Day 2）判据** |
-| 接口 A 的最终冻结 | **待 C2（HDMI IN 接入判定）结论** |
+| 接口 A Gray8 协议 | **Frozen / Active Baseline —— ADR-0004，2026-10-27** |
+| 硬件实现 | Vivado 2026.1 build / implementation 通过；离线证据已归档 |
+| 板端验收 | **未运行；不得表述为板端通过** |
+| 输入源路线 | 摄像头与回放源接入保持开放，不由本协议冻结 |
+
+### Gray8 Active Baseline 验证记录（2026-10-27）
+
+- Vivado/XSim 2026.1：Gray8 端到端 suite 通过。单帧输出为 76,800 B；C 类三帧运行累计 230,400 B。A/B/C 有效帧及随机反压向量共 6 次运行，均与 Golden bit-exact（`mismatch_bytes=0`）；短包、长包、校验错误、复位中止、packer 与 wrapper guard 均通过。
+- Vivado 2026.1：PYNQ-Z2 `xc7z020clg400-1`、50 MHz 构建和导出通过；实现时序 WNS **8.160 ns**、TNS **0 ns**、WHS **0.014 ns**，setup/hold/pulse-width failing endpoints 均为 0；DRC Error/Critical Warning 均为 0。
+- 正式工件：[wo15.bit](../data/results/wo0015-gray8-baseline-20261027/export/wo15.bit)（SHA-256 `dfe50c82731139c59f71b22386187bf39012ff1dd2ccd2efe1f5d9489e486d56`）、[wo15.hwh](../data/results/wo0015-gray8-baseline-20261027/export/wo15.hwh)（SHA-256 `844af1c52c5f5b4a290501952206ce1d2e52157c9447aca8ed8cf1c97a9f2cb7`）、[pair-manifest.json](../data/results/wo0015-gray8-baseline-20261027/export/pair-manifest.json)。实现报告和绑定日志位于同一 baseline 目录的 `reports/` 与根目录。
+- 默认板端运行包：[run-manifest.json](../data/results/wo0015-gray8-baseline-20261027/board-package/run-manifest.json)，SHA-256 `df769072750cbe7f2674b6473be95797127f840fb61c6a2feb6dc9153793a64d`。硬件执行仍需单独复核并显式提供该 SHA。
+- 可复核的 XSim 输入、输出、结果 JSON 与日志位于 [xsim-final](../data/results/wo0015-gray8-baseline-20261027/xsim-final/)。板端部署与验收尚未运行。
 
 ---
 
-## 接口 A · 视频流（源 → PL 流水线）
+## 接口 A · 视频流（PS MM2S 包 → PL 流水线）
 
 | 信号 | 宽度 | 含义 |
 |---|---|---|
-| TDATA | 24 bit (RGB888) | 源侧像素格式 |
-| TUSER[0] | 1 | SOF（帧首） |
-| TLAST | 1 | 行末 |
-| TVALID / TREADY | 1 / 1 | **必须严格实现反压** |
+| MM2S TDATA | 32 bit | 一个 beat 按 Little-Endian 顺序装入 4 个连续 Gray8 像素（byte 0 → byte 3） |
+| MM2S TKEEP | 4 bit | 320×240 目标帧的 header、payload、footer beat 均为 `4'hf` |
+| MM2S TLAST | 1 | 只在包尾 footer 第四个 word 置位；不是像素行末 |
+| MM2S TVALID / TREADY | 1 / 1 | **必须严格实现反压** |
+| PL Gray8 stream TDATA | 8 bit | 解包后每次传一个 Gray8 像素 |
+| PL Gray8 stream TUSER[0] | 1 | 第一像素的 SOF |
+| PL Gray8 stream TLAST | 1 | 每行最后一个像素的 EOL |
 
+- Header：4 个 32-bit little-endian words，依次为 `0x574f3134`、`(HEIGHT<<16)|WIDTH`、payload 字节数、`frame_id`。
+- Payload：**76,800 B Gray8**，行优先连续排列；每行 320 像素，4 像素正好组成一个 MM2S beat。
+- Footer：4 个 32-bit words，依次为 `0x454e4434`、`frame_id`、payload 所有 Gray8 字节和的低 32 位、`0xc0dec014`；只在最后一个 word 上置 MM2S TLAST。
+- 总包长：**76,832 B / 19,208 个 32-bit beats**。PL 输出 Binary8 继续为 **76,800 B / 19,200 个 32-bit S2MM beats**。
 - 处理分辨率：**320×240 @ ≥30fps**（第一版，`[Target]`）；640×480 作为 stretch
 - 像素时钟：100 MHz
 
-> **★ 像素格式约定**：源接口按 **RGB888** 定义；**PL 内部第一级（rgb2gray）的输出即 Gray8**。
-> 24 bit 只在源到 rgb2gray 之间这一小段存在。这决定压缩比公式中 `bytes_per_pixel` 取 3 还是 1
-> —— **两个数都算，答辩给 Gray8 基准（保守、诚实）**。
+> **★ Active 路径**：`axis_dma_gray_adapter` 校验包并从每个 32-bit payload word 按 byte 0 → byte 3 输出 4 个 Gray8 像素，随后直连 `axis_gray2binary`。PL 路径不实例化 `axis_rgb2gray`；WO-0015 S2MM frame packer 的 Binary8 输出格式不变。
 >
-> **待定**：具体的源侧接口参数取决于 C2（HDMI IN）与 C3（引脚预算）的实测结论。
+> **待定**：Gray8 源数据的具体摄像头/回放接入方式仍取决于 C2（HDMI IN）与 C3（引脚预算）的实测结论；本协议修订本身未冻结视频源路线。
 
 ---
 

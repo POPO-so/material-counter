@@ -110,7 +110,7 @@ def _packet(frame_id: int, *, checkerboard: bool = True) -> tuple[bytes, bytes]:
     for index in range(pixels):
         white = checkerboard and ((index + frame_id) & 1) == 0
         value = 255 if white else 0
-        payload.extend((value, value, value))
+        payload.append(value)
         binary.append(value)
     header = struct.pack("<IIII", preflight.PACKET_MAGIC,
                          (preflight.HEIGHT << 16) | preflight.WIDTH,
@@ -207,7 +207,7 @@ def test_valid_manifest_checks_bit_hwh_packet_golden_and_1_or_3_frame_contract(t
     assert plan.dma_base == 0x40400000
     assert plan.checker_base == 0x43C20000
     assert [frame.frame_id for frame in plan.frames] == [1, 2, 3]
-    assert all(len(frame.packet) == 230432 for frame in plan.frames)
+    assert all(len(frame.packet) == preflight.TX_BYTES == 76832 for frame in plan.frames)
     assert all(len(frame.binary) == 76800 for frame in plan.frames)
 
 
@@ -234,6 +234,50 @@ def test_new_boot_requires_explicit_approved_boot_and_pinned_manifest(tmp_path):
                                     approved_boot_id="00000000-0000-0000-0000-000000000000")
 
 
+def test_board_authorization_accepts_rebound_boot_only_with_explicit_pin(tmp_path):
+    path, manifest = make_manifest(tmp_path, frame_count=3)
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    manifest["boot_id"] = boot
+    _write_manifest(path, manifest)
+    digest = file_sha256(path)
+    plan = preflight.validate_manifest(path, digest, approved_boot_id=boot)
+
+    with pytest.raises(preflight.PreflightError, match="approved boot"):
+        preflight.require_board_authorization(
+            execute=True, stage="dma-single", authorize_stage="dma-single",
+            approve_once=True, manifest_sha256=digest,
+            expected_manifest_sha256=digest, boot_id=plan.boot_id,
+        )
+
+    preflight.require_board_authorization(
+        execute=True, stage="dma-single", authorize_stage="dma-single",
+        approve_once=True, manifest_sha256=digest,
+        expected_manifest_sha256=digest, boot_id=plan.boot_id,
+        approved_boot_id=boot,
+    )
+
+
+def test_once_guard_accepts_rebound_boot_only_with_explicit_pin(tmp_path):
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    with pytest.raises(preflight.PreflightError, match="unapproved boot_id"):
+        preflight.claim_once_guard(
+            tmp_path / "missing-pin.json", boot_id=boot,
+            manifest_sha256="a" * 64, stage="overlay-only",
+        )
+
+    receipt = preflight.claim_once_guard(
+        tmp_path / "pinned.json", boot_id=boot, approved_boot_id=boot,
+        manifest_sha256="a" * 64, stage="overlay-only",
+    )
+    assert receipt["boot_id"] == boot
+
+
+def test_preflight_cli_exposes_explicit_approved_boot_id():
+    boot = "35983d66-bb1d-4a8a-85e5-802170825515"
+    args = preflight._parser().parse_args(["--approved-boot-id", boot])
+    assert args.approved_boot_id == boot
+
+
 def test_s2mm_disabled_in_hwh_is_rejected_even_when_hwh_hash_matches(tmp_path):
     manifest_path, manifest = make_manifest(tmp_path, frame_count=1)
     hwh_path = tmp_path / manifest["hwh_path"]
@@ -245,7 +289,7 @@ def test_s2mm_disabled_in_hwh_is_rejected_even_when_hwh_hash_matches(tmp_path):
         preflight.validate_manifest(manifest_path)
 
 
-def test_binary_golden_must_match_independent_rgb_conversion(tmp_path):
+def test_binary_golden_must_match_independent_gray8_conversion(tmp_path):
     manifest_path, manifest = make_manifest(tmp_path, frame_count=1)
     binary_path = tmp_path / manifest["frames"][0]["binary_path"]
     corrupted = bytearray(binary_path.read_bytes())
@@ -408,10 +452,18 @@ def test_kernel_log_delta_requires_continuity_and_rejects_new_health_errors():
 
 
 def test_real_generated_wo15_hwh_passes_offline_when_present():
-    path = (HERE.parents[1] / "data/results/wo0015-hw-50mhz-20261015/export/wo15.hwh")
+    path = (HERE.parents[1] / "data/results/wo0015-gray8-baseline-20261027/export/wo15.hwh")
     if not path.is_file():
-        pytest.skip("real generated HWH is not included in this checkout")
+        pytest.skip("active Gray8 HWH is not included in this checkout")
     preflight.validate_hwh(path)
+
+
+def test_default_manifest_is_the_gray8_active_baseline():
+    expected = (HERE.parents[1] /
+                "data/results/wo0015-gray8-baseline-20261027/board-package/run-manifest.json").resolve()
+    args = preflight._parser().parse_args([])
+    assert Path(args.manifest).resolve() == expected
+    assert expected.is_file()
 
 
 def test_board_preflight_cli_is_offline_and_does_not_import_pynq(tmp_path, monkeypatch):

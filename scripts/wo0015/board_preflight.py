@@ -23,8 +23,8 @@ from typing import Any, Mapping
 WIDTH = 320
 HEIGHT = 240
 PIXEL_COUNT = WIDTH * HEIGHT
-RGB_PAYLOAD_BYTES = PIXEL_COUNT * 3
-TX_BYTES = 230432
+PAYLOAD_BYTES = PIXEL_COUNT
+TX_BYTES = 16 + PAYLOAD_BYTES + 16
 RX_BYTES = PIXEL_COUNT
 TX_BEATS = TX_BYTES // 4
 RX_BEATS = RX_BYTES // 4
@@ -42,6 +42,24 @@ EXPECTED_DDR_RANGE = (0, 0x20000000)
 PAGE_BYTES = 4096
 MIN_CMA_KIB = ((TX_BYTES + PAGE_BYTES - 1) // PAGE_BYTES +
                (RX_BYTES + PAGE_BYTES - 1) // PAGE_BYTES) * PAGE_BYTES // 1024
+DEFAULT_RUN_MANIFEST_REL = Path(
+    "data/results/wo0015-gray8-baseline-20261027/board-package/run-manifest.json"
+)
+
+
+def _default_run_manifest() -> Path:
+    # A packaged board copy keeps its manifest beside the executor scripts;
+    # a separate PS package may keep it in the package root beside `wo0015/`.
+    script_dir = Path(__file__).resolve().parent
+    for local_manifest in (script_dir / "run-manifest.json",
+                           script_dir.parent / "run-manifest.json"):
+        if local_manifest.is_file():
+            return local_manifest
+    # The repository checkout resolves the canonical, versioned baseline.
+    return Path(__file__).resolve().parents[2] / DEFAULT_RUN_MANIFEST_REL
+
+
+DEFAULT_RUN_MANIFEST = _default_run_manifest()
 DEFAULT_GUARD_DIR = Path("/var/lib/wo0015-s2mm")
 
 _MANIFEST_KEYS = {
@@ -73,6 +91,7 @@ _CONTRACT_VALUES = {
     "checker_signature": PACKET_MAGIC,
     "packer_signature": PACKER_SIGNATURE,
 }
+_BOOT_ID_PATTERN = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 
 
 class PreflightError(RuntimeError):
@@ -143,6 +162,12 @@ def _require_digest(value: Any, field: str) -> str:
             any(ch not in "0123456789abcdef" for ch in value.lower())):
         raise PreflightError(f"{field} must be a 64-character SHA-256 hex digest")
     return value.lower()
+
+
+def _require_boot_id(value: Any, field: str = "boot_id") -> str:
+    if not isinstance(value, str) or _BOOT_ID_PATTERN.fullmatch(value) is None:
+        raise PreflightError(f"{field} must be a lowercase canonical UUID")
+    return value
 
 
 def _resolve_file(base_dir: Path, value: Any, field: str) -> Path:
@@ -321,14 +346,8 @@ def validate_hwh(path: str | Path) -> None:
 
 
 def _expected_binary(packet: bytes) -> bytes:
-    payload = packet[16:16 + RGB_PAYLOAD_BYTES]
-    binary = bytearray(PIXEL_COUNT)
-    for pixel in range(PIXEL_COUNT):
-        offset = pixel * 3
-        red, green, blue = payload[offset:offset + 3]
-        gray = (77 * red + 150 * green + 29 * blue) // 256
-        binary[pixel] = 0xFF if gray >= 128 else 0x00
-    return bytes(binary)
+    payload = packet[16:16 + PAYLOAD_BYTES]
+    return bytes(0xFF if gray >= 128 else 0x00 for gray in payload)
 
 
 def _validate_packet(packet: bytes, frame_id: int) -> int:
@@ -339,17 +358,17 @@ def _validate_packet(packet: bytes, frame_id: int) -> int:
         raise PreflightError(f"frame {frame_id} packet header magic is invalid")
     if geometry != (HEIGHT << 16) | WIDTH:
         raise PreflightError(f"frame {frame_id} packet geometry is not 320x240")
-    if payload_length != RGB_PAYLOAD_BYTES:
-        raise PreflightError(f"frame {frame_id} packet RGB payload length is invalid")
+    if payload_length != PAYLOAD_BYTES:
+        raise PreflightError(f"frame {frame_id} packet Gray8 payload length is invalid")
     if packet_frame_id != frame_id:
         raise PreflightError(f"frame {frame_id} packet header ID does not match manifest")
     trailer_magic, trailer_id, payload_sum, end_marker = struct.unpack_from(
-        "<IIII", packet, 16 + RGB_PAYLOAD_BYTES)
-    payload = packet[16:16 + RGB_PAYLOAD_BYTES]
+        "<IIII", packet, 16 + PAYLOAD_BYTES)
+    payload = packet[16:16 + PAYLOAD_BYTES]
     if trailer_magic != TRAILER_MAGIC or trailer_id != frame_id or end_marker != TRAILER_END:
         raise PreflightError(f"frame {frame_id} packet trailer is invalid")
     if payload_sum != sum(payload) & 0xFFFFFFFF:
-        raise PreflightError(f"frame {frame_id} packet RGB checksum is invalid")
+        raise PreflightError(f"frame {frame_id} packet Gray8 checksum is invalid")
     return sum(packet) & 0xFFFFFFFF
 
 
@@ -379,7 +398,7 @@ def _validate_contract(manifest: Mapping[str, Any]) -> tuple[tuple[int, int], tu
 def validate_manifest(path: str | Path,
                       expected_manifest_sha256: str | None = None, *,
                       approved_boot_id: str | None = None) -> ValidatedRun:
-    """Validate one or three fixed RGB→Binary8 frames and all bound artifacts."""
+    """Validate one or three fixed Gray8→Binary8 frames and bound artifacts."""
     manifest_path = Path(path).expanduser().resolve()
     try:
         raw = manifest_path.read_bytes()
@@ -403,9 +422,12 @@ def validate_manifest(path: str | Path,
         raise PreflightError("manifest is not the WO-0015 S2MM Binary8 frame-return stage")
     if not isinstance(manifest["build_id"], str) or not manifest["build_id"].strip():
         raise PreflightError("manifest build_id must be non-empty")
+    manifest_boot_id = _require_boot_id(manifest["boot_id"], "manifest boot_id")
     if approved_boot_id is not None and expected_manifest_sha256 is None:
         raise PreflightError("explicit approved boot requires a pinned manifest SHA-256")
-    if manifest["boot_id"] != (AUTHORIZED_BOOT_ID if approved_boot_id is None else approved_boot_id):
+    approved = (AUTHORIZED_BOOT_ID if approved_boot_id is None else
+                _require_boot_id(approved_boot_id, "approved boot_id"))
+    if manifest_boot_id != approved:
         raise PreflightError("manifest boot_id differs from the approved boot")
     if manifest["part"] != EXPECTED_PART or type(manifest["clock_mhz"]) is not int \
             or manifest["clock_mhz"] != 50:
@@ -517,7 +539,8 @@ def require_board_authorization(*, execute: bool, stage: str,
                                 authorize_stage: str | None, approve_once: bool,
                                 manifest_sha256: str | None,
                                 expected_manifest_sha256: str | None,
-                                boot_id: str, ready_for_board: bool = True) -> None:
+                                boot_id: str, ready_for_board: bool = True,
+                                approved_boot_id: str | None = None) -> None:
     """Fail closed unless the exact hardware stage is explicitly authorized once."""
     if execute is not True:
         raise PreflightError("board access requires --execute")
@@ -531,8 +554,10 @@ def require_board_authorization(*, execute: bool, stage: str,
     actual = _require_digest(manifest_sha256, "manifest SHA-256")
     if actual != wanted:
         raise PreflightError("manifest SHA-256 does not match the separately reviewed digest")
-    if boot_id != AUTHORIZED_BOOT_ID:
-        raise PreflightError("live boot_id differs from the one approved for WO-0015")
+    approved = (AUTHORIZED_BOOT_ID if approved_boot_id is None else
+                _require_boot_id(approved_boot_id, "approved boot_id"))
+    if _require_boot_id(boot_id, "live boot_id") != approved:
+        raise PreflightError("live boot_id differs from the explicitly approved boot")
     if ready_for_board is not True:
         raise PreflightError("manifest is not marked ready_for_board")
 
@@ -984,9 +1009,12 @@ def validate_dma_buffer_pair(*, tx_address: int, tx_size: int,
 
 def claim_once_guard(path: str | Path, *, boot_id: str,
                      manifest_sha256: str, stage: str,
+                     approved_boot_id: str | None = None,
                      clock_mhz: int = 50) -> dict[str, Any]:
     """Atomically consume this WO-0015 stage guard; there is deliberately no reset."""
-    if boot_id != AUTHORIZED_BOOT_ID:
+    approved = (AUTHORIZED_BOOT_ID if approved_boot_id is None else
+                _require_boot_id(approved_boot_id, "approved boot_id"))
+    if _require_boot_id(boot_id, "live boot_id") != approved:
         raise PreflightError("refusing to claim WO-0015 guard for an unapproved boot_id")
     manifest_sha = _require_digest(manifest_sha256, "manifest SHA-256")
     if clock_mhz != 50:
@@ -1041,8 +1069,11 @@ def _emit(result: Mapping[str, Any], output: str | None) -> None:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="WO-0015 offline artifact and HWH preflight")
-    parser.add_argument("--manifest", required=True, help="reviewed WO-0015 run manifest")
+    parser.add_argument("--manifest", default=DEFAULT_RUN_MANIFEST,
+                        help="reviewed WO-0015 run manifest (defaults to the Gray8 active baseline)")
     parser.add_argument("--manifest-sha256", help="optional separately reviewed manifest digest")
+    parser.add_argument("--approved-boot-id",
+                        help="explicit current board Boot ID; requires --manifest-sha256")
     parser.add_argument("--evidence-json", help="write the offline preflight result to this path")
     return parser
 
@@ -1050,7 +1081,8 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        plan = validate_manifest(args.manifest, args.manifest_sha256)
+        plan = validate_manifest(args.manifest, args.manifest_sha256,
+                                 approved_boot_id=args.approved_boot_id)
     except (OSError, ValueError, PreflightError) as exc:
         _emit({
             "task": "WO-0015",

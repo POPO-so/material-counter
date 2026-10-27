@@ -1,16 +1,16 @@
 `timescale 1ns/1ps
 
 // Offline self-check for the AXI-Lite wrapper. The default 5x3 geometry
-// exercises the tail TKEEP path and packet recovery without external files.
+// exercises the Gray8 tail TKEEP path and packet recovery without external files.
 // For the 320x240 replay, elaborate with WIDTH=320 / HEIGHT=240 and pass the
-// existing five-byte beat stream and two-byte golden output via +INPUT/+EXPECTED.
+// packed Gray8 five-byte beat-record stream and Binary8 Golden via +INPUT/+EXPECTED.
 module tb_axis_dma_image_pipeline_bd #(
     parameter integer WIDTH = 5,
     parameter integer HEIGHT = 3,
     parameter integer THRESHOLD = 128
 );
     localparam integer PIXELS = WIDTH * HEIGHT;
-    localparam integer PAYLOAD_BYTES = PIXELS * 3;
+    localparam integer PAYLOAD_BYTES = PIXELS;
     localparam integer MAX_WAIT_CYCLES = (WIDTH * HEIGHT * 6) + 100000;
     localparam integer MAX_AXI_WAIT_CYCLES = 1000;
 
@@ -100,16 +100,15 @@ module tb_axis_dma_image_pipeline_bd #(
 
     always #5 aclk = ~aclk;
 
-    function [7:0] rgb_lane;
+    function [7:0] gray_pixel;
         input integer pixel;
-        input integer channel;
         begin
             case (pixel % 5)
-                0: rgb_lane = (channel == 0) ? 8'hff : 8'h00;
-                1: rgb_lane = (channel == 1) ? 8'hff : 8'h00;
-                2: rgb_lane = (channel == 2) ? 8'hff : 8'h00;
-                3: rgb_lane = 8'hff;
-                default: rgb_lane = 8'h00;
+                0: gray_pixel = 8'hff;
+                1: gray_pixel = 8'h7f;
+                2: gray_pixel = 8'h80;
+                3: gray_pixel = 8'hff;
+                default: gray_pixel = 8'h00;
             endcase
         end
     endfunction
@@ -313,16 +312,14 @@ module tb_axis_dma_image_pipeline_bd #(
         integer pos;
         integer lane;
         integer remaining;
-        integer pixel;
-        integer channel;
         reg [31:0] word;
         reg [3:0] keep;
         reg [31:0] payload_sum;
         reg [7:0] byte_value;
         begin
             payload_sum = 0;
-            for (pos = 0; pos < PAYLOAD_BYTES; pos = pos + 1)
-                payload_sum = payload_sum + rgb_lane(pos / 3, pos % 3);
+            for (pos = 0; pos < PIXELS; pos = pos + 1)
+                payload_sum = payload_sum + gray_pixel(pos);
             send_beat(32'h574f3134, 4'hf, 1'b0);
             send_beat((HEIGHT << 16) | WIDTH, 4'hf, 1'b0);
             send_beat(PAYLOAD_BYTES, 4'hf, 1'b0);
@@ -338,9 +335,7 @@ module tb_axis_dma_image_pipeline_bd #(
                 endcase
                 for (lane = 0; lane < 4; lane = lane + 1) begin
                     if (pos + lane < PAYLOAD_BYTES) begin
-                        pixel = (pos + lane) / 3;
-                        channel = (pos + lane) % 3;
-                        byte_value = rgb_lane(pixel, channel);
+                        byte_value = gray_pixel(pos + lane);
                         word[lane*8 +: 8] = byte_value;
                     end
                 end
@@ -524,10 +519,7 @@ module tb_axis_dma_image_pipeline_bd #(
         end
 
         for (index = 0; index < PIXELS; index = index + 1) begin
-            r = rgb_lane(index, 0);
-            g = rgb_lane(index, 1);
-            b = rgb_lane(index, 2);
-            gray = (77*r + 150*g + 29*b) >> 8;
+            gray = gray_pixel(index);
             expected_binary[index] = (gray >= THRESHOLD) ? 8'hff : 8'h00;
         end
         expected_pixel_sum = 0;

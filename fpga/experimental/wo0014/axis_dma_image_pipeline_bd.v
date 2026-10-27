@@ -1,4 +1,4 @@
-// Isolated WO-0014 Block Design wrapper. It exposes the RGB packet input as
+// Isolated WO-0014 Block Design wrapper. It exposes the Gray8 packet input as
 // AXI4-Stream and a small read-only status map plus one drain-enable control.
 module axis_dma_image_pipeline_bd #(
     parameter integer WIDTH = 320,

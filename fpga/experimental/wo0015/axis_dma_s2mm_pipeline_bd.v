@@ -1,4 +1,5 @@
-// WO-0015 dual-channel wrapper; legacy Checker map remains at 0x00..0x48.
+// WO-0015 dual-channel wrapper; MM2S carries packed Gray8 and the Checker map
+// remains at 0x00..0x48.
 module axis_dma_s2mm_pipeline_bd #(
     parameter integer WIDTH = 320,
     parameter integer HEIGHT = 240,
@@ -154,6 +155,7 @@ module axis_dma_s2mm_pipeline_bd #(
         .error_code(packer_error), .accepted_pixels(packer_pixels), .sent_beats(packer_beats)
     );
 
+    // The 32-bit MM2S words contain four Gray8 samples, byte 0 first.
     axis_dma_image_pipeline #(
         .WIDTH(WIDTH),
         .HEIGHT(HEIGHT),

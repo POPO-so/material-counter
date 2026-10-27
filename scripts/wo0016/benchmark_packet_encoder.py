@@ -17,18 +17,18 @@ for path in (SCRIPT_DIR, WO15_DIR):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from camera_adapter import gray320x240_to_rgb_packet
-from packet_encoder import gray320x240_to_rgb_packet_into
+from camera_adapter import gray320x240_to_gray_packet
+from packet_encoder import gray320x240_to_gray_packet_into
 from prepare_vectors import HEIGHT, WIDTH
 
 
 def legacy_packet(gray: np.ndarray, frame_id: int) -> bytes:
     """Call the untouched WO-0015 encoder, which uses the original Beat-list path."""
-    return gray320x240_to_rgb_packet(gray, frame_id=frame_id)
+    return gray320x240_to_gray_packet(gray, frame_id=frame_id)
 
 
 def vectorized_packet(gray: np.ndarray, output: np.ndarray, frame_id: int) -> None:
-    gray320x240_to_rgb_packet_into(gray, output, frame_id=frame_id)
+    gray320x240_to_gray_packet_into(gray, output, frame_id=frame_id)
 
 
 def benchmark(iterations: int) -> dict:

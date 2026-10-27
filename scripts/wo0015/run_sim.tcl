@@ -52,9 +52,8 @@ cd $work
 set packer_rtl [file join $root fpga experimental wo0015 axis_s2mm_frame_packer.v]
 set packer_tb [file join $root fpga sim wo0015 tb_axis_s2mm_frame_packer.sv]
 set pipeline_sources [list \
-    [file join $root fpga rtl axis_rgb2gray.v] \
     [file join $root fpga rtl axis_gray2binary.v] \
-    [file join $root fpga experimental wo0014 axis_dma_rgb_adapter.v] \
+    [file join $root fpga experimental wo0014 axis_dma_gray_adapter.v] \
     [file join $root fpga experimental wo0014 axis_binary_output_checker.v] \
     [file join $root fpga experimental wo0014 axis_dma_image_pipeline.v] \
     $packer_rtl \

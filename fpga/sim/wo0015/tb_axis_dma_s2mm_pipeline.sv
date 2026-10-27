@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-// Full-chain offline self-check: RGB packet -> Gray/Binary8 -> S2MM packer.
+// Full-chain offline self-check: packed Gray8 packet -> Binary8 -> S2MM packer.
 // Input beats are 40-bit hex records {3'b0, TLAST, TKEEP, TDATA}; golden.hex
 // contains one Binary8 byte per line. No AXI DMA IP or board is modeled here.
 module tb_axis_dma_s2mm_pipeline #(
@@ -11,7 +11,7 @@ module tb_axis_dma_s2mm_pipeline #(
     localparam integer PIXELS_PER_FRAME = WIDTH * HEIGHT;
     localparam integer BEATS_PER_FRAME = PIXELS_PER_FRAME / 4;
     localparam integer MAX_INPUT_BEATS = 200000;
-    localparam integer MAX_GOLDEN_PIXELS = PIXELS_PER_FRAME * 3;
+    localparam integer MAX_GOLDEN_PIXELS = 3 * PIXELS_PER_FRAME;
     localparam integer MAX_WAIT_CYCLES = 5000000;
     localparam integer MAX_AXI_WAIT_CYCLES = 5000;
     localparam integer MODE_NORMAL = 0;

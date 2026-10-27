@@ -1,4 +1,4 @@
-"""Vectorized WO-0016 packet writer; the frozen WO-0015 dependency stays intact."""
+"""Vectorized WO-0016 writer for the compact native Gray8 MM2S packet."""
 from __future__ import annotations
 
 import operator
@@ -14,7 +14,9 @@ except ImportError:  # pragma: no cover - package-style import support
         HEIGHT, PIXELS, WIDTH, MAGIC, TRAILER_MAGIC, TRAILER_END,
     )
 
-TX_BYTES = 16 + PIXELS * 3 + 16
+PAYLOAD_BYTES = PIXELS
+TX_BYTES = 16 + PAYLOAD_BYTES + 16
+PACKET_MAGIC = MAGIC
 
 
 def _frame_id_value(frame_id: int) -> int:
@@ -29,16 +31,20 @@ def _frame_id_value(frame_id: int) -> int:
     return value
 
 
-def gray320x240_to_rgb_packet_into(gray: np.ndarray, output: Any, *,
-                                   frame_id: int = 0) -> None:
-    """Fill a caller-owned 230432-byte TX buffer using native NumPy operations.
+def gray320x240_to_gray_packet_into(gray: np.ndarray, output: Any, *,
+                                    frame_id: int = 0) -> Any:
+    """Write one Gray8 frame into a caller-owned 76832-byte TX buffer.
 
     The packet's wire representation consists of TDATA bytes only. Its header
-    and trailer are four little-endian words each; payload triplets are R=G=B.
+    and trailer are four little-endian words each. Payload bytes are copied
+    unchanged in row-major order, with no channel replication or RGB scratch.
     """
     image = np.asarray(gray)
-    if image.dtype != np.uint8 or image.shape != (HEIGHT, WIDTH):
-        raise ValueError(f"expected a uint8 Gray8 matrix with shape {(HEIGHT, WIDTH)}")
+    if (image.dtype != np.uint8 or image.shape != (HEIGHT, WIDTH)
+            or not image.flags.c_contiguous):
+        raise ValueError(
+            f"expected a C-contiguous uint8 Gray8 matrix with shape {(HEIGHT, WIDTH)}"
+        )
     frame_id = _frame_id_value(frame_id)
 
     packet = np.asarray(output)
@@ -48,11 +54,11 @@ def gray320x240_to_rgb_packet_into(gray: np.ndarray, output: Any, *,
     packet = packet.reshape(-1)
 
     payload_start = 16
-    payload_end = payload_start + PIXELS * 3
-    payload = packet[payload_start:payload_end].reshape(PIXELS, 3)
-    payload[:] = image.reshape(PIXELS, 1)
-    checksum = (3 * int(np.sum(image, dtype=np.uint64))) & 0xFFFFFFFF
+    payload_end = payload_start + PAYLOAD_BYTES
+    packet[payload_start:payload_end] = image.reshape(-1)
+    checksum = int(np.sum(image, dtype=np.uint64)) & 0xFFFFFFFF
     struct.pack_into("<IIII", packet, 0, MAGIC, (HEIGHT << 16) | WIDTH,
-                     PIXELS * 3, frame_id)
+                     PAYLOAD_BYTES, frame_id)
     struct.pack_into("<IIII", packet, payload_end, TRAILER_MAGIC, frame_id,
                      checksum, TRAILER_END)
+    return output

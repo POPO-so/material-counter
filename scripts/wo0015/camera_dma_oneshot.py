@@ -20,11 +20,11 @@ import numpy as np
 
 try:
     from . import board_once, board_preflight as preflight
-    from .camera_adapter import gray320x240_to_rgb_packet
+    from .camera_adapter import gray320x240_to_gray_packet
 except ImportError:  # pragma: no cover - direct script execution on PYNQ
     import board_once
     import board_preflight as preflight
-    from camera_adapter import gray320x240_to_rgb_packet
+    from camera_adapter import gray320x240_to_gray_packet
 
 
 STEP3_MANIFEST_SHA256 = "2c24709bbe60711c095b5ccbdf4b3582e93e65d98a9538ad2b413136ad942e8b"
@@ -310,12 +310,12 @@ def prepare_camera_bundle(*, template_manifest_path: str | Path,
     frame_files: list[dict[str, Any]] = []
     for offset in range(3):
         current_id = first_frame_id + offset
-        packet = gray320x240_to_rgb_packet(resized, frame_id=current_id)
+        packet = gray320x240_to_gray_packet(resized, frame_id=current_id)
         golden = preflight._expected_binary(packet)
         threshold_golden = np.where(resized >= 128, 0xFF, 0x00).astype(np.uint8).tobytes()
         if golden != threshold_golden or len(packet) != preflight.TX_BYTES or len(golden) != preflight.RX_BYTES:
             raise AssertionError("camera packet and independent Binary8 Golden disagree")
-        packet_path = run_dir / f"frame-{current_id}.rgb.bin"
+        packet_path = run_dir / f"frame-{current_id}.gray8.bin"
         golden_path = run_dir / f"frame-{current_id}.binary.bin"
         _write_exclusive(packet_path, packet)
         _write_exclusive(golden_path, golden)
@@ -358,7 +358,7 @@ def prepare_camera_bundle(*, template_manifest_path: str | Path,
         "resized_gray_file_sha256": preflight.sha256_file(resized_image_path),
         "threshold": 128,
         "resize": "bilinear, endpoint-aligned, round-to-nearest",
-        "channel_mapping": "R=G=B=Y",
+        "channel_mapping": "Gray8 passthrough; no channel expansion",
         "manifest_path": str(manifest_path.resolve()),
         "manifest_sha256": manifest_sha256,
         "template_manifest_path": str(template.manifest_path),
@@ -634,7 +634,7 @@ def _write_camera_result(plan: preflight.ValidatedRun, sidecar: Mapping[str, Any
             "resized_gray_sha256": sidecar["resized_gray_sha256"],
             "packet_sha256": plan.frames[0].packet_sha256,
             "software_golden_sha256": plan.frames[0].binary_sha256,
-            "channel_mapping": "R=G=B=Y",
+            "channel_mapping": "Gray8 passthrough; no channel expansion",
             "threshold": 128,
         },
         "pl_output": {

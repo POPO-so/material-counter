@@ -12,42 +12,66 @@ import zipfile
 import board_preflight as preflight
 
 ROOT = Path(__file__).resolve().parents[2]
+BASELINE_ROOT = ROOT / "data/results/wo0015-gray8-baseline-20261027"
+PAIR_MANIFEST_PATH = BASELINE_ROOT / "export/pair-manifest.json"
+XSIM_VECTOR_ROOT = BASELINE_ROOT / "xsim-final/vectors"
+XSIM_RESULT_ROOT = BASELINE_ROOT / "xsim-final/xsim"
 
 
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def prepare(destination: Path) -> dict:
-    pair_path = ROOT / "data/results/wo0015-hw-50mhz-20261015/export/pair-manifest.json"
+def prepare(destination: Path, *, replace_existing: bool = False,
+            boot_id: str | None = None) -> dict:
+    pair_path = PAIR_MANIFEST_PATH
+    approved_boot_id = (preflight.AUTHORIZED_BOOT_ID if boot_id is None else
+                        preflight._require_boot_id(boot_id, "approved boot_id"))
     pair = json.loads(pair_path.read_text(encoding="utf-8"))
     if pair["implementation_status"] != "implemented_offline" or pair["clock_mhz"] != 50:
         raise RuntimeError("Checked 50 MHz build manifest required")
+
+    def pair_file(name: str) -> Path:
+        value = Path(pair[name]["path"])
+        return (value if value.is_absolute() else ROOT / value).resolve()
+
     for name in ("bit", "hwh"):
-        if sha(Path(pair[name]["path"])) != pair[name]["sha256"]:
+        if sha(pair_file(name)) != pair[name]["sha256"]:
             raise RuntimeError(f"Changed build artifact: {name}")
-    xsim_path = ROOT / "data/results/wo0015-offline-20261015/xsim-summary.json"
-    xsim = json.loads(xsim_path.read_text(encoding="utf-8"))
-    if xsim["status"] != "PASS" or len(xsim["cases"]) != 10:
-        raise RuntimeError("Required independent XSim comparisons are incomplete")
-    for rel, digest in xsim["rtl_sha256"].items():
-        if sha(ROOT / rel) != digest:
-            raise RuntimeError(f"Simulation source changed after acceptance: {rel}")
-    replay_path = ROOT / "data/results/wo0015-xsim-replay-20261015/replay-summary.json"
-    replay = json.loads(replay_path.read_text(encoding="utf-8"))
-    if replay["suite_status"] != "PASS":
-        raise RuntimeError("Final delivered simulation entrypoint did not pass")
-    for rel, digest in replay["source_sha256"].items():
-        if sha(ROOT / rel) != digest:
-            raise RuntimeError(f"Replay source changed after acceptance: {rel}")
-    destination.mkdir(parents=True, exist_ok=False)
+
+    xsim_case_names = ("A", "B", "C-seed1", "C-seed7", "C-seed42",
+                       "C-seed20261015", "D_short", "D_long", "D_checksum", "D_reset")
+    for case_name in xsim_case_names:
+        result_path = XSIM_RESULT_ROOT / f"{case_name}-result.json"
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        expected_status = "PASS" if not case_name.startswith("D_") else (
+            "PASS_RESET_STOP" if case_name == "D_reset" else "PASS_FAULT_STOP"
+        )
+        if result["status"] != expected_status or result["mismatch_bytes"] != 0:
+            raise RuntimeError(f"Gray8 XSim case did not pass: {case_name}")
+
+    destination = destination.resolve()
+    if destination.exists():
+        if not replace_existing:
+            raise FileExistsError(destination)
+        expected_destination = (BASELINE_ROOT / "board-package").resolve()
+        if destination != expected_destination:
+            raise RuntimeError("--replace-existing is restricted to the canonical Gray8 board package")
+        existing_pair = destination / "build-pair-manifest.json"
+        if not existing_pair.is_file() or sha(existing_pair) != sha(pair_path):
+            raise RuntimeError("Existing package is not the current Gray8 baseline package")
+    else:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.mkdir(parents=False, exist_ok=False)
     for filename in ("board_once.py", "board_preflight.py"):
         shutil.copyfile(Path(__file__).parent / filename, destination / filename)
-    shutil.copyfile(Path(pair["bit"]["path"]), destination / "wo15.bit")
-    shutil.copyfile(Path(pair["hwh"]["path"]), destination / "wo15.hwh")
+    shutil.copyfile(pair_file("bit"), destination / "wo15.bit")
+    shutil.copyfile(pair_file("hwh"), destination / "wo15.hwh")
     shutil.copyfile(pair_path, destination / "build-pair-manifest.json")
-    shutil.copyfile(replay_path, destination / "xsim-replay-summary.json")
-    case_root = ROOT / "data/results/wo0015-offline-20261015/vectors/B"
+    for case_name in xsim_case_names:
+        shutil.copyfile(XSIM_RESULT_ROOT / f"{case_name}-result.json",
+                        destination / f"xsim-{case_name}-result.json")
+    case_root = XSIM_VECTOR_ROOT / "B"
     case = json.loads((case_root / "case.json").read_text(encoding="utf-8"))
     records = [int(line, 16) for line in (case_root / "beats.hex").read_text().splitlines()]
     packed = bytearray()
@@ -56,11 +80,14 @@ def prepare(destination: Path) -> dict:
             raise RuntimeError("Unexpected input record framing/KEEP")
         packed.extend(struct.pack("<I", word & 0xffffffff))
     golden = (case_root / "golden.bin").read_bytes()
-    if len(packed) != 3 * preflight.TX_BYTES or len(golden) != 3 * preflight.RX_BYTES:
+    if (case["expected_frames"] != 3 or len(case["source_frames"]) != 3
+            or len(packed) != 3 * preflight.TX_BYTES
+            or len(golden) != 3 * preflight.RX_BYTES
+            or sha(case_root / "golden.bin") != case["golden_sha256"]):
         raise RuntimeError("Expected three complete simulation frames")
     frames = []
     for i, record in enumerate(case["source_frames"]):
-        packet_path = destination / f"frame-{i}.rgb.bin"
+        packet_path = destination / f"frame-{i}.gray8.bin"
         binary_path = destination / f"frame-{i}.binary.bin"
         packet_path.write_bytes(packed[i * preflight.TX_BYTES:(i + 1) * preflight.TX_BYTES])
         binary_path.write_bytes(golden[i * preflight.RX_BYTES:(i + 1) * preflight.RX_BYTES])
@@ -71,7 +98,7 @@ def prepare(destination: Path) -> dict:
                        "binary_sha256": sha(binary_path)})
     manifest = {
         "schema": 1, "work_order": "WO-0015", "stage": "S2MM_BINARY8_FRAME_RETURN",
-        "build_id": pair["build_id"], "boot_id": preflight.AUTHORIZED_BOOT_ID,
+        "build_id": pair["build_id"], "boot_id": approved_boot_id,
         "part": preflight.EXPECTED_PART, "clock_mhz": 50,
         "bit_path": "wo15.bit", "bit_sha256": sha(destination / "wo15.bit"),
         "hwh_path": "wo15.hwh", "hwh_sha256": sha(destination / "wo15.hwh"),
@@ -82,16 +109,19 @@ def prepare(destination: Path) -> dict:
     }
     manifest_path = destination / "run-manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    plan = preflight.validate_manifest(manifest_path, sha(manifest_path))
+    plan = preflight.validate_manifest(
+        manifest_path, sha(manifest_path), approved_boot_id=approved_boot_id
+    )
     # The board controller uses the explicit deployment name while offline
     # validators retain the run-manifest name; bind both identical copies.
     shutil.copyfile(manifest_path, destination / "wo0015-manifest.json")
     (destination / "SHA256SUMS.json").write_text(json.dumps(
         {p.name: sha(p) for p in sorted(destination.iterdir()) if p.is_file()}, indent=2) + "\n", encoding="utf-8")
     archive_path = destination.with_suffix(".zip")
-    if archive_path.exists():
+    if archive_path.exists() and not replace_existing:
         raise FileExistsError(archive_path)
-    with zipfile.ZipFile(archive_path, "x", compression=zipfile.ZIP_DEFLATED) as archive:
+    archive_mode = "w" if replace_existing else "x"
+    with zipfile.ZipFile(archive_path, archive_mode, compression=zipfile.ZIP_DEFLATED) as archive:
         for p in sorted(destination.iterdir()):
             archive.write(p, p.name)
     result = {"status": "OFFLINE_BUNDLE_VALIDATED", "board_accessed": False,
@@ -104,8 +134,17 @@ def prepare(destination: Path) -> dict:
     return result
 
 
-if __name__ == "__main__":
+def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True, help="new local directory, never a board path")
-    args = parser.parse_args()
-    print(json.dumps(prepare(args.out.resolve()), indent=2))
+    parser.add_argument("--replace-existing", action="store_true",
+                        help="refresh only the canonical Gray8 board package after verifying its build manifest")
+    parser.add_argument("--boot-id",
+                        help="explicit current board Boot ID to bind into both manifests")
+    return parser
+
+
+if __name__ == "__main__":
+    args = _parser().parse_args()
+    print(json.dumps(prepare(args.out.resolve(), replace_existing=args.replace_existing,
+                             boot_id=args.boot_id), indent=2))
