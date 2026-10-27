@@ -24,6 +24,10 @@ python3 scripts/live_lighting_tuner.py --device /dev/video0 --port 8080 --allow-
 
 默认仅采集，不修改 V4L2 参数。若明确需要相机滑块，增加 `--allow-camera-controls`；该模式启动时尝试设置手动曝光 `auto_exposure=1`、曝光 `exposure_time_absolute=50`、gamma 100、gain 0。设备必须支持这些控制与对应范围；命令错误或回读不一致会停止采集并显示错误。脚本不会静默切换控制名或把请求值当作实际值。曝光单位以设备定义为准。
 
+只查看相机实际参数时使用 `--observe-camera-controls`。程序约每秒只读查询曝光模式、曝光控件值、增益与 Gamma，页面独立显示回读结果；曝光时间按 V4L2 的 100 微秒单位换算。查询失败、读数超过3秒未更新或网页连接中断时，实际值显示不可用，不用滑块默认值替代。关闭网页硬件写入时隐藏硬件滑块。读取参数与图像取帧独立进行，不保证读数与某一帧曝光同步。
+
+如已另外运行 `button_exposure.py`，可增加 `--exposure-buttons` 显示 BTN0/BTN1 每次减/加0.1毫秒的操作说明；这个选项只显示说明，不启动按键程序，也不代表按键程序运行状态。
+
 ```bash
 python3 scripts/live_lighting_tuner.py --device /dev/video0 --allow-camera --allow-camera-controls
 ```

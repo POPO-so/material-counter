@@ -8,6 +8,7 @@ import queue
 import shutil
 import threading
 import time
+import zipfile
 from dataclasses import asdict, dataclass, is_dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,6 +38,17 @@ class CapturedFrame:
     gray: np.ndarray
     mask: np.ndarray
     metadata: dict[str, Any]
+
+
+@dataclass
+class _BoundedCaptureSlot:
+    """One pair of reusable frame buffers owned by the bounded writer."""
+
+    gray: np.ndarray
+    mask: np.ndarray
+    frame_id: int | None = None
+    metadata: dict[str, Any] | None = None
+    blocked_ms: float = 0.0
 
 
 def _json_safe(value: Any) -> Any:
@@ -119,13 +131,27 @@ def _validate_frame_metadata(frame_id: int, metadata: Mapping[str, Any]) -> dict
     return safe
 
 
-def estimated_capture_bytes(expected_frames: int, *, source_frame_count: int = 0) -> int:
-    """Conservative cap for per-frame records plus the combined raw-frame NPZ."""
+def estimated_capture_bytes(expected_frames: int, *, source_frame_count: int = 0,
+                            write_mode: str = "streaming_queue") -> int:
+    """Admission estimate, not a guarantee for arbitrary metadata/filesystems.
+
+    Legacy retains its original formula. Bounded reserves per-frame NPY headers
+    (256), complete JSONL record (8192), wait record (256), and allocation slack
+    (8192). Fixed allowances cover archive headers/sidecar (16384), control files
+    and manifest replacement overlap (65536), runtime reserve (32768), and
+    filesystem slack (16384). Runtime actual-byte checks remain authoritative.
+    """
     if isinstance(expected_frames, bool) or not isinstance(expected_frames, int) or expected_frames < 1:
         raise ValueError("expected_frames must be a positive integer")
     if (isinstance(source_frame_count, bool) or not isinstance(source_frame_count, int)
             or source_frame_count < 0 or source_frame_count > expected_frames):
         raise ValueError("source_frame_count must be between zero and expected_frames")
+    if write_mode not in {"streaming_queue", "deferred_memory", "bounded_stream"}:
+        raise ValueError(f"unsupported capture write mode: {write_mode}")
+    if write_mode == "bounded_stream":
+        if source_frame_count:
+            raise ValueError("bounded_stream does not support source_frame_ids")
+        return expected_frames * (4 * FRAME_BYTES + 256 + 8192 + 256 + 8192) + 131072
     return (expected_frames * (4 * FRAME_BYTES + 4096) + 32768
             + source_frame_count * (SOURCE_FRAME_BYTES + 4096))
 
@@ -138,9 +164,19 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _sha256_file_bounded(path: Path, *, chunk_bytes: int = 64 * 1024) -> str:
+    """Hash a file with a small fixed read buffer for bounded-stream close."""
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        while chunk := stream.read(chunk_bytes):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def preflight_capture_target(output_dir: str | Path, *, expected_frames: int,
                              max_bytes: int = DEFAULT_MAX_BYTES,
-                             source_frame_count: int = 0) -> dict[str, Any]:
+                             source_frame_count: int = 0,
+                             write_mode: str = "streaming_queue") -> dict[str, Any]:
     target = Path(output_dir).expanduser().resolve(strict=False)
     normalized_parts = [part.lower() for part in target.parts]
     protected_archive = any(
@@ -159,7 +195,8 @@ def preflight_capture_target(output_dir: str | Path, *, expected_frames: int,
     if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes < 1:
         raise ValueError("max_bytes must be a positive integer")
     estimate = estimated_capture_bytes(expected_frames,
-                                       source_frame_count=source_frame_count)
+                                       source_frame_count=source_frame_count,
+                                       write_mode=write_mode)
     if estimate > max_bytes:
         raise CaptureError(
             f"capture capacity limit {max_bytes} bytes is below estimated requirement {estimate} bytes"
@@ -181,10 +218,36 @@ class CaptureWriter:
                  queue_depth: int = 2, metadata: Mapping[str, Any] | None = None,
                  source_type: str = "camera_capture",
                  source_frame_ids: tuple[int, ...] = (),
-                 defer_writes_until_close: bool = False):
+                 defer_writes_until_close: bool = False,
+                 write_mode: str | None = None,
+                 ring_depth: int = 4,
+                 submit_timeout_s: float = 1.0):
         if type(defer_writes_until_close) is not bool:
             raise ValueError("defer_writes_until_close must be a boolean")
+        explicit_write_mode = write_mode is not None
+        if write_mode is None:
+            write_mode = "deferred_memory" if defer_writes_until_close else "streaming_queue"
+        if write_mode not in {"deferred_memory", "streaming_queue", "bounded_stream"}:
+            raise ValueError(f"unsupported capture write mode: {write_mode}")
+        if (explicit_write_mode and write_mode == "deferred_memory"
+                and not defer_writes_until_close):
+            raise ValueError("deferred_memory requires defer_writes_until_close=True")
+        if (explicit_write_mode and write_mode == "streaming_queue"
+                and defer_writes_until_close):
+            raise ValueError("streaming_queue cannot defer writes until close")
+        if write_mode == "bounded_stream" and defer_writes_until_close:
+            raise ValueError("bounded_stream cannot defer writes until close")
+        if write_mode == "bounded_stream" and source_frame_ids:
+            raise ValueError("bounded_stream does not support source_frame_ids")
+        if (isinstance(ring_depth, bool) or not isinstance(ring_depth, int)
+                or ring_depth < 1):
+            raise ValueError("ring_depth must be a positive integer")
+        if (isinstance(submit_timeout_s, bool)
+                or not isinstance(submit_timeout_s, (int, float))
+                or not np.isfinite(submit_timeout_s) or submit_timeout_s <= 0):
+            raise ValueError("submit_timeout_s must be a finite positive number")
         self.defer_writes_until_close = defer_writes_until_close
+        self.write_mode = write_mode
         self._deferred_metadata: list[dict[str, Any]] = []
         if isinstance(queue_depth, bool) or not isinstance(queue_depth, int) or queue_depth < 1:
             raise ValueError("queue_depth must be a positive integer")
@@ -206,6 +269,7 @@ class CaptureWriter:
         self.preflight = preflight_capture_target(
             output_dir, expected_frames=expected_frames, max_bytes=max_bytes,
             source_frame_count=len(source_frame_ids),
+            write_mode=write_mode,
         )
         self.output_dir = Path(self.preflight["path"])
         self.expected_frames = expected_frames
@@ -215,11 +279,44 @@ class CaptureWriter:
         self.source_type = source_type
         # These NumPy arrays live in ordinary process RAM. Only the four DMA
         # ping-pong buffers in the board runner use PYNQ/CMA allocation.
-        self.raw_gray8 = np.empty((expected_frames, *FRAME_SHAPE), dtype=np.uint8)
-        self.raw_binary8 = np.empty((expected_frames, *FRAME_SHAPE), dtype=np.uint8)
+        if write_mode == "bounded_stream":
+            self.raw_gray8 = None
+            self.raw_binary8 = None
+            self._slots = [
+                _BoundedCaptureSlot(np.empty(FRAME_SHAPE, dtype=np.uint8),
+                                    np.empty(FRAME_SHAPE, dtype=np.uint8))
+                for _ in range(ring_depth)
+            ]
+            self._free_slots: queue.Queue[_BoundedCaptureSlot] = queue.Queue(
+                maxsize=ring_depth)
+            for slot in self._slots:
+                self._free_slots.put_nowait(slot)
+            self._ring_depth = ring_depth
+            self.ring_depth = ring_depth
+            self.submit_timeout_s = float(submit_timeout_s)
+            self._submit_lock = threading.Lock()
+            self._bounded_condition = threading.Condition()
+            self._bounded_state = "OPEN"
+            self._active_submitters = 0
+            self._bounded_close_result: dict[str, Any] | None = None
+            self._submit_wait_count = 0
+            self._submit_wait_total_ms = 0.0
+            self._submit_wait_max_ms = 0.0
+            self._failed_submit_wait: tuple[int, float] | None = None
+            self._wait_log_bytes = 0
+            self._owned_bytes_peak = 0
+        else:
+            self.raw_gray8 = np.empty((expected_frames, *FRAME_SHAPE), dtype=np.uint8)
+            self.raw_binary8 = np.empty((expected_frames, *FRAME_SHAPE), dtype=np.uint8)
+            self._slots = []
+            self._ring_depth = None
+            self.ring_depth = None
+            self.submit_timeout_s = None
         self._raw_frames_recorded = 0
         self._raw_record_lock = threading.Lock()
-        self._queue: queue.Queue[Any] = queue.Queue(maxsize=queue_depth)
+        self._submission_lock = threading.Lock()
+        queue_size = ring_depth if write_mode == "bounded_stream" else queue_depth
+        self._queue: queue.Queue[Any] = queue.Queue(maxsize=queue_size)
         self._thread = threading.Thread(target=self._writer_main,
                                         name="wo0017-capture-writer", daemon=True)
         self._error: str | None = None
@@ -234,7 +331,7 @@ class CaptureWriter:
         self._manifest: dict[str, Any] = {
             "schema_version": SCHEMA_VERSION,
             "status": "IN_PROGRESS",
-            "write_mode": ("deferred_memory" if defer_writes_until_close else "streaming_queue"),
+            "write_mode": write_mode,
             "source_type": source_type,
             "created_utc": datetime.now(timezone.utc).isoformat(),
             "expected_frames": expected_frames,
@@ -249,12 +346,23 @@ class CaptureWriter:
             "metadata": self.metadata,
             "capacity": self.preflight,
             "estimated_total_bytes": estimated_capture_bytes(
-                expected_frames, source_frame_count=len(source_frame_ids)),
+                expected_frames, source_frame_count=len(source_frame_ids),
+                write_mode=write_mode),
             "max_bytes": max_bytes,
             "raw_frame_archive": None,
             "source_frame_ids": list(source_frame_ids),
             "source_frame_archive": None,
         }
+        if write_mode == "bounded_stream":
+            self._manifest.update({
+                "ring_depth": ring_depth,
+                "submit_timeout_s": self.submit_timeout_s,
+                "archive_builder": "streaming_npy_members_v1",
+                "submit_wait_count": 0,
+                "submit_wait_total_ms": 0.0,
+                "submit_wait_max_ms": 0.0,
+                "owned_bytes_peak": 0,
+            })
         try:
             self.output_dir.mkdir(mode=0o700)
         except OSError as exc:
@@ -269,6 +377,9 @@ class CaptureWriter:
                 stream.write("\n")
                 stream.flush()
                 os.fsync(stream.fileno())
+            if self.write_mode == "bounded_stream":
+                self._owned_bytes_peak = max(
+                    self._owned_bytes_peak, self._bounded_disk_usage())
             if not self.defer_writes_until_close:
                 self._thread.start()
         except BaseException as exc:
@@ -282,7 +393,11 @@ class CaptureWriter:
             raise CaptureError(f"capture writer initialization failed: {self._error}") from exc
 
     def submit(self, frame_id: int, gray: np.ndarray, mask: np.ndarray,
-               metadata: Mapping[str, Any]) -> None:
+               metadata: Mapping[str, Any], *, submission_started_ns: int | None = None) -> None:
+        if self.write_mode == "bounded_stream":
+            self._submit_bounded(frame_id, gray, mask, metadata,
+                                 submission_started_ns=submission_started_ns)
+            return
         if self._closed:
             raise CaptureError("capture writer is already closed")
         if self._error is not None:
@@ -308,18 +423,103 @@ class CaptureWriter:
             self._submitted += 1
             self._accepted += 1
             self._next_frame_id += 1
+            self._finish_submission_timing(safe_metadata, submission_started_ns)
             return
         item = (frame_id, np.array(gray_array, copy=True, order="C"),
                 np.array(mask_array, copy=True, order="C"), safe_metadata)
         self._submitted += 1
         self._next_frame_id += 1
         try:
-            self._queue.put_nowait(item)
+            with self._submission_lock:
+                self._queue.put_nowait(item)
+                self._finish_submission_timing(safe_metadata, submission_started_ns)
         except queue.Full as exc:
             self._dropped += 1
             self._error = f"bounded capture queue overflow at frame {frame_id}"
             raise CaptureError(self._error) from exc
         self._accepted += 1
+
+    def _submit_bounded(self, frame_id: int, gray: np.ndarray, mask: np.ndarray,
+                        metadata: Mapping[str, Any], *,
+                        submission_started_ns: int | None = None) -> None:
+        with self._bounded_condition:
+            if self._bounded_state != "OPEN":
+                raise CaptureError("capture writer is already closing or closed")
+            self._active_submitters += 1
+        try:
+            # Keep IDs, pool acquisition, and ready-queue order serialized. close()
+            # separately waits for all callers that entered while OPEN.
+            with self._submit_lock:
+                if self._error is not None:
+                    raise CaptureError(f"capture writer failed: {self._error}")
+                if (isinstance(frame_id, bool) or not isinstance(frame_id, int)
+                        or frame_id != self._next_frame_id):
+                    raise CaptureError(
+                        f"capture frame IDs must be contiguous from zero; got {frame_id}")
+                if frame_id >= self.expected_frames:
+                    raise CaptureError("capture received more frames than requested")
+                if not isinstance(metadata, Mapping):
+                    raise CaptureError("per-frame capture metadata must be a mapping")
+                safe_metadata = _validate_frame_metadata(frame_id, metadata)
+                safe_metadata["capture_config_sha256"] = hashlib.sha256(
+                    _json_bytes(self.config)).hexdigest()
+                gray_array = self._validate_image(gray, "gray")
+                mask_array = self._validate_image(mask, "mask")
+                if np.any((mask_array != 0) & (mask_array != 0xFF)):
+                    raise CaptureError(
+                        "raw mask contains values other than Binary8 0x00/0xFF")
+                if frame_id >= self._raw_frames_recorded:
+                    self.record_raw_frame(frame_id, gray_array, mask_array)
+
+                self._submitted += 1
+                self._next_frame_id += 1
+                wait_started_ns = time.perf_counter_ns()
+                try:
+                    slot = self._free_slots.get(timeout=self.submit_timeout_s)
+                except queue.Empty as exc:
+                    blocked_ms = (time.perf_counter_ns() - wait_started_ns) / 1e6
+                    self._dropped += 1
+                    self._submit_wait_count += 1
+                    self._submit_wait_total_ms += blocked_ms
+                    self._submit_wait_max_ms = max(self._submit_wait_max_ms, blocked_ms)
+                    self._failed_submit_wait = (frame_id, blocked_ms)
+                    self._error = (
+                        f"timed out waiting for capture slot at frame {frame_id} "
+                        f"after {blocked_ms:.3f} ms")
+                    raise CaptureError(self._error) from exc
+                blocked_ms = (time.perf_counter_ns() - wait_started_ns) / 1e6
+                try:
+                    np.copyto(slot.gray, gray_array, casting="no")
+                    np.copyto(slot.mask, mask_array, casting="no")
+                    self._finish_submission_timing(safe_metadata, submission_started_ns)
+                    slot.frame_id = frame_id
+                    slot.metadata = safe_metadata
+                    slot.blocked_ms = blocked_ms
+                    self._submit_wait_count += 1
+                    self._submit_wait_total_ms += blocked_ms
+                    self._submit_wait_max_ms = max(self._submit_wait_max_ms, blocked_ms)
+                    self._queue.put_nowait(slot)
+                except BaseException as exc:
+                    slot.frame_id = None
+                    slot.metadata = None
+                    self._free_slots.put_nowait(slot)
+                    self._dropped += 1
+                    self._error = f"bounded capture submission failed at frame {frame_id}: {exc}"
+                    if isinstance(exc, CaptureError):
+                        raise
+                    raise CaptureError(self._error) from exc
+                self._accepted += 1
+        finally:
+            with self._bounded_condition:
+                self._active_submitters -= 1
+                self._bounded_condition.notify_all()
+
+    @staticmethod
+    def _finish_submission_timing(metadata: dict[str, Any], started_ns: int | None) -> None:
+        if started_ns is not None:
+            timings = metadata.setdefault("stage_timings_ms", {})
+            timings["t_preview_sink"] = (float(timings.get("t_preview_sink", 0.0))
+                                         + (time.perf_counter_ns() - started_ns) / 1e6)
 
     def record_raw_frame(self, frame_id: int, gray: np.ndarray, mask: np.ndarray) -> None:
         """Copy one completed DMA pair into preallocated ordinary-RAM arrays."""
@@ -342,8 +542,9 @@ class CaptureWriter:
                 raise CaptureError(
                     f"raw frame IDs must be contiguous from zero; got {frame_id}"
                 )
-            np.copyto(self.raw_gray8[frame_id], gray_array, casting="no")
-            np.copyto(self.raw_binary8[frame_id], mask_array, casting="no")
+            if self.write_mode != "bounded_stream":
+                np.copyto(self.raw_gray8[frame_id], gray_array, casting="no")
+                np.copyto(self.raw_binary8[frame_id], mask_array, casting="no")
             self._raw_frames_recorded += 1
 
     def record_source_frame(self, frame_id: int, source: np.ndarray) -> None:
@@ -394,7 +595,10 @@ class CaptureWriter:
         }
         line = _json_bytes(record) + b"\n"
         estimate = int(gray.nbytes + mask.nbytes + 1024 + len(line))
-        if self._bytes_written + estimate > self.max_bytes - 32768:
+        current_disk = (self._bounded_disk_usage()
+                        if self.write_mode == "bounded_stream"
+                        else self._bytes_written + getattr(self, "_wait_log_bytes", 0))
+        if current_disk + estimate > self.max_bytes - 32768:
             raise CaptureError("capture files exceed configured capacity limit")
         gray_path = self.output_dir / gray_rel
         mask_path = self.output_dir / mask_rel
@@ -405,25 +609,70 @@ class CaptureWriter:
                 np.save(stream, gray, allow_pickle=False)
                 stream.flush()
                 os.fsync(stream.fileno())
+            self._track_bounded_owned_peak((gray_tmp,))
             with mask_tmp.open("wb") as stream:
                 np.save(stream, mask, allow_pickle=False)
                 stream.flush()
                 os.fsync(stream.fileno())
+            self._track_bounded_owned_peak((gray_tmp, mask_tmp))
             os.replace(gray_tmp, gray_path)
+            self._track_bounded_owned_peak(
+                (mask_tmp,), extra_bytes=gray_path.stat().st_size)
             os.replace(mask_tmp, mask_path)
+            self._track_bounded_owned_peak(
+                extra_bytes=gray_path.stat().st_size + mask_path.stat().st_size)
             with self._records_path.open("ab") as stream:
                 stream.write(line)
                 stream.flush()
             self._bytes_written += gray_path.stat().st_size + mask_path.stat().st_size + len(line)
             self._written += 1
+            if self.write_mode == "bounded_stream":
+                self._owned_bytes_peak = max(
+                    self._owned_bytes_peak, self._bounded_disk_usage())
         finally:
+            cleanup_error: OSError | None = None
             for temp in (gray_tmp, mask_tmp):
                 try:
                     temp.unlink(missing_ok=True)
-                except OSError:
-                    pass
+                except OSError as exc:
+                    if cleanup_error is None:
+                        cleanup_error = exc
+            if cleanup_error is not None and self.write_mode == "bounded_stream":
+                raise CaptureError(f"cannot clean capture temporary file: {cleanup_error}") from cleanup_error
+
+    def _track_bounded_owned_peak(self, temporary_paths: tuple[Path, ...] = (),
+                                  *, extra_bytes: int = 0) -> None:
+        if self.write_mode != "bounded_stream":
+            return
+        temporary_bytes = sum(path.stat().st_size for path in temporary_paths if path.exists())
+        self._owned_bytes_peak = max(
+            self._owned_bytes_peak,
+            self._bounded_disk_usage() + temporary_bytes + extra_bytes,
+        )
+
+    def _bounded_disk_usage(self) -> int:
+        """Constant-work count of known files owned by a bounded capture."""
+        total = self._bytes_written + self._wait_log_bytes
+        paths = (
+            self.output_dir / "ground-truth.template.json",
+            self.output_dir / "manifest.json",
+            self.output_dir / "manifest.json.tmp",
+            self.output_dir / RAW_FRAME_ARCHIVE_NAME,
+            self.output_dir / (RAW_FRAME_ARCHIVE_NAME + ".tmp"),
+            self.output_dir / (RAW_FRAME_ARCHIVE_NAME + ".sha256"),
+            self.output_dir / (RAW_FRAME_ARCHIVE_NAME + ".sha256.tmp"),
+        )
+        for path in paths:
+            try:
+                total += path.stat().st_size
+            except FileNotFoundError:
+                pass
+        return total
 
     def _writer_main(self) -> None:
+        if self.write_mode == "bounded_stream":
+            self._bounded_writer_main()
+            return
         if self.defer_writes_until_close:
             # close() starts this thread only after the runner has checked that
             # both DMA channels are idle. Slow storage cannot back up sampling.
@@ -447,6 +696,9 @@ class CaptureWriter:
                 if self._error is not None:
                     self._dropped += 1
                     continue
+                # submit finalizes per-frame enqueue timing before disk serialization.
+                with self._submission_lock:
+                    pass
                 self._write_frame(item)
             except BaseException as exc:
                 self._dropped += 1
@@ -455,7 +707,60 @@ class CaptureWriter:
             finally:
                 self._queue.task_done()
 
+    def _bounded_writer_main(self) -> None:
+        while True:
+            slot = self._queue.get()
+            try:
+                if slot is None:
+                    return
+                assert isinstance(slot, _BoundedCaptureSlot)
+                assert slot.frame_id is not None
+                if self._error is not None:
+                    self._dropped += 1
+                    try:
+                        self._append_wait_record(slot.frame_id, slot.blocked_ms,
+                                                 outcome="dropped")
+                    except BaseException:
+                        pass
+                    continue
+                assert slot.metadata is not None
+                written_before = self._written
+                try:
+                    self._write_frame((slot.frame_id, slot.gray, slot.mask, slot.metadata))
+                    self._append_wait_record(slot.frame_id, slot.blocked_ms)
+                except BaseException:
+                    if self._written == written_before:
+                        self._dropped += 1
+                    raise
+            except BaseException as exc:
+                # A wait-log failure after the frame artifacts were committed
+                # still fails the capture, but does not relabel that frame as lost.
+                if self._error is None:
+                    self._error = f"{type(exc).__name__}: {exc}"
+            finally:
+                if isinstance(slot, _BoundedCaptureSlot):
+                    slot.frame_id = None
+                    slot.metadata = None
+                    slot.blocked_ms = 0.0
+                    self._free_slots.put(slot)
+                self._queue.task_done()
+
+    def _append_wait_record(self, frame_id: int, blocked_ms: float,
+                            outcome: str = "accepted") -> None:
+        record = _json_bytes({"frame_id": frame_id, "blocked_ms": blocked_ms,
+                              "outcome": outcome}) + b"\n"
+        path = self.output_dir / "capture-submit-waits.jsonl"
+        if self._bounded_disk_usage() + len(record) > self.max_bytes - 32768:
+            raise CaptureError("capture wait records exceed configured capacity limit")
+        with path.open("ab") as stream:
+            stream.write(record)
+            stream.flush()
+        self._wait_log_bytes += len(record)
+        self._owned_bytes_peak = max(self._owned_bytes_peak, self._bounded_disk_usage())
+
     def close(self) -> dict[str, Any]:
+        if self.write_mode == "bounded_stream":
+            return self._close_bounded()
         if self._closed:
             return dict(self._manifest)
         self._closed = True
@@ -537,6 +842,304 @@ class CaptureWriter:
         })
         self._write_manifest()
         return dict(self._manifest)
+
+    def _close_bounded(self) -> dict[str, Any]:
+        # Let any already-entered submit reach its own configured finite
+        # slot timeout, then reserve the existing writer flush window.
+        deadline = time.monotonic() + 35.0 + (self.submit_timeout_s or 0.0)
+        with self._bounded_condition:
+            if self._bounded_close_result is not None:
+                return dict(self._bounded_close_result)
+            if self._bounded_state == "DRAINING":
+                while self._bounded_close_result is None:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise CaptureError("timed out waiting for concurrent capture close")
+                    self._bounded_condition.wait(timeout=remaining)
+                return dict(self._bounded_close_result)
+            self._bounded_state = "DRAINING"
+            while self._active_submitters:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    self._error = self._error or "active capture submitters did not finish before close"
+                    break
+                self._bounded_condition.wait(timeout=remaining)
+            active_submitters = self._active_submitters
+            self._closed = True
+
+        if active_submitters:
+            return self._bounded_close_incomplete(
+                "active submitters remain; writer was not sent a sentinel", writer_active=True)
+
+        try:
+            while self._thread.is_alive() and time.monotonic() < deadline:
+                try:
+                    self._queue.put(None, timeout=min(0.25, max(0.01, deadline - time.monotonic())))
+                    break
+                except queue.Full:
+                    continue
+            remaining = max(0.0, deadline - time.monotonic())
+            self._thread.join(timeout=remaining)
+        except BaseException as exc:
+            self._error = self._error or f"{type(exc).__name__}: {exc}"
+
+        if self._thread.is_alive():
+            self._error = self._error or "bounded writer thread did not stop within thirty-five seconds"
+            return self._bounded_close_incomplete(self._error, writer_active=True)
+
+        try:
+            if self._failed_submit_wait is not None:
+                frame_id, blocked_ms = self._failed_submit_wait
+                self._append_wait_record(frame_id, blocked_ms, outcome="timeout")
+            if self._records_path.exists():
+                with self._records_path.open("ab") as stream:
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            complete = (self._error is None and self._written == self.expected_frames
+                        and self._accepted == self.expected_frames and self._dropped == 0
+                        and self._raw_frames_recorded == self.expected_frames
+                        and not self.source_frame_ids)
+            if self._error is None and self._raw_frames_recorded != self.expected_frames:
+                self._error = (f"raw frame capture is incomplete: {self._raw_frames_recorded}/"
+                               f"{self.expected_frames}")
+            if (self._error is None and self._written != self.expected_frames):
+                self._error = (f"capture is incomplete: wrote {self._written}/"
+                               f"{self.expected_frames} frames")
+            if complete:
+                raw_frame_archive = self._write_raw_frame_archive_bounded()
+            else:
+                raw_frame_archive = None
+            records_sha256 = (_sha256_file_bounded(self._records_path)
+                              if self._records_path.exists() else None)
+            self._owned_bytes_peak = max(
+                self._owned_bytes_peak, self._bounded_disk_usage())
+            self._manifest.update({
+                "status": "COMPLETE" if complete else "INCOMPLETE",
+                "writer_active": False,
+                "completed_utc": datetime.now(timezone.utc).isoformat(),
+                "captured_frames": self._written,
+                "accepted_frames": self._accepted,
+                "dropped_frames": self._dropped,
+                "submitted_frames": self._submitted,
+                "missing_frames": max(0, self.expected_frames - self._written - self._dropped),
+                "bytes_written": self._bytes_written,
+                "frame_records_sha256": records_sha256,
+                "raw_frame_archive": raw_frame_archive,
+                "source_frame_archive": None,
+                "submit_wait_count": self._submit_wait_count,
+                "submit_wait_total_ms": self._submit_wait_total_ms,
+                "submit_wait_max_ms": self._submit_wait_max_ms,
+                "submit_wait_log": "capture-submit-waits.jsonl",
+                "submit_wait_log_bytes": self._wait_log_bytes,
+                "owned_bytes_peak": self._owned_bytes_peak,
+                "error": self._error,
+            })
+        except BaseException as exc:
+            self._error = self._error or f"{type(exc).__name__}: {exc}"
+            self._manifest.update({
+                "status": "INCOMPLETE",
+                "writer_active": False,
+                "completed_utc": datetime.now(timezone.utc).isoformat(),
+                "captured_frames": self._written,
+                "accepted_frames": self._accepted,
+                "dropped_frames": self._dropped,
+                "submitted_frames": self._submitted,
+                "missing_frames": max(0, self.expected_frames - self._written - self._dropped),
+                "bytes_written": self._bytes_written,
+                "frame_records_sha256": None,
+                "raw_frame_archive": None,
+                "submit_wait_count": self._submit_wait_count,
+                "submit_wait_total_ms": self._submit_wait_total_ms,
+                "submit_wait_max_ms": self._submit_wait_max_ms,
+                "submit_wait_log": "capture-submit-waits.jsonl",
+                "submit_wait_log_bytes": self._wait_log_bytes,
+                "owned_bytes_peak": self._owned_bytes_peak,
+                "error": self._error,
+            })
+        try:
+            self._write_manifest()
+        except BaseException as exc:
+            self._error = self._error or f"manifest write failed: {type(exc).__name__}: {exc}"
+            self._manifest.update({"status": "INCOMPLETE", "error": self._error})
+        result = dict(self._manifest)
+        with self._bounded_condition:
+            self._bounded_state = "CLOSED" if result["status"] == "COMPLETE" else "FAILED"
+            self._bounded_close_result = result
+            self._bounded_condition.notify_all()
+        return result
+
+    def _bounded_close_incomplete(self, reason: str, *, writer_active: bool) -> dict[str, Any]:
+        self._error = self._error or reason
+        self._manifest.update({
+            "status": "INCOMPLETE",
+            "writer_active": writer_active,
+            "completed_utc": datetime.now(timezone.utc).isoformat(),
+            "captured_frames": self._written,
+            "accepted_frames": self._accepted,
+            "dropped_frames": self._dropped,
+            "submitted_frames": self._submitted,
+            "missing_frames": max(0, self.expected_frames - self._written - self._dropped),
+            "bytes_written": self._bytes_written,
+            "frame_records_sha256": None,
+            "raw_frame_archive": None,
+            "submit_wait_count": self._submit_wait_count,
+            "submit_wait_total_ms": self._submit_wait_total_ms,
+            "submit_wait_max_ms": self._submit_wait_max_ms,
+            "submit_wait_log": "capture-submit-waits.jsonl",
+            "submit_wait_log_bytes": self._wait_log_bytes,
+            "owned_bytes_peak": self._owned_bytes_peak,
+            "error": self._error,
+        })
+        try:
+            self._write_manifest()
+        except BaseException as exc:
+            self._error = f"{self._error}; manifest write failed: {type(exc).__name__}: {exc}"
+            self._manifest["error"] = self._error
+        result = dict(self._manifest)
+        with self._bounded_condition:
+            self._bounded_state = "FAILED"
+            self._bounded_close_result = result
+            self._bounded_condition.notify_all()
+        return result
+
+    def _write_raw_frame_archive_bounded(self) -> dict[str, Any]:
+        """Build the compatible NPZ by streaming existing per-frame NPY files."""
+        archive_path = self.output_dir / RAW_FRAME_ARCHIVE_NAME
+        archive_tmp = archive_path.with_suffix(archive_path.suffix + ".tmp")
+        sidecar_path = archive_path.with_suffix(archive_path.suffix + ".sha256")
+        sidecar_tmp = sidecar_path.with_suffix(sidecar_path.suffix + ".tmp")
+        gray_digest = hashlib.sha256()
+        mask_digest = hashlib.sha256()
+        payload_names = (("raw_gray8", "gray", gray_digest),
+                         ("raw_binary8", "mask", mask_digest))
+        shape = (self.expected_frames, *FRAME_SHAPE)
+        header = {"descr": np.lib.format.dtype_to_descr(np.dtype(np.uint8)),
+                  "fortran_order": False, "shape": shape}
+
+        def check_capacity(size: int | None = None) -> None:
+            current_archive = archive_tmp if archive_tmp.exists() else archive_path
+            current_size = current_archive.stat().st_size if current_archive.exists() else 0
+            projected_size = current_size if size is None else max(current_size, size)
+            actual_owned = self._bounded_disk_usage() + projected_size - current_size
+            capacity_owned = actual_owned
+            if not sidecar_tmp.exists() and not sidecar_path.exists():
+                capacity_owned += 128
+            if capacity_owned > self.max_bytes - 8192:
+                raise CaptureError("capture files exceed configured capacity limit")
+            self._owned_bytes_peak = max(self._owned_bytes_peak, actual_owned)
+
+        class CapacityCheckedStream:
+            """Track ZIP output high-water and reject a write before it grows."""
+
+            def __init__(self, stream):
+                self._stream = stream
+                self._highwater = 0
+
+            def write(self, data):
+                projected = max(self._highwater, self._stream.tell() + len(data))
+                check_capacity(projected)
+                written = self._stream.write(data)
+                self._highwater = max(self._highwater,
+                                      self._stream.tell())
+                return written
+
+            def __getattr__(self, name):
+                return getattr(self._stream, name)
+
+        try:
+            with archive_tmp.open("w+b", buffering=0) as archive_stream:
+                checked_stream = CapacityCheckedStream(archive_stream)
+                with zipfile.ZipFile(checked_stream, mode="w",
+                                     compression=zipfile.ZIP_STORED,
+                                     allowZip64=True) as archive:
+                    for member_name, suffix, digest in payload_names:
+                        with archive.open(f"{member_name}.npy", mode="w",
+                                          force_zip64=True) as member:
+                            np.lib.format.write_array_header_1_0(member, header)
+                            check_capacity()
+                            for frame_id in range(self.expected_frames):
+                                path = self.output_dir / "frames" / f"{frame_id:06d}.{suffix}.npy"
+                                with path.open("rb") as frame_file:
+                                    frame = np.load(frame_file, allow_pickle=False)
+                                if (frame.dtype != np.uint8 or frame.shape != FRAME_SHAPE
+                                        or not frame.flags.c_contiguous):
+                                    raise CaptureError(
+                                        f"stored {suffix} frame {frame_id} is malformed")
+                                payload = memoryview(frame).cast("B")
+                                digest.update(payload)
+                                for offset in range(0, len(payload), 64 * 1024):
+                                    member.write(payload[offset:offset + 64 * 1024])
+                                    check_capacity()
+                                del payload, frame
+                            check_capacity()
+
+                    gray_sha256 = gray_digest.hexdigest()
+                    mask_sha256 = mask_digest.hexdigest()
+                    embedded = {
+                        "schema_version": 1,
+                        "captured_frames": self.expected_frames,
+                        "frame_shape": list(FRAME_SHAPE),
+                        "array_shape": list(shape),
+                        "dtype": "uint8",
+                        "raw_gray8_sha256": gray_sha256,
+                        "raw_binary8_sha256": mask_sha256,
+                    }
+                    embedded_text = _json_bytes(embedded).decode("utf-8")
+                    embedded_array = np.asarray(embedded_text)
+                    embedded_header = {
+                        "descr": np.lib.format.dtype_to_descr(embedded_array.dtype),
+                        "fortran_order": False,
+                        "shape": (),
+                    }
+                    with archive.open("archive_metadata_json.npy", mode="w",
+                                      force_zip64=True) as member:
+                        np.lib.format.write_array_header_1_0(member, embedded_header)
+                        payload = embedded_text.encode("utf-32-le")
+                        for offset in range(0, len(payload), 64 * 1024):
+                            member.write(payload[offset:offset + 64 * 1024])
+                            check_capacity()
+                    check_capacity()
+
+            with archive_tmp.open("r+b") as stream:
+                stream.flush()
+                os.fsync(stream.fileno())
+            check_capacity()
+            archive_sha256 = _sha256_file_bounded(archive_tmp)
+            sidecar_text = f"{archive_sha256}  {archive_path.name}\n"
+            os.replace(archive_tmp, archive_path)
+            with sidecar_tmp.open("x", encoding="ascii", newline="\n") as stream:
+                stream.write(sidecar_text)
+                stream.flush()
+                os.fsync(stream.fileno())
+            check_capacity()
+            os.replace(sidecar_tmp, sidecar_path)
+            self._owned_bytes_peak = max(
+                self._owned_bytes_peak,
+                self._bytes_written + self._wait_log_bytes
+                + archive_path.stat().st_size + sidecar_path.stat().st_size,
+            )
+            return {
+                "filename": archive_path.name,
+                "sha256_sidecar": sidecar_path.name,
+                "sha256": archive_sha256,
+                "size_bytes": archive_path.stat().st_size,
+                "captured_frames": self.expected_frames,
+                "shape": list(shape),
+                "dtype": "uint8",
+                "raw_gray8_sha256": gray_sha256,
+                "raw_binary8_sha256": mask_sha256,
+            }
+        finally:
+            cleanup_error: OSError | None = None
+            for temporary in (archive_tmp, sidecar_tmp):
+                try:
+                    temporary.unlink(missing_ok=True)
+                except OSError as exc:
+                    if cleanup_error is None:
+                        cleanup_error = exc
+            if cleanup_error is not None:
+                raise CaptureError(
+                    f"cannot clean archive temporary file: {cleanup_error}") from cleanup_error
 
     def _write_raw_frame_archive(self) -> dict[str, Any]:
         archive_path = self.output_dir / RAW_FRAME_ARCHIVE_NAME
@@ -651,12 +1254,28 @@ class CaptureWriter:
     def _write_manifest(self) -> None:
         target = self.output_dir / "manifest.json"
         temp = target.with_suffix(".json.tmp")
-        with temp.open("w", encoding="utf-8", newline="\n") as stream:
-            json.dump(self._manifest, stream, ensure_ascii=False, indent=2, sort_keys=True,
-                      allow_nan=False)
-            stream.write("\n")
-            stream.flush()
-            os.fsync(stream.fileno())
+        if self.write_mode != "bounded_stream":
+            with temp.open("w", encoding="utf-8", newline="\n") as stream:
+                json.dump(self._manifest, stream, ensure_ascii=False, indent=2, sort_keys=True,
+                          allow_nan=False)
+                stream.write("\n")
+                stream.flush()
+                os.fsync(stream.fileno())
+        else:
+            for _ in range(3):
+                with temp.open("w", encoding="utf-8", newline="\n") as stream:
+                    json.dump(self._manifest, stream, ensure_ascii=False, indent=2,
+                              sort_keys=True, allow_nan=False)
+                    stream.write("\n")
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                owned = self._bounded_disk_usage()
+                if owned > self.max_bytes - 8192:
+                    raise CaptureError("capture manifest exceeds configured capacity limit")
+                if owned <= self._owned_bytes_peak:
+                    break
+                self._owned_bytes_peak = owned
+                self._manifest["owned_bytes_peak"] = owned
         os.replace(temp, target)
 
 

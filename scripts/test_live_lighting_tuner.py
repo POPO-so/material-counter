@@ -77,6 +77,35 @@ class AnalysisTests(unittest.TestCase):
 
 
 class StateTests(unittest.TestCase):
+    def test_observed_camera_values_are_actual_readonly_and_expire(self):
+        state = tuner.LightingTunerState(observe_camera_controls=True)
+        output = 'auto_exposure: 1 (Manual Mode)\nexposure_time_absolute: 2\ngain: 16\ngamma: 100\n'
+        with patch.object(tuner.subprocess, 'run') as run:
+            run.return_value.stdout = output
+            state.refresh_camera_readback()
+        self.assertIn('--get-ctrl=', run.call_args.args[0][-1])
+        status = state.status()
+        self.assertEqual(status['camera_readback']['exposure_ms'], .2)
+        self.assertEqual(status['camera_readback']['gain'], 16)
+        self.assertFalse(status['camera_readback_stale'])
+        self.assertFalse(status['hardware_enabled'])
+        self.assertEqual(state.params['exposure'], 50)
+        state.camera_readback_at -= 5
+        self.assertTrue(state.status()['camera_readback_stale'])
+
+    def test_failed_or_disabled_camera_observation_never_claims_values(self):
+        state = tuner.LightingTunerState()
+        with patch.object(tuner.subprocess, 'run') as run:
+            state.refresh_camera_readback()
+            run.assert_not_called()
+        self.assertIsNone(state.status()['camera_readback'])
+        state = tuner.LightingTunerState(observe_camera_controls=True)
+        with patch.object(tuner.subprocess, 'run', side_effect=RuntimeError('read failed')):
+            state.refresh_camera_readback()
+        self.assertIsNone(state.status()['camera_readback'])
+        self.assertTrue(state.status()['camera_readback_stale'])
+        self.assertIn('read failed', state.status()['camera_readback_error'])
+
     def test_invalid_controls_are_atomic(self):
         state = tuner.LightingTunerState(width=180, height=120)
         original = state.params.copy()

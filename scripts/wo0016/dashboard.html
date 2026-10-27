@@ -50,11 +50,11 @@ dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);bord
 <div class="left">
 <section class="card" aria-labelledby="preview-title"><div class="card-head"><h2 id="preview-title"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><span id="preview-heading">二值化实时预览</span></h2><div class="small preview-meta"><span>画面 <span id="resolution">--</span></span><span>预览 <span id="preview-fps">--</span> FPS</span></div></div>
 <div class="video"><img id="stream" alt="实时预览；画中画显示二值化图像，来源见下方说明" width="320" height="240" hidden><div id="video-overlay" class="video-overlay"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><strong id="video-title">等待预览画面</strong><p id="video-note">尚未收到图像。请检查采集服务与连接。</p></div></div>
-<div class="video-footer"><span id="source" class="source">图像来源未确认</span><button class="text-button" id="toggle-preview" type="button" aria-pressed="false">暂停预览</button></div></section>
+<div class="video-footer"><span><span id="source" class="source">图像来源未确认</span><br><span id="preview-identity" class="small">预览帧身份：--</span></span><button class="text-button" id="toggle-preview" type="button" aria-pressed="false">暂停预览</button></div></section>
 <section class="card" aria-labelledby="logs-title"><div class="card-head"><h2 id="logs-title"><svg class="icon" aria-hidden="true"><use href="#list"/></svg>系统事件</h2><span class="small">最近 30 条</span></div><ol id="logs" class="logs" tabindex="0" aria-label="最近系统事件"><li><span>等待服务端状态事件…</span></li></ol><p class="log-note">显示计数及状态变化；完整日志保留在原运行记录中。</p></section>
 </div>
 <div class="right">
-<section class="card count-card" aria-labelledby="count-title"><div class="card-head"><h2 id="count-title"><svg class="icon" aria-hidden="true"><use href="#bars"/></svg><span id="count-label">累计计数</span></h2><span class="small">本次会话</span></div><div class="count-display"><span class="label" id="count-hint">等待真实计数数据</span><strong id="count" class="count">--</strong><div class="count-meta"><span>单位：个</span><span id="count-freshness">尚无已处理帧</span></div><div class="small" id="last-crossing-area">最近越线面积：--</div></div></section>
+<section class="card count-card" aria-labelledby="count-title"><div class="card-head"><h2 id="count-title"><svg class="icon" aria-hidden="true"><use href="#bars"/></svg><span id="count-label">累计计数</span></h2><span class="small">本次会话</span></div><div class="count-display"><span class="label" id="count-hint">等待真实计数数据</span><strong id="count" class="count">--</strong><div class="count-meta"><span>单位：个</span><span id="count-freshness">尚无已处理帧</span></div><div class="small" id="status-identity">状态帧身份：--</div><div class="small" id="last-crossing-area">最近越线面积：--</div></div></section>
 <div class="metrics">
 <section class="card metric"><svg class="icon" aria-hidden="true"><use href="#gauge"/></svg><div><h2>输送速度</h2><span id="conveyor-speed" class="value">--</span><small id="speed-note">等待轨迹速度与标定比例</small></div></section>
 <section class="card metric"><svg class="icon" aria-hidden="true"><use href="#list"/></svg><div><h2>当前帧区域数</h2><span id="detections" class="value">--</span><span class="unit">个</span><small>当前计数配置内的区域</small></div></section>
@@ -103,6 +103,7 @@ function preview(){
   if(streamFailed&&Date.now()<retryAfter){overlay('图像连接中断','正在等待重新连接；计数主链路不受影响。');return;}
   if(!$('stream').hasAttribute('src')){streamFailed=false;$('stream').src='/stream.mjpg';}
   if(!numeric(p.age_seconds)||p.age_seconds>5){overlay('等待新画面','尚无图像或已超过 5 秒未更新，请检查采集服务。');return;}
+  text('preview-identity',integer(p.frame_id)&&integer(p.total_count)?'最近发布预览帧 F'+fmt.format(p.frame_id)+' · 累计 '+fmt.format(p.total_count):'预览帧身份：旧版/测试画面未提供');
   if($('stream').naturalWidth>0&&!streamFailed){$('stream').hidden=false;$('video-overlay').hidden=true;}
 }
 $('stream').addEventListener('load',()=>preview());
@@ -140,6 +141,7 @@ function render(data){
   if(current!==null&&lastCount!==null&&current!==lastCount&&!matchMedia('(prefers-reduced-motion: reduce)').matches){countAnimation?.cancel();countAnimation=$('count').animate([{opacity:.55},{opacity:1}],{duration:500,easing:'ease-out'});}
   lastCount=current;
   text('count-freshness',final?'采集已结束 · 保留最终计数':fresh?'已同步最新完成帧':s.stale?'帧数据未更新':'尚无已处理帧');
+  text('status-identity',integer(s.frame_id)?'状态帧 F'+fmt.format(s.frame_id)+' · 累计 '+(integer(s.total_count)?fmt.format(s.total_count):'--'):'状态帧身份：未提供');
   text('last-crossing-area','最近越线面积：'+(valid&&(fresh||final)&&integer(s.last_crossing_area_px)?fmt.format(s.last_crossing_area_px)+' px':'--'));
   text('conveyor-speed',fresh&&numeric(s.cm_per_second)?s.cm_per_second.toFixed(1)+' cm/s':fresh&&numeric(s.px_per_frame)?s.px_per_frame.toFixed(1)+' px/帧':'--');
   text('speed-note',(fresh&&numeric(s.px_per_frame)?s.px_per_frame.toFixed(2)+' px/帧 · ':'像素速度未知 · ')+(fresh&&numeric(s.px_per_second)?s.px_per_second.toFixed(1)+' px/s · ':'')+(numeric(s.mm_per_pixel)?'按 '+s.mm_per_pixel+' mm/px 估算':'标定比例未提供'));
@@ -179,7 +181,7 @@ function offline(){
   for(const id of ['count','detections','processing-fps','elapsed','preview-fps','resolution','conveyor-speed'])text(id,'--');
   for(const id of ['camera','fpga','dma'])device(id,id==='camera'?'相机':id.toUpperCase(),'unknown');device('system','系统','unknown');
   text('last-crossing-area','最近越线面积：--');text('speed-note','等待轨迹速度与标定比例');
-  text('phase','未连接');text('frame-age','无法获取当前状态');text('count-hint','状态接口未连接');text('count-freshness','等待重新连接');text('source','图像来源未确认');
+  text('phase','未连接');text('frame-age','无法获取当前状态');text('count-hint','状态接口未连接');text('count-freshness','等待重新连接');text('source','图像来源未确认');text('preview-identity','预览帧身份：--');text('status-identity','状态帧身份：--');
   for(const id of ['cma-free','rss','dma-mm2s','dma-s2mm'])text(id,'--');
   disableCalibration();preview();
 }

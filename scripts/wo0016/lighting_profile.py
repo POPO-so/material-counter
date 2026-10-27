@@ -46,7 +46,7 @@ WIDTH = 320
 HEIGHT = 240
 OUTPUT_ROI = (30, 210)
 CAMERA_CONTROL_TIMEOUT_S = 5
-TX_BYTES = 16 + WIDTH * HEIGHT * 3 + 16
+TX_BYTES = 16 + WIDTH * HEIGHT + 16
 def gray_to_pl_lut(threshold: int = THRESHOLD) -> np.ndarray:
     """Map Gray8 > T to the fixed PL >=128 comparison, including negative offsets."""
     return _gray_to_pl_lut(validate_threshold(threshold))
@@ -138,14 +138,14 @@ def prepare_gray(gray320x240: np.ndarray) -> np.ndarray:
     return prepared
 
 
-def gray320x240_to_rgb_packet_into(gray: np.ndarray, output: Any, *,
-                                   frame_id: int = 0) -> None:
+def gray320x240_to_gray_packet_into(gray: np.ndarray, output: Any, *,
+                                    frame_id: int = 0) -> None:
     """Load the existing packet writer only when the lighting profile is used."""
     try:
         import packet_encoder
     except ImportError:  # pragma: no cover - package-style import support
         from . import packet_encoder
-    packet_encoder.gray320x240_to_rgb_packet_into(gray, output, frame_id=frame_id)
+    packet_encoder.gray320x240_to_gray_packet_into(gray, output, frame_id=frame_id)
 
 
 def encode_into(gray320x240: np.ndarray, output: Any, *, frame_id: int = 0,
@@ -153,7 +153,7 @@ def encode_into(gray320x240: np.ndarray, output: Any, *, frame_id: int = 0,
     """Encode a compensated private copy; preserve caller Gray8 for evidence."""
     prepared = prepare_gray(gray320x240)
     pl_input = gray_to_pl_lut(threshold)[prepared]
-    gray320x240_to_rgb_packet_into(pl_input, output, frame_id=frame_id)
+    gray320x240_to_gray_packet_into(pl_input, output, frame_id=frame_id)
 
 
 def encode(gray320x240: np.ndarray, *, frame_id: int = 0,
@@ -195,7 +195,7 @@ def make_packet_encoders(threshold: int = THRESHOLD):
         scratch.fill(lut[0])
         top, bottom = OUTPUT_ROI
         cv2.LUT(gray[top:bottom, :], lut, dst=scratch[top:bottom, :])
-        gray320x240_to_rgb_packet_into(scratch, output, frame_id=frame_id)
+        gray320x240_to_gray_packet_into(scratch, output, frame_id=frame_id)
 
     def encode(gray320x240: np.ndarray, *, frame_id: int = 0) -> np.ndarray:
         output = np.empty(TX_BYTES, dtype=np.uint8)

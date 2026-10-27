@@ -129,12 +129,11 @@ def test_wire_threshold_compensation_matches_gray_greater_than_100_for_every_int
     gray[40, :256] = values
     output = profile.encode(gray, frame_id=91)
 
-    pixels = output[16:16 + 320 * 240 * 3].reshape(240, 320, 3)
-    pl_binary = pixels[40, :256, 0] >= 128
+    pixels = output[16:16 + packet_encoder.PAYLOAD_BYTES].reshape(240, 320)
+    pl_binary = pixels[40, :256] >= 128
 
     assert np.array_equal(pl_binary, values > profile.THRESHOLD)
-    assert np.array_equal(pixels[40, :256, 0], pixels[40, :256, 1])
-    assert np.array_equal(pixels[40, :256, 1], pixels[40, :256, 2])
+    assert np.array_equal(pixels[40, :256], np.minimum(values.astype(np.uint16) + 27, 255))
 
 
 def test_encode_into_uses_existing_packet_writer_and_preserves_gray8_evidence(monkeypatch):
@@ -147,7 +146,7 @@ def test_encode_into_uses_existing_packet_writer_and_preserves_gray8_evidence(mo
     def write_packet(encoded_gray, destination, *, frame_id):
         calls.append((encoded_gray.copy(), destination, frame_id))
 
-    monkeypatch.setattr(profile, "gray320x240_to_rgb_packet_into", write_packet)
+    monkeypatch.setattr(profile, "gray320x240_to_gray_packet_into", write_packet)
     result = profile.encode_into(gray, output, frame_id=7)
 
     assert result is None

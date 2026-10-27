@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import re
 import subprocess
 import threading
 import time
@@ -159,7 +160,8 @@ class V4L2Controls:
 
 class LightingTunerState:
     def __init__(self, device='/dev/video0', width=640, height=400, fps=60,
-                 demo=False, allow_camera_controls=False):
+                 demo=False, allow_camera_controls=False, observe_camera_controls=False,
+                 exposure_buttons=False):
         self.device, self.width, self.height, self.fps = device, width, height, fps
         self.demo = demo
         self.lock = threading.RLock()
@@ -175,6 +177,36 @@ class LightingTunerState:
         self.source = 'DEMO' if demo else 'WAITING'
         self.error = None
         self.last_frame_time = None
+        self.observe_camera_controls = observe_camera_controls and not demo
+        self.exposure_buttons = exposure_buttons and not demo
+        self.camera_readback = None
+        self.camera_readback_at = None
+        self.camera_readback_error = None
+
+    def refresh_camera_readback(self):
+        """Read controls separately from frame processing; never write camera settings."""
+        if not self.observe_camera_controls:
+            return
+        try:
+            names = ('auto_exposure', 'exposure_time_absolute', 'gain', 'gamma')
+            result = subprocess.run(['v4l2-ctl', '-d', self.device, '--get-ctrl=' + ','.join(names)],
+                                    capture_output=True, text=True, timeout=2, check=True)
+            values = {}
+            for name in names:
+                match = re.search(r'^' + name + r':\s*(-?\d+)\b', result.stdout, re.MULTILINE)
+                if match is None:
+                    raise ValueError('Missing camera readback: ' + name)
+                values[name] = int(match.group(1))
+            values['exposure_ms'] = values['exposure_time_absolute'] / 10
+            with self.lock:
+                self.camera_readback = values
+                self.camera_readback_at = time.monotonic()
+                self.camera_readback_error = None
+        except Exception as error:
+            with self.lock:
+                self.camera_readback = None
+                self.camera_readback_at = None
+                self.camera_readback_error = str(error)
 
     def update_controls(self, updates):
         if not isinstance(updates, dict) or not updates or set(updates) - set(DEFAULT_PARAMS):
@@ -254,6 +286,10 @@ class LightingTunerState:
                         width=self.width, height=self.height, metrics=metrics,
                         hardware_enabled=self.controls is not None and not self.demo and not self.stop.is_set() and not self.error,
                         hardware_applied=deepcopy(self.hardware_applied), hardware_error=self.hardware_error,
+                        camera_readback=deepcopy(self.camera_readback),
+                        camera_readback_stale=self.camera_readback_at is None or time.monotonic() - self.camera_readback_at > 3,
+                        camera_readback_error=self.camera_readback_error,
+                        exposure_buttons=self.exposure_buttons,
                         physical_calibration_status='NOT_MEASURED')
 
     def snapshot(self, directory):
@@ -274,6 +310,12 @@ class LightingTunerState:
             metadata.unlink(missing_ok=True)
             raise
         return dict(ok=True, image=str(image.resolve()), report=str(metadata.resolve()))
+
+
+def observe_camera_loop(state):
+    while not state.stop.is_set():
+        state.refresh_camera_readback()
+        state.stop.wait(1)
 
 
 def capture_loop(state):
@@ -333,7 +375,7 @@ label{display:flex;align-items:center;gap:8px;padding:8px 0}label span{width:130
 @media(max-width:850px){main{grid-template-columns:1fr}body{padding:10px}}
 </style><header><h1>实时调光辅助台</h1><p>红色：灰度达到告警阈值（数值统计仅限 ROI）。绿框：检测到内孔；橙框：未检测到内孔（可能为实心件、阈值或阴影影响）。这些提示不能单独证明光学标定完成或计数准确率。</p><div id="banner">等待视频源…</div></header>
 <main><div><section><select id="mode"><option value="assist">调光辅助</option><option value="grid">三区均匀度</option><option value="binary">二值化</option><option value="raw">原始灰度</option></select><button id="save">保存原图与 JSON 快照</button><img id="video" src="/stream.mjpg" alt="实时预览"><div id="feedback" role="status"></div><div id="details"></div></section><section><h3>零件拓扑提示</h3><pre id="parts">等待帧…</pre></section></div>
-<div><section><div class="metrics" id="metrics"></div></section><section><h3>图像参数</h3><div id="software"></div><h3>相机参数</h3><p id="hw">读取硬件控制状态…</p><div id="hardware"></div></section></div></main>
+<div><section><h3>相机实际参数</h3><div class="metrics"><div class="kpi"><div>曝光时间</div><div class="value" id="actual-exposure">—</div><small id="actual-mode">等待回读</small></div><div class="kpi"><div>增益</div><div class="value" id="actual-gain">—</div><small id="actual-gamma">等待回读</small></div></div><p id="camera-readback-status">等待相机参数…</p><p id="exposure-buttons" hidden>板载按键：BTN0 减少 / BTN1 增加曝光，每次 0.1 毫秒。按下后松开；长按不连续调节。</p></section><section><div class="metrics" id="metrics"></div></section><section><h3>图像参数</h3><div id="software"></div><h3>网页相机控制</h3><p id="hw">读取硬件控制状态…</p><div id="hardware"></div></section></div></main>
 <script>
 const $=id=>document.getElementById(id);
 const controls=[['binary_thresh','分割阈值',0,255],['overexp_thresh','过曝告警阈值',1,255],['roi_top','ROI 起始行',0,399],['roi_bottom','ROI 结束行（不含）',1,400],['min_area','最小净面积',1,3000],['exposure','曝光（设备单位）',1,1000],['gamma','Gamma',1,500],['gain','增益',0,255]];
@@ -351,9 +393,17 @@ const kpis=[['背景灰度',m.bg_mean,m.status_bg,'参考 20–45'],['金属前�
 $('metrics').replaceChildren();for(const [title,value,status,hint] of kpis){const d=document.createElement('div');d.className='kpi '+(s.stale?'WAIT':status);d.innerHTML=`<div>${title}</div><div class="value">${s.stale?'—':fmt(value)}</div><small>${hint} · ${s.stale?'STALE':status||'WAIT'}</small>`;$('metrics').append(d);}
 for(const [key] of controls){if(key==='roi_top')$(key).max=s.height-1;if(key==='roi_bottom')$(key).max=s.height;if(document.activeElement!==$(key)){ $(key).value=s.params[key];$(key+'_value').textContent=s.params[key];}if(['exposure','gamma','gain'].includes(key))$(key).disabled=!s.hardware_enabled;}
 $('mode').value=s.params.view_mode;$('hw').textContent=s.hardware_enabled?'已启用 V4L2 写入和回读；退出时尝试恢复原设置':'硬件写入关闭；滑块数值不是相机实际读数';
+$('hardware').hidden=!s.hardware_enabled;
+const camera=s.camera_readback,actualValid=camera&&!s.camera_readback_stale;
+$('actual-exposure').textContent=actualValid?camera.exposure_ms.toFixed(1)+' ms':'—';
+$('actual-gain').textContent=actualValid?camera.gain:'—';
+$('actual-mode').textContent=actualValid?(camera.auto_exposure===1?'手动曝光':'自动曝光 · 显示曝光控件值'):'等待有效回读';
+$('actual-gamma').textContent=actualValid?'Gamma '+camera.gamma:'—';
+$('camera-readback-status').textContent=actualValid?'相机实际回读 · 约每秒更新一次':s.camera_readback_error?'参数回读失败：'+s.camera_readback_error:'暂无有效相机参数';
+$('exposure-buttons').hidden=!s.exposure_buttons;
 $('details').textContent=`源 ${s.source} · 帧 ${s.frame_id||'—'} · FPS ${fmt(m.fps)} · 左/中/右背景 ${fmt(m.left_bg)} / ${fmt(m.center_bg)} / ${fmt(m.right_bg)}`;
 $('parts').textContent=JSON.stringify(m.parts||[],null,2);
-}catch(e){$('banner').textContent='连接中断：'+e.message;$('video').style.opacity='.25';$('metrics').textContent='指标不可用';}finally{setTimeout(poll,500);}}poll();
+}catch(e){$('banner').textContent='连接中断：'+e.message;$('video').style.opacity='.25';$('metrics').textContent='指标不可用';$('actual-exposure').textContent='—';$('actual-gain').textContent='—';$('actual-mode').textContent='连接中断';$('actual-gamma').textContent='—';$('camera-readback-status').textContent='参数不可用';}finally{setTimeout(poll,500);}}poll();
 </script></html>'''
 
 
@@ -469,6 +519,8 @@ def main():
     parser.add_argument('--demo', action='store_true', help='Explicit synthetic source; never opens a camera')
     parser.add_argument('--allow-camera', action='store_true', help='Explicitly allow real acquisition')
     parser.add_argument('--allow-camera-controls', action='store_true', help='Allow V4L2 writes/readback/restoration')
+    parser.add_argument('--observe-camera-controls', action='store_true', help='Read actual camera controls every second without writing')
+    parser.add_argument('--exposure-buttons', action='store_true', help='Show the separately configured BTN0/BTN1 exposure adjustment hint')
     parser.add_argument('--snapshot-dir', type=Path, default=Path('calibration_snapshots'))
     args = parser.parse_args()
     if not args.demo and not args.allow_camera:
@@ -479,11 +531,16 @@ def main():
         parser.error('V4L2 controls require a /dev/video device')
     if not (3 <= args.width <= 4096 and 3 <= args.height <= 4096 and 1 <= args.fps <= 240 and 0 <= args.port <= 65535):
         parser.error('Invalid dimensions, FPS or port')
-    state = LightingTunerState(args.device, args.width, args.height, args.fps, args.demo, args.allow_camera_controls)
+    state = LightingTunerState(args.device, args.width, args.height, args.fps, args.demo, args.allow_camera_controls,
+                               args.observe_camera_controls, args.exposure_buttons)
     # Bind before opening hardware: a port conflict must not touch the camera.
     server = make_server(state, args.host, args.port, args.snapshot_dir)
     thread = threading.Thread(target=capture_loop, args=(state,), daemon=True)
     thread.start()
+    observer = None
+    if state.observe_camera_controls:
+        observer = threading.Thread(target=observe_camera_loop, args=(state,), daemon=True)
+        observer.start()
     print('Lighting tuner: http://%s:%d/ (%s)' % (args.host, server.server_port, 'DEMO' if args.demo else 'CAMERA'), flush=True)
     try:
         server.serve_forever()
@@ -493,6 +550,8 @@ def main():
         state.stop.set()
         server.server_close()
         thread.join(timeout=20)
+        if observer is not None:
+            observer.join(timeout=3)
         if thread.is_alive():
             print('Capture is still blocked in the camera backend; restoration is not confirmed.', flush=True)
 

@@ -30,6 +30,25 @@ def test_reset_preserves_new_crossing_on_boundary_and_raw_counter():
     assert state.snapshot()["dashboard"]["total_count"] == 0
 
 
+def test_dashboard_exposes_latest_completed_frame_identity_with_reset_count():
+    from dataclasses import make_dataclass
+    cls = state_module().LiveMonitorState
+    state = cls(mode="mock", history_limit=8)
+    result = make_dataclass("Result", ["frame_id", "total_count", "detections"])
+    state.complete_frame(result(41, 3, ()))
+    state.control("reset", {})
+    state.complete_frame(result(42, 4, ()))
+    telemetry = state.snapshot()["dashboard"]
+    assert telemetry["frame_id"] == 42
+    assert telemetry["total_count"] == 1
+
+
+def test_live_monitor_parser_accepts_compact_preview_overlay():
+    import run_live_monitor as live
+    assert live.parser().parse_args(["--preview-overlay", "compact"]).preview_overlay == "compact"
+    assert live.parser().parse_args([]).preview_overlay == "standard"
+
+
 def test_sliding_history_is_bounded_and_health_is_explicitly_mock():
     cls = state_module().LiveMonitorState
     state = cls(mode="mock", history_limit=8)

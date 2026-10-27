@@ -17,6 +17,7 @@ class DashboardState:
         self._first = self._last = self._ended = None
         self._frames = 0
         self._total = self._detections = None
+        self._frame_id = None
         self._phase = "waiting"
         self._events: deque[dict[str, Any]] = deque(maxlen=30)
         self._event_id = 0
@@ -41,6 +42,7 @@ class DashboardState:
                 self._event("收到首个已处理帧" if self.source == "software"
                             else "收到首个 DMA / Packer 校验完成的计数帧")
             self._last = now
+            self._frame_id = int(result.frame_id)
             self._frames += 1
             total = int(result.total_count)
             if total != self._total:
@@ -63,6 +65,7 @@ class DashboardState:
                    if fresh and span is not None and span > 0 else None)
             return {"source": self.source, "phase": self._phase,
                     "total_count": self._total, "detections": self._detections,
+                    "frame_id": self._frame_id,
                     "frames_processed": self._frames, "processing_fps": fps,
                     "fps_kind": "completed-frame session mean",
                     "elapsed_seconds": elapsed, "last_frame_age_seconds": age,

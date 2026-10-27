@@ -44,6 +44,9 @@ def parser():
     result.add_argument("--hysteresis", type=float, default=2.0, action=finite.PixelOverrideAction)
     result.add_argument("--host", default="127.0.0.1")
     result.add_argument("--port", type=int, default=8080)
+    result.add_argument("--preview-overlay", choices=("standard", "compact"),
+                         default="standard",
+                         help="standard keeps the mask inset and large X label; compact removes the inset and moves the X label to the lower edge")
     result.add_argument("--timeout-s", type=float, default=5.0)
     result.add_argument("--camera", default="/dev/video0")
     result.add_argument("--execute", action="store_true")
@@ -290,6 +293,7 @@ async def run_monitor(args, *, state=None, server_ready=None):
         active_rows=(counter.roi_top, counter.roi_bottom) if args.counting_profile == "lighting-calibrated" else (20,220), history_limit=args.history_limit,
         count_label="TOTAL COUNT" if args.mode == "board" else "DEMO COUNT",
         pip_label=f"PL DMA MASK TH{finite.effective_threshold(args)}" if args.mode == "board" and args.counting_profile == "lighting-calibrated" else "PL DMA MASK" if args.mode == "board" else "SYNTHETIC MASK",
+        preview_overlay=args.preview_overlay,
         view_mode_provider=lambda: state.view_mode)
     state.invalidate_preview = publisher.invalidate
     server = MjpegPreviewServer(hub=hub, host=args.host, port=args.port,

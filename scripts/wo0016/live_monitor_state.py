@@ -68,6 +68,7 @@ class LiveMonitorState:
         self.events = deque(maxlen=30)
         self.started = clock()
         self.frames = self.raw_total = self.base = self.total = self.detections = 0
+        self.last_frame_id = None
         self.reset_requested = False
         self.reset_sequence = 0
         self.view_mode = "overlay"
@@ -112,6 +113,7 @@ class LiveMonitorState:
                 self.events.append({"id": self.frames, "time": time.time(), "message": "计数已清零"})
             self.raw_total = result.total_count
             self.total = self.raw_total - self.base
+            self.last_frame_id = getattr(result, "frame_id", None)
             self.frames += 1
             self.detections = len(result.detections)
             self.completed_times.append(self.clock())
@@ -191,6 +193,7 @@ class LiveMonitorState:
             verified = "frame_verified" if fresh else "unknown"
             telemetry = {"source": "pl_dma" if self.mode == "board" else "software", "mode": self.mode,
                          "phase": self.phase, "total_count": self.total, "detections": self.detections,
+                         "frame_id": self.last_frame_id,
                          "frames_processed": self.frames, "processing_fps": fps,
                          "px_per_frame": px_frame, "px_per_second": px_second,
                          "cm_per_second": px_second * self.mm_per_pixel / 10 if px_second is not None else None,
