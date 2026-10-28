@@ -123,6 +123,7 @@ def test_periodic_publisher_skips_binary_jpeg_without_binary_subscriber(monkeypa
             assert hub.wait_for_next(after_sequence=0, timeout_s=2) == (1, b"main-jpeg")
             assert encode_calls == []
             assert hub.wait_for_next(after_sequence=0, timeout_s=0, binary=True) is None
+        publisher.close()  # Join the encoder before inspecting its final timing sample.
         assert publisher.encode_stage_timings_ms
         stage = publisher.encode_stage_timings_ms[-1]
         assert set(stage) >= {"main_jpeg_wall_ms", "main_jpeg_cpu_ms", "publish_wall_ms", "publish_cpu_ms"}
@@ -153,6 +154,7 @@ def test_periodic_publisher_encodes_binary_jpeg_on_demand_for_same_sequence(monk
                 assert main == (1, b"main-jpeg")
                 assert binary == (1, b"binary-jpeg")
                 assert encode_calls == [1]
+        publisher.close()
         stage = publisher.encode_stage_timings_ms[-1]
         assert set(stage) >= {"main_jpeg_wall_ms", "main_jpeg_cpu_ms",
                               "binary_jpeg_wall_ms", "binary_jpeg_cpu_ms",
