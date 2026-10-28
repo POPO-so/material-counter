@@ -90,6 +90,79 @@ def test_binary_hub_never_substitutes_main_or_stale_frame():
     assert hub.wait_for_next(after_sequence=0, timeout_s=0, binary=True) is None
 
 
+def test_stream_hub_tracks_binary_subscribers_separately_and_releases_lease():
+    hub = MjpegFrameHub()
+    assert hub.stream_clients == 0
+    assert hub.binary_stream_clients == 0
+    with hub.streaming_client():
+        assert hub.stream_clients == 1
+        assert hub.binary_stream_clients == 0
+        with hub.streaming_client(binary=True):
+            assert hub.stream_clients == 2
+            assert hub.binary_stream_clients == 1
+        assert hub.stream_clients == 1
+        assert hub.binary_stream_clients == 0
+    assert hub.stream_clients == 0
+
+
+def test_periodic_publisher_skips_binary_jpeg_without_binary_subscriber(monkeypatch):
+    hub = MjpegFrameHub()
+    encode_calls = []
+    monkeypatch.setattr(preview_module, "render_preview_jpeg", lambda *args, **kwargs: b"main-jpeg")
+
+    def encode(*args, **kwargs):
+        encode_calls.append(1)
+        return True, np.frombuffer(b"binary-jpeg", dtype=np.uint8)
+
+    monkeypatch.setattr(preview_module.cv2, "imencode", encode)
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120, interval=1, history_limit=4)
+    try:
+        with hub.streaming_client():
+            publisher(type("Frame", (), {"frame_id": 0, "total_count": 0})(),
+                      np.zeros((240, 320), np.uint8), np.full((240, 320), 72, np.uint8))
+            assert hub.wait_for_next(after_sequence=0, timeout_s=2) == (1, b"main-jpeg")
+            assert encode_calls == []
+            assert hub.wait_for_next(after_sequence=0, timeout_s=0, binary=True) is None
+        assert publisher.encode_stage_timings_ms
+        stage = publisher.encode_stage_timings_ms[-1]
+        assert set(stage) >= {"main_jpeg_wall_ms", "main_jpeg_cpu_ms", "publish_wall_ms", "publish_cpu_ms"}
+        assert "binary_jpeg_wall_ms" not in stage
+    finally:
+        publisher.close()
+        hub.close()
+
+
+def test_periodic_publisher_encodes_binary_jpeg_on_demand_for_same_sequence(monkeypatch):
+    hub = MjpegFrameHub()
+    encode_calls = []
+    monkeypatch.setattr(preview_module, "render_preview_jpeg", lambda *args, **kwargs: b"main-jpeg")
+
+    def encode(*args, **kwargs):
+        encode_calls.append(1)
+        return True, np.frombuffer(b"binary-jpeg", dtype=np.uint8)
+
+    monkeypatch.setattr(preview_module.cv2, "imencode", encode)
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120, interval=1, history_limit=4)
+    try:
+        with hub.streaming_client():
+            with hub.streaming_client(binary=True):
+                publisher(type("Frame", (), {"frame_id": 0, "total_count": 0})(),
+                          np.zeros((240, 320), np.uint8), np.full((240, 320), 72, np.uint8))
+                main = hub.wait_for_next(after_sequence=0, timeout_s=2)
+                binary = hub.wait_for_next(after_sequence=0, timeout_s=0, binary=True)
+                assert main == (1, b"main-jpeg")
+                assert binary == (1, b"binary-jpeg")
+                assert encode_calls == [1]
+        stage = publisher.encode_stage_timings_ms[-1]
+        assert set(stage) >= {"main_jpeg_wall_ms", "main_jpeg_cpu_ms",
+                              "binary_jpeg_wall_ms", "binary_jpeg_cpu_ms",
+                              "publish_wall_ms", "publish_cpu_ms"}
+        assert all(stage[name] >= 0 for name in stage)
+    finally:
+        publisher.close()
+        hub.close()
+
+
 def test_industrial_hud_uses_gray_camera_background_and_tracking_overlay():
     mask = np.zeros((240, 320), dtype=np.uint8)
     mask[100:108, 40:48] = 0xFF

@@ -34,6 +34,7 @@ class MjpegFrameHub:
         self._jpeg: bytes | None = None
         self._binary_jpeg: bytes | None = None
         self._stream_clients = 0
+        self._binary_stream_clients = 0
         self._closed = False
         self._published_times: deque[float] = deque(maxlen=60)
         self._dimensions: tuple[int, int] | None = None
@@ -65,18 +66,27 @@ class MjpegFrameHub:
         with self._condition:
             return self._stream_clients
 
+    @property
+    def binary_stream_clients(self) -> int:
+        with self._condition:
+            return self._binary_stream_clients
+
     @contextmanager
-    def streaming_client(self) -> Iterator[None]:
+    def streaming_client(self, *, binary: bool = False) -> Iterator[None]:
         with self._condition:
             if self._closed:
                 raise RuntimeError("frame hub is closed")
             self._stream_clients += 1
+            if binary:
+                self._binary_stream_clients += 1
             self._condition.notify_all()
         try:
             yield
         finally:
             with self._condition:
                 self._stream_clients -= 1
+                if binary:
+                    self._binary_stream_clients -= 1
                 self._condition.notify_all()
 
     def wait_for_client(self, *, timeout_s: float = 0.1) -> bool:
@@ -381,6 +391,8 @@ class PeriodicMjpegPublisher:
         self.handoff_timings_ms = (deque(maxlen=history_limit) if history_limit is not None else [])
         self.background_encode_timings_ms = (
             deque(maxlen=history_limit) if history_limit is not None else [])
+        self.encode_stage_timings_ms = (
+            deque(maxlen=history_limit) if history_limit is not None else [])
         self.encode_errors = deque(maxlen=history_limit) if history_limit is not None else []
         self._condition = threading.Condition()
         self._latest_mask = np.empty((240, 320), dtype=np.uint8)
@@ -511,12 +523,15 @@ class PeriodicMjpegPublisher:
                 self._encoded_sequence = sequence
 
             started = time.perf_counter()
+            stage_timings: dict[str, float] = {}
             try:
                 view_mode = ("overlay" if self.view_mode_provider is None
                              else self.view_mode_provider())
                 if view_mode not in ("overlay", "binary"):
                     raise ValueError("preview view mode must be 'overlay' or 'binary'")
                 main_background = self._encode_mask if view_mode == "binary" else self._encode_gray
+                stage_wall = time.perf_counter()
+                stage_cpu = time.thread_time()
                 jpeg = render_preview_jpeg(
                     self._encode_mask,
                     total_count=total_count,
@@ -531,17 +546,32 @@ class PeriodicMjpegPublisher:
                     **({"roi_top": roi_top, "roi_bottom": roi_bottom}
                        if (roi_top, roi_bottom) != (0, 240) else {}),
                 )
-                binary_ok, binary_payload = cv2.imencode(
-                    ".jpg", self._encode_mask,
-                    [int(cv2.IMWRITE_JPEG_QUALITY), int(self.quality)])
-                if not binary_ok:
-                    raise RuntimeError("OpenCV failed to encode the binary preview JPEG")
+                stage_timings["main_jpeg_wall_ms"] = (time.perf_counter() - stage_wall) * 1000.0
+                stage_timings["main_jpeg_cpu_ms"] = (time.thread_time() - stage_cpu) * 1000.0
+
+                binary_jpeg = None
+                if self.hub.binary_stream_clients:
+                    stage_wall = time.perf_counter()
+                    stage_cpu = time.thread_time()
+                    binary_ok, binary_payload = cv2.imencode(
+                        ".jpg", self._encode_mask,
+                        [int(cv2.IMWRITE_JPEG_QUALITY), int(self.quality)])
+                    if not binary_ok:
+                        raise RuntimeError("OpenCV failed to encode the binary preview JPEG")
+                    binary_jpeg = binary_payload.tobytes()
+                    stage_timings["binary_jpeg_wall_ms"] = (time.perf_counter() - stage_wall) * 1000.0
+                    stage_timings["binary_jpeg_cpu_ms"] = (time.thread_time() - stage_cpu) * 1000.0
+
+                stage_wall = time.perf_counter()
+                stage_cpu = time.thread_time()
                 with self._condition:
                     if epoch != self._epoch or self._closing or self._closed:
                         continue
-                    self.hub.publish(jpeg, binary_jpeg=binary_payload.tobytes(), dimensions=(self._encode_mask.shape[1],
+                    self.hub.publish(jpeg, binary_jpeg=binary_jpeg, dimensions=(self._encode_mask.shape[1],
                                      self._encode_mask.shape[0] + (85 if calibration is not None else 0)))
                     self.encoded_frames += 1
+                stage_timings["publish_wall_ms"] = (time.perf_counter() - stage_wall) * 1000.0
+                stage_timings["publish_cpu_ms"] = (time.thread_time() - stage_cpu) * 1000.0
             except RuntimeError as exc:
                 if not self.hub.closed:
                     self.encode_errors.append(f"{type(exc).__name__}: {exc}")
@@ -550,6 +580,7 @@ class PeriodicMjpegPublisher:
             except Exception as exc:
                 self.encode_errors.append(f"{type(exc).__name__}: {exc}")
             finally:
+                self.encode_stage_timings_ms.append(stage_timings)
                 self.background_encode_timings_ms.append(
                     (time.perf_counter() - started) * 1000.0
                 )
@@ -937,7 +968,7 @@ class MjpegPreviewServer:
                 try:
                     self.wfile.write(b"--frame\r\n")
                     self.wfile.flush()
-                    with hub.streaming_client():
+                    with hub.streaming_client(binary=self.path == "/binary.mjpg"):
                         while not hub.closed:
                             item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0,
                                                      binary=self.path == "/binary.mjpg")
