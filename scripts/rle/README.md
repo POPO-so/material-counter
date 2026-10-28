@@ -27,6 +27,8 @@ New-Item -ItemType Directory data/results/rle-check
 
 原生模块用本机 `g++` 编译为 Windows `.dll` 或 Linux `.so`。离线 FPS 包含软件 RLE 编码和黄金掩膜生成，不代表 PL 性能。
 
+默认原生库文件为 `rle_components_v2.dll/.so`；它在 C++ 内先按最小面积筛选，避免为噪点区域创建 Python 对象，同时保留候选局部掩膜所需的游程标签。显式提供 `--native-lib` 时必须用当前 `native/rle_components.cpp` 编译，不复用旧 ABI 的库。
+
 ## 构建
 
 1. 设置 `RLE_OUT` 为新的仿真目录；`python -B -m scripts.rle.sim_vectors <该目录>/vectors`，用 Vivado 2026.1 source `run_sim.tcl`，要求 `RLE_XSIM_ALL_PASS cases=8`。

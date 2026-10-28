@@ -48,7 +48,7 @@ class RleCounter(MaskCounter):
         self._split_origins = {}
         detections, rejected = [], []
         if frame.total_fg >= self.min_area:
-            analysis = analyze_runs(frame.runs, library=self.library)
+            analysis = analyze_runs(frame.runs, library=self.library, min_area=self.min_area)
             for index, component in enumerate(analysis.components):
                 if component.area < self.min_area:
                     continue

@@ -84,10 +84,11 @@ def _load_library(library: Any = None):
         library = ctypes.CDLL(key)
     else:
         key = None
-    function = library.rle_components
+    function = library.rle_components_filtered
     function.argtypes = [
         ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32,
         ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(_NativeComponent), ctypes.c_uint32,
+        ctypes.c_uint32,
     ]
     function.restype = ctypes.c_int
     if key is not None:
@@ -106,9 +107,12 @@ def _runs_array(runs: Any) -> np.ndarray:
     return array
 
 
-def analyze_runs(runs: Any, *, library: Any = None) -> RleAnalysis:
+def analyze_runs(runs: Any, *, library: Any = None, min_area: int = 1) -> RleAnalysis:
     """Join 8-connected runs and return per-component geometry and run labels."""
     array = _runs_array(runs)
+    if (isinstance(min_area,bool) or not isinstance(min_area,(int,np.integer))
+            or not 1<=min_area<=0xffffffff):
+        raise ValueError("min_area must be a positive integer")
     function = _load_library(library)
     count = len(array)
     labels = np.empty(count, dtype=np.uint32)
@@ -116,7 +120,7 @@ def analyze_runs(runs: Any, *, library: Any = None) -> RleAnalysis:
     run_pointer = array.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32))
     label_pointer = labels.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32))
     output_pointer = ctypes.cast(output, ctypes.POINTER(_NativeComponent))
-    result = function(run_pointer, count, label_pointer, output_pointer, count)
+    result = function(run_pointer, count, label_pointer, output_pointer, count, min_area)
     if result < 0:
         messages = {
             -1: "invalid native C ABI arguments",

@@ -51,11 +51,13 @@ void unite(std::vector<Node>& nodes, std::uint32_t first, std::uint32_t second) 
 
 // Return component count, or a negative error code: -1 arguments, -2 malformed
 // runs, -3 output capacity, -4 allocation failure.
-extern "C" RLE_EXPORT int rle_components(const std::uint32_t* runs,
+static int components_impl(const std::uint32_t* runs,
                                            std::uint32_t run_count,
                                            std::uint32_t* labels,
                                            Component* output,
-                                           std::uint32_t output_capacity) {
+                                           std::uint32_t output_capacity,
+                                           std::uint32_t minimum_area) {
+    if (minimum_area == 0) return -1;
     if ((run_count && (!runs || !labels)) || (output_capacity && !output)) return -1;
     if (run_count == 0) return 0;
 
@@ -140,10 +142,11 @@ extern "C" RLE_EXPORT int rle_components(const std::uint32_t* runs,
         roots.reserve(run_count);
         for (std::uint32_t i = 0; i < run_count; ++i) {
             const std::uint32_t root = labels[i];
-            if (aggregates[root].first_run == i) roots.push_back(root);
+            if (aggregates[root].first_run == i && aggregates[root].value.area >= minimum_area)
+                roots.push_back(root);
         }
         if (roots.size() > output_capacity) return -3;
-        std::vector<std::uint32_t> remap(run_count, 0);
+        std::vector<std::uint32_t> remap(run_count, 0xffffffffu);
         for (std::uint32_t component = 0; component < roots.size(); ++component) {
             const std::uint32_t root = roots[component];
             remap[root] = component;
@@ -156,4 +159,16 @@ extern "C" RLE_EXPORT int rle_components(const std::uint32_t* runs,
     } catch (...) {
         return -4;
     }
+}
+
+extern "C" RLE_EXPORT int rle_components(const std::uint32_t* runs,
+        std::uint32_t count, std::uint32_t* labels, Component* output,
+        std::uint32_t capacity) {
+    return components_impl(runs, count, labels, output, capacity, 1);
+}
+
+extern "C" RLE_EXPORT int rle_components_filtered(const std::uint32_t* runs,
+        std::uint32_t count, std::uint32_t* labels, Component* output,
+        std::uint32_t capacity, std::uint32_t minimum_area) {
+    return components_impl(runs, count, labels, output, capacity, minimum_area);
 }

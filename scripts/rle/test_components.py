@@ -4,6 +4,32 @@ import cv2
 import numpy as np
 import pytest
 
+
+def test_area_filter_keeps_run_labels_consistent(native_library):
+    from scripts.rle.components import analyze_runs, local_mask
+    # Two separate components; only the length-three run qualifies.
+    runs=np.array([(2<<20)|(2<<10)|2,(5<<20)|(10<<10)|12],dtype=np.uint32)
+    analysis=analyze_runs(runs,library=native_library,min_area=2)
+    assert len(analysis.components)==1 and analysis.components[0].area==3
+    assert analysis.labels.tolist()==[0xffffffff,0]
+    assert local_mask(runs,analysis.labels,0).shape==(1,3)
+
+
+def test_native_filtered_abi_returns_only_qualified_records(native_library):
+    import ctypes
+    from scripts.rle.components import _load_library, _NativeComponent
+    _load_library(native_library)
+    function=ctypes.CDLL(str(native_library)).rle_components_filtered
+    function.argtypes=[ctypes.POINTER(ctypes.c_uint32),ctypes.c_uint32,
+        ctypes.POINTER(ctypes.c_uint32),ctypes.POINTER(_NativeComponent),
+        ctypes.c_uint32,ctypes.c_uint32]
+    function.restype=ctypes.c_int
+    runs=(ctypes.c_uint32*2)((2<<20)|(2<<10)|2,(5<<20)|(10<<10)|12)
+    labels=(ctypes.c_uint32*2)()
+    output=(_NativeComponent*2)()
+    assert function(runs,2,labels,output,2,2)==1
+    assert list(labels)==[0xffffffff,0] and output[0].area==3
+
 from .components import analyze_runs, build_native, local_mask
 
 

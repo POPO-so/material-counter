@@ -111,7 +111,8 @@ def main(argv=None):
     counter=RleCounter(library=None,**settings)
     if (counter.width,counter.height)!=(WIDTH,HEIGHT):parser.error('counter must use 640x400 coordinates')
     top,bottom=counter._roi_bounds()
-    if not top<=counter.line_y<bottom:parser.error('ROI must contain counting line_y')
+    if counter.count_axis=='y' and not top<=counter.line_y<bottom:
+        parser.error('ROI must contain counting line_y')
     args.output.parent.mkdir(parents=True,exist_ok=True)
     roi=(0,top,WIDTH,bottom)
     config=dict(roi=roi,threshold=args.threshold,intensity_offset=args.offset,morph_mode=args.morph)
@@ -153,7 +154,7 @@ def main(argv=None):
             report['manifest_sha256']=sha256(args.manifest)
         library=args.native_lib
         if library is None:
-            library=args.output.parent/('rle_components.dll' if os.name=='nt' else 'rle_components.so')
+            library=args.output.parent/('rle_components_v2.dll' if os.name=='nt' else 'rle_components_v2.so')
             if not library.exists():build_native(library)
         counter.library=library
         source=(camera_frames(args.device,args.frames) if args.mode=='camera' else synthetic_frames(args.frames,args.pattern))
