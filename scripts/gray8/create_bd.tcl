@@ -122,6 +122,8 @@ try {
 }
 
 # Gray8-only packet adapter and threshold path; no RGB stage is included.
+if {![info exists gray8_profile]} {set gray8_profile binary8}
+if {$gray8_profile ni {binary8 rle}} {error "Unknown Gray8 build profile"}
 set gray8_sources {
     fpga/rtl/axis_gray2binary.v
     fpga/experimental/wo0014/axis_binary_output_checker.v
@@ -129,6 +131,14 @@ set gray8_sources {
     fpga/experimental/gray8/axis_dma_gray_adapter.v
     fpga/experimental/gray8/axis_dma_gray_image_pipeline.v
     fpga/experimental/gray8/axis_dma_gray_s2mm_pipeline_bd.v
+}
+if {$gray8_profile eq "rle"} {
+    set gray8_sources {
+        fpga/experimental/gray8/axis_dma_gray_adapter.v
+        fpga/rtl/axis_morphology3x3.v
+        fpga/experimental/rle/axis_rle_encoder.v
+        fpga/experimental/rle/axis_dma_rle_pipeline_bd.v
+    }
 }
 foreach source $gray8_sources {
     set original [file join $gray8_repo $source]
@@ -181,9 +191,14 @@ gray8_capture high_create [list ipcfg::create_cell_cfg xilinx.com:ip:xlconstant 
 gray8_capture low_create [list ipcfg::create_cell_cfg xilinx.com:ip:xlconstant constant_low \
     [dict create CONFIG.CONST_WIDTH 1 CONFIG.CONST_VAL 0]] {SUCCESS:created+configured}
 
-create_bd_cell -type module -reference axis_dma_gray_s2mm_pipeline_bd image_pipeline
-gray8_capture image_parameters [list set_property -dict [list \
-    CONFIG.WIDTH 320 CONFIG.HEIGHT 240 CONFIG.THRESHOLD 128] [get_bd_cells image_pipeline]]
+if {$gray8_profile eq "rle"} {
+    create_bd_cell -type module -reference axis_dma_rle_pipeline_bd image_pipeline
+    gray8_capture image_parameters [list set_property -dict [list CONFIG.WIDTH 640 CONFIG.HEIGHT 400 CONFIG.MAX_RUNS 16384] [get_bd_cells image_pipeline]]
+} else {
+    create_bd_cell -type module -reference axis_dma_gray_s2mm_pipeline_bd image_pipeline
+    gray8_capture image_parameters [list set_property -dict [list \
+        CONFIG.WIDTH 320 CONFIG.HEIGHT 240 CONFIG.THRESHOLD 128] [get_bd_cells image_pipeline]]
+}
 
 # Control path and original HP0 MM2S read path.
 connect_bd_intf_net [get_bd_intf_pins ps7/M_AXI_GP0] [get_bd_intf_pins control_fabric/S00_AXI]
@@ -258,6 +273,13 @@ dict set interface_readback axi_dma_0/S_AXIS_S2MM [gray8_check_axis_interface ax
 
 set readback [dict create clock_mhz 50 tx_packet_bytes 76832 rx_frame_bytes 76800 rx_beats 19200 \
     hp0_memory_width_bits 64 hp1_memory_width_bits 32 dma_params [dict create]]
+if {$gray8_profile eq "rle"} {
+    dict set readback protocol RLE_PACKET_V1
+    dict set readback tx_packet_bytes 256032
+    dict unset readback rx_frame_bytes
+    dict unset readback rx_beats
+    dict set readback rx_capacity_bytes 67744
+}
 foreach key {c_include_sg c_include_mm2s c_include_s2mm c_micro_dma c_sg_length_width c_addr_width \
              c_m_axi_mm2s_data_width c_m_axis_mm2s_tdata_width c_include_mm2s_dre c_mm2s_burst_size \
              c_m_axi_s2mm_data_width c_s_axis_s2mm_tdata_width c_include_s2mm_dre c_s2mm_burst_size} {

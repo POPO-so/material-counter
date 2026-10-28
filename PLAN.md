@@ -1,5 +1,20 @@
 # Gray8 唯一运行链路实施状态
 
+## 640×400 RLE 优化（2026-10-28，进行中）
+
+用户已批准按 [RLE 设计](docs/superpowers/specs/2026-10-28-rle-design.md) 开始实现。Manager 负责接口、RTL、集成及验收，边界明确的软件模块和既定测试交给 Luna Worker；不切换分支，不改既有历史证据。
+
+- [x] 协议与黄金模型：新增 `scripts/rle/protocol.py` 及失败先行测试；输入 256032 B、输出上限 67744 B；验证无损、错误帧及溢出。
+- [x] PS 原生游程 8 连通分析：新增 `scripts/rle/native/rle_components.cpp`、Python 包装与 OpenCV 对照测试；只重建复杂候选局部掩膜。
+- [x] PL 原分辨率 ROI/灰度映射/阈值/可选形态学与游程输出；新增 `fpga/experimental/rle/`、`fpga/sim/rle/` 和自检 XSim 入口。
+- [ ] 构建与板端入口：新增 `scripts/rle/` 构建、制品校验、变长 DMA 接收、计数与独立运行入口，验证实际接收长度及 FAIL_HOLD。
+- [ ] 运行协议/原生/集成回归、RTL 仿真、实现及可用板端验证；记录真实结果和未完成项。
+- [ ] 同步项目树、接口增量与运行说明，审查本次 diff，仅提交本次文件。
+
+测试命令统一使用可用 CPython，`-B -m pytest -p no:cacheprovider --basetemp <系统临时目录> scripts/rle -q`，避免再次在仓库生成测试临时目录。XSim 使用 Vivado 2026.1 后端；MCP 启动若失败，记录错误后使用配置中同一 Vivado 的 batch 入口，不更换后端。板端未通过前不替换桌面 GUI 的已验入口。
+
+中间验证：RTL 八组完整 640×400 黄金向量通过；首次板测发现投影 RAM 奇数地址丢失，综合后自检已复现并以显式独立读口修复，修复后的综合后自检通过。首次／第二次位流不作为交付验收。系统临时目录写入受限，测试临时文件转到独立 `data/results/rle-20261028-validation/` 下，避免污染源码。Vivado MCP 配置未改，后续启动和 Tcl 执行均恢复成功，初次异常根因未能确认。最终位流和板端结果继续记录。
+
 ## PySide6 Fluent 桌面界面（2026-10-28）
 
 - 桌面界面迁移至 PySide6/Qt Widgets，提供跟随系统、浅色、深色和高对比度主题；保留既有桌面会话、单连接同帧图传及安全停止逻辑。
