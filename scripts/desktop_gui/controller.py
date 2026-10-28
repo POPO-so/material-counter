@@ -211,6 +211,7 @@ class DesktopController:
                 self.view.show_message(data)
             elif kind == "status":
                 status = dict(data)
+                status["connected"] = bool(data.get("telemetry"))
                 with self.frame_lock:
                     if len(self.frame_times) > 1 and time.monotonic() - self.frame_times[-1] <= 5:
                         span = self.frame_times[-1] - self.frame_times[0]
@@ -343,7 +344,18 @@ class DesktopController:
             return
         session = self.session
         self._message("正在安全停止采集，等待相机释放与结果保存")
-        status = _request(self.config, session["token"], "GET", "/status.json")
+        try:
+            status = _request(self.config, session["token"], "GET", "/status.json")
+        except (OSError, http.client.HTTPException):
+            result = read_remote_result(self.config, session["dir"])
+            if (result and result.get("session_id") == session["id"]
+                    and result.get("status") == "STOPPED"
+                    and result.get("standard_profile_restored") is True):
+                self.session = None
+                self.latest_status = {}
+                self._message(f"采集已停止，最终计数 {result.get('total_count', '--')}；结果：{session['dir']}/result.json")
+                return
+            raise
         if status.get("session_id") != session["id"]:
             raise RuntimeError("端口会话不匹配，拒绝停止其他任务")
         self._control("/api/stop", {})

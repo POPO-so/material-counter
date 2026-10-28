@@ -522,7 +522,7 @@ class DesktopWindow:
             (self.update_button, ("update_backend", "backend_update")),
         )
         for button, keys in capability_keys:
-            enabled = connected and not self.closing and any(caps.get(key) is True for key in keys)
+            enabled = (connected or button is self.start_button) and not self.closing and any(caps.get(key) is True for key in keys)
             button.configure(state="normal" if enabled else "disabled")
 
     def _update_calibration(self, data: dict[str, Any], caps: dict[str, Any], connected: bool) -> None:

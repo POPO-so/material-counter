@@ -47,3 +47,18 @@ def test_stop_refuses_to_control_a_different_session(monkeypatch):
         app._stop()
     assert calls == [("GET", "/status.json")]
     assert app.session["id"] == "ours"
+
+
+def test_stop_accepts_already_stopped_matching_session(monkeypatch):
+    class Root:
+        def after(self, *_args):
+            pass
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "ours", "token": "token", "dir": "/ours", "pid": 12}
+    def disconnected(*_args, **_kwargs):
+        raise ConnectionRefusedError("service already stopped")
+    monkeypatch.setattr(controller, "_request", disconnected)
+    monkeypatch.setattr(controller, "read_remote_result", lambda _config, _path: {
+        "session_id": "ours", "status": "STOPPED", "standard_profile_restored": True, "total_count": 4})
+    app._stop()
+    assert app.session is None
