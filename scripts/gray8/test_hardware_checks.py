@@ -57,6 +57,63 @@ def test_completion_checks_actual_gray_payload_and_every_output_pixel():
         check.after_transfer(0, slot)
 
 
+def test_runtime_checks_keep_hardware_integrity_and_time_separate_stages(monkeypatch):
+    import hardware_checks
+
+    calls = {"validate": 0, "golden": 0}
+    original_validate = hardware_checks.validate_packet
+    original_golden = hardware_checks.binary_golden
+
+    def count_validate(*args, **kwargs):
+        calls["validate"] += 1
+        return original_validate(*args, **kwargs)
+
+    def count_golden(*args, **kwargs):
+        calls["golden"] += 1
+        return original_golden(*args, **kwargs)
+
+    monkeypatch.setattr(hardware_checks, "validate_packet", count_validate)
+    monkeypatch.setattr(hardware_checks, "binary_golden", count_golden)
+    regs = Registers()
+    gray = np.resize(np.array([0, 127, 128, 255], dtype=np.uint8), (240, 320))
+    packet = gray320x240_to_gray_packet(gray, frame_id=0)
+    mask = binary_golden(gray)
+    slot = SimpleNamespace(tx_buffer=np.frombuffer(packet, dtype=np.uint8), cached_mask=mask)
+    check = Gray8Checks(regs, validation="runtime")
+    check.before_transfer(0, slot)
+    regs.values.update({0x08: 9, 0x10: 0, 0x14: 1, 0x1C: TX_BYTES,
+                        0x20: TX_BYTES // 4, 0x24: 1, 0x34: 76800,
+                        0x38: 1, 0x3C: 240, 0x40: int(mask.sum(dtype=np.uint64)),
+                        0x4C: 2, 0x50: 76800, 0x54: 19200})
+
+    record = check.after_transfer(0, slot)
+
+    assert calls == {"validate": 0, "golden": 0}
+    assert check.verified_frames == 0
+    assert record["pixel_verified"] is False
+    assert set(record["timings_ms"]) == {"mmio", "output_checksum", "pixel_verify"}
+    assert set(record["cpu_ms"]) == {"mmio", "output_checksum", "pixel_verify"}
+    assert all(value >= 0 for value in record["timings_ms"].values())
+    assert all(value >= 0 for value in record["cpu_ms"].values())
+    assert check.output_checksum_frames == 1
+
+
+def test_runtime_mode_still_rejects_corrupt_output_checksum():
+    regs = Registers()
+    gray = np.zeros((240, 320), dtype=np.uint8)
+    packet = gray320x240_to_gray_packet(gray, frame_id=0)
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    slot = SimpleNamespace(tx_buffer=np.frombuffer(packet, dtype=np.uint8), cached_mask=mask)
+    check = Gray8Checks(regs, validation="runtime")
+    check.before_transfer(0, slot)
+    regs.values.update({0x08: 9, 0x10: 0, 0x14: 1, 0x1C: TX_BYTES,
+                        0x20: TX_BYTES // 4, 0x24: 1, 0x34: 76800,
+                        0x38: 1, 0x3C: 240, 0x40: 1,
+                        0x4C: 2, 0x50: 76800, 0x54: 19200})
+    with pytest.raises(RuntimeError, match="checksum"):
+        check.after_transfer(0, slot)
+
+
 def test_fresh_started_dma_is_allowed_only_before_any_programmed_transfer():
     regs = Registers()
     dma = {0x04: 0, 0x34: 0}

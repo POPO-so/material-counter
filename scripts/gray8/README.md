@@ -16,6 +16,8 @@ XSim 的 adapter、320×240 wrapper、S2MM guards 三项均已通过，Vivado BI
 
 ## 运行入口
 
+2026-10-28 起可指定 `--validation full|runtime`，默认 `full` 保持逐像素验收行为，`self-test` 必须使用 `full`。`runtime` 跳过输入包的软件重解码、软件期望掩膜生成和全像素比较，仍检查硬件签名、状态、帧号、长度计数和返回数据的输出 checksum；它不等于逐像素验证通过。结果分别为 `GRAY8_PIXEL_VERIFIED`、`GRAY8_RUNTIME_CHECKED`，并报告验证帧数及检查阶段的墙钟/线程 CPU 耗时。输入包 checksum 仍由编码器生成并由 PL 验证，不能用输出 checksum 替代。
+
 `run_gray8_counter.py` 支持 `offline`（默认，只验证 manifest/制品）、`self-test`（板端合成输入）和 `camera` 模式。命令需要 manifest、对应 SHA-256 和一个从未存在过的结果路径：
 
 ```powershell

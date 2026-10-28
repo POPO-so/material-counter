@@ -61,6 +61,8 @@ def main(argv=None):
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--manifest-sha256", required=True)
     parser.add_argument("--mode", choices=("offline", "self-test", "camera"), default="offline")
+    parser.add_argument("--validation", choices=("full", "runtime"), default="full",
+                        help="full checks each pixel; runtime retains hardware and checksum checks")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--load-overlay", action="store_true")
     parser.add_argument("--boot-id")
@@ -70,6 +72,8 @@ def main(argv=None):
     parser.add_argument("--lighting-threshold", type=int, default=100)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
+    if args.mode == "self-test" and args.validation != "full":
+        parser.error("self-test requires --validation full")
     if args.output.exists():
         parser.error("Choose a new output path; existing evidence is never overwritten")
     if not 1 <= args.frames <= 100000:
@@ -79,7 +83,10 @@ def main(argv=None):
     result = dict(status="OFFLINE_ARTIFACTS_VALID", protocol=manifest["protocol"],
                   manifest_sha256=sha256(args.manifest), mode=args.mode,
                   tx_bytes=TX_BYTES, rx_bytes=76800, count_accuracy="NOT_MEASURED",
-                  verify_pixels=True, frames_requested=args.frames)
+                  validation=args.validation, verify_pixels=args.validation == "full",
+                  pixel_verified_frames=0, output_checksum_frames=0,
+                  frames_requested=args.frames,
+                  timing_scope="Offline artifact validation only; no frames were transferred")
     if args.mode == "offline":
         args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")
         print(json.dumps(result))
@@ -118,7 +125,7 @@ def main(argv=None):
     checker = MMIO(manifest["checker_base"], 0x10000)
     dma_registers = MMIO(manifest["dma_base"], 0x10000)
     result["dma_before_driver"] = require_dma_quiescent(dma_registers.read)
-    checks = Gray8Checks(checker, verify_pixels=True, dma_read=dma_registers.read)
+    checks = Gray8Checks(checker, validation=args.validation, dma_read=dma_registers.read)
     checks.signatures()
     result["afi1"] = board_once.sync_afi1_hp1_32bit(
         api, SimpleNamespace(hwh_path=args.manifest.resolve().parent / manifest["hwh_path"]),
@@ -167,10 +174,16 @@ def main(argv=None):
             raise RuntimeError("DMA channels are not idle after stream completion")
         if preflight.read_boot_id() != boot:
             raise RuntimeError("Board boot changed during execution")
-        result.update(status="GRAY8_PIXEL_VERIFIED", frames=len(frames),
+        status = ("GRAY8_PIXEL_VERIFIED" if args.validation == "full"
+                  else "GRAY8_RUNTIME_CHECKED")
+        result.update(status=status, validation=args.validation, frames=len(frames),
                       pixel_verified_frames=checks.verified_frames,
+                      output_checksum_frames=checks.output_checksum_frames,
                       elapsed_s=elapsed, throughput_fps=len(frames) / elapsed,
-                      timing_scope="Includes startup/warmup and per-frame pixel verification",
+                      timing_scope=("Includes startup/warmup, MMIO checks, output checksum, "
+                                    + ("and full input/output pixel verification" if args.validation == "full"
+                                       else "without software per-pixel verification")),
+                      check_timings_ms=checks.summarize_timings_ms(),
                       total_count=counter.total_count,
                       stage_timings_ms=runtime.summarize_stage_timings_ms(timings),
                       camera_metadata=capture_metadata,
@@ -202,7 +215,7 @@ def main(argv=None):
             print("GRAY8_FAIL_HOLD: process retains CMA buffers; operator recovery required", flush=True)
             while True:
                 time.sleep(1)
-    return 0 if result["status"] == "GRAY8_PIXEL_VERIFIED" else 1
+    return 0 if result["status"] in ("GRAY8_PIXEL_VERIFIED", "GRAY8_RUNTIME_CHECKED") else 1
 
 
 if __name__ == "__main__":
