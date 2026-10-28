@@ -1,5 +1,16 @@
 # Gray8 唯一运行链路实施状态
 
+## 网页启动器优化（2026-10-28）
+
+用户已批准按风险核实结果开始优化。实现采用独立 JSON 部署配置、可独立加载测试的板端启动/停止脚本和真实本机 HTTP 代理测试；预期哈希继续由维护者明确更新，禁止自动信任板端哈希。保留现有停止所有权检查、FAIL_HOLD、不自动重试和历史实验入口约束。
+
+- [x] 先添加配置校验、远端流程和目录命名的失败测试，再集中地址、路径、端口和预期哈希；配置错误必须在 SSH/停止服务前报错。
+- [x] 提取远端启动/停止脚本，参数化部署依赖，保留旧已部署模块的目录兼容；新版模块使用无 attempt 编号的网页运行目录。
+- [x] 补真实回环 HTTP POST/MJPEG 和注册表系统边界测试；保持本机端口和 Local 互斥锁范围，修正互斥锁句柄释放。
+- [x] 运行相关回归，检查本次增量 diff、维护项目树及配置说明；相机模块、项目树和本文件按任务起始快照隔离增量，原有无关修改保留在工作区。
+
+验证：`test_camera_only_preview.py`、`test_web_launcher_deployment.py`、`test_web_launcher_bridge.py`、`test_web_launcher_browser.py`、`test_web_preview_workflow.py`、`test_live_monitor_http.py` 共 126 passed（27.26 s，Windows 沙箱外，真实回环 HTTP；运行参数 `-B -m pytest -p no:cacheprovider ... -q`）。部署与板端入口的初始失败测试为 35 failed，缺少实现；实现后通过。2026-10-28 尝试只读 SSH 核对板端产物和脚本语法时，`192.168.2.99` 连接超时，未执行远端代码、未写板卡或停止图传；本轮不宣称真实板端启动通过。
+
 用户于 2026-10-27 明确批准移除当前生产路径中的 Gray→RGB→Gray。当前运行入口统一使用 `GRAY8_PACKET_V1`；旧 RGB 编码器、RGB AXI-Stream RTL、旧 RGB 构建入口及对应回放代码已从活动实现删除，不保留运行期 RGB 回退。历史 `data/results/` 和旧设计说明作为原始证据保留，不改写成 Gray8 结果。
 
 该授权只确定当前实现采用 Gray8 输入协议，不代表算法 Route、摄像头/机械路线、项目接口正式冻结或验收签字已完成。

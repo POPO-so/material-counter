@@ -33,6 +33,7 @@ from live_calibration import (MonochromePreprocessor, monochrome_view,
 
 EXPECTED_BOOT = "35983d66-bb1d-4a8a-85e5-802170825515"
 WO_ROOT = Path("/home/xilinx/wo0017")
+WEB_OUTPUT = False
 CAMERA_PATH = "/dev/video0"
 CAMERA_INDEX = 0
 SOURCE_WIDTH, SOURCE_HEIGHT, SOURCE_FPS = 640, 400, 60
@@ -224,6 +225,11 @@ def _median(values: list[float]) -> float | None:
     return float(np.median(np.asarray(values, dtype=np.float64)))
 
 
+def web_output_name(boot_id: str) -> str:
+    """Each web launch already has its own mktemp parent directory."""
+    return f"camera-preview-{boot_id}"
+
+
 def main(argv: list[str] | None = None) -> int:
     global running
     parser = argparse.ArgumentParser(description=__doc__)
@@ -240,9 +246,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.expected_boot_id != EXPECTED_BOOT or live_boot_id() != EXPECTED_BOOT:
         raise RuntimeError("live Boot ID differs from the explicit preview binding")
     output_dir = args.output_dir.resolve(strict=False)
-    expected_name = f"camera-preview-{EXPECTED_BOOT}-06"
+    expected_name = web_output_name(EXPECTED_BOOT) if WEB_OUTPUT else f"camera-preview-{EXPECTED_BOOT}-06"
     if output_dir.parent != WO_ROOT or output_dir.name != expected_name:
-        raise RuntimeError("output directory must be the exact WO-0017 attempt -06 path")
+        raise RuntimeError("output directory must match the bound preview run path")
     if output_dir.exists() or output_dir.is_symlink():
         raise RuntimeError(f"refusing to overwrite existing attempt directory: {output_dir}")
     output_dir.mkdir(mode=0o700)

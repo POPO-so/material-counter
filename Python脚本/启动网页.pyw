@@ -8,129 +8,93 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import hashlib
 import json
+import re
 import shlex
 import subprocess
 import sys
-import tempfile
-from pathlib import Path
+from functools import lru_cache
+from pathlib import Path, PurePosixPath
 import time
 import webbrowser
 from urllib.request import ProxyHandler, build_opener
 
-HOST = '192.168.2.99'
-URL = f'http://{HOST}:8080/'
+ROOT = Path(__file__).resolve().parent.parent
+CONFIG_PATH = ROOT / 'Python脚本' / '网页部署.json'
+PAYLOAD_DIR = ROOT / 'scripts' / 'wo0016'
 LOCAL_URL = 'http://127.0.0.1:18765/'
-STARTUP_LOG = Path(tempfile.gettempdir()) / 'material-counter-startup.log'
-STARTUP_STATUS = Path(tempfile.gettempdir()) / 'material-counter-startup-status.json'
-BOARD_DIR = '/home/xilinx/material-web-resources-20261027'
+RUNTIME_DIR = ROOT / '.runtime'
+STARTUP_LOG = RUNTIME_DIR / 'material-counter-startup.log'
+STARTUP_STATUS = RUNTIME_DIR / 'material-counter-startup-status.json'
+BRIDGE_LOG = RUNTIME_DIR / 'material-counter-web-sync.log'
+BRIDGE_VERSION = 5
 
-# 使用已部署的预览模块，并为每次启动分配独立目录。
-BOARD_CODE = r'''import fcntl, json, os, pathlib, subprocess, sys, time
 
-root = pathlib.Path('/home/xilinx/gray8-dma-20261027')
-manifest = root / 'export/manifest.json'
-manifest_hash = 'b81e6ea09cba48d643b3f09ae88b9ea784176c81ebc53799f1af38aedb0cd484'
-bit = root / 'export/gray8.bit'
-bit_hash = 'feadeae19058e23c6bfb443e4f25aade48a90d19c8b64bbbc7fe3219ebcea926'
-outdir = pathlib.Path(sys.argv[1])
-lock = open('/tmp/material-web-preview.lock', 'a')
-fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-sys.path.insert(0, str(root / 'scripts/wo0015'))
-import board_preflight as preflight
-preflight.audit_process_ownership()
-state = preflight.inspect_pynq_global_state(
-    '/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/__init__.py',
-    require_empty_shutdown=True)
-load = state['pl_state_status'] == 'COLD_BOOT_NO_GLOBAL_STATE'
-if not load:
-    preflight.inspect_pynq_global_state(
-        '/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/__init__.py',
-        require_empty_shutdown=True, require_loaded_bit=True,
-        expected_bit_path=bit, expected_bit_sha256=bit_hash)
-boot = pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip()
-evidence = outdir / 'self-test.json'
-cmd = ['/usr/local/share/pynq-venv/bin/python3',
-       str(root / 'scripts/gray8/run_gray8_counter.py'), '--manifest', str(manifest),
-       '--manifest-sha256', manifest_hash, '--mode', 'self-test', '--frames', '3',
-       '--execute', '--boot-id', boot, '--output', str(evidence)]
-if load:
-    cmd.append('--load-overlay')
-env = os.environ.copy()
-env['XILINX_XRT'] = '/usr'
-with (outdir / 'self-test.log').open('w') as log:
-    proc = subprocess.Popen(cmd, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-    deadline = time.monotonic() + 90
-    while proc.poll() is None and time.monotonic() < deadline:
-        time.sleep(1)
-    if proc.poll() is None:
-        raise RuntimeError('自检尚未结束；进程及 DMA 状态已保留，需人工检查 self-test.log')
-if proc.returncode != 0 or not evidence.exists():
-    raise RuntimeError('FPGA 自检失败，请检查 self-test.log；不要自动重试')
-result = json.loads(evidence.read_text())
-if (result.get('status') != 'GRAY8_PIXEL_VERIFIED' or result.get('frames') != 3
-        or result.get('pixel_verified_frames') != 3 or result.get('buffers_held') is not False
-        or result.get('boot_id') != boot):
-    raise RuntimeError('FPGA 自检结果不满足启动条件')
-if preflight.read_cma_meminfo()['CmaFree'] <= 32768:
-    os.sync()
-    pathlib.Path('/proc/sys/vm/drop_caches').write_text('3\n')
-    if preflight.read_cma_meminfo()['CmaFree'] <= 32768:
-        raise RuntimeError('连续内存不足，无法启动相机预览')
-if pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip() != boot:
-    raise RuntimeError('板卡开机状态已变化')
-subprocess.run(['v4l2-ctl', '-d', '/dev/video0',
-                '--set-fmt-video=width=640,height=400,pixelformat=MJPG',
-                '--set-parm=60',
-                '--set-ctrl=auto_exposure=1,exposure_time_absolute=50,brightness=0'],
-               check=True, timeout=10)
-sys.path.insert(0, os.getcwd())
-import camera_only_preview as preview
-preview.EXPECTED_BOOT = boot
-preview.WO_ROOT = outdir
-output = outdir / ('camera-preview-' + boot + '-06')
-raise SystemExit(preview.main(['--expected-boot-id', boot, '--output-dir', str(output), '--calibration-mode']))
-'''
+def load_deployment_config(path=None):
+    path = CONFIG_PATH if path is None else Path(path)
+    def unique_pairs(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('重复字段: ' + key)
+            result[key] = value
+        return result
+    def valid_path(value, absolute):
+        if not isinstance(value, str) or not value or any(c in value for c in ('\\', '\0', '\n', '\r')):
+            return False
+        pure = PurePosixPath(value)
+        return (pure.is_absolute() == absolute and value == str(pure)
+                and value not in ('/', '.') and '..' not in pure.parts)
+    try:
+        cfg = json.loads(path.read_text(encoding='utf-8-sig'), object_pairs_hook=unique_pairs)
+        required = {'host', 'board_port', 'board_dir', 'runtime_root', 'python', 'pynq_init',
+                    'manifest', 'manifest_sha256', 'bit', 'bit_sha256', 'legacy_preview_paths'}
+        if not isinstance(cfg, dict) or set(cfg) != required:
+            raise ValueError('字段缺失或含有未知字段')
+        host = cfg['host']
+        if (not isinstance(host, str) or len(host) > 253 or not host
+                or any(not re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?', label)
+                       for label in host.split('.'))):
+            raise ValueError('host 必须为 IPv4 地址或主机名')
+        if type(cfg['board_port']) is not int or not 1 <= cfg['board_port'] <= 65535:
+            raise ValueError('board_port 必须在 1 到 65535 之间')
+        for key in ('board_dir', 'runtime_root', 'python', 'pynq_init'):
+            if not valid_path(cfg[key], True):
+                raise ValueError(key + ' 必须为规范的板端绝对路径')
+        for key in ('manifest', 'bit'):
+            if not valid_path(cfg[key], False):
+                raise ValueError(key + ' 必须为 runtime_root 内的相对路径')
+            if not isinstance(cfg[key + '_sha256'], str) or not re.fullmatch(r'[0-9a-f]{64}', cfg[key + '_sha256']):
+                raise ValueError(key + '_sha256 必须为 64 位小写 SHA-256')
+        legacy = cfg['legacy_preview_paths']
+        if not isinstance(legacy, list) or not all(valid_path(value, True) for value in legacy):
+            raise ValueError('legacy_preview_paths 必须为已确认预览入口的绝对路径列表')
+        return cfg
+    except (OSError, ValueError, TypeError) as exc:
+        raise RuntimeError(f'部署配置无效（{path}）：{exc}') from exc
 
-# 只停止已知预览入口；无法确认持有者时保留现场，不使用强制终止。
-STOP_CODE = r'''import os, pathlib, signal, subprocess, time
-def owners(*args):
-    result = subprocess.run(['fuser', *args], capture_output=True, text=True)
-    if result.returncode not in (0, 1):
-        raise RuntimeError('无法检查设备或端口占用')
-    return {int(x) for x in result.stdout.split()}
-camera = owners('/dev/video0')
-port = owners('-n', 'tcp', '8080')
-if len(camera) != 1 or camera != port:
-    raise RuntimeError('相机与端口的占用进程不一致，未执行停止')
-pid = next(iter(camera))
-proc = pathlib.Path('/proc') / str(pid)
-args = proc.joinpath('cmdline').read_bytes().split(b'\0')
-known_paths = {b'/home/xilinx/web-preview-20261027-124938/launch_viewer.py',
-               b'/home/xilinx/image-debug-660088b71d/launch.py'}
-known = any(arg in known_paths for arg in args)
-known = known or any(b'/tmp/material-web-preview.lock' in arg and
-                     b'import camera_only_preview as preview' in arg for arg in args)
-if not known:
-    raise RuntimeError('占用进程不是已知网页预览入口，未执行停止')
-os.kill(pid, signal.SIGTERM)
-deadline = time.monotonic() + 30
-while time.monotonic() < deadline:
-    if not owners('/dev/video0') and not owners('-n', 'tcp', '8080'):
-        try:
-            state = proc.joinpath('stat').read_text().split(') ', 1)[1][0]
-        except FileNotFoundError:
-            state = 'Z'
-        if state == 'Z':
-            break
-    time.sleep(0.5)
-else:
-    raise RuntimeError('旧预览未在 30 秒内退出并释放相机和端口；未强制终止')
-'''
+
+@lru_cache(maxsize=1)
+def deployment_config():
+    # One validated snapshot per process. A restart adopts a changed deployment.
+    return load_deployment_config()
+
+
+def deployment_fingerprint(config):
+    return hashlib.sha256(json.dumps(config, sort_keys=True, separators=(',', ':')).encode('utf-8')).hexdigest()
+
+
+def remote_payload(name):
+    path = PAYLOAD_DIR / name
+    code = path.read_text(encoding='utf-8')
+    compile(code, str(path), 'exec')
+    return code
 
 
 def available():
     try:
-        with build_opener(ProxyHandler({})).open(URL + 'status.json', timeout=2) as response:
+        cfg = deployment_config()
+        url = f"http://{cfg['host']}:{cfg['board_port']}/status.json"
+        with build_opener(ProxyHandler({})).open(url, timeout=2) as response:
             state = json.load(response)
         if not isinstance(state, dict):
             return False
@@ -143,14 +107,17 @@ def available():
 
 
 def stop_board():
+    cfg = deployment_config()
+    code = remote_payload('web_preview_stop.py')
     import paramiko
     client = paramiko.SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.RejectPolicy())
     try:
-        client.connect(HOST, username='xilinx', password='xilinx', timeout=8,
+        client.connect(cfg['host'], username='xilinx', password='xilinx', timeout=8,
                        look_for_keys=False, allow_agent=False)
-        command = '/usr/local/share/pynq-venv/bin/python3 -c ' + shlex.quote(STOP_CODE)
+        command = (shlex.quote(cfg['python']) + ' -c ' + shlex.quote(code) + ' ' +
+                   shlex.quote(json.dumps(cfg)))
         stdin, stdout, stderr = client.exec_command('sudo -S -p "" sh -c ' + shlex.quote(command), timeout=40)
         stdin.write('xilinx\n')
         stdin.flush()
@@ -164,21 +131,24 @@ def stop_board():
 
 
 def start_board():
+    cfg = deployment_config()
+    code = remote_payload('web_preview_start.py')
     import paramiko
 
     command = (
-        'cd ' + shlex.quote(BOARD_DIR) + ' || exit 11; '
+        'cd ' + shlex.quote(cfg['board_dir']) + ' || exit 11; '
         'command -v fuser >/dev/null || exit 13; '
         "if fuser /dev/video0 >/dev/null 2>&1; then echo 'Camera is busy' >&2; exit 14; fi; "
         'd=$(mktemp -d /tmp/material-web-preview.XXXXXX) || exit 15; chmod 755 "$d"; '
-        'nohup /usr/local/share/pynq-venv/bin/python3 -u -c ' + shlex.quote(BOARD_CODE) +
+        'nohup ' + shlex.quote(cfg['python']) + ' -u -c ' + shlex.quote(code) + ' ' +
+        shlex.quote(json.dumps(cfg)) +
         ' "$d" >"$d/viewer.log" 2>&1 </dev/null & echo "$d"'
     )
     client = paramiko.SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.RejectPolicy())
     try:
-        client.connect(HOST, username='xilinx', password='xilinx', timeout=8,
+        client.connect(cfg['host'], username='xilinx', password='xilinx', timeout=8,
                        look_for_keys=False, allow_agent=False)
         stdin, stdout, stderr = client.exec_command('sudo -S -p "" sh -c ' + shlex.quote(command), timeout=20)
         stdin.write('xilinx\n')
@@ -196,7 +166,6 @@ def start_board():
 
 
 
-ROOT = Path(__file__).resolve().parent.parent
 PAGE = ROOT / 'scripts' / 'wo0016' / 'dashboard.html'
 MODULES = ('camera_only_preview.py', 'mjpeg_preview.py', 'image_debug.py',
            'dashboard_state.py', 'live_monitor_state.py', 'resource_monitor.py',
@@ -221,7 +190,9 @@ def wait_for_preview(launcher, sftp, log_dir, timeout=120):
     raise RuntimeError('新图传未就绪，请检查板端日志 ' + log_dir + '/viewer.log；未自动重试')
 
 
-def make_bridge(board_host, update, port=BRIDGE_PORT, board_port=8080):
+def make_bridge(board_host, update, port=BRIDGE_PORT, board_port=8080, deployment_digest=None):
+    if deployment_digest is None:
+        deployment_digest = deployment_fingerprint(deployment_config())
     lock = threading.Lock()
     state = {'busy': False, 'message': '准备就绪', 'success': None}
 
@@ -273,7 +244,7 @@ def make_bridge(board_host, update, port=BRIDGE_PORT, board_port=8080):
                 self.reply(403, {'error': 'forbidden'})
                 return
             if self.path == '/api/bridge-version':
-                self.reply(200, {'version': 3})
+                self.reply(200, {'version': BRIDGE_VERSION, 'deployment_sha256': deployment_digest})
                 return
             if self.path == '/api/startup-status':
                 try:
@@ -375,6 +346,10 @@ def make_bridge(board_host, update, port=BRIDGE_PORT, board_port=8080):
 
 
 def deploy(host, board_dir, report):
+    cfg = deployment_config()
+    # Validate both remote payloads before stopping a running preview.
+    remote_payload('web_preview_start.py')
+    remote_payload('web_preview_stop.py')
     import paramiko
     source = ROOT / 'scripts' / 'wo0016'
     contents = {}
@@ -409,8 +384,8 @@ def deploy(host, board_dir, report):
                 with sftp.open(stage + '/' + name, 'rb') as remote:
                     if hashlib.sha256(remote.read()).digest() != hashlib.sha256(data).digest():
                         raise RuntimeError('上传校验失败：' + name)
-            command = ('cd ' + shlex.quote(stage) + ' && PYTHONDONTWRITEBYTECODE=1 '
-                       '/usr/local/share/pynq-venv/bin/python3 -c ' +
+            command = ('cd ' + shlex.quote(stage) + ' && PYTHONDONTWRITEBYTECODE=1 ' +
+                       shlex.quote(cfg['python']) + ' -c ' +
                        shlex.quote("import pathlib; [compile(p.read_bytes(), str(p), 'exec') for p in pathlib.Path('.').glob('*.py')]; print('OK')"))
             _, stdout, stderr = client.exec_command(command, timeout=45)
             result = stdout.read().decode('utf-8', errors='replace')
@@ -435,8 +410,8 @@ def deploy(host, board_dir, report):
             launcher['stop_board']()
             stopped = True
             report('正在检查板端模块依赖')
-            command = ('cd ' + shlex.quote(stage) + ' && PYTHONDONTWRITEBYTECODE=1 '
-                       '/usr/local/share/pynq-venv/bin/python3 -c ' +
+            command = ('cd ' + shlex.quote(stage) + ' && PYTHONDONTWRITEBYTECODE=1 ' +
+                       shlex.quote(cfg['python']) + ' -c ' +
                        shlex.quote("import camera_only_preview; print('OK')"))
             _, stdout, stderr = client.exec_command(command, timeout=45)
             result = stdout.read().decode('utf-8', errors='replace')
@@ -489,16 +464,26 @@ def deploy(host, board_dir, report):
 
 
 def run_bridge():
+    cfg = deployment_config()
     kernel = ctypes.WinDLL('kernel32', use_last_error=True)
     kernel.CreateMutexW.argtypes = [ctypes.c_void_p, ctypes.c_bool, ctypes.c_wchar_p]
     kernel.CreateMutexW.restype = ctypes.c_void_p
+    kernel.CloseHandle.argtypes = [ctypes.c_void_p]
+    kernel.CloseHandle.restype = ctypes.c_bool
     mutex = kernel.CreateMutexW(None, False, 'Local\\MaterialCounterWebSync')
     if not mutex:
         raise OSError('无法创建网页服务互斥锁')
-    if ctypes.get_last_error() == 183:
-        return
-    bridge = make_bridge(HOST, lambda report: deploy(HOST, BOARD_DIR, report))
-    bridge.serve_forever()
+    bridge = None
+    try:
+        if ctypes.get_last_error() == 183:
+            return
+        bridge = make_bridge(cfg['host'], lambda report: deploy(cfg['host'], cfg['board_dir'], report),
+                             board_port=cfg['board_port'], deployment_digest=deployment_fingerprint(cfg))
+        bridge.serve_forever()
+    finally:
+        if bridge is not None:
+            bridge.server_close()
+        kernel.CloseHandle(mutex)
 
 
 def start_web_sync():
@@ -510,24 +495,28 @@ def start_web_sync():
 
 def wait_for_web_sync(timeout=15):
     expected = hashlib.sha256(PAGE.read_bytes()).hexdigest()
+    expected_config = deployment_fingerprint(deployment_config())
     opener = build_opener(ProxyHandler({}))
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         try:
             with opener.open(LOCAL_URL + 'api/bridge-version', timeout=1) as response:
-                version = json.load(response).get('version')
+                identity = json.load(response)
+                version = identity.get('version')
             with opener.open(LOCAL_URL + 'api/page-version', timeout=1) as response:
                 page_hash = json.load(response).get('sha256')
-            if version == 3 and page_hash == expected:
+            if version != BRIDGE_VERSION or identity.get('deployment_sha256') != expected_config:
+                raise RuntimeError('已有网页桥接使用旧版本或不同部署配置，请退出旧桥接进程后重新双击启动。')
+            if page_hash == expected:
                 return
         except (OSError, ValueError, AttributeError):
             pass
         time.sleep(0.2)
-    log = Path(tempfile.gettempdir()) / 'material-counter-web-sync.log'
-    raise RuntimeError(f'本机网页服务未就绪，请检查 18765 端口及日志 {log}。')
+    raise RuntimeError(f'本机网页服务未就绪，请检查 18765 端口及日志 {BRIDGE_LOG}。')
 
 
 def set_startup_status(phase, message):
+    STARTUP_STATUS.parent.mkdir(parents=True, exist_ok=True)
     temporary = STARTUP_STATUS.with_name(STARTUP_STATUS.name + '.' + uuid.uuid4().hex)
     try:
         temporary.write_text(json.dumps({'phase': phase, 'message': message}, ensure_ascii=False), encoding='utf-8')
@@ -536,13 +525,37 @@ def set_startup_status(phase, message):
         temporary.unlink(missing_ok=True)
 
 
+def default_browser_executable():
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice') as key:
+            progid = winreg.QueryValueEx(key, 'ProgId')[0]
+        with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, progid + r'\shell\open\command') as key:
+            command = os.path.expandvars(winreg.QueryValueEx(key, '')[0]).strip()
+        match = re.match(r'^"([^"]+)"|^(\S+)', command)
+        executable = Path(match.group(1) or match.group(2)) if match else None
+        return executable if executable and executable.is_file() else None
+    except OSError:
+        return None
+
+
+def open_browser(url):
+    executable = default_browser_executable()
+    if executable:
+        # 通过 Windows Shell 启动，避免直接子进程继承受限的浏览器配置目录访问环境。
+        os.startfile(str(executable), 'open', subprocess.list2cmdline([url]))
+        return True
+    return webbrowser.open(url)
+
+
 def main(report=lambda message: None):
+    deployment_config()
     set_startup_status('starting', '正在启动网页服务…')
     report('正在启动本机网页服务…')
     start_web_sync()
     wait_for_web_sync()
     report('正在打开网页…')
-    if not webbrowser.open(LOCAL_URL):
+    if not open_browser(LOCAL_URL):
         raise RuntimeError('无法打开浏览器，请手动访问：' + LOCAL_URL)
     report('网页已就绪')
     set_startup_status('starting', '正在检查板卡连接与相机预览…')
@@ -567,12 +580,20 @@ def run_silently():
             traceback.print_exc(file=stream)
 
 
+def log_startup(message):
+    STARTUP_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with STARTUP_LOG.open('a', encoding='utf-8') as stream:
+        stream.write(f'{time.strftime("%Y-%m-%d %H:%M:%S")} pid={os.getpid()} {message}\n')
+
+
 if __name__ == '__main__':
+    log_startup(f'入口启动 exe={sys.executable} prefix={sys.prefix} args={sys.argv[1:]}')
     if '--bridge' in sys.argv[1:]:
         try:
             run_bridge()
         except Exception:
-            with (Path(tempfile.gettempdir()) / 'material-counter-web-sync.log').open('a', encoding='utf-8') as stream:
+            BRIDGE_LOG.parent.mkdir(parents=True, exist_ok=True)
+            with BRIDGE_LOG.open('a', encoding='utf-8') as stream:
                 traceback.print_exc(file=stream)
     else:
         try:
@@ -580,12 +601,16 @@ if __name__ == '__main__':
             if not pythonw.is_file():
                 raise RuntimeError('未找到项目 Python 环境：' + str(pythonw))
             if Path(sys.prefix).resolve() != (ROOT / '.venv').resolve():
+                log_startup('切换到项目 Python 环境')
                 subprocess.Popen([str(pythonw), str(Path(__file__).resolve())],
                                  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                                  stderr=subprocess.DEVNULL,
                                  creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
             else:
+                log_startup('执行网页启动流程')
                 run_silently()
+                log_startup('网页启动流程结束')
         except Exception:
+            STARTUP_LOG.parent.mkdir(parents=True, exist_ok=True)
             with STARTUP_LOG.open('a', encoding='utf-8') as stream:
                 traceback.print_exc(file=stream)
