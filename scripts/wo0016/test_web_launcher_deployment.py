@@ -1,5 +1,6 @@
 """Deployment validation and remote workflow tests; no board access."""
 import importlib.util
+import ast
 import json
 import sys
 import types
@@ -9,6 +10,17 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_binary_validation_dependency_is_in_both_deployment_lists():
+    assert "binary_stats.py" in launcher().MODULES
+    desktop = ROOT / "scripts" / "desktop_gui" / "controller.py"
+    tree = ast.parse(desktop.read_text(encoding="utf-8"))
+    modules = next(node.value for node in tree.body
+                   if isinstance(node, ast.Assign)
+                   and any(isinstance(target, ast.Name)
+                           and target.id == "MODULES" for target in node.targets))
+    assert "binary_stats.py" in ast.literal_eval(modules)
 
 
 def launcher():

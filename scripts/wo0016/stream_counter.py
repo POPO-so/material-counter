@@ -15,6 +15,7 @@ import cv2
 import numpy as np
 
 from split_touching import is_single_connected_component, split_touching_component
+from binary_stats import Binary8RoiValidator
 
 WIDTH = 320
 HEIGHT = 240
@@ -243,6 +244,7 @@ class MaskCounter:
         self.rejected_detections: tuple[Detection, ...] = ()
         self.rejected_contours: tuple[np.ndarray, ...] = ()
         self._split_origins: dict[Detection, int] = {}
+        self._binary_validator = Binary8RoiValidator()
 
     def update_detections(self, frame_id: int, detections: Any, *,
                           capture_monotonic_ns: int | None = None) -> FrameResult:
@@ -356,8 +358,7 @@ class MaskCounter:
             raise ValueError(f"mask must be a uint8 array with shape {(self.height, self.width)}")
         roi_top, roi_bottom = self._roi_bounds()
         roi = image[roi_top:roi_bottom, :]
-        if np.any((roi != 0) & (roi != 0xFF)):
-            raise ValueError("mask values must be Binary8 0x00 or 0xFF")
+        self._binary_validator.validate(roi)
         validate_ms = (time.perf_counter() - validate_started) * 1000.0
 
         projection_started = time.perf_counter()

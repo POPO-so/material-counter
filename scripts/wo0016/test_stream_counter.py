@@ -1367,6 +1367,73 @@ def test_roi_row_and_column_projections_match_foreground_pixels():
     assert result.column_projection[80] == 5
 
 
+def test_counter_reuses_binary_validation_workspace_across_frames():
+    counter = MaskCounter()
+    mask = np.zeros((240, 320), np.uint8)
+    counter.update(0, mask)
+    scratch = counter._binary_validator._scratch
+    counter.update(1, mask)
+    assert counter._binary_validator._scratch is scratch
+    mask[120, 10] = 128
+    with pytest.raises(ValueError, match="Binary8"):
+        counter.update(2, mask)
+
+
+def test_async_checks_allow_previous_consumer_to_finish_before_current_frame_is_published():
+    from hardware_checks import Gray8Checks
+
+    validating_second = threading.Event()
+    release_validation = threading.Event()
+    previous_consumed = threading.Event()
+    current_consumed = threading.Event()
+    checks = Gray8Checks(None)
+
+    def verify(frame_id, slot):
+        if frame_id == 1:
+            validating_second.set()
+            if not release_validation.wait(2.0):
+                raise TimeoutError("test did not release frame-one validation")
+
+    checks.after_transfer = verify
+
+    class ObservedCounter(MaskCounter):
+        def update(self, frame_id, mask):
+            if frame_id == 1:
+                current_consumed.set()
+            return super().update(frame_id, mask)
+
+    async def on_frame(result, mask):
+        if result.frame_id == 0:
+            assert await asyncio.to_thread(validating_second.wait, 1.0)
+            previous_consumed.set()
+
+    allocator = MockAllocator()
+    tx, rx = allocate_ping_pong_buffers(allocator)
+    dma = MockDma([_mask(110), _mask(120)])
+    dma.release_frame1.set()
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel, send_channel=dma.sendchannel,
+        tx_buffers=tx, rx_buffers=rx, counter=ObservedCounter(),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        after_transfer=checks.after_transfer_async, on_frame=on_frame)
+
+    async def exercise():
+        running = asyncio.create_task(stream.run(_frames(2)))
+        try:
+            assert await asyncio.to_thread(previous_consumed.wait, 1.0)
+            assert validating_second.is_set()
+            assert not current_consumed.is_set()
+            release_validation.set()
+            assert len(await running) == 2
+            assert current_consumed.is_set()
+        finally:
+            release_validation.set()
+            if not running.done():
+                await running
+
+    asyncio.run(exercise())
+
+
 
 def test_capture_mode_preserves_gray_mask_pairing_across_ping_pong_reuse(tmp_path):
     from capture_dataset import CaptureWriter, load_dataset

@@ -24,7 +24,7 @@ HERE = Path(__file__).resolve().parent
 MODULES = ("camera_only_preview.py", "mjpeg_preview.py", "image_debug.py",
            "dashboard_state.py", "live_monitor_state.py", "resource_monitor.py",
            "live_calibration.py", "stream_counter.py", "lighting_profile.py",
-           "scale_parameters.py", "split_touching.py", "packet_encoder.py")
+           "scale_parameters.py", "split_touching.py", "binary_stats.py", "packet_encoder.py")
 
 
 def validate_config(value):
