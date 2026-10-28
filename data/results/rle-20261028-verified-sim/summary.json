@@ -1,0 +1,85 @@
+{
+  "verdict": "RLE_XSIM_ALL_PASS",
+  "cases": [
+    {
+      "case": "bad_checksum-actual.hex",
+      "frame_id": 17,
+      "status": 2,
+      "runs": 85,
+      "total_runs": 85,
+      "foreground": 1865,
+      "bytes": 2548,
+      "sha256": "da12ad4c568a49fd64fecad0d113f392e70f388f125ab93797c2b1430f5f6305"
+    },
+    {
+      "case": "bad_header-actual.hex",
+      "frame_id": 17,
+      "status": 2,
+      "runs": 0,
+      "total_runs": 0,
+      "foreground": 0,
+      "bytes": 2208,
+      "sha256": "825fe4625d3d9e406dca8d54a24ddeac0d389ce31f058ba744598f5bd57f1e0c"
+    },
+    {
+      "case": "baseline-actual.hex",
+      "frame_id": 17,
+      "status": 0,
+      "runs": 85,
+      "total_runs": 85,
+      "foreground": 1865,
+      "bytes": 2548,
+      "sha256": "26ec214f626a8b33b8e4d0aec1900a01dae438cd2e1737bf3dfdc9a3d954b2fd"
+    },
+    {
+      "case": "dilate-actual.hex",
+      "frame_id": 17,
+      "status": 0,
+      "runs": 85,
+      "total_runs": 85,
+      "foreground": 2022,
+      "bytes": 2548,
+      "sha256": "81c625fc301fb4263b57cfa57255030b5f1138bc19e4cfefabf2d9a33a79a79c"
+    },
+    {
+      "case": "empty-actual.hex",
+      "frame_id": 17,
+      "status": 0,
+      "runs": 0,
+      "total_runs": 0,
+      "foreground": 0,
+      "bytes": 2208,
+      "sha256": "1af27e64ae4698b142672fbe5ac5512c29828af1e5efdf9a00a9ee8416c2d6f2"
+    },
+    {
+      "case": "erode-actual.hex",
+      "frame_id": 17,
+      "status": 0,
+      "runs": 79,
+      "total_runs": 79,
+      "foreground": 1437,
+      "bytes": 2524,
+      "sha256": "4617349310a420d05f5bd79f713a1531fa875985f12185d672b0009cc2347ead"
+    },
+    {
+      "case": "overflow-actual.hex",
+      "frame_id": 17,
+      "status": 1,
+      "runs": 16384,
+      "total_runs": 128000,
+      "foreground": 128000,
+      "bytes": 67744,
+      "sha256": "6dd2ab64cabc059e24488b62ed33ca5b437fbd47cadb525e37153cbef48899ac"
+    },
+    {
+      "case": "roi-actual.hex",
+      "frame_id": 17,
+      "status": 0,
+      "runs": 83,
+      "total_runs": 83,
+      "foreground": 1662,
+      "bytes": 2540,
+      "sha256": "15a2622cc11204a7776fdb2669b40ff9dc0d1f49bdb886a690ddba0ef6c11c30"
+    }
+  ]
+}

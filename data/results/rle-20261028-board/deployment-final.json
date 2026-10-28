@@ -1,0 +1,265 @@
+{
+  "remote": "/home/xilinx/rle-20261028",
+  "files": [
+    {
+      "path": "scripts/rle/artifacts.py",
+      "sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7"
+    },
+    {
+      "path": "scripts/rle/benchmark_regions.py",
+      "sha256": "39d69d7f864159063a3fe11fdb8ef30188b6fe5fcd3403c3eef8f7ceb4b31251"
+    },
+    {
+      "path": "scripts/rle/components.py",
+      "sha256": "874eabb8f29d162decd19cb4a2686ed457f21c621648cdc90d12f6ecdebd7de3"
+    },
+    {
+      "path": "scripts/rle/counter.py",
+      "sha256": "01c538ee75b8460d0506a17616ae7e4d6b40129f17c5ca0bb34c01f0e558f513"
+    },
+    {
+      "path": "scripts/rle/protocol.py",
+      "sha256": "f50a352ab04ee0c1537a0c1eb3ce4b3127f23f5536d986608ae876e230383671"
+    },
+    {
+      "path": "scripts/rle/run_counter.py",
+      "sha256": "a1e66cc82a6a8f38faea302533f391d0281bf0b430b5b8949451a7d3c594a2cc"
+    },
+    {
+      "path": "scripts/rle/sim_vectors.py",
+      "sha256": "d52b8fddbd6327c53419bded268b34da6bfc886cdd1e4593013a1e71ae9865f7"
+    },
+    {
+      "path": "scripts/rle/transport.py",
+      "sha256": "943dbc7a096d6f54985c1661d31f15edd8f46974fea24283cbd65d3123389083"
+    },
+    {
+      "path": "scripts/rle/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "scripts/wo0015/board_once.py",
+      "sha256": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9"
+    },
+    {
+      "path": "scripts/wo0015/board_preflight.py",
+      "sha256": "071dc9e7cdac74705e6428c43a4170ed01c27fccd547295da16dab7ff5080e17"
+    },
+    {
+      "path": "scripts/wo0015/camera_adapter.py",
+      "sha256": "3de607848ee6d10bcbbbb76395e0b52be8eb11fa33b99d946ed7d1c94e0a4fc8"
+    },
+    {
+      "path": "scripts/wo0015/camera_dma_oneshot.py",
+      "sha256": "1992bbdb255ac96409210cdd000d298d8486ddba443017164df1cff61f83969a"
+    },
+    {
+      "path": "scripts/wo0015/check_sim.py",
+      "sha256": "e1ac891a5ee6991e22236543dc65fad3615a1e0371f2057008c6f7f2256a8d86"
+    },
+    {
+      "path": "scripts/wo0015/finalize_build.py",
+      "sha256": "c27b775cb425a8fc85566ad795965925fc666b1b8819a8051fd73b20786ba2d4"
+    },
+    {
+      "path": "scripts/wo0015/prepare_board_bundle.py",
+      "sha256": "9e2b20ca7affbe79510a005e8e34e92de4ea41ff399cc40db06e37dcc0d67849"
+    },
+    {
+      "path": "scripts/wo0015/prepare_vectors.py",
+      "sha256": "2c65e3bf4d0973c2bc2d769a17be9a89a3e802c968cb3111487e9b7954be9139"
+    },
+    {
+      "path": "scripts/wo0016/ablate_split_datasets.py",
+      "sha256": "46be8fe688ff85c8af705f5c63ef2898909463d66ce81f65a90654ff6b6dffbf"
+    },
+    {
+      "path": "scripts/wo0016/benchmark_monochrome.py",
+      "sha256": "b076805645bdd2901a3caba376fb99e3bbd869eb42d07a7dd9b5a159ab09aaec"
+    },
+    {
+      "path": "scripts/wo0016/benchmark_packet_encoder.py",
+      "sha256": "2e72d5b3f956a38668836fa9e3ae45620a6754bcc557c57e8db0b4aaac4a2f12"
+    },
+    {
+      "path": "scripts/wo0016/benchmark_tx_scratch.py",
+      "sha256": "ab7f94ff625001cc0c046097734e449ad8d8ea29fe00167309f6d511929dedd4"
+    },
+    {
+      "path": "scripts/wo0016/binary_stats.py",
+      "sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44"
+    },
+    {
+      "path": "scripts/wo0016/calibration_runtime_gate.py",
+      "sha256": "af4c43565dfed7609cb861a9b4901d4b30eac424a7ebc857ff8bdefe2e6eacba"
+    },
+    {
+      "path": "scripts/wo0016/camera_only_preview.py",
+      "sha256": "bced0f52ea39ae1ce293c8f27182cfac3c9bad57dd19d81ff77efd809480afdc"
+    },
+    {
+      "path": "scripts/wo0016/capture_dataset.py",
+      "sha256": "1e3aee24e3f8c61841ac5b6ac6e83e92eb5c16a0e20f157359dfdc2a44aa6c16"
+    },
+    {
+      "path": "scripts/wo0016/capture_touching_camera_only.py",
+      "sha256": "e4ad6a91a2fc749d2d369a699ac8c72fa0244267bd06d7a6e4b14aed8573ef9e"
+    },
+    {
+      "path": "scripts/wo0016/dashboard_state.py",
+      "sha256": "c844a6a45301d775913596adb1d70c2f5bff82344b2fd01467e877fb61fb4f44"
+    },
+    {
+      "path": "scripts/wo0016/diagnose_touching_capture.py",
+      "sha256": "ca96b0eb671d1403024c6d00dd3b7d6885d931ef294d37ac4257ba1291262653"
+    },
+    {
+      "path": "scripts/wo0016/image_debug.py",
+      "sha256": "051b3263b07405b72dd5f6fa7141923c0d96dc317e74176059c43fae03c5fc05"
+    },
+    {
+      "path": "scripts/wo0016/lighting_profile.py",
+      "sha256": "1c8e2ad1e73c8c91a08ecd0a605bc8bb46540a51baf82d2a83594b5736bd8d84"
+    },
+    {
+      "path": "scripts/wo0016/live_calibration.py",
+      "sha256": "0f0f38845d0ece530abc4223c173b52070ecd609835ab20767936be8992f6889"
+    },
+    {
+      "path": "scripts/wo0016/live_monitor_state.py",
+      "sha256": "06eb99fbc2a68dced2da2e59a760745e688929bb6e1823a51bc6c0d6982c662f"
+    },
+    {
+      "path": "scripts/wo0016/mjpeg_preview.py",
+      "sha256": "e112aa0fb9c7ee89b8b63fe2f233aea8b7cd8672a11708c57b8d7bc2f07ca21d"
+    },
+    {
+      "path": "scripts/wo0016/offline_threshold.py",
+      "sha256": "98f8b701e5a92b9d4735b5e2c16edde7b2f7432a93bdb0e05e7d22448b72d77c"
+    },
+    {
+      "path": "scripts/wo0016/operator_gate_launcher.py",
+      "sha256": "85910cdfcf666d45c99480638d6611ce78abb03e7ae21e58c5a4030347994f93"
+    },
+    {
+      "path": "scripts/wo0016/packet_encoder.py",
+      "sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8"
+    },
+    {
+      "path": "scripts/wo0016/physical_calibration_lock.py",
+      "sha256": "b4787fe9537c46a9762882a8b95553407a3c5270127207e5c9dd43cd3fe3a1d0"
+    },
+    {
+      "path": "scripts/wo0016/prepare_physical_calibration.py",
+      "sha256": "2bd1a93931791bb59f838b550b2070948315126143c449f89e4e64979567f71d"
+    },
+    {
+      "path": "scripts/wo0016/replay_capture_dataset.py",
+      "sha256": "a2ab6074826994f7d799456ed205e0324c8419025adfff0cd5bc3697eee790a6"
+    },
+    {
+      "path": "scripts/wo0016/replay_recorded_components.py",
+      "sha256": "a1213572caea354964aee955352d912a82ac3e08a355035e6d65425d1bbe9609"
+    },
+    {
+      "path": "scripts/wo0016/resource_monitor.py",
+      "sha256": "e5d247b006b9819eb74f377ea5795efe349170d8a967aeb09945bb6f3a8ab09c"
+    },
+    {
+      "path": "scripts/wo0016/run_live_monitor.py",
+      "sha256": "f50badc732281d00dc30f55e41af9c181a190c589654cafa86326830db4cb828"
+    },
+    {
+      "path": "scripts/wo0016/run_stream_counter.py",
+      "sha256": "1a968134a7ff5f27521859b4327a362a407b58ede14f8a9235043488cbffdddb"
+    },
+    {
+      "path": "scripts/wo0016/scale_parameters.py",
+      "sha256": "80d091c7e9b3b3396da009596cb36c34001ed616ec0c070452927cedf5756feb"
+    },
+    {
+      "path": "scripts/wo0016/split_touching.py",
+      "sha256": "b34ce5e74b689a863ed8d9175fa60f0ac22f5133638b6056e567912385d37412"
+    },
+    {
+      "path": "scripts/wo0016/stageb1_calibration_preview_metrics.py",
+      "sha256": "f50810e7236529dab2e03fe396e77e0c3a0e95d79f1c90492d4b456c2cade4d3"
+    },
+    {
+      "path": "scripts/wo0016/start_physical_calibration_standby.py",
+      "sha256": "bec366ebe3b083258627e6fe51f44ed0acc78b5313f5ebf16aa1b832ed7989ff"
+    },
+    {
+      "path": "scripts/wo0016/stream_counter.py",
+      "sha256": "90bf52c79eca1c43dc6f089c3338337cb27d8bc2299fa74b2deb9761d103a12f"
+    },
+    {
+      "path": "scripts/wo0016/verify_algorithm_replay.py",
+      "sha256": "de93265487728901ba50d28c4c2303d683a59e44542ab5dcaea0e5646531b0f3"
+    },
+    {
+      "path": "scripts/wo0016/web_preview_start.py",
+      "sha256": "abbafcb01da31f10410b0419a0d6be2610aa89e6f0dac19caa62e7964539d62a"
+    },
+    {
+      "path": "scripts/wo0016/web_preview_stop.py",
+      "sha256": "1a594d495a08e11321812ce64f6f0f6f121f3b48c4885630f8a25aaf4db03bbe"
+    },
+    {
+      "path": "scripts/wo0016/wo0017_capture_profile.py",
+      "sha256": "cefd8601b90cefa20cbe20ed830d05e8d99dc4524fccf72aabed4ed3650bdbef"
+    },
+    {
+      "path": "scripts/gray8/dma_polling.py",
+      "sha256": "a26c53bed5d4d6ec00fbb72310adc06b4cbdc221a358e91aefdc67afe6a458fb"
+    },
+    {
+      "path": "scripts/gray8/finalize_build.py",
+      "sha256": "0acaeeb73e578b13aac7d414aa413d1aad9b0cf9b6acf4a607d920c63cbbcbd2"
+    },
+    {
+      "path": "scripts/gray8/hardware_checks.py",
+      "sha256": "b95425d64413b2e6dab70a001e91299da69fbcf38abe3f18dc1caf7604d211f4"
+    },
+    {
+      "path": "scripts/gray8/packet_codec.py",
+      "sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8"
+    },
+    {
+      "path": "scripts/gray8/run_gray8_counter.py",
+      "sha256": "35d7805fe8405d6c6d509987da4a2c22474aa19db4bca72281f9b00417daa821"
+    },
+    {
+      "path": "scripts/rle/native/rle_components.cpp",
+      "sha256": "f4fee53d199578c8d0db78094cfe9e081f9cbe3ad5fd6724e721c050e7ee73c7"
+    },
+    {
+      "path": "data/results/gray8-rle-20261028-verified-build/export/rle.bit",
+      "sha256": "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
+    },
+    {
+      "path": "data/results/gray8-rle-20261028-verified-build/export/rle.hwh",
+      "sha256": "3032568fc1dd1660b7e6ac6e0113870ff86afce723b4f0a8612f8848276bc6b3"
+    },
+    {
+      "path": "data/results/gray8-rle-20261028-verified-build/export/manifest.json",
+      "sha256": "4c430d69534f9a1c8bfac091adbae7cc7e2d9168a7052b470c6276576e7dcb4e"
+    },
+    {
+      "path": "data/results/gray8-rle-20261028-verified-build/rtl/axis_dma_gray_adapter.v",
+      "sha256": "1d6f303af3ecbbd2fa72d9ff1921d23bce22f2e33bcfc90c03b4ff8a829137d4"
+    },
+    {
+      "path": "data/results/gray8-rle-20261028-verified-build/rtl/axis_dma_rle_pipeline_bd.v",
+      "sha256": "94561afafa4708c168fa5af4e4d60a13d5d49a7fa28ed9649fb865cba101d301"
+    },
+    {
+      "path": "data/results/gray8-rle-20261028-verified-build/rtl/axis_morphology3x3.v",
+      "sha256": "41bd8ac2bd659357807c172ddc0e14b0b6a85d14afc8d5323836c60e8b277cb1"
+    },
+    {
+      "path": "data/results/gray8-rle-20261028-verified-build/rtl/axis_rle_encoder.v",
+      "sha256": "2606fc95105671a0f0864f5af01207ae2a2415fa76c9f45523c5e06103ed1bb7"
+    }
+  ]
+}

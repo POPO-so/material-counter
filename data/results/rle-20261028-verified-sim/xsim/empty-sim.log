@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 28 22:23:12 2026
+# Process ID         : 67892
+# Current directory  : C:/Users/14173/Documents/material-counter/data/results/rle-20261028-verified-sim/xsim
+# Command line       : xsim.exe -log empty-sim.log -mode tcl -source {xsim.dir/rle_pipeline/xsim_script.tcl}
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/rle-20261028-verified-sim/xsim/empty-sim.log
+# Journal file       : C:/Users/14173/Documents/material-counter/data/results/rle-20261028-verified-sim/xsim\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 6645 MB
+#-----------------------------------------------------------
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/rle-20261028-verified-sim/vectors/empty-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/rle-20261028-verified-sim/vectors/empty-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/rle-20261028-verified-sim/xsim/empty-actual.hex -testplusarg WORDS=552 -testplusarg MORPH=0 -testplusarg OFFSET=-255 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=552 cycles=257430
+$finish called at time : 5148690 ns : File "C:/Users/14173/Documents/material-counter/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Oct 28 22:23:15 2026...

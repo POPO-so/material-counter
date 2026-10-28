@@ -1,0 +1,127 @@
+{
+  "status": "RLE_BOARD_COMPLETED",
+  "mode": "self-test",
+  "resolution": [
+    640,
+    400
+  ],
+  "frames": 2,
+  "pixel_verified_frames": 0,
+  "count_accuracy": "NOT_MEASURED",
+  "tx_bytes": 256032,
+  "rx_capacity": 67744,
+  "configuration": {
+    "roi": [
+      0,
+      0,
+      640,
+      400
+    ],
+    "threshold": 128,
+    "intensity_offset": 0,
+    "morph_mode": 0
+  },
+  "pattern": "noise",
+  "frames_evidence": [
+    {
+      "frame_id": 0,
+      "runs": 16384,
+      "total_runs": 128000,
+      "total_fg": 128000,
+      "status": 1,
+      "rx_bytes": 67744,
+      "hw_timestamp": 14178386,
+      "capture_ms": 0.6540610011143144,
+      "transfer_parse_ms": 70.28691699815681,
+      "verification_ms": 0.029385002562776208,
+      "count_ms": 0.06142100028228015,
+      "total_count": 0,
+      "detections": [],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 67744,
+        "actual_hw_bytes": 67744,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 1,
+      "runs": 16384,
+      "total_runs": 128000,
+      "total_fg": 128000,
+      "status": 1,
+      "rx_bytes": 67744,
+      "hw_timestamp": 16377377,
+      "capture_ms": 0.7558279976365156,
+      "transfer_parse_ms": 67.76675700166379,
+      "verification_ms": 0.025395998818567023,
+      "count_ms": 0.05630799932987429,
+      "total_count": 0,
+      "detections": [],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 67744,
+        "actual_hw_bytes": 67744,
+        "pipeline_state": 2
+      }
+    }
+  ],
+  "total_count": 0,
+  "invalid_frames": 2,
+  "boot_id": "71c03d07-ef08-47f2-b871-725f30f5d5e1",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "cma_before": {
+    "CmaTotal": 131072,
+    "CmaFree": 57616
+  },
+  "overlay": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-verified-build/export/rle.bit",
+    "loaded_bit_sha1": "385cc6a2a9096a65c342a57edbead545581930fa",
+    "loaded_bit_sha256": "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
+  },
+  "afi1": {
+    "stage": "rle-start",
+    "status": "AFI1_HP1_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-verified-build/export/rle.hwh",
+    "hwh_sha256": "3032568fc1dd1660b7e6ac6e0113870ff86afce723b4f0a8612f8848276bc6b3",
+    "hwh_hp1_data_width_bits": 32,
+    "fpga_rst_ctrl": 0,
+    "fpga_rst_ctrl_raw_hex": "0x00000000",
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "before": 1,
+        "before_raw_hex": "0x00000001",
+        "write_value": 1,
+        "write_raw_hex": "0x00000001",
+        "readback": 1,
+        "readback_raw_hex": "0x00000001",
+        "width_bit0": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "before": 3841,
+        "before_raw_hex": "0x00000f01",
+        "write_value": 3841,
+        "write_raw_hex": "0x00000f01",
+        "readback": 3841,
+        "readback_raw_hex": "0x00000f01",
+        "width_bit0": 1
+      }
+    }
+  },
+  "manifest_sha256": "4c430d69534f9a1c8bfac091adbae7cc7e2d9168a7052b470c6276576e7dcb4e",
+  "elapsed_s": 0.1397133649988973,
+  "throughput_fps": 14.31502276117811,
+  "buffers_held": false
+}

@@ -1,0 +1,14 @@
+{
+  "software_checks": "118 passed; see software-tests.txt",
+  "command": ".venv/Scripts/python.exe -B -m pytest -p no:cacheprovider --basetemp data/results/rle-20261028-validation/precommit scripts/rle scripts/gray8 -q",
+  "code_commit": "eb1804b",
+  "rtl_cases": 8,
+  "rtl_result": "RLE_XSIM_ALL_PASS cases=8",
+  "rtl_summary": "../rle-20261028-verified-sim/summary.json",
+  "netlist_result": "RLE_POST_SYNTHESIS_PASS",
+  "netlist_log": "../rle-20261028-projection-green/sim.log",
+  "initial_board_result": "Initial odd-address projection failure reproduced after synthesis, fixed with explicit RAM read ports; final board frames verified",
+  "mcp": "Unchanged configuration later started and executed Vivado 2026.1 Tcl successfully; initial exit1 remains unexplained",
+  "final_board_summary": "../rle-20261028-board/summary.json",
+  "final_bit_sha256": "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
+}

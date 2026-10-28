@@ -1,0 +1,1589 @@
+{
+  "status": "RLE_BOARD_COMPLETED",
+  "mode": "camera",
+  "resolution": [
+    640,
+    400
+  ],
+  "frames": 12,
+  "pixel_verified_frames": 12,
+  "count_accuracy": "NOT_MEASURED",
+  "tx_bytes": 256032,
+  "rx_capacity": 67744,
+  "configuration": {
+    "roi": [
+      0,
+      0,
+      640,
+      400
+    ],
+    "threshold": 100,
+    "intensity_offset": 0,
+    "morph_mode": 0
+  },
+  "counter_configuration": {
+    "line_y": 200,
+    "roi_top": 0,
+    "roi_bottom": 400,
+    "min_area": 48
+  },
+  "pattern": "moving",
+  "frames_evidence": [
+    {
+      "frame_id": 0,
+      "runs": 478,
+      "total_runs": 478,
+      "total_fg": 4652,
+      "status": 0,
+      "rx_bytes": 4120,
+      "hw_timestamp": 31068010,
+      "capture_ms": 552.9047930031084,
+      "transfer_parse_ms": 28.69031399677624,
+      "verification_ms": 47.52630100119859,
+      "count_ms": 115.48715100070694,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 4,
+          "x_max": 24,
+          "y_min": 207,
+          "y_max": 223,
+          "area": 133,
+          "centroid_x": 13.541353383458647,
+          "centroid_y": 216.17293233082708
+        },
+        {
+          "x_min": 12,
+          "x_max": 23,
+          "y_min": 104,
+          "y_max": 115,
+          "area": 78,
+          "centroid_x": 16.141025641025642,
+          "centroid_y": 108.84615384615384
+        },
+        {
+          "x_min": 27,
+          "x_max": 32,
+          "y_min": 105,
+          "y_max": 119,
+          "area": 51,
+          "centroid_x": 30.07843137254902,
+          "centroid_y": 112.68627450980392
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 339,
+          "centroid_x": 224.858407079646,
+          "centroid_y": 288.0560471976401
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 258,
+          "area": 347,
+          "centroid_x": 250.7550432276657,
+          "centroid_y": 247.44956772334294
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 950,
+          "centroid_x": 264.71263157894737,
+          "centroid_y": 75.86631578947369
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 203,
+          "area": 352,
+          "centroid_x": 266.17329545454544,
+          "centroid_y": 192.13920454545453
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 324,
+          "centroid_x": 284.11728395061726,
+          "centroid_y": 286.2654320987654
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 308,
+          "centroid_x": 285.6948051948052,
+          "centroid_y": 141.88636363636363
+        },
+        {
+          "x_min": 278,
+          "x_max": 301,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 376,
+          "centroid_x": 289.718085106383,
+          "centroid_y": 216.2872340425532
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1039,
+          "centroid_x": 355.43984600577477,
+          "centroid_y": 152.84889316650626
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 143,
+          "y_max": 163,
+          "area": 337,
+          "centroid_x": 380.7151335311573,
+          "centroid_y": 152.85756676557864
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4120,
+        "actual_hw_bytes": 4120,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 1,
+      "runs": 481,
+      "total_runs": 481,
+      "total_fg": 4768,
+      "status": 0,
+      "rx_bytes": 4132,
+      "hw_timestamp": 37456301,
+      "capture_ms": 14.222228001017356,
+      "transfer_parse_ms": 25.464086000283714,
+      "verification_ms": 49.95508899810375,
+      "count_ms": 11.49456599887344,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 3,
+          "x_max": 24,
+          "y_min": 208,
+          "y_max": 223,
+          "area": 166,
+          "centroid_x": 12.975903614457831,
+          "centroid_y": 215.3975903614458
+        },
+        {
+          "x_min": 12,
+          "x_max": 32,
+          "y_min": 103,
+          "y_max": 120,
+          "area": 194,
+          "centroid_x": 21.835051546391753,
+          "centroid_y": 111.0
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 335,
+          "centroid_x": 224.91641791044776,
+          "centroid_y": 288.11641791044775
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 259,
+          "area": 350,
+          "centroid_x": 250.72,
+          "centroid_y": 247.46857142857144
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 961,
+          "centroid_x": 264.6857440166493,
+          "centroid_y": 75.92299687825182
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 204,
+          "area": 357,
+          "centroid_x": 266.1848739495798,
+          "centroid_y": 192.1736694677871
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 326,
+          "centroid_x": 284.0674846625767,
+          "centroid_y": 286.25766871165644
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 310,
+          "centroid_x": 285.5451612903226,
+          "centroid_y": 141.91612903225806
+        },
+        {
+          "x_min": 278,
+          "x_max": 301,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 382,
+          "centroid_x": 289.73298429319374,
+          "centroid_y": 216.3586387434555
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1042,
+          "centroid_x": 355.383877159309,
+          "centroid_y": 152.90690978886755
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 142,
+          "y_max": 164,
+          "area": 345,
+          "centroid_x": 380.74782608695654,
+          "centroid_y": 153.00579710144928
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4132,
+        "actual_hw_bytes": 4132,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 2,
+      "runs": 477,
+      "total_runs": 477,
+      "total_fg": 4706,
+      "status": 0,
+      "rx_bytes": 4116,
+      "hw_timestamp": 40518995,
+      "capture_ms": 11.110375002317596,
+      "transfer_parse_ms": 25.52723099870491,
+      "verification_ms": 43.48544000094989,
+      "count_ms": 10.708491998229874,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 4,
+          "x_max": 24,
+          "y_min": 208,
+          "y_max": 223,
+          "area": 156,
+          "centroid_x": 13.435897435897436,
+          "centroid_y": 215.37179487179486
+        },
+        {
+          "x_min": 12,
+          "x_max": 32,
+          "y_min": 104,
+          "y_max": 119,
+          "area": 156,
+          "centroid_x": 21.76923076923077,
+          "centroid_y": 110.66666666666667
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 336,
+          "centroid_x": 224.83333333333334,
+          "centroid_y": 288.0238095238095
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 258,
+          "area": 348,
+          "centroid_x": 250.77011494252875,
+          "centroid_y": 247.42528735632183
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 956,
+          "centroid_x": 264.68514644351467,
+          "centroid_y": 75.90062761506276
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 203,
+          "area": 356,
+          "centroid_x": 266.08988764044943,
+          "centroid_y": 192.12921348314606
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 323,
+          "centroid_x": 284.08049535603715,
+          "centroid_y": 286.28173374613004
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 312,
+          "centroid_x": 285.6025641025641,
+          "centroid_y": 141.94871794871796
+        },
+        {
+          "x_min": 278,
+          "x_max": 302,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 382,
+          "centroid_x": 289.73821989528795,
+          "centroid_y": 216.36649214659687
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1042,
+          "centroid_x": 355.4203454894434,
+          "centroid_y": 152.82245681381957
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 143,
+          "y_max": 163,
+          "area": 337,
+          "centroid_x": 380.7715133531157,
+          "centroid_y": 152.86943620178042
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4116,
+        "actual_hw_bytes": 4116,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 3,
+      "runs": 481,
+      "total_runs": 481,
+      "total_fg": 4867,
+      "status": 0,
+      "rx_bytes": 4132,
+      "hw_timestamp": 43381668,
+      "capture_ms": 11.615384999458911,
+      "transfer_parse_ms": 26.125334999960614,
+      "verification_ms": 43.12225200192188,
+      "count_ms": 10.955890000332147,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 3,
+          "x_max": 24,
+          "y_min": 207,
+          "y_max": 223,
+          "area": 174,
+          "centroid_x": 13.293103448275861,
+          "centroid_y": 215.2183908045977
+        },
+        {
+          "x_min": 11,
+          "x_max": 32,
+          "y_min": 102,
+          "y_max": 121,
+          "area": 225,
+          "centroid_x": 21.573333333333334,
+          "centroid_y": 111.22666666666667
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 338,
+          "centroid_x": 224.94378698224853,
+          "centroid_y": 288.08284023668637
+        },
+        {
+          "x_min": 239,
+          "x_max": 262,
+          "y_min": 236,
+          "y_max": 258,
+          "area": 359,
+          "centroid_x": 250.76044568245126,
+          "centroid_y": 247.30640668523677
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 58,
+          "y_max": 100,
+          "area": 970,
+          "centroid_x": 264.73092783505155,
+          "centroid_y": 75.91443298969072
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 204,
+          "area": 364,
+          "centroid_x": 266.02197802197804,
+          "centroid_y": 192.27197802197801
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 332,
+          "centroid_x": 284.08734939759034,
+          "centroid_y": 286.2048192771084
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 317,
+          "centroid_x": 285.61514195583595,
+          "centroid_y": 142.04731861198738
+        },
+        {
+          "x_min": 278,
+          "x_max": 302,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 385,
+          "centroid_x": 289.8077922077922,
+          "centroid_y": 216.33246753246752
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 180,
+          "area": 1051,
+          "centroid_x": 355.3767840152236,
+          "centroid_y": 153.00951474785919
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 142,
+          "y_max": 164,
+          "area": 352,
+          "centroid_x": 380.75852272727275,
+          "centroid_y": 153.02272727272728
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4132,
+        "actual_hw_bytes": 4132,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 4,
+      "runs": 474,
+      "total_runs": 474,
+      "total_fg": 4658,
+      "status": 0,
+      "rx_bytes": 4104,
+      "hw_timestamp": 46204769,
+      "capture_ms": 11.019341000064742,
+      "transfer_parse_ms": 24.95667100083665,
+      "verification_ms": 40.11819099832792,
+      "count_ms": 11.585544001718517,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 4,
+          "x_max": 24,
+          "y_min": 208,
+          "y_max": 223,
+          "area": 130,
+          "centroid_x": 13.507692307692308,
+          "centroid_y": 216.19230769230768
+        },
+        {
+          "x_min": 12,
+          "x_max": 25,
+          "y_min": 104,
+          "y_max": 118,
+          "area": 89,
+          "centroid_x": 16.53932584269663,
+          "centroid_y": 109.67415730337079
+        },
+        {
+          "x_min": 27,
+          "x_max": 32,
+          "y_min": 105,
+          "y_max": 118,
+          "area": 49,
+          "centroid_x": 30.163265306122447,
+          "centroid_y": 112.48979591836735
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 334,
+          "centroid_x": 224.90419161676647,
+          "centroid_y": 288.0688622754491
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 258,
+          "area": 347,
+          "centroid_x": 250.77521613832852,
+          "centroid_y": 247.46974063400577
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 956,
+          "centroid_x": 264.7008368200837,
+          "centroid_y": 75.85251046025104
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 203,
+          "area": 357,
+          "centroid_x": 266.2773109243698,
+          "centroid_y": 192.0532212885154
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 324,
+          "centroid_x": 284.0462962962963,
+          "centroid_y": 286.3179012345679
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 310,
+          "centroid_x": 285.5741935483871,
+          "centroid_y": 141.94193548387096
+        },
+        {
+          "x_min": 278,
+          "x_max": 301,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 374,
+          "centroid_x": 289.7700534759358,
+          "centroid_y": 216.30213903743316
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1040,
+          "centroid_x": 355.4307692307692,
+          "centroid_y": 152.91057692307692
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 142,
+          "y_max": 163,
+          "area": 338,
+          "centroid_x": 380.7692307692308,
+          "centroid_y": 152.87573964497042
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4104,
+        "actual_hw_bytes": 4104,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 5,
+      "runs": 480,
+      "total_runs": 480,
+      "total_fg": 4664,
+      "status": 0,
+      "rx_bytes": 4128,
+      "hw_timestamp": 48974060,
+      "capture_ms": 11.4402399995015,
+      "transfer_parse_ms": 24.938313999882666,
+      "verification_ms": 43.325845999788726,
+      "count_ms": 10.763194000901422,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 3,
+          "x_max": 24,
+          "y_min": 208,
+          "y_max": 223,
+          "area": 147,
+          "centroid_x": 13.421768707482993,
+          "centroid_y": 215.58503401360545
+        },
+        {
+          "x_min": 12,
+          "x_max": 32,
+          "y_min": 104,
+          "y_max": 120,
+          "area": 149,
+          "centroid_x": 21.79194630872483,
+          "centroid_y": 110.79865771812081
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 332,
+          "centroid_x": 224.85542168674698,
+          "centroid_y": 288.0030120481928
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 258,
+          "area": 345,
+          "centroid_x": 250.63478260869564,
+          "centroid_y": 247.45507246376812
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 957,
+          "centroid_x": 264.6771159874608,
+          "centroid_y": 75.90595611285266
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 203,
+          "area": 354,
+          "centroid_x": 266.1723163841808,
+          "centroid_y": 192.14406779661016
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 324,
+          "centroid_x": 284.1203703703704,
+          "centroid_y": 286.2716049382716
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 130,
+          "y_max": 153,
+          "area": 310,
+          "centroid_x": 285.68387096774194,
+          "centroid_y": 141.88709677419354
+        },
+        {
+          "x_min": 278,
+          "x_max": 301,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 375,
+          "centroid_x": 289.73333333333335,
+          "centroid_y": 216.32266666666666
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1033,
+          "centroid_x": 355.35043562439495,
+          "centroid_y": 152.86060019361085
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 143,
+          "y_max": 163,
+          "area": 337,
+          "centroid_x": 380.73293768545994,
+          "centroid_y": 152.88427299703264
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4128,
+        "actual_hw_bytes": 4128,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 6,
+      "runs": 489,
+      "total_runs": 489,
+      "total_fg": 4857,
+      "status": 0,
+      "rx_bytes": 4164,
+      "hw_timestamp": 51817915,
+      "capture_ms": 11.589488996833097,
+      "transfer_parse_ms": 26.252222000039183,
+      "verification_ms": 43.33033200236969,
+      "count_ms": 11.51941499847453,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 3,
+          "x_max": 24,
+          "y_min": 207,
+          "y_max": 223,
+          "area": 176,
+          "centroid_x": 13.375,
+          "centroid_y": 215.28977272727272
+        },
+        {
+          "x_min": 11,
+          "x_max": 32,
+          "y_min": 103,
+          "y_max": 121,
+          "area": 213,
+          "centroid_x": 21.4037558685446,
+          "centroid_y": 111.4319248826291
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 338,
+          "centroid_x": 224.95562130177515,
+          "centroid_y": 288.0266272189349
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 236,
+          "y_max": 259,
+          "area": 355,
+          "centroid_x": 250.75211267605633,
+          "centroid_y": 247.3774647887324
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 58,
+          "y_max": 100,
+          "area": 967,
+          "centroid_x": 264.7435367114788,
+          "centroid_y": 75.93174767321614
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 204,
+          "area": 368,
+          "centroid_x": 266.1902173913044,
+          "centroid_y": 192.23641304347825
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 328,
+          "centroid_x": 284.0396341463415,
+          "centroid_y": 286.3140243902439
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 316,
+          "centroid_x": 285.53164556962025,
+          "centroid_y": 141.99367088607596
+        },
+        {
+          "x_min": 278,
+          "x_max": 302,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 385,
+          "centroid_x": 289.8285714285714,
+          "centroid_y": 216.26493506493506
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 180,
+          "area": 1057,
+          "centroid_x": 355.41154210028384,
+          "centroid_y": 152.91579943235573
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 142,
+          "y_max": 164,
+          "area": 353,
+          "centroid_x": 380.671388101983,
+          "centroid_y": 153.05382436260624
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4164,
+        "actual_hw_bytes": 4164,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 7,
+      "runs": 477,
+      "total_runs": 477,
+      "total_fg": 4630,
+      "status": 0,
+      "rx_bytes": 4116,
+      "hw_timestamp": 54680644,
+      "capture_ms": 11.471262001577998,
+      "transfer_parse_ms": 24.281377998704556,
+      "verification_ms": 41.39502800171613,
+      "count_ms": 11.52710099995602,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 3,
+          "x_max": 24,
+          "y_min": 208,
+          "y_max": 223,
+          "area": 131,
+          "centroid_x": 13.114503816793894,
+          "centroid_y": 216.21374045801528
+        },
+        {
+          "x_min": 12,
+          "x_max": 22,
+          "y_min": 104,
+          "y_max": 117,
+          "area": 75,
+          "centroid_x": 16.133333333333333,
+          "centroid_y": 109.36
+        },
+        {
+          "x_min": 27,
+          "x_max": 32,
+          "y_min": 105,
+          "y_max": 118,
+          "area": 48,
+          "centroid_x": 30.229166666666668,
+          "centroid_y": 112.64583333333333
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 334,
+          "centroid_x": 224.8443113772455,
+          "centroid_y": 288.0479041916168
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 258,
+          "area": 345,
+          "centroid_x": 250.71884057971013,
+          "centroid_y": 247.37101449275363
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 955,
+          "centroid_x": 264.63769633507854,
+          "centroid_y": 75.92670157068063
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 203,
+          "area": 354,
+          "centroid_x": 266.1553672316384,
+          "centroid_y": 192.18926553672316
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 325,
+          "centroid_x": 284.0369230769231,
+          "centroid_y": 286.2246153846154
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 309,
+          "centroid_x": 285.62783171521033,
+          "centroid_y": 141.89967637540454
+        },
+        {
+          "x_min": 278,
+          "x_max": 301,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 372,
+          "centroid_x": 289.83870967741933,
+          "centroid_y": 216.34677419354838
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1032,
+          "centroid_x": 355.3139534883721,
+          "centroid_y": 152.88662790697674
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 143,
+          "y_max": 163,
+          "area": 334,
+          "centroid_x": 380.7544910179641,
+          "centroid_y": 152.92215568862275
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4116,
+        "actual_hw_bytes": 4116,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 8,
+      "runs": 482,
+      "total_runs": 482,
+      "total_fg": 4763,
+      "status": 0,
+      "rx_bytes": 4136,
+      "hw_timestamp": 57448819,
+      "capture_ms": 10.750776000350015,
+      "transfer_parse_ms": 25.652417996752774,
+      "verification_ms": 39.82500900019659,
+      "count_ms": 11.871416001667967,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 3,
+          "x_max": 24,
+          "y_min": 208,
+          "y_max": 223,
+          "area": 170,
+          "centroid_x": 13.070588235294117,
+          "centroid_y": 215.35294117647058
+        },
+        {
+          "x_min": 12,
+          "x_max": 32,
+          "y_min": 104,
+          "y_max": 120,
+          "area": 174,
+          "centroid_x": 21.850574712643677,
+          "centroid_y": 110.816091954023
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 336,
+          "centroid_x": 225.00892857142858,
+          "centroid_y": 288.05357142857144
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 258,
+          "area": 350,
+          "centroid_x": 250.75428571428571,
+          "centroid_y": 247.43714285714285
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 960,
+          "centroid_x": 264.7125,
+          "centroid_y": 75.91770833333334
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 204,
+          "area": 358,
+          "centroid_x": 266.1117318435754,
+          "centroid_y": 192.23743016759778
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 330,
+          "centroid_x": 284.05757575757576,
+          "centroid_y": 286.2848484848485
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 311,
+          "centroid_x": 285.59485530546624,
+          "centroid_y": 141.92604501607718
+        },
+        {
+          "x_min": 278,
+          "x_max": 302,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 384,
+          "centroid_x": 289.7473958333333,
+          "centroid_y": 216.29427083333334
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1044,
+          "centroid_x": 355.4597701149425,
+          "centroid_y": 152.88122605363984
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 142,
+          "y_max": 164,
+          "area": 346,
+          "centroid_x": 380.8150289017341,
+          "centroid_y": 152.94219653179192
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4136,
+        "actual_hw_bytes": 4136,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 9,
+      "runs": 483,
+      "total_runs": 483,
+      "total_fg": 4816,
+      "status": 0,
+      "rx_bytes": 4140,
+      "hw_timestamp": 60224171,
+      "capture_ms": 11.371360000339337,
+      "transfer_parse_ms": 25.15519399821642,
+      "verification_ms": 41.3700669996615,
+      "count_ms": 12.403305001498666,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 4,
+          "x_max": 24,
+          "y_min": 207,
+          "y_max": 223,
+          "area": 171,
+          "centroid_x": 13.473684210526315,
+          "centroid_y": 215.29239766081872
+        },
+        {
+          "x_min": 12,
+          "x_max": 32,
+          "y_min": 103,
+          "y_max": 120,
+          "area": 202,
+          "centroid_x": 21.801980198019802,
+          "centroid_y": 111.08415841584159
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 339,
+          "centroid_x": 224.93805309734512,
+          "centroid_y": 288.0206489675516
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 259,
+          "area": 350,
+          "centroid_x": 250.80857142857144,
+          "centroid_y": 247.45714285714286
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 960,
+          "centroid_x": 264.69375,
+          "centroid_y": 75.92604166666666
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 204,
+          "area": 358,
+          "centroid_x": 266.0949720670391,
+          "centroid_y": 192.19553072625698
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 331,
+          "centroid_x": 284.19033232628396,
+          "centroid_y": 286.24471299093653
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 315,
+          "centroid_x": 285.6,
+          "centroid_y": 141.9206349206349
+        },
+        {
+          "x_min": 278,
+          "x_max": 302,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 386,
+          "centroid_x": 289.7357512953368,
+          "centroid_y": 216.29533678756476
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 180,
+          "area": 1050,
+          "centroid_x": 355.4266666666667,
+          "centroid_y": 152.86190476190475
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 142,
+          "y_max": 164,
+          "area": 351,
+          "centroid_x": 380.65242165242165,
+          "centroid_y": 152.94301994301995
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4140,
+        "actual_hw_bytes": 4140,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 10,
+      "runs": 482,
+      "total_runs": 482,
+      "total_fg": 4625,
+      "status": 0,
+      "rx_bytes": 4136,
+      "hw_timestamp": 63046951,
+      "capture_ms": 11.371734999556793,
+      "transfer_parse_ms": 24.9345420015743,
+      "verification_ms": 39.96919299970614,
+      "count_ms": 11.710541999491397,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 4,
+          "x_max": 24,
+          "y_min": 207,
+          "y_max": 223,
+          "area": 127,
+          "centroid_x": 13.440944881889763,
+          "centroid_y": 216.0708661417323
+        },
+        {
+          "x_min": 12,
+          "x_max": 21,
+          "y_min": 104,
+          "y_max": 118,
+          "area": 76,
+          "centroid_x": 16.19736842105263,
+          "centroid_y": 109.76315789473684
+        },
+        {
+          "x_min": 25,
+          "x_max": 32,
+          "y_min": 105,
+          "y_max": 119,
+          "area": 49,
+          "centroid_x": 29.979591836734695,
+          "centroid_y": 113.20408163265306
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 331,
+          "centroid_x": 224.86706948640483,
+          "centroid_y": 288.10574018126886
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 258,
+          "area": 347,
+          "centroid_x": 250.7579250720461,
+          "centroid_y": 247.39193083573488
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 952,
+          "centroid_x": 264.64600840336135,
+          "centroid_y": 75.9233193277311
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 203,
+          "area": 354,
+          "centroid_x": 266.19209039548025,
+          "centroid_y": 192.1045197740113
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 324,
+          "centroid_x": 284.0246913580247,
+          "centroid_y": 286.2901234567901
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 131,
+          "y_max": 153,
+          "area": 306,
+          "centroid_x": 285.640522875817,
+          "centroid_y": 141.9281045751634
+        },
+        {
+          "x_min": 278,
+          "x_max": 302,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 374,
+          "centroid_x": 289.8181818181818,
+          "centroid_y": 216.30213903743316
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1032,
+          "centroid_x": 355.3643410852713,
+          "centroid_y": 152.86918604651163
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 142,
+          "y_max": 164,
+          "area": 337,
+          "centroid_x": 380.7151335311573,
+          "centroid_y": 152.91097922848664
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4136,
+        "actual_hw_bytes": 4136,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 11,
+      "runs": 474,
+      "total_runs": 474,
+      "total_fg": 4786,
+      "status": 0,
+      "rx_bytes": 4104,
+      "hw_timestamp": 65773606,
+      "capture_ms": 11.38763700146228,
+      "transfer_parse_ms": 24.42611699734698,
+      "verification_ms": 41.445525999733945,
+      "count_ms": 11.509446001582546,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 3,
+          "x_max": 24,
+          "y_min": 208,
+          "y_max": 223,
+          "area": 166,
+          "centroid_x": 13.295180722891565,
+          "centroid_y": 215.46385542168676
+        },
+        {
+          "x_min": 12,
+          "x_max": 32,
+          "y_min": 103,
+          "y_max": 120,
+          "area": 187,
+          "centroid_x": 21.77005347593583,
+          "centroid_y": 110.89839572192513
+        },
+        {
+          "x_min": 214,
+          "x_max": 236,
+          "y_min": 277,
+          "y_max": 299,
+          "area": 339,
+          "centroid_x": 224.87315634218288,
+          "centroid_y": 288.0619469026549
+        },
+        {
+          "x_min": 240,
+          "x_max": 262,
+          "y_min": 237,
+          "y_max": 258,
+          "area": 347,
+          "centroid_x": 250.72046109510086,
+          "centroid_y": 247.44380403458214
+        },
+        {
+          "x_min": 243,
+          "x_max": 287,
+          "y_min": 59,
+          "y_max": 100,
+          "area": 963,
+          "centroid_x": 264.69470404984423,
+          "centroid_y": 75.90965732087227
+        },
+        {
+          "x_min": 255,
+          "x_max": 277,
+          "y_min": 181,
+          "y_max": 203,
+          "area": 357,
+          "centroid_x": 266.03921568627453,
+          "centroid_y": 192.1624649859944
+        },
+        {
+          "x_min": 273,
+          "x_max": 295,
+          "y_min": 275,
+          "y_max": 297,
+          "area": 329,
+          "centroid_x": 284.0182370820669,
+          "centroid_y": 286.2857142857143
+        },
+        {
+          "x_min": 275,
+          "x_max": 296,
+          "y_min": 130,
+          "y_max": 153,
+          "area": 315,
+          "centroid_x": 285.6031746031746,
+          "centroid_y": 141.88888888888889
+        },
+        {
+          "x_min": 278,
+          "x_max": 302,
+          "y_min": 205,
+          "y_max": 227,
+          "area": 386,
+          "centroid_x": 289.8626943005181,
+          "centroid_y": 216.33678756476684
+        },
+        {
+          "x_min": 333,
+          "x_max": 372,
+          "y_min": 125,
+          "y_max": 179,
+          "area": 1050,
+          "centroid_x": 355.4047619047619,
+          "centroid_y": 152.9257142857143
+        },
+        {
+          "x_min": 369,
+          "x_max": 392,
+          "y_min": 143,
+          "y_max": 164,
+          "area": 344,
+          "centroid_x": 380.6337209302326,
+          "centroid_y": 152.9825581395349
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 4104,
+        "actual_hw_bytes": 4104,
+        "pipeline_state": 2
+      }
+    }
+  ],
+  "total_count": 0,
+  "invalid_frames": 0,
+  "boot_id": "71c03d07-ef08-47f2-b871-725f30f5d5e1",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "cma_before": {
+    "CmaTotal": 131072,
+    "CmaFree": 56344
+  },
+  "overlay": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-verified-build/export/rle.bit",
+    "loaded_bit_sha1": "385cc6a2a9096a65c342a57edbead545581930fa",
+    "loaded_bit_sha256": "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
+  },
+  "afi1": {
+    "stage": "rle-start",
+    "status": "AFI1_HP1_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-verified-build/export/rle.hwh",
+    "hwh_sha256": "3032568fc1dd1660b7e6ac6e0113870ff86afce723b4f0a8612f8848276bc6b3",
+    "hwh_hp1_data_width_bits": 32,
+    "fpga_rst_ctrl": 0,
+    "fpga_rst_ctrl_raw_hex": "0x00000000",
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "before": 1,
+        "before_raw_hex": "0x00000001",
+        "write_value": 1,
+        "write_raw_hex": "0x00000001",
+        "readback": 1,
+        "readback_raw_hex": "0x00000001",
+        "width_bit0": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "before": 3841,
+        "before_raw_hex": "0x00000f01",
+        "write_value": 3841,
+        "write_raw_hex": "0x00000f01",
+        "readback": 3841,
+        "readback_raw_hex": "0x00000f01",
+        "width_bit0": 1
+      }
+    }
+  },
+  "manifest_sha256": "4c430d69534f9a1c8bfac091adbae7cc7e2d9168a7052b470c6276576e7dcb4e",
+  "elapsed_s": 2.2865367100021103,
+  "throughput_fps": 5.248111673653788,
+  "buffers_held": false
+}

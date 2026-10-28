@@ -1,0 +1,344 @@
+{
+  "status": "OFFLINE_VERIFIED",
+  "mode": "offline",
+  "resolution": [
+    640,
+    400
+  ],
+  "frames": 12,
+  "pixel_verified_frames": 12,
+  "count_accuracy": "NOT_MEASURED",
+  "tx_bytes": 256032,
+  "rx_capacity": 67744,
+  "configuration": {
+    "roi": [
+      0,
+      0,
+      640,
+      400
+    ],
+    "threshold": 128,
+    "intensity_offset": 0,
+    "morph_mode": 0
+  },
+  "pattern": "moving",
+  "frames_evidence": [
+    {
+      "frame_id": 0,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.047900000936351717,
+      "transfer_parse_ms": 2.702600002521649,
+      "verification_ms": 1.2308000004850328,
+      "count_ms": 5.887299994355999,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 140,
+          "y_max": 155,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 147.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 1,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.037600009818561375,
+      "transfer_parse_ms": 2.5006999931065366,
+      "verification_ms": 1.1098999966634437,
+      "count_ms": 0.11970000923611224,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 152,
+          "y_max": 167,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 159.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 2,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.01889999839477241,
+      "transfer_parse_ms": 2.718299991101958,
+      "verification_ms": 1.125000009778887,
+      "count_ms": 0.11860000086016953,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 164,
+          "y_max": 179,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 171.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 3,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.07139999070204794,
+      "transfer_parse_ms": 2.4630999978398904,
+      "verification_ms": 1.3241000124253333,
+      "count_ms": 0.11539999104570597,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 176,
+          "y_max": 191,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 183.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 4,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.07550000736955553,
+      "transfer_parse_ms": 2.3704999912297353,
+      "verification_ms": 1.0053000005427748,
+      "count_ms": 0.0906000059330836,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 188,
+          "y_max": 203,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 195.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 5,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.06489999941550195,
+      "transfer_parse_ms": 2.38540000282228,
+      "verification_ms": 1.1063999991165474,
+      "count_ms": 0.09539999882690609,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 200,
+          "y_max": 215,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 207.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 6,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.07139999070204794,
+      "transfer_parse_ms": 2.8433000115910545,
+      "verification_ms": 1.1312999995425344,
+      "count_ms": 0.12040000001434237,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 212,
+          "y_max": 227,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 219.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 7,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.06890000076964498,
+      "transfer_parse_ms": 2.2478999890154228,
+      "verification_ms": 1.1206000053789467,
+      "count_ms": 0.08769999840296805,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 224,
+          "y_max": 239,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 231.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 8,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.06600000779144466,
+      "transfer_parse_ms": 2.2705999872414395,
+      "verification_ms": 1.0039000044343993,
+      "count_ms": 0.076299998909235,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 236,
+          "y_max": 251,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 243.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 9,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.06510000093840063,
+      "transfer_parse_ms": 2.1489000064320862,
+      "verification_ms": 1.0407999943709,
+      "count_ms": 0.06980000762268901,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 248,
+          "y_max": 263,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 255.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 10,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.06629999552387744,
+      "transfer_parse_ms": 2.4267999979201704,
+      "verification_ms": 1.150299998698756,
+      "count_ms": 0.09650000720284879,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 260,
+          "y_max": 275,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 267.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 11,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.06880000000819564,
+      "transfer_parse_ms": 2.2973000013735145,
+      "verification_ms": 1.066299999365583,
+      "count_ms": 0.08199999865610152,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 272,
+          "y_max": 287,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 279.5
+        }
+      ],
+      "dma": null
+    }
+  ],
+  "total_count": 1,
+  "invalid_frames": 0,
+  "elapsed_s": 0.05048079999687616,
+  "throughput_fps": 237.7141408365672,
+  "buffers_held": false
+}

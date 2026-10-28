@@ -1,0 +1,24 @@
+{
+  "bit_path": "rle.bit",
+  "bit_sha256": "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6",
+  "build_evidence": "ROUTED_NOT_BOARD_VERIFIED",
+  "clock_mhz": 50,
+  "control_base": 1136787456,
+  "dma_base": 1077936128,
+  "height": 400,
+  "hwh_path": "rle.hwh",
+  "hwh_sha256": "3032568fc1dd1660b7e6ac6e0113870ff86afce723b4f0a8612f8848276bc6b3",
+  "max_runs": 16384,
+  "part": "xc7z020clg400-1",
+  "protocol": "RLE_PACKET_V1",
+  "rtl_snapshot_sha256": {
+    "rtl/axis_dma_gray_adapter.v": "1d6f303af3ecbbd2fa72d9ff1921d23bce22f2e33bcfc90c03b4ff8a829137d4",
+    "rtl/axis_dma_rle_pipeline_bd.v": "94561afafa4708c168fa5af4e4d60a13d5d49a7fa28ed9649fb865cba101d301",
+    "rtl/axis_morphology3x3.v": "41bd8ac2bd659357807c172ddc0e14b0b6a85d14afc8d5323836c60e8b277cb1",
+    "rtl/axis_rle_encoder.v": "2606fc95105671a0f0864f5af01207ae2a2415fa76c9f45523c5e06103ed1bb7"
+  },
+  "rx_capacity_bytes": 67744,
+  "schema": 1,
+  "tx_bytes": 256032,
+  "width": 640
+}

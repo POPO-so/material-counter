@@ -1,0 +1,344 @@
+{
+  "protocol": "RLE_PACKET_V1",
+  "resolution": [
+    640,
+    400
+  ],
+  "manifest_sha256": "4c430d69534f9a1c8bfac091adbae7cc7e2d9168a7052b470c6276576e7dcb4e",
+  "implementation_commit": "eb1804b",
+  "boot_id": "71c03d07-ef08-47f2-b871-725f30f5d5e1",
+  "final_state": "DMA_IDLE_PL_DONE_NO_RUNNER",
+  "cases": [
+    {
+      "file": "camera-12-final-verified.json",
+      "mode": "camera",
+      "frames": 12,
+      "verified": 12,
+      "invalid": 0,
+      "fps": 5.248111673653788,
+      "count": 0,
+      "foreground_range": [
+        4625,
+        4867
+      ],
+      "runs_range": [
+        474,
+        489
+      ],
+      "rx_bytes_range": [
+        4104,
+        4164
+      ],
+      "average_ms": {
+        "capture_ms": 56.687885083798996,
+        "transfer_parse_ms": 25.53365183242325,
+        "verification_ms": 42.90568950030623,
+        "count_ms": 20.12800516695279
+      }
+    },
+    {
+      "file": "camera-30-verified.json",
+      "mode": "camera",
+      "frames": 30,
+      "verified": 30,
+      "invalid": 0,
+      "fps": 7.88803228243844,
+      "count": 0,
+      "foreground_range": [
+        4625,
+        4893
+      ],
+      "runs_range": [
+        473,
+        487
+      ],
+      "rx_bytes_range": [
+        4100,
+        4156
+      ],
+      "average_ms": {
+        "capture_ms": 29.99242693343452,
+        "transfer_parse_ms": 25.184384366851493,
+        "verification_ms": 39.85283643305593,
+        "count_ms": 8.998651999960808
+      }
+    },
+    {
+      "file": "camera-300-final.json",
+      "mode": "camera",
+      "frames": 300,
+      "verified": 0,
+      "invalid": 0,
+      "fps": 19.363327558751497,
+      "count": 0,
+      "foreground_range": [
+        4605,
+        4880
+      ],
+      "runs_range": [
+        468,
+        492
+      ],
+      "rx_bytes_range": [
+        4080,
+        4176
+      ],
+      "average_ms": {
+        "capture_ms": 12.247335550006634,
+        "transfer_parse_ms": 25.153418640087086,
+        "verification_ms": 0.016684453233513825,
+        "count_ms": 11.816291663332473
+      }
+    },
+    {
+      "file": "camera-300-native-v2.json",
+      "mode": "camera",
+      "frames": 300,
+      "verified": 0,
+      "invalid": 0,
+      "fps": 20.56506367293831,
+      "count": 0,
+      "foreground_range": [
+        4610,
+        4873
+      ],
+      "runs_range": [
+        470,
+        492
+      ],
+      "rx_bytes_range": [
+        4088,
+        4176
+      ],
+      "average_ms": {
+        "capture_ms": 12.137204366639102,
+        "transfer_parse_ms": 25.13670692666589,
+        "verification_ms": 0.016488840022551205,
+        "count_ms": 9.521537193346981
+      }
+    },
+    {
+      "file": "camera-300.json",
+      "mode": "camera",
+      "frames": 300,
+      "verified": 0,
+      "invalid": 0,
+      "fps": 20.150126981610637,
+      "count": 0,
+      "foreground_range": [
+        4583,
+        4880
+      ],
+      "runs_range": [
+        471,
+        495
+      ],
+      "rx_bytes_range": [
+        4092,
+        4188
+      ],
+      "average_ms": {
+        "capture_ms": 12.41779638347604,
+        "transfer_parse_ms": 25.162169103229342,
+        "verification_ms": 0.01641289003600832,
+        "count_ms": 9.708147769924835
+      }
+    },
+    {
+      "file": "self-test-empty.json",
+      "mode": "self-test",
+      "frames": 3,
+      "verified": 3,
+      "invalid": 0,
+      "fps": 18.71051076535336,
+      "count": 0,
+      "foreground_range": [
+        0,
+        0
+      ],
+      "runs_range": [
+        0,
+        0
+      ],
+      "rx_bytes_range": [
+        2208,
+        2208
+      ],
+      "average_ms": {
+        "capture_ms": 0.1944739997270517,
+        "transfer_parse_ms": 21.833626667406254,
+        "verification_ms": 30.431710666258976,
+        "count_ms": 0.958504667020558
+      }
+    },
+    {
+      "file": "self-test-final-12.json",
+      "mode": "self-test",
+      "frames": 12,
+      "verified": 12,
+      "invalid": 0,
+      "fps": 18.402433977026995,
+      "count": 1,
+      "foreground_range": [
+        320,
+        320
+      ],
+      "runs_range": [
+        16,
+        16
+      ],
+      "rx_bytes_range": [
+        2272,
+        2272
+      ],
+      "average_ms": {
+        "capture_ms": 0.5878107504031505,
+        "transfer_parse_ms": 22.611985666723438,
+        "verification_ms": 28.830199916531758,
+        "count_ms": 2.274578416290751
+      }
+    },
+    {
+      "file": "self-test-native-v2.json",
+      "mode": "self-test",
+      "frames": 12,
+      "verified": 12,
+      "invalid": 0,
+      "fps": 18.348788936175612,
+      "count": 1,
+      "foreground_range": [
+        320,
+        320
+      ],
+      "runs_range": [
+        16,
+        16
+      ],
+      "rx_bytes_range": [
+        2272,
+        2272
+      ],
+      "average_ms": {
+        "capture_ms": 0.5877322507027808,
+        "transfer_parse_ms": 22.50427591661719,
+        "verification_ms": 29.092855832762627,
+        "count_ms": 2.2795154166791085
+      }
+    },
+    {
+      "file": "self-test-overflow.json",
+      "mode": "self-test",
+      "frames": 2,
+      "verified": 0,
+      "invalid": 2,
+      "fps": 14.31502276117811,
+      "count": 0,
+      "foreground_range": [
+        128000,
+        128000
+      ],
+      "runs_range": [
+        16384,
+        16384
+      ],
+      "rx_bytes_range": [
+        67744,
+        67744
+      ],
+      "average_ms": {
+        "capture_ms": 0.704944499375415,
+        "transfer_parse_ms": 69.0268369999103,
+        "verification_ms": 0.027390500690671615,
+        "count_ms": 0.05886449980607722
+      }
+    },
+    {
+      "file": "self-test-rings-dilate.json",
+      "mode": "self-test",
+      "frames": 3,
+      "verified": 3,
+      "invalid": 0,
+      "fps": 12.92119143106954,
+      "count": 0,
+      "foreground_range": [
+        1920,
+        1920
+      ],
+      "runs_range": [
+        96,
+        96
+      ],
+      "rx_bytes_range": [
+        2592,
+        2592
+      ],
+      "average_ms": {
+        "capture_ms": 0.9425409989489708,
+        "transfer_parse_ms": 31.45372500027103,
+        "verification_ms": 40.75145233340057,
+        "count_ms": 3.9166566675703507
+      }
+    },
+    {
+      "file": "self-test-rings-erode.json",
+      "mode": "self-test",
+      "frames": 3,
+      "verified": 3,
+      "invalid": 0,
+      "fps": 8.203377253871603,
+      "count": 0,
+      "foreground_range": [
+        1152,
+        1152
+      ],
+      "runs_range": [
+        96,
+        96
+      ],
+      "rx_bytes_range": [
+        2592,
+        2592
+      ],
+      "average_ms": {
+        "capture_ms": 0.9362133326552188,
+        "transfer_parse_ms": 30.35106466753253,
+        "verification_ms": 86.42188899951482,
+        "count_ms": 3.861860666802386
+      }
+    },
+    {
+      "file": "self-test-roi.json",
+      "mode": "self-test",
+      "frames": 12,
+      "verified": 12,
+      "invalid": 0,
+      "fps": 18.767773814958584,
+      "count": 1,
+      "foreground_range": [
+        120,
+        320
+      ],
+      "runs_range": [
+        6,
+        16
+      ],
+      "rx_bytes_range": [
+        2232,
+        2272
+      ],
+      "average_ms": {
+        "capture_ms": 0.5915619164322076,
+        "transfer_parse_ms": 22.117759583125007,
+        "verification_ms": 28.299498250817123,
+        "count_ms": 2.2391858328774106
+      }
+    }
+  ],
+  "accuracy": "NOT_MEASURED_NO_PHYSICAL_GROUND_TRUTH",
+  "production_camera_case": "camera-300-native-v2.json",
+  "notes": [
+    "Host date 2026-10-28; board wall clock is inaccurate. Elapsed times use monotonic clock.",
+    "Camera tests have nonzero foreground; zero count is not a validated accuracy result.",
+    "Runs before native-v2 filtering are retained as intermediate evidence, not mixed into a single FPS rate."
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "status": "FAILED",
+  "mode": "self-test",
+  "resolution": [
+    640,
+    400
+  ],
+  "frames": 0,
+  "pixel_verified_frames": 0,
+  "count_accuracy": "NOT_MEASURED",
+  "tx_bytes": 256032,
+  "rx_capacity": 67744,
+  "configuration": {
+    "roi": [
+      0,
+      0,
+      640,
+      400
+    ],
+    "threshold": 128,
+    "intensity_offset": 0,
+    "morph_mode": 0
+  },
+  "frames_evidence": [],
+  "total_count": 0,
+  "invalid_frames": 0,
+  "boot_id": "71c03d07-ef08-47f2-b871-725f30f5d5e1",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "cma_before": {
+    "CmaTotal": 131072,
+    "CmaFree": 18596
+  },
+  "overlay": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-build/export/rle.bit",
+    "loaded_bit_sha1": "8d75e8b874a6e78ab7d65c53d48ca08c75f9fe22",
+    "loaded_bit_sha256": "09c20803a053861f96b8f28cad98f0a8b7dce6d9094d9ab0c28ba017b8f9681f"
+  },
+  "afi1": {
+    "stage": "rle-start",
+    "status": "AFI1_HP1_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-build/export/rle.hwh",
+    "hwh_sha256": "51d5ad8c424fcef251ab91d1bf13e78bd3cb3fb578d9cc8fce36835b41d2533b",
+    "hwh_hp1_data_width_bits": 32,
+    "fpga_rst_ctrl": 0,
+    "fpga_rst_ctrl_raw_hex": "0x00000000",
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "before": 1,
+        "before_raw_hex": "0x00000001",
+        "write_value": 1,
+        "write_raw_hex": "0x00000001",
+        "readback": 1,
+        "readback_raw_hex": "0x00000001",
+        "width_bit0": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "before": 3841,
+        "before_raw_hex": "0x00000f01",
+        "write_value": 3841,
+        "write_raw_hex": "0x00000f01",
+        "readback": 3841,
+        "readback_raw_hex": "0x00000f01",
+        "width_bit0": 1
+      }
+    }
+  },
+  "manifest_sha256": "9a72710d780b06b407cd276dec2aee2501ca657b99b48dcb0b95b8b217f2d808",
+  "error": "RLE projection totals disagree with foreground count",
+  "error_type": "ValueError",
+  "failed_rx_path": "/home/xilinx/rle-20261028/board-projection-debug.rx.bin",
+  "failed_dma_snapshot": {
+    "mm2s_status": 4098,
+    "s2mm_status": 4098,
+    "actual_dma_bytes": 2272,
+    "actual_hw_bytes": 2272,
+    "pipeline_state": 2
+  },
+  "buffers_held": false
+}

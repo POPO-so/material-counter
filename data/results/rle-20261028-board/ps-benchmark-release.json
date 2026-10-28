@@ -1,0 +1,82 @@
+{
+  "architecture": "armv7l",
+  "python": "3.10.4",
+  "scope": "Synthetic masks, same full-frame ROI, new empty tracker each sample; PS only, excludes camera, input encoding and DMA",
+  "cases": [
+    {
+      "name": "empty",
+      "runs": 0,
+      "rx_bytes": 2208,
+      "foreground": 0,
+      "components": 0,
+      "timings": {
+        "pixel_counter_ms": {
+          "mean_ms": 7.831648600767949,
+          "p95_ms": 7.962688950829033
+        },
+        "rle_decode_ms": {
+          "mean_ms": 4.515961799552315,
+          "p95_ms": 4.7065045013368945
+        },
+        "rle_native_ms": {
+          "mean_ms": 0.6180506006785436,
+          "p95_ms": 0.6687966009849333
+        },
+        "rle_counter_ms": {
+          "mean_ms": 0.7179616997746052,
+          "p95_ms": 0.769724899691937
+        }
+      }
+    },
+    {
+      "name": "six_rings",
+      "runs": 192,
+      "rx_bytes": 2976,
+      "foreground": 3072,
+      "components": 6,
+      "timings": {
+        "pixel_counter_ms": {
+          "mean_ms": 19.794620100583415,
+          "p95_ms": 19.91817080106557
+        },
+        "rle_decode_ms": {
+          "mean_ms": 5.188596999505535,
+          "p95_ms": 5.266776249482064
+        },
+        "rle_native_ms": {
+          "mean_ms": 1.108884799759835,
+          "p95_ms": 1.1508821002280456
+        },
+        "rle_counter_ms": {
+          "mean_ms": 2.467170000090846,
+          "p95_ms": 2.528920050826855
+        }
+      }
+    },
+    {
+      "name": "dense_fragments",
+      "runs": 2945,
+      "rx_bytes": 13988,
+      "foreground": 14725,
+      "components": 589,
+      "timings": {
+        "pixel_counter_ms": {
+          "mean_ms": 133.5992409993196,
+          "p95_ms": 139.91918544961663
+        },
+        "rle_decode_ms": {
+          "mean_ms": 12.96691930074303,
+          "p95_ms": 13.293132400576724
+        },
+        "rle_native_ms": {
+          "mean_ms": 39.14847119995102,
+          "p95_ms": 43.41270024924597
+        },
+        "rle_counter_ms": {
+          "mean_ms": 119.92119009992166,
+          "p95_ms": 158.68904474882578
+        }
+      }
+    }
+  ]
+}

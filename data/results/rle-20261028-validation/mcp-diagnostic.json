@@ -1,0 +1,17 @@
+{
+  "initial": {
+    "proxy_hello": true,
+    "vivado_child_exit": 1,
+    "vivado_stdout": "none",
+    "reason": "unconfirmed"
+  },
+  "configuration_changed": false,
+  "recheck": {
+    "session_id": "vivado-20261028-220807-cdf092b7",
+    "vivado_version": "2026.1",
+    "tcl_result": 42,
+    "start_succeeded": true,
+    "execute_exit": 0
+  },
+  "conclusion": "Recovered usability without configuration change; initial root cause not established"
+}
