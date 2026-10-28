@@ -43,3 +43,16 @@ def test_camera_mjpeg_decode_preserves_all_source_pixels():
     expected=cv2.imdecode(jpeg,cv2.IMREAD_GRAYSCALE)
     assert np.array_equal(decode_camera_frame(jpeg),expected)
     with pytest.raises(ValueError):decode_camera_frame(np.zeros((2,3),np.uint8))
+
+
+def test_counter_configuration_preserves_x_axis_and_complex_rules(tmp_path):
+    config=tmp_path/'counter.json'
+    config.write_text(json.dumps(dict(count_axis='x',line_x=320,roi_top=20,roi_bottom=380,
+        guarded_merge=True,single_intact_area=256,max_split_area=2160,
+        max_merge_area=2160,max_area=2160,component_cluster_gap=0)))
+    output=tmp_path/'configured.json'
+    assert main(['--mode','offline','--frames','2','--counter-config',str(config),'--output',str(output)])==0
+    result=json.loads(output.read_text())
+    assert result['counter_configuration']['count_axis']=='x'
+    assert result['counter_configuration']['guarded_merge'] is True
+    assert result['configuration']['roi']==[0,20,640,380]

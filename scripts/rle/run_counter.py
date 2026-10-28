@@ -93,19 +93,32 @@ def main(argv=None):
     parser.add_argument('--roi-bottom',type=int,default=HEIGHT)
     parser.add_argument('--line-y',type=int,default=200)
     parser.add_argument('--min-area',type=int,default=48)
+    parser.add_argument('--counter-config',type=Path,
+        help='JSON MaskCounter settings in original 640x400 coordinates; overrides CLI counting defaults')
     parser.add_argument('--verify-pixels',action='store_true')
     parser.add_argument('--pattern',choices=('moving','empty','noise','rings'),default='moving')
     args=parser.parse_args(argv)
     if args.output.exists():raise FileExistsError(args.output)
     if not 1<=args.frames<=100000:parser.error('frames must be in 1..100000')
     if not 0<=args.threshold<=255 or not -255<=args.offset<=255:parser.error('invalid threshold/offset')
-    if not 0<=args.roi_top<=args.line_y<args.roi_bottom<=HEIGHT:parser.error('ROI must contain counting line')
+    settings=dict(line_y=args.line_y,roi_top=args.roi_top,roi_bottom=args.roi_bottom,min_area=args.min_area)
+    if args.counter_config:
+        overrides=json.loads(args.counter_config.read_text(encoding='utf-8'))
+        if not isinstance(overrides,dict) or 'library' in overrides:
+            parser.error('counter-config must be a JSON object of counting settings')
+        settings.update(overrides)
+    # Validate counting and ROI settings before any board access or DMA allocation.
+    counter=RleCounter(library=None,**settings)
+    if (counter.width,counter.height)!=(WIDTH,HEIGHT):parser.error('counter must use 640x400 coordinates')
+    top,bottom=counter._roi_bounds()
+    if not top<=counter.line_y<bottom:parser.error('ROI must contain counting line_y')
     args.output.parent.mkdir(parents=True,exist_ok=True)
-    roi=(0,args.roi_top,WIDTH,args.roi_bottom)
+    roi=(0,top,WIDTH,bottom)
     config=dict(roi=roi,threshold=args.threshold,intensity_offset=args.offset,morph_mode=args.morph)
     report=dict(status='STARTING',mode=args.mode,resolution=[WIDTH,HEIGHT],frames=0,
         pixel_verified_frames=0,count_accuracy='NOT_MEASURED',tx_bytes=TX_BYTES,rx_capacity=RX_CAPACITY,
-        configuration=config,pattern=args.pattern,frames_evidence=[],total_count=0,invalid_frames=0)
+        configuration=config,counter_configuration=settings,pattern=args.pattern,
+        frames_evidence=[],total_count=0,invalid_frames=0)
     transport=None;allocated=[];held=False
     try:
         if args.mode!='offline':
@@ -142,8 +155,7 @@ def main(argv=None):
         if library is None:
             library=args.output.parent/('rle_components.dll' if os.name=='nt' else 'rle_components.so')
             if not library.exists():build_native(library)
-        counter=RleCounter(library=library,line_y=args.line_y,roi_top=args.roi_top,
-                           roi_bottom=args.roi_bottom,min_area=args.min_area)
+        counter.library=library
         source=(camera_frames(args.device,args.frames) if args.mode=='camera' else synthetic_frames(args.frames,args.pattern))
         start=time.perf_counter();last=start
         for frame_id,gray in enumerate(source):

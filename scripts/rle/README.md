@@ -50,6 +50,8 @@ sudo env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python3 -B -m scripts.rl
 
 `--mode camera` 使用原分辨率相机；`--verify-pixels` 显式启用完整掩膜重建与黄金比对，性能报告需说明该开关。`--threshold` 使用 >= 比较，`--offset` 默认 0；`--morph 0/1/2` 分别关闭／腐蚀／膨胀，默认关闭。ROI 上下边界、计数线和最小面积可通过命令行配置；真实准确率需要物料真值。
 
+`--counter-config <JSON>` 可传入原 `MaskCounter` 的区域筛选、X/Y 计数轴、跟踪、粘连拆分和聚类设置，并覆盖命令行计数默认值。坐标必须已经换算并标定到 640×400；不会自动套用旧 320×240 面积或距离。配置在板卡访问之前验证。硬件 ROI 与 PS 计数 ROI 自动保持一致；可以用 `count_axis: "x"`、`line_x: 320` 保留横向越线流程。
+
 ## 容量和故障
 
 输入 256032 B。输出为 128 B 头尾、4 B/游程及 2080 B 投影；容量上限 67744 B，空帧为 2208 B。压缩率取决于物料和噪声，不承诺固定 2–8 KB。
