@@ -1,0 +1,20 @@
+{
+  "status": "FAILED",
+  "failure": "RuntimeError: CMA free memory is not above 32768 KiB",
+  "memory_health": {
+    "cma_free_kib": 32532,
+    "mem_available_kib": 345600,
+    "process_rss_kib": 97968
+  },
+  "memory_minimum_kib": {
+    "cma_free_kib": 32532,
+    "mem_available_kib": 345600,
+    "process_rss_kib": 88532
+  },
+  "cma_before_camera_kib": 38100,
+  "cma_after_first_frame_kib": 32532,
+  "dma_status_read_only_before_preview": {
+    "MM2S": 4098,
+    "S2MM": 4098
+  }
+}

@@ -55,6 +55,7 @@ import board_preflight as preflight
 from packet_encoder import (gray320x240_to_gray_packet,
                             gray320x240_to_gray_packet_into)
 from dashboard_state import DashboardState
+from image_debug import DebugSnapshots
 from mjpeg_preview import (
     PREVIEW_FRAME_INTERVAL,
     PREVIEW_JPEG_QUALITY,
@@ -1005,7 +1006,7 @@ def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
              "split_touching.py", "lighting_profile.py", "scale_parameters.py", "dashboard_state.py", "dashboard.html",
              "capture_dataset.py", "live_calibration.py",
-             "packet_encoder.py", "mjpeg_preview.py", "wo0017_capture_profile.py",
+             "packet_encoder.py", "mjpeg_preview.py", "image_debug.py", "wo0017_capture_profile.py",
              "physical_calibration_lock.py", "prepare_physical_calibration.py",
              "calibration_runtime_gate.py", "start_physical_calibration_standby.py")
     paths = {name: SCRIPT_DIR / name for name in names}
@@ -1758,9 +1759,11 @@ def execute_board_stream(args: argparse.Namespace, *,
                 slot.capture_metadata["packer_status"] = dict(packer_record)
 
         hub = MjpegFrameHub()
+        debug_snapshots = DebugSnapshots()
         preview = MjpegPreviewServer(
             hub=hub, host=args.host, port=args.port,
             state_provider=lambda: {**runtime_state, "dashboard": dashboard.snapshot()},
+            debug_snapshots=debug_snapshots,
         ).start()
         stage_timings_ms: dict[str, list[float]] = {stage: [] for stage in (
             "capture", "mapping", "encode", "dma", "rx_sync", "rx_copy", "packer_check", "roi_count",
@@ -1785,6 +1788,15 @@ def execute_board_stream(args: argparse.Namespace, *,
             ).start()
 
         counter = MaskCounter(**frozen_counting_config)
+        debug_mapping_note = "映射方式：" + preprocessing_configuration(args)["mapping"]
+        debug_threshold_note = ("FPGA S2MM 输出；发送前另有灰度映射，左图为映射前图像"
+                                if args.counting_profile == "lighting-calibrated"
+                                else "FPGA S2MM 输出，阈值 ≥128")
+        def publish_preview(result, mask, gray):
+            debug_snapshots.offer(result, gray, mask, source="pl_dma", counter=counter,
+                                  mapping_note=debug_mapping_note,
+                                  threshold_note=debug_threshold_note)
+            preview_publisher(result, mask, gray)
         def capture_frame(result: Any, slot: Any) -> None:
             if capture_writer is None or slot.capture_gray is None or slot.capture_mask is None:
                 raise CaptureError("capture writer or raw source/mask slot snapshot is unavailable")
@@ -1834,7 +1846,7 @@ def execute_board_stream(args: argparse.Namespace, *,
             before_rx_copy=lambda frame_id, slot: api.sync_from_device(slot.rx_buffer),
             after_transfer=verify_frame,
             on_frame=dashboard.on_frame,
-            preview_callback=preview_publisher,
+            preview_callback=publish_preview,
             raw_capture_callback=(capture_writer.record_raw_frame
                                   if capture_writer is not None else None),
             source_capture_callback=(capture_writer.record_source_frame

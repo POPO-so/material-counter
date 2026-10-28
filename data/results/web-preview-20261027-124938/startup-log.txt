@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 386, in main
+    update_memory()
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 338, in update_memory
+    state["memory_health_status"] = require_preview_memory(
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 103, in require_preview_memory
+    raise RuntimeError("CMA free memory is not above 32768 KiB")
+RuntimeError: CMA free memory is not above 32768 KiB
+Traceback (most recent call last):
+  File "/home/xilinx/web-preview-20261027-124938/launch_preview.py", line 5, in <module>
+    raise SystemExit(preview.main(['--expected-boot-id', preview.EXPECTED_BOOT, '--output-dir', str(preview.WO_ROOT / ('camera-preview-' + preview.EXPECTED_BOOT + '-06'))]))
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 386, in main
+    update_memory()
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 338, in update_memory
+    state["memory_health_status"] = require_preview_memory(
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 103, in require_preview_memory
+    raise RuntimeError("CMA free memory is not above 32768 KiB")
+RuntimeError: CMA free memory is not above 32768 KiB
+  PID USER     COMMAND

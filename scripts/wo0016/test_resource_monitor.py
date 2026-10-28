@@ -233,3 +233,15 @@ def test_rootfs_resolves_dev_root_only_to_verified_mmc_partition():
     monitor._device_resolver = lambda path: (_ for _ in ()).throw(OSError('unresolved'))
     assert monitor._root_filesystem() == {
         'rootfs_total_bytes': None, 'rootfs_used_bytes': None}
+
+
+def test_sd_root_uses_kernel_device_identity_when_dev_root_missing():
+    from types import SimpleNamespace
+    def resolver(path):
+        if path == '/sys/dev/block/179:2':
+            return '/sys/devices/platform/block/mmcblk0/mmcblk0p2'
+        raise OSError('missing device')
+    monitor = ResourceMonitor(reader=lambda path: '17 1 179:2 / / rw - ext4 /dev/root rw\n',
+                              statvfs=lambda path: SimpleNamespace(f_blocks=100, f_frsize=4096, f_bavail=25),
+                              device_resolver=resolver)
+    assert monitor._root_filesystem() == {'rootfs_total_bytes': 409600, 'rootfs_used_bytes': 307200}

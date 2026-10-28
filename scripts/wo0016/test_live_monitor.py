@@ -474,3 +474,31 @@ def test_camera_control_verification_and_gain_exception_are_in_monitor_json():
 
     assert snapshot["camera_controls"] == report
     assert snapshot["dashboard"]["camera_controls"] == report
+
+
+def test_board_resource_samples_use_real_proc_totals_and_cpu_deltas(monkeypatch):
+    module = state_module()
+    texts = {"/proc/meminfo": "MemTotal: 1000 kB\nMemAvailable: 400 kB\nCmaTotal: 200 kB\nCmaFree: 50 kB\n", "/proc/stat": "cpu  100 0 100 800 0 0 0 0\n"}
+    monkeypatch.setattr(module.Path, "read_text", lambda self, **kwargs: texts[str(self).replace("\\", "/")])
+    state = module.LiveMonitorState(mode="board")
+    state.update_health(cma_free_kib=50)
+    assert state.snapshot()["resource_health"]["cpu_percent"] is None
+    texts["/proc/stat"] = "cpu  150 0 150 900 0 0 0 0\n"
+    state.update_health(cma_free_kib=50)
+    health = state.snapshot()["resource_health"]
+    assert health["cpu_percent"] == 50
+    assert (health["memory_total_kib"], health["memory_available_kib"]) == (1000, 400)
+    assert (health["cma_total_kib"], health["cma_free_kib"]) == (200, 50)
+
+
+def test_board_resource_samples_unavailable_on_bad_or_missing_proc(monkeypatch):
+    module = state_module()
+    def missing(self, **kwargs):
+        raise OSError("unavailable")
+    monkeypatch.setattr(module.Path, "read_text", missing)
+    state = module.LiveMonitorState(mode="board")
+    state.update_health()
+    health = state.snapshot()["resource_health"]
+    assert health["cpu_percent"] is None
+    assert health["memory_total_kib"] is None
+    assert health["cma_total_kib"] is None

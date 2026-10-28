@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import json
+import hashlib
 import ipaddress
 import socket
 import select
@@ -31,6 +32,7 @@ class MjpegFrameHub:
         self._condition = threading.Condition()
         self._sequence = 0
         self._jpeg: bytes | None = None
+        self._binary_jpeg: bytes | None = None
         self._stream_clients = 0
         self._closed = False
         self._published_times: deque[float] = deque(maxlen=60)
@@ -88,13 +90,17 @@ class MjpegFrameHub:
             return self._stream_clients > 0
 
     def publish(self, jpeg: bytes | bytearray | memoryview, *,
-                dimensions: tuple[int, int] | None = None) -> int:
+                dimensions: tuple[int, int] | None = None,
+                binary_jpeg: bytes | bytearray | memoryview | None = None) -> int:
         if not isinstance(jpeg, (bytes, bytearray, memoryview)) or not jpeg:
             raise ValueError("published JPEG must be non-empty bytes")
+        if binary_jpeg is not None and (not isinstance(binary_jpeg, (bytes, bytearray, memoryview)) or not binary_jpeg):
+            raise ValueError("published binary JPEG must be non-empty bytes")
         with self._condition:
             if self._closed:
                 raise RuntimeError("frame hub is closed")
             self._jpeg = bytes(jpeg)
+            self._binary_jpeg = None if binary_jpeg is None else bytes(binary_jpeg)
             self._published_times.append(time.monotonic())
             self._dimensions = dimensions
             self._sequence += 1
@@ -105,22 +111,25 @@ class MjpegFrameHub:
         """Drop the current image and its age metrics without rewinding sequence."""
         with self._condition:
             self._jpeg = None
+            self._binary_jpeg = None
             self._published_times.clear()
             self._dimensions = None
             self._condition.notify_all()
 
-    def wait_for_next(self, *, after_sequence: int, timeout_s: float = 1.0
+    def wait_for_next(self, *, after_sequence: int, timeout_s: float = 1.0, binary: bool = False
                       ) -> tuple[int, bytes] | None:
         if after_sequence < 0 or timeout_s < 0:
             raise ValueError("sequence and timeout must be nonnegative")
         with self._condition:
             ready = self._condition.wait_for(
-                lambda: self._sequence > after_sequence or self._closed,
+                lambda: (self._sequence > after_sequence and
+                         (self._binary_jpeg if binary else self._jpeg) is not None) or self._closed,
                 timeout=timeout_s,
             )
-            if not ready or self._jpeg is None or self._sequence <= after_sequence:
+            jpeg = self._binary_jpeg if binary else self._jpeg
+            if not ready or jpeg is None or self._sequence <= after_sequence:
                 return None
-            return self._sequence, self._jpeg
+            return self._sequence, jpeg
 
     def close(self) -> None:
         with self._condition:
@@ -138,7 +147,7 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                          calibration: dict | None = None,
                          roi_top: int = 0, roi_bottom: int = 240
                          ) -> np.ndarray:
-    """Render the Gray8 camera frame with tracking HUD and Binary8 DMA-mask PIP."""
+    """Render the Gray8 camera frame with the tracking HUD, without a mask inset."""
     image = np.asarray(mask)
     if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (240, 320):
         raise ValueError("mask must be a uint8 array with shape (240, 320)")
@@ -189,8 +198,8 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
                          (0, 210, 255), 1, lineType=cv2.LINE_8)
 
     # Keep full area labels readable for adjacent split children and image edges.
-    # These rectangles reserve the count HUD and mask PIP drawn below.
-    occupied_labels = [(3, 4, 212, 34), (216, 4, 316, 97)]
+    # Reserve the count HUD so track labels remain readable.
+    occupied_labels = [(3, 4, 212, 34)]
     x_axis_hud = None
     if count_axis == "x":
         x_label_text = f"X={line_x}"
@@ -263,18 +272,6 @@ def render_preview_frame(mask: np.ndarray, *, total_count: int, line_y: int,
     cv2.putText(frame, f"{label}  {int(total_count):03d}", (10, 24),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.48, (255, 255, 255), 1, lineType=cv2.LINE_AA)
 
-    pip_x, pip_y, pip_width, pip_height = 220, 8, 92, 70
-    cv2.rectangle(frame, (pip_x - 2, pip_y - 2),
-                  (pip_x + pip_width + 2, pip_y + pip_height + 17), (12, 25, 35), -1)
-    cv2.putText(frame, pip_label, (pip_x + 2, pip_y + 11),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.31, (44, 224, 208), 1, lineType=cv2.LINE_AA)
-    pip = cv2.resize(image, (pip_width, pip_height), interpolation=cv2.INTER_NEAREST)
-    pip = cv2.cvtColor(pip, cv2.COLOR_GRAY2BGR)
-    frame[pip_y + 15:pip_y + 15 + pip_height,
-          pip_x:pip_x + pip_width] = pip
-    cv2.rectangle(frame, (pip_x, pip_y + 15),
-                  (pip_x + pip_width - 1, pip_y + 15 + pip_height - 1),
-                  (44, 224, 208), 1, lineType=cv2.LINE_8)
     if calibration is not None:
         for contour in calibration.get("glare_contours", ()):
             points = np.asarray(contour, dtype=np.float64).reshape(-1, 2)
@@ -534,10 +531,15 @@ class PeriodicMjpegPublisher:
                     **({"roi_top": roi_top, "roi_bottom": roi_bottom}
                        if (roi_top, roi_bottom) != (0, 240) else {}),
                 )
+                binary_ok, binary_payload = cv2.imencode(
+                    ".jpg", self._encode_mask,
+                    [int(cv2.IMWRITE_JPEG_QUALITY), int(self.quality)])
+                if not binary_ok:
+                    raise RuntimeError("OpenCV failed to encode the binary preview JPEG")
                 with self._condition:
                     if epoch != self._epoch or self._closing or self._closed:
                         continue
-                    self.hub.publish(jpeg, dimensions=(self._encode_mask.shape[1],
+                    self.hub.publish(jpeg, binary_jpeg=binary_payload.tobytes(), dimensions=(self._encode_mask.shape[1],
                                      self._encode_mask.shape[0] + (85 if calibration is not None else 0)))
                     self.encoded_frames += 1
             except RuntimeError as exc:
@@ -685,7 +687,8 @@ class MjpegPreviewServer:
     def __init__(self, *, hub: MjpegFrameHub | None = None,
                  host: str = "0.0.0.0", port: int = 8080,
                  state_provider=None, control_callback=None,
-                 live_control_callback=None, resource_monitor=None):
+                 live_control_callback=None, debug_snapshots=None, resource_monitor=None,
+                 serve_dashboard=True):
         if not isinstance(host, str) or not host:
             raise ValueError("host must be non-empty text")
         if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
@@ -696,7 +699,9 @@ class MjpegPreviewServer:
         self.state_provider = state_provider
         self.control_callback = control_callback
         self.live_control_callback = live_control_callback
+        self.debug_snapshots = debug_snapshots
         self.resource_monitor = resource_monitor
+        self.serve_dashboard = serve_dashboard
         self._server: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
 
@@ -713,8 +718,12 @@ class MjpegPreviewServer:
         state_provider = self.state_provider
         control_callback = self.control_callback
         live_control_callback = self.live_control_callback
+        debug_snapshots = self.debug_snapshots
         resource_monitor = self.resource_monitor
-        page = Path(__file__).with_name("dashboard.html").read_bytes()
+        serve_dashboard = self.serve_dashboard
+        page_path = Path(__file__).with_name("dashboard.html")
+        if serve_dashboard:
+            page_path.read_bytes()  # Fail startup if the initial page is missing.
 
         class Handler(BaseHTTPRequestHandler):
             protocol_version = "HTTP/1.1"
@@ -794,8 +803,8 @@ class MjpegPreviewServer:
                     if host not in ("127.0.0.1", "localhost", "::1") or (origin and origin != expected_origin):
                         self._reject_post(403, {"error": "local same-origin access required"})
                         return
-                elif self.path in live_actions or self.path == "/api/resource-monitor":
-                    if (self.path == "/api/resource-monitor" and resource_monitor is None) or (self.path in live_actions and live_control_callback is None):
+                elif self.path in live_actions or self.path in ("/api/debug-mode", "/api/resource-monitor"):
+                    if (self.path == "/api/debug-mode" and debug_snapshots is None) or (self.path == "/api/resource-monitor" and resource_monitor is None) or (self.path in live_actions and live_control_callback is None):
                         self._reject_post(403, {"error": "live controls disabled"})
                         return
                     if not self._is_local_request_host():
@@ -823,10 +832,14 @@ class MjpegPreviewServer:
                         raise ValueError("JSON body must be an object")
                     if self.path == "/api/calibration":
                         result = control_callback(payload)
+                    elif self.path == "/api/debug-mode":
+                        if set(payload) != {"enabled"}:
+                            raise ValueError("expected enabled")
+                        result = debug_snapshots.set_enabled(payload["enabled"])
                     elif self.path == "/api/resource-monitor":
                         if set(payload) != {"enabled", "mode"}:
                             raise ValueError("expected enabled and mode")
-                        result = resource_monitor.control(payload["enabled"], payload["mode"])
+                        result = resource_monitor.control(enabled=payload["enabled"], mode=payload["mode"])
                     else:
                         result = live_control_callback(live_actions[self.path], payload)
                     self._json(200, result)
@@ -838,6 +851,21 @@ class MjpegPreviewServer:
                     self._json(503, {"error": str(exc)})
 
             def do_GET(self) -> None:
+                if self.path == "/api/page-version":
+                    if not serve_dashboard:
+                        self.send_error(404)
+                        return
+                    try:
+                        self._json(200, {"sha256": hashlib.sha256(page_path.read_bytes()).hexdigest()})
+                    except OSError:
+                        self._json(503, {"error": "page unavailable"})
+                    return
+                if self.path == "/api/debug-snapshot":
+                    if debug_snapshots is None:
+                        self._json(404, {"error": "debug mode unavailable"})
+                    else:
+                        self._json(200, debug_snapshots.snapshot())
+                    return
                 if self.path == "/status.json":
                     try:
                         raw = state_provider() if state_provider is not None else {}
@@ -856,6 +884,8 @@ class MjpegPreviewServer:
                             "resource_monitor": resource_monitor.snapshot() if resource_monitor is not None else None,
                             "view_mode": raw.get("view_mode"),
                             "camera_controls": raw.get("camera_controls"),
+                            "debug": ({"enabled": debug_snapshots.snapshot()["enabled"]}
+                                      if debug_snapshots is not None else None),
                             "capabilities": {
                                 "start": False,
                                 "stop": live_controls_enabled,
@@ -875,6 +905,16 @@ class MjpegPreviewServer:
                         self._json(503, {"error": "state unavailable"})
                     return
                 if self.path in ("/", "/index.html"):
+                    if not serve_dashboard:
+                        self.send_error(404)
+                        return
+                    try:
+                        page = page_path.read_bytes()
+                    except OSError:
+                        self.send_error(503, "page unavailable")
+                        return
+                    version = hashlib.sha256(page).hexdigest().encode("ascii")
+                    page = page.replace(b"<head>", b'<head><meta name="dashboard-version" content="' + version + b'">', 1)
                     self.send_response(200)
                     self.send_header("Content-Type", "text/html; charset=utf-8")
                     self.send_header("Content-Length", str(len(page)))
@@ -882,7 +922,7 @@ class MjpegPreviewServer:
                     self.end_headers()
                     self.wfile.write(page)
                     return
-                if self.path != "/stream.mjpg":
+                if self.path not in ("/stream.mjpg", "/binary.mjpg"):
                     self.send_error(404)
                     return
                 self.send_response(200)
@@ -899,7 +939,8 @@ class MjpegPreviewServer:
                     self.wfile.flush()
                     with hub.streaming_client():
                         while not hub.closed:
-                            item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0)
+                            item = hub.wait_for_next(after_sequence=sequence, timeout_s=1.0,
+                                                     binary=self.path == "/binary.mjpg")
                             if item is None:
                                 # Detect a disconnected/hidden browser even when
                                 # the producer is idle; release its client lease.

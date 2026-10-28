@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "telemetry": {
+    "source": "software",
+    "phase": "running",
+    "total_count": 0,
+    "detections": 0,
+    "frames_processed": 3652,
+    "processing_fps": 57.45938903939232,
+    "fps_kind": "completed-frame session mean",
+    "elapsed_seconds": 63.551179647000026,
+    "last_frame_age_seconds": 0.010650222000549547,
+    "stale": false,
+    "camera": "frames_received",
+    "fpga": "disabled",
+    "dma": "disabled",
+    "events": [
+      {
+        "id": 1,
+        "time": 1746366836.446759,
+        "message": "\u6536\u5230\u9996\u4e2a\u5df2\u5904\u7406\u5e27"
+      },
+      {
+        "id": 2,
+        "time": 1746366836.446806,
+        "message": "\u7d2f\u8ba1\u8ba1\u6570\uff1a0"
+      }
+    ]
+  },
+  "preview": {
+    "sequence": 182,
+    "clients": 0,
+    "closed": false,
+    "age_seconds": 56.434140075999494,
+    "width": 320,
+    "height": 325,
+    "fps": null
+  },
+  "runtime_status": "READY_WAITING_FOR_OPERATOR_OBSERVATION",
+  "health": null,
+  "view_mode": null,
+  "camera_controls": {
+    "exposure_time_absolute": 50,
+    "brightness": 0
+  },
+  "capabilities": {
+    "start": false,
+    "stop": false,
+    "reset": false,
+    "view_mode": false,
+    "calibration": true
+  }
+}

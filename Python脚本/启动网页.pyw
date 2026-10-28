@@ -539,13 +539,156 @@ def default_browser_executable():
         return None
 
 
-def open_browser(url):
-    executable = default_browser_executable()
-    if executable:
-        # 通过 Windows Shell 启动，避免直接子进程继承受限的浏览器配置目录访问环境。
-        os.startfile(str(executable), 'open', subprocess.list2cmdline([url]))
+def _browser_window_title(executable):
+    """返回浏览器全部可见窗口的标题（换行连接）；无窗口或检测不可用时返回 ''。"""
+    if executable is None or sys.platform != 'win32':
+        return ''
+    script = ("$t = Get-Process -Name '" + executable.stem + "' -ErrorAction SilentlyContinue | "
+              "Where-Object {$_.MainWindowTitle} | ForEach-Object {$_.MainWindowTitle}; "
+              "$t -join \"`n\"")
+    try:
+        result = subprocess.run(
+            ['powershell', '-NoProfile', '-Command', script],
+            capture_output=True, timeout=30,
+            creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+        return result.stdout.decode('utf-8', errors='replace').strip()
+    except (OSError, subprocess.SubprocessError):
+        return ''
+
+
+def _wait_for_browser_window(executable, timeout=10, title_hint=None):
+    """等待浏览器出现可见窗口；检测不可用时保守返回 True。
+
+    title_hint 非空时要求窗口标题包含该提示（页面 <title>），排除崩溃恢复
+    对话框等没有页面内容的窗口被误判为成功。
+    """
+    if executable is None or sys.platform != 'win32':
         return True
-    return webbrowser.open(url)
+    process_name = executable.stem
+    script = (
+        '$deadline = (Get-Date).AddSeconds(' + str(timeout) + '); '
+        'while ((Get-Date) -lt $deadline) { '
+        "$w = Get-Process -Name '" + process_name + "' -ErrorAction SilentlyContinue | "
+        'Where-Object {$_.MainWindowTitle}; '
+        'if ($w) { exit 0 }; '
+        'Start-Sleep -Milliseconds 500 }; '
+        'exit 1'
+    )
+    try:
+        result = subprocess.run(
+            ['powershell', '-NoProfile', '-Command', script],
+            capture_output=True, timeout=timeout + 20,
+            creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+        if result.returncode != 0:
+            return False
+        if title_hint is None:
+            return True
+        deadline = time.monotonic() + max(timeout, 10)
+        while time.monotonic() < deadline:
+            title = _browser_window_title(executable)
+            if title_hint in title:
+                return True
+            time.sleep(1)
+        return False
+    except (OSError, subprocess.SubprocessError):
+        return True
+
+
+def _browser_process_count(executable):
+    """返回浏览器当前进程数；检测不可用时返回 None。"""
+    if executable is None or sys.platform != 'win32':
+        return None
+    script = "$p = @(Get-Process -Name '" + executable.stem + "' -ErrorAction SilentlyContinue); $p.Count"
+    try:
+        result = subprocess.run(
+            ['powershell', '-NoProfile', '-Command', script],
+            capture_output=True, timeout=30,
+            creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+        return int(result.stdout.strip())
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+
+
+def _wait_for_browser_exit(executable, timeout=15):
+    """等待浏览器进程全部退出以释放配置目录单例锁；超时后放行。"""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        count = _browser_process_count(executable)
+        if count == 0:
+            return True
+        time.sleep(1)
+    return False
+
+
+def _terminate_browser_processes(executable):
+    """强制结束浏览器所有进程以释放坏死的后台单例。"""
+    if executable is None:
+        return
+    try:
+        subprocess.run(
+            ['taskkill', '/F', '/IM', executable.name],
+            capture_output=True, timeout=15,
+            creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+
+def _launch_dedicated_profile(executable, url):
+    """用独立配置目录直接启动浏览器，绕开主配置目录的锁竞争与崩溃恢复提示。"""
+    profile = RUNTIME_DIR / 'browser-profile'
+    profile.mkdir(parents=True, exist_ok=True)
+    subprocess.Popen(
+        [str(executable), '--user-data-dir=' + str(profile), '--no-first-run',
+         '--no-default-browser-check', '--hide-crash-restore-bubble', '--new-window', url],
+        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+
+
+def open_browser(url, report=lambda message: None):
+    """用默认浏览器打开页面；浏览器后台单例坏死时自动恢复。
+
+    失败模式：浏览器“启动增强/后台运行”进程持有配置目录单例锁但无法开窗，
+    新启动的浏览器进程为避免配置损坏而静默退出（无报错）。恢复方式：先试
+    常规启动；无窗口则（在确认浏览器当前无任何可见窗口、不丢失用户页面的
+    前提下）结束浏览器进程释放锁，改用独立配置目录直接启动——全新目录无
+    锁竞争、无崩溃恢复对话框，冷启动实测可靠。窗口标题未含页面标题时视为
+    未成功（排除崩溃恢复对话框被误判）。每步结果记入启动日志。
+    """
+    executable = default_browser_executable()
+    if not executable:
+        return webbrowser.open(url)
+    arguments = subprocess.list2cmdline([url])
+    title_hint = _page_title(url)
+    # 通过 Windows Shell 启动，避免直接子进程继承受限的浏览器配置目录访问环境。
+    os.startfile(str(executable), 'open', arguments)
+    if _wait_for_browser_window(executable, title_hint=title_hint):
+        return True
+    report('浏览器未响应，正在重启浏览器…')
+    set_startup_status('starting', '浏览器后台进程未响应，正在重启浏览器…')
+    log_startup('浏览器恢复：窗口未出现，改用独立配置目录启动')
+    # 仅当浏览器当前没有任何可见窗口时才清理进程，避免关掉用户正开着的页面。
+    if _browser_window_title(executable) == '':
+        _terminate_browser_processes(executable)
+        _wait_for_browser_exit(executable)
+    else:
+        log_startup('浏览器恢复：存在可见窗口，跳过进程清理，直接独立配置启动')
+    try:
+        _launch_dedicated_profile(executable, url)
+    except (OSError, subprocess.SubprocessError) as exc:
+        log_startup(f'浏览器恢复：独立配置启动失败 {exc}')
+        return False
+    return _wait_for_browser_window(executable, timeout=20, title_hint=title_hint)
+
+
+def _page_title(url):
+    """获取要打开页面的标题，用于浏览器窗口成功的判定。"""
+    opener = build_opener(ProxyHandler({}))
+    try:
+        with opener.open(url, timeout=5) as response:
+            match = re.search(r'<title>(.*?)</title>', response.read().decode('utf-8', errors='replace'), re.S)
+            return match.group(1).strip() if match else None
+    except (OSError, ValueError):
+        return None
 
 
 def main(report=lambda message: None):
@@ -555,7 +698,7 @@ def main(report=lambda message: None):
     start_web_sync()
     wait_for_web_sync()
     report('正在打开网页…')
-    if not open_browser(LOCAL_URL):
+    if not open_browser(LOCAL_URL, report):
         raise RuntimeError('无法打开浏览器，请手动访问：' + LOCAL_URL)
     report('网页已就绪')
     set_startup_status('starting', '正在检查板卡连接与相机预览…')

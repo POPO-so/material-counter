@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 445, in main
+    control_callback=control_update if args.calibration_mode else None).start()
+  File "/home/xilinx/web-preview-20261027-124938/mjpeg_preview.py", line 715, in start
+    page = Path(__file__).with_name("dashboard.html").read_bytes()
+  File "/usr/lib/python3.10/pathlib.py", line 1124, in read_bytes
+    with self.open(mode='rb') as f:
+  File "/usr/lib/python3.10/pathlib.py", line 1117, in open
+    return self._accessor.open(self, mode, buffering, encoding, errors,
+FileNotFoundError: [Errno 2] No such file or directory: '/home/xilinx/web-preview-20261027-124938/dashboard.html'
+Traceback (most recent call last):
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 445, in main
+    control_callback=control_update if args.calibration_mode else None).start()
+  File "/home/xilinx/web-preview-20261027-124938/mjpeg_preview.py", line 715, in start
+    page = Path(__file__).with_name("dashboard.html").read_bytes()
+  File "/usr/lib/python3.10/pathlib.py", line 1124, in read_bytes
+    with self.open(mode='rb') as f:
+  File "/usr/lib/python3.10/pathlib.py", line 1117, in open
+    return self._accessor.open(self, mode, buffering, encoding, errors,
+FileNotFoundError: [Errno 2] No such file or directory: '/home/xilinx/web-preview-20261027-124938/dashboard.html'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/xilinx/web-preview-20261027-124938/launch_calibration_preview.py", line 5, in <module>
+    raise SystemExit(preview.main(['--expected-boot-id', preview.EXPECTED_BOOT, '--output-dir', str(preview.WO_ROOT / ('camera-preview-' + preview.EXPECTED_BOOT + '-06')), '--calibration-mode']))
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 568, in main
+    raise restoration_error
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 556, in main
+    controls.close_and_restore()
+  File "/home/xilinx/web-preview-20261027-124938/live_calibration.py", line 194, in close_and_restore
+    values = self.apply(dict(self.STANDARD))
+  File "/home/xilinx/web-preview-20261027-124938/camera_only_preview.py", line 163, in apply_v4l2_controls
+    subprocess.run(command, check=True, stdout=subprocess.PIPE,
+  File "/usr/lib/python3.10/subprocess.py", line 524, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['sudo', '-n', 'v4l2-ctl', '-d', '/dev/video0', '--set-ctrl=exposure_time_absolute=50,brightness=0']' returned non-zero exit status 1.
+  PID USER     COMMAND

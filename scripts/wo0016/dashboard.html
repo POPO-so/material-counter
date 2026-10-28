@@ -20,9 +20,12 @@ dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);bord
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .view-mode-control{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:14px;color:var(--muted)}.view-mode-control select{min-height:44px;min-width:190px;padding:8px 34px 8px 10px;border:1px solid #a6b9d0;border-radius:6px;color:var(--ink);background:white}.view-mode-control select:disabled{color:#66758b;background:#e9eef5;border-color:#d4deea}.view-mode-control select:focus-visible{outline:3px solid #ed9800;outline-offset:4px}.health-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:0 22px 20px}.health-item{min-width:0;padding:12px;border:1px solid var(--line);border-radius:8px;background:#f8fbff}.health-item span,.health-item small{display:block;color:var(--muted);font-size:12px}.health-item strong{display:block;margin:4px 0;font:700 18px/1.35 "Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.health-item code{font:600 13px/1.4 ui-monospace,Consolas,monospace}.health-note{margin:-6px 22px 18px;color:var(--muted);font-size:12px}
 .view-mode-control select{font:inherit}@media(max-width:600px){.health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.backend-update{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:8px;background:#f8fbff}.backend-update strong{font-size:14px}.backend-update p{margin:4px 0 0;color:var(--muted);font-size:12px}.backend-update button{font-weight:600}
 .resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0 22px 18px}.resource{text-align:center;border:1px solid var(--line);border-radius:9px;background:#f8fbff;padding:14px 8px}.resource h3{font-size:14px;margin:0 0 10px;color:var(--ink)}.resource-ring{--percent:0%;width:90px;height:90px;margin:auto;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--blue) var(--percent),#dce7f3 0);position:relative}.resource-ring::before{content:"";position:absolute;inset:10px;border-radius:50%;background:#f8fbff}.resource-ring strong{position:relative;font:700 18px/1.2 "Segoe UI",sans-serif;font-variant-numeric:tabular-nums}.resource p{font-size:12px;color:var(--muted);margin:10px 0 0;overflow-wrap:anywhere}@media(max-width:380px){.resource-grid{grid-template-columns:1fr}.resource-ring{width:82px;height:82px}}
 .resource-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 22px 16px}.resource-controls button,.resource-controls select{font:inherit;min-height:40px;border:1px solid #a6b9d0;border-radius:7px;padding:7px 12px;background:white;color:var(--ink)}.resource-controls button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:white}.resource-status{font-size:13px;color:var(--muted)}.resource-details{padding:0 22px 18px}.resource-details h3{font-size:15px;margin:12px 0}.resource-table{width:100%;border-collapse:collapse;font-size:13px}.resource-table th,.resource-table td{text-align:left;border-bottom:1px solid var(--line);padding:7px 4px}.resource-table th{color:var(--muted);font-weight:500}.resource-bar{height:7px;background:#dce7f3;border-radius:8px;overflow:hidden;margin-top:4px}.resource-bar span{display:block;height:100%;background:var(--blue)}.resource-detail-note{color:var(--muted);font-size:12px;margin:10px 0}.resource-grid{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:520px){.resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+ .binary-video{background:#101820}.binary-video img{image-rendering:pixelated}.binary-overlay{background:#101820f2;color:white}.binary-overlay>.icon{color:#91a8c4}.binary-overlay p{color:#cfdae8}
 .startup-status{display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:14px 18px;border:1px solid #a9c9ef;border-left:4px solid var(--blue);border-radius:8px;background:#fff;color:var(--ink);box-shadow:0 3px 14px #1c5ea307}.startup-status[data-phase=error]{border-color:#f2b8b2;border-left-color:var(--red);background:#fff8f7}.startup-status strong{white-space:nowrap}.startup-status span{overflow-wrap:anywhere}
+ .debug-toggle{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 18px 16px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:#f8fbff}.debug-toggle button{min-height:44px;padding:9px 16px;border:1px solid var(--blue);border-radius:7px;background:var(--blue);color:#fff;font-weight:650}.debug-toggle button[aria-pressed=true]{background:#fff;color:var(--blue-dark)}.debug-toggle button:disabled{background:#e9eef5;color:#66758b;border-color:#d4deea}.debug-status{font-size:13px;color:var(--muted)}.debug-meta{display:flex;gap:12px;flex-wrap:wrap;padding:0 20px 14px;font-size:13px;color:var(--muted)}.debug-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:0 18px 20px}.debug-step{min-width:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}.debug-step h3{margin:0;padding:11px 13px;background:#f3f7fc;font-size:14px}.debug-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px}.debug-frame{min-width:0}.debug-frame img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#edf2f8;border:1px solid var(--line);border-radius:5px}.debug-frame figcaption{padding:5px 1px;font-size:12px;color:var(--muted)}.debug-unavailable{display:grid;place-items:center;min-height:100px;padding:10px;text-align:center;background:#f7f9fc;border:1px dashed #bdcada;border-radius:5px;color:var(--muted);font-size:12px}.debug-note{margin:0;padding:0 12px 12px;color:var(--muted);font-size:12px}@media(max-width:600px){.debug-steps{grid-template-columns:1fr}.debug-pair{gap:6px;padding:8px}}
 </style>
 </head>
 <body>
@@ -52,9 +55,15 @@ dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);bord
 <div class="connection"><p><strong id="connection">正在连接状态接口…</strong> <span id="mode"></span></p><p>更新间隔 1.5 秒 <span aria-hidden="true">／</span> 最近同步 <span id="updated">--</span></p></div>
 <div class="workspace">
 <div class="left">
-<section class="card" aria-labelledby="preview-title"><div class="card-head"><h2 id="preview-title"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><span id="preview-heading">二值化实时预览</span></h2><div class="small preview-meta"><span>画面 <span id="resolution">--</span></span><span>预览 <span id="preview-fps">--</span> FPS</span></div></div>
-<div class="video"><img id="stream" alt="实时预览；画中画显示二值化图像，来源见下方说明" width="320" height="240" hidden><div id="video-overlay" class="video-overlay"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><strong id="video-title">等待预览画面</strong><p id="video-note">尚未收到图像。请检查采集服务与连接。</p></div></div>
+<section class="card" aria-labelledby="preview-title"><div class="card-head"><h2 id="preview-title"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><span id="preview-heading">相机画面与跟踪</span></h2><div class="small preview-meta"><span>画面 <span id="resolution">--</span></span><span>预览 <span id="preview-fps">--</span> FPS</span></div></div>
+<div class="video"><img id="stream" alt="相机灰度画面，带有计数线和跟踪标注" width="320" height="240" hidden><div id="video-overlay" class="video-overlay"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><strong id="video-title">等待预览画面</strong><p id="video-note">尚未收到图像。请检查采集服务与连接。</p></div></div>
 <div class="video-footer"><span id="source" class="source">图像来源未确认</span><button class="text-button" id="toggle-preview" type="button" aria-pressed="false">暂停预览</button></div></section>
+<section class="card" aria-labelledby="binary-title"><div class="card-head"><h2 id="binary-title"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg>二值化结果</h2><span class="small" id="binary-meta">等待图像来源确认</span></div>
+<div class="video binary-video"><img id="binary-stream" alt="独立的黑白二值化结果" width="320" height="240" hidden><div id="binary-overlay" class="video-overlay binary-overlay"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg><strong id="binary-title-text">等待二值化画面</strong><p id="binary-note">二值化结果将与相机画面分开展示。</p></div></div>
+<div class="video-footer"><span id="binary-source" class="source">二值图来源待确认</span></div></section>
+<section class="card" aria-labelledby="debug-title"><div class="card-head"><h2 id="debug-title"><svg class="icon" aria-hidden="true"><use href="#picture"/></svg>图像处理调试</h2><span class="small">默认关闭 · 降低额外处理开销</span></div>
+<div class="debug-toggle"><button id="toggle-debug" type="button" aria-pressed="false" disabled>开启调试</button><span id="debug-status" class="debug-status" role="status" aria-live="polite">连接服务后可开启</span></div>
+<div id="debug-content" hidden><div class="debug-meta"><span>帧号 <strong id="debug-frame">--</strong></span><span>来源 <strong id="debug-source">--</strong></span></div><div id="debug-steps" class="debug-steps" aria-live="polite"></div></div></section>
 <section class="card" aria-labelledby="logs-title"><div class="card-head"><h2 id="logs-title"><svg class="icon" aria-hidden="true"><use href="#list"/></svg>系统事件</h2><span class="small">最近 30 条</span></div><ol id="logs" class="logs" tabindex="0" aria-label="最近系统事件"><li><span>等待服务端状态事件…</span></li></ol><p class="log-note">显示计数及状态变化；完整日志保留在原运行记录中。</p></section>
 </div>
 <div class="right">
@@ -82,6 +91,7 @@ dialog{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--line);bord
 <div class="view-mode-control"><label for="view-mode">画面显示</label><select id="view-mode" disabled aria-describedby="control-note"><option value="overlay">原图与叠加层</option><option id="binary-option" value="binary">FPGA Binary8</option></select></div>
 <div class="actions"><button class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#play"/></svg>开始采集</button><button id="stop-monitor" class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#stop"/></svg>停止监控</button><button id="reset-count" class="action" type="button" disabled aria-describedby="control-note"><svg class="icon" aria-hidden="true"><use href="#trash"/></svg>计数清零</button></div>
 <p id="control-note" class="control-note">停止和清零只在当前服务明确提供对应控制时启用。</p>
+<div class="backend-update"><div><strong>后端代码更新</strong><p>使用本机项目中的预览代码；更新时图传会短暂中断。</p></div><button id="backend-update" class="text-button" type="button" disabled>更新后端 Python</button></div><p id="backend-update-status" class="feedback" role="status" aria-live="polite">正在连接本机同步程序…</p>
 <form id="calibration" class="calibration" hidden><h3>相机标定</h3><div class="fields"><label for="exposure">曝光时间<input id="exposure" name="exposure" type="number" min="50" max="10000" step="1" inputmode="numeric" autocomplete="off" required></label><label for="brightness">亮度<input id="brightness" name="brightness" type="number" min="-64" max="64" step="1" inputmode="numeric" autocomplete="off" required></label></div><div class="cal-actions"><button id="apply" class="apply" type="submit">应用参数</button><button id="restore" class="text-button" type="button">恢复基准参数</button></div><p class="control-note">仅标定模式可用，需通过本地 SSH 隧道访问。恢复操作沿用后端基准。</p></form>
 <p id="feedback" class="feedback" role="status" aria-live="polite"></p></div></section>
 </div></div>
@@ -97,36 +107,57 @@ const numeric = value => typeof value === 'number' && Number.isFinite(value) && 
 const integer = value => numeric(value) && Number.isSafeInteger(value);
 const fmt = new Intl.NumberFormat('zh-CN');
 const clock = new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-let paused=false, connected=false, polling=false, pending=false, timer=null, request=null;
-let resourceBusy=false;
+let paused=false, connected=false, polling=false, pending=false, timer=null, request=null, debugEnabled=null, debugPolling=false, debugTimer=null, debugRequest=null, debugBusy=false;
+let resourceBusy=false, backendBusy=false;
 let countAnimation=null;
-let snapshot=null, streamFailed=false, retryAfter=0, lastCount=null, eventSignature='', viewModeAccepted='overlay';
+let snapshot=null, streamFailed=false, binaryStreamFailed=false, retryAfter=0, binaryRetryAfter=0, lastCount=null, eventSignature='', viewModeAccepted='overlay';
+const pageVersion=document.querySelector('meta[name="dashboard-version"]')?.content;
+async function checkPageVersion(){
+  if(!pageVersion||document.hidden||pending||debugBusy||backendBusy||$('confirm-control').open||['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;
+  try{const response=await fetch('/api/page-version',{cache:'no-store',signal:AbortSignal.timeout(4000)});if(response.ok){const version=await response.json();if(typeof version.sha256==='string'&&version.sha256!==pageVersion)location.reload();}}catch{}
+}
+setInterval(checkPageVersion,5000);
 function text(id,value){const node=$(id),next=String(value);if(node.textContent!==next)node.textContent=next;}
 async function startupStatus(){
   if(location.hostname!=='127.0.0.1')return;
   try{const response=await fetch('/api/startup-status',{cache:'no-store',signal:AbortSignal.timeout(3000)});if(!response.ok)return;const state=await response.json();const visible=state.phase==='starting'||state.phase==='error';$('startup-status').hidden=!visible;if(visible){$('startup-status').dataset.phase=state.phase;text('startup-title',state.phase==='error'?'启动失败':'启动中');text('startup-message',state.message||'正在准备…');}}catch{}
 }
 startupStatus();setInterval(startupStatus,1000);
+const backendBridge='http://127.0.0.1:18765';
+async function backendStatus(){
+  if(document.hidden)return;
+  try{const r=await fetch(backendBridge+'/status',{cache:'no-store',signal:AbortSignal.timeout(3000)});if(!r.ok)throw new Error('本机服务不可用');const data=await r.json();backendBusy=data.busy===true;$('backend-update').disabled=backendBusy;text('backend-update-status',data.message||'准备就绪');$('backend-update-status').classList.toggle('error',data.success===false);}
+  catch{backendBusy=false;$('backend-update').disabled=true;text('backend-update-status','本机同步程序未连接，请在这台电脑双击运行启动网页.pyw。');}
+}
+$('backend-update').addEventListener('click',async()=>{backendBusy=true;$('backend-update').disabled=true;text('backend-update-status','正在提交更新请求…');try{const r=await fetch(backendBridge+'/update',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(5000)});if(!r.ok)throw new Error('本机服务未接受请求');await backendStatus();}catch(error){backendBusy=false;text('backend-update-status','更新请求失败：'+error.message);$('backend-update-status').classList.add('error');}});
+backendStatus();setInterval(backendStatus,2000);
 function device(id,label,value){
   const states={frames_received:['有图像','good'],frame_verified:['帧已校验','good'],disabled:['未启用','warn'],unknown:['未连接',''],running:['运行中','good'],waiting:['等待采集','warn'],stopping:['正在停止','warn'],failed:['故障','bad'],fail_hold:['故障保持','bad'],complete:['已完成',''],stopped:['已停止',''],stale:['数据过期','warn']};
   const [title,kind]=states[value]||['未连接',''];
   $(id).dataset.kind=kind;$(id).querySelector('span').textContent=label+'：'+title;
 }
 function overlay(title,note){$('stream').hidden=true;$('video-overlay').hidden=false;text('video-title',title);text('video-note',note);}
-function detach(){if($('stream').hasAttribute('src'))$('stream').removeAttribute('src');$('stream').hidden=true;}
+function binaryOverlay(title,note){$('binary-stream').hidden=true;$('binary-overlay').hidden=false;text('binary-title-text',title);text('binary-note',note);}
+function detachStream(id){const stream=$(id);if(stream.hasAttribute('src'))stream.removeAttribute('src');stream.hidden=true;}
+function detach(){detachStream('stream');detachStream('binary-stream');}
 function preview(){
-  if(paused||document.hidden){detach();overlay('预览已暂停','计数与采集继续运行；恢复后显示最新画面。');return;}
-  if(!connected||!snapshot){detach();overlay('预览未连接','无法获取状态，请检查服务与网络连接。');return;}
+  if(paused||document.hidden){detach();overlay('预览已暂停','计数与采集继续运行；恢复后显示最新画面。');binaryOverlay('预览已暂停','计数与采集继续运行；恢复后显示最新二值图。');return;}
+  if(!connected||!snapshot){detach();overlay('预览未连接','无法获取状态，请检查服务与网络连接。');binaryOverlay('预览未连接','无法获取状态，请检查服务与网络连接。');return;}
   const p=snapshot.preview||{};
-  if(p.closed){detach();overlay('预览已结束','采集服务已关闭本次图像流。');return;}
-  if(streamFailed&&Date.now()<retryAfter){overlay('图像连接中断','正在等待重新连接；计数主链路不受影响。');return;}
-  if(!$('stream').hasAttribute('src')){streamFailed=false;$('stream').src='/stream.mjpg';}
-  if(!numeric(p.age_seconds)||p.age_seconds>5){overlay('等待新画面','尚无图像或已超过 5 秒未更新，请检查采集服务。');return;}
-  if($('stream').naturalWidth>0&&!streamFailed){$('stream').hidden=false;$('video-overlay').hidden=true;}
+  if(p.closed){detach();overlay('预览已结束','采集服务已关闭本次图像流。');binaryOverlay('预览已结束','采集服务已关闭本次图像流。');return;}
+  if(!$('stream').hasAttribute('src')&&(!streamFailed||Date.now()>=retryAfter)){streamFailed=false;$('stream').src='/stream.mjpg';}
+  if(!$('binary-stream').hasAttribute('src')&&(!binaryStreamFailed||Date.now()>=binaryRetryAfter)){binaryStreamFailed=false;$('binary-stream').src='/binary.mjpg';}
+  if(!numeric(p.age_seconds)||p.age_seconds>5){overlay('等待新画面','尚无图像或已超过 5 秒未更新，请检查采集服务。');binaryOverlay('等待新画面','尚无图像或已超过 5 秒未更新，请检查采集服务。');return;}
+  if(streamFailed&&Date.now()<retryAfter){overlay('图像连接中断','正在等待重新连接；计数主链路不受影响。');}
+  else if($('stream').naturalWidth>0&&!streamFailed){$('stream').hidden=false;$('video-overlay').hidden=true;}
+  if(binaryStreamFailed&&Date.now()<binaryRetryAfter){binaryOverlay('二值图连接中断','主相机预览和计数仍可继续；请检查二值图流。');}
+  else if($('binary-stream').naturalWidth>0&&!binaryStreamFailed){$('binary-stream').hidden=false;$('binary-overlay').hidden=true;}
 }
 $('stream').addEventListener('load',()=>preview());
-$('stream').addEventListener('error',()=>{if(!$('stream').hasAttribute('src'))return;streamFailed=true;retryAfter=Date.now()+5000;detach();overlay('图像连接中断','稍后自动重连；也可以暂停后恢复预览。');});
-$('toggle-preview').addEventListener('click',()=>{paused=!paused;streamFailed=false;retryAfter=0;$('toggle-preview').setAttribute('aria-pressed',String(paused));text('toggle-preview',paused?'恢复预览':'暂停预览');preview();});
+$('stream').addEventListener('error',()=>{if(!$('stream').hasAttribute('src'))return;streamFailed=true;retryAfter=Date.now()+5000;detachStream('stream');overlay('图像连接中断','稍后自动重连；也可以暂停后恢复预览。');});
+$('binary-stream').addEventListener('load',()=>preview());
+$('binary-stream').addEventListener('error',()=>{if(!$('binary-stream').hasAttribute('src'))return;binaryStreamFailed=true;binaryRetryAfter=Date.now()+5000;detachStream('binary-stream');binaryOverlay('二值图连接中断','主相机预览和计数仍可继续；稍后自动重连。');});
+$('toggle-preview').addEventListener('click',()=>{paused=!paused;streamFailed=false;binaryStreamFailed=false;retryAfter=0;binaryRetryAfter=0;$('toggle-preview').setAttribute('aria-pressed',String(paused));text('toggle-preview',paused?'恢复预览':'暂停预览');preview();});
 function duration(seconds){if(!numeric(seconds))return '--';const n=Math.floor(seconds);return [Math.floor(n/3600),Math.floor(n/60)%60,n%60].map(v=>String(v).padStart(2,'0')).join(':');}
 function logs(events){
   const rows=Array.isArray(events)?events.slice(-30):[];
@@ -137,19 +168,22 @@ function logs(events){
   for(const event of rows){const li=document.createElement('li'),time=document.createElement('time'),span=document.createElement('span');time.textContent=numeric(event.time)?clock.format(new Date(event.time*1000)):'--';span.textContent=String(event.message||'').slice(0,500);li.append(time,span);list.append(li);}
   if(nearEnd)list.scrollTop=list.scrollHeight;
 }
-function disableLiveControls(){const caps=snapshot?.capabilities||{};$('reset-count').disabled=pending||!connected||caps.reset!==true;$('stop-monitor').disabled=pending||!connected||caps.stop!==true;$('view-mode').disabled=pending||!connected||caps.view_mode!==true;}
+function disableLiveControls(){const caps=snapshot?.capabilities||{};$('reset-count').disabled=pending||!connected||caps.reset!==true;$('stop-monitor').disabled=pending||!connected||caps.stop!==true;$('view-mode').disabled=pending||!connected||caps.view_mode!==true;$('toggle-debug').disabled=pending||debugBusy||!connected||typeof debugEnabled!=='boolean';}
 function disableCalibration(){for(const el of $('calibration').querySelectorAll('input,button'))el.disabled=pending||!connected;disableLiveControls();}
 function formatDma(value){if(integer(value))return '0x'+value.toString(16).padStart(8,'0');if(typeof value==='string'&&/^(0x)?[0-9a-f]{1,8}$/i.test(value))return value.startsWith('0x')||value.startsWith('0X')?value:'0x'+value.padStart(8,'0');return '--';}
 function render(data){
   snapshot=data;connected=true;
+  syncDebugState(data.debug);
   const s=data.telemetry&&typeof data.telemetry==='object'?data.telemetry:{};
   const p=data.preview||{}, fresh=s.stale===false&&numeric(s.last_frame_age_seconds)&&s.last_frame_age_seconds<=5&&s.phase==='running';
   const valid=s.source==='software'||s.source==='pl_dma';
   const mock=s.mode==='mock';
   text('connection',valid?'状态接口已连接':'状态接口已连接 · 计数数据未提供');text('updated',clock.format(new Date()));
   text('mode',mock?'离线合成监控 · 非相机/FPGA 数据':s.source==='software'?'相机软件预览 · FPGA / DMA 未启用':s.source==='pl_dma'?'FPGA Binary8 / S2MM 计数':'');
-  text('source',mock?'离线合成帧 · 不代表相机或 FPGA 输出':s.source==='software'?'软件阈值图像 · 非 FPGA 输出':s.source==='pl_dma'?'相机 Gray8 + FPGA Binary8 画中画':'图像来源未确认');
-  text('preview-heading',mock?'合成动态图预览':s.source==='pl_dma'?'FPGA 二值化实时预览':s.source==='software'?'相机与软件二值化预览':'二值化实时预览');
+  text('source',mock?'离线合成帧 · 不代表相机或 FPGA 输出':s.source==='software'?'相机灰度图与软件跟踪标注 · 非 FPGA 输出':s.source==='pl_dma'?'相机 Gray8 与 FPGA 计数标注':'图像来源未确认');
+  text('preview-heading',mock?'合成动态图预览':s.source==='pl_dma'?'相机画面与 FPGA 跟踪':s.source==='software'?'相机画面与软件跟踪':'相机画面与跟踪');
+  text('binary-source',mock?'合成 Binary8 · 不代表硬件输出':s.source==='software'?'软件阈值结果 · 非 FPGA 输出':s.source==='pl_dma'?'FPGA Binary8 回传结果':'二值图来源未确认');
+  text('binary-meta',mock?'离线合成帧':s.source==='software'?'与计数处理同一软件掩膜':s.source==='pl_dma'?'与当前计数结果对应的回传掩膜':'等待图像来源确认');
   text('binary-option',mock?'合成 Binary8':s.source==='pl_dma'?'FPGA Binary8':'软件 Binary8');
   text('count-label',mock?'合成累计计数':s.source==='software'?'软件预览累计计数':'累计计数');
   text('count-hint',mock?'合成数据演示，不代表硬件':(['complete','stopped'].includes(s.phase)?'本次会话最终结果':fresh?(s.source==='software'?'仅软件预览结果':'来自已处理的 FPGA 回传帧'):'等待最新计数数据'));
@@ -209,21 +243,58 @@ async function setResourceMonitor(enabled,mode){if(!connected||resourceBusy)retu
 $('resource-toggle').addEventListener('click',()=>{const r=snapshot?.resource_monitor;if(r)setResourceMonitor(!r.enabled,$('resource-mode').value);});$('resource-mode').addEventListener('change',()=>{const r=snapshot?.resource_monitor;if(r)setResourceMonitor(r.enabled,$('resource-mode').value);});
 function offline(){
   connected=false;snapshot=null;lastCount=null;text('connection','状态未连接 · 请检查服务与网络');text('updated','--');text('mode','');
+  debugEnabled=null;stopDebugPolling();clearDebug('状态连接中断；服务端调试状态未知');$('toggle-debug').setAttribute('aria-pressed','mixed');text('toggle-debug','调试状态未知');$('toggle-debug').disabled=true;
   for(const id of ['count','detections','processing-fps','elapsed','preview-fps','resolution','conveyor-speed'])text(id,'--');
   for(const id of ['camera','fpga','dma'])device(id,id==='camera'?'相机':id.toUpperCase(),'unknown');device('system','系统','unknown');
   text('last-crossing-area','最近越线面积：--');text('speed-note','等待轨迹速度与标定比例');
-  text('phase','未连接');text('frame-age','无法获取当前状态');text('count-hint','状态接口未连接');text('count-freshness','等待重新连接');text('source','图像来源未确认');
-  renderResources(null);
+  text('phase','未连接');text('frame-age','无法获取当前状态');text('count-hint','状态接口未连接');text('count-freshness','等待重新连接');text('source','图像来源未确认');text('binary-source','二值图来源待确认');text('binary-meta','等待图像来源确认');
+  renderResources(null);resourceMemory('cma',null,null);
   disableCalibration();preview();
 }
+function stopDebugPolling(){clearTimeout(debugTimer);debugTimer=null;debugRequest?.abort();debugRequest=null;debugPolling=false;}
+function clearDebug(message){$('debug-content').hidden=true;$('debug-steps').replaceChildren();text('debug-frame','--');text('debug-source','--');text('debug-status',message);}
+function syncDebugState(state){
+  const next=state&&typeof state==='object'&&typeof state.enabled==='boolean'?state.enabled:null;
+  if(next===null){debugEnabled=null;stopDebugPolling();clearDebug('服务端未提供调试状态');$('toggle-debug').setAttribute('aria-pressed','mixed');text('toggle-debug','调试状态不可用');return;}
+  const changed=next!==debugEnabled;debugEnabled=next;$('toggle-debug').setAttribute('aria-pressed',String(next));text('toggle-debug',next?'关闭调试':'开启调试');
+  if(next){$('debug-content').hidden=false;if(changed)text('debug-status','服务端调试已开启，等待最新快照…');if(!document.hidden&&!debugPolling&&!debugTimer)pollDebug();}
+  else{stopDebugPolling();if(changed||$('debug-content').hidden===false)clearDebug('服务端调试已关闭');}
+}
+function debugImage(value,label){const figure=document.createElement('figure');figure.className='debug-frame';if(typeof value==='string'&&/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(value)){const img=document.createElement('img');img.src=value;img.alt=label;figure.append(img);}else{const empty=document.createElement('div');empty.className='debug-unavailable';empty.textContent='此步骤未提供画面';figure.append(empty);}const caption=document.createElement('figcaption');caption.textContent=label;figure.append(caption);return figure;}
+function renderDebug(data){
+  if(!debugEnabled||!data||data.enabled!==true)return;
+  $('debug-content').hidden=false;text('debug-frame',Number.isSafeInteger(data.frame_id)?String(data.frame_id):'--');text('debug-source',typeof data.source==='string'?data.source:'来源未提供');
+  const host=$('debug-steps');host.replaceChildren();
+  if(!Array.isArray(data.steps)||!data.steps.length){text('debug-status',typeof data.error==='string'?'调试快照生成失败：'+data.error:'调试已开启，等待处理帧…');return;}
+  for(const [index,step] of data.steps.entries()){
+    const card=document.createElement('article');card.className='debug-step';const title=document.createElement('h3');title.textContent=(index+1)+'. '+(typeof step.name==='string'?step.name:'处理步骤');card.append(title);
+    const pair=document.createElement('div');pair.className='debug-pair';pair.append(debugImage(step.before,'处理前'),debugImage(step.after,'处理后'));card.append(pair);
+    if(typeof step.note==='string'&&step.note){const note=document.createElement('p');note.className='debug-note';note.textContent=step.note;card.append(note);}host.append(card);
+  }
+  text('debug-status','调试已开启 · 每 2 秒更新最新帧');
+}
+async function pollDebug(){
+  if(debugEnabled!==true||!connected||document.hidden||debugPolling)return;debugPolling=true;debugRequest=new AbortController();const timeout=setTimeout(()=>debugRequest?.abort(),4000);
+  try{const response=await fetch('/api/debug-snapshot',{cache:'no-store',signal:debugRequest.signal});if(!response.ok)throw new Error('快照读取失败（HTTP '+response.status+'）');const data=await response.json();renderDebug(data);}
+  catch(error){if(debugEnabled===true&&!document.hidden)text('debug-status',error.name==='AbortError'?'调试快照请求超时':'调试快照暂不可用：'+error.message);}
+  finally{clearTimeout(timeout);debugPolling=false;debugRequest=null;if(debugEnabled===true&&!document.hidden)debugTimer=setTimeout(pollDebug,2000);}
+}
+async function toggleDebug(){
+  if(!connected||debugBusy||typeof debugEnabled!=='boolean')return;const requested=!debugEnabled;debugBusy=true;$('toggle-debug').disabled=true;text('debug-status',requested?'正在请求开启调试…':'正在请求关闭调试…');
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);
+  try{const response=await fetch('/api/debug-mode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:requested}),signal:controller.signal});let result={};try{result=await response.json();}catch{}if(!response.ok)throw new Error(result.error||'后端未接受调试开关');if(result.enabled!==requested)throw new Error('后端返回的调试状态不匹配');text('debug-status','后端已接受请求，等待状态同步…');}
+  catch(error){text('debug-status',error.name==='AbortError'?'调试开关请求超时；服务端状态待确认':'调试开关失败：'+error.message);}
+  finally{clearTimeout(timeout);debugBusy=false;disableLiveControls();poll();}
+}
+ $('toggle-debug').addEventListener('click',toggleDebug);
 async function poll(){
   if(polling||document.hidden)return;polling=true;request=new AbortController();const timeout=setTimeout(()=>request.abort(),4000);
   try{const r=await fetch('/status.json',{cache:'no-store',signal:request.signal});if(!r.ok)throw new Error('status');const data=await r.json();if(data.schema!==1)throw new Error('schema');render(data);}
   catch(e){if(!document.hidden)offline();}
   finally{clearTimeout(timeout);polling=false;request=null;if(!document.hidden)timer=setTimeout(poll,1500);}
 }
-document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(document.hidden){request?.abort();preview();}else if(!polling)poll();});
-window.addEventListener('pagehide',()=>{clearTimeout(timer);request?.abort();detach();});
+document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(document.hidden){request?.abort();stopDebugPolling();preview();}else if(!polling)poll();});
+window.addEventListener('pagehide',()=>{clearTimeout(timer);request?.abort();stopDebugPolling();detach();});
 async function adjust(reset){
   if(pending||!connected)return;
   if(!reset&&!$('calibration').reportValidity())return;

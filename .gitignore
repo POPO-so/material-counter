@@ -25,6 +25,7 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+.runtime/
 *.egg-info/
 .coverage
 htmlcov/

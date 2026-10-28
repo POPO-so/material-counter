@@ -1,0 +1,18 @@
+{
+  "http_page_ok": true,
+  "runtime_status": "READY_WAITING_FOR_OPERATOR_OBSERVATION",
+  "decoded_live_jpegs": 5,
+  "jpeg_shape": [
+    325,
+    320,
+    3
+  ],
+  "url": "http://192.168.2.99:8080/",
+  "frames_processed_before": 3652,
+  "frames_processed_after": 3661,
+  "preview_sequence_before": 182,
+  "preview_sequence_after": 186,
+  "source": "software",
+  "fpga": "disabled",
+  "dma": "disabled"
+}

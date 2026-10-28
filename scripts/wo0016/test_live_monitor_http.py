@@ -326,6 +326,21 @@ def test_mjpeg_primes_legacy_single_frame_browser_without_replaying_live_frames(
         assert response.count(b"Content-Type: image/jpeg") == 1
 
 
+def test_dashboard_page_and_version_update_without_server_restart(tmp_path, monkeypatch):
+    import hashlib
+    page = tmp_path / "dashboard.html"
+    page.write_text("first", encoding="utf-8")
+    monkeypatch.setattr(mjpeg_preview, "__file__", str(tmp_path / "mjpeg_preview.py"))
+    with MjpegPreviewServer(host="127.0.0.1", port=0) as server:
+        with urlopen(f"http://127.0.0.1:{server.port}/", timeout=2) as response:
+            assert b"first" in response.read()
+        assert get_json(server, "/api/page-version")["sha256"] == hashlib.sha256(b"first").hexdigest()
+        page.write_text("second", encoding="utf-8")
+        with urlopen(f"http://127.0.0.1:{server.port}/", timeout=2) as response:
+            assert b"second" in response.read()
+        assert get_json(server, "/api/page-version")["sha256"] == hashlib.sha256(b"second").hexdigest()
+
+
 def test_resource_control_is_independent_and_exposes_confirmed_state():
     class Monitor:
         def __init__(self):
@@ -347,3 +362,24 @@ def test_resource_control_is_independent_and_exposes_confirmed_state():
         with pytest.raises(HTTPError) as error:
             post_json(server, '/api/resource-monitor', {'enabled': True, 'mode': 'normal'}, origin='https://attacker.invalid')
         assert error.value.code == 403
+
+
+def test_http_resource_monitor_accepts_actual_keyword_only_control():
+    from resource_monitor import ResourceMonitor
+    monitor = ResourceMonitor(source='mock')
+    try:
+        with MjpegPreviewServer(host='127.0.0.1', port=0, resource_monitor=monitor) as server:
+            with post_json(server, '/api/resource-monitor', {'enabled': True, 'mode': 'normal'}) as response:
+                assert json.load(response)['enabled'] is True
+            with post_json(server, '/api/resource-monitor', {'enabled': False, 'mode': 'normal'}) as response:
+                assert json.load(response)['enabled'] is False
+    finally:
+        monitor.close()
+
+
+def test_camera_server_can_disable_board_html_while_keeping_status():
+    with MjpegPreviewServer(host="127.0.0.1", port=0, serve_dashboard=False) as server:
+        with pytest.raises(HTTPError) as error:
+            urlopen(f"http://127.0.0.1:{server.port}/", timeout=2)
+        assert error.value.code == 404
+        assert get_json(server)["schema"] == 1

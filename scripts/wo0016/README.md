@@ -1,6 +1,20 @@
 # WO-0016 Stream Counter
 
-**Current protocol note (2026-10-27):** the shared production stream now uses only `GRAY8_PACKET_V1`: 76,832-byte Gray8 MM2S packets and 76,800-byte Binary8 S2MM masks. No active RGB encoder or RGB runtime fallback remains. The unique Vivado build is under `scripts/gray8/`; see [its run guide](../gray8/README.md). Three synthetic board frames have passed full Binary8 pixel comparison. A camera run failed before DMA because no `/dev/video*` device was enumerated; buffers were not held. Software suite status is 706 passed, 8 skipped, 2 known unrelated failures, recorded in [the Gray8 cleanup report](../../data/results/gray8-cleanup-20261027/README.md). No camera FPS, material accuracy, or YOLO benefit is established.
+**Current protocol note (2026-10-27):** the shared production stream now uses only `GRAY8_PACKET_V1`: 76,832-byte Gray8 MM2S packets and 76,800-byte Binary8 S2MM masks. No active RGB encoder or RGB runtime fallback remains. The unique Vivado build is under `scripts/gray8/`; see [its run guide](../gray8/README.md). Three synthetic board frames have passed full Binary8 pixel comparison. An earlier camera DMA attempt failed before DMA because no `/dev/video*` device was enumerated; buffers were not held. Subsequent Gray8 camera-board test results are recorded in the [camera board-test report](../../data/results/gray8-camera-20261027-122633/README.md). Software suite status is 706 passed, 8 skipped, 2 known unrelated failures, recorded in [the Gray8 cleanup report](../../data/results/gray8-cleanup-20261027/README.md). The board test did not establish object accuracy or YOLO benefit.
+
+## Active camera-only web preview
+
+On 2026-10-27, the standalone software preview was restored at [http://192.168.2.99:8080/](http://192.168.2.99:8080/) on boot `442a249b-1a20-41a1-bbc6-46debb0f4af8`. It uses `/dev/video0` with software thresholding and `SIM COUNT`; DMA and FPGA counting are disabled. The old viewer exited after CMA fell below its emergency floor. Reclaiming filesystem caches restored CMA, and a separately deployed viewer passed existing startup checks. HTTP status reported continuously increasing camera frames, and the enabled debug endpoint returned five image-pair stages. This does not verify FPGA behavior or material recognition.
+
+The current process is PID 2597, launched from `/home/xilinx/image-debug-660088b71d/launch.py`; it is not installed as a boot service. Verify the boot ID, PID and command before stopping it, then send SIGTERM; stop the preview and confirm camera release before any later DMA/counter test because the preview owns the camera:
+
+```sh
+ps -o pid,uid,gid,args -p 2597
+# Only after confirming this is the current image-debug-660088b71d/launch.py process:
+kill -TERM 2597
+```
+
+See the [web preview verification report](../../data/results/web-preview-20261027-124938/README.md) for service state and logs.
 
 This package provides the host-testable two-slot Binary8 DMA consumer, ROI crossing counter, and MJPEG preview reused by the Gray8 runtime. Old WO-0015 stage commands and RGB packet examples below are historical records; they are not current Gray8 deployment instructions.
 
@@ -17,7 +31,7 @@ The default CLI mode is Mock. It creates synthetic moving components, filters a 
 
 ## Archived WO-0015 Board mode details
 
-The current hardware entry point and required Gray8 manifest/boot controls are documented in [`scripts/gray8/README.md`](../gray8/README.md). Do not use an RGB-era WO-0015 overlay or old packet manifest with this stream. Board operations remain finite, one-shot and hash-gated; the most recent camera attempt could not start because V4L2 had no enumerated device.
+The current hardware entry point and required Gray8 manifest/boot controls are documented in [`scripts/gray8/README.md`](../gray8/README.md). Do not use an RGB-era WO-0015 overlay or old packet manifest with this stream. Board operations remain finite, one-shot and hash-gated; the earlier camera attempt described in this archived section could not start because V4L2 had no enumerated device.
 
 The remainder of this section records the previous WO-0015 stage invocation contract for historical context. It is not a current deployment command:
 
@@ -77,6 +91,14 @@ least 100 pixels at Gray8 >= 128 in the left half, then saves the requested
 number of frames. The manifest records the actual wait duration.
 
 Capture is not proof that the hardware mask carries an echoed frame ID, nor is a software-synthetic dataset board evidence. Review the current capture report and hardware checklist before any separate board authorization.
+
+## 图像处理调试模式
+
+在现有相机软件预览或 `run_stream_counter.py` 看板中，点击“开启调试”可按同一帧查看图像映射、阈值分割、ROI、区域分析和跟踪计数的前后对照；再次点击关闭。默认关闭，开启后最多每两秒生成一组快照，关闭后不再生成和编码调试图。区域和轨迹画面是基于实际结果绘制的叠加图。
+
+页面标明软件阈值或 FPGA 返回掩膜。板端当前预览回调不提供原始相机图，页面会标记不可用；调光校准模式下，发往 FPGA 前还有灰度映射，页面的分割前画面是该映射之前的 Gray8。调试截图使用 JPEG，仅供观察，不能用于逐像素验证。开启调试会增加处理开销，实际板端开销尚需测量。
+
+相机预览与二值图分别显示：主画面不再叠加二值画中画，独立二值预览与主画面由同一处理帧生成，并标明数据来源。二值图以 JPEG 编码，仅供观察；增加编码和传输开销，实际板端影响尚需测量。暂停预览会同时停止两个网页图像流，不停止采集和计数。
 
 ## Evidence boundary
 

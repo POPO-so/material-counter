@@ -145,7 +145,14 @@ class ResourceMonitor:
                         if " - " in line and line.split(" - ", 1)[0].split()[4] == "/")
             source = root.split(" - ", 1)[1].split()[1]
             if source == "/dev/root":
-                source = self._device_resolver(source)
+                try:
+                    source = self._device_resolver(source)
+                except OSError:
+                    device_id = root.split(" - ", 1)[0].split()[2]
+                    if not re.fullmatch(r"\d+:\d+", device_id):
+                        raise ValueError("invalid root device")
+                    resolved = self._device_resolver("/sys/dev/block/" + device_id)
+                    source = "/dev/" + Path(resolved).name
             if not re.fullmatch(r"/dev/mmcblk\d+p\d+", source):
                 return {"rootfs_total_bytes": None, "rootfs_used_bytes": None}
             stats = self._statvfs("/")

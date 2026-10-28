@@ -1,0 +1,16 @@
+{
+  "root": "/home/xilinx/web-preview-20261027-124938",
+  "files": {
+    "camera_only_preview.py": true,
+    "live_calibration.py": true,
+    "lighting_profile.py": true,
+    "packet_encoder.py": true,
+    "scale_parameters.py": true,
+    "stream_counter.py": true,
+    "split_touching.py": true,
+    "dashboard_state.py": true,
+    "mjpeg_preview.py": true,
+    "launch_preview.py": true
+  },
+  "boot_id": "442a249b-1a20-41a1-bbc6-46debb0f4af8"
+}

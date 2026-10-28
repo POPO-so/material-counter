@@ -1,0 +1,195 @@
+{
+  "legacy": {
+    "boot": "71c03d07-ef08-47f2-b871-725f30f5d5e1",
+    "legacy": [
+      {
+        "cpu": 93.6,
+        "memory_available_kib": 349264,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 511122.6,
+        "fps": 49.762309121965586
+      },
+      {
+        "cpu": 94.7,
+        "memory_available_kib": 348920,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 452229.6,
+        "fps": 50.003251254877966
+      },
+      {
+        "cpu": 94.6,
+        "memory_available_kib": 348920,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 514983.5,
+        "fps": 50.20977034760482
+      },
+      {
+        "cpu": 94.0,
+        "memory_available_kib": 348680,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 500487.5,
+        "fps": 50.37482744554796
+      },
+      {
+        "cpu": 95.0,
+        "memory_available_kib": 348684,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 515686.5,
+        "fps": 50.41741666946011
+      },
+      {
+        "cpu": 92.2,
+        "memory_available_kib": 348184,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 416077.0,
+        "fps": 50.229221497156814
+      },
+      {
+        "cpu": 96.0,
+        "memory_available_kib": 347980,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 476240.4,
+        "fps": 50.04121236806361
+      },
+      {
+        "cpu": 93.3,
+        "memory_available_kib": 347676,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 549975.2,
+        "fps": 50.04322375115147
+      },
+      {
+        "cpu": 93.5,
+        "memory_available_kib": 347492,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 516688.0,
+        "fps": 50.32606668331142
+      },
+      {
+        "cpu": 93.0,
+        "memory_available_kib": 347564,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 514637.8,
+        "fps": 50.411860049603774
+      },
+      {
+        "cpu": 93.7,
+        "memory_available_kib": 347484,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 504061.7,
+        "fps": 50.481953676080266
+      },
+      {
+        "cpu": 93.6,
+        "memory_available_kib": 349112,
+        "cma_free_kib": 76356,
+        "network_tx_bytes_per_second": 544129.6,
+        "fps": 50.5186001226646
+      }
+    ]
+  },
+  "desktop": {
+    "boot": "71c03d07-ef08-47f2-b871-725f30f5d5e1",
+    "session": "b36c43a5012a4a2a82a9726a4063c9d1",
+    "desktop": [
+      {
+        "cpu": 52.7,
+        "memory_available_kib": 348688,
+        "cma_free_kib": 74024,
+        "network_tx_bytes_per_second": 2648424.1,
+        "fps": 58.776886509381946
+      },
+      {
+        "cpu": 54.2,
+        "memory_available_kib": 347724,
+        "cma_free_kib": 74024,
+        "network_tx_bytes_per_second": 2685222.8,
+        "fps": 58.45468411138242
+      },
+      {
+        "cpu": 56.4,
+        "memory_available_kib": 347056,
+        "cma_free_kib": 74024,
+        "network_tx_bytes_per_second": 2638173.1,
+        "fps": 58.20941200093934
+      },
+      {
+        "cpu": 55.2,
+        "memory_available_kib": 349000,
+        "cma_free_kib": 74024,
+        "network_tx_bytes_per_second": 2805326.8,
+        "fps": 58.83217346626011
+      },
+      {
+        "cpu": 57.2,
+        "memory_available_kib": 348912,
+        "cma_free_kib": 74024,
+        "network_tx_bytes_per_second": 2653434.1,
+        "fps": 58.905447817474574
+      },
+      {
+        "cpu": 57.2,
+        "memory_available_kib": 348332,
+        "cma_free_kib": 74024,
+        "network_tx_bytes_per_second": 2647346.1,
+        "fps": 57.61234901393195
+      },
+      {
+        "cpu": 70.8,
+        "memory_available_kib": 348132,
+        "cma_free_kib": 74024,
+        "network_tx_bytes_per_second": 2681515.5,
+        "fps": 57.94360092422529
+      },
+      {
+        "cpu": 57.4,
+        "memory_available_kib": 348132,
+        "cma_free_kib": 74024,
+        "network_tx_bytes_per_second": 2637201.1,
+        "fps": 58.89846607863976
+      },
+      {
+        "cpu": 57.2,
+        "memory_available_kib": 347916,
+        "cma_free_kib": 74028,
+        "network_tx_bytes_per_second": 2651230.6,
+        "fps": 59.17036653292168
+      },
+      {
+        "cpu": 56.9,
+        "memory_available_kib": 347512,
+        "cma_free_kib": 74028,
+        "network_tx_bytes_per_second": 2809931.1,
+        "fps": 59.70708611700655
+      },
+      {
+        "cpu": 58.3,
+        "memory_available_kib": 349008,
+        "cma_free_kib": 74028,
+        "network_tx_bytes_per_second": 2646067.4,
+        "fps": 59.5956404843453
+      },
+      {
+        "cpu": 57.2,
+        "memory_available_kib": 349012,
+        "cma_free_kib": 74028,
+        "network_tx_bytes_per_second": 2520075.2,
+        "fps": 59.56136312413813
+      }
+    ],
+    "paired_frames": 253,
+    "pixel_mismatches": 0,
+    "receive_fps": 16.45528455284553,
+    "processing_without_preview": 61,
+    "errors": [],
+    "stop_result": {
+      "boot_id": "71c03d07-ef08-47f2-b871-725f30f5d5e1",
+      "frames": 1002,
+      "session_id": "b36c43a5012a4a2a82a9726a4063c9d1",
+      "source": "software",
+      "standard_profile_restored": true,
+      "status": "STOPPED",
+      "total_count": 0
+    }
+  }
+}

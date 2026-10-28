@@ -73,6 +73,7 @@ class LiveMonitorState:
         self.view_mode = "overlay"
         self.phase = "waiting"
         self.health = {"cma_free_kib": None, "rss_kib": process_rss_kib(), "dma_status": None}
+        self._cpu_sample = None
         self.camera_controls = None
         self.invalidate_preview = lambda: None
 
@@ -155,8 +156,36 @@ class LiveMonitorState:
 
     def update_health(self, *, cma_free_kib=None, dma_status=None):
         with self.lock:
+            metrics = {"cpu_percent": None, "memory_total_kib": None,
+                       "memory_available_kib": None, "cma_total_kib": None}
+            if self.mode == "board":
+                try:
+                    values = {}
+                    for line in Path("/proc/meminfo").read_text(encoding="ascii").splitlines():
+                        parts = line.split()
+                        if len(parts) >= 2 and parts[0].rstrip(":") in ("MemTotal", "MemAvailable", "CmaTotal"):
+                            values[parts[0].rstrip(":")] = int(parts[1])
+                    metrics.update(memory_total_kib=values.get("MemTotal"),
+                                   memory_available_kib=values.get("MemAvailable"),
+                                   cma_total_kib=values.get("CmaTotal"))
+                except (OSError, ValueError, UnicodeError):
+                    pass
+                try:
+                    fields = Path("/proc/stat").read_text(encoding="ascii").splitlines()[0].split()
+                    if fields[0] != "cpu" or len(fields) < 5:
+                        raise ValueError("invalid CPU sample")
+                    counters = [int(value) for value in fields[1:9]]
+                    total, idle = sum(counters), counters[3] + (counters[4] if len(counters) > 4 else 0)
+                    if self._cpu_sample is not None:
+                        delta = total - self._cpu_sample[0]
+                        idle_delta = idle - self._cpu_sample[1]
+                        if delta > 0 and 0 <= idle_delta <= delta:
+                            metrics["cpu_percent"] = 100 * (delta - idle_delta) / delta
+                    self._cpu_sample = (total, idle)
+                except (OSError, ValueError, IndexError, UnicodeError):
+                    self._cpu_sample = None
             self.health = {"cma_free_kib": cma_free_kib, "rss_kib": process_rss_kib(),
-                           "dma_status": dma_status}
+                           "dma_status": dma_status, **metrics}
 
     def set_camera_controls(self, report):
         if not isinstance(report, dict) or report.get("required_controls_verified") is not True:

@@ -49,7 +49,48 @@ def test_preview_jpeg_is_valid_and_invalid_binary_masks_are_rejected():
         render_preview_jpeg(np.ones((240, 320), dtype=np.uint8), total_count=0, line_y=120)
 
 
-def test_industrial_hud_uses_gray_camera_background_mask_pip_and_tracking_overlay():
+def test_camera_preview_does_not_cover_top_right_with_binary_inset():
+    gray = np.full((240, 320), 72, np.uint8)
+    frame = render_preview_frame(np.zeros_like(gray), total_count=0, line_y=120,
+                                 count_axis="x", source_gray=gray)
+    assert np.all(frame[35:75, 230:310] == 72)
+
+
+def test_binary_stream_serves_same_frame_mask_as_separate_image():
+    hub = MjpegFrameHub()
+    server = MjpegPreviewServer(hub=hub, host="127.0.0.1", port=0).start()
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120, interval=1)
+    mask = np.zeros((240, 320), np.uint8)
+    mask[40:70, 220:250] = 255
+    try:
+        with urlopen(f"http://127.0.0.1:{server.port}/binary.mjpg", timeout=3) as response:
+            publisher(type("Frame", (), {"frame_id": 1, "total_count": 0})(), mask,
+                      np.full_like(mask, 72))
+            assert response.readline().startswith(b"--frame")
+            assert response.readline().startswith(b"Content-Type: image/jpeg")
+            size = int(response.readline().split(b":", 1)[1])
+            assert response.readline().startswith(b"X-Frame-Sequence:")
+            assert response.readline() == b"\r\n"
+            image = preview_module.cv2.imdecode(np.frombuffer(response.read(size), np.uint8),
+                                               preview_module.cv2.IMREAD_GRAYSCALE)
+            assert image.shape == mask.shape
+            assert image[50, 230] > 240 and image[100, 100] < 15
+    finally:
+        publisher.close()
+        server.close()
+
+
+def test_binary_hub_never_substitutes_main_or_stale_frame():
+    hub = MjpegFrameHub()
+    hub.publish(b"camera-1", binary_jpeg=b"mask-1")
+    assert hub.wait_for_next(after_sequence=0, timeout_s=0, binary=True) == (1, b"mask-1")
+    hub.publish(b"camera-2")
+    assert hub.wait_for_next(after_sequence=1, timeout_s=0, binary=True) is None
+    hub.clear()
+    assert hub.wait_for_next(after_sequence=0, timeout_s=0, binary=True) is None
+
+
+def test_industrial_hud_uses_gray_camera_background_and_tracking_overlay():
     mask = np.zeros((240, 320), dtype=np.uint8)
     mask[100:108, 40:48] = 0xFF
     gray = np.full((240, 320), 72, dtype=np.uint8)
@@ -69,8 +110,8 @@ def test_industrial_hud_uses_gray_camera_background_mask_pip_and_tracking_overla
 
     assert frame.shape == (240, 320, 3)
     assert tuple(frame[80, 20]) == (72, 72, 72)
-    # The top-right inset is rendered from this frame's DMA Binary8 mask.
-    assert np.any(np.all(frame[34:82, 224:318] == (255, 255, 255), axis=2))
+    # The right-hand camera image is no longer hidden by an inset.
+    assert np.all(frame[34:82, 224:318] == 72)
     # The center line remains a single pixel so both hysteresis edges stay visible.
     assert tuple(frame[40, 160]) == (0, 0, 255)
     assert tuple(frame[40, 159]) == (0, 0, 0)
@@ -128,7 +169,7 @@ def test_x160_count_line_and_hysteresis_edges_remain_distinct_in_stream_jpeg():
     assert right_edge[0] > 120 and right_edge[1] > 150
 
 
-def test_preview_hud_labels_a_software_threshold_pip(monkeypatch):
+def test_preview_hud_does_not_draw_a_software_threshold_pip(monkeypatch):
     labels = []
     original_put_text = preview_module.cv2.putText
 
@@ -141,7 +182,7 @@ def test_preview_hud_labels_a_software_threshold_pip(monkeypatch):
                          line_y=120, source_gray=np.full((240, 320), 96, np.uint8),
                          pip_label="SIM TH=128")
 
-    assert "SIM TH=128" in labels
+    assert "SIM TH=128" not in labels
 
 
 def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkeypatch):

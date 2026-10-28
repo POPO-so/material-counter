@@ -26,7 +26,10 @@ import cv2
 import numpy as np
 
 import mjpeg_preview
+from image_debug import DebugSnapshots
 from dashboard_state import DashboardState
+from live_monitor_state import LiveMonitorState
+from resource_monitor import ResourceMonitor
 from stream_counter import MaskCounter
 from live_calibration import (MonochromePreprocessor, monochrome_view,
                               optical_metrics, CalibrationControls)
@@ -47,6 +50,44 @@ DMA_STATUS_OFFSETS = {"MM2S": 0x04, "S2MM": 0x34}
 COUNT_LINE_X = 160
 HYSTERESIS = 15.0
 running = True
+
+
+def create_resource_monitor() -> ResourceMonitor:
+    return ResourceMonitor(source="board")
+
+
+def preview_fpga_resources(evidence_path: Path, boot_id: str) -> dict | None:
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+        if not (evidence.get("status") == "GRAY8_PIXEL_VERIFIED"
+                and evidence.get("mode") == "self-test"
+                and evidence.get("frames") == 3 and evidence.get("pixel_verified_frames") == 3
+                and evidence.get("buffers_held") is False and evidence.get("boot_id") == boot_id
+                and evidence.get("manifest_sha256") == "b81e6ea09cba48d643b3f09ae88b9ea784176c81ebc53799f1af38aedb0cd484"):
+            return None
+        return {"lut": [2777, 53200], "ff": [3470, 106400], "bram": [2.5, 140],
+                "dsp": [0, 220], "lutram": [115, 17400], "iob": [0, 125],
+                "bufg": [1, 32], "mmcm": [0, 4], "pll": [0, 4]}
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+class PreviewResourceView:
+    def __init__(self, monitor, evidence_path, boot_id):
+        self.monitor = monitor
+        self.fpga = preview_fpga_resources(evidence_path, boot_id)
+
+    def control(self, *, enabled, mode):
+        return self.monitor.control(enabled=enabled, mode=mode)
+
+    def snapshot(self):
+        result = self.monitor.snapshot()
+        if result["enabled"] and result["mode"] == "detail":
+            result["detail"] = {"fpga": self.fpga, "camera": CAMERA_PATH}
+        return result
+
+    def close(self):
+        self.monitor.close()
 
 
 @dataclass(frozen=True)
@@ -78,6 +119,21 @@ def preview_memory_snapshot() -> dict[str, int]:
     return {"cma_free_kib": values["CmaFree"],
             "mem_available_kib": values["MemAvailable"],
             "process_rss_kib": values["VmRSS"]}
+
+
+def startup_memory_snapshot() -> dict[str, int]:
+    snapshot = preview_memory_snapshot()
+    if snapshot["cma_free_kib"] <= 32768 and os.geteuid() == 0:
+        # 使用启动器已有的缓存回收方式；随后仍严格执行原有内存水位检查。
+        os.sync()
+        Path("/proc/sys/vm/drop_caches").write_text("3\n")
+        snapshot = preview_memory_snapshot()
+    return snapshot
+
+
+def update_resource_health(state: dict, sampler: LiveMonitorState, snapshot: dict) -> None:
+    sampler.update_health(cma_free_kib=snapshot["cma_free_kib"])
+    state["resource_health"] = sampler.snapshot()["resource_health"]
 
 
 def require_preview_memory(snapshot: dict[str, int], *, calibration_mode: bool,
@@ -131,8 +187,6 @@ def require_dma_idle_and_error_free(statuses: dict[str, int]) -> None:
 def query_v4l2() -> str:
     command = ["v4l2-ctl", "-d", CAMERA_PATH, "--get-fmt-video", "--get-parm",
                "--get-ctrl=auto_exposure,exposure_time_absolute,brightness"]
-    if os.geteuid() != 0:
-        command = ["sudo", "-n"] + command
     result = subprocess.run(command, check=True, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True, timeout=10)
     return result.stdout
@@ -159,8 +213,6 @@ def require_profile(output: str, stage: str, controls: dict | None = None) -> No
 def apply_v4l2_controls(values: dict[str, int]) -> dict[str, int]:
     command = ["v4l2-ctl", "-d", CAMERA_PATH,
                "--set-ctrl=" + ",".join(f"{key}={value}" for key, value in values.items())]
-    if os.geteuid() != 0:
-        command = ["sudo", "-n"] + command
     subprocess.run(command, check=True, stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT, text=True, timeout=5)
     require_profile(query_v4l2(), "after calibration control", values)
@@ -207,7 +259,8 @@ def drop_to_xilinx() -> None:
     if pwd is None:
         raise RuntimeError("dropping privileges requires the PYNQ Linux pwd module")
     user = pwd.getpwnam("xilinx")
-    os.setgroups([])
+    camera_gid = os.stat(CAMERA_PATH).st_gid
+    os.setgroups([camera_gid])
     os.setgid(user.pw_gid)
     os.setuid(user.pw_uid)
     if os.geteuid() != user.pw_uid:
@@ -310,6 +363,7 @@ def main(argv: list[str] | None = None) -> int:
     publisher = None
     loopback = None
     dashboard = DashboardState(source="software")
+    resources = PreviewResourceView(create_resource_monitor(), output_dir.parent / "self-test.json", args.expected_boot_id)
     controls = CalibrationControls(enabled=args.calibration_mode, apply=apply_v4l2_controls)
     def control_update(payload: dict) -> dict:
         try:
@@ -328,7 +382,7 @@ def main(argv: list[str] | None = None) -> int:
     memory_last_log = -10.0
     def update_memory(*, startup: bool = False) -> None:
         nonlocal memory_last_log
-        snapshot = preview_memory_snapshot()
+        snapshot = startup_memory_snapshot() if startup else preview_memory_snapshot()
         state["memory_health"] = snapshot
         minimum = state.setdefault("memory_minimum_kib", dict(snapshot))
         for key, value in snapshot.items():
@@ -401,6 +455,7 @@ def main(argv: list[str] | None = None) -> int:
         preprocessor = MonochromePreprocessor()
         frame_times = deque(maxlen=60)
         hub = mjpeg_preview.MjpegFrameHub()
+        debug_snapshots = DebugSnapshots()
         publisher = mjpeg_preview.PeriodicMjpegPublisher(
             hub=hub, line_y=120, interval=1, quality=85,
             count_label="SIM COUNT",
@@ -421,6 +476,9 @@ def main(argv: list[str] | None = None) -> int:
                 (time.perf_counter() - started) * 1000.0)
             started = time.perf_counter()
             result = counter.update(frame_number, mask)
+            debug_snapshots.offer(result, gray, mask, source="software", source_gray=raw_frame, counter=counter,
+                                  mapping_note="映射方式：" + preprocessor.mapping,
+                                  threshold_note=f"软件阈值 >{preprocessor.threshold}")
             dashboard.on_frame(result)
             timing["software_track_ms"].append((time.perf_counter() - started) * 1000.0)
             frame_times.append(time.monotonic())
@@ -446,8 +504,10 @@ def main(argv: list[str] | None = None) -> int:
         signal.signal(signal.SIGTERM, stop)
         signal.signal(signal.SIGINT, stop)
         server = mjpeg_preview.MjpegPreviewServer(
-            hub=hub, host="0.0.0.0", port=PREVIEW_PORT,
+            hub=hub, host="0.0.0.0", port=PREVIEW_PORT, serve_dashboard=False,
             state_provider=lambda: {**state, "dashboard": dashboard.snapshot()},
+            debug_snapshots=debug_snapshots,
+            resource_monitor=resources,
             control_callback=control_update if args.calibration_mode else None).start()
         loopback = mjpeg_preview.MjpegLoopbackClient(
             f"http://127.0.0.1:{server.port}/stream.mjpg", timeout_s=1.0).start()
@@ -541,6 +601,7 @@ def main(argv: list[str] | None = None) -> int:
         traceback.print_exc()
         raise
     finally:
+        resources.close()
         if loopback is not None:
             try:
                 loopback.close()

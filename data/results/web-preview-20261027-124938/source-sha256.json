@@ -1,0 +1,15 @@
+{
+  "camera_only_preview.py": "a7ff90b3d24f982172c627a8a02cbefc0598a9bdcf25de26de433484a30abe4b",
+  "live_calibration.py": "0f0f38845d0ece530abc4223c173b52070ecd609835ab20767936be8992f6889",
+  "lighting_profile.py": "1c8e2ad1e73c8c91a08ecd0a605bc8bb46540a51baf82d2a83594b5736bd8d84",
+  "packet_encoder.py": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+  "scale_parameters.py": "80d091c7e9b3b3396da009596cb36c34001ed616ec0c070452927cedf5756feb",
+  "stream_counter.py": "3c4cb42a7873e2dc2fcd4021fbfb61c3ce465533a7b4101a9c94c386b1d591f0",
+  "split_touching.py": "4ef0a304604a188afeb3675c62207191df8086b7ddbd7ddc1961f0469a0c6b76",
+  "dashboard_state.py": "c844a6a45301d775913596adb1d70c2f5bff82344b2fd01467e877fb61fb4f44",
+  "mjpeg_preview.py": "cffffa42dc347fa9a9ecc6c1666086d6af3635be58dfb4e641007c2ce1d6678f",
+  "launch_preview.py": "15aab27080efa6f2d888cae79e3b11152a4fbc80cb3d459fbc92bfa13e9bf4b4",
+  "packet_codec.py": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+  "dashboard.html": "e83b5d826cbd370f1c08df034a9283ff9d8a4a38b2ee2e8eacef544976ddc49f",
+  "launch_viewer.py": "949406dbacdd4416951e212d1cd10e11287fde875c6f51faa1a3081281e04ca6"
+}
