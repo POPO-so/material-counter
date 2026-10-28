@@ -20,11 +20,11 @@ def _hole_area_threshold(area: int, min_hole_area: int, *,
 def is_single_connected_component(mask: np.ndarray) -> bool:
     """Return whether a non-empty 2D mask is one 8-connected region."""
     pixels = np.asarray(mask)
-    if pixels.ndim != 2 or not np.any(pixels):
+    if pixels.ndim != 2 or pixels.shape[0] == 0 or pixels.shape[1] == 0:
         return False
-    count, _, _, _ = cv2.connectedComponentsWithStats(
-        (pixels != 0).astype(np.uint8), connectivity=8
-    )
+    binary = (np.ascontiguousarray(pixels) if pixels.dtype == np.uint8
+              else np.asarray(pixels != 0, dtype=np.uint8))
+    count, _ = cv2.connectedComponents(binary, connectivity=8, ltype=cv2.CV_32S)
     return count == 2
 
 
