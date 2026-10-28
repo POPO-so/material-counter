@@ -1,0 +1,5 @@
+# Desktop client only; board-side Python dependencies are unchanged.
+PySide6-Essentials==6.12.0
+numpy>=1.23,<3
+Pillow>=9
+paramiko>=3

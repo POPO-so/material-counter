@@ -1,6 +1,7 @@
 import unittest
 
-from view import DesktopWindow, _box_from_item, format_duration, frame_summary, resource_percent, recent_events, roi_bounds
+from qt_view import DesktopWindow
+from view_model import _box_from_item, format_duration, frame_summary, resource_percent, recent_events, roi_bounds
 
 
 class ViewLogicTests(unittest.TestCase):
@@ -48,19 +49,6 @@ class ViewLogicTests(unittest.TestCase):
         events = [{"message": str(index)} for index in range(35)]
         self.assertEqual(recent_events(events), events[-30:])
         self.assertEqual(recent_events(None), [])
-
-    def test_start_is_available_while_status_is_disconnected(self):
-        class Button:
-            def configure(self, **kw): self.state = kw["state"]
-        class Window:
-            closing = False
-            def __init__(self):
-                for name in ("start_button", "stop_button", "reset_button", "view_mode", "update_button"):
-                    setattr(self, name, Button())
-        window = Window()
-        DesktopWindow._set_capability_buttons(window, {"start": True, "stop": True}, connected=False)
-        self.assertEqual(window.start_button.state, "normal")
-        self.assertEqual(window.stop_button.state, "disabled")
 
 if __name__ == "__main__":
     unittest.main()

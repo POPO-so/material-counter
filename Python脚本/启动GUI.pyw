@@ -21,15 +21,22 @@ def main():
                         format="%(asctime)s %(levelname)s %(message)s", encoding="utf-8")
     sys.path.insert(0, str(ROOT / "scripts" / "desktop_gui"))
     from controller import DesktopController, load_config
-    from view import DesktopWindow
-    import tkinter as tk
+    from fluent_theme import FluentThemeManager
+    from view import DesktopWindow, QtRootAdapter
+    from PySide6.QtCore import QTimer
+    from PySide6.QtWidgets import QApplication
 
-    root = tk.Tk()
+    app = QApplication(sys.argv)
+    theme = FluentThemeManager(app)
+    theme.apply("system")
+    root = QtRootAdapter()
     controller = DesktopController(root, load_config())
-    view = DesktopWindow(root, controller)
+    view = DesktopWindow(controller, theme)
+    root.bind(view)
     controller.attach(view)
-    root.after(100, controller.start)
-    root.mainloop()
+    view.show()
+    QTimer.singleShot(100, controller.start)
+    app.exec()
 
 
 if __name__ == "__main__":

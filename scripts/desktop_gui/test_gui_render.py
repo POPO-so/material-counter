@@ -1,12 +1,14 @@
-"""Real Tk layout regression for pause and paired-frame display."""
+"""Qt pause must preserve the preview and avoid collapsing its layout."""
+import os
 import sys
 from pathlib import Path
 
-import numpy as np
-import tkinter as tk
-
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from view import DesktopWindow
+
+import numpy as np
+from PySide6.QtWidgets import QApplication
+from qt_view import DesktopWindow
 
 
 class Controller:
@@ -15,26 +17,25 @@ class Controller:
 
 
 def test_pause_keeps_preview_geometry_stable_and_freezes_last_frame():
-    root = tk.Tk()
-    root.withdraw()
-    try:
-        controller = Controller()
-        view = DesktopWindow(root, controller)
-        frame = {"frame_id": 1, "gray": np.zeros((240, 320), np.uint8),
-                 "mask": np.zeros((240, 320), np.uint8), "source": "software",
-                 "result": {"total_count": 3, "detections": [], "tracks": []},
-                 "config": {"count_axis": "x", "line_x": 160}}
-        view.show_frame(frame)
-        root.update_idletasks()
-        height = view.body.winfo_reqheight()
-        preview_image = view.preview_image.cget("image")
-        binary_image = view.binary_image.cget("image")
-        view._toggle_pause()
-        root.update_idletasks()
-        assert controller.paused is True
-        assert view.body.winfo_reqheight() == height
-        assert view.preview_image.cget("image") == preview_image
-        assert view.binary_image.cget("image") == binary_image
-        assert "暂停" in view.source_var.get()
-    finally:
-        root.destroy()
+    app = QApplication.instance() or QApplication([])
+    controller = Controller()
+    window = DesktopWindow(controller)
+    window.show()
+    frame = {"frame_id": 1, "gray": np.zeros((240, 320), np.uint8),
+             "mask": np.zeros((240, 320), np.uint8), "source": "software",
+             "result": {"total_count": 3, "detections": [], "tracks": []},
+             "config": {"count_axis": "x", "line_x": 160}}
+    window.show_frame(frame)
+    app.processEvents()
+    geometry = window.preview_image.geometry()
+    preview = window.preview_image.pixmap().cacheKey()
+    binary = window.binary_image.pixmap().cacheKey()
+    window.pause_button.click()
+    app.processEvents()
+    assert controller.paused is True
+    assert window.preview_image.geometry() == geometry
+    assert window.preview_image.pixmap().cacheKey() == preview
+    assert window.binary_image.pixmap().cacheKey() == binary
+    assert "暂停" in window.source_label.text()
+    window.allow_close = True
+    window.close()
