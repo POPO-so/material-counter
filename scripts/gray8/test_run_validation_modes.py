@@ -61,3 +61,12 @@ def test_offline_records_explicit_dma_wait_strategy(tmp_path, monkeypatch):
     arguments, output = _offline_arguments(tmp_path, "--dma-wait", "cooperative")
     assert run_gray8_counter.main(arguments) == 0
     assert json.loads(output.read_text())["dma_wait"] == "cooperative"
+
+
+@pytest.mark.parametrize("execution", ["inline", "worker"])
+def test_offline_records_check_execution_for_comparable_profiles(tmp_path, monkeypatch, execution):
+    monkeypatch.setattr(run_gray8_counter, "load_manifest",
+                        lambda path, digest: {"protocol": "GRAY8_PACKET_V1"})
+    arguments, output = _offline_arguments(tmp_path, "--check-execution", execution)
+    assert run_gray8_counter.main(arguments) == 0
+    assert json.loads(output.read_text())["check_execution"] == execution

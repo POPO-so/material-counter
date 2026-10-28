@@ -66,6 +66,8 @@ def main(argv=None):
                         help="full checks each pixel; runtime retains hardware and checksum checks")
     parser.add_argument("--dma-wait", choices=("driver", "cooperative"), default="driver",
                         help="driver uses PYNQ wait threads; cooperative yields between status polls")
+    parser.add_argument("--check-execution", choices=("inline", "worker"), default="worker",
+                        help="worker lets the event loop progress while completion checks run")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--load-overlay", action="store_true")
     parser.add_argument("--boot-id")
@@ -87,6 +89,7 @@ def main(argv=None):
                   manifest_sha256=sha256(args.manifest), mode=args.mode,
                   tx_bytes=TX_BYTES, rx_bytes=76800, count_accuracy="NOT_MEASURED",
                   validation=args.validation, dma_wait=args.dma_wait,
+                  check_execution=args.check_execution,
                   verify_pixels=args.validation == "full",
                   pixel_verified_frames=0, output_checksum_frames=0,
                   frames_requested=args.frames,
@@ -161,7 +164,8 @@ def main(argv=None):
             tx_buffers=tx, rx_buffers=rx, counter=counter,
             packet_encoder=encoding, packet_encoder_into=encoding_into,
             tx_bytes=TX_BYTES, before_transfer=checks.before_transfer,
-            after_transfer=checks.after_transfer,
+            after_transfer=(checks.after_transfer_async if args.check_execution == "worker"
+                            else checks.after_transfer),
             transfer_timeout_s=5, stage_timings_ms=timings)
         source = synthetic_frames(args.frames)
         if args.mode == "camera":

@@ -22,6 +22,8 @@ XSim 的 adapter、320×240 wrapper、S2MM guards 三项均已通过，Vivado BI
 
 结果新增 `process_cpu_s`、`cpu_core_ms_per_frame`（仅流处理区间，包含进程内线程）、DMA 查询/缓存收尾计时，以及 `roi_worker_wall`、`roi_worker_cpu`、`roi_dispatch_wait`、`frame_source_wait` 和 `free_slot_wait`。`roi_count` 仍为提交计数至返回的墙钟时间；派发等待不是 CPU 时间，阶段之间可以重叠，不能相加推算 FPS。
 
+`--check-execution worker|inline` 默认 `worker`：在工作线程执行当前帧完成校验，让事件循环继续处理另一槽消费者和相机帧通知；同帧仍必须等校验成功才能计数。取消时先等校验线程停止访问 TX/RX 后再传播取消，避免提前释放缓冲区。`inline` 保留原调度方式用于相同版本的对照。对照高吞吐路径可同时指定 `--validation runtime --dma-wait cooperative --check-execution worker`；该组合尚需板端验收，不以本机软件测试代替 FPS 实测。
+
 `run_gray8_counter.py` 支持 `offline`（默认，只验证 manifest/制品）、`self-test`（板端合成输入）和 `camera` 模式。命令需要 manifest、对应 SHA-256 和一个从未存在过的结果路径：
 
 ```powershell

@@ -1,4 +1,5 @@
 """Checks surrounding each Gray8 transfer; importing never opens MMIO."""
+import asyncio
 import time
 
 import numpy as np
@@ -114,6 +115,29 @@ class Gray8Checks:
         self.completions.append(record)
         self.previous = None
         return record
+
+    async def after_transfer_async(self, frame_id, slot):
+        """Run completion checks off-loop and keep slot inputs alive through cancellation."""
+        worker = asyncio.create_task(asyncio.to_thread(self.after_transfer, frame_id, slot))
+        try:
+            return await asyncio.shield(worker)
+        except asyncio.CancelledError as cancellation:
+            while not worker.done():
+                try:
+                    await asyncio.shield(worker)
+                except asyncio.CancelledError:
+                    # A second cancellation request must not release buffers while the
+                    # already-running thread still reads the slot.
+                    continue
+                except BaseException as worker_error:
+                    raise cancellation from worker_error
+            if worker.cancelled():
+                raise cancellation
+            try:
+                worker.result()
+            except BaseException as worker_error:
+                raise cancellation from worker_error
+            raise cancellation
 
     def summarize_timings_ms(self):
         result = {}

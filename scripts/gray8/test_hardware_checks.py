@@ -1,5 +1,7 @@
 from pathlib import Path
+import asyncio
 import sys
+import threading
 from types import SimpleNamespace
 
 import numpy as np
@@ -112,6 +114,90 @@ def test_runtime_mode_still_rejects_corrupt_output_checksum():
                         0x4C: 2, 0x50: 76800, 0x54: 19200})
     with pytest.raises(RuntimeError, match="checksum"):
         check.after_transfer(0, slot)
+
+
+def test_async_completion_runs_in_background_and_event_loop_keeps_responding():
+    started = threading.Event()
+    release = threading.Event()
+    worker_thread_ids = []
+    check = Gray8Checks(Registers())
+
+    def blocking_check(frame_id, slot):
+        worker_thread_ids.append(threading.get_ident())
+        started.set()
+        if not release.wait(timeout=1.0):
+            raise TimeoutError("test did not release the checker")
+        return {"frame_id": frame_id}
+
+    check.after_transfer = blocking_check
+
+    async def exercise():
+        event_loop_thread = threading.get_ident()
+        callback = asyncio.create_task(check.after_transfer_async(7, object()))
+        assert await asyncio.to_thread(started.wait, 1.0)
+        heartbeats = 0
+        while not callback.done():
+            heartbeats += 1
+            await asyncio.sleep(0)
+            if heartbeats == 100:
+                release.set()
+        result = await callback
+        assert result == {"frame_id": 7}
+        assert heartbeats > 0
+        assert worker_thread_ids == [worker_thread_ids[0]]
+        assert worker_thread_ids[0] != event_loop_thread
+
+    try:
+        asyncio.run(exercise())
+    finally:
+        release.set()
+
+
+def test_async_completion_cancellation_waits_for_worker_before_propagating():
+    started = threading.Event()
+    release = threading.Event()
+    worker_finished = threading.Event()
+    check = Gray8Checks(Registers())
+
+    def blocking_check(frame_id, slot):
+        started.set()
+        try:
+            if not release.wait(timeout=1.0):
+                raise TimeoutError("test did not release the checker")
+            return frame_id
+        finally:
+            worker_finished.set()
+
+    check.after_transfer = blocking_check
+
+    async def exercise():
+        callback = asyncio.create_task(check.after_transfer_async(3, object()))
+        assert await asyncio.to_thread(started.wait, 1.0)
+        callback.cancel()
+        await asyncio.sleep(0)
+        assert not callback.done()
+        assert not worker_finished.is_set()
+        release.set()
+        with pytest.raises(asyncio.CancelledError):
+            await callback
+        assert worker_finished.is_set()
+
+    try:
+        asyncio.run(exercise())
+    finally:
+        release.set()
+
+
+def test_async_completion_propagates_worker_exception():
+    check = Gray8Checks(Registers())
+
+    def failing_check(frame_id, slot):
+        raise RuntimeError("worker validation failed")
+
+    check.after_transfer = failing_check
+
+    with pytest.raises(RuntimeError, match="worker validation failed"):
+        asyncio.run(check.after_transfer_async(0, object()))
 
 
 def test_fresh_started_dma_is_allowed_only_before_any_programmed_transfer():
