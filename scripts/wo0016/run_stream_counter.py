@@ -1004,7 +1004,7 @@ def validate_operator_gate_launcher_sha256(value: str | None,
 
 def formal_runtime_sha256() -> dict[str, str]:
     names = ("run_stream_counter.py", "operator_gate_launcher.py", "stream_counter.py",
-             "split_touching.py", "lighting_profile.py", "scale_parameters.py", "dashboard_state.py", "dashboard.html",
+             "split_touching.py", "binary_stats.py", "lighting_profile.py", "scale_parameters.py", "dashboard_state.py", "dashboard.html",
              "capture_dataset.py", "live_calibration.py",
              "packet_encoder.py", "mjpeg_preview.py", "image_debug.py", "wo0017_capture_profile.py",
              "physical_calibration_lock.py", "prepare_physical_calibration.py",

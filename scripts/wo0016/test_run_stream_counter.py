@@ -59,7 +59,7 @@ def test_wo0017_runtime_binding_covers_raw_writer_and_camera_controls():
     assert {"capture_dataset.py", "live_calibration.py", "run_stream_counter.py",
             "operator_gate_launcher.py", "wo0017_capture_profile.py",
             "calibration_runtime_gate.py", "start_physical_calibration_standby.py",
-            "split_touching.py", "dashboard_state.py", "dashboard.html",
+            "split_touching.py", "binary_stats.py", "dashboard_state.py", "dashboard.html",
             "wo0015/board_preflight.py", "wo0015/board_once.py"} <= set(sources)
     assert all(len(value) == 64 for value in sources.values())
 
