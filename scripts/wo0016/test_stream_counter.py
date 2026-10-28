@@ -25,6 +25,7 @@ from stream_counter import (
     allocate_ping_pong_buffers,
     transfer_async,
 )
+import stream_counter as stream_counter_module
 from split_touching import split_touching_component
 
 
@@ -813,6 +814,59 @@ def test_default_stream_sends_single_channel_gray8_packet_with_keyword_frame_id(
     assert len(stream.stage_timings_ms["dma"]) == 1
     assert len(stream.stage_timings_ms["roi_count"]) == 1
     assert len(stream.stage_timings_ms["postprocess"]) == 1
+    assert len(stream.stage_timings_ms["roi_worker_wall"]) == 1
+    assert len(stream.stage_timings_ms["roi_worker_cpu"]) == 1
+    assert len(stream.stage_timings_ms["roi_dispatch_wait"]) == 1
+    assert len(stream.stage_timings_ms["free_slot_wait"]) == 1
+    assert len(stream.stage_timings_ms["frame_source_wait"]) == 2
+
+
+def test_roi_cpu_time_is_sampled_in_counter_worker_not_event_loop(monkeypatch):
+    real_thread_time = stream_counter_module.time.thread_time
+    main_thread_id = threading.get_ident()
+    measured_thread_ids = []
+    worker_values = iter((10.0, 10.00725))
+    worker_thread_id = []
+
+    class ObservedCounter(MaskCounter):
+        def update(self, frame_id, mask, *, capture_monotonic_ns=None):
+            worker_thread_id.append(threading.get_ident())
+            return super().update(frame_id, mask,
+                                  capture_monotonic_ns=capture_monotonic_ns)
+
+    def thread_time_in_worker():
+        thread_id = threading.get_ident()
+        measured_thread_ids.append(thread_id)
+        if thread_id == main_thread_id:
+            return real_thread_time()
+        return next(worker_values)
+
+    monkeypatch.setattr(stream_counter_module.time, "thread_time", thread_time_in_worker)
+    allocator = MockAllocator()
+    tx_buffers, rx_buffers = allocate_ping_pong_buffers(allocator)
+    dma = MockDma([_mask(116)])
+    stream = DoubleBufferStream(
+        recv_channel=dma.recvchannel,
+        send_channel=dma.sendchannel,
+        tx_buffers=tx_buffers,
+        rx_buffers=rx_buffers,
+        counter=ObservedCounter(),
+        packet_encoder=lambda gray, *, frame_id: bytes([frame_id]) * TX_BYTES,
+        transfer_timeout_s=1.0,
+        stage_timings_ms={},
+    )
+
+    asyncio.run(stream.run(_frames(1)))
+
+    assert worker_thread_id and worker_thread_id[0] != main_thread_id
+    assert measured_thread_ids == [worker_thread_id[0], worker_thread_id[0]]
+    assert stream.stage_timings_ms["roi_worker_cpu"][0] == pytest.approx(7.25)
+    roi_ms = stream.stage_timings_ms["roi_count"][0]
+    worker_wall_ms = stream.stage_timings_ms["roi_worker_wall"][0]
+    assert stream.stage_timings_ms["roi_dispatch_wait"][0] == pytest.approx(
+        max(roi_ms - worker_wall_ms, 0.0))
+    for name in ("free_slot_wait", "frame_source_wait"):
+        assert all(value >= 0 for value in stream.stage_timings_ms[name])
 
 
 class MockRxChannel:
@@ -1262,8 +1316,12 @@ def test_frame_callbacks_arm_before_dma_and_validate_completed_output():
     assert names.index("arm") < names.index("rx-start") < names.index("tx-start")
     assert names.index("rx-done") < names.index("validated")
     assert names.index("tx-done") < names.index("validated") < names.index("processed")
-    assert all(len(samples) == 1 and samples[0] >= 0
-               for samples in stage_timings_ms.values())
+    assert all(len(stage_timings_ms[name]) == 1 and stage_timings_ms[name][0] >= 0
+               for name in ("packer_check", "roi_count", "postprocess",
+                            "roi_worker_wall", "roi_worker_cpu", "roi_dispatch_wait",
+                            "free_slot_wait"))
+    assert len(stage_timings_ms["frame_source_wait"]) == 2
+    assert all(value >= 0 for value in stage_timings_ms["frame_source_wait"])
 
 def test_timed_out_blocking_wait_does_not_block_asyncio_shutdown():
     import threading

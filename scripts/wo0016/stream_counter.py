@@ -1104,19 +1104,24 @@ class DoubleBufferStream:
                 if consumer.done():
                     consumer.result()
                 pending_source_task = asyncio.create_task(frame_iterator.__anext__())
-                while True:
-                    done, _ = await asyncio.wait(
-                        (pending_source_task, consumer), return_when=asyncio.FIRST_COMPLETED,
-                        timeout=(0.05 if stop_requested is not None else None),
-                    )
-                    if done:
-                        break
-                    if stop_requested is not None and stop_requested():
-                        source_cleanup_error = await self._cancel_frame_read(pending_source_task)
-                        pending_source_task = None
-                        if source_cleanup_error is not None:
-                            raise source_cleanup_error
-                        break
+                source_wait_started = time.perf_counter()
+                try:
+                    while True:
+                        done, _ = await asyncio.wait(
+                            (pending_source_task, consumer), return_when=asyncio.FIRST_COMPLETED,
+                            timeout=(0.05 if stop_requested is not None else None),
+                        )
+                        if done:
+                            break
+                        if stop_requested is not None and stop_requested():
+                            source_cleanup_error = await self._cancel_frame_read(pending_source_task)
+                            pending_source_task = None
+                            if source_cleanup_error is not None:
+                                raise source_cleanup_error
+                            break
+                finally:
+                    self._record_timing("frame_source_wait",
+                                        time.perf_counter() - source_wait_started)
                 if pending_source_task is None:
                     break
                 if consumer in done:
@@ -1331,18 +1336,22 @@ class DoubleBufferStream:
     async def _get_free_slot_or_consumer_failure(
         self, consumer: asyncio.Task
     ) -> DmaBufferSlot:
-        slot_waiter = asyncio.create_task(self._free_slots.get())
-        done, _ = await asyncio.wait(
-            (slot_waiter, consumer), return_when=asyncio.FIRST_COMPLETED
-        )
-        if consumer in done:
-            if slot_waiter.done():
-                self._free_slots.put_nowait(slot_waiter.result())
-            else:
-                slot_waiter.cancel()
-                await asyncio.gather(slot_waiter, return_exceptions=True)
-            consumer.result()
-        return slot_waiter.result()
+        wait_started = time.perf_counter()
+        try:
+            slot_waiter = asyncio.create_task(self._free_slots.get())
+            done, _ = await asyncio.wait(
+                (slot_waiter, consumer), return_when=asyncio.FIRST_COMPLETED
+            )
+            if consumer in done:
+                if slot_waiter.done():
+                    self._free_slots.put_nowait(slot_waiter.result())
+                else:
+                    slot_waiter.cancel()
+                    await asyncio.gather(slot_waiter, return_exceptions=True)
+                consumer.result()
+            return slot_waiter.result()
+        finally:
+            self._record_timing("free_slot_wait", time.perf_counter() - wait_started)
 
     async def _consume_ready_slots(self) -> None:
         while True:
@@ -1360,13 +1369,26 @@ class DoubleBufferStream:
             frame_id = slot.frame_id
             postprocess_started = time.perf_counter()
             roi_started = time.perf_counter()
-            if self.counter.motion_timebase_s is None:
-                result = await asyncio.to_thread(self.counter.update, slot.frame_id, mask)
-            else:
-                result = await asyncio.to_thread(self.counter.update, slot.frame_id, mask,
-                                                capture_monotonic_ns=slot.capture_monotonic_ns)
+
+            def update_counter_in_worker():
+                worker_started = time.perf_counter()
+                cpu_started = time.thread_time()
+                if self.counter.motion_timebase_s is None:
+                    result = self.counter.update(slot.frame_id, mask)
+                else:
+                    result = self.counter.update(
+                        slot.frame_id, mask,
+                        capture_monotonic_ns=slot.capture_monotonic_ns)
+                return result, time.perf_counter() - worker_started, time.thread_time() - cpu_started
+
+            result, worker_wall_seconds, worker_cpu_seconds = await asyncio.to_thread(
+                update_counter_in_worker)
             roi_seconds = time.perf_counter() - roi_started
             self._record_timing("roi_count", roi_seconds)
+            self._record_timing("roi_worker_wall", worker_wall_seconds)
+            self._record_timing("roi_worker_cpu", worker_cpu_seconds)
+            self._record_timing("roi_dispatch_wait",
+                                max(roi_seconds - worker_wall_seconds, 0.0))
             if self.on_frame is not None:
                 if inspect.iscoroutinefunction(self.on_frame):
                     await self.on_frame(result, mask)
