@@ -83,3 +83,25 @@ data/results/**/debug-output/
 *~
 Thumbs.db
 desktop.ini
+
+# Reviewed local-only verification snapshots and raw board captures (2026-10-28).
+# Preserve files on disk; committed evidence remains tracked.
+/data/results/lighting-calibration-20261025/board-approval/
+/data/results/wo0017-physical-calibration-20261023/attempt-02/evidence-bundle.tar
+/data/results/wo0017-physical-calibration-20261023/attempt-02/evidence/operator-gate.log
+/docs/verification/arm-pl-gray8-20261027/
+/docs/verification/arm-pl-gray8-refactor-plan-20261027.md
+/docs/verification/m8-board-readonly-20261026/
+/docs/verification/m8-board-readonly-20261027/
+/docs/verification/m8-bounded-capture-design-20261027/
+/docs/verification/m8-memory-audit-20261026/
+/docs/verification/m8-offline-diagnostics-20261026/
+/docs/verification/m8-probe-contract-completion-20261027/
+/docs/verification/m8-probe-contract-review-20261027/
+
+# Only untracked Gray8 build/package auxiliaries; do not ignore the baseline root.
+/data/results/wo0015-gray8-baseline-20261027/board-package-receipt.json
+/data/results/wo0015-gray8-baseline-20261027/board-package.zip
+/data/results/wo0015-gray8-baseline-20261027/build-harness.tcl
+/data/results/wo0015-gray8-baseline-20261027/ipcfg_evidence/
+/data/results/wo0015-gray8-baseline-20261027/vivado-build.log
