@@ -1,0 +1,12 @@
+{
+  "scripts/gray8/hardware_checks.py": "3f7960e2a1f8e45b6528a4b7c958fa99164f147db673b5e21fd3825222041c1b",
+  "scripts/gray8/run_gray8_counter.py": "33274b2516bcdcc3f606839477f5cd6a60ebf41aaa57c433ee224f957c5a2ed0",
+  "scripts/gray8/dma_polling.py": "a26c53bed5d4d6ec00fbb72310adc06b4cbdc221a358e91aefdc67afe6a458fb",
+  "scripts/gray8/test_dma_polling.py": "ba0e9961f28b18d54f6a638fac7b3295848e6d6c64ea7ae9ccb6d632b06f1a6a",
+  "scripts/gray8/test_hardware_checks.py": "8ee4961459bb963dc81d5a1b661d5ab4378170bfcb77a0880d00c0a536901c69",
+  "scripts/gray8/test_run_validation_modes.py": "f0de53edaad6c710539a452e1ff43a7d6ff4604bef7a3df912ecd68803f234c1",
+  "scripts/wo0016/stream_counter.py": "3892d4d30ed64f78e20d60bdb7c56304190878f4d29ae49be86999c5daebe5c1",
+  "scripts/wo0016/test_stream_counter.py": "2de8d3a14745b278e422a64617edc2639c05ea097e676158228901b4e315344a",
+  "scripts/wo0016/mjpeg_preview.py": "e112aa0fb9c7ee89b8b63fe2f233aea8b7cd8672a11708c57b8d7bc2f07ca21d",
+  "scripts/wo0016/test_mjpeg_preview.py": "9040aeb1bf01b8ae7d51b45e8a107d1e7a343d5d8fe3d2f1f1f20c429e2813c9"
+}

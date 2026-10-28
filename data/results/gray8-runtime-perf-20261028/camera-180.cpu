@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/home/xilinx/gray8-perf-20261028-ordered/baseline/scripts/gray8/run_gray8_counter.py", line 209, in <module>
+    raise SystemExit(main())
+  File "/home/xilinx/gray8-perf-20261028-ordered/baseline/scripts/gray8/run_gray8_counter.py", line 110, in main
+    result["pynq_loaded"] = preflight.inspect_pynq_global_state(
+  File "/home/xilinx/gray8-perf-20261028-ordered/baseline/scripts/wo0015/board_preflight.py", line 678, in inspect_pynq_global_state
+    raise PreflightError("PYNQ global state loaded BIT path differs from the reviewed artifact")
+board_preflight.PreflightError: PYNQ global state loaded BIT path differs from the reviewed artifact
+user_s=19.279 system_s=7.989 wall_s=40.289
