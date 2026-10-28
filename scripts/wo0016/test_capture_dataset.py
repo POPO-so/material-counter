@@ -215,6 +215,49 @@ def test_calibration_writer_seals_selected_full_resolution_source_frames(tmp_pat
     assert loaded_manifest["source_frame_archive"] == source_info
 
 
+def test_bounded_calibration_writer_seals_selected_source_frames(tmp_path):
+    source_ids = (0, 1)
+    required_bytes = estimated_capture_bytes(
+        2, source_frame_count=len(source_ids), write_mode="bounded_stream")
+    no_source_bytes = estimated_capture_bytes(2, write_mode="bounded_stream")
+    assert required_bytes == no_source_bytes + len(source_ids) * (400 * 640 + 4096)
+
+    writer = CaptureWriter(
+        tmp_path / "bounded-calibration", expected_frames=2,
+        config={"line_y": 120, "min_area": 12}, max_bytes=required_bytes,
+        source_frame_ids=source_ids, write_mode="bounded_stream", ring_depth=2)
+    gray = np.full((240, 320), 31, np.uint8)
+    mask = np.zeros((240, 320), np.uint8)
+    for frame_id, value in enumerate((31, 97)):
+        writer.record_source_frame(
+            frame_id, np.full((400, 640), value, dtype=np.uint8))
+        writer.submit(frame_id, gray, mask, _frame_metadata(frame_id))
+
+    manifest = writer.close()
+    assert manifest["status"] == "COMPLETE"
+    assert manifest["write_mode"] == "bounded_stream"
+    assert manifest["source_frame_archive"]["frame_ids"] == [0, 1]
+    with np.load(tmp_path / "bounded-calibration" / "frames_source640x400.npz",
+                 allow_pickle=False) as stored:
+        assert stored["source_gray8"].shape == (2, 400, 640)
+        assert stored["source_gray8"][:, 0, 0].tolist() == [31, 97]
+    loaded_manifest, _ = load_dataset(tmp_path / "bounded-calibration")
+    assert loaded_manifest["source_frame_archive"] == manifest["source_frame_archive"]
+
+
+def test_bounded_calibration_capture_fails_closed_if_a_source_frame_is_missing(tmp_path):
+    writer = CaptureWriter(
+        tmp_path / "missing-source", expected_frames=1, config={},
+        source_frame_ids=(0,), write_mode="bounded_stream", ring_depth=1)
+    gray = np.zeros((240, 320), np.uint8)
+    writer.submit(0, gray, gray, _frame_metadata(0))
+
+    manifest = writer.close()
+    assert manifest["status"] == "INCOMPLETE"
+    assert "source frame" in manifest["error"]
+    assert manifest["source_frame_archive"] is None
+
+
 def test_dataset_loader_rejects_tampered_original_source_frame_archive(tmp_path):
     writer = CaptureWriter(
         tmp_path / "capture", expected_frames=1,

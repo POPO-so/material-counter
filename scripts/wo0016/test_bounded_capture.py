@@ -208,13 +208,16 @@ def test_bounded_stream_timeout_marks_incomplete_without_silent_drop(tmp_path, m
     assert "timed out waiting for capture slot" in manifest["error"]
 
 
-def test_bounded_stream_rejects_legacy_contract_combinations(tmp_path):
+def test_bounded_stream_rejects_deferred_contract_but_supports_selected_source_frames(tmp_path):
     with pytest.raises(ValueError, match="cannot defer"):
         CaptureWriter(tmp_path / "deferred", expected_frames=1, config={},
                       write_mode="bounded_stream", defer_writes_until_close=True)
-    with pytest.raises(ValueError, match="source_frame_ids"):
-        CaptureWriter(tmp_path / "source", expected_frames=1, config={},
-                      write_mode="bounded_stream", source_frame_ids=(0,))
+    writer = CaptureWriter(tmp_path / "source", expected_frames=1, config={},
+                           write_mode="bounded_stream", ring_depth=1,
+                           source_frame_ids=(0,))
+    assert writer.raw_gray8 is None and writer.raw_binary8 is None
+    assert writer.source_gray8.shape == (1, 400, 640)
+    assert writer.close()["status"] == "INCOMPLETE"
 
 
 def test_bounded_stream_array_allocation_depends_on_ring_depth_not_run_length(

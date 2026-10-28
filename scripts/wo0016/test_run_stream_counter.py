@@ -126,6 +126,47 @@ def test_physical_calibration_manifest_validation_pins_the_approved_boot():
     }
 
 
+def test_physical_calibration_identity_binds_bounded_capture_and_capacity(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    import wo0017_capture_profile
+
+    boot_id = "35983d66-bb1d-4a8a-85e5-802170825515"
+    output = tmp_path / "capture"
+    lock_path = tmp_path / "calibration.lock"
+    args = SimpleNamespace(
+        capture_write_mode="bounded_stream", expected_boot_id=boot_id,
+        stage1_receipt="receipt.json", stage1_receipt_sha256="a" * 64,
+        capture_dir=str(output), capture_max_bytes=96 * 1024 * 1024,
+        calibration_id="cal-test", calibration_lock=str(lock_path),
+        evidence_json=str(tmp_path / "evidence.json"), worker_python="python3",
+    )
+    plan = SimpleNamespace(boot_id=boot_id, manifest_sha256="b" * 64,
+                           bit_sha256="c" * 64, hwh_sha256="d" * 64)
+    preflight_calls = []
+    monkeypatch.setattr(runner, "validate_calibration_options", lambda args: None)
+    monkeypatch.setattr(wo0017_capture_profile, "validate_stage1_receipt",
+                        lambda *args: {"status": "PASS"})
+    monkeypatch.setattr(runner, "preflight_capture_target",
+                        lambda *args, **kwargs: preflight_calls.append(kwargs) or {
+                            "path": str(output), "expected_bytes": 1})
+    monkeypatch.setattr(runner, "formal_runtime_sha256", lambda: {"runtime": "hash"})
+    monkeypatch.setattr(runner.calibration_lock, "calibration_lock_path",
+                        lambda *args: lock_path)
+    monkeypatch.setattr(runner, "counting_configuration", lambda args: {})
+    monkeypatch.setattr(runner, "preprocessing_configuration", lambda args: {})
+    monkeypatch.setattr(runner, "calibration_initial_dmasr", lambda args: 1)
+
+    context = runner.physical_calibration_context(args, plan)
+
+    capture_config = context["identity"]["capture_config"]
+    assert preflight_calls[0]["write_mode"] == "bounded_stream"
+    assert preflight_calls[0]["source_frame_count"] == len(
+        runner.PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS)
+    assert capture_config["write_mode"] == "bounded_stream"
+    assert capture_config["ring_depth"] == 4
+    assert capture_config["submit_timeout_s"] == 1.0
+
+
 def test_formal_ready_id_selects_a_new_file_without_replacing_legacy_ready():
     boot = "35983d66-bb1d-4a8a-85e5-802170825515"
     base = Path("/var/lib/wo0017") / boot / "b1"
@@ -1626,7 +1667,8 @@ def test_stageb2_attempt_permit_binds_optional_capture_destination_and_limits(tm
         capture_config={"enabled": True,
                         "output_directory": str((tmp_path / "new-capture").resolve()),
                         "max_bytes": 64 * 1024 * 1024,
-                        "queue_depth": 2, "schema_version": 1},
+                        "queue_depth": 2, "schema_version": 1,
+                        "write_mode": "streaming_queue"},
     )
     assert identity["capture_config"]["output_directory"].endswith("new-capture")
     assert identity["capture_config"]["max_bytes"] == 64 * 1024 * 1024
@@ -1636,5 +1678,37 @@ def test_stageb2_attempt_permit_binds_optional_capture_destination_and_limits(tm
             attempt_id="capture-2", operator_prearm_delay_s=15.0,
             runner_sha256="e" * 64, gate_launcher_sha256="f" * 64,
             capture_config={"enabled": True, "output_directory": "relative",
-                            "max_bytes": 10, "queue_depth": 2},
+                            "max_bytes": 10, "queue_depth": 2,
+                            "write_mode": "streaming_queue"},
         )
+
+
+def test_stageb2_attempt_permit_accepts_only_the_pinned_bounded_pool_contract(tmp_path):
+    ready_identity = {"boot_id": "boot-1"}
+    capture = {"enabled": True,
+               "output_directory": str((tmp_path / "bounded-capture").resolve()),
+               "max_bytes": 64 * 1024 * 1024, "queue_depth": 4,
+               "schema_version": 1, "write_mode": "bounded_stream",
+               "ring_depth": 4, "submit_timeout_s": 1.0}
+
+    identity = runner.stageb2_attempt_permit_identity(
+        ready_identity=ready_identity, ready_guard_sha256="d" * 64,
+        attempt_id="bounded-1", operator_prearm_delay_s=15.0,
+        runner_sha256="e" * 64, gate_launcher_sha256="f" * 64,
+        capture_config=capture)
+    assert identity["capture_config"] == capture
+
+    with pytest.raises(ValueError, match="bounded capture"):
+        runner.stageb2_attempt_permit_identity(
+            ready_identity=ready_identity, ready_guard_sha256="d" * 64,
+            attempt_id="bounded-2", operator_prearm_delay_s=15.0,
+            runner_sha256="e" * 64, gate_launcher_sha256="f" * 64,
+            capture_config={**capture, "queue_depth": 2})
+
+    with pytest.raises(ValueError, match="mode"):
+        runner.stageb2_attempt_permit_identity(
+            ready_identity=ready_identity, ready_guard_sha256="d" * 64,
+            attempt_id="unbound-mode", operator_prearm_delay_s=15.0,
+            runner_sha256="e" * 64, gate_launcher_sha256="f" * 64,
+            capture_config={key: value for key, value in capture.items()
+                            if key != "write_mode"})

@@ -2,7 +2,33 @@
 
 面向螺母、垫圈等小型物料连续输送场景的 PYNQ-Z2 视觉计数原型，探索由 FPGA PL 承担流式像素变换、ARM PS 承担区域分析与跨帧计数的实现路径。
 
-> **当前状态：工程原型，尚未完成工业工况验收。** 已有板端图像流与 DMA 处理记录；最新 M6 螺母实测为 4/5（80%），计数准确率验收未通过。本文按代码和可追溯报告区分实现、离线验证、仿真与板端结果。
+## PYNQ-Z2 最简运行命令
+
+先按 [WO-0015 板端说明](scripts/wo0015/README-board.md)准备并核对当前 Boot 对应的 Gray8 BIT/HWH、manifest 与 SHA-256，再将运行包部署到 /home/xilinx/wo0016。以下是有限帧、单次授权的板端命令模板；替换所有 REPLACE_* 字段后才能运行：
+
+```bash
+WO=/home/xilinx/wo0016
+mkdir -p "$WO/evidence/captures"
+CAPTURE_DIR="$WO/evidence/captures/REPLACE_WITH_UNIQUE_CAPTURE_NAME"
+sudo -n env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python3 "$WO/run_stream_counter.py" \
+  --mode board \
+  --manifest "$WO/wo0015/run-manifest.json" \
+  --manifest-sha256 REPLACE_WITH_REVIEWED_MANIFEST_SHA256 \
+  --approved-boot-id REPLACE_WITH_CURRENT_BOOT_ID \
+  --max-frames REPLACE_WITH_FINITE_APPROVED_FRAME_LIMIT \
+  --camera /dev/video0 \
+  --evidence-json "$WO/evidence/REPLACE_WITH_UNIQUE_RUN_NAME.json" \
+  --capture-dir "$CAPTURE_DIR" \
+  --capture-max-bytes REPLACE_WITH_REVIEWED_CAPTURE_CAPACITY_BYTES \
+  --capture-write-mode bounded_stream \
+  --execute --authorize-stage wo0016-stream --approve-once
+```
+
+该命令不会下载 Overlay；它复用已加载且与 manifest 匹配的 Gray8 Overlay，并保留 Boot、DMA、CMA、一次性许可等运行门禁。当前仓库中的 Gray8 BIT/HWH 只有离线构建证据，不能把命令模板当作已部署或已验收证明。
+
+> **当前状态：工程原型，尚未完成工业工况验收。** 当前批准的目标接口为 Gray8：MM2S 发送 76,832 B，S2MM 返回 76,800 B。2026-10-25 有一轮特定 5 件粘连 M6 样本在板端完成 5/5；该轮使用旧 RGB BIT/HWH，不代表 Gray8 已上板或所有工况通过。10-21 的 4/5 是调光与光学标定前的阶段记录，已由后续验证取代，不作为当前系统“计数未通过”的结论。另有两轮各 50 件准确计数的操作员报告，但后续漏记报告没有逐轮总数。本文区分实现、离线验证、仿真与板端结果。
+
+当前已批准使用四槽固定普通 RAM 池进行正式采集留证；M8 准入预估按四槽图像池计算，并继续保留系统内存预留、逐帧元数据预算和原 CMA 水位。物理标定若启用指定相机源帧留证，会额外固定保留 18 张 640×400 Gray8，合计 4,608,000 B 普通 RAM；容量上界同时写入采集清单和板端许可身份。该代码与准入策略仍需新的 Boot 绑定许可和实板测量才能形成板端内存验收证据。
 
 ## 项目概述
 
@@ -16,7 +42,7 @@
 - **DMA 图像往返：** WO-0015/0016 路径将 Gray8 包经 MM2S 送入 PL，再通过 S2MM 把 76,800 B Binary8 掩膜写回 PS 可访问的 DDR。
 - **PS 端目标计数：** Python、NumPy 和 OpenCV 处理回传掩膜，执行 ROI 区域分析、连通域筛选、候选粘连拆分、跨帧质心关联、轨迹确认和越线计数。
 - **模块级探索与验证：** `axis_rgb2gray` 保留在旧 RGB 位流和历史证据中；`axis_roi_crop`、`axis_morphology3x3` 有独立验证，但三者均不在当前 Gray8 位流中。
-- **计数与预览解耦：** WO-0016 提供 HTTP/MJPEG 预览实现；计数处理和 JPEG 编码分开调度。浏览器实际显示帧率尚未测定。
+- **计数与预览解耦：** WO-0016 的 HTTP/MJPEG JPEG 编码在独立工作线程运行；无预览客户端时跳过 Gray8/Binary8 快照复制，流客户端最多 4 个。计数处理帧率不受预览帧率限速；浏览器实际显示帧率尚未测定。
 
 PL 流水线的工程价值在于可按像素顺序进行确定性处理，并有机会减少 PS 对每个像素执行重复运算的负担。当前没有同输入、同精度条件下的 CPU/PL 对比基准，因此不宣称已测得加速比或端到端性能优势。
 
@@ -46,7 +72,7 @@ flowchart LR
 
 当前 Gray8 build 的六个 RTL 源为 `fpga/rtl/axis_gray2binary.v`、`fpga/experimental/wo0014/axis_dma_gray_adapter.v`、`fpga/experimental/wo0014/axis_binary_output_checker.v`、`fpga/experimental/wo0014/axis_dma_image_pipeline.v`、`fpga/experimental/wo0015/axis_s2mm_frame_packer.v` 和 `fpga/experimental/wo0015/axis_dma_s2mm_pipeline_bd.v`（清单见 `scripts/wo0015/create_s2mm_bd.tcl`）。`axis_rgb2gray`、`axis_roi_crop`、`axis_morphology3x3` 不在该 Gray8 位流中；其中 `axis_rgb2gray` 曾属于旧 RGB 位流。WO-0016 的计数 ROI 和连通域分析在 PS 执行。
 
-2026-10-27 Gray8 BIT/HWH 已完成离线 Vivado build/implementation 和 XSim 验证，但该包**尚未下载或验收于板端**。历史板端记录绑定的是旧 RGB BIT/HWH，不能作为 Gray8 板端证据。
+当前工作分支的正式接口为 Gray8：AXI DMA MM2S 传输 76,832 B（16 B Header + 76,800 B Gray8 + 16 B Footer），S2MM 返回 76,800 B Binary8。2026-10-27 Gray8 BIT/HWH 已完成离线 Vivado build/implementation 和 XSim 验证，但该工件**尚未下载或验收于板端**。10-21 的 4/5 记录属于调光和算法修正前的历史阶段；后续 10-25 Attempt-03 的 5/5 物料样本使用旧 RGB BIT/HWH，因此既不否定后续计数验证，也不能作为 Gray8 板端证据。
 
 ### PS 端计数流程
 
@@ -125,7 +151,7 @@ WO-0016 板端模式是有限帧、单次授权的实验入口，需要先完成
 | 状态 | 项目与结果 | 测量口径及限制 |
 |---|---|---|
 | **VERIFIED_ON_BOARD** | WO-0016 Stage A Attempt 8：30/30 帧完成；端到端吞吐 15.157 FPS（65.975 ms/帧）。 | 空载基线，0/0 目标不能证明物料准确率。49×320 计数带的 ROI 处理均值为 17.657 ms，高于 2.5 ms 目标；CCL 在 30/30 帧运行。 |
-| **VERIFIED_ON_BOARD** | WO-0016 Stage B-2 Attempt-5 Recovery-2：165/165 帧完成；5 颗 M6 螺母计数为 4，准确率 80%；端到端吞吐 22.132 FPS。 | DMA/帧处理链路完成，但少计 1 次，物料准确率验收失败；报告未确定具体漏计原因，且本轮不重测。 |
+| **VERIFIED_ON_BOARD · 单组样本** | 2026-10-25 B-2 Attempt-03：220/220 帧完成；特定 5 件粘连 M6 样本计数 5/5；端到端吞吐 12.248 FPS。 | 使用旧 RGB BIT/HWH（MM2S 230,432 B、S2MM 76,800 B），不是当前 Gray8 位流验收。操作员另报告两轮各 50 件准确计数；后续漏记报告无分轮真值和系统计数，不能计算总体准确率。详见[调光后板测记录](docs/verification/lighting-calibration-20261025.md)。 |
 | **VERIFIED_OFFLINE** | 2026-10-27 Gray8 Active Baseline：XSim bit-exact；Vivado build/implementation 完成。 | 对应 `wo0015-gray8-baseline-20261027` BIT/HWH；尚未进行板端下载、DMA 或计数验收。 |
 | **VERIFIED_OFFLINE** | 2026-10-24 粘连候选诊断记录 pytest scripts/wo0016 为 288 passed、3 skipped。 | 这是报告中的离线测试记录，不是本次 README 修改后重跑的结果；见[诊断报告](data/results/wo0017-touching-diagnosis-20261024/README.md)。 |
 | **SIMULATION_ONLY** | WO-0014 RGB→Gray→Binary8：15 项 XSim 场景；487 帧、37,401,600 像素，独立黄金比对 0 mismatch。 | 仅离线 RTL 仿真和输出比对，不代表板端同规模像素比对或物料计数准确率。 |
@@ -135,9 +161,13 @@ WO-0016 板端模式是有限帧、单次授权的实验入口，需要先完成
 
 上述 WO-0016 板端帧率和计数记录绑定旧 RGB BIT/HWH；2026-10-27 Gray8 build 是不同的工件，板端状态仍为未运行。不能将历史板端结果移记为 Gray8 路径结果。
 
+### 早期历史归档
+
+2026-10-21 WO-0016 Stage B-2 Attempt-5 Recovery-2 完成 165/165 帧，5 颗 M6 螺母计数为 4/5，端到端吞吐 22.132 FPS。该样本来自调光与光学标定前的阶段；后续 2026-10-25 Attempt-03 已完成特定 5 件样本的 5/5。保留 4/5 记录供追溯，不作为当前“计数未通过”依据。完整历史证据见[板端验收记录](docs/verification/wo-0016-board-acceptance.md)。
+
 ## 已知限制与后续优化
 
-- **计数准确率仍需解决。** 板测样本为 4/5；目标间接近、粘连或分割变化可能导致少计，现有单轮证据不能建立通用准确率。
+- **准确率结论限于已记录工况。** 早期 4/5 已归档并被后续调光后的 5/5 特定样本验证取代；两轮 50 件准确计数为操作员报告，后续漏记报告没有分轮计数。粘连和不同速度工况仍需带物理真值的完整记录，当前证据不能外推通用准确率。
 - **近期算法改进仍属候选。** 2026-10-24 的两颗/三颗螺母录像用 Gray8 离线阈值回放比较拆分规则；部分样本从旧规则的 1 次事件变为 2 或 3 次。录像没有 PL Binary8，不能作为部署后结果。
 - **ROI 热路径需优化。** Stage A 的计数 ROI 平均耗时 17.657 ms，超过 2.5 ms 目标。
 - **模块尚未整合。** `axis_roi_crop` 和 `axis_morphology3x3` 有独立实现，但未串入当前 Gray8 位流；`axis_rgb2gray` 仅属于旧 RGB 路径。视频源最终路线仍未冻结。

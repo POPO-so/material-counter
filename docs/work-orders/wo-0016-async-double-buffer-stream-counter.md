@@ -2,7 +2,7 @@
 
 | 项目 | 内容 |
 |---|---|
-| 状态 | Stage A Attempt 8 完成 30/30 帧，端到端 15.157 FPS；`roi_count_ms=17.657 ms` 仍未达到 `<=2.5 ms` 子目标。Stage B-2 单轮采样已收口：Attempt-5 Recovery-2 完成 165/165 帧，5 颗真值计数为 4（80%），物料准确率验收未通过；用户确认采用该有效样本、不再重测。WO-0016 离线测试本轮复验 109 passed。详见[板端验收记录](../verification/wo-0016-board-acceptance.md#stage-b-2-收口attempt-5-recovery-2-2026-10-21) |
+| 状态 | Stage A Attempt 8 的 30/30 帧与 15.157 FPS、ROI 17.657 ms 仍是 2026-10-21 历史基线。Attempt-5 Recovery-2 的 4/5 是调光前阶段样本，已由 2026-10-25 Attempt-03 特定 5 件粘连 M6 样本 5/5（220/220 帧）取代为当前单组板测记录；另两轮 50 件准确计数为操作员报告，不能外推总体准确率。上述板测使用旧 RGB BIT/HWH。当前获批接口为 Gray8，MM2S 76,832 B、S2MM 76,800 B；Gray8 板端验收仍未执行。详见[板端验收记录](../verification/wo-0016-board-acceptance.md)与[调光后板测记录](../verification/lighting-calibration-20261025.md)。 |
 | 基线 | `feat/pl-stream-skeleton`，WO-0015 50 MHz、320×240 Binary8 S2MM 合同 |
 | 工作分支 | `codex/wo0016-counting-20261017` |
 | 范围 | Python PS 侧双缓冲调度、过线计数、MJPEG 预览和离线 Mock |

@@ -25,6 +25,38 @@ PREVIEW_JPEG_QUALITY = 70
 MAX_REJECTED_BODY_DRAIN_BYTES = 4096
 DEFAULT_HISTORY_LIMIT = 2000
 DEFAULT_PUBLISHER_CLOSE_TIMEOUT_S = 2.0
+DEFAULT_MAX_PREVIEW_CLIENTS = 4
+
+
+class _BoundedThreadingHTTPServer(ThreadingHTTPServer):
+    """Reject excess sockets before they can create unbounded handler threads."""
+
+    def __init__(self, server_address, request_handler_class, *, max_clients: int):
+        self._client_slots = threading.BoundedSemaphore(max_clients)
+        super().__init__(server_address, request_handler_class)
+
+    def process_request(self, request, client_address):
+        if not self._client_slots.acquire(blocking=False):
+            try:
+                request.sendall(
+                    b"HTTP/1.1 503 Service Unavailable\r\n"
+                    b"Content-Length: 0\r\nConnection: close\r\n\r\n")
+            except OSError:
+                pass
+            finally:
+                self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except BaseException:
+            self._client_slots.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self._client_slots.release()
 
 
 def _close_timeout_seconds(value: float) -> float:
@@ -37,11 +69,15 @@ def _close_timeout_seconds(value: float) -> float:
 class MjpegFrameHub:
     """Keep only the newest frame so a slow browser never queues stale video."""
 
-    def __init__(self):
+    def __init__(self, *, max_stream_clients: int = DEFAULT_MAX_PREVIEW_CLIENTS):
+        if (isinstance(max_stream_clients, bool) or not isinstance(max_stream_clients, int)
+                or max_stream_clients < 1):
+            raise ValueError("max_stream_clients must be a positive integer")
         self._condition = threading.Condition()
         self._sequence = 0
         self._jpeg: bytes | None = None
         self._stream_clients = 0
+        self.max_stream_clients = max_stream_clients
         self._closed = False
         self._published_times: deque[float] = deque(maxlen=60)
         self._dimensions: tuple[int, int] | None = None
@@ -76,19 +112,31 @@ class MjpegFrameHub:
         with self._condition:
             return self._stream_clients
 
-    @contextmanager
-    def streaming_client(self) -> Iterator[None]:
+    def try_acquire_streaming_client(self) -> bool:
         with self._condition:
             if self._closed:
                 raise RuntimeError("frame hub is closed")
+            if self._stream_clients >= self.max_stream_clients:
+                return False
             self._stream_clients += 1
             self._condition.notify_all()
+            return True
+
+    def release_streaming_client(self) -> None:
+        with self._condition:
+            if self._stream_clients <= 0:
+                raise RuntimeError("no streaming client lease to release")
+            self._stream_clients -= 1
+            self._condition.notify_all()
+
+    @contextmanager
+    def streaming_client(self) -> Iterator[bool]:
+        acquired = self.try_acquire_streaming_client()
         try:
-            yield
+            yield acquired
         finally:
-            with self._condition:
-                self._stream_clients -= 1
-                self._condition.notify_all()
+            if acquired:
+                self.release_streaming_client()
 
     def wait_for_client(self, *, timeout_s: float = 0.1) -> bool:
         if timeout_s < 0:
@@ -490,6 +538,8 @@ class PeriodicMjpegPublisher:
                 callback_epoch = self._epoch
                 if frame_id % self.interval and not self._force_encode:
                     return
+            if self.hub.stream_clients == 0:
+                return
             image = np.asarray(mask)
             if image.dtype != np.uint8 or image.shape != (240, 320):
                 raise ValueError("preview snapshot must be a uint8 array with shape (240, 320)")
@@ -500,6 +550,8 @@ class PeriodicMjpegPublisher:
                 if self._closing or self._closed or callback_epoch != self._epoch:
                     return
                 if frame_id % self.interval and not self._force_encode:
+                    return
+                if self.hub.stream_clients == 0:
                     return
                 self._force_encode = False
                 np.copyto(self._latest_mask, image, casting="no")
@@ -1022,54 +1074,62 @@ class MjpegPreviewServer:
                 if self.path != "/stream.mjpg":
                     self.send_error(404)
                     return
-                self.send_response(200)
-                self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
-                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
-                self.send_header("Pragma", "no-cache")
-                self.send_header("Connection", "close")
-                self.end_headers()
-                sequence = 0
-                first_part = True
-                self.connection.settimeout(2.0)
+                if not hub.try_acquire_streaming_client():
+                    self.send_error(503, "preview client limit reached")
+                    return
                 try:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
+                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    self.send_header("Pragma", "no-cache")
+                    self.send_header("Connection", "close")
+                    self.end_headers()
+                    sequence = 0
+                    first_part = True
+                    self.connection.settimeout(2.0)
                     self.wfile.write(b"--frame\r\n")
                     self.wfile.flush()
-                    with hub.streaming_client():
-                        while not hub.closed:
-                            item = hub.wait_for_next_record(after_sequence=sequence, timeout_s=1.0)
-                            if item is None:
-                                # Detect a disconnected/hidden browser even when
-                                # the producer is idle; release its client lease.
-                                if select.select([self.connection], [], [], 0)[0]:
-                                    if not self.connection.recv(1, socket.MSG_PEEK):
-                                        return
-                                continue
-                            sequence, jpeg = item["sequence"], item["jpeg"]
-                            header = (b"Content-Type: image/jpeg\r\n"
-                                      + f"Content-Length: {len(jpeg)}\r\nX-Frame-Sequence: {sequence}\r\n".encode("ascii"))
-                            if item["frame_id"] is not None:
-                                header += (f"X-Frame-ID: {item['frame_id']}\r\n"
-                                           f"X-Total-Count: {item['total_count']}\r\n").encode("ascii")
-                            header += b"\r\n"
+                    while not hub.closed:
+                        item = hub.wait_for_next_record(after_sequence=sequence, timeout_s=1.0)
+                        if item is None:
+                            # Detect a disconnected/hidden browser even when
+                            # the producer is idle; release its client lease.
+                            if select.select([self.connection], [], [], 0)[0]:
+                                if not self.connection.recv(1, socket.MSG_PEEK):
+                                    return
+                            continue
+                        sequence, jpeg = item["sequence"], item["jpeg"]
+                        header = (b"Content-Type: image/jpeg\r\n"
+                                  + f"Content-Length: {len(jpeg)}\r\nX-Frame-Sequence: {sequence}\r\n".encode("ascii"))
+                        if item["frame_id"] is not None:
+                            header += (f"X-Frame-ID: {item['frame_id']}\r\n"
+                                       f"X-Total-Count: {item['total_count']}\r\n").encode("ascii")
+                        header += b"\r\n"
+                        self.wfile.write(header)
+                        self.wfile.write(jpeg)
+                        self.wfile.write(b"\r\n--frame\r\n")
+                        # Chromium does not surface the first multipart JPEG
+                        # until it has consumed a following complete part.
+                        # Legacy preview servers have no reset control, so a
+                        # one-time duplicate safely primes that decoder. Live
+                        # Monitor servers provide controls and must only send
+                        # newly published frames, avoiding stale post-reset data.
+                        if first_part and live_control_callback is None:
                             self.wfile.write(header)
                             self.wfile.write(jpeg)
                             self.wfile.write(b"\r\n--frame\r\n")
-                            # Chromium does not surface the first multipart JPEG
-                            # until it has consumed a following complete part.
-                            # Legacy preview servers have no reset control, so a
-                            # one-time duplicate safely primes that decoder. Live
-                            # Monitor servers provide controls and must only send
-                            # newly published frames, avoiding stale post-reset data.
-                            if first_part and live_control_callback is None:
-                                self.wfile.write(header)
-                                self.wfile.write(jpeg)
-                                self.wfile.write(b"\r\n--frame\r\n")
-                            first_part = False
-                            self.wfile.flush()
+                        first_part = False
+                        self.wfile.flush()
                 except (BrokenPipeError, ConnectionResetError, OSError, RuntimeError):
                     return
+                finally:
+                    hub.release_streaming_client()
 
-        self._server = ThreadingHTTPServer((self.host, self.requested_port), Handler)
+        self._server = _BoundedThreadingHTTPServer(
+            (self.host, self.requested_port), Handler,
+            # Leave one short-lived handler slot for an overload response
+            # while all permitted MJPEG streams occupy their long-lived slots.
+            max_clients=self.hub.max_stream_clients + 1)
         self._server.daemon_threads = True
         self._server.block_on_close = False
         self._thread = threading.Thread(target=self._server.serve_forever,

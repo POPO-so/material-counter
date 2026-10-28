@@ -160,9 +160,10 @@ def _make_case(tmp_path, monkeypatch, profile, ready_id=None):
     )
     ready = runner.validate_non_consuming_guard(guard_path, context["identity"])
 
+    capture_write_mode = runner.resolve_capture_write_mode(args)
     capture = runner.preflight_capture_target(
         args.capture_dir, expected_frames=args.max_frames,
-        max_bytes=args.capture_max_bytes,
+        max_bytes=args.capture_max_bytes, write_mode=capture_write_mode,
     )
     identity = runner.stageb2_attempt_permit_identity(
         ready_identity=context["identity"],
@@ -177,8 +178,8 @@ def _make_case(tmp_path, monkeypatch, profile, ready_id=None):
             "enabled": True,
             "output_directory": capture["path"],
             "max_bytes": args.capture_max_bytes,
-            "queue_depth": 2,
             "schema_version": 1,
+            **runner.capture_write_contract(capture_write_mode),
         },
     )
     identity.update({
@@ -236,6 +237,7 @@ def test_formal_prelaunch_accepts_exact_b1_b2_permits_without_board_side_effects
     assert context["identity"]["capture_config"]["output_directory"] == str(capture_path.resolve())
     assert context["identity"]["capture_config"]["schema_version"] == 1
     assert context["identity"]["capture_config"]["queue_depth"] == 2
+    assert context["identity"]["capture_config"]["write_mode"] == runner.resolve_capture_write_mode(args)
     assert result["permit"]["capture_config"]["output_directory"] == str(capture_path.resolve())
     assert not (attempt_root / args.attempt_id / "consumed.json").exists()
     assert not capture_path.exists()

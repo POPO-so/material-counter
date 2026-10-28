@@ -2,6 +2,7 @@ import sys
 import threading
 import time
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import numpy as np
@@ -211,9 +212,12 @@ def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkey
         assert hub.sequence == 0
 
         with hub.streaming_client():
+            for frame_id in range(4, 8):
+                publisher(type("Frame", (), {"frame_id": frame_id,
+                                              "total_count": frame_id // 3})(), mask)
             first = hub.wait_for_next(after_sequence=0, timeout_s=2.0)
             assert first == (1, b"jpeg")
-            for frame_id in range(4, 8):
+            for frame_id in range(8, 12):
                 publisher(type("Frame", (), {"frame_id": frame_id,
                                               "total_count": frame_id // 3})(), mask)
             second = hub.wait_for_next(after_sequence=1, timeout_s=2.0)
@@ -222,19 +226,56 @@ def test_periodic_publisher_encodes_lazily_for_clients_on_a_worker_thread(monkey
         assert publisher.interval == 4
         assert publisher.quality == 70
         assert publisher.encoded_frames == 2
-        assert [row[:3] for row in encoded] == [(0, 120, 70), (1, 120, 70)]
+        assert [row[:3] for row in encoded] == [(1, 120, 70), (2, 120, 70)]
         assert [row[4:] for row in encoded] == [
             (0, 2.0, "SIM COUNT", "SIM TH=128", 0, 0),
             (0, 2.0, "SIM COUNT", "SIM TH=128", 0, 0),
         ]
         assert all(thread_id != caller_thread for *_, thread_id in encoded)
         assert hub.sequence == 2
-        assert len(publisher.handoff_timings_ms) == 8
+        assert len(publisher.handoff_timings_ms) == 12
         assert len(publisher.background_encode_timings_ms) == 2
     finally:
         close = getattr(publisher, "close", None)
         if callable(close):
             close()
+        hub.close()
+
+
+def test_periodic_publisher_skips_full_frame_snapshot_copies_without_clients(monkeypatch):
+    hub = MjpegFrameHub()
+    publisher = PeriodicMjpegPublisher(hub=hub, line_y=120, interval=1)
+    copies = []
+    monkeypatch.setattr(preview_module.np, "copyto",
+                        lambda *args, **kwargs: copies.append((args, kwargs)))
+    mask = np.zeros((240, 320), dtype=np.uint8)
+    gray = np.zeros_like(mask)
+    result = type("Frame", (), {"frame_id": 1, "total_count": 0})()
+
+    try:
+        publisher(result, mask, source_gray=gray)
+
+        assert copies == []
+        assert hub.sequence == 0
+        assert publisher.encoded_frames == 0
+    finally:
+        publisher.close()
+        hub.close()
+
+
+def test_frame_hub_caps_streaming_client_leases():
+    hub = MjpegFrameHub(max_stream_clients=2)
+    try:
+        with hub.streaming_client() as first:
+            assert first is True
+            with hub.streaming_client() as second:
+                assert second is True
+                with hub.streaming_client() as third:
+                    assert third is False
+                assert hub.stream_clients == 2
+            assert hub.stream_clients == 1
+        assert hub.stream_clients == 0
+    finally:
         hub.close()
 
 
@@ -430,6 +471,30 @@ def test_http_server_serves_page_and_live_mjpeg_multipart_stream():
             frame = response.read(int(part_headers["content-length"]))
             assert frame == b"mock-jpeg-frame"
     finally:
+        server.close()
+
+
+def test_http_server_rejects_stream_clients_over_the_hub_limit():
+    hub = MjpegFrameHub(max_stream_clients=2)
+    server = MjpegPreviewServer(hub=hub, host="127.0.0.1", port=0).start()
+    responses = []
+    url = f"http://127.0.0.1:{server.port}/stream.mjpg"
+    try:
+        for _ in range(2):
+            responses.append(urlopen(url, timeout=2))
+        deadline = time.monotonic() + 1.0
+        while hub.stream_clients != 2 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert hub.stream_clients == 2
+
+        with pytest.raises(HTTPError) as error:
+            urlopen(url, timeout=2)
+
+        assert error.value.code == 503
+        assert hub.stream_clients == 2
+    finally:
+        for response in responses:
+            response.close()
         server.close()
 
 

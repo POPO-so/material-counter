@@ -25,6 +25,8 @@ PROBE_COUNTING_PROFILE = "lighting-calibrated"
 PROBE_AREA_FILTER = "output-roi"
 PROBE_REFERENCE_AREA = 111.0
 PROBE_LIGHTING_THRESHOLD = 100
+PROBE_CAPTURE_WRITE_MODE = "bounded_stream"
+PROBE_CAPTURE_RING_DEPTH = 4
 PROBE_STARTUP_POLICY = "consume_before_hardware_click_starts_sampling"
 PROBE_ABORT_POLICY = "checkpoint_exception_dma_safe_cleanup_else_fail_hold_no_kill_reset_retry"
 PROBE_RUNTIME_FILES = ("m8_probe_profile.py", "m8_probe_runtime.py", "m8_memory_sampler.py")
@@ -68,8 +70,9 @@ def validate_pinned_arguments(*, max_frames: int, expected_count: int,
         raise ValueError(f"diagnostic probe requires --reference-area {PROBE_REFERENCE_AREA:g}")
     if lighting_threshold != PROBE_LIGHTING_THRESHOLD:
         raise ValueError(f"diagnostic probe requires --lighting-threshold {PROBE_LIGHTING_THRESHOLD}")
-    if capture_write_mode != "deferred":
-        raise ValueError("diagnostic probe requires --capture-write-mode deferred")
+    if capture_write_mode != PROBE_CAPTURE_WRITE_MODE:
+        raise ValueError(
+            f"diagnostic probe requires --capture-write-mode {PROBE_CAPTURE_WRITE_MODE}")
 
 
 def probe_permit_identity(*, boot_id: str, manifest_sha256: str, bit_sha256: str,
@@ -157,8 +160,8 @@ def probe_permit_identity(*, boot_id: str, manifest_sha256: str, bit_sha256: str
             "enabled": True,
             "output_directory": capture_path,
             "max_bytes": capture_max_bytes,
-            "queue_depth": 2,
-            "write_mode": "deferred_memory",
+            "ring_depth": PROBE_CAPTURE_RING_DEPTH,
+            "write_mode": PROBE_CAPTURE_WRITE_MODE,
             "schema_version": 1,
         },
         "evidence_path": evidence_path,

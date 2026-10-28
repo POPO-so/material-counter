@@ -149,9 +149,8 @@ def estimated_capture_bytes(expected_frames: int, *, source_frame_count: int = 0
     if write_mode not in {"streaming_queue", "deferred_memory", "bounded_stream"}:
         raise ValueError(f"unsupported capture write mode: {write_mode}")
     if write_mode == "bounded_stream":
-        if source_frame_count:
-            raise ValueError("bounded_stream does not support source_frame_ids")
-        return expected_frames * (4 * FRAME_BYTES + 256 + 8192 + 256 + 8192) + 131072
+        return (expected_frames * (4 * FRAME_BYTES + 256 + 8192 + 256 + 8192)
+                + 131072 + source_frame_count * (SOURCE_FRAME_BYTES + 4096))
     return (expected_frames * (4 * FRAME_BYTES + 4096) + 32768
             + source_frame_count * (SOURCE_FRAME_BYTES + 4096))
 
@@ -237,8 +236,6 @@ class CaptureWriter:
             raise ValueError("streaming_queue cannot defer writes until close")
         if write_mode == "bounded_stream" and defer_writes_until_close:
             raise ValueError("bounded_stream cannot defer writes until close")
-        if write_mode == "bounded_stream" and source_frame_ids:
-            raise ValueError("bounded_stream does not support source_frame_ids")
         if (isinstance(ring_depth, bool) or not isinstance(ring_depth, int)
                 or ring_depth < 1):
             raise ValueError("ring_depth must be a positive integer")
@@ -254,7 +251,9 @@ class CaptureWriter:
         if not isinstance(source_frame_ids, tuple):
             raise ValueError("source_frame_ids must be a tuple of selected frame indexes")
         # Validate frame counts before using them in index checks or set construction.
-        estimated_capture_bytes(expected_frames, source_frame_count=len(source_frame_ids))
+        estimated_capture_bytes(expected_frames,
+                                source_frame_count=len(source_frame_ids),
+                                write_mode=write_mode)
         if any(isinstance(value, bool) or not isinstance(value, int)
                or not 0 <= value < expected_frames for value in source_frame_ids):
             raise ValueError("source_frame_ids must be unique indexes inside the capture window")
@@ -661,6 +660,10 @@ class CaptureWriter:
             self.output_dir / (RAW_FRAME_ARCHIVE_NAME + ".tmp"),
             self.output_dir / (RAW_FRAME_ARCHIVE_NAME + ".sha256"),
             self.output_dir / (RAW_FRAME_ARCHIVE_NAME + ".sha256.tmp"),
+            self.output_dir / SOURCE_FRAME_ARCHIVE_NAME,
+            self.output_dir / (SOURCE_FRAME_ARCHIVE_NAME + ".tmp"),
+            self.output_dir / (SOURCE_FRAME_ARCHIVE_NAME + ".sha256"),
+            self.output_dir / (SOURCE_FRAME_ARCHIVE_NAME + ".sha256.tmp"),
         )
         for path in paths:
             try:
@@ -895,20 +898,27 @@ class CaptureWriter:
                 with self._records_path.open("ab") as stream:
                     stream.flush()
                     os.fsync(stream.fileno())
+            source_frames_complete = (
+                self._source_frames_recorded == set(self.source_frame_ids))
             complete = (self._error is None and self._written == self.expected_frames
                         and self._accepted == self.expected_frames and self._dropped == 0
                         and self._raw_frames_recorded == self.expected_frames
-                        and not self.source_frame_ids)
+                        and source_frames_complete)
             if self._error is None and self._raw_frames_recorded != self.expected_frames:
                 self._error = (f"raw frame capture is incomplete: {self._raw_frames_recorded}/"
                                f"{self.expected_frames}")
+            if self._error is None and not source_frames_complete:
+                self._error = "selected original-resolution source frame capture is incomplete"
             if (self._error is None and self._written != self.expected_frames):
                 self._error = (f"capture is incomplete: wrote {self._written}/"
                                f"{self.expected_frames} frames")
             if complete:
                 raw_frame_archive = self._write_raw_frame_archive_bounded()
+                source_frame_archive = (self._write_source_frame_archive_bounded()
+                                        if self.source_frame_ids else None)
             else:
                 raw_frame_archive = None
+                source_frame_archive = None
             records_sha256 = (_sha256_file_bounded(self._records_path)
                               if self._records_path.exists() else None)
             self._owned_bytes_peak = max(
@@ -925,7 +935,7 @@ class CaptureWriter:
                 "bytes_written": self._bytes_written,
                 "frame_records_sha256": records_sha256,
                 "raw_frame_archive": raw_frame_archive,
-                "source_frame_archive": None,
+                "source_frame_archive": source_frame_archive,
                 "submit_wait_count": self._submit_wait_count,
                 "submit_wait_total_ms": self._submit_wait_total_ms,
                 "submit_wait_max_ms": self._submit_wait_max_ms,
@@ -982,6 +992,7 @@ class CaptureWriter:
             "bytes_written": self._bytes_written,
             "frame_records_sha256": None,
             "raw_frame_archive": None,
+            "source_frame_archive": None,
             "submit_wait_count": self._submit_wait_count,
             "submit_wait_total_ms": self._submit_wait_total_ms,
             "submit_wait_max_ms": self._submit_wait_max_ms,
@@ -1195,6 +1206,116 @@ class CaptureWriter:
                     temporary.unlink(missing_ok=True)
                 except OSError:
                     pass
+
+    def _write_source_frame_archive_bounded(self) -> dict[str, Any]:
+        """Write selected camera source frames without allocating a second frame array."""
+        if self.write_mode != "bounded_stream" or self.source_gray8 is None or not self.source_frame_ids:
+            raise CaptureError("bounded source frame archive was not configured")
+        archive_path = self.output_dir / SOURCE_FRAME_ARCHIVE_NAME
+        archive_tmp = archive_path.with_suffix(archive_path.suffix + ".tmp")
+        sidecar_path = archive_path.with_suffix(archive_path.suffix + ".sha256")
+        sidecar_tmp = sidecar_path.with_suffix(sidecar_path.suffix + ".tmp")
+        source = self.source_gray8
+        source_sha256 = hashlib.sha256(memoryview(source)).hexdigest()
+        source_ids = np.asarray(self.source_frame_ids, dtype=np.uint32)
+        embedded_metadata = {
+            "schema_version": 1,
+            "frame_ids": list(self.source_frame_ids),
+            "frame_shape": list(SOURCE_FRAME_SHAPE),
+            "array_shape": list(source.shape),
+            "dtype": "uint8",
+            "source_gray8_sha256": source_sha256,
+        }
+        metadata_array = np.asarray(_json_bytes(embedded_metadata).decode("utf-8"))
+
+        def check_capacity(size: int | None = None) -> None:
+            current_archive = archive_tmp if archive_tmp.exists() else archive_path
+            current_size = current_archive.stat().st_size if current_archive.exists() else 0
+            projected_size = current_size if size is None else max(current_size, size)
+            actual_owned = self._bounded_disk_usage() + projected_size - current_size
+            capacity_owned = actual_owned
+            if not sidecar_tmp.exists() and not sidecar_path.exists():
+                capacity_owned += 128
+            if capacity_owned > self.max_bytes - 8192:
+                raise CaptureError("capture files exceed configured capacity limit")
+            self._owned_bytes_peak = max(self._owned_bytes_peak, actual_owned)
+
+        class CapacityCheckedStream:
+            """Reject NPZ growth before a write exceeds the configured disk limit."""
+
+            def __init__(self, stream):
+                self._stream = stream
+                self._highwater = 0
+
+            def write(self, data):
+                projected = max(self._highwater, self._stream.tell() + len(data))
+                check_capacity(projected)
+                written = self._stream.write(data)
+                self._highwater = max(self._highwater, self._stream.tell())
+                return written
+
+            def __getattr__(self, name):
+                return getattr(self._stream, name)
+
+        def write_member(archive, name: str, array: np.ndarray) -> None:
+            header = {
+                "descr": np.lib.format.dtype_to_descr(array.dtype),
+                "fortran_order": False,
+                "shape": array.shape,
+            }
+            with archive.open(f"{name}.npy", mode="w", force_zip64=True) as member:
+                np.lib.format.write_array_header_1_0(member, header)
+                payload = memoryview(array).cast("B")
+                for offset in range(0, len(payload), 64 * 1024):
+                    member.write(payload[offset:offset + 64 * 1024])
+                    check_capacity()
+
+        try:
+            with archive_tmp.open("w+b", buffering=0) as archive_stream:
+                checked_stream = CapacityCheckedStream(archive_stream)
+                with zipfile.ZipFile(checked_stream, mode="w",
+                                     compression=zipfile.ZIP_STORED,
+                                     allowZip64=True) as archive:
+                    write_member(archive, "source_frame_ids", source_ids)
+                    write_member(archive, "source_gray8", source)
+                    write_member(archive, "archive_metadata_json", metadata_array)
+
+            with archive_tmp.open("r+b") as stream:
+                stream.flush()
+                os.fsync(stream.fileno())
+            check_capacity()
+            archive_sha256 = _sha256_file_bounded(archive_tmp)
+            os.replace(archive_tmp, archive_path)
+            check_capacity()
+            sidecar_text = f"{archive_sha256}  {archive_path.name}\n"
+            with sidecar_tmp.open("x", encoding="ascii", newline="\n") as stream:
+                stream.write(sidecar_text)
+                stream.flush()
+                os.fsync(stream.fileno())
+            check_capacity()
+            os.replace(sidecar_tmp, sidecar_path)
+            self._owned_bytes_peak = max(self._owned_bytes_peak, self._bounded_disk_usage())
+            return {
+                "filename": archive_path.name,
+                "sha256_sidecar": sidecar_path.name,
+                "sha256": archive_sha256,
+                "size_bytes": archive_path.stat().st_size,
+                "frame_ids": list(self.source_frame_ids),
+                "shape": list(source.shape),
+                "dtype": "uint8",
+                "source_gray8_sha256": source_sha256,
+            }
+        finally:
+            cleanup_error: OSError | None = None
+            for temporary in (archive_tmp, sidecar_tmp):
+                try:
+                    temporary.unlink(missing_ok=True)
+                except OSError as exc:
+                    if cleanup_error is None:
+                        cleanup_error = exc
+            if cleanup_error is not None:
+                raise CaptureError(
+                    f"cannot clean source archive temporary file: {cleanup_error}") from cleanup_error
 
     def _write_source_frame_archive(self) -> dict[str, Any]:
         if self.source_gray8 is None or not self.source_frame_ids:

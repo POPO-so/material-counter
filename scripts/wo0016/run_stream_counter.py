@@ -489,6 +489,20 @@ def packet_encoders(args):
     return gray320x240_to_gray_packet, gray320x240_to_gray_packet_into
 
 
+def capture_write_contract(write_mode: str) -> dict[str, Any]:
+    """Return the storage geometry that must be covered by board permits."""
+    if write_mode == "bounded_stream":
+        return {
+            "write_mode": write_mode,
+            "queue_depth": m8_probe_profile.PROBE_CAPTURE_RING_DEPTH,
+            "ring_depth": m8_probe_profile.PROBE_CAPTURE_RING_DEPTH,
+            "submit_timeout_s": 1.0,
+        }
+    if write_mode not in {"streaming_queue", "deferred_memory"}:
+        raise ValueError(f"unsupported capture write mode: {write_mode}")
+    return {"write_mode": write_mode, "queue_depth": 2}
+
+
 def counting_roi_metadata(result: Any, counter: MaskCounter) -> dict[str, Any]:
     return {"top": result.roi_top, "bottom_exclusive": result.roi_bottom,
             "line_y": counter.line_y, "line_x": counter.line_x,
@@ -537,8 +551,19 @@ def stageb2_attempt_permit_identity(*, ready_identity: Mapping[str, Any],
                 or not isinstance(output_directory, str)
                 or not Path(output_directory).is_absolute()
                 or isinstance(max_bytes, bool) or not isinstance(max_bytes, int)
-                or max_bytes < 1 or capture_value.get("queue_depth") != 2):
+                or max_bytes < 1):
             raise ValueError("capture configuration must bind an absolute path, capacity and queue depth")
+        write_mode = capture_value.get("write_mode")
+        if write_mode == "bounded_stream":
+            expected_bounded = capture_write_contract(write_mode)
+            if any(capture_value.get(key) != value
+                   for key, value in expected_bounded.items()):
+                raise ValueError(
+                    "bounded capture must bind the fixed ring depth and submit timeout")
+        elif (write_mode not in {"streaming_queue", "deferred_memory"}
+              or capture_value.get("queue_depth") != 2):
+            raise ValueError(
+                "capture configuration must bind mode, absolute path, capacity and queue depth")
         extra["capture_config"] = capture_value
     return {
         **dict(ready_identity),
@@ -579,7 +604,8 @@ def canonical_probe_options(*, capture_max_bytes: int = DEFAULT_MAX_BYTES) -> ar
                   ground_truth_count=0, material_label=m8_probe_profile.PROBE_MATERIAL_LABEL,
                   stabilization_delay_s=3.0, operator_prearm_delay_s=15.0,
                   counting_profile="lighting-calibrated", lighting_area_filter="output-roi",
-                  reference_area=111.0, lighting_threshold=100, capture_write_mode="deferred",
+                  reference_area=111.0, lighting_threshold=100,
+                  capture_write_mode=m8_probe_profile.PROBE_CAPTURE_WRITE_MODE,
                   capture_max_bytes=capture_max_bytes, count_observability=True,
                   preview_overlay="compact", host="127.0.0.1")
     for name, value in values.items():
@@ -1387,11 +1413,13 @@ def formal_capture_context(args: argparse.Namespace, plan: Any) -> dict[str, Any
         material_label=args.material_label, stabilization_delay_s=args.stabilization_delay_s,
         stage1_receipt_sha256=args.stage1_receipt_sha256)
     runtime = formal_runtime_sha256()
+    capture_write_mode = resolve_capture_write_mode(args)
     identity.update({"runtime_sha256": runtime,
                      "counting_config": counting_configuration(args),
                      "capture_config": {"enabled": True,
                          "output_directory": str(Path(args.capture_dir).expanduser().resolve(strict=False)),
-                         "max_bytes": args.capture_max_bytes, "queue_depth": 2, "schema_version": 1}})
+                         "max_bytes": args.capture_max_bytes, "schema_version": 1,
+                         **capture_write_contract(capture_write_mode)}})
     ready_id = getattr(args, "wo0017_ready_id", None)
     ready_path = formal_ready_path(plan.boot_id, profile, ready_id)
     if ready_id is not None:
@@ -1508,9 +1536,14 @@ def physical_calibration_context(args: argparse.Namespace, plan: Any) -> dict[st
     from wo0017_capture_profile import validate_stage1_receipt
     receipt = validate_stage1_receipt(args.stage1_receipt,
                                       args.stage1_receipt_sha256, plan)
+    capture_write_mode = resolve_capture_write_mode(args, calibration_mode=True)
+    bounded_capture = capture_write_mode == "bounded_stream"
+    ring_depth = m8_probe_profile.PROBE_CAPTURE_RING_DEPTH
+    submit_timeout_s = 1.0
     capture = preflight_capture_target(
         args.capture_dir, expected_frames=300, max_bytes=args.capture_max_bytes,
-        source_frame_count=len(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS))
+        source_frame_count=len(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS),
+        write_mode=capture_write_mode)
     runtime = formal_runtime_sha256()
     lock_path = calibration_lock.calibration_lock_path(plan.boot_id, args.calibration_id)
     requested_lock_path = Path(args.calibration_lock).expanduser().resolve(strict=False)
@@ -1537,8 +1570,11 @@ def physical_calibration_context(args: argparse.Namespace, plan: Any) -> dict[st
         "capture_config": {"enabled": True, "dual_arrays": ["gray8", "binary8"],
                             "output_directory": capture["path"],
                             "max_bytes": args.capture_max_bytes,
-                            "queue_depth": 0, "schema_version": 1,
-                            "write_mode": "deferred_memory", "flush_timeout_s": 300.0,
+                            "queue_depth": (ring_depth if bounded_capture else 0),
+                            "schema_version": 1,
+                            "write_mode": capture_write_mode,
+                            "flush_timeout_s": (35.0 + submit_timeout_s
+                                                if bounded_capture else 300.0),
                             "source_resolution": [640, 400],
                             "source_frame_ids": list(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS),
                             "source_archive": "frames_source640x400.npz"},
@@ -1546,6 +1582,11 @@ def physical_calibration_context(args: argparse.Namespace, plan: Any) -> dict[st
         "worker_python": args.worker_python,
         "runtime_sha256": runtime,
     }
+    if bounded_capture:
+        identity["capture_config"].update({
+            "ring_depth": ring_depth,
+            "submit_timeout_s": submit_timeout_s,
+        })
     if calibration_initial_dmasr(args) != 0x00000001:
         identity["initial_dmasr"] = f"0x{calibration_initial_dmasr(args):08x}"
     return {"identity": identity, "receipt": receipt, "runtime_sha256": runtime,
@@ -1657,8 +1698,10 @@ def validate_formal_prelaunch(args: argparse.Namespace, launcher_sha256: str) ->
         raise ValueError("formal prelaunch current Boot mismatch")
     if preflight.read_cma_meminfo()["CmaFree"] <= CMA_WATERMARK_KIB:
         raise ValueError("formal prelaunch CMA is not above watermark")
+    capture_write_mode = resolve_capture_write_mode(args)
     capture = preflight_capture_target(args.capture_dir, expected_frames=args.max_frames,
-                                       max_bytes=args.capture_max_bytes)
+                                       max_bytes=args.capture_max_bytes,
+                                       write_mode=capture_write_mode)
     ready = validate_non_consuming_guard(formal["ready_path"], formal["identity"])
     identity = stageb2_attempt_permit_identity(
         ready_identity=formal["identity"], ready_guard_sha256=ready["sha256"],
@@ -1667,7 +1710,8 @@ def validate_formal_prelaunch(args: argparse.Namespace, launcher_sha256: str) ->
         gate_launcher_sha256=launcher_sha256, counting_config=counting_configuration(args),
         counter_sha256=formal["runtime_sha256"]["stream_counter.py"],
         capture_config={"enabled": True, "output_directory": capture["path"],
-                        "max_bytes": args.capture_max_bytes, "queue_depth": 2, "schema_version": 1})
+                        "max_bytes": args.capture_max_bytes, "schema_version": 1,
+                        **capture_write_contract(capture_write_mode)})
     identity.update({"stage": f"wo0017-{args.wo0017_profile}-attempt",
                      "runtime_sha256": formal["runtime_sha256"]})
     attempt = formal["attempt_root"] / args.attempt_id
@@ -1701,19 +1745,8 @@ def defer_capture_writes_until_close(args: argparse.Namespace, *,
 
 def resolve_capture_write_mode(args: argparse.Namespace, *,
                                calibration_mode: bool = False) -> str:
-    """Resolve explicit experimental storage without overriding signed contracts."""
+    """Resolve the selected storage mode; all guarded board profiles may opt in."""
     if getattr(args, "capture_write_mode", "auto") == "bounded_stream":
-        if (getattr(args, "mode", None) == "board"
-                or getattr(args, "authorize_stage", None) == WO16_STAGE):
-            raise ValueError("bounded_stream is not authorized for wo0016-stream or other "
-                             "formal board stages; a new explicit contract and Manager "
-                             "approval are required")
-        if (calibration_mode or getattr(args, "physical_calibration", False)
-                or getattr(args, "wo0017_profile", None)
-                or getattr(args, "diagnostic_probe", False)):
-            raise ValueError("bounded_stream is not authorized for existing formal, "
-                             "calibration and probe profiles; a separately approved "
-                             "capture contract is required")
         return "bounded_stream"
     return ("deferred_memory" if defer_capture_writes_until_close(
         args, calibration_mode=calibration_mode) else "streaming_queue")
@@ -1721,6 +1754,8 @@ def resolve_capture_write_mode(args: argparse.Namespace, *,
 
 def capture_storage_evidence(writer: CaptureWriter, *, write_mode: str) -> dict[str, Any]:
     bounded = write_mode == "bounded_stream"
+    source_frame_bytes = (int(writer.source_gray8.nbytes)
+                          if writer.source_gray8 is not None else 0)
     evidence = {
         "memory_kind": "ordinary NumPy process RAM; not PYNQ/CMA allocation",
         "array_shape": ([writer.ring_depth, HEIGHT, WIDTH] if bounded
@@ -1730,6 +1765,11 @@ def capture_storage_evidence(writer: CaptureWriter, *, write_mode: str) -> dict[
                        else int(writer.raw_gray8.nbytes)),
         "binary_bytes": (writer.ring_depth * HEIGHT * WIDTH if bounded
                          else int(writer.raw_binary8.nbytes)),
+        "selected_source_frame_storage_bytes": source_frame_bytes,
+        "writer_owned_image_array_bytes": (
+            writer.ring_depth * HEIGHT * WIDTH * 2 + source_frame_bytes
+            if bounded else int(writer.raw_gray8.nbytes + writer.raw_binary8.nbytes
+                                + source_frame_bytes)),
         "recording": ("continuity callback; submit copies into fixed pool before slot reuse"
                       if bounded else "np.copyto after S2MM completion and frame-status validation"),
         "archive_written_after_sampling": True,
@@ -1782,7 +1822,7 @@ def execute_board_stream(args: argparse.Namespace, *,
                           if calibration_mode else 0)
     capture_preflight = (preflight_capture_target(
         capture_dir, expected_frames=args.max_frames, max_bytes=capture_max_bytes,
-        source_frame_count=source_frame_count
+        source_frame_count=source_frame_count, write_mode=capture_write_mode
     ) if capture_dir else None)
     process_start_monotonic = getattr(args, "process_start_monotonic", time.monotonic())
     milestone_path = Path(args.evidence_json).with_suffix(".milestones.jsonl")
@@ -1885,8 +1925,8 @@ def execute_board_stream(args: argparse.Namespace, *,
                 "enabled": True,
                 "output_directory": capture_preflight["path"],
                 "max_bytes": capture_max_bytes,
-                "queue_depth": 2,
                 "schema_version": 1,
+                **capture_write_contract(capture_write_mode),
             } if capture_preflight is not None else None),
         )
         if formal:
@@ -2151,7 +2191,8 @@ def execute_board_stream(args: argparse.Namespace, *,
                 max_bytes=capture_max_bytes,
                 queue_depth=2,
                 defer_writes_until_close=deferred_capture_writes,
-                **({"write_mode": "bounded_stream", "ring_depth": 4,
+                **({"write_mode": "bounded_stream",
+                    "ring_depth": m8_probe_profile.PROBE_CAPTURE_RING_DEPTH,
                     "submit_timeout_s": 1.0} if capture_write_mode == "bounded_stream" else {}),
                 source_frame_ids=(PHYSICAL_CALIBRATION_SOURCE_FRAME_IDS
                                   if calibration_mode else ()),

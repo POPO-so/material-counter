@@ -22,11 +22,10 @@ def test_bounded_cli_is_explicit_and_defaults_stay_auto():
                                        ("wo0017_profile", "b2"),
                                        ("diagnostic_probe", True),
                                        ("physical_calibration", True)])
-def test_existing_formal_contracts_reject_bounded_before_hardware(field, value):
+def test_formal_capture_profiles_allow_explicit_bounded_mode(field, value):
     args = options()
     setattr(args, field, value)
-    with pytest.raises(ValueError, match="bounded_stream"):
-        runner.resolve_capture_write_mode(args)
+    assert runner.resolve_capture_write_mode(args) == "bounded_stream"
 
 
 def test_legacy_resolution_preserves_formal_deferred_and_auto_streaming():
@@ -44,35 +43,29 @@ def test_legacy_resolution_preserves_formal_deferred_and_auto_streaming():
 def test_bounded_storage_evidence_does_not_read_full_run_arrays(tmp_path):
     from capture_dataset import CaptureWriter
     writer = CaptureWriter(tmp_path / "capture", expected_frames=1, config={},
-                           write_mode="bounded_stream", ring_depth=4)
+                           source_frame_ids=(0,), write_mode="bounded_stream", ring_depth=4)
     try:
         evidence = runner.capture_storage_evidence(writer, write_mode="bounded_stream")
         assert evidence["write_mode"] == "bounded_stream"
         assert evidence["gray_bytes"] == evidence["binary_bytes"] == 4 * 240 * 320
         assert evidence["per_frame_files_written_during_sampling"] is True
         assert evidence["ring_depth"] == 4
+        assert evidence["selected_source_frame_storage_bytes"] == 400 * 640
+        assert evidence["writer_owned_image_array_bytes"] == 4 * 240 * 320 * 2 + 400 * 640
     finally:
         writer.close()
 
 
-def test_calibration_flag_cannot_silently_override_explicit_bounded():
-    with pytest.raises(ValueError, match="bounded_stream"):
-        runner.resolve_capture_write_mode(options(), calibration_mode=True)
+def test_explicit_bounded_mode_is_available_for_calibration_evidence():
+    assert runner.resolve_capture_write_mode(
+        options(), calibration_mode=True) == "bounded_stream"
 
 
-def test_wo0016_formal_stage_rejects_bounded_even_with_operator_opt_in(monkeypatch):
+def test_wo0016_formal_board_stage_allows_bounded_mode_without_touching_hardware():
     args = runner._parser().parse_args([
         "--mode", "board", "--capture-write-mode", "bounded_stream",
         "--authorize-stage", runner.WO16_STAGE, "--execute", "--approve-once"])
-    with pytest.raises(ValueError, match="bounded_stream.*not authorized.*wo0016-stream"):
-        runner.resolve_capture_write_mode(args)
-
-    def forbidden(*args, **kwargs):
-        pytest.fail("permit/hardware gate reached before stage rejection")
-
-    monkeypatch.setattr(runner, "validate_operator_gate_launcher_sha256", forbidden)
-    with pytest.raises(ValueError, match="bounded_stream.*not authorized"):
-        runner.execute_board_stream(args)
+    assert runner.resolve_capture_write_mode(args) == "bounded_stream"
 
 
 @pytest.mark.parametrize("mode,expected", [("auto", "streaming_queue"),
@@ -83,12 +76,15 @@ def test_wo0016_legacy_stage_resolution_unchanged(mode, expected):
     assert runner.resolve_capture_write_mode(args) == expected
 
 
-def test_board_entry_without_stage_still_rejects_bounded(monkeypatch):
+def test_bounded_mode_does_not_bypass_board_stage_authorization(monkeypatch):
     args = runner._parser().parse_args(["--mode", "board", "--capture-write-mode", "bounded_stream"])
+    assert runner.resolve_capture_write_mode(args) == "bounded_stream"
+
     def forbidden(*args, **kwargs):
-        pytest.fail("permit gate reached before rejection")
-    monkeypatch.setattr(runner, "validate_operator_gate_launcher_sha256", forbidden)
-    with pytest.raises(ValueError, match="bounded_stream.*not authorized"):
+        pytest.fail("board admission must stop before manifest or hardware checks")
+
+    monkeypatch.setattr(runner.preflight, "validate_manifest", forbidden)
+    with pytest.raises(ValueError, match="requires --execute --authorize-stage"):
         runner.execute_board_stream(args)
 
 
@@ -96,14 +92,7 @@ def test_board_entry_without_stage_still_rejects_bounded(monkeypatch):
                                        ("wo0017_profile", "b2"),
                                        ("diagnostic_probe", True),
                                        ("physical_calibration", True)])
-def test_board_entry_rejects_contract_conflict_before_gate_or_hardware(monkeypatch, field, value):
+def test_explicit_bounded_mode_resolves_for_formal_board_contexts(field, value):
     args = runner._parser().parse_args(["--mode", "board", "--capture-write-mode", "bounded_stream"])
     setattr(args, field, value)
-
-    def forbidden(*args, **kwargs):
-        pytest.fail("board/permit gate reached before bounded mode contract rejection")
-
-    monkeypatch.setattr(runner, "validate_operator_gate_launcher_sha256", forbidden)
-    monkeypatch.setattr(runner, "require_board_opt_in", forbidden)
-    with pytest.raises(ValueError, match="bounded_stream"):
-        runner.execute_board_stream(args)
+    assert runner.resolve_capture_write_mode(args) == "bounded_stream"

@@ -28,7 +28,7 @@ PINNED = dict(
     area_filter="output-roi",
     reference_area=111.0,
     lighting_threshold=100,
-    capture_write_mode="deferred",
+    capture_write_mode="bounded_stream",
 )
 
 
@@ -109,8 +109,8 @@ def test_identity_is_pinned_to_a_non_acceptance_measurement():
     assert identity["max_frames"] == 100
     assert identity["expected_count"] == 0
     assert identity["material_label"] == "empty_belt_memory_probe"
-    assert identity["capture_config"]["write_mode"] == "deferred_memory"
-    assert identity["capture_config"]["queue_depth"] == 2
+    assert identity["capture_config"]["write_mode"] == "bounded_stream"
+    assert identity["capture_config"]["ring_depth"] == 4
     assert "not a counting or acceptance run" in identity["purpose"]
     assert identity["attempt_id"] == "probe-1"
     assert identity["runtime_sha256"] == {"run_stream_counter.py": SHA["runner"]}
@@ -167,6 +167,7 @@ def test_pinned_arguments_accept_only_the_reviewed_contract():
     ("area_filter", "full-frame"),
     ("reference_area", 100.0),
     ("lighting_threshold", 90),
+    ("capture_write_mode", "deferred"),
     ("capture_write_mode", "streaming_queue"),
     ("capture_write_mode", "auto"),
 ])

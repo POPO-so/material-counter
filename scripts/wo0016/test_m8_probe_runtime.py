@@ -9,9 +9,11 @@ import m8_probe_runtime as runtime
 
 
 def test_retained_admission_exact_ram_and_cma_boundaries():
-    required = 122880 + 144208 + 36864 + 100 * (150 + 128)
+    required = 122880 + 144208 + 36864 + 4 * 150 + 100 * 128
     result = runtime.retained_admission({'MemAvailable': required, 'CmaFree': 36864})
     assert result['required_kib'] == required and result['margin_kib'] == 0
+    assert result['ring_depth'] == 4
+    assert result['capture_pool_kib'] == 4 * 150
     with pytest.raises(RuntimeError, match='MemAvailable'):
         runtime.retained_admission({'MemAvailable': required - 1, 'CmaFree': 36864})
     with pytest.raises(RuntimeError, match='CmaFree'):

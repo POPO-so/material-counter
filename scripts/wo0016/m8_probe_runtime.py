@@ -15,12 +15,15 @@ import threading
 import time
 from typing import Any, Mapping
 
+from m8_probe_profile import PROBE_CAPTURE_RING_DEPTH, PROBE_MAX_FRAMES
+
 SYSTEM_RESERVE_KIB = 122880
 RSS_PROXY_KIB = 144208
 CMA_PREFLIGHT_MIN_KIB = 36864
 CMA_RUNTIME_MIN_KIB = 32768
 METADATA_KIB_PER_FRAME = 128
 FRAME_PAIR_KIB = 150
+CAPTURE_RING_DEPTH = PROBE_CAPTURE_RING_DEPTH
 
 
 def _kib(values: Mapping[str, Any], key: str) -> int:
@@ -31,18 +34,21 @@ def _kib(values: Mapping[str, Any], key: str) -> int:
 
 
 def retained_admission(meminfo: Mapping[str, Any]) -> dict[str, Any]:
-    """Apply the unchanged conservative 100-frame model, before consumption."""
+    """Reserve the fixed capture pool plus the existing per-frame metadata budget."""
     available = _kib(meminfo, 'MemAvailable')
     cma = _kib(meminfo, 'CmaFree')
-    required = SYSTEM_RESERVE_KIB + RSS_PROXY_KIB + cma + 100 * (FRAME_PAIR_KIB + METADATA_KIB_PER_FRAME)
+    capture_pool_kib = CAPTURE_RING_DEPTH * FRAME_PAIR_KIB
+    required = (SYSTEM_RESERVE_KIB + RSS_PROXY_KIB + cma + capture_pool_kib
+                + PROBE_MAX_FRAMES * METADATA_KIB_PER_FRAME)
     if cma < CMA_PREFLIGHT_MIN_KIB:
         raise RuntimeError('diagnostic CmaFree is below 36864 KiB preflight minimum')
     if available < required:
         raise RuntimeError(f'diagnostic MemAvailable {available} KiB is below retained requirement {required} KiB')
     return {'status': 'PASS', 'mem_available_kib': available, 'cma_free_kib': cma,
             'required_kib': required, 'margin_kib': available - required,
-            'frames': 100, 'metadata_kib_per_frame': METADATA_KIB_PER_FRAME,
-            'scope': 'fresh diagnostic pre-consumption arithmetic; not project memory admission'}
+            'frames': PROBE_MAX_FRAMES, 'metadata_kib_per_frame': METADATA_KIB_PER_FRAME,
+            'ring_depth': CAPTURE_RING_DEPTH, 'capture_pool_kib': capture_pool_kib,
+            'scope': 'fresh diagnostic pre-consumption arithmetic; not board memory acceptance'}
 
 
 def read_meminfo(path: str | Path = '/proc/meminfo') -> dict[str, int]:
