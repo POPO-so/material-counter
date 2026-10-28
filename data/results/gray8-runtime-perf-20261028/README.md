@@ -34,3 +34,22 @@
 先重新读取 boot、运行进程、相机占用、位流身份和 DMA 状态，核对独占权；不能沿用本次 boot 或因 idle 就视作另一会话已结束。按相同光照/物料/阈值/profile，在独立目录依次测 `full+driver`、`runtime+driver`、`runtime+cooperative`，先 3 帧 full self-test，再短测，成功后重复长测。仅在独占确认及必要时恢复匹配 Gray8 位流，不自动覆盖另一会话。
 
 记录总墙钟、process CPU、各阶段 wall/thread CPU、帧源/槽位等待和缺帧情况；同帧统计和计数结果应一致。预览另做无客户端、仅主图、主图+二值图三种对照。RLE 全分辨率/特征协议沿用独立实现与验收，不把其结果归入现有 Gray8 优化收益。无人工真值不宣称物料准确率通过。
+
+## 第二轮：补齐调度、内存与粘连开销
+
+用户继续要求直接优化全部项，本轮没有再次访问板卡或改变等待 RLE 会话释放板卡的安排。
+
+| 优化类 | 本轮落地与验证 |
+| --- | --- |
+| 采集/处理解耦 | 原专用相机线程、预取和双 DMA 槽继续使用。新增 `--check-execution worker`（默认），将 Gray8 完成校验移出事件循环；保留 `inline` 对照。集成测试在第 1 帧校验仍阻塞时确认第 0 帧消费者可完成，但第 1 帧不能提前计数。取消必须等校验 worker 不再访问缓冲区后才传播，不因 offload 提前 free。 |
+| 重复扫描/分配 | 每个 MaskCounter 复用 Binary8 ROI validator 的 uint8 工作区，替代 `(roi!=0)&(roi!=255)` 临时布尔数组；0/255 严格语义、只读/非连续输入不变。同步网页、桌面部署模块清单，防止部署后缺依赖。full/runtime 验证与按订阅编码预览沿用第一轮。 |
+| DMA 等待 | 沿用已实现的 cooperative 非忙等候选，与 runtime+worker 可在同一入口组合；driver 默认保留用于板测对照，未凭本机测试改成默认。 |
+| RLE 与复杂候选 | 另一会话提交 `3334a84` 提供 RLE 候选链，本会话未重复修改其 RTL 或入口。已有原生游程/局部候选/离线计数测试再次运行：`rle-software-integration.txt` 为 20 passed。共享粘连 helper 去掉只为了得到连通域数量而计算的 stats/centroids 和预先空掩膜扫描，保持 8 连通、非零视前景及拆分判据。 |
+
+软件回归 `software-second-wave-full.txt`：**317 passed、1 failed，30.97 s**，覆盖 Gray8、双槽、相机/预览、网页部署和桌面控制。失败仍为此前精确纯白文字像素断言。`software-second-wave.txt` 是首次命令误写了不存在的 `test_controller.py` 的选择错误（no tests ran），不计作测试通过；随后改用真实存在的 `test_client.py` 运行完整范围。
+
+最终审查另补上新 `binary_stats.py` 在 `formal_runtime_sha256()` 中的依赖身份绑定，先确认新断言失败再修复；运行入口全文件 **74 passed**，见 `runtime-identity-regression.txt`。另一会话在 RLE 增加原尺寸参数后，针对当前源码复跑原生区域、counter、entrypoint 三文件为 **22 passed**（`rle-software-integration-current.txt`）；前述 20 项日志保留作为较早版本的检查记录。
+
+本机微基准：`benchmark_helpers.py` 可重放；`helper-benchmark.json` 保存交替旧/新顺序、7 批原始数据和环境。Binary8 校验各尺寸/场景的局部加速比约 **0.95–1.24×**（小 ROI 噪声场景约慢 6%，绝对差约 0.3 µs；减少临时分配不代表所有小图都更快）；录制局部候选连通性检查约 **1.66×**。初次逐调用计时 `binary-validation-benchmark.csv` 也原样保留，其中一个样本有更大波动；没有选择性删除慢样本。以上均为 Windows 微基准，不代表 ARM CPU、整帧、粘连工况或板端 FPS。
+
+第二轮 source hashes 单独记录在 `second-wave-source-sha256.json`，不覆盖第一轮哈希。板卡释放后的对照增加 `full+driver+inline`、`runtime+driver+inline`、`runtime+driver+worker`、`runtime+cooperative+worker`，区分验证开销、调度交叠和 DMA 策略；RLE 使用其独立链路的原分辨率配置，不能直接混算不同分辨率/算法的加速比。

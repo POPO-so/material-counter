@@ -1,0 +1,16 @@
+{
+  "scripts/gray8/hardware_checks.py": "b95425d64413b2e6dab70a001e91299da69fbcf38abe3f18dc1caf7604d211f4",
+  "scripts/gray8/run_gray8_counter.py": "35d7805fe8405d6c6d509987da4a2c22474aa19db4bca72281f9b00417daa821",
+  "scripts/gray8/dma_polling.py": "a26c53bed5d4d6ec00fbb72310adc06b4cbdc221a358e91aefdc67afe6a458fb",
+  "scripts/wo0016/binary_stats.py": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+  "scripts/wo0016/stream_counter.py": "90bf52c79eca1c43dc6f089c3338337cb27d8bc2299fa74b2deb9761d103a12f",
+  "scripts/wo0016/run_stream_counter.py": "4be93481407d9602d25341c895e7f810016a7be5ffdec5482f00ad9129c71c22",
+  "scripts/wo0016/split_touching.py": "b34ce5e74b689a863ed8d9175fa60f0ac22f5133638b6056e567912385d37412",
+  "scripts/wo0016/mjpeg_preview.py": "e112aa0fb9c7ee89b8b63fe2f233aea8b7cd8672a11708c57b8d7bc2f07ca21d",
+  "scripts/desktop_gui/controller.py": "fd76d783a4d84602187b4b64fba35db0a0a4ee3463b5ed3d7df647b6380f3a9c",
+  "Python脚本/启动网页.pyw": "9c92df48b07edc09c9f6d0743dd858b156bac070af9e76e34529c6384c083a94",
+  "scripts/rle/components.py": "7c46fe9e1ed92b0a92b69614a6e6a0b9abf839fa0eb773d0e7fbdb1b5aa8a79a",
+  "scripts/rle/native/rle_components.cpp": "f4fee53d199578c8d0db78094cfe9e081f9cbe3ad5fd6724e721c050e7ee73c7",
+  "scripts/rle/counter.py": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+  "scripts/rle/run_counter.py": "1384bc9e26888948b41d89fae4a624357ab3a5ff5635bd9a71a31c7f7118175c"
+}
