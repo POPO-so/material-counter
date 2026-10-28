@@ -1,0 +1,56 @@
+{
+  "accepted_frames": 5,
+  "bytes_written": 774750,
+  "capacity": {
+    "expected_bytes": 1589248,
+    "free_bytes_at_preflight": 271060828160,
+    "max_bytes": 2000000,
+    "path": "C:\\Users\\14173\\Documents\\material-counter\\data\\results\\rle-20261028-validation\\stream-counter-after-rle-import\\test_capture_mode_preserves_gr0\\capture"
+  },
+  "captured_frames": 5,
+  "completed_utc": "2026-10-28T15:37:20.451175+00:00",
+  "config": {
+    "line_y": 120,
+    "min_area": 12
+  },
+  "created_utc": "2026-10-28T15:37:20.397647+00:00",
+  "dropped_frames": 0,
+  "error": null,
+  "estimated_total_bytes": 1589248,
+  "expected_frames": 5,
+  "frame_records_sha256": "3e3b8b0a7b735fe1e4ba687a4f0de6943b4f3bc84451e36ed8d53758ab65df5d",
+  "frame_shape": [
+    240,
+    320
+  ],
+  "gray_dtype": "uint8",
+  "gray_encoding": "unmodified FPGA input Gray8; uncompressed NPY",
+  "mask_dtype": "uint8",
+  "mask_encoding": "raw Binary8 values 0x00/0xFF; uncompressed NPY",
+  "max_bytes": 2000000,
+  "metadata": {},
+  "missing_frames": 0,
+  "raw_frame_archive": {
+    "captured_frames": 5,
+    "dtype": "uint8",
+    "filename": "frames_gray8_binary8.npz",
+    "raw_binary8_sha256": "75beb1fa4cfb54e64cd46bcb5c5b87994dc8908abb79ab4be6fbf52d37c681d3",
+    "raw_gray8_sha256": "e87bf9ad39adf26c9cb8f329d36b3317f34cb8dad12ae16d55eb0299814a000d",
+    "sha256": "8f5d06432da94a9c8f8dfbba08e9007546baac4999e250d7b780d3eaab7e3c00",
+    "sha256_sidecar": "frames_gray8_binary8.npz.sha256",
+    "shape": [
+      5,
+      240,
+      320
+    ],
+    "size_bytes": 769920
+  },
+  "schema_version": 1,
+  "source_frame_archive": null,
+  "source_frame_ids": [],
+  "source_type": "camera_capture",
+  "status": "COMPLETE",
+  "submitted_frames": 5,
+  "write_mode": "streaming_queue",
+  "writer_active": false
+}

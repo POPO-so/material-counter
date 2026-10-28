@@ -1,0 +1,17 @@
+{
+  "status": "OFFLINE_ARTIFACTS_VALID",
+  "protocol": "GRAY8_PACKET_V1",
+  "manifest_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "mode": "offline",
+  "tx_bytes": 76832,
+  "rx_bytes": 76800,
+  "count_accuracy": "NOT_MEASURED",
+  "validation": "runtime",
+  "dma_wait": "driver",
+  "check_execution": "worker",
+  "verify_pixels": false,
+  "pixel_verified_frames": 0,
+  "output_checksum_frames": 0,
+  "frames_requested": 30,
+  "timing_scope": "Offline artifact validation only; no frames were transferred"
+}

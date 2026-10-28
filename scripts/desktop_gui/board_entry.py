@@ -1,4 +1,4 @@
-"""Start the desktop camera service with the existing Gray8 deployment checks."""
+"""Start the desktop camera service with pinned Gray8 or RLE deployment checks."""
 from __future__ import annotations
 
 import argparse
@@ -11,6 +11,10 @@ import subprocess
 import sys
 import time
 import traceback
+
+
+class SelfTestOwnershipUncertain(RuntimeError):
+    """The self-test child still owns a possibly active hardware transaction."""
 
 
 def digest(path):
@@ -28,20 +32,46 @@ def check_artifacts(config):
 def self_test(config, session_dir, boot):
     root = Path(config["runtime_root"])
     sys.path.insert(0, str(root / "scripts/wo0015"))
+    sys.path.insert(0, str(session_dir / "scripts/wo0015"))
     import board_preflight as preflight
     preflight.audit_process_ownership()
     state = preflight.inspect_pynq_global_state(config["pynq_init"], require_empty_shutdown=True)
     load = state["pl_state_status"] == "COLD_BOOT_NO_GLOBAL_STATE"
     if not load:
-        preflight.inspect_pynq_global_state(config["pynq_init"], require_empty_shutdown=True,
-            require_loaded_bit=True, expected_bit_path=root / config["bit"],
-            expected_bit_sha256=config["bit_sha256"])
+        try:
+            preflight.inspect_pynq_global_state(
+                config["pynq_init"],
+                require_empty_shutdown=True,
+                require_loaded_bit=True,
+                expected_bit_path=root / config["bit"],
+                expected_bit_sha256=config["bit_sha256"],
+            )
+        except preflight.PreflightError as exc:
+            if "loaded BIT path differs" not in str(exc):
+                raise
+            # A reviewed overlay switch is safe only after the global-state
+            # audit found no live PYNQ owner. run_counter performs the DMA
+            # idle/error check immediately before Overlay(download=True).
+            load = True
     output = session_dir / "self-test.json"
-    command = [config["python"], str(root / "scripts/gray8/run_gray8_counter.py"),
-               "--manifest", str(root / config["manifest"]), "--manifest-sha256",
-               config["manifest_sha256"], "--mode", "self-test", "--frames", "3",
-               "--execute", "--boot-id", boot, "--output", str(output)]
-    if load:
+    if config["protocol"] == "RLE_PACKET_V1":
+        command = [
+            config["python"], str(session_dir / "scripts/rle/run_counter.py"),
+            "--manifest", str(root / config["manifest"]), "--manifest-sha256",
+            config["manifest_sha256"], "--mode", "self-test", "--frames", "3",
+            "--execute", "--boot-id", boot, "--output", str(output),
+        ]
+    else:
+        command = [
+            config["python"], str(root / "scripts/gray8/run_gray8_counter.py"),
+            "--manifest", str(root / config["manifest"]), "--manifest-sha256",
+            config["manifest_sha256"], "--mode", "self-test", "--frames", "3",
+            "--execute", "--boot-id", boot, "--output", str(output),
+        ]
+    if load or config["protocol"] == "RLE_PACKET_V1":
+        # The RLE self-test establishes a fresh pipeline generation. A prior
+        # completed run can legitimately leave its frame-complete bit set, so
+        # reloading the same reviewed artifact is required to clear that state.
         command.append("--load-overlay")
     env = os.environ.copy()
     env["XILINX_XRT"] = "/usr"
@@ -51,12 +81,19 @@ def self_test(config, session_dir, boot):
         try:
             code = process.wait(timeout=90)
         except subprocess.TimeoutExpired as exc:
-            raise RuntimeError("FPGA 自检超时，保留进程与现场；请检查 self-test.log") from exc
+            raise SelfTestOwnershipUncertain(
+                "FPGA 自检超时，保留进程与现场；请检查 self-test.log") from exc
     if code != 0 or not output.is_file():
         raise RuntimeError("FPGA 自检失败；请检查 self-test.log")
     result = json.loads(output.read_text(encoding="utf-8"))
-    if not (result.get("status") == "GRAY8_PIXEL_VERIFIED" and result.get("boot_id") == boot
-            and result.get("frames") == 3 and result.get("pixel_verified_frames") == 3
+    expected_status = (
+        "RLE_BOARD_COMPLETED"
+        if config["protocol"] == "RLE_PACKET_V1"
+        else "GRAY8_PIXEL_VERIFIED"
+    )
+    if not (result.get("status") == expected_status
+            and result.get("boot_id") == boot and result.get("frames") == 3
+            and result.get("pixel_verified_frames") == 3
             and result.get("buffers_held") is False):
         raise RuntimeError("FPGA 自检结果不满足启动条件")
     if preflight.read_boot_id() != boot:
@@ -64,6 +101,13 @@ def self_test(config, session_dir, boot):
 
 
 def run(config, session_dir):
+    session_dir = Path(session_dir).resolve(strict=True)
+    os.environ["XILINX_XRT"] = "/usr"
+    if config["protocol"] == "RLE_PACKET_V1":
+        from rle_desktop_board import run_session
+
+        return run_session(config, session_dir)
+
     import fcntl
     import cv2
     import camera_only_preview as camera
@@ -74,7 +118,6 @@ def run(config, session_dir):
 
     if os.geteuid() != 0:
         raise RuntimeError("板端服务需要 root 启动以执行硬件准入")
-    session_dir = Path(session_dir).resolve(strict=True)
     boot = camera.live_boot_id()
     status_path = session_dir / "result.json"
     summary = {"session_id": config["session_id"], "boot_id": boot, "status": "STARTING",

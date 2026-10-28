@@ -1,0 +1,2 @@
+ATTEMPT:/reset_pl count=1/10 operation=create_configure
+INFO: [Ipptcl 7-1463] No Compatible Board Interface found. Board Tab not created in customize GUI

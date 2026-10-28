@@ -1,0 +1,98 @@
+{
+  "status": "OFFLINE_VERIFIED",
+  "mode": "offline",
+  "resolution": [
+    640,
+    400
+  ],
+  "frames": 2,
+  "pixel_verified_frames": 2,
+  "count_accuracy": "NOT_MEASURED",
+  "tx_bytes": 256032,
+  "rx_capacity": 67744,
+  "configuration": {
+    "roi": [
+      0,
+      20,
+      640,
+      380
+    ],
+    "threshold": 128,
+    "intensity_offset": 0,
+    "morph_mode": 0
+  },
+  "counter_configuration": {
+    "line_y": 200,
+    "roi_top": 20,
+    "roi_bottom": 380,
+    "min_area": 48,
+    "count_axis": "x",
+    "line_x": 320,
+    "guarded_merge": true,
+    "single_intact_area": 256,
+    "max_split_area": 2160,
+    "max_merge_area": 2160,
+    "max_area": 2160,
+    "component_cluster_gap": 0
+  },
+  "pattern": "moving",
+  "frames_evidence": [
+    {
+      "frame_id": 0,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.038300000596791506,
+      "transfer_parse_ms": 2.437400005874224,
+      "verification_ms": 0.8828999998513609,
+      "count_ms": 5.3407999948831275,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 140,
+          "y_max": 155,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 147.5
+        }
+      ],
+      "dma": null
+    },
+    {
+      "frame_id": 1,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 0,
+      "capture_ms": 0.01930000144056976,
+      "transfer_parse_ms": 2.253400001791306,
+      "verification_ms": 0.9095999994315207,
+      "count_ms": 0.4247999895596877,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 152,
+          "y_max": 167,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 159.5
+        }
+      ],
+      "dma": null
+    }
+  ],
+  "total_count": 0,
+  "invalid_frames": 0,
+  "elapsed_s": 0.012317800006712787,
+  "throughput_fps": 162.36665629496073,
+  "buffers_held": false
+}

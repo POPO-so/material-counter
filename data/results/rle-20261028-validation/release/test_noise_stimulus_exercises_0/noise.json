@@ -1,0 +1,54 @@
+{
+  "status": "OFFLINE_VERIFIED",
+  "mode": "offline",
+  "resolution": [
+    640,
+    400
+  ],
+  "frames": 1,
+  "pixel_verified_frames": 0,
+  "count_accuracy": "NOT_MEASURED",
+  "tx_bytes": 256032,
+  "rx_capacity": 67744,
+  "configuration": {
+    "roi": [
+      0,
+      0,
+      640,
+      400
+    ],
+    "threshold": 128,
+    "intensity_offset": 0,
+    "morph_mode": 0
+  },
+  "counter_configuration": {
+    "line_y": 200,
+    "roi_top": 0,
+    "roi_bottom": 400,
+    "min_area": 48
+  },
+  "pattern": "noise",
+  "frames_evidence": [
+    {
+      "frame_id": 0,
+      "runs": 16384,
+      "total_runs": 128000,
+      "total_fg": 128000,
+      "status": 1,
+      "rx_bytes": 67744,
+      "hw_timestamp": 0,
+      "capture_ms": 0.11530000483617187,
+      "transfer_parse_ms": 11.917099996935576,
+      "verification_ms": 0.00100000761449337,
+      "count_ms": 0.0041000021155923605,
+      "total_count": 0,
+      "detections": [],
+      "dma": null
+    }
+  ],
+  "total_count": 0,
+  "invalid_frames": 1,
+  "elapsed_s": 0.0120432000112487,
+  "throughput_fps": 83.03440938172336,
+  "buffers_held": false
+}

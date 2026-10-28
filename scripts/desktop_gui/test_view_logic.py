@@ -30,11 +30,17 @@ class ViewLogicTests(unittest.TestCase):
         self.assertEqual(roi_bounds({"roi": {"x_min": 5, "y_min": 6, "x_max": 25, "y_max": 26}}), (5, 6, 25, 26))
         self.assertEqual(roi_bounds({"roi": [5, 6, 25, 26]}), (5, 6, 25, 26))
         self.assertEqual(roi_bounds({"roi_top": 96, "roi_bottom": 144}), (0, 96, 320, 144))
+        self.assertEqual(roi_bounds({"width": 640, "height": 400, "roi_top": 100,
+                                     "roi_bottom": 300}), (0, 100, 640, 300))
         self.assertIsNone(roi_bounds({}))
 
     def test_centroid_supports_nested_detection_coordinates(self):
         self.assertEqual(DesktopWindow._center_from_item({"centroid_x": 36, "centroid_y": 50}), (36, 50))
         self.assertEqual(DesktopWindow._center_from_item({"detection": {"centroid_x": 0.5, "centroid_y": 0.5}}), (160, 120))
+        self.assertEqual(DesktopWindow._center_from_item(
+            {"centroid_x": 0.5, "centroid_y": 0.5}, 640, 400), (320, 200))
+        self.assertEqual(DesktopWindow._scale_box((0.25, 0.5, 0.75, 0.9), 640, 400),
+                         (160, 200, 480, 360))
 
     def test_count_axis_x_draws_a_vertical_line_at_line_x(self):
         class Draw:

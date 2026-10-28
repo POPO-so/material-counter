@@ -1,0 +1,4 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/14173/Documents/material-counter/fpga/experimental/rle/axis_rle_encoder.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_rle_encoder
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/14173/Documents/material-counter/fpga/sim/rle/tb_axis_rle_encoder.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_axis_rle_encoder

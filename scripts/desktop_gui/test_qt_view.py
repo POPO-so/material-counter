@@ -84,6 +84,20 @@ def test_controls_and_calibration_follow_backend_capabilities(application):
     window.deleteLater()
 
 
+def test_status_row_reports_only_states_this_session_can_change(application):
+    window = DesktopWindow(FakeController())
+    window.show_status({"connected": True, "telemetry": {"source": "software",
+        "phase": "running", "camera": "frames_received", "fpga": "disabled",
+        "dma": "disabled", "stale": False, "last_frame_age_seconds": 0,
+        "total_count": 4}, "capabilities": {}})
+    assert set(window.devices) == {"camera", "system"}
+    texts = [label.text() for label in window.devices.values()]
+    assert "相机：有图像" in texts
+    assert "系统：运行中" in texts
+    assert all("未启用" not in text for text in texts)
+    window.deleteLater()
+
+
 def test_start_is_available_while_disconnected(application):
     window = DesktopWindow(FakeController())
     window.show_status({"connected": False, "capabilities": {"start": True, "stop": True}})

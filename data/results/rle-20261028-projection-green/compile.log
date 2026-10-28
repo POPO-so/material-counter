@@ -1,0 +1,6 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/14173/Documents/material-counter/data/results/rle-20261028-projection-green/encoder-netlist.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_rle_encoder
+INFO: [VRFC 10-311] analyzing module glbl
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/14173/Documents/material-counter/fpga/sim/rle/tb_axis_rle_encoder.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_axis_rle_encoder
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/AMDDesignTools/2026.1/data/verilog/src/glbl.v" into library work

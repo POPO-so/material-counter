@@ -161,7 +161,10 @@ class DesktopWindow(QMainWindow):
         devices = QHBoxLayout()
         devices.setSpacing(20)
         self.devices = {}
-        for key, name in (("camera", "相机"), ("fpga", "FPGA"), ("dma", "DMA"), ("system", "系统")):
+        # This desktop session always counts on the PS software path, so the
+        # FPGA and DMA fields would be a constant "disabled" label that never
+        # reflects hardware health. Only the states this session can report are shown.
+        for key, name in (("camera", "相机"), ("system", "系统")):
             label = _label(f"{name}：未连接", "deviceStatus")
             label.setAccessibleName(name + "状态")
             self.devices[key] = label
@@ -426,9 +429,8 @@ class DesktopWindow(QMainWindow):
         connected = bool(data) and data.get("connected") is not False and data.get("online") is not False
         self.connection_label.setText("状态接口已连接" if connected else "状态接口未连接")
         phase = str(telemetry.get("phase", "unknown"))
-        for key, label in (("camera", "相机"), ("fpga", "FPGA"), ("dma", "DMA")):
-            state = str(telemetry.get(key, "unknown"))
-            self.devices[key].setText(f"{label}：{_STATE_LABELS.get(state, state)}")
+        camera_state = str(telemetry.get("camera", "unknown"))
+        self.devices["camera"].setText(f"相机：{_STATE_LABELS.get(camera_state, camera_state)}")
         shown = "stale" if phase == "running" and telemetry.get("stale") is True else phase
         self.devices["system"].setText("系统：" + _STATE_LABELS.get(shown, "状态未提供"))
         self.metric_values["phase"].setText(_STATE_LABELS.get(shown, "状态未提供"))
@@ -437,7 +439,7 @@ class DesktopWindow(QMainWindow):
         final = phase in ("complete", "stopped")
         if self._frame is None or self._paused:
             count = telemetry.get("total_count")
-            valid = telemetry.get("source") in ("software", "pl_dma") and (fresh or final)
+            valid = telemetry.get("source") in ("software", "pl_dma", "pl_rle") and (fresh or final)
             self.count_value.setText(str(count) if valid and isinstance(count, int) else _MISSING)
             regions = telemetry.get("detections")
             self.metric_values["detections"].setText(str(regions) if fresh and isinstance(regions, int) else _MISSING)
@@ -519,6 +521,13 @@ class DesktopWindow(QMainWindow):
             detail = _mapping(resource.get("detail"))
             fpga = _mapping(detail.get("fpga"))
             lines = ["FPGA 位流资源（静态；仅显示已核验数据）"]
+            if fpga.get("source"):
+                lines.append(f"数据来源：{fpga['source']}")
+            if fpga.get("protocol"):
+                lines.append(f"处理协议：{fpga['protocol']}")
+            resolution = fpga.get("resolution")
+            if isinstance(resolution, (tuple, list)) and len(resolution) == 2:
+                lines.append(f"处理尺寸：{resolution[0]} × {resolution[1]}")
             for key, label in (("lut", "LUT"), ("ff", "FF 寄存器"), ("bram", "BRAM Tile"),
                     ("dsp", "DSP"), ("lutram", "LUT 存储"), ("iob", "PL I/O"),
                     ("bufg", "BUFG 时钟"), ("mmcm", "MMCM"), ("pll", "PLL")):
@@ -527,6 +536,8 @@ class DesktopWindow(QMainWindow):
                     lines.append(f"{label}：{values[0]} / {values[1]} · {values[0] * 100 / values[1]:.2f}%")
                 else:
                     lines.append(f"{label}：未提供")
+            if fpga.get("timing"):
+                lines.append(f"时序：{fpga['timing']}")
             lines += [f"相机：{detail.get('camera', '未提供')}",
                       f"DMA：{detail.get('dma_status', '未提供')}",
                       "DDR 带宽、流水线负载与供电：未接入"]
@@ -544,15 +555,16 @@ class DesktopWindow(QMainWindow):
         self._render_debug()
 
     @staticmethod
-    def _scale_box(box):
+    def _scale_box(box, width=320, height=240):
         x1, y1, x2, y2 = box
         if all(-1 <= value <= 1 for value in box):
-            x1, x2, y1, y2 = x1 * 320, x2 * 320, y1 * 240, y2 * 240
-        return tuple(int(round(value)) for value in (max(0, min(319, x1)), max(0, min(239, y1)),
-                                                     max(0, min(319, x2)), max(0, min(239, y2))))
+            x1, x2, y1, y2 = x1 * width, x2 * width, y1 * height, y2 * height
+        return tuple(int(round(value)) for value in (
+            max(0, min(width - 1, x1)), max(0, min(height - 1, y1)),
+            max(0, min(width - 1, x2)), max(0, min(height - 1, y2))))
 
     @staticmethod
-    def _center_from_item(item):
+    def _center_from_item(item, width=320, height=240):
         item = _mapping(item)
         nested = _mapping(item.get("detection"))
         x = _number(item.get("centroid_x", item.get("cx", item.get("center_x", nested.get("centroid_x")))))
@@ -560,47 +572,49 @@ class DesktopWindow(QMainWindow):
         if x is None or y is None:
             return None
         if 0 <= x <= 1 and 0 <= y <= 1:
-            x, y = x * 320, y * 240
-        return int(max(0, min(319, x))), int(max(0, min(239, y)))
+            x, y = x * width, y * height
+        return int(max(0, min(width - 1, x))), int(max(0, min(height - 1, y)))
 
     @staticmethod
-    def _draw_config_line(draw, config):
+    def _draw_config_line(draw, config, width=320, height=240):
         if config.get("count_axis") == "x":
             x = _number(config.get("line_x"))
             if x is not None:
-                draw.line((int(x * 320 if 0 <= x <= 1 else x), 0,
-                           int(x * 320 if 0 <= x <= 1 else x), 239), fill="#ff4d4d", width=2)
+                x = int(x * width if 0 <= x <= 1 else x)
+                draw.line((x, 0, x, height - 1), fill="#ff4d4d", width=2)
             return
         line = config.get("count_line", config.get("counting_line"))
         if isinstance(line, (list, tuple)) and len(line) >= 4:
             coords = [_number(value) for value in line[:4]]
             if all(value is not None for value in coords):
                 if all(0 <= value <= 1 for value in coords):
-                    coords = [coords[0] * 320, coords[1] * 240, coords[2] * 320, coords[3] * 240]
+                    coords = [coords[0] * width, coords[1] * height,
+                              coords[2] * width, coords[3] * height]
                 draw.line(tuple(int(value) for value in coords), fill="#ff4d4d", width=2)
                 return
         y = _number(config.get("line_y", config.get("count_line_y")))
         if y is not None:
-            y = int(y * 240 if 0 <= y <= 1 else y)
-            draw.line((0, y, 319, y), fill="#ff4d4d", width=2)
+            y = int(y * height if 0 <= y <= 1 else y)
+            draw.line((0, y, width - 1, y), fill="#ff4d4d", width=2)
 
     def _annotate(self, base, result, config, tracks=True):
         image = base.copy()
         draw = ImageDraw.Draw(image)
-        self._draw_config_line(draw, config)
+        width, height = image.size
+        self._draw_config_line(draw, config, width, height)
         for key, color in (("detections", "#00e0ff"), ("tracks", "#ffcc00")):
             if key == "tracks" and not tracks:
                 continue
             for item in result.get(key, []) if isinstance(result.get(key), list) else ():
                 box = _box_from_item(item)
                 if box:
-                    bounds = self._scale_box(box)
+                    bounds = self._scale_box(box, width, height)
                     draw.rectangle(bounds, outline=color, width=2)
                     track_id = _mapping(item).get("track_id")
                     if track_id is not None:
                         draw.text((bounds[0] + 2, max(0, bounds[1] - 13)), str(track_id), fill=color)
                 else:
-                    center = self._center_from_item(item)
+                    center = self._center_from_item(item, width, height)
                     if center:
                         x, y = center
                         draw.ellipse((x - 4, y - 4, x + 4, y + 4), outline=color, width=2)
@@ -608,8 +622,10 @@ class DesktopWindow(QMainWindow):
 
     def _images(self):
         gray, mask = self._frame["gray"], self._frame["mask"]
-        if not isinstance(gray, np.ndarray) or not isinstance(mask, np.ndarray) or gray.dtype != np.uint8 or mask.dtype != np.uint8 or gray.shape != (240, 320) or mask.shape != (240, 320):
-            raise ValueError("帧尺寸应为 320×240 的灰度图和二值图")
+        if (not isinstance(gray, np.ndarray) or not isinstance(mask, np.ndarray)
+                or gray.ndim != 2 or mask.ndim != 2 or gray.dtype != np.uint8
+                or mask.dtype != np.uint8 or gray.shape != mask.shape):
+            raise ValueError("帧应包含尺寸一致的二维 uint8 灰度图和二值图")
         return Image.fromarray(gray).convert("RGB"), Image.fromarray(mask).convert("RGB")
 
     def _render_frame(self):
@@ -642,9 +658,11 @@ class DesktopWindow(QMainWindow):
             roi_image = None
             if region is not None:
                 x1, y1, x2, y2 = (int(v) for v in region)
-                roi_array = np.zeros((240, 320), np.uint8)
                 source = np.asarray(mask.convert("L"))
-                roi_array[max(0,y1):min(240,y2), max(0,x1):min(320,x2)] = source[max(0,y1):min(240,y2), max(0,x1):min(320,x2)]
+                height, width = source.shape
+                roi_array = np.zeros((height, width), np.uint8)
+                roi_array[max(0, y1):min(height, y2), max(0, x1):min(width, x2)] = (
+                    source[max(0, y1):min(height, y2), max(0, x1):min(width, x2)])
                 roi_image = Image.fromarray(roi_array).convert("RGB")
             areas = self._annotate(gray, result, config, tracks=False) if isinstance(result.get("detections"), list) else None
             tracked = self._annotate(gray, result, config) if isinstance(result.get("tracks"), list) else None

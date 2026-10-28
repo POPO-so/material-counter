@@ -1,0 +1,1732 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 28 21:37:28 2026
+# Process ID         : 41232
+# Current directory  : C:/Users/14173/Documents/material-counter
+# Command line       : vivado.exe -mode batch -source scripts/rle/build.tcl -log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log -journal C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.jou
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log
+# Journal file       : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 5822 MB
+#-----------------------------------------------------------
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source scripts/rle/build.tcl
+# set repo [file normalize [file join [file dirname [info script]] ../..]]
+# if {![info exists ::env(RLE_OUT)]} {error "Set RLE_OUT to a fresh gray8-rle-* result directory"}
+# set gray8_output [file normalize $::env(RLE_OUT)]
+# set gate_file [file join $gray8_output xsim-gate.txt]
+# if {![file isfile $gate_file]} {error "RLE_XSIM_GATE_MISSING"}
+# set fd [open $gate_file]
+# set gate [string trim [read $fd]]
+# close $fd
+# if {$gate ne "RLE_XSIM_ALL_PASS cases=7"} {error "RLE_XSIM_GATE_INVALID"}
+# set gray8_repo $repo
+# set gray8_profile rle
+# set gray8_board_repo C:/FPGA/vivado_board_repos
+# set helper [file normalize [file join $::env(USERPROFILE) .codex skills vivado-ip-configurator lib ipcfg.tcl]]
+# source -notrace $helper
+LIBRARY:OK ipcfg
+# if {![info exists ::env(RLE_NATIVE_LOG)]} {error "Set RLE_NATIVE_LOG to the batch -log path"}
+# set ::ipcfg::native_log_path [file normalize $::env(RLE_NATIVE_LOG)]
+# puts [ipcfg::python_status]
+PYTHON:OK source=vivado version=3.13.0 executable=C:/AMDDesignTools/2026.1/Vivado/tps/win64/python-3.13.0/python.exe
+# puts [ipcfg::python_exec -c {import argparse, hashlib, json, pathlib, xml.etree.ElementTree; print("PYTHON_IMPORTS:OK")}]
+PYTHON_IMPORTS:OK
+# source [file join $repo scripts gray8 create_bd.tcl]
+## set gray8_script_dir [file dirname [file normalize [info script]]]
+## if {![info exists gray8_repo]} {
+##     set gray8_repo [file normalize [file join $gray8_script_dir ../..]]
+## }
+## set gray8_repo [file normalize $gray8_repo]
+## set gray8_result_root [file normalize [file join $gray8_repo data results]]
+## if {![info exists gray8_output]} {
+##     if {[info exists ::env(GRAY8_OUT)]} {
+##         set gray8_output [file normalize $::env(GRAY8_OUT)]
+##     } else {
+##         set gray8_output [file join $gray8_result_root gray8-dma-[clock format [clock seconds] -format %Y%m%d-%H%M%S]]
+##     }
+## }
+## set gray8_output [file normalize $gray8_output]
+## if {[string first "${gray8_result_root}/" $gray8_output] != 0 || ![string match {gray8-*} [file tail $gray8_output]]} {
+##     error "GRAY8_OUTPUT_MUST_BE_NEW_GRAY8_DIRECTORY_UNDER:$gray8_result_root"
+## }
+## if {![info exists gray8_clock_mhz]} {set gray8_clock_mhz 50}
+## if {$gray8_clock_mhz != 50} {error "GRAY8_FIXED_CLOCK_MHZ:50"}
+## set gray8_project_name gray8_50m
+## set gray8_bd_name gray8
+## set gray8_project_dir [file join $gray8_output project]
+## set gray8_project_file [file join $gray8_project_dir ${gray8_project_name}.xpr]
+## if {[llength [get_projects -quiet]]} {
+##     error "Use a fresh Vivado session with no open project"
+## }
+## if {[file exists $gray8_project_file]} {
+##     error "GRAY8 project already exists; use a fresh output directory: $gray8_project_file"
+## }
+## foreach relative_dir {project reports export ipcfg_evidence rtl} {
+##     set path [file join $gray8_output $relative_dir]
+##     if {[file exists $path] && [llength [glob -nocomplain -directory $path *]]} {
+##         error "GRAY8 output subdirectory is not empty: $path"
+##     }
+##     file mkdir $path
+## }
+## if {![llength [info commands ipcfg::capture]]} {
+##     if {[info exists gray8_ipcfg_path]} {
+##         set gray8_helper $gray8_ipcfg_path
+##     } elseif {[info exists ::env(GRAY8_IPCFG_PATH)]} {
+##         set gray8_helper $::env(GRAY8_IPCFG_PATH)
+##     } else {
+##         set gray8_helper [file normalize [file join $::env(USERPROFILE) .codex skills vivado-ip-configurator lib ipcfg.tcl]]
+##     }
+##     if {![file isfile $gray8_helper]} {error "IPCFG_HELPER_MISSING:$gray8_helper"}
+##     source -notrace [file normalize $gray8_helper]
+## }
+## if {![info exists ::ipcfg::native_log_path] || $::ipcfg::native_log_path eq ""} {
+##     error "Bind the active Vivado session's exact native log path before sourcing this script"
+## }
+## proc gray8_capture {label command {expected {}}} {
+##     global gray8_output
+##     set path [file join $gray8_output ipcfg_evidence "$label.[pid].[clock clicks].tcldict"]
+##     set receipt [ipcfg::capture $path $command $expected]
+##     puts $receipt
+##     if {[dict get $receipt status] ne "OK"} {
+##         error "GRAY8_STAGE_FAIL:$label:$path"
+##     }
+##     return $receipt
+## }
+## proc gray8_check_axi_interface {name width protocol} {
+##     set pins [get_bd_intf_pins -quiet $name]
+##     if {[llength $pins] != 1} {error "GRAY8_INTERFACE_MISSING:$name"}
+##     set actual_width [string trim [get_property CONFIG.DATA_WIDTH $pins]]
+##     set actual_protocol [string trim [get_property CONFIG.PROTOCOL $pins]]
+##     if {$actual_width ne "$width" || $actual_protocol ne $protocol} {
+##         error "GRAY8_INTERFACE_MISMATCH:$name width=$actual_width/$width protocol=$actual_protocol/$protocol"
+##     }
+##     return [dict create data_width $actual_width protocol $actual_protocol]
+## }
+## proc gray8_check_axis_interface {name bytes} {
+##     set pins [get_bd_intf_pins -quiet $name]
+##     if {[llength $pins] != 1} {error "GRAY8_INTERFACE_MISSING:$name"}
+##     set readback [dict create]
+##     foreach {property wanted} [list \
+##         CONFIG.TDATA_NUM_BYTES $bytes \
+##         CONFIG.HAS_TKEEP 1 \
+##         CONFIG.HAS_TLAST 1 \
+##         CONFIG.HAS_TREADY 1] {
+##         set actual [string trim [get_property $property $pins]]
+##         if {$actual ne "$wanted"} {error "GRAY8_AXIS_INTERFACE_MISMATCH:$name $property=$actual expected=$wanted"}
+##         dict set readback $property $actual
+##     }
+##     return $readback
+## }
+## set gray8_board_paths_before [get_param board.repoPaths]
+## set gray8_board_paths_changed 0
+## if {![llength [get_board_parts tul.com.tw:pynq-z2:part0:1.0]]} {
+##     if {![info exists gray8_board_repo] || $gray8_board_repo eq ""} {
+##         error "PYNQ-Z2 board preset unavailable; set gray8_board_repo before sourcing"
+##     }
+##     set board_paths [get_param board.repoPaths]
+##     set gray8_board_repo [file normalize $gray8_board_repo]
+##     if {[lsearch -exact $board_paths $gray8_board_repo] < 0} {
+##         lappend board_paths $gray8_board_repo
+##         set_param board.repoPaths $board_paths
+##         set gray8_board_paths_changed 1
+##     }
+## }
+get_board_parts: Time (s): cpu = 00:00:11 ; elapsed = 00:00:06 . Memory (MB): peak = 559.664 ; gain = 243.629
+## if {![llength [get_board_parts tul.com.tw:pynq-z2:part0:1.0]]} {
+##     error "PYNQ-Z2 board preset still unavailable after repository lookup"
+## }
+## try {
+##     create_project $gray8_project_name $gray8_project_dir -part xc7z020clg400-1
+##     set_property board_part tul.com.tw:pynq-z2:part0:1.0 [current_project]
+##     set_property target_language Verilog [current_project]
+## } finally {
+##     if {$gray8_board_paths_changed} {set_param board.repoPaths $gray8_board_paths_before}
+## }
+INFO: [ProjectBase 1-489] The host OS only allows 260 characters in a normal path. The project is stored in a path with more than 80 characters. If you experience issues with IP, Block Designs, or files not being found, please consider moving the project to a location with a shorter path. Alternately consider using the OS subst command to map part of the path to a drive letter.
+Current project path is 'C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project'
+create_project: Time (s): cpu = 00:00:01 ; elapsed = 00:00:07 . Memory (MB): peak = 584.531 ; gain = 24.867
+## if {![info exists gray8_profile]} {set gray8_profile binary8}
+## if {$gray8_profile ni {binary8 rle}} {error "Unknown Gray8 build profile"}
+## set gray8_sources {
+##     fpga/rtl/axis_gray2binary.v
+##     fpga/experimental/wo0014/axis_binary_output_checker.v
+##     fpga/experimental/wo0015/axis_s2mm_frame_packer.v
+##     fpga/experimental/gray8/axis_dma_gray_adapter.v
+##     fpga/experimental/gray8/axis_dma_gray_image_pipeline.v
+##     fpga/experimental/gray8/axis_dma_gray_s2mm_pipeline_bd.v
+## }
+## if {$gray8_profile eq "rle"} {
+##     set gray8_sources {
+##         fpga/experimental/gray8/axis_dma_gray_adapter.v
+##         fpga/rtl/axis_morphology3x3.v
+##         fpga/experimental/rle/axis_rle_encoder.v
+##         fpga/experimental/rle/axis_dma_rle_pipeline_bd.v
+##     }
+## }
+## foreach source $gray8_sources {
+##     set original [file join $gray8_repo $source]
+##     if {![file isfile $original]} {error "GRAY8_SOURCE_MISSING:$source"}
+##     set staged [file join $gray8_output rtl [file tail $source]]
+##     if {[file exists $staged]} {error "GRAY8_SOURCE_SNAPSHOT_EXISTS:$staged"}
+##     file copy $original $staged
+##     add_files -norecurse $staged
+## }
+## create_bd_design gray8
+Wrote  : <C:\Users\14173\Documents\material-counter\data\results\gray8-rle-20261028-build\project\gray8_50m.srcs\sources_1\bd\gray8\gray8.bd> 
+## gray8_capture ps_create [list ipcfg::create_cell xilinx.com:ip:processing_system7 ps7] {SUCCESS:created}
+ATTEMPT:/ps7 count=1/10 operation=create
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_create.41232.877074558558.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_create.41232.877074558558.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_create.41232.877074558558.tcldict.after.log native_counts_before {WARNING 0 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 0 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_create.41232.877074558558.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {10350 10391} unprinted_warning_count 0 expected SUCCESS:created elapsed_ms 2955 excerpt {}
+## gray8_capture ps_preset [list ipcfg::run_automation ps7 xilinx.com:bd_rule:processing_system7 \
+##     [dict create CONFIG [dict create apply_board_preset 1 make_external {FIXED_IO, DDR}]]] {AUTOMATION:OK}
+ATTEMPT:/ps7 count=2/10 operation=automation
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_preset.41232.877104254383.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_preset.41232.877104254383.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_preset.41232.877104254383.tcldict.after.log native_counts_before {WARNING 0 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_preset.41232.877104254383.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {11611 11656} unprinted_warning_count 8 expected AUTOMATION:OK elapsed_ms 675 excerpt {}
+## set ps_requirements [dict create \
+##     CONFIG.PCW_USE_M_AXI_GP0 1 \
+##     CONFIG.PCW_USE_S_AXI_HP0 1 CONFIG.PCW_S_AXI_HP0_DATA_WIDTH 64 \
+##     CONFIG.PCW_USE_S_AXI_HP1 1 CONFIG.PCW_S_AXI_HP1_DATA_WIDTH 32 \
+##     CONFIG.PCW_EN_CLK0_PORT 1 CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ 50]
+## gray8_capture ps_ports [list ipcfg::require ps7 $ps_requirements \
+##     {Gray8 keeps MM2S on 64-bit HP0 and enables the 32-bit HP1 S2MM path at 50 MHz} {} \
+##     {Gray8 approved S2MM memory width 32 and PS HP1 width 32; MM2S HP0 remains 64-bit}] {REQ:pinned+applied}
+ATTEMPT:/ps7 count=3/10 operation=configure
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_ports.41232.877111042024.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_ports.41232.877111042024.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_ports.41232.877111042024.tcldict.after.log native_counts_before {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/ps_ports.41232.877111042024.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {13227 13271} unprinted_warning_count 0 expected REQ:pinned+applied elapsed_ms 266 excerpt {}
+## gray8_capture dma_create [list ipcfg::create_cell xilinx.com:ip:axi_dma axi_dma_0] {SUCCESS:created}
+ATTEMPT:/axi_dma_0 count=1/10 operation=create
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/dma_create.41232.877113722784.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/dma_create.41232.877113722784.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/dma_create.41232.877113722784.tcldict.after.log native_counts_before {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/dma_create.41232.877113722784.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {14384 14431} unprinted_warning_count 0 expected SUCCESS:created elapsed_ms 257 excerpt {}
+## set dma_requirements [dict create \
+##     CONFIG.c_include_sg 0 CONFIG.c_include_mm2s 1 CONFIG.c_include_s2mm 1 \
+##     CONFIG.c_micro_dma 0 CONFIG.c_sg_length_width 18 CONFIG.c_addr_width 32 \
+##     CONFIG.c_m_axi_mm2s_data_width 64 CONFIG.c_m_axis_mm2s_tdata_width 32 \
+##     CONFIG.c_include_mm2s_dre 0 CONFIG.c_mm2s_burst_size 16 \
+##     CONFIG.c_m_axi_s2mm_data_width 32 CONFIG.c_s_axis_s2mm_tdata_width 32 \
+##     CONFIG.c_include_s2mm_dre 0 CONFIG.c_s2mm_burst_size 16]
+## gray8_capture dma_parameters [list ipcfg::require axi_dma_0 $dma_requirements \
+##     {Gray8 direct-register DMA: MM2S 64/32, S2MM 32/32, 18-bit length, 32-bit address, no SG/Micro/DRE}] {REQ:pinned+applied}
+ATTEMPT:/axi_dma_0 count=2/10 operation=configure
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/dma_parameters.41232.877116327524.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/dma_parameters.41232.877116327524.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/dma_parameters.41232.877116327524.tcldict.after.log native_counts_before {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/dma_parameters.41232.877116327524.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {16143 16193} unprinted_warning_count 0 expected REQ:pinned+applied elapsed_ms 71 excerpt {}
+## gray8_capture control_fabric_create [list ipcfg::create_cell_cfg xilinx.com:ip:smartconnect control_fabric \
+##     [dict create CONFIG.NUM_SI 1 CONFIG.NUM_MI 2 CONFIG.NUM_CLKS 1 CONFIG.HAS_ARESETN 1]] {SUCCESS:created+configured}
+ATTEMPT:/control_fabric count=1/10 operation=create_configure
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/control_fabric_create.41232.877117056582.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/control_fabric_create.41232.877117056582.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/control_fabric_create.41232.877117056582.tcldict.after.log native_counts_before {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/control_fabric_create.41232.877117056582.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {17459 17521} unprinted_warning_count 0 expected SUCCESS:created+configured elapsed_ms 436 excerpt {}
+## gray8_capture hp0_converter_create [list ipcfg::create_cell_cfg xilinx.com:ip:axi_protocol_converter hp0_protocol \
+##     [dict create CONFIG.SI_PROTOCOL AXI4 CONFIG.MI_PROTOCOL AXI3 CONFIG.DATA_WIDTH 64 CONFIG.TRANSLATION_MODE 2]] {SUCCESS:created+configured}
+ATTEMPT:/hp0_protocol count=1/10 operation=create_configure
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp0_converter_create.41232.877121474478.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp0_converter_create.41232.877121474478.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp0_converter_create.41232.877121474478.tcldict.after.log native_counts_before {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp0_converter_create.41232.877121474478.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {18855 18915} unprinted_warning_count 0 expected SUCCESS:created+configured elapsed_ms 304 excerpt {}
+## gray8_capture hp1_fabric_create [list ipcfg::create_cell xilinx.com:ip:axi_interconnect hp1_fabric] {SUCCESS:created}
+ATTEMPT:/hp1_fabric count=1/10 operation=create
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp1_fabric_create.41232.877124568321.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp1_fabric_create.41232.877124568321.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp1_fabric_create.41232.877124568321.tcldict.after.log native_counts_before {WARNING 8 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 19 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp1_fabric_create.41232.877124568321.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {20101 20149} unprinted_warning_count 11 expected SUCCESS:created elapsed_ms 1970 excerpt {}
+## set hp1_fabric_requirements [dict create CONFIG.NUM_SI 1 CONFIG.NUM_MI 1]
+## gray8_capture hp1_fabric_parameters [list ipcfg::require hp1_fabric $hp1_fabric_requirements \
+##     {One AXI Interconnect SI from S2MM and one MI to the PS HP1 port; endpoint connectivity derives AXI4-to-AXI3 conversion}] {REQ:pinned+applied}
+ATTEMPT:/hp1_fabric count=2/10 operation=configure
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp1_fabric_parameters.41232.877144337619.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp1_fabric_parameters.41232.877144337619.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp1_fabric_parameters.41232.877144337619.tcldict.after.log native_counts_before {WARNING 19 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 20 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/hp1_fabric_parameters.41232.877144337619.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {21519 21570} unprinted_warning_count 1 expected REQ:pinned+applied elapsed_ms 153 excerpt {}
+## gray8_capture reset_create [list ipcfg::create_cell_cfg xilinx.com:ip:proc_sys_reset reset_pl \
+##     [dict create CONFIG.C_EXT_RESET_HIGH 0 CONFIG.C_AUX_RESET_HIGH 1]] {SUCCESS:created+configured}
+ATTEMPT:/reset_pl count=1/10 operation=create_configure
+INFO: [Ipptcl 7-1463] No Compatible Board Interface found. Board Tab not created in customize GUI
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/reset_create.41232.877145887783.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/reset_create.41232.877145887783.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/reset_create.41232.877145887783.tcldict.after.log native_counts_before {WARNING 20 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 20 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/reset_create.41232.877145887783.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {22835 22989} unprinted_warning_count 0 expected SUCCESS:created+configured elapsed_ms 190 excerpt {}
+## gray8_capture high_create [list ipcfg::create_cell_cfg xilinx.com:ip:xlconstant constant_high \
+##     [dict create CONFIG.CONST_WIDTH 1 CONFIG.CONST_VAL 1]] {SUCCESS:created+configured}
+ATTEMPT:/constant_high count=1/10 operation=create_configure
+INFO: [BD 5-1043] It is recommended to use inline hdl version xilinx.com:inline_hdl:ilconstant:1.0 for the IP type xilinx.com:ip:xlconstant:1.1 for improved performance and reduced disk space. IPs with VLNV xilinx.com:ip:xlconstant:1.1 will not be supported from release 2025.2. More information on inline hdl IP is available in UG994 
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/high_create.41232.877147829644.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/high_create.41232.877147829644.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/high_create.41232.877147829644.tcldict.after.log native_counts_before {WARNING 20 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 20 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/high_create.41232.877147829644.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {24214 24611} unprinted_warning_count 0 expected SUCCESS:created+configured elapsed_ms 178 excerpt {}
+## gray8_capture low_create [list ipcfg::create_cell_cfg xilinx.com:ip:xlconstant constant_low \
+##     [dict create CONFIG.CONST_WIDTH 1 CONFIG.CONST_VAL 0]] {SUCCESS:created+configured}
+ATTEMPT:/constant_low count=1/10 operation=create_configure
+INFO: [BD 5-1043] It is recommended to use inline hdl version xilinx.com:inline_hdl:ilconstant:1.0 for the IP type xilinx.com:ip:xlconstant:1.1 for improved performance and reduced disk space. IPs with VLNV xilinx.com:ip:xlconstant:1.1 will not be supported from release 2025.2. More information on inline hdl IP is available in UG994 
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/low_create.41232.877149662104.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/low_create.41232.877149662104.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/low_create.41232.877149662104.tcldict.after.log native_counts_before {WARNING 20 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 20 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/low_create.41232.877149662104.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {25830 26226} unprinted_warning_count 0 expected SUCCESS:created+configured elapsed_ms 62 excerpt {}
+## if {$gray8_profile eq "rle"} {
+##     create_bd_cell -type module -reference axis_dma_rle_pipeline_bd image_pipeline
+##     gray8_capture image_parameters [list set_property -dict [list CONFIG.WIDTH 640 CONFIG.HEIGHT 400 CONFIG.MAX_RUNS 16384] [get_bd_cells image_pipeline]]
+## } else {
+## create_bd_cell -type module -reference axis_dma_gray_s2mm_pipeline_bd image_pipeline
+## gray8_capture image_parameters [list set_property -dict [list \
+##     CONFIG.WIDTH 320 CONFIG.HEIGHT 240 CONFIG.THRESHOLD 128] [get_bd_cells image_pipeline]]
+## 
+## }
+INFO: [IP_Flow 19-5107] Inferred bus interface 'aclk' of definition 'xilinx.com:signal:clock:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'aclk' of definition 'xilinx.com:signal:clock:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'aresetn' of definition 'xilinx.com:signal:reset:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'aresetn' of definition 'xilinx.com:signal:reset:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi' of definition 'xilinx.com:interface:aximm:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi' of definition 'xilinx.com:interface:aximm:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axis' of definition 'xilinx.com:interface:axis:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axis' of definition 'xilinx.com:interface:axis:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'm_axis' of definition 'xilinx.com:interface:axis:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'm_axis' of definition 'xilinx.com:interface:axis:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-4728] Bus Interface 'aclk': Added interface parameter 'ASSOCIATED_BUSIF' with value 's_axi'.
+INFO: [IP_Flow 19-4728] Bus Interface 'aclk': Added interface parameter 'ASSOCIATED_RESET' with value 'aresetn'.
+INFO: [IP_Flow 19-4728] Bus Interface 'aresetn': Added interface parameter 'POLARITY' with value 'ACTIVE_LOW'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi': Added interface parameter 'PROTOCOL' with value 'AXI4LITE'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi': Added interface parameter 'DATA_WIDTH' with value '32'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi': Added interface parameter 'ADDR_WIDTH' with value '32'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axis': Added interface parameter 'TDATA_NUM_BYTES' with value '4'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axis': Added interface parameter 'HAS_TKEEP' with value '1'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axis': Added interface parameter 'HAS_TLAST' with value '1'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axis': Added interface parameter 'HAS_TREADY' with value '1'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axis': Added interface parameter 'HAS_TSTRB' with value '0'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axis': Added interface parameter 'HAS_TUSER' with value '0'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axis': Added interface parameter 'HAS_TID' with value '0'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axis': Added interface parameter 'HAS_TDEST' with value '0'.
+INFO: [IP_Flow 19-4728] Bus Interface 'm_axis': Added interface parameter 'TDATA_NUM_BYTES' with value '4'.
+INFO: [IP_Flow 19-4728] Bus Interface 'm_axis': Added interface parameter 'HAS_TKEEP' with value '1'.
+INFO: [IP_Flow 19-4728] Bus Interface 'm_axis': Added interface parameter 'HAS_TLAST' with value '1'.
+INFO: [IP_Flow 19-4728] Bus Interface 'm_axis': Added interface parameter 'HAS_TREADY' with value '1'.
+INFO: [IP_Flow 19-4728] Bus Interface 'm_axis': Added interface parameter 'HAS_TSTRB' with value '0'.
+INFO: [IP_Flow 19-4728] Bus Interface 'm_axis': Added interface parameter 'HAS_TUSER' with value '0'.
+INFO: [IP_Flow 19-4728] Bus Interface 'm_axis': Added interface parameter 'HAS_TID' with value '0'.
+INFO: [IP_Flow 19-4728] Bus Interface 'm_axis': Added interface parameter 'HAS_TDEST' with value '0'.
+WARNING: [IP_Flow 19-11770] Clock interface 'aclk' has no FREQ_HZ parameter.
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/image_parameters.41232.877163805409.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/image_parameters.41232.877163805409.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/image_parameters.41232.877163805409.tcldict.after.log native_counts_before {WARNING 2 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 2 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/image_parameters.41232.877163805409.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {31608 31608} unprinted_warning_count 0 expected {} elapsed_ms 14 excerpt {}
+## connect_bd_intf_net [get_bd_intf_pins ps7/M_AXI_GP0] [get_bd_intf_pins control_fabric/S00_AXI]
+## connect_bd_intf_net [get_bd_intf_pins control_fabric/M00_AXI] [get_bd_intf_pins axi_dma_0/S_AXI_LITE]
+## connect_bd_intf_net [get_bd_intf_pins control_fabric/M01_AXI] [get_bd_intf_pins image_pipeline/s_axi]
+## connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXI_MM2S] [get_bd_intf_pins hp0_protocol/S_AXI]
+## connect_bd_intf_net [get_bd_intf_pins hp0_protocol/M_AXI] [get_bd_intf_pins ps7/S_AXI_HP0]
+## connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXI_S2MM] [get_bd_intf_pins hp1_fabric/S00_AXI]
+## connect_bd_intf_net [get_bd_intf_pins hp1_fabric/M00_AXI] [get_bd_intf_pins ps7/S_AXI_HP1]
+## connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins image_pipeline/s_axis]
+## connect_bd_intf_net [get_bd_intf_pins image_pipeline/m_axis] [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM]
+## connect_bd_net [get_bd_pins ps7/FCLK_CLK0] \
+##     [get_bd_pins ps7/M_AXI_GP0_ACLK] \
+##     [get_bd_pins ps7/S_AXI_HP0_ACLK] [get_bd_pins ps7/S_AXI_HP1_ACLK] \
+##     [get_bd_pins control_fabric/aclk] [get_bd_pins hp0_protocol/aclk] \
+##     [get_bd_pins hp1_fabric/ACLK] [get_bd_pins hp1_fabric/S00_ACLK] [get_bd_pins hp1_fabric/M00_ACLK] \
+##     [get_bd_pins axi_dma_0/s_axi_lite_aclk] \
+##     [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] \
+##     [get_bd_pins image_pipeline/aclk] [get_bd_pins reset_pl/slowest_sync_clk]
+## connect_bd_net [get_bd_pins ps7/FCLK_RESET0_N] [get_bd_pins reset_pl/ext_reset_in]
+## connect_bd_net [get_bd_pins constant_high/dout] [get_bd_pins reset_pl/dcm_locked]
+## connect_bd_net [get_bd_pins constant_low/dout] [get_bd_pins reset_pl/aux_reset_in] \
+##     [get_bd_pins reset_pl/mb_debug_sys_rst] \
+##     [get_bd_pins ps7/S_AXI_HP0_RDISSUECAP1_EN] [get_bd_pins ps7/S_AXI_HP0_WRISSUECAP1_EN] \
+##     [get_bd_pins ps7/S_AXI_HP1_RDISSUECAP1_EN] [get_bd_pins ps7/S_AXI_HP1_WRISSUECAP1_EN]
+WARNING: [BD 41-1306] The connection to interface pin </ps7/S_AXI_HP0_RDISSUECAP1_EN> is being overridden by the user with net <constant_low_dout>. This pin will not be connected as a part of interface connection <S_AXI_HP0_FIFO_CTRL>, and might not recreate the connectivity as expected using the writ_bd_tcl command.
+WARNING: [BD 41-1306] The connection to interface pin </ps7/S_AXI_HP0_WRISSUECAP1_EN> is being overridden by the user with net <constant_low_dout>. This pin will not be connected as a part of interface connection <S_AXI_HP0_FIFO_CTRL>, and might not recreate the connectivity as expected using the writ_bd_tcl command.
+WARNING: [BD 41-1306] The connection to interface pin </ps7/S_AXI_HP1_RDISSUECAP1_EN> is being overridden by the user with net <constant_low_dout>. This pin will not be connected as a part of interface connection <S_AXI_HP1_FIFO_CTRL>, and might not recreate the connectivity as expected using the writ_bd_tcl command.
+WARNING: [BD 41-1306] The connection to interface pin </ps7/S_AXI_HP1_WRISSUECAP1_EN> is being overridden by the user with net <constant_low_dout>. This pin will not be connected as a part of interface connection <S_AXI_HP1_FIFO_CTRL>, and might not recreate the connectivity as expected using the writ_bd_tcl command.
+## connect_bd_net [get_bd_pins reset_pl/interconnect_aresetn] [get_bd_pins control_fabric/aresetn]
+## connect_bd_net [get_bd_pins reset_pl/peripheral_aresetn] \
+##     [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins hp0_protocol/aresetn] \
+##     [get_bd_pins hp1_fabric/ARESETN] [get_bd_pins hp1_fabric/S00_ARESETN] [get_bd_pins hp1_fabric/M00_ARESETN] \
+##     [get_bd_pins image_pipeline/aresetn]
+## assign_bd_address -offset 0x40400000 -range 64K -target_address_space [get_bd_addr_spaces ps7/Data] \
+##     [get_bd_addr_segs axi_dma_0/S_AXI_LITE/Reg]
+Slave segment '/axi_dma_0/S_AXI_LITE/Reg' is being assigned into address space '/ps7/Data' at <0x4040_0000 [ 64K ]>.
+## set image_segments [get_bd_addr_segs image_pipeline/s_axi/*]
+## if {[llength $image_segments] != 1} {error "Expected one image-pipeline AXI-Lite segment"}
+## assign_bd_address -offset 0x43C20000 -range 64K -target_address_space [get_bd_addr_spaces ps7/Data] $image_segments
+Slave segment '/image_pipeline/s_axi/reg0' is being assigned into address space '/ps7/Data' at <0x43C2_0000 [ 64K ]>.
+## assign_bd_address -offset 0 -range 512M -target_address_space [get_bd_addr_spaces axi_dma_0/Data_MM2S] \
+##     [get_bd_addr_segs ps7/S_AXI_HP0/HP0_DDR_LOWOCM]
+Slave segment '/ps7/S_AXI_HP0/HP0_DDR_LOWOCM' is being assigned into address space '/axi_dma_0/Data_MM2S' at <0x0000_0000 [ 512M ]>.
+## assign_bd_address -offset 0 -range 512M -target_address_space [get_bd_addr_spaces axi_dma_0/Data_S2MM] \
+##     [get_bd_addr_segs ps7/S_AXI_HP1/HP1_DDR_LOWOCM]
+Slave segment '/ps7/S_AXI_HP1/HP1_DDR_LOWOCM' is being assigned into address space '/axi_dma_0/Data_S2MM' at <0x0000_0000 [ 512M ]>.
+## save_bd_design
+Wrote  : <C:\Users\14173\Documents\material-counter\data\results\gray8-rle-20261028-build\project\gray8_50m.srcs\sources_1\bd\gray8\gray8.bd> 
+## gray8_capture bd_validate [list validate_bd_design]
+INFO: [BD 5-943] Reserving offset range <0x4040_0000 [ 64K ]> from slave interface '/control_fabric/S00_AXI' to master interface '/control_fabric/M00_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x43C2_0000 [ 64K ]> from slave interface '/control_fabric/S00_AXI' to master interface '/control_fabric/M01_AXI'. This will be used by smartconnect on path for routing.
+INFO: [xilinx.com:ip:smartconnect:1.0-1] gray8_control_fabric_0: SmartConnect gray8_control_fabric_0 is in Ultralite mode.
+status OK code 0 warning_count 0 critical_count 0 error_count 0 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/bd_validate.41232.877171890997.tcldict before_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/bd_validate.41232.877171890997.tcldict.before.log log_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/bd_validate.41232.877171890997.tcldict.after.log native_counts_before {WARNING 6 {CRITICAL WARNING} 0 ERROR 0} native_counts_after {WARNING 17 {CRITICAL WARNING} 0 ERROR 0} native_log C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/ipcfg_evidence/bd_validate.41232.877171890997.tcldict.native.log native_log_source C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/build.log native_log_offsets {37754 38299} unprinted_warning_count 11 expected {} elapsed_ms 2531 excerpt {}
+## save_bd_design
+Wrote  : <C:\Users\14173\Documents\material-counter\data\results\gray8-rle-20261028-build\project\gray8_50m.srcs\sources_1\bd\gray8\gray8.bd> 
+## set audit [ipcfg::audit_requirements]
+## puts $audit
+REQ:OK 23/23
+## if {![string match {REQ:OK *} $audit]} {error "GRAY8_REQUIREMENT_AUDIT_FAILED:$audit"}
+## set interface_readback [dict create]
+## foreach {name width protocol} {
+##     axi_dma_0/M_AXI_MM2S 64 AXI4
+##     hp0_protocol/S_AXI 64 AXI4
+##     hp0_protocol/M_AXI 64 AXI3
+##     ps7/S_AXI_HP0 64 AXI3
+##     axi_dma_0/M_AXI_S2MM 32 AXI4
+##     hp1_fabric/s00_couplers/auto_pc/S_AXI 32 AXI4
+##     hp1_fabric/s00_couplers/auto_pc/M_AXI 32 AXI3
+##     ps7/S_AXI_HP1 32 AXI3
+## } {
+##     dict set interface_readback $name [gray8_check_axi_interface $name $width $protocol]
+## }
+## dict set interface_readback image_pipeline/m_axis [gray8_check_axis_interface image_pipeline/m_axis 4]
+## dict set interface_readback axi_dma_0/S_AXIS_S2MM [gray8_check_axis_interface axi_dma_0/S_AXIS_S2MM 4]
+## set readback [dict create clock_mhz 50 tx_packet_bytes 76832 rx_frame_bytes 76800 rx_beats 19200 \
+##     hp0_memory_width_bits 64 hp1_memory_width_bits 32 dma_params [dict create]]
+## if {$gray8_profile eq "rle"} {
+##     dict set readback protocol RLE_PACKET_V1
+##     dict set readback tx_packet_bytes 256032
+##     dict unset readback rx_frame_bytes
+##     dict unset readback rx_beats
+##     dict set readback rx_capacity_bytes 67744
+## }
+## foreach key {c_include_sg c_include_mm2s c_include_s2mm c_micro_dma c_sg_length_width c_addr_width \
+##              c_m_axi_mm2s_data_width c_m_axis_mm2s_tdata_width c_include_mm2s_dre c_mm2s_burst_size \
+##              c_m_axi_s2mm_data_width c_s_axis_s2mm_tdata_width c_include_s2mm_dre c_s2mm_burst_size} {
+##     dict set readback dma_params $key [get_property CONFIG.$key [get_bd_cells axi_dma_0]]
+## }
+## foreach key {PCW_USE_S_AXI_HP0 PCW_S_AXI_HP0_DATA_WIDTH PCW_USE_S_AXI_HP1 PCW_S_AXI_HP1_DATA_WIDTH PCW_FPGA0_PERIPHERAL_FREQMHZ} {
+##     dict set readback ps7_params $key [get_property CONFIG.$key [get_bd_cells ps7]]
+## }
+## dict set readback interfaces $interface_readback
+## if {[dict get $readback dma_params c_include_s2mm] != 1 ||
+##     [dict get $readback dma_params c_sg_length_width] != 18 ||
+##     [dict get $readback dma_params c_m_axi_s2mm_data_width] != 32 ||
+##     [dict get $readback dma_params c_s_axis_s2mm_tdata_width] != 32 ||
+##     [dict get $readback dma_params c_m_axi_mm2s_data_width] != 64 ||
+##     [dict get $readback dma_params c_m_axis_mm2s_tdata_width] != 32} {
+##     error "GRAY8_DMA_READBACK_MISMATCH"
+## }
+## puts [ipcfg::write_evidence [file join $gray8_output reports parameter-readback.tcldict] $readback]
+status RECORDED bytes 1257 evidence_path C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/reports/parameter-readback.tcldict
+## set gray8_coverage_ledger {
+##     {MM2S channel enabled} CONFIG.c_include_mm2s applied
+##     {S2MM channel enabled} CONFIG.c_include_s2mm applied
+##     {simple direct-register mode, SG disabled} CONFIG.c_include_sg applied
+##     {Micro DMA disabled} CONFIG.c_micro_dma applied
+##     {18-bit MM2S/S2MM buffer length register} CONFIG.c_sg_length_width applied
+##     {32-bit DMA address width} CONFIG.c_addr_width applied
+##     {MM2S memory width 64 bits and stream width 32 bits} CONFIG.c_m_axi_mm2s_data_width applied
+##     {S2MM memory width 32 bits and stream width 32 bits} CONFIG.c_m_axi_s2mm_data_width applied
+##     {S2MM DRE disabled} CONFIG.c_include_s2mm_dre applied
+##     {PS HP0 remains 64-bit for MM2S} CONFIG.PCW_S_AXI_HP0_DATA_WIDTH applied
+##     {PS HP1 is enabled at 32-bit for S2MM} CONFIG.PCW_S_AXI_HP1_DATA_WIDTH applied
+##     {HP1 AXI4 SI to AXI3 MI through 1x1 AXI Interconnect} hp1_fabric/S00_AXI->M00_AXI applied
+##     {FCLK_CLK0 is 50 MHz} CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ applied
+## }
+## set coverage [ipcfg::coverage_report $gray8_coverage_ledger]
+## puts $coverage
+COVERAGE:FULL
+Applied (exact):
+  - "MM2S channel enabled" (param: CONFIG.c_include_mm2s): applied
+  - "S2MM channel enabled" (param: CONFIG.c_include_s2mm): applied
+  - "simple direct-register mode, SG disabled" (param: CONFIG.c_include_sg): applied
+  - "Micro DMA disabled" (param: CONFIG.c_micro_dma): applied
+  - "18-bit MM2S/S2MM buffer length register" (param: CONFIG.c_sg_length_width): applied
+  - "32-bit DMA address width" (param: CONFIG.c_addr_width): applied
+  - "MM2S memory width 64 bits and stream width 32 bits" (param: CONFIG.c_m_axi_mm2s_data_width): applied
+  - "S2MM memory width 32 bits and stream width 32 bits" (param: CONFIG.c_m_axi_s2mm_data_width): applied
+  - "S2MM DRE disabled" (param: CONFIG.c_include_s2mm_dre): applied
+  - "PS HP0 remains 64-bit for MM2S" (param: CONFIG.PCW_S_AXI_HP0_DATA_WIDTH): applied
+  - "PS HP1 is enabled at 32-bit for S2MM" (param: CONFIG.PCW_S_AXI_HP1_DATA_WIDTH): applied
+  - "HP1 AXI4 SI to AXI3 MI through 1x1 AXI Interconnect" (param: hp1_fabric/S00_AXI->M00_AXI): applied
+  - "FCLK_CLK0 is 50 MHz" (param: CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ): applied
+## if {![string match {COVERAGE:FULL*} $coverage]} {error "GRAY8_REQUIREMENT_COVERAGE_FAILED:$coverage"}
+## set coverage_path [file join $gray8_output reports ip-requirement-coverage.txt]
+## set coverage_channel [open $coverage_path {WRONLY CREAT EXCL}]
+## puts $coverage_channel $coverage
+## close $coverage_channel
+## set gray8_bd_file [get_files -quiet */${gray8_bd_name}.bd]
+## if {[llength $gray8_bd_file] != 1} {error "Expected exactly one GRAY8 Block Design"}
+## generate_target all $gray8_bd_file
+INFO: [BD 41-1662] The design 'gray8.bd' is already validated. Therefore parameter propagation will not be re-run.
+Verilog Output written to : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v
+Verilog Output written to : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/sim/gray8.v
+Verilog Output written to : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/hdl/gray8_wrapper.v
+INFO: [IP_Flow 19-5611] Unable to find an associated reset port for the interface 'M_AXI_GP0'. A default connection has been created.
+INFO: [IP_Flow 19-5611] Unable to find an associated reset port for the interface 'S_AXI_HP0'. A default connection has been created.
+INFO: [IP_Flow 19-5611] Unable to find an associated reset port for the interface 'S_AXI_HP1'. A default connection has been created.
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps7 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block axi_dma_0 .
+Exporting to file c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/bd_0/hw_handoff/gray8_control_fabric_0.hwh
+Generated Hardware Definition File c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/bd_0/synth/gray8_control_fabric_0.hwdef
+INFO: [BD 41-1029] Generation completed for the IP Integrator block control_fabric .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_hp0_protocol_0/gray8_hp0_protocol_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block hp0_protocol .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block reset_pl .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block constant_high .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block constant_low .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block image_pipeline .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_hp1_fabric_imp_auto_pc_0/gray8_hp1_fabric_imp_auto_pc_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block hp1_fabric/s00_couplers/auto_pc .
+Exporting to file C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/hw_handoff/gray8.hwh
+Generated Hardware Definition File C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.hwdef
+INFO: [BD 41-3262] Generated VHDL Instantiation Template file c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/gray8.vho
+INFO: [BD 41-3262] Generated Verilog Instantiation Template file c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/gray8.veo
+INFO: [BD 41-3262] Generated System Verilog Instantiation Template file c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/gray8_sv.sveo
+generate_target: Time (s): cpu = 00:00:20 ; elapsed = 00:00:26 . Memory (MB): peak = 795.250 ; gain = 42.289
+## set wrapper [make_wrapper -files $gray8_bd_file -top]
+## add_files -norecurse $wrapper
+## set_property top ${gray8_bd_name}_wrapper [current_fileset]
+## update_compile_order -fileset sources_1
+## set recreate_path [file join $gray8_output export gray8_recreate.tcl]
+## write_bd_tcl -force $recreate_path
+WARNING: [BD 41-2925] The design that will be created by this Tcl script contains the following module references: axis_dma_rle_pipeline_bd.
+Please add the sources of those modules before sourcing this Tcl script or use write_project_tcl.
+INFO: [BD 5-148] Tcl file written out <C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/export/gray8_recreate.tcl>.
+
+## puts "GRAY8_BD_READY clock=50 project=$gray8_project_file bd=$gray8_bd_name wrapper=$wrapper build_started=false"
+GRAY8_BD_READY clock=50 project=C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.xpr bd=gray8 wrapper=c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/hdl/gray8_wrapper.v build_started=false
+# launch_runs synth_1 -jobs 2
+[Wed Oct 28 21:38:37 2026] Launched gray8_control_fabric_0_synth_1, gray8_ps7_0_synth_1, gray8_hp0_protocol_0_synth_1, gray8_axi_dma_0_0_synth_1, gray8_reset_pl_0_synth_1, gray8_image_pipeline_0_synth_1, gray8_hp1_fabric_imp_auto_pc_0_synth_1...
+Run output will be captured here:
+gray8_control_fabric_0_synth_1: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/gray8_control_fabric_0_synth_1/runme.log
+gray8_ps7_0_synth_1: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/gray8_ps7_0_synth_1/runme.log
+gray8_hp0_protocol_0_synth_1: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/gray8_hp0_protocol_0_synth_1/runme.log
+gray8_axi_dma_0_0_synth_1: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/gray8_axi_dma_0_0_synth_1/runme.log
+gray8_reset_pl_0_synth_1: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/gray8_reset_pl_0_synth_1/runme.log
+gray8_image_pipeline_0_synth_1: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/gray8_image_pipeline_0_synth_1/runme.log
+gray8_hp1_fabric_imp_auto_pc_0_synth_1: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/gray8_hp1_fabric_imp_auto_pc_0_synth_1/runme.log
+[Wed Oct 28 21:38:37 2026] Launched synth_1...
+Run output will be captured here: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/runme.log
+# wait_on_run synth_1
+[Wed Oct 28 21:38:37 2026] Waiting for synth_1 to finish...
+
+*** Running vivado
+    with args -log gray8_wrapper.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source gray8_wrapper.tcl
+
+
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 28 21:43:05 2026
+# Process ID         : 33512
+# Current directory  : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1
+# Command line       : vivado.exe -log gray8_wrapper.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source gray8_wrapper.tcl
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/gray8_wrapper.vds
+# Journal file       : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1\vivado.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 33293 MB
+# Total Virtual      : 50151 MB
+# Available Virtual  : 4996 MB
+#-----------------------------------------------------------
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Wed Oct 28 21:43:05 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source gray8_wrapper.tcl -notrace
+create_project: Time (s): cpu = 00:00:12 ; elapsed = 00:00:12 . Memory (MB): peak = 586.883 ; gain = 273.125
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2026.1/Vivado/data/ip'.
+INFO: [Project 1-5698] Found the below utility IPs instantiated in block design C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.srcs/sources_1/bd/gray8/gray8.bd which have equivalent inline hdl with improved performance and reduced diskspace.
+It is recommended to migrate these utility IPs to inline hdl  using the command upgrade_project -migrate_to_inline_hdl.  The utility IPs may be deprecated in future releases.
+More information on inline hdl is available in UG994.
+Utility IP Component Instances:
+ gray8_constant_high_0
+gray8_constant_low_0
+Command: synth_design -top gray8_wrapper -part xc7z020clg400-1
+Starting synth_design
+Attempting to get a license for feature 'Vivado_Synthesis' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Synthesis' and/or device 'xc7z020'
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+INFO: [Designutils 20-5008] Incremental synthesis strategy default
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 37208
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 1420.953 ; gain = 577.508
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'gray8_wrapper' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/hdl/gray8_wrapper.v:13]
+INFO: [Synth 8-6157] synthesizing module 'gray8' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:13]
+INFO: [Synth 8-6157] synthesizing module 'gray8_axi_dma_0_0' [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_axi_dma_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_axi_dma_0_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_axi_dma_0_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mm2s_prmry_reset_out_n' of module 'gray8_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:229]
+WARNING: [Synth 8-7071] port 's2mm_prmry_reset_out_n' of module 'gray8_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:229]
+WARNING: [Synth 8-7071] port 'mm2s_introut' of module 'gray8_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:229]
+WARNING: [Synth 8-7071] port 's2mm_introut' of module 'gray8_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:229]
+WARNING: [Synth 8-7071] port 'axi_dma_tstvec' of module 'gray8_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:229]
+WARNING: [Synth 8-7023] instance 'axi_dma_0' of module 'gray8_axi_dma_0_0' has 64 connections declared, but only 59 given [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:229]
+INFO: [Synth 8-6157] synthesizing module 'gray8_constant_high_0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_constant_high_0/synth/gray8_constant_high_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'xlconstant_v1_1_11_xlconstant' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'xlconstant_v1_1_11_xlconstant' (0#1) [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_constant_high_0' (0#1) [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_constant_high_0/synth/gray8_constant_high_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'gray8_constant_low_0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_constant_low_0/synth/gray8_constant_low_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'xlconstant_v1_1_11_xlconstant__parameterized0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'xlconstant_v1_1_11_xlconstant__parameterized0' (0#1) [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_constant_low_0' (0#1) [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_constant_low_0/synth/gray8_constant_low_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'gray8_control_fabric_0' [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_control_fabric_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_control_fabric_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_control_fabric_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'M00_AXI_awprot' of module 'gray8_control_fabric_0' is unconnected for instance 'control_fabric' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:293]
+WARNING: [Synth 8-7071] port 'M00_AXI_wstrb' of module 'gray8_control_fabric_0' is unconnected for instance 'control_fabric' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:293]
+WARNING: [Synth 8-7071] port 'M00_AXI_arprot' of module 'gray8_control_fabric_0' is unconnected for instance 'control_fabric' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:293]
+WARNING: [Synth 8-7071] port 'M01_AXI_awprot' of module 'gray8_control_fabric_0' is unconnected for instance 'control_fabric' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:293]
+WARNING: [Synth 8-7071] port 'M01_AXI_arprot' of module 'gray8_control_fabric_0' is unconnected for instance 'control_fabric' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:293]
+WARNING: [Synth 8-7023] instance 'control_fabric' of module 'gray8_control_fabric_0' has 78 connections declared, but only 73 given [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:293]
+INFO: [Synth 8-6157] synthesizing module 'gray8_hp0_protocol_0' [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_hp0_protocol_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_hp0_protocol_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_hp0_protocol_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'gray8_hp1_fabric_0' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:614]
+INFO: [Synth 8-6157] synthesizing module 's00_couplers_imp_1YH7X65' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:776]
+INFO: [Synth 8-6157] synthesizing module 'gray8_hp1_fabric_imp_auto_pc_0' [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_hp1_fabric_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_hp1_fabric_imp_auto_pc_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_hp1_fabric_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 's00_couplers_imp_1YH7X65' (0#1) [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:776]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_hp1_fabric_0' (0#1) [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:614]
+INFO: [Synth 8-6157] synthesizing module 'gray8_image_pipeline_0' [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_image_pipeline_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_image_pipeline_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_image_pipeline_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'gray8_ps7_0' [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_ps7_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_ps7_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_ps7_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_AWREADY' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BVALID' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WREADY' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BRESP' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BID' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RID' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RCOUNT' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WCOUNT' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RACOUNT' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WACOUNT' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_ARREADY' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RLAST' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RVALID' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RRESP' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_BID' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RID' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RDATA' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RCOUNT' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_WCOUNT' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RACOUNT' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_WACOUNT' of module 'gray8_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+WARNING: [Synth 8-7023] instance 'ps7' of module 'gray8_ps7_0' has 152 connections declared, but only 131 given [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:472]
+INFO: [Synth 8-6157] synthesizing module 'gray8_reset_pl_0' [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_reset_pl_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_reset_pl_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/.Xil/Vivado-33512-JiA/realtime/gray8_reset_pl_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mb_reset' of module 'gray8_reset_pl_0' is unconnected for instance 'reset_pl' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:604]
+WARNING: [Synth 8-7071] port 'bus_struct_reset' of module 'gray8_reset_pl_0' is unconnected for instance 'reset_pl' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:604]
+WARNING: [Synth 8-7071] port 'peripheral_reset' of module 'gray8_reset_pl_0' is unconnected for instance 'reset_pl' [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:604]
+WARNING: [Synth 8-7023] instance 'reset_pl' of module 'gray8_reset_pl_0' has 10 connections declared, but only 7 given [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:604]
+INFO: [Synth 8-6155] done synthesizing module 'gray8' (0#1) [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/synth/gray8.v:13]
+INFO: [Synth 8-6155] done synthesizing module 'gray8_wrapper' (0#1) [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/hdl/gray8_wrapper.v:13]
+WARNING: [Synth 8-7129] Port M_ACLK in module s00_couplers_imp_1YH7X65 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module s00_couplers_imp_1YH7X65 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ACLK in module gray8_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ARESETN in module gray8_hp1_fabric_0 is either unconnected or has no load
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 1551.047 ; gain = 707.602
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 1551.047 ; gain = 707.602
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 1551.047 ; gain = 707.602
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 1551.047 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_ps7_0/gray8_ps7_0/gray8_ps7_0_in_context.xdc] for cell 'gray8_i/ps7'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_ps7_0/gray8_ps7_0/gray8_ps7_0_in_context.xdc] for cell 'gray8_i/ps7'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_axi_dma_0_0/gray8_axi_dma_0_0/gray8_axi_dma_0_0_in_context.xdc] for cell 'gray8_i/axi_dma_0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_axi_dma_0_0/gray8_axi_dma_0_0/gray8_axi_dma_0_0_in_context.xdc] for cell 'gray8_i/axi_dma_0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/gray8_control_fabric_0/gray8_control_fabric_0_in_context.xdc] for cell 'gray8_i/control_fabric'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/gray8_control_fabric_0/gray8_control_fabric_0_in_context.xdc] for cell 'gray8_i/control_fabric'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_hp0_protocol_0/gray8_hp0_protocol_0/gray8_hp0_protocol_0_in_context.xdc] for cell 'gray8_i/hp0_protocol'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_hp0_protocol_0/gray8_hp0_protocol_0/gray8_hp0_protocol_0_in_context.xdc] for cell 'gray8_i/hp0_protocol'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_hp1_fabric_imp_auto_pc_0/gray8_hp1_fabric_imp_auto_pc_0/gray8_hp1_fabric_imp_auto_pc_0_in_context.xdc] for cell 'gray8_i/hp1_fabric/s00_couplers/auto_pc'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_hp1_fabric_imp_auto_pc_0/gray8_hp1_fabric_imp_auto_pc_0/gray8_hp1_fabric_imp_auto_pc_0_in_context.xdc] for cell 'gray8_i/hp1_fabric/s00_couplers/auto_pc'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_reset_pl_0/gray8_reset_pl_0/gray8_reset_pl_0_in_context.xdc] for cell 'gray8_i/reset_pl'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_reset_pl_0/gray8_reset_pl_0/gray8_reset_pl_0_in_context.xdc] for cell 'gray8_i/reset_pl'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_image_pipeline_0/gray8_image_pipeline_0/gray8_image_pipeline_0_in_context.xdc] for cell 'gray8_i/image_pipeline'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_image_pipeline_0/gray8_image_pipeline_0/gray8_image_pipeline_0_in_context.xdc] for cell 'gray8_i/image_pipeline'
+Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/dont_touch.xdc]
+Finished Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/dont_touch.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1551.047 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.026 . Memory (MB): peak = 1551.047 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:18 ; elapsed = 00:00:20 . Memory (MB): peak = 1551.047 ; gain = 707.602
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7z020clg400-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:18 ; elapsed = 00:00:20 . Memory (MB): peak = 1551.047 ; gain = 707.602
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 1551.047 ; gain = 707.602
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 1551.047 ; gain = 707.602
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 220 (col length:60)
+BRAMs: 280 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7129] Port ACLK in module gray8_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ARESETN in module gray8_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M00_ACLK in module gray8_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M00_ARESETN in module gray8_hp1_fabric_0 is either unconnected or has no load
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:21 ; elapsed = 00:00:23 . Memory (MB): peak = 1573.016 ; gain = 729.570
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:27 ; elapsed = 00:00:29 . Memory (MB): peak = 1748.234 ; gain = 904.789
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:27 ; elapsed = 00:00:29 . Memory (MB): peak = 1748.945 ; gain = 905.500
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:27 ; elapsed = 00:00:29 . Memory (MB): peak = 1759.047 ; gain = 915.602
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++------+-------------------------------+----------+
+|      |BlackBox name                  |Instances |
++------+-------------------------------+----------+
+|1     |gray8_axi_dma_0_0              |         1|
+|2     |gray8_control_fabric_0         |         1|
+|3     |gray8_hp0_protocol_0           |         1|
+|4     |gray8_hp1_fabric_imp_auto_pc_0 |         1|
+|5     |gray8_image_pipeline_0         |         1|
+|6     |gray8_ps7_0                    |         1|
+|7     |gray8_reset_pl_0               |         1|
++------+-------------------------------+----------+
+
+Report Cell Usage: 
++------+-----------------------------+------+
+|      |Cell                         |Count |
++------+-----------------------------+------+
+|1     |gray8_axi_dma_0              |     1|
+|2     |gray8_control_fabric         |     1|
+|3     |gray8_hp0_protocol           |     1|
+|4     |gray8_hp1_fabric_imp_auto_pc |     1|
+|5     |gray8_image_pipeline         |     1|
+|6     |gray8_ps7                    |     1|
+|7     |gray8_reset_pl               |     1|
++------+-----------------------------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 4 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:21 ; elapsed = 00:00:31 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+Synthesis Optimization Complete : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2033.902 ; gain = 1190.457
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.005 . Memory (MB): peak = 2033.902 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2040.020 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete | Checksum: 38b8669d
+INFO: [Common 17-83] Releasing license: Vivado_Synthesis
+47 Infos, 46 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:00:37 ; elapsed = 00:00:44 . Memory (MB): peak = 2044.020 ; gain = 1424.070
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/synth_1/gray8_wrapper.dcp' has been generated.
+INFO: [Vivado 12-24828] Executing command : report_utilization -file gray8_wrapper_utilization_synth.rpt -pb gray8_wrapper_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Wed Oct 28 21:44:11 2026...
+[Wed Oct 28 21:44:16 2026] synth_1 finished
+wait_on_runs: Time (s): cpu = 00:00:02 ; elapsed = 00:05:39 . Memory (MB): peak = 795.250 ; gain = 0.000
+# if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "RLE_SYNTH_FAILED"}
+# launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Wed Oct 28 21:44:19 2026] Launched impl_1...
+Run output will be captured here: C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/runme.log
+# wait_on_run impl_1
+[Wed Oct 28 21:44:19 2026] Waiting for impl_1 to finish...
+
+*** Running vivado
+    with args -log gray8_wrapper.vdi -applog -m64 -product Vivado -messageDb vivado.pb -mode batch -source gray8_wrapper.tcl -notrace
+
+
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Wed Oct 28 21:44:26 2026
+# Process ID         : 63752
+# Current directory  : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1
+# Command line       : vivado.exe -log gray8_wrapper.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source gray8_wrapper.tcl -notrace
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/gray8_wrapper.vdi
+# Journal file       : C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1\vivado.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 33293 MB
+# Total Virtual      : 50151 MB
+# Available Virtual  : 5144 MB
+#-----------------------------------------------------------
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Wed Oct 28 21:44:26 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source gray8_wrapper.tcl -notrace
+create_project: Time (s): cpu = 00:00:11 ; elapsed = 00:00:14 . Memory (MB): peak = 586.246 ; gain = 270.066
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2026.1/Vivado/data/ip'.
+Command: link_design -top gray8_wrapper -part xc7z020clg400-1
+Design is defaulting to srcset: sources_1
+Design is defaulting to constrset: constrs_1
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+INFO: [Project 1-5699] Read binary netlist with skipMacroContent - 1
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_axi_dma_0_0/gray8_axi_dma_0_0.dcp' for cell 'gray8_i/axi_dma_0'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/gray8_control_fabric_0.dcp' for cell 'gray8_i/control_fabric'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_hp0_protocol_0/gray8_hp0_protocol_0.dcp' for cell 'gray8_i/hp0_protocol'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_image_pipeline_0/gray8_image_pipeline_0.dcp' for cell 'gray8_i/image_pipeline'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_ps7_0/gray8_ps7_0.dcp' for cell 'gray8_i/ps7'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_reset_pl_0/gray8_reset_pl_0.dcp' for cell 'gray8_i/reset_pl'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_hp1_fabric_imp_auto_pc_0/gray8_hp1_fabric_imp_auto_pc_0.dcp' for cell 'gray8_i/hp1_fabric/s00_couplers/auto_pc'
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.061 . Memory (MB): peak = 890.527 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 714 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2026.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_ps7_0/gray8_ps7_0.xdc] for cell 'gray8_i/ps7/inst'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_ps7_0/gray8_ps7_0.xdc] for cell 'gray8_i/ps7/inst'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_axi_dma_0_0/gray8_axi_dma_0_0.xdc] for cell 'gray8_i/axi_dma_0/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_axi_dma_0_0/gray8_axi_dma_0_0.xdc] for cell 'gray8_i/axi_dma_0/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/bd_0/ip/ip_0/bd_663e_sc_ul_0_cdc.xdc] for cell 'gray8_i/control_fabric/inst/sc_ul/inst'
+WARNING: [Vivado_Tcl 4-921] Waiver ID 'CDC-7' -to list should not be empty. [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/bd_0/ip/ip_0/bd_663e_sc_ul_0_cdc.xdc:22]
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/bd_0/ip/ip_0/bd_663e_sc_ul_0_cdc.xdc] for cell 'gray8_i/control_fabric/inst/sc_ul/inst'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/smartconnect.xdc] for cell 'gray8_i/control_fabric/inst'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_control_fabric_0/smartconnect.xdc] for cell 'gray8_i/control_fabric/inst'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_reset_pl_0/gray8_reset_pl_0_board.xdc] for cell 'gray8_i/reset_pl/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_reset_pl_0/gray8_reset_pl_0_board.xdc] for cell 'gray8_i/reset_pl/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_axi_dma_0_0/gray8_axi_dma_0_0_clocks.xdc] for cell 'gray8_i/axi_dma_0/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.gen/sources_1/bd/gray8/ip/gray8_axi_dma_0_0/gray8_axi_dma_0_0_clocks.xdc] for cell 'gray8_i/axi_dma_0/U0'
+INFO: [Project 1-1714] 11 XPM XDC files have been applied to the design.
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+INFO: [Project 1-1687] 4 scoped IP constraints or related sub-commands were skipped due to synthesis logic optimizations usually triggered by constant connectivity or unconnected output pins. To review the skipped constraints and messages, run the command 'set_param netlist.IPMsgFiltering false' before opening the design.
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 1609.102 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 341 instances were transformed.
+  RAM128X1D => RAM128X1D (MUXF7(x2), RAMD64E(x4)): 30 instances
+  RAM32M => RAM32M (RAMD32(x6), RAMS32(x2)): 4 instances
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 1 instance 
+  RAM64M => RAM64M (RAMD64E(x4)): 255 instances
+  RAM64X1D => RAM64X1D (RAMD64E(x2)): 51 instances
+
+20 Infos, 1 Warnings, 0 Critical Warnings and 0 Errors encountered.
+link_design completed successfully
+link_design: Time (s): cpu = 00:00:15 ; elapsed = 00:00:18 . Memory (MB): peak = 1609.102 ; gain = 986.941
+Command: opt_design
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+Running DRC as a precondition to command opt_design
+
+Starting DRC Task
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Project 1-461] DRC finished with 0 Errors
+INFO: [Project 1-462] Please refer to the DRC report (report_drc) for more information.
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.776 . Memory (MB): peak = 1609.102 ; gain = 0.000
+
+Starting Cache Timing Information Task
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+Ending Cache Timing Information Task | Checksum: 17aeef224
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.383 . Memory (MB): peak = 1609.102 ; gain = 0.000
+
+Starting Logic Optimization Task
+
+Phase 1 Initialization
+
+Phase 1.1 Core Generation And Design Setup
+Phase 1.1 Core Generation And Design Setup | Checksum: 17aeef224
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.022 . Memory (MB): peak = 2076.949 ; gain = 0.000
+
+Phase 1.2 Setup Constraints And Sort Netlist
+Phase 1.2 Setup Constraints And Sort Netlist | Checksum: 17aeef224
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.038 . Memory (MB): peak = 2076.949 ; gain = 0.000
+Phase 1 Initialization | Checksum: 17aeef224
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.041 . Memory (MB): peak = 2076.949 ; gain = 0.000
+
+Phase 2 Timer Update And Timing Data Collection
+
+Phase 2.1 Detect if minReqCache needed
+Phase 2.1 Detect if minReqCache needed | Checksum: 17aeef224
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.059 . Memory (MB): peak = 2076.973 ; gain = 0.023
+
+Phase 2.2 Timer Update
+Phase 2.2 Timer Update | Checksum: 17aeef224
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.327 . Memory (MB): peak = 2076.973 ; gain = 0.023
+
+Phase 2.3 Timing Data Collection
+Phase 2.3 Timing Data Collection | Checksum: 17aeef224
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.344 . Memory (MB): peak = 2076.973 ; gain = 0.023
+Phase 2 Timer Update And Timing Data Collection | Checksum: 17aeef224
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.348 . Memory (MB): peak = 2076.973 ; gain = 0.023
+
+Phase 3 Retarget
+INFO: [Opt 31-1851] Number of loadless carry chains removed were: 0
+INFO: [Opt 31-1834] Total Chains To Be Transformed Were: 0 AND Number of Transformed insts Created are: 0
+INFO: [Opt 31-1566] Pulled 6 inverters resulting in an inversion of 49 pins
+INFO: [Opt 31-138] Pushed 2 inverter(s) to 6 load pin(s).
+INFO: [Opt 31-49] Retargeted 0 cell(s).
+Phase 3 Retarget | Checksum: 21e88b6d4
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.733 . Memory (MB): peak = 2076.973 ; gain = 0.023
+Retarget | Checksum: 21e88b6d4
+INFO: [Opt 31-389] Phase Retarget created 29 cells and removed 121 cells
+INFO: [Opt 31-1021] In phase Retarget, 27 netlist objects are constrained preventing optimization. Please run opt_design with -debug_log to get more detail. 
+
+Phase 4 Constant propagation
+INFO: [Opt 31-138] Pushed 4 inverter(s) to 11 load pin(s).
+Phase 4 Constant propagation | Checksum: 26ca2033f
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.995 . Memory (MB): peak = 2076.973 ; gain = 0.023
+Constant propagation | Checksum: 26ca2033f
+INFO: [Opt 31-389] Phase Constant propagation created 109 cells and removed 318 cells
+INFO: [Opt 31-1021] In phase Constant propagation, 27 netlist objects are constrained preventing optimization. Please run opt_design with -debug_log to get more detail. 
+
+Phase 5 Sweep
+INFO: [Constraints 18-11670] Building netlist checker database with flags, 0x8
+Done building netlist checker database: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Constraints 18-11670] Building netlist checker database with flags, 0x8
+Done building netlist checker database: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 5 Sweep | Checksum: 20500e312
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:01 . Memory (MB): peak = 2076.973 ; gain = 0.023
+Sweep | Checksum: 20500e312
+INFO: [Opt 31-389] Phase Sweep created 0 cells and removed 141 cells
+INFO: [Opt 31-1021] In phase Sweep, 97 netlist objects are constrained preventing optimization. Please run opt_design with -debug_log to get more detail. 
+
+Phase 6 BUFG optimization
+Phase 6 BUFG optimization | Checksum: 20500e312
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2076.973 ; gain = 0.023
+BUFG optimization | Checksum: 20500e312
+INFO: [Opt 31-662] Phase BUFG optimization created 0 cells of which 0 are BUFGs and removed 0 cells.
+
+Phase 7 Shift Register Optimization
+INFO: [Opt 31-1064] SRL Remap converted 0 SRLs to 0 registers and converted 0 registers of register chains to 0 SRLs
+Phase 7 Shift Register Optimization | Checksum: 20500e312
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2076.973 ; gain = 0.023
+Shift Register Optimization | Checksum: 20500e312
+INFO: [Opt 31-389] Phase Shift Register Optimization created 0 cells and removed 0 cells
+
+Phase 8 Post Processing Netlist
+Phase 8 Post Processing Netlist | Checksum: 1bead3067
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2076.973 ; gain = 0.023
+Post Processing Netlist | Checksum: 1bead3067
+INFO: [Opt 31-389] Phase Post Processing Netlist created 0 cells and removed 0 cells
+INFO: [Opt 31-1021] In phase Post Processing Netlist, 33 netlist objects are constrained preventing optimization. Please run opt_design with -debug_log to get more detail. 
+
+Phase 9 Finalization
+
+Phase 9.1 Finalizing Design Cores and Updating Shapes
+Phase 9.1 Finalizing Design Cores and Updating Shapes | Checksum: 20c440203
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2076.973 ; gain = 0.023
+
+Phase 9.2 Verifying Netlist Connectivity
+
+Starting Connectivity Check Task
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.031 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 9.2 Verifying Netlist Connectivity | Checksum: 20c440203
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2076.973 ; gain = 0.023
+Phase 9 Finalization | Checksum: 20c440203
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2076.973 ; gain = 0.023
+Opt_design Change Summary
+=========================
+
+
+-------------------------------------------------------------------------------------------------------------------------
+|  Phase                        |  #Cells created  |  #Cells Removed  |  #Constrained objects preventing optimizations  |
+-------------------------------------------------------------------------------------------------------------------------
+|  Retarget                     |              29  |             121  |                                             27  |
+|  Constant propagation         |             109  |             318  |                                             27  |
+|  Sweep                        |               0  |             141  |                                             97  |
+|  BUFG optimization            |               0  |               0  |                                              0  |
+|  Shift Register Optimization  |               0  |               0  |                                              0  |
+|  Post Processing Netlist      |               0  |               0  |                                             33  |
+-------------------------------------------------------------------------------------------------------------------------
+
+
+Ending Logic Optimization Task | Checksum: 20c440203
+
+Time (s): cpu = 00:00:03 ; elapsed = 00:00:02 . Memory (MB): peak = 2076.973 ; gain = 0.023
+
+Starting Power Optimization Task
+INFO: [Pwropt 34-132] Skipping clock gating for clocks with a period < 2.00 ns.
+INFO: [Pwropt 34-9] Applying IDT optimizations ...
+INFO: [Pwropt 34-10] Applying ODC optimizations ...
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+Running Vector-less Activity Propagation...
+
+Finished Running Vector-less Activity Propagation
+
+
+Starting PowerOpt Patch Enables Task
+INFO: [Pwropt 34-162] WRITE_MODE attribute of 0 BRAM(s) out of a total of 3 has been updated to save power. Run report_power_opt to get a complete listing of the BRAMs updated.
+INFO: [Pwropt 34-201] Structural ODC has moved 1 WE to EN ports
+Number of BRAM Ports augmented: 5 newly gated: 1 Total Ports: 6
+Ending PowerOpt Patch Enables Task | Checksum: 13991253d
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.064 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Ending Power Optimization Task | Checksum: 13991253d
+
+Time (s): cpu = 00:00:04 ; elapsed = 00:00:03 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Starting Final Cleanup Task
+Ending Final Cleanup Task | Checksum: 13991253d
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+51 Infos, 1 Warnings, 0 Critical Warnings and 0 Errors encountered.
+opt_design completed successfully
+opt_design: Time (s): cpu = 00:00:12 ; elapsed = 00:00:11 . Memory (MB): peak = 2076.973 ; gain = 467.871
+INFO: [Vivado 12-24828] Executing command : report_drc -file gray8_wrapper_drc_opted.rpt -pb gray8_wrapper_drc_opted.pb -rpx gray8_wrapper_drc_opted.rpx
+Command: report_drc -file gray8_wrapper_drc_opted.rpt -pb gray8_wrapper_drc_opted.pb -rpx gray8_wrapper_drc_opted.rpx
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 2-168] The results of DRC are in file C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/gray8_wrapper_drc_opted.rpt.
+report_drc completed successfully
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Writing XDEF routing.
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.017 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Writing XDEF routing logical nets.
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.020 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote PlaceStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.008 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.007 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.051 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/gray8_wrapper_opt.dcp' has been generated.
+Command: place_design
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+Running DRC as a precondition to command place_design
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 4-198] DRC finished with 0 Errors, 12 Warnings
+INFO: [Vivado_Tcl 4-199] Please refer to the DRC report (report_drc) for more information.
+INFO: [Place 30-611] Multithreading enabled for place_design using a maximum of 2 CPUs
+
+Starting Placer Task
+
+Phase 1 Placer Initialization
+
+Phase 1.1 Placer Initialization Netlist Sorting
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.007 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 1.1 Placer Initialization Netlist Sorting | Checksum: 12ea63046
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.016 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 1.2 IO Placement/ Clock Placement/ Build Placer Device
+Phase 1.2 IO Placement/ Clock Placement/ Build Placer Device | Checksum: 799c034a
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:01 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 1.3 Build Placer Netlist Model
+Phase 1.3 Build Placer Netlist Model | Checksum: 1a3e3b78f
+
+Time (s): cpu = 00:00:05 ; elapsed = 00:00:04 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 1.4 Constrain Clocks/Macros
+Phase 1.4 Constrain Clocks/Macros | Checksum: 1a3e3b78f
+
+Time (s): cpu = 00:00:05 ; elapsed = 00:00:04 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 1 Placer Initialization | Checksum: 1a3e3b78f
+
+Time (s): cpu = 00:00:05 ; elapsed = 00:00:04 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 2 Global Placement
+
+Phase 2.1 Floorplanning
+Phase 2.1 Floorplanning | Checksum: 1b3def83c
+
+Time (s): cpu = 00:00:07 ; elapsed = 00:00:05 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 2.2 Update Timing before SLR Path Opt
+Phase 2.2 Update Timing before SLR Path Opt | Checksum: 10eb24f9d
+
+Time (s): cpu = 00:00:09 ; elapsed = 00:00:06 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 2.3 Post-Processing in Floorplanning
+Phase 2.3 Post-Processing in Floorplanning | Checksum: 10eb24f9d
+
+Time (s): cpu = 00:00:09 ; elapsed = 00:00:06 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 2.4 Global Place Phase1
+Phase 2.4 Global Place Phase1 | Checksum: 20d7f6d1c
+
+Time (s): cpu = 00:00:19 ; elapsed = 00:00:13 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 2.5 Global Place Phase2
+
+Phase 2.5.1 UpdateTiming Before Physical Synthesis
+Phase 2.5.1 UpdateTiming Before Physical Synthesis | Checksum: 20d7f6d1c
+
+Time (s): cpu = 00:00:21 ; elapsed = 00:00:14 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 2.5.2 Physical Synthesis In Placer
+INFO: [Physopt 32-1035] Found 0 LUTNM shape to break, 307 LUT instances to create LUTNM shape
+INFO: [Physopt 32-1044] Break lutnm for timing: one critical 0, two critical 0, total 0, new lutff created 0
+INFO: [Physopt 32-1138] End 1 Pass. Optimized 111 nets or LUTs. Breaked 0 LUT, combined 111 existing LUTs and moved 0 existing LUT
+INFO: [Physopt 32-65] No nets found for high-fanout optimization.
+INFO: [Physopt 32-232] Optimized 0 net. Created 0 new instance.
+INFO: [Physopt 32-775] End 1 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+INFO: [Physopt 32-670] No setup violation found.  DSP Register Optimization was not performed.
+INFO: [Physopt 32-670] No setup violation found.  Shift Register to Pipeline Optimization was not performed.
+INFO: [Physopt 32-670] No setup violation found.  Shift Register Optimization was not performed.
+INFO: [Physopt 32-670] No setup violation found.  BRAM Register Optimization was not performed.
+INFO: [Physopt 32-670] No setup violation found.  URAM Register Optimization was not performed.
+INFO: [Physopt 32-949] No candidate nets found for dynamic/static region interface net replication
+INFO: [Physopt 32-775] End 1 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Summary of Physical Synthesis Optimizations
+============================================
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|  Optimization                                     |  Added Cells  |  Removed Cells  |  Optimized Cells/Nets  |  Dont Touch  |  Iterations  |  Elapsed   |
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|  LUT Combining                                    |            0  |            111  |                   111  |           0  |           1  |  00:00:01  |
+|  Retime                                           |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  Very High Fanout                                 |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  DSP Register                                     |            0  |              0  |                     0  |           0  |           0  |  00:00:00  |
+|  Shift Register to Pipeline                       |            0  |              0  |                     0  |           0  |           0  |  00:00:00  |
+|  Shift Register                                   |            0  |              0  |                     0  |           0  |           0  |  00:00:00  |
+|  BRAM Register                                    |            0  |              0  |                     0  |           0  |           0  |  00:00:00  |
+|  URAM Register                                    |            0  |              0  |                     0  |           0  |           0  |  00:00:00  |
+|  Dynamic/Static Region Interface Net Replication  |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  Total                                            |            0  |            111  |                   111  |           0  |           4  |  00:00:01  |
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Phase 2.5.2 Physical Synthesis In Placer | Checksum: 1e5d90ac3
+
+Time (s): cpu = 00:00:24 ; elapsed = 00:00:16 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 2.5 Global Place Phase2 | Checksum: 1f093b5ac
+
+Time (s): cpu = 00:00:25 ; elapsed = 00:00:17 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 2 Global Placement | Checksum: 1f093b5ac
+
+Time (s): cpu = 00:00:25 ; elapsed = 00:00:17 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 3 Detail Placement
+
+Phase 3.1 Commit Multi Column Macros
+Phase 3.1 Commit Multi Column Macros | Checksum: 1a75ce9ec
+
+Time (s): cpu = 00:00:26 ; elapsed = 00:00:18 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 3.2 Commit Most Macros & LUTRAMs
+Phase 3.2 Commit Most Macros & LUTRAMs | Checksum: 1fda775e2
+
+Time (s): cpu = 00:00:30 ; elapsed = 00:00:20 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 3.3 Area Swap Optimization
+Phase 3.3 Area Swap Optimization | Checksum: 1ebb70a36
+
+Time (s): cpu = 00:00:30 ; elapsed = 00:00:20 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 3.4 Pipeline Register Optimization
+Phase 3.4 Pipeline Register Optimization | Checksum: 1477b9346
+
+Time (s): cpu = 00:00:30 ; elapsed = 00:00:20 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 3.5 Small Shape Detail Placement
+Phase 3.5 Small Shape Detail Placement | Checksum: 28cfe57cc
+
+Time (s): cpu = 00:00:33 ; elapsed = 00:00:23 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 3.6 Re-assign LUT pins
+Phase 3.6 Re-assign LUT pins | Checksum: 2719784f8
+
+Time (s): cpu = 00:00:33 ; elapsed = 00:00:24 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 3.7 Pipeline Register Optimization
+Phase 3.7 Pipeline Register Optimization | Checksum: 205e923da
+
+Time (s): cpu = 00:00:33 ; elapsed = 00:00:24 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 3 Detail Placement | Checksum: 205e923da
+
+Time (s): cpu = 00:00:33 ; elapsed = 00:00:24 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 4 Post Placement Optimization and Clean-Up
+
+Phase 4.1 Post Commit Optimization
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+
+Phase 4.1.1 Post Placement Optimization
+Post Placement Optimization Initialization | Checksum: 130a41c89
+
+Phase 4.1.1.1 BUFG Insertion
+
+Starting Physical Synthesis Task
+
+Phase 1 Physical Synthesis Initialization
+INFO: [Physopt 32-721] Multithreading enabled for phys_opt_design using a maximum of 2 CPUs
+INFO: [Physopt 32-619] Estimated Timing Summary | WNS=4.076 | TNS=0.000 |
+Phase 1 Physical Synthesis Initialization | Checksum: b5ddaa17
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.286 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Place 46-33] Processed net gray8_i/image_pipeline/inst/encoder/aresetn_0, BUFG insertion was skipped due to placement/routing conflicts.
+INFO: [Place 46-56] BUFG insertion identified 1 candidate nets. Inserted BUFG: 0, Replicated BUFG Driver: 0, Skipped due to Placement/Routing Conflicts: 1, Skipped due to Timing Degradation: 0, Skipped due to netlist editing failed: 0.
+Ending Physical Synthesis Task | Checksum: 18d9c1b28
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.451 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 4.1.1.1 BUFG Insertion | Checksum: 130a41c89
+
+Time (s): cpu = 00:00:38 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 4.1.1.2 Post Placement Timing Optimization
+INFO: [Place 30-746] Post Placement Timing Summary WNS=4.076. For the most accurate timing information please run report_timing.
+Phase 4.1.1.2 Post Placement Timing Optimization | Checksum: 192d1a69a
+
+Time (s): cpu = 00:00:38 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Time (s): cpu = 00:00:38 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 4.1 Post Commit Optimization | Checksum: 192d1a69a
+
+Time (s): cpu = 00:00:38 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 4.2 Post Placement Cleanup
+Phase 4.2 Post Placement Cleanup | Checksum: 192d1a69a
+
+Time (s): cpu = 00:00:38 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 4.3 Placer Reporting
+
+Phase 4.3.1 Print Estimated Congestion
+INFO: [Place 30-612] Post-Placement Estimated Congestion 
+ ____________________________________________________
+|           | Global Congestion | Short Congestion  |
+| Direction | Region Size       | Region Size       |
+|___________|___________________|___________________|
+|      North|                1x1|                1x1|
+|___________|___________________|___________________|
+|      South|                1x1|                1x1|
+|___________|___________________|___________________|
+|       East|                1x1|                1x1|
+|___________|___________________|___________________|
+|       West|                1x1|                1x1|
+|___________|___________________|___________________|
+
+Phase 4.3.1 Print Estimated Congestion | Checksum: 192d1a69a
+
+Time (s): cpu = 00:00:39 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 4.3 Placer Reporting | Checksum: 192d1a69a
+
+Time (s): cpu = 00:00:39 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 4.4 Final Placement Cleanup
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Time (s): cpu = 00:00:39 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 4 Post Placement Optimization and Clean-Up | Checksum: 1ad76fd7a
+
+Time (s): cpu = 00:00:39 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Ending Placer Task | Checksum: 13718dfc1
+
+Time (s): cpu = 00:00:39 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+84 Infos, 1 Warnings, 0 Critical Warnings and 0 Errors encountered.
+place_design completed successfully
+place_design: Time (s): cpu = 00:00:41 ; elapsed = 00:00:30 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Vivado 12-24838] Running report commands "report_control_sets, report_io, report_utilization" in parallel.
+Running report generation with 2 threads.
+INFO: [Vivado 12-24828] Executing command : report_io -file gray8_wrapper_io_placed.rpt
+report_io: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.117 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Vivado 12-24828] Executing command : report_control_sets -verbose -file gray8_wrapper_control_sets_placed.rpt
+report_control_sets: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.053 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Vivado 12-24828] Executing command : report_utilization -file gray8_wrapper_utilization_placed.rpt -pb gray8_wrapper_utilization_placed.pb
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Writing XDEF routing.
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.024 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Writing XDEF routing logical nets.
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.019 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote PlaceStorage: Time (s): cpu = 00:00:02 ; elapsed = 00:00:00.383 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:02 ; elapsed = 00:00:00.440 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/gray8_wrapper_placed.dcp' has been generated.
+Command: phys_opt_design
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+
+Starting Initial Update Timing Task
+
+Time (s): cpu = 00:00:03 ; elapsed = 00:00:02 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Vivado_Tcl 4-2279] Estimated Timing Summary | WNS= 4.076 | TNS= 0.000 | 
+INFO: [Vivado_Tcl 4-383] Design worst setup slack (WNS) is greater than or equal to 0.000 ns. All physical synthesis setup optimizations will be skipped.
+INFO: [Vivado_Tcl 4-232] No setup violation found. The netlist was not modified.
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+95 Infos, 1 Warnings, 0 Critical Warnings and 0 Errors encountered.
+phys_opt_design completed successfully
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Writing XDEF routing.
+Write ShapeDB Complete: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.026 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Writing XDEF routing logical nets.
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.026 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote PlaceStorage: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.379 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.015 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.012 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.449 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/gray8_wrapper_physopt.dcp' has been generated.
+Command: route_design
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+
+
+Starting Routing Task
+INFO: [Route 35-254] Multithreading enabled for route_design using a maximum of 2 CPUs
+
+Phase 1 Build RT Design
+Checksum: PlaceDB: 9fec19d5 ConstDB: 0 ShapeSum: 813352fc RouteDB: 15f972f0
+Post Restoration Checksum: NetGraph: d06cdacc | NumContArr: 74a842b4 | Constraints: c2a8fa9d | Timing: c2a8fa9d
+Phase 1 Build RT Design | Checksum: 2ca6712ba
+
+Time (s): cpu = 00:00:31 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 2 Router Initialization
+
+Phase 2.1 Fix Topology Constraints
+Phase 2.1 Fix Topology Constraints | Checksum: 2ca6712ba
+
+Time (s): cpu = 00:00:31 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 2.2 Pre Route Cleanup
+Phase 2.2 Pre Route Cleanup | Checksum: 2ca6712ba
+
+Time (s): cpu = 00:00:31 ; elapsed = 00:00:27 . Memory (MB): peak = 2076.973 ; gain = 0.000
+ Number of Nodes with overlaps = 0
+
+Phase 2.3 Update Timing
+Phase 2.3 Update Timing | Checksum: 2c8cdf98a
+
+Time (s): cpu = 00:00:36 ; elapsed = 00:00:30 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=4.376  | TNS=0.000  | WHS=-0.187 | THS=-124.466|
+
+
+Phase 2.4 Soft Constraint Pins - Fast Budgeting
+Phase 2.4 Soft Constraint Pins - Fast Budgeting | Checksum: 2e564e564
+
+Time (s): cpu = 00:00:38 ; elapsed = 00:00:31 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Router Utilization Summary
+  Global Vertical Routing Utilization    = 0 %
+  Global Horizontal Routing Utilization  = 0 %
+  Routable Net Status*
+  *Does not include unroutable nets such as driverless and loadless.
+  Run report_route_status for detailed report.
+  Number of Failed Nets               = 8821
+    (Failed Nets is the sum of unrouted and partially routed nets)
+  Number of Unrouted Nets             = 8821
+  Number of Partially Routed Nets     = 0
+  Number of Node Overlaps             = 0
+
+Phase 2 Router Initialization | Checksum: 331aff539
+
+Time (s): cpu = 00:00:38 ; elapsed = 00:00:31 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 3 Global Routing
+Phase 3 Global Routing | Checksum: 331aff539
+
+Time (s): cpu = 00:00:38 ; elapsed = 00:00:31 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 4 Initial Routing
+
+Phase 4.1 Initial Net Routing Pass
+Phase 4.1 Initial Net Routing Pass | Checksum: 1fb87b9ec
+
+Time (s): cpu = 00:00:40 ; elapsed = 00:00:33 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 4 Initial Routing | Checksum: 1fb87b9ec
+
+Time (s): cpu = 00:00:40 ; elapsed = 00:00:33 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 5 Rip-up And Reroute
+
+Phase 5.1 Global Iteration 0
+ Number of Nodes with overlaps = 615
+ Number of Nodes with overlaps = 13
+ Number of Nodes with overlaps = 0
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=3.092  | TNS=0.000  | WHS=N/A    | THS=N/A    |
+
+Phase 5.1 Global Iteration 0 | Checksum: 2f5fa9480
+
+Time (s): cpu = 00:00:45 ; elapsed = 00:00:36 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 5.2 Global Iteration 1
+ Number of Nodes with overlaps = 1
+ Number of Nodes with overlaps = 0
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=3.092  | TNS=0.000  | WHS=N/A    | THS=N/A    |
+
+Phase 5.2 Global Iteration 1 | Checksum: 1eadd29a1
+
+Time (s): cpu = 00:00:46 ; elapsed = 00:00:36 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 5 Rip-up And Reroute | Checksum: 1eadd29a1
+
+Time (s): cpu = 00:00:46 ; elapsed = 00:00:36 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 6 Delay and Skew Optimization
+
+Phase 6.1 Delay CleanUp
+
+Phase 6.1.1 Update Timing
+Phase 6.1.1 Update Timing | Checksum: 22960ed0d
+
+Time (s): cpu = 00:00:46 ; elapsed = 00:00:37 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=3.106  | TNS=0.000  | WHS=N/A    | THS=N/A    |
+
+Phase 6.1 Delay CleanUp | Checksum: 22960ed0d
+
+Time (s): cpu = 00:00:46 ; elapsed = 00:00:37 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 6.2 Clock Skew Optimization
+Phase 6.2 Clock Skew Optimization | Checksum: 22960ed0d
+
+Time (s): cpu = 00:00:46 ; elapsed = 00:00:37 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 6 Delay and Skew Optimization | Checksum: 22960ed0d
+
+Time (s): cpu = 00:00:46 ; elapsed = 00:00:37 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 7 Post Hold Fix
+
+Phase 7.1 Hold Fix Iter
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=3.106  | TNS=0.000  | WHS=0.023  | THS=0.000  |
+
+Phase 7.1 Hold Fix Iter | Checksum: 202913cde
+
+Time (s): cpu = 00:00:47 ; elapsed = 00:00:37 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Phase 7 Post Hold Fix | Checksum: 202913cde
+
+Time (s): cpu = 00:00:47 ; elapsed = 00:00:37 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 8 Route finalize
+
+Router Utilization Summary
+  Global Vertical Routing Utilization    = 2.0131 %
+  Global Horizontal Routing Utilization  = 2.42808 %
+  Routable Net Status*
+  *Does not include unroutable nets such as driverless and loadless.
+  Run report_route_status for detailed report.
+  Number of Failed Nets               = 0
+    (Failed Nets is the sum of unrouted and partially routed nets)
+  Number of Unrouted Nets             = 0
+  Number of Partially Routed Nets     = 0
+  Number of Node Overlaps             = 0
+
+Phase 8 Route finalize | Checksum: 202913cde
+
+Time (s): cpu = 00:00:47 ; elapsed = 00:00:37 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 9 Verifying routed nets
+
+ Verification completed successfully
+Phase 9 Verifying routed nets | Checksum: 202913cde
+
+Time (s): cpu = 00:00:47 ; elapsed = 00:00:37 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 10 Depositing Routes
+Phase 10 Depositing Routes | Checksum: 17723a661
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:38 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 11 Post Process Routing
+Phase 11 Post Process Routing | Checksum: 17723a661
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:38 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Phase 12 Post Router Timing
+INFO: [Route 35-57] Estimated Timing Summary | WNS=3.106  | TNS=0.000  | WHS=0.023  | THS=0.000  |
+
+INFO: [Route 35-327] The final timing numbers are based on the router estimated timing analysis. For a complete and accurate timing signoff, please run report_timing_summary.
+Phase 12 Post Router Timing | Checksum: 17723a661
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:38 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Total Elapsed time in route_design: 38.146 secs
+
+Phase 13 Post-Route Event Processing
+Phase 13 Post-Route Event Processing | Checksum: 12eca816c
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:38 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Route 35-16] Router Completed Successfully
+Ending Routing Task | Checksum: 12eca816c
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:38 . Memory (MB): peak = 2076.973 ; gain = 0.000
+
+Routing Is Done.
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+108 Infos, 1 Warnings, 0 Critical Warnings and 0 Errors encountered.
+route_design completed successfully
+route_design: Time (s): cpu = 00:00:48 ; elapsed = 00:00:38 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Vivado 12-24828] Executing command : report_drc -file gray8_wrapper_drc_routed.rpt -pb gray8_wrapper_drc_routed.pb -rpx gray8_wrapper_drc_routed.rpx
+Command: report_drc -file gray8_wrapper_drc_routed.rpt -pb gray8_wrapper_drc_routed.pb -rpx gray8_wrapper_drc_routed.rpx
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 2-168] The results of DRC are in file C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/gray8_wrapper_drc_routed.rpt.
+report_drc completed successfully
+INFO: [Vivado 12-24828] Executing command : report_methodology -file gray8_wrapper_methodology_drc_routed.rpt -pb gray8_wrapper_methodology_drc_routed.pb -rpx gray8_wrapper_methodology_drc_routed.rpx
+Command: report_methodology -file gray8_wrapper_methodology_drc_routed.rpt -pb gray8_wrapper_methodology_drc_routed.pb -rpx gray8_wrapper_methodology_drc_routed.rpx
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [DRC 23-133] Running Methodology with 2 threads
+INFO: [Vivado_Tcl 2-1520] The results of Report Methodology are in file C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/gray8_wrapper_methodology_drc_routed.rpt.
+report_methodology completed successfully
+INFO: [Vivado 12-24828] Executing command : report_timing_summary -max_paths 10 -routable_nets -report_unconstrained -file gray8_wrapper_timing_summary_routed.rpt -pb gray8_wrapper_timing_summary_routed.pb -rpx gray8_wrapper_timing_summary_routed.rpx -warn_on_violation 
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+INFO: [Vivado 12-24838] Running report commands "report_incremental_reuse, report_route_status" in parallel.
+Running report generation with 2 threads.
+INFO: [Vivado 12-24828] Executing command : report_incremental_reuse -file gray8_wrapper_incremental_reuse_routed.rpt
+INFO: [Vivado_Tcl 4-1062] Incremental flow is disabled. No incremental reuse Info to report.
+INFO: [Vivado 12-24828] Executing command : report_route_status -file gray8_wrapper_route_status.rpt -pb gray8_wrapper_route_status.pb
+INFO: [Vivado 12-24828] Executing command : report_power -file gray8_wrapper_power_routed.rpt -pb gray8_wrapper_power_summary_routed.pb -rpx gray8_wrapper_power_routed.rpx
+Command: report_power -file gray8_wrapper_power_routed.rpt -pb gray8_wrapper_power_summary_routed.pb -rpx gray8_wrapper_power_routed.rpx
+Running Vector-less Activity Propagation...
+
+Finished Running Vector-less Activity Propagation
+125 Infos, 1 Warnings, 0 Critical Warnings and 0 Errors encountered.
+report_power completed successfully
+INFO: [Vivado 12-24828] Executing command : report_clock_utilization -file gray8_wrapper_clock_utilization_routed.rpt
+INFO: [Vivado 12-24828] Executing command : report_bus_skew -warn_on_violation -file gray8_wrapper_bus_skew_routed.rpt -pb gray8_wrapper_bus_skew_routed.pb -rpx gray8_wrapper_bus_skew_routed.rpx
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+generate_parallel_reports: Time (s): cpu = 00:00:18 ; elapsed = 00:00:12 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Writing XDEF routing.
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.025 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Writing XDEF routing logical nets.
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.151 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote PlaceStorage: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.356 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.016 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 2076.973 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:02 ; elapsed = 00:00:00.559 . Memory (MB): peak = 2076.973 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/project/gray8_50m.runs/impl_1/gray8_wrapper_routed.dcp' has been generated.
+INFO: [Memdata 28-167] Found XPM memory block gray8_i/axi_dma_0/U0/I_PRMRY_DATAMOVER/GEN_S2MM_FULL.I_S2MM_FULL_WRAPPER/GEN_ENABLE_INDET_BTT_SF.I_INDET_BTT/I_XD_FIFO/NON_BLK_MEM.I_SYNC_FIFOGEN_FIFO/xpm_fifo_base_inst/gen_sdpram.xpm_memory_base_inst with a P_MEMORY_PRIMITIVE property set to auto. A value of block is required. You will not be able to use the updatemem program to update the bitstream with new data for the gray8_i/axi_dma_0/U0/I_PRMRY_DATAMOVER/GEN_S2MM_FULL.I_S2MM_FULL_WRAPPER/GEN_ENABLE_INDET_BTT_SF.I_INDET_BTT/I_XD_FIFO/NON_BLK_MEM.I_SYNC_FIFOGEN_FIFO/xpm_fifo_base_inst/gen_sdpram.xpm_memory_base_inst block.
+INFO: [Memdata 28-208] The XPM instance: <gray8_i/axi_dma_0/U0/I_PRMRY_DATAMOVER/GEN_S2MM_FULL.I_S2MM_FULL_WRAPPER/GEN_ENABLE_INDET_BTT_SF.I_INDET_BTT/I_DATA_FIFO/BLK_MEM.I_SYNC_FIFOGEN_FIFO/xpm_fifo_base_inst/gen_sdpram.xpm_memory_base_inst> is part of IP: <gray8_i/axi_dma_0>. This XPM instance will be excluded from the .mmi because updatemem is prohibited from making changes to an XPM that is part of an IP.
+INFO: [Memdata 28-208] The XPM instance: <gray8_i/axi_dma_0/U0/I_PRMRY_DATAMOVER/GEN_MM2S_FULL.I_MM2S_FULL_WRAPPER/GEN_INCLUDE_MM2S_SF.I_RD_SF/I_DATA_FIFO/BLK_MEM.I_SYNC_FIFOGEN_FIFO/xpm_fifo_base_inst/gen_sdpram.xpm_memory_base_inst> is part of IP: <gray8_i/axi_dma_0>. This XPM instance will be excluded from the .mmi because updatemem is prohibited from making changes to an XPM that is part of an IP.
+Command: write_bitstream -force gray8_wrapper.bit
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+Running DRC as a precondition to command write_bitstream
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado 12-3199] DRC finished with 0 Errors
+INFO: [Vivado 12-3200] Please refer to the DRC report (report_drc) for more information.
+Integrating Hard IP ELF/MEM with the PDI.
+INFO: [Designutils 20-2272] Running write_bitstream with 2 threads.
+Initializing bitstream generation complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.894 . Memory (MB): peak = 2190.195 ; gain = 54.965
+Loading data files...
+Loading site data...
+Loading route data...
+Processing options...
+Creating bitmap...
+Creating bitstream...
+Writing bitstream ./gray8_wrapper.bit...
+Generate Bitstream complete. Time (s): cpu = 00:00:13 ; elapsed = 00:00:10 . Memory (MB): peak = 2455.965 ; gain = 320.734
+INFO: [Vivado 12-1842] Bitgen Completed Successfully.
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+142 Infos, 1 Warnings, 0 Critical Warnings and 0 Errors encountered.
+write_bitstream completed successfully
+write_bitstream: Time (s): cpu = 00:00:18 ; elapsed = 00:00:35 . Memory (MB): peak = 2455.965 ; gain = 378.992
+INFO: [Common 17-206] Exiting Vivado at Wed Oct 28 21:47:23 2026...
+[Wed Oct 28 21:47:28 2026] impl_1 finished
+wait_on_runs: Time (s): cpu = 00:00:01 ; elapsed = 00:03:09 . Memory (MB): peak = 795.250 ; gain = 0.000
+# if {[get_property PROGRESS [get_runs impl_1]] ne "100%" ||
+#     ![string match {*write_bitstream Complete*} [get_property STATUS [get_runs impl_1]]]} {
+#     error "RLE_IMPL_FAILED"
+# }
+# open_run impl_1
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.053 . Memory (MB): peak = 1044.727 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 705 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2026.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Read ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.031 . Memory (MB): peak = 1158.297 ; gain = 2.426
+INFO: [Timing 38-478] Restoring timing data from binary archive.
+INFO: [Timing 38-479] Binary timing data restore complete.
+INFO: [Project 1-856] Restoring constraints from binary archive.
+INFO: [Project 1-853] Binary constraint restore complete.
+INFO: [Designutils 20-5722] Start Reading Physical Databases.
+Reading placement.
+Read Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.013 . Memory (MB): peak = 1771.301 ; gain = 0.000
+Reading placer database...
+Read Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.015 . Memory (MB): peak = 1771.301 ; gain = 0.000
+Read PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1771.301 ; gain = 0.000
+Read placeStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.288 . Memory (MB): peak = 1790.973 ; gain = 19.672
+Read PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1790.973 ; gain = 0.000
+Reading routing.
+Read RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.134 . Memory (MB): peak = 1790.973 ; gain = 0.000
+Read Physdb Files: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.482 . Memory (MB): peak = 1790.973 ; gain = 19.672
+Restored from archive | CPU: 0.000000 secs | Memory: 0.000000 MB |
+Finished XDEF File Restore: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.537 . Memory (MB): peak = 1790.973 ; gain = 21.641
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 1790.973 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 341 instances were transformed.
+  RAM128X1D => RAM128X1D (MUXF7(x2), RAMD64E(x4)): 30 instances
+  RAM32M => RAM32M (RAMD32(x6), RAMS32(x2)): 4 instances
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 1 instance 
+  RAM64M => RAM64M (RAMD64E(x4)): 255 instances
+  RAM64X1D => RAM64X1D (RAMD64E(x2)): 51 instances
+
+open_run: Time (s): cpu = 00:00:12 ; elapsed = 00:00:15 . Memory (MB): peak = 1790.973 ; gain = 995.723
+# set reports [file join $gray8_output reports]
+# report_timing_summary -delay_type min_max -report_unconstrained -file [file join $reports timing.rpt]
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+# report_utilization -file [file join $reports utilization.rpt]
+# report_utilization -hierarchical -file [file join $reports utilization-hierarchical.rpt]
+# report_drc -file [file join $reports drc.rpt]
+Command: report_drc -file C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/reports/drc.rpt
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 2-168] The results of DRC are in file C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/reports/drc.rpt.
+report_drc completed successfully
+# report_methodology -file [file join $reports methodology.rpt]
+Command: report_methodology -file C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/reports/methodology.rpt
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [DRC 23-133] Running Methodology with 2 threads
+INFO: [Vivado_Tcl 2-1520] The results of Report Methodology are in file C:/Users/14173/Documents/material-counter/data/results/gray8-rle-20261028-build/reports/methodology.rpt.
+report_methodology completed successfully
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+# set setup [get_property SLACK [get_timing_paths -delay_type max -max_paths 1]]
+# set hold [get_property SLACK [get_timing_paths -delay_type min -max_paths 1]]
+# if {$setup eq "" || $hold eq "" || $setup<0 || $hold<0} {error "RLE_TIMING_FAIL setup=$setup hold=$hold"}
+# foreach v [concat [get_drc_violations] [get_methodology_violations]] {
+#     if {[get_property SEVERITY $v] in {Error {Critical Warning}}} {error "RLE_SERIOUS_VIOLATION:$v"}
+# }
+# file copy [file join [get_property DIRECTORY [get_runs impl_1]] gray8_wrapper.bit] [file join $gray8_output export rle.bit]
+# file copy [file join $gray8_output project gray8_50m.gen sources_1 bd gray8 hw_handoff gray8.hwh] [file join $gray8_output export rle.hwh]
+# puts "RLE_BUILD_PASS setup=$setup hold=$hold board_verified=false"
+RLE_BUILD_PASS setup=3.112 hold=0.023 board_verified=false
+INFO: [Common 17-206] Exiting Vivado at Wed Oct 28 21:47:54 2026...

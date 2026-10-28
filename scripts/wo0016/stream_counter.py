@@ -14,8 +14,12 @@ from typing import Any, AsyncIterable, Callable, Protocol
 import cv2
 import numpy as np
 
-from split_touching import is_single_connected_component, split_touching_component
-from binary_stats import Binary8RoiValidator
+try:
+    from .split_touching import is_single_connected_component, split_touching_component
+    from .binary_stats import Binary8RoiValidator
+except ImportError:
+    from split_touching import is_single_connected_component, split_touching_component
+    from binary_stats import Binary8RoiValidator
 
 WIDTH = 320
 HEIGHT = 240
