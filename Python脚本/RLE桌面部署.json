@@ -1,0 +1,29 @@
+{
+  "host": "192.168.2.99",
+  "board_port": 8080,
+  "board_dir": "/home/xilinx/material-web-resources-20261027",
+  "runtime_root": "/home/xilinx/rle-20261028",
+  "python": "/usr/local/share/pynq-venv/bin/python3",
+  "pynq_init": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/__init__.py",
+  "manifest": "data/results/gray8-rle-20261028-verified-build/export/manifest.json",
+  "manifest_sha256": "4c430d69534f9a1c8bfac091adbae7cc7e2d9168a7052b470c6276576e7dcb4e",
+  "bit": "data/results/gray8-rle-20261028-verified-build/export/rle.bit",
+  "bit_sha256": "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6",
+  "protocol": "RLE_PACKET_V1",
+  "fpga_resources": {
+    "source": "ROUTED 50 MHz build: data/results/gray8-rle-20261028-verified-build/reports/utilization.rpt",
+    "protocol": "RLE_PACKET_V1",
+    "resolution": [640, 400],
+    "timing": "WNS +3.366 ns；WHS +0.036 ns；全部时序约束满足",
+    "lut": [5809, 53200],
+    "ff": [4162, 106400],
+    "bram": [2.5, 140],
+    "dsp": [0, 220],
+    "lutram": [1731, 17400],
+    "iob": [0, 125]
+  },
+  "legacy_preview_paths": [
+    "/home/xilinx/web-preview-20261027-124938/launch_viewer.py",
+    "/home/xilinx/image-debug-660088b71d/launch.py"
+  ]
+}

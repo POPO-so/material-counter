@@ -11,7 +11,7 @@ import controller
 
 
 def sample_config():
-    path = Path(__file__).resolve().parents[2] / "Python脚本" / "网页部署.json"
+    path = Path(__file__).resolve().parents[2] / "Python脚本" / "RLE桌面部署.json"
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
@@ -19,6 +19,8 @@ def test_config_is_loaded_from_existing_deployment_without_web_launcher():
     config = load_config()
     assert config["host"] == sample_config()["host"]
     assert config["board_port"] == sample_config()["board_port"]
+    assert config["protocol"] == "RLE_PACKET_V1"
+    assert config["fpga_resources"]["lut"] == [5809, 53200]
 
 
 @pytest.mark.parametrize("key,value", [
@@ -30,6 +32,13 @@ def test_invalid_configuration_is_rejected_before_board_operations(key, value):
     config[key] = value
     with pytest.raises(ValueError):
         validate_config(config)
+
+
+def test_legacy_config_without_protocol_remains_valid():
+    config = sample_config()
+    config.pop("protocol")
+    config.pop("fpga_resources")
+    assert validate_config(config)["protocol"] == "GRAY8_PACKET_V1"
 
 
 def test_stop_refuses_to_control_a_different_session(monkeypatch):

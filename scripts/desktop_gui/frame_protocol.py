@@ -1,13 +1,14 @@
 """Versioned, bounded transport for one desktop gray/mask frame pair.
 
-Wire layout is a 20-byte network-order header (magic, version, flags, metadata,
-Gray8, Binary8 lengths), followed by UTF-8 JSON and the two tightly packed
-320x240 images. Reading consumes exactly one length-described message.
+The legacy v1 format carries two raw 320x240 arrays. Full-resolution sessions
+use v3: a JPEG gray preview and a lossless one-bit mask, with dynamic dimensions.
+Raw dynamic v2 remains readable. Counting uses the uncompressed camera data.
 """
 
 from __future__ import annotations
 
 import json
+import io
 import struct
 import threading
 import time
@@ -20,10 +21,16 @@ WIDTH = 320
 HEIGHT = 240
 PIXELS = WIDTH * HEIGHT
 MAGIC = b"MCF1"
-VERSION = 1
+LEGACY_VERSION = 1
+RAW_DYNAMIC_VERSION = 2
+COMPRESSED_VERSION = 3
+FLAG_JPEG_GRAY = 1
+FLAG_PACKED_MASK = 2
 MAX_METADATA_SIZE = 64 * 1024
-MAX_MESSAGE_SIZE = 256 * 1024
-_HEADER = struct.Struct("!4sHHIII")
+MAX_MESSAGE_SIZE = 1024 * 1024
+MAX_PIXELS = 640 * 400
+_LEGACY_HEADER = struct.Struct("!4sHHIII")
+_DYNAMIC_HEADER = struct.Struct("!4sHHHHIII")
 _REQUIRED_METADATA = ("frame_id", "session_id", "source", "result", "config")
 _OPTIONAL_METADATA = ("capture_time_ns",)
 
@@ -54,11 +61,21 @@ def _validate_metadata(metadata):
             raise FrameProtocolError(f"{key} must be a non-empty string")
 
 
-def _image_bytes(image, name):
+def _image_shape(image, name):
     if not isinstance(image, np.ndarray):
         raise FrameProtocolError(f"{name} must be a numpy ndarray")
-    if image.shape != (HEIGHT, WIDTH) or image.dtype != np.uint8:
-        raise FrameProtocolError(f"{name} must have shape (240, 320) and dtype uint8")
+    if image.ndim != 2 or image.dtype != np.uint8:
+        raise FrameProtocolError(f"{name} must be a two-dimensional uint8 array")
+    height, width = image.shape
+    if not 1 <= width <= 0xFFFF or not 1 <= height <= 0xFFFF:
+        raise FrameProtocolError(f"{name} dimensions must fit unsigned 16-bit fields")
+    if width * height > MAX_PIXELS:
+        raise FrameProtocolError(f"{name} dimensions exceed the preview pixel limit")
+    return height, width
+
+
+def _image_bytes(image, name):
+    _image_shape(image, name)
     return np.ascontiguousarray(image).tobytes()
 
 
@@ -80,12 +97,53 @@ def pack_frame(frame: dict) -> bytes:
         raise FrameProtocolError("frame metadata must be JSON serializable") from exc
     if not metadata_bytes or len(metadata_bytes) > MAX_METADATA_SIZE:
         raise FrameProtocolError("metadata exceeds the protocol size limit")
-    gray = _image_bytes(frame.get("gray"), "gray")
-    mask = _image_bytes(frame.get("mask"), "mask")
-    message_size = _HEADER.size + len(metadata_bytes) + len(gray) + len(mask)
+    gray_image, mask_image = frame.get("gray"), frame.get("mask")
+    gray_shape = _image_shape(gray_image, "gray")
+    mask_shape = _image_shape(mask_image, "mask")
+    if gray_shape != mask_shape:
+        raise FrameProtocolError("gray and mask dimensions must match")
+    height, width = gray_shape
+    legacy = gray_shape == (HEIGHT, WIDTH)
+    if legacy:
+        gray = _image_bytes(gray_image, "gray")
+        mask = _image_bytes(mask_image, "mask")
+    else:
+        if np.any((mask_image != 0) & (mask_image != 255)):
+            raise FrameProtocolError("compressed preview requires a binary 0/255 mask")
+        # Reuse the original MJPEG camera packet when available. This avoids
+        # doing a second JPEG encode on the board just for the desktop viewer.
+        gray = frame.get("preview_jpeg")
+        if gray is not None:
+            if (not isinstance(gray, bytes) or not 4 <= len(gray) <= MAX_MESSAGE_SIZE
+                    or not gray.startswith(b"\xff\xd8")):
+                raise FrameProtocolError("invalid camera JPEG preview")
+        else:
+            import cv2
+
+            ok, encoded = cv2.imencode(
+                ".jpg", np.ascontiguousarray(gray_image), [cv2.IMWRITE_JPEG_QUALITY, 85]
+            )
+            if not ok:
+                raise FrameProtocolError("gray preview JPEG encoding failed")
+            gray = np.asarray(encoded, dtype=np.uint8).tobytes()
+        packed = np.packbits(
+            (np.asarray(mask_image) != 0).reshape(-1), bitorder="big"
+        )
+        mask = packed.tobytes()
+    header_size = (_LEGACY_HEADER if legacy else _DYNAMIC_HEADER).size
+    message_size = header_size + len(metadata_bytes) + len(gray) + len(mask)
     if message_size > MAX_MESSAGE_SIZE:
         raise FrameProtocolError("frame exceeds the protocol size limit")
-    header = _HEADER.pack(MAGIC, VERSION, 0, len(metadata_bytes), len(gray), len(mask))
+    if legacy:
+        header = _LEGACY_HEADER.pack(
+            MAGIC, LEGACY_VERSION, 0, len(metadata_bytes), len(gray), len(mask)
+        )
+    else:
+        header = _DYNAMIC_HEADER.pack(
+            MAGIC, COMPRESSED_VERSION, FLAG_JPEG_GRAY | FLAG_PACKED_MASK,
+            width, height,
+            len(metadata_bytes), len(gray), len(mask),
+        )
     return header + metadata_bytes + gray + mask
 
 
@@ -112,18 +170,46 @@ def _reject_json_constant(value):
 
 def read_frame(stream) -> dict:
     """Read exactly one frame from a file-like stream, tolerating short reads."""
-    header_bytes = _read_exact(stream, _HEADER.size)
+    prefix = _read_exact(stream, 6)
+    magic, version = struct.unpack("!4sH", prefix)
+    if magic != MAGIC or version not in (
+            LEGACY_VERSION, RAW_DYNAMIC_VERSION, COMPRESSED_VERSION):
+        raise FrameProtocolError("unsupported frame magic or version")
+    legacy = version == LEGACY_VERSION
+    header_struct = _LEGACY_HEADER if legacy else _DYNAMIC_HEADER
+    header_bytes = prefix + _read_exact(stream, header_struct.size - len(prefix))
     try:
-        magic, version, flags, metadata_size, gray_size, mask_size = _HEADER.unpack(header_bytes)
+        fields = header_struct.unpack(header_bytes)
     except struct.error as exc:  # defensive; _read_exact normally guarantees full header
         raise FrameProtocolError("invalid frame header") from exc
-    if magic != MAGIC or version != VERSION or flags != 0:
-        raise FrameProtocolError("unsupported frame magic, version, or flags")
+    if legacy:
+        _magic, _version, flags, metadata_size, gray_size, mask_size = fields
+        width, height = WIDTH, HEIGHT
+    else:
+        _magic, _version, flags, width, height, metadata_size, gray_size, mask_size = fields
+    if legacy and flags != 0:
+        raise FrameProtocolError("unsupported frame flags")
+    if version == RAW_DYNAMIC_VERSION and flags != 0:
+        raise FrameProtocolError("unsupported raw dynamic frame flags")
+    if version == COMPRESSED_VERSION and flags != (
+            FLAG_JPEG_GRAY | FLAG_PACKED_MASK):
+        raise FrameProtocolError("unsupported compressed frame flags")
+    if not 1 <= width <= 0xFFFF or not 1 <= height <= 0xFFFF:
+        raise FrameProtocolError("invalid frame dimensions")
+    if width * height > MAX_PIXELS:
+        raise FrameProtocolError("frame dimensions exceed the preview pixel limit")
     if metadata_size == 0 or metadata_size > MAX_METADATA_SIZE:
         raise FrameProtocolError("invalid metadata length")
-    if gray_size != PIXELS or mask_size != PIXELS:
-        raise FrameProtocolError("gray and mask lengths must each be 320x240 bytes")
-    message_size = _HEADER.size + metadata_size + gray_size + mask_size
+    pixels = width * height
+    compressed = version == COMPRESSED_VERSION
+    if compressed:
+        if not 0 < gray_size <= MAX_MESSAGE_SIZE:
+            raise FrameProtocolError("invalid compressed gray length")
+        if mask_size != (pixels + 7) // 8:
+            raise FrameProtocolError("packed mask length must match frame dimensions")
+    elif gray_size != pixels or mask_size != pixels:
+        raise FrameProtocolError("gray and mask lengths must match the frame dimensions")
+    message_size = header_struct.size + metadata_size + gray_size + mask_size
     if message_size > MAX_MESSAGE_SIZE:
         raise FrameProtocolError("frame exceeds the protocol size limit")
 
@@ -137,8 +223,24 @@ def read_frame(stream) -> dict:
     _validate_metadata(metadata)
     gray_bytes = _read_exact(stream, gray_size)
     mask_bytes = _read_exact(stream, mask_size)
-    metadata["gray"] = np.frombuffer(gray_bytes, dtype=np.uint8).reshape(HEIGHT, WIDTH).copy()
-    metadata["mask"] = np.frombuffer(mask_bytes, dtype=np.uint8).reshape(HEIGHT, WIDTH).copy()
+    if compressed:
+        from PIL import Image
+
+        try:
+            image = Image.open(io.BytesIO(gray_bytes))
+            if image.format != "JPEG" or image.size != (width, height):
+                raise FrameProtocolError("compressed gray dimensions or format differ from the header")
+            image = image.convert("L")
+        except (OSError, ValueError) as exc:
+            raise FrameProtocolError("compressed gray preview is not a valid image") from exc
+        metadata["gray"] = np.asarray(image, dtype=np.uint8).copy()
+        bits = np.unpackbits(
+            np.frombuffer(mask_bytes, dtype=np.uint8), bitorder="big"
+        )[:pixels].reshape(height, width)
+        metadata["mask"] = (bits * 255).astype(np.uint8)
+    else:
+        metadata["gray"] = np.frombuffer(gray_bytes, dtype=np.uint8).reshape(height, width).copy()
+        metadata["mask"] = np.frombuffer(mask_bytes, dtype=np.uint8).reshape(height, width).copy()
     return metadata
 
 

@@ -19,18 +19,35 @@ from collections import deque
 from frame_protocol import read_frame
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIG = ROOT / "Python脚本" / "网页部署.json"
+CONFIG = ROOT / "Python脚本" / "RLE桌面部署.json"
 HERE = Path(__file__).resolve().parent
 MODULES = ("camera_only_preview.py", "mjpeg_preview.py", "image_debug.py",
            "dashboard_state.py", "live_monitor_state.py", "resource_monitor.py",
            "live_calibration.py", "stream_counter.py", "lighting_profile.py",
-           "scale_parameters.py", "split_touching.py", "binary_stats.py", "packet_encoder.py")
+           "scale_parameters.py", "split_touching.py", "binary_stats.py",
+           "packet_encoder.py")
+PACKAGE_FILES = (
+    ("scripts/rle/__init__.py", ROOT / "scripts/rle/__init__.py"),
+    ("scripts/rle/protocol.py", ROOT / "scripts/rle/protocol.py"),
+    ("scripts/rle/components.py", ROOT / "scripts/rle/components.py"),
+    ("scripts/rle/counter.py", ROOT / "scripts/rle/counter.py"),
+    ("scripts/rle/transport.py", ROOT / "scripts/rle/transport.py"),
+    ("scripts/rle/artifacts.py", ROOT / "scripts/rle/artifacts.py"),
+    ("scripts/rle/run_counter.py", ROOT / "scripts/rle/run_counter.py"),
+    ("scripts/rle/native/rle_components.cpp", ROOT / "scripts/rle/native/rle_components.cpp"),
+    ("scripts/wo0015/board_preflight.py", ROOT / "scripts/wo0015/board_preflight.py"),
+    ("scripts/wo0015/board_once.py", ROOT / "scripts/wo0015/board_once.py"),
+    ("scripts/wo0016/stream_counter.py", ROOT / "scripts/wo0016/stream_counter.py"),
+    ("scripts/wo0016/split_touching.py", ROOT / "scripts/wo0016/split_touching.py"),
+    ("scripts/wo0016/binary_stats.py", ROOT / "scripts/wo0016/binary_stats.py"),
+)
 
 
 def validate_config(value):
     required = {"host", "board_port", "board_dir", "runtime_root", "python", "pynq_init",
                 "manifest", "manifest_sha256", "bit", "bit_sha256", "legacy_preview_paths"}
-    if not isinstance(value, dict) or set(value) != required:
+    optional = {"protocol", "fpga_resources"}
+    if not isinstance(value, dict) or not required <= set(value) or set(value) - required - optional:
         raise ValueError("部署配置字段缺失或未知")
     host = value["host"]
     if (not isinstance(host, str) or len(host) > 253 or not host or
@@ -52,7 +69,23 @@ def validate_config(value):
             raise ValueError(key + " 哈希无效")
     if not isinstance(value["legacy_preview_paths"], list):
         raise ValueError("legacy_preview_paths 无效")
-    return dict(value)
+    result = dict(value)
+    protocol = result.setdefault("protocol", "GRAY8_PACKET_V1")
+    if protocol not in ("GRAY8_PACKET_V1", "RLE_PACKET_V1"):
+        raise ValueError("protocol 无效")
+    resources = result.get("fpga_resources")
+    if resources is not None:
+        if not isinstance(resources, dict):
+            raise ValueError("fpga_resources 无效")
+        for key in ("lut", "ff", "bram", "dsp", "lutram", "iob", "bufg", "mmcm", "pll"):
+            pair = resources.get(key)
+            if pair is None:
+                continue
+            if (not isinstance(pair, (list, tuple)) or len(pair) != 2
+                    or any(type(item) not in (int, float) for item in pair)
+                    or pair[0] < 0 or pair[1] <= 0 or pair[0] > pair[1]):
+                raise ValueError("fpga_resources." + key + " 无效")
+    return result
 
 
 def load_config(path=CONFIG):
@@ -124,11 +157,26 @@ def deploy(config, session_id, token):
                 if not sftp.stat(remote_root):
                     raise
             sftp.mkdir(remote_dir, mode=0o700)
-            files = [(HERE / name, name) for name in ("board_entry.py", "desktop_board.py", "frame_protocol.py")]
+            files = [(HERE / name, name) for name in (
+                "board_entry.py", "desktop_board.py", "frame_protocol.py",
+                "rle_desktop_board.py")]
             files += [(ROOT / "scripts" / "wo0016" / name, name) for name in MODULES]
             files += [(ROOT / "scripts" / "gray8" / "packet_codec.py", "packet_codec.py")]
-            for local, name in files:
-                compile(local.read_bytes(), str(local), "exec")
+            packaged = [(local, name) for name, local in PACKAGE_FILES]
+            all_files = files + packaged
+            for local, _name in all_files:
+                content = local.read_bytes()
+                if local.suffix == ".py":
+                    compile(content, str(local), "exec")
+            directories = set()
+            for _, remote_name in packaged:
+                directories.update(
+                    str(parent) for parent in PurePosixPath(remote_name).parents
+                    if str(parent) != "."
+                )
+            for name in sorted(directories, key=lambda item: (item.count("/"), item)):
+                sftp.mkdir(remote_dir + "/" + name, mode=0o700)
+            for local, name in all_files:
                 sftp.put(str(local), remote_dir + "/" + name)
             remote_config = dict(config, session_id=session_id, token=token)
             config_path = remote_dir + "/config.json"
@@ -267,7 +315,9 @@ class DesktopController:
                     raise RuntimeError("端口属于其他任务，不接管")
                 self.latest_status = status
                 self._status(status)
-                self._message("采集已启动；计算来源：软件阈值")
+                source = status.get("telemetry", {}).get("source")
+                self._message("采集已启动；计算来源：" + (
+                    "PL 游程 + PS 区域分析/跟踪" if source == "pl_rle" else "软件阈值"))
                 threading.Thread(target=self._poll, args=(session_id,), daemon=True).start()
                 threading.Thread(target=self._receive, args=(session_id,), daemon=True).start()
                 return
@@ -279,6 +329,9 @@ class DesktopController:
                 if result and result.get("status") == "FAILED":
                     self.session = None
                     raise RuntimeError("板端启动失败：" + result.get("error", "请检查 viewer.log"))
+                if result and result.get("status") == "FAIL_HOLD":
+                    raise RuntimeError("DMA 所有权未确认，板端已保留缓冲区；请检查 "
+                                       + remote_dir + "/viewer.log，不自动重启")
             time.sleep(0.5)
         raise RuntimeError("板端启动超时，服务状态未确认；请检查 " + remote_dir + "/viewer.log")
 
@@ -362,7 +415,7 @@ class DesktopController:
         deadline = time.monotonic() + 30
         while time.monotonic() < deadline:
             result = read_remote_result(self.config, session["dir"])
-            if result and result.get("status") in ("STOPPED", "FAILED"):
+            if result and result.get("status") in ("STOPPED", "FAILED", "FAIL_HOLD"):
                 if result.get("status") != "STOPPED" or result.get("standard_profile_restored") is not True:
                     raise RuntimeError("板端停止未确认：" + json.dumps(result, ensure_ascii=False))
                 self.session = None

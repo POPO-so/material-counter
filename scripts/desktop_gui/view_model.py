@@ -109,8 +109,10 @@ def frame_summary(result: Any) -> tuple[int | None, int | None]:
 def roi_bounds(config: Any) -> tuple[float, float, float, float] | None:
     config = _mapping(config)
     top, bottom = _number(config.get("roi_top")), _number(config.get("roi_bottom"))
-    if top is not None and bottom is not None and 0 <= top < bottom <= 240:
-        return (0, top, 320, bottom)
+    width = _number(config.get("width")) or 320
+    height = _number(config.get("height")) or 240
+    if top is not None and bottom is not None and 0 <= top < bottom <= height:
+        return (0, top, width, bottom)
     roi = config.get("roi", config.get("region_of_interest"))
     if isinstance(roi, (list, tuple)) and len(roi) >= 4:
         values = tuple(_number(value) for value in roi[:4])

@@ -1,0 +1,386 @@
+{
+  "date": "2026-10-29",
+  "timezone": "Asia/Shanghai",
+  "gui_platform": "Qt offscreen window connected to actual board",
+  "self-test.json": {
+    "status": "RLE_BOARD_COMPLETED",
+    "mode": "self-test",
+    "resolution": [
+      640,
+      400
+    ],
+    "frames": 3,
+    "pixel_verified_frames": 3,
+    "count_accuracy": "NOT_MEASURED",
+    "tx_bytes": 256032,
+    "rx_capacity": 67744,
+    "configuration": {
+      "roi": [
+        0,
+        0,
+        640,
+        400
+      ],
+      "threshold": 128,
+      "intensity_offset": 0,
+      "morph_mode": 0
+    },
+    "counter_configuration": {
+      "line_y": 200,
+      "roi_top": 0,
+      "roi_bottom": 400,
+      "min_area": 48
+    },
+    "pattern": "moving",
+    "frames_evidence": [
+      {
+        "frame_id": 0,
+        "runs": 16,
+        "total_runs": 16,
+        "total_fg": 320,
+        "status": 0,
+        "rx_bytes": 2272,
+        "hw_timestamp": 207803812,
+        "capture_ms": 0.22220299979380798,
+        "transfer_parse_ms": 26.974153999617556,
+        "verification_ms": 35.769144000369124,
+        "count_ms": 6.329742000161787,
+        "total_count": 0,
+        "detections": [
+          {
+            "x_min": 200,
+            "x_max": 219,
+            "y_min": 140,
+            "y_max": 155,
+            "area": 320,
+            "centroid_x": 209.5,
+            "centroid_y": 147.5
+          }
+        ],
+        "dma": {
+          "mm2s_status": 4098,
+          "s2mm_status": 4098,
+          "actual_dma_bytes": 2272,
+          "actual_hw_bytes": 2272,
+          "pipeline_state": 2
+        }
+      },
+      {
+        "frame_id": 1,
+        "runs": 16,
+        "total_runs": 16,
+        "total_fg": 320,
+        "status": 0,
+        "rx_bytes": 2272,
+        "hw_timestamp": 209985193,
+        "capture_ms": 0.6361230007314589,
+        "transfer_parse_ms": 22.808682999311714,
+        "verification_ms": 29.361685999901965,
+        "count_ms": 2.0518710007308982,
+        "total_count": 0,
+        "detections": [
+          {
+            "x_min": 200,
+            "x_max": 219,
+            "y_min": 152,
+            "y_max": 167,
+            "area": 320,
+            "centroid_x": 209.5,
+            "centroid_y": 159.5
+          }
+        ],
+        "dma": {
+          "mm2s_status": 4098,
+          "s2mm_status": 4098,
+          "actual_dma_bytes": 2272,
+          "actual_hw_bytes": 2272,
+          "pipeline_state": 2
+        }
+      },
+      {
+        "frame_id": 2,
+        "runs": 16,
+        "total_runs": 16,
+        "total_fg": 320,
+        "status": 0,
+        "rx_bytes": 2272,
+        "hw_timestamp": 211687959,
+        "capture_ms": 0.6158399992273189,
+        "transfer_parse_ms": 22.38987700002326,
+        "verification_ms": 28.313963000982767,
+        "count_ms": 1.8715320002229419,
+        "total_count": 0,
+        "detections": [
+          {
+            "x_min": 200,
+            "x_max": 219,
+            "y_min": 164,
+            "y_max": 179,
+            "area": 320,
+            "centroid_x": 209.5,
+            "centroid_y": 171.5
+          }
+        ],
+        "dma": {
+          "mm2s_status": 4098,
+          "s2mm_status": 4098,
+          "actual_dma_bytes": 2272,
+          "actual_hw_bytes": 2272,
+          "pipeline_state": 2
+        }
+      }
+    ],
+    "total_count": 0,
+    "invalid_frames": 0,
+    "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+    "ownership": {
+      "findings": [],
+      "denied": [],
+      "scanned_proc": "/proc"
+    },
+    "cma_before": {
+      "CmaTotal": 131072,
+      "CmaFree": 38432
+    },
+    "overlay": {
+      "pl_state_status": "GLOBAL_STATE_PRESENT",
+      "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+      "shutdown_ips": {},
+      "shutdown_ips_empty": true,
+      "loaded_bit_path": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-verified-build/export/rle.bit",
+      "loaded_bit_sha1": "385cc6a2a9096a65c342a57edbead545581930fa",
+      "loaded_bit_sha256": "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
+    },
+    "afi1": {
+      "stage": "rle-start",
+      "status": "AFI1_HP1_32BIT_SYNC_PASS",
+      "hwh_path": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-verified-build/export/rle.hwh",
+      "hwh_sha256": "3032568fc1dd1660b7e6ac6e0113870ff86afce723b4f0a8612f8848276bc6b3",
+      "hwh_hp1_data_width_bits": 32,
+      "fpga_rst_ctrl": 0,
+      "fpga_rst_ctrl_raw_hex": "0x00000000",
+      "registers": {
+        "AFI1_RDCHAN_CTRL": {
+          "address": "0xf8009000",
+          "before": 1,
+          "before_raw_hex": "0x00000001",
+          "write_value": 1,
+          "write_raw_hex": "0x00000001",
+          "readback": 1,
+          "readback_raw_hex": "0x00000001",
+          "width_bit0": 1
+        },
+        "AFI1_WRCHAN_CTRL": {
+          "address": "0xf8009014",
+          "before": 3841,
+          "before_raw_hex": "0x00000f01",
+          "write_value": 3841,
+          "write_raw_hex": "0x00000f01",
+          "readback": 3841,
+          "readback_raw_hex": "0x00000f01",
+          "width_bit0": 1
+        }
+      }
+    },
+    "manifest_sha256": "4c430d69534f9a1c8bfac091adbae7cc7e2d9168a7052b470c6276576e7dcb4e",
+    "elapsed_s": 0.17777486700106238,
+    "throughput_fps": 16.87527630090744,
+    "buffers_held": false
+  },
+  "result.json": {
+    "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+    "buffers_held": false,
+    "frames": 570,
+    "invalid_frames": 0,
+    "protocol": "RLE_PACKET_V1",
+    "session_id": "0d583e3d19cd47988da99c065c06a99d",
+    "source": "pl_rle",
+    "standard_profile_restored": true,
+    "status": "STOPPED",
+    "total_count": 0
+  },
+  "board_entry.py": {
+    "sha256_lf": "71879c64e8c0b18324034703f3a305b818209339aa0d981ab72fd5a4e1ae98ed",
+    "matches_commit_source": true
+  },
+  "frame_protocol.py": {
+    "sha256_lf": "15a713bf1a3fb6e1ef72e7232776c9552a8885265cad3cb932e10c1070049785",
+    "matches_commit_source": true
+  },
+  "rle_desktop_board.py": {
+    "sha256_lf": "6931b30a9753ccc975ed121137391b10fd59e66259ac9baafbc92be4970fcbda",
+    "matches_commit_source": false,
+    "difference": "one trailing blank line removed after board test",
+    "matches_ignoring_trailing_blank_lines": true
+  },
+  "process_check": "",
+  "process_check_stderr": "",
+  "session": {
+    "session": "0d583e3d19cd47988da99c065c06a99d",
+    "remote_dir": "/home/xilinx/.material-counter-desktop/0d583e3d19cd47988da99c065c06a99d",
+    "shape": [
+      400,
+      640
+    ],
+    "source": "pl_rle"
+  },
+  "measurements": [
+    {
+      "debug": false,
+      "frames": 293,
+      "elapsed": 20.01600000000326,
+      "preview_fps": 14.638289368502813,
+      "processing_fps": 16.597715525584263,
+      "stage_ms": {
+        "capture_ms": 9.307762783328144,
+        "dma_ms": 23.648845900045973,
+        "regions_tracking_ms": 1.326161666626528,
+        "monitor_preview_ms": 25.156923000092018
+      },
+      "invalid_frames": 0,
+      "mask_mismatches": [],
+      "rx_bytes_min": 2276,
+      "rx_bytes_max": 2352,
+      "resource": {
+        "enabled": true,
+        "mode": "detail",
+        "metrics": {
+          "cpu_percent": 47.7,
+          "memory_total_kib": 503464,
+          "memory_available_kib": 318120,
+          "cma_total_kib": 131072,
+          "cma_free_kib": 44584,
+          "rootfs_total_bytes": 15002755072,
+          "rootfs_used_bytes": 8819720192,
+          "network_interface": "eth0",
+          "network_rx_bytes_per_second": 10424.2,
+          "network_tx_bytes_per_second": 721453.5,
+          "network_link_mbps": 100,
+          "sd_device": "mmcblk0",
+          "sd_read_bytes_per_second": 0,
+          "sd_write_bytes_per_second": 11963,
+          "soc_temperature_c": null,
+          "fpga_resources": null
+        },
+        "detail": {
+          "fpga": {
+            "source": "ROUTED 50 MHz build: data/results/gray8-rle-20261028-verified-build/reports/utilization.rpt",
+            "protocol": "RLE_PACKET_V1",
+            "resolution": [
+              640,
+              400
+            ],
+            "timing": "WNS +3.366 ns；WHS +0.036 ns；全部时序约束满足",
+            "lut": [
+              5809,
+              53200
+            ],
+            "ff": [
+              4162,
+              106400
+            ],
+            "bram": [
+              2.5,
+              140
+            ],
+            "dsp": [
+              0,
+              220
+            ],
+            "lutram": [
+              1731,
+              17400
+            ],
+            "iob": [
+              0,
+              125
+            ]
+          },
+          "camera": "/dev/video0",
+          "dma_status": "MM2S=0x00001002，S2MM=0x00001002，实际 2312 B"
+        }
+      },
+      "dimensions_label": "画面 640 × 400 · 预览 16.6 FPS",
+      "resource_text": "FPGA 位流资源（静态；仅显示已核验数据）\n数据来源：ROUTED 50 MHz build: data/results/gray8-rle-20261028-verified-build/reports/utilization.rpt\n处理协议：RLE_PACKET_V1\n处理尺寸：640 × 400\nLUT：5809 / 53200 · 10.92%\nFF 寄存器：4162 / 106400 · 3.91%\nBRAM Tile：2.5 / 140 · 1.79%\nDSP：0 / 220 · 0.00%\nLUT 存储：1731 / 17400 · 9.95%\nPL I/O：0 / 125 · 0.00%\nBUFG 时钟：未提供\nMMCM：未提供\nPLL：未提供\n时序：WNS +3.366 ns；WHS +0.036 ns；全部时序约束满足\n相机：/dev/video0\nDMA：MM2S=0x00001002，S2MM=0x00001002，实际 2336 B\nDDR 带宽、流水线负载与供电：未接入"
+    },
+    {
+      "debug": true,
+      "frames": 75,
+      "elapsed": 5.01600000000326,
+      "preview_fps": 14.95215311003813,
+      "processing_fps": 17.31597532025727,
+      "stage_ms": {
+        "capture_ms": 8.211302383248645,
+        "dma_ms": 23.86698412489447,
+        "regions_tracking_ms": 1.2462175666617743,
+        "monitor_preview_ms": 23.877023891661036
+      },
+      "invalid_frames": 0,
+      "mask_mismatches": [],
+      "rx_bytes_min": 2276,
+      "rx_bytes_max": 2348,
+      "resource": {
+        "enabled": true,
+        "mode": "detail",
+        "metrics": {
+          "cpu_percent": 52.8,
+          "memory_total_kib": 503464,
+          "memory_available_kib": 317524,
+          "cma_total_kib": 131072,
+          "cma_free_kib": 44584,
+          "rootfs_total_bytes": 15002755072,
+          "rootfs_used_bytes": 8819724288,
+          "network_interface": "eth0",
+          "network_rx_bytes_per_second": 11274.7,
+          "network_tx_bytes_per_second": 764036.8,
+          "network_link_mbps": 100,
+          "sd_device": "mmcblk0",
+          "sd_read_bytes_per_second": 0,
+          "sd_write_bytes_per_second": 0,
+          "soc_temperature_c": null,
+          "fpga_resources": null
+        },
+        "detail": {
+          "fpga": {
+            "source": "ROUTED 50 MHz build: data/results/gray8-rle-20261028-verified-build/reports/utilization.rpt",
+            "protocol": "RLE_PACKET_V1",
+            "resolution": [
+              640,
+              400
+            ],
+            "timing": "WNS +3.366 ns；WHS +0.036 ns；全部时序约束满足",
+            "lut": [
+              5809,
+              53200
+            ],
+            "ff": [
+              4162,
+              106400
+            ],
+            "bram": [
+              2.5,
+              140
+            ],
+            "dsp": [
+              0,
+              220
+            ],
+            "lutram": [
+              1731,
+              17400
+            ],
+            "iob": [
+              0,
+              125
+            ]
+          },
+          "camera": "/dev/video0",
+          "dma_status": "MM2S=0x00001002，S2MM=0x00001002，实际 2332 B"
+        }
+      },
+      "dimensions_label": "画面 640 × 400 · 预览 17.2 FPS",
+      "resource_text": "FPGA 位流资源（静态；仅显示已核验数据）\n数据来源：ROUTED 50 MHz build: data/results/gray8-rle-20261028-verified-build/reports/utilization.rpt\n处理协议：RLE_PACKET_V1\n处理尺寸：640 × 400\nLUT：5809 / 53200 · 10.92%\nFF 寄存器：4162 / 106400 · 3.91%\nBRAM Tile：2.5 / 140 · 1.79%\nDSP：0 / 220 · 0.00%\nLUT 存储：1731 / 17400 · 9.95%\nPL I/O：0 / 125 · 0.00%\nBUFG 时钟：未提供\nMMCM：未提供\nPLL：未提供\n时序：WNS +3.366 ns；WHS +0.036 ns；全部时序约束满足\n相机：/dev/video0\nDMA：MM2S=0x00001002，S2MM=0x00001002，实际 2332 B\nDDR 带宽、流水线负载与供电：未接入"
+    }
+  ],
+  "resume_verified": true
+}

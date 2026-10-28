@@ -51,6 +51,60 @@ def test_round_trip_preserves_metadata_and_images():
     assert decoded["mask"].shape == (240, 320)
 
 
+def test_round_trip_supports_full_resolution_dynamic_frames():
+    frame = make_frame(value=31)
+    frame["gray"] = np.full((400, 640), 31, dtype=np.uint8)
+    frame["mask"] = np.zeros((400, 640), dtype=np.uint8)
+    frame["mask"][15:170, 60:233] = 255
+    frame["mask"][399, 639] = 255
+    encoded = pack_frame(frame)
+    decoded = read_frame(ShortReader(encoded, max_chunk=4093))
+
+    assert decoded["gray"].shape == (400, 640)
+    assert decoded["mask"].shape == (400, 640)
+    assert abs(int(decoded["gray"][399, 639]) - 31) <= 2
+    assert np.array_equal(decoded["mask"], frame["mask"])
+    assert len(encoded) < 400 * 640 * 2
+
+
+def test_compressed_preview_rejects_nonbinary_mask():
+    frame = make_frame()
+    frame["gray"] = np.zeros((400, 640), dtype=np.uint8)
+    frame["mask"] = np.full((400, 640), 224, dtype=np.uint8)
+    with pytest.raises(FrameProtocolError, match="binary"):
+        pack_frame(frame)
+
+
+def test_camera_jpeg_is_reused_without_encoding_again(monkeypatch):
+    import cv2
+    frame = make_frame()
+    frame["gray"] = np.full((400, 640), 17, dtype=np.uint8)
+    frame["mask"] = np.zeros_like(frame["gray"])
+    ok, jpeg = cv2.imencode(".jpg", frame["gray"])
+    assert ok
+    frame["preview_jpeg"] = jpeg.tobytes()
+    monkeypatch.setattr(cv2, "imencode", lambda *_a, **_kw: pytest.fail("encoded twice"))
+    decoded = read_frame(io.BytesIO(pack_frame(frame)))
+    assert decoded["gray"].shape == (400, 640)
+    assert abs(int(decoded["gray"][0, 0]) - 17) <= 2
+    assert not decoded["mask"].any()
+
+
+def test_compressed_preview_rejects_invalid_image_and_dimensions():
+    frame = make_frame()
+    frame["gray"] = np.zeros((400, 640), dtype=np.uint8)
+    frame["mask"] = np.zeros_like(frame["gray"])
+    encoded = bytearray(pack_frame(frame))
+    metadata_size = struct.unpack_from("!I", encoded, 12)[0]
+    encoded[24 + metadata_size:24 + metadata_size + 2] = b"xx"
+    with pytest.raises(FrameProtocolError, match="valid image"):
+        read_frame(io.BytesIO(encoded))
+    encoded = bytearray(pack_frame(frame))
+    struct.pack_into("!HH", encoded, 8, 65535, 65535)
+    with pytest.raises(FrameProtocolError, match="dimensions"):
+        read_frame(io.BytesIO(encoded))
+
+
 def test_read_frame_handles_short_reads():
     decoded = read_frame(ShortReader(pack_frame(make_frame()), max_chunk=7))
     assert decoded["frame_id"] == 7
