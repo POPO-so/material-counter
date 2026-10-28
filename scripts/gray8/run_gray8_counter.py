@@ -26,6 +26,7 @@ from stream_counter import DoubleBufferStream, MaskCounter, allocate_ping_pong_b
 from hardware_checks import Gray8Checks, require_dma_quiescent
 from packet_codec import (TX_BYTES, gray320x240_to_gray_packet,
                           gray320x240_to_gray_packet_into)
+from dma_polling import CooperativeDmaChannel
 
 
 def packet_encoders(profile, threshold):
@@ -63,6 +64,8 @@ def main(argv=None):
     parser.add_argument("--mode", choices=("offline", "self-test", "camera"), default="offline")
     parser.add_argument("--validation", choices=("full", "runtime"), default="full",
                         help="full checks each pixel; runtime retains hardware and checksum checks")
+    parser.add_argument("--dma-wait", choices=("driver", "cooperative"), default="driver",
+                        help="driver uses PYNQ wait threads; cooperative yields between status polls")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--load-overlay", action="store_true")
     parser.add_argument("--boot-id")
@@ -83,7 +86,8 @@ def main(argv=None):
     result = dict(status="OFFLINE_ARTIFACTS_VALID", protocol=manifest["protocol"],
                   manifest_sha256=sha256(args.manifest), mode=args.mode,
                   tx_bytes=TX_BYTES, rx_bytes=76800, count_accuracy="NOT_MEASURED",
-                  validation=args.validation, verify_pixels=args.validation == "full",
+                  validation=args.validation, dma_wait=args.dma_wait,
+                  verify_pixels=args.validation == "full",
                   pixel_verified_frames=0, output_checksum_frames=0,
                   frames_requested=args.frames,
                   timing_scope="Offline artifact validation only; no frames were transferred")
@@ -131,6 +135,10 @@ def main(argv=None):
         api, SimpleNamespace(hwh_path=args.manifest.resolve().parent / manifest["hwh_path"]),
         stage="gray8-start")
     dma = overlay.axi_dma_0
+    send_channel, recv_channel = dma.sendchannel, dma.recvchannel
+    if args.dma_wait == "cooperative":
+        send_channel = CooperativeDmaChannel(send_channel, read=dma_registers.read)
+        recv_channel = CooperativeDmaChannel(recv_channel, read=dma_registers.read)
     buffers, stream, held = (), None, False
     settings = runtime._parser().parse_args([
         "--counting-profile", args.profile, "--lighting-threshold", str(args.lighting_threshold)])
@@ -148,15 +156,12 @@ def main(argv=None):
                 raise RuntimeError("DMA allocation is outside the validated HP DDR aperture")
         result["buffers"] = [dict(address=int(b.physical_address), nbytes=b.nbytes) for b in buffers]
 
-        def sync_rx(frame_id, slot):
-            slot.rx_buffer.sync_from_device()
-
         stream = DoubleBufferStream(
-            recv_channel=dma.recvchannel, send_channel=dma.sendchannel,
+            recv_channel=recv_channel, send_channel=send_channel,
             tx_buffers=tx, rx_buffers=rx, counter=counter,
             packet_encoder=encoding, packet_encoder_into=encoding_into,
             tx_bytes=TX_BYTES, before_transfer=checks.before_transfer,
-            before_rx_copy=sync_rx, after_transfer=checks.after_transfer,
+            after_transfer=checks.after_transfer,
             transfer_timeout_s=5, stage_timings_ms=timings)
         source = synthetic_frames(args.frames)
         if args.mode == "camera":
@@ -168,7 +173,9 @@ def main(argv=None):
                 mapping_timings_ms=mapping_timings)
             result["geometry"] = geometry
         start = time.perf_counter()
+        cpu_start = time.process_time()
         frames = asyncio.run(stream.run(source))
+        cpu_elapsed = time.process_time() - cpu_start
         elapsed = time.perf_counter() - start
         if not _dma_idle(dma):
             raise RuntimeError("DMA channels are not idle after stream completion")
@@ -180,6 +187,8 @@ def main(argv=None):
                       pixel_verified_frames=checks.verified_frames,
                       output_checksum_frames=checks.output_checksum_frames,
                       elapsed_s=elapsed, throughput_fps=len(frames) / elapsed,
+                      process_cpu_s=cpu_elapsed,
+                      cpu_core_ms_per_frame=cpu_elapsed * 1000 / len(frames),
                       timing_scope=("Includes startup/warmup, MMIO checks, output checksum, "
                                     + ("and full input/output pixel verification" if args.validation == "full"
                                        else "without software per-pixel verification")),
@@ -189,6 +198,8 @@ def main(argv=None):
                       camera_metadata=capture_metadata,
                       capture_timings_ms=capture_timings, mapping_timings_ms=mapping_timings,
                       results=[asdict(f) for f in frames], checker_frames=checks.completions)
+        if args.dma_wait == "cooperative":
+            result["dma_wait_timings"] = {"tx": send_channel.timings, "rx": recv_channel.timings}
     except BaseException as exc:
         try:
             held = bool(stream is not None and (stream.dma_may_be_active or not _dma_idle(dma)))
@@ -209,6 +220,7 @@ def main(argv=None):
             json.dump(result, output, indent=2)
         print(json.dumps({k: v for k, v in result.items() if k not in
                          ("results", "checker_frames", "capture_timings_ms", "mapping_timings_ms",
+                          "dma_wait_timings",
                           "kernel_log_before", "kernel_log_after")}), flush=True)
         if held:
             # Do not let Python destruction release buffers still owned by DMA.

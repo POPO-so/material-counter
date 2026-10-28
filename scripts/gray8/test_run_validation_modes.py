@@ -53,3 +53,11 @@ def test_self_test_rejects_runtime_validation(tmp_path):
         run_gray8_counter.main(arguments)
 
     assert exc.value.code == 2
+
+
+def test_offline_records_explicit_dma_wait_strategy(tmp_path, monkeypatch):
+    monkeypatch.setattr(run_gray8_counter, "load_manifest",
+                        lambda path, digest: {"protocol": "GRAY8_PACKET_V1"})
+    arguments, output = _offline_arguments(tmp_path, "--dma-wait", "cooperative")
+    assert run_gray8_counter.main(arguments) == 0
+    assert json.loads(output.read_text())["dma_wait"] == "cooperative"

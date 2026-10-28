@@ -18,6 +18,10 @@ XSim 的 adapter、320×240 wrapper、S2MM guards 三项均已通过，Vivado BI
 
 2026-10-28 起可指定 `--validation full|runtime`，默认 `full` 保持逐像素验收行为，`self-test` 必须使用 `full`。`runtime` 跳过输入包的软件重解码、软件期望掩膜生成和全像素比较，仍检查硬件签名、状态、帧号、长度计数和返回数据的输出 checksum；它不等于逐像素验证通过。结果分别为 `GRAY8_PIXEL_VERIFIED`、`GRAY8_RUNTIME_CHECKED`，并报告验证帧数及检查阶段的墙钟/线程 CPU 耗时。输入包 checksum 仍由编码器生成并由 PL 验证，不能用输出 checksum 替代。
 
+新增 `--dma-wait driver|cooperative`（默认 `driver` 用于保留原测量基线）。`cooperative` 使用已经核对的 PYNQ 3.1.1 simple-DMA 状态/缓存收尾约定，每 0.5 ms 让出事件循环后重新查询完成状态，不为每次 TX/RX 创建等待线程。实际唤醒间隔受系统调度影响；不承诺精确 0.5 ms。取消、错误或长度不符时不释放驱动的 active buffer，由流处理进入既有 FAIL_HOLD；没有自动复位或重试。RX 成功时只做一次驱动缓存失效，不再额外重复 `sync_from_device()`。该模式需要板端对照验证后再决定是否作为默认。
+
+结果新增 `process_cpu_s`、`cpu_core_ms_per_frame`（仅流处理区间，包含进程内线程）、DMA 查询/缓存收尾计时，以及 `roi_worker_wall`、`roi_worker_cpu`、`roi_dispatch_wait`、`frame_source_wait` 和 `free_slot_wait`。`roi_count` 仍为提交计数至返回的墙钟时间；派发等待不是 CPU 时间，阶段之间可以重叠，不能相加推算 FPS。
+
 `run_gray8_counter.py` 支持 `offline`（默认，只验证 manifest/制品）、`self-test`（板端合成输入）和 `camera` 模式。命令需要 manifest、对应 SHA-256 和一个从未存在过的结果路径：
 
 ```powershell
