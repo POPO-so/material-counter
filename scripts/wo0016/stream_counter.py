@@ -164,6 +164,7 @@ class MaskCounter:
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
                  discard_finished_tracks: bool = False,
+                 max_completed_tracks: int = 128,
                  motion_timebase_s: float | None = None,
                  observability: bool = False):
         self.width = _integer(width, "width", minimum=1)
@@ -236,6 +237,9 @@ class MaskCounter:
         if not isinstance(discard_finished_tracks, bool):
             raise ValueError("discard_finished_tracks must be a bool")
         self.discard_finished_tracks = discard_finished_tracks
+        self.max_completed_tracks = _integer(
+            max_completed_tracks, "max_completed_tracks", minimum=1
+        )
         if not isinstance(observability, bool):
             raise ValueError("observability must be a bool")
         self.observability = observability
@@ -247,6 +251,7 @@ class MaskCounter:
         self.total_count = 0
         self.last_frame_id: int | None = None
         self._tracks: dict[int, _Track] = {}
+        self._completed_tracks: deque[_Track] = deque(maxlen=self.max_completed_tracks)
         self._next_track_id = 1
         self.last_associations: list[dict[str, Any]] = []
         self.glare_rejected_count = 0
@@ -486,9 +491,10 @@ class MaskCounter:
         }
 
     def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
-        """Return serializable track state without mutating tracker behavior."""
+        """Return active and most-recent completed tracks in stable ID order."""
+        retained = (*self._completed_tracks, *self._tracks.values())
         return tuple(self._track_record(track) for track in
-                     sorted(self._tracks.values(), key=lambda item: item.track_id))
+                     sorted(retained, key=lambda item: item.track_id))
 
     def _finish_track(self, track: _Track, reason: str) -> None:
         if track.finished:
@@ -980,15 +986,18 @@ class MaskCounter:
                               detections: list[Detection],
                               capture_monotonic_ns: int | None = None) -> list[CountEvent]:
         active = []
+        finished_tracks: list[_Track] = []
         self.last_associations = []
         self.last_suppressed_events = []
         self._recent_events = [event for event in self._recent_events
                                if frame_id-event.frame_id <= self.cooldown_frames]
         for track in self._tracks.values():
             if track.finished:
+                finished_tracks.append(track)
                 continue
             if frame_id - track.last_frame > self._missing_budget(track) + 1:
                 self._finish_track(track, "association_gap_exceeded")
+                finished_tracks.append(track)
             else:
                 active.append(track)
 
@@ -1238,6 +1247,7 @@ class MaskCounter:
                 track.streak = 0
                 if track.missed > self._missing_budget(track):
                     self._finish_track(track, "missed_frame_budget_exceeded")
+                    finished_tracks.append(track)
 
         for index, detection in enumerate(detections):
             if index in used_detections:
@@ -1257,10 +1267,10 @@ class MaskCounter:
             self.last_associations.append({"track_id": track.track_id, "detection_index": index,
                                            "previous_frame": None, "kind": "new", "dx": None, "dy": None})
             self._next_track_id += 1
-        if self.discard_finished_tracks:
-            for track_id in [track_id for track_id, track in self._tracks.items()
-                             if track.finished]:
-                del self._tracks[track_id]
+        for track in finished_tracks:
+            retained = self._tracks.pop(track.track_id, None)
+            if retained is not None and not self.discard_finished_tracks:
+                self._completed_tracks.append(retained)
         self._last_capture_monotonic_ns = capture_monotonic_ns
         return sorted(events, key=lambda event: event.track_id)
 

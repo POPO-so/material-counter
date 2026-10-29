@@ -1751,3 +1751,46 @@ def test_blocked_jpeg_encoder_does_not_block_dma_counter_pipeline(monkeypatch):
         release_encode.set()
         publisher.close()
         hub.close()
+
+
+def test_completed_track_history_is_bounded_and_keeps_cumulative_count_and_active_tracking():
+    counter = MaskCounter(count_axis="x", line_x=160, max_step=40,
+                          max_missing=1, confirm_hits=2,
+                          max_completed_tracks=3)
+
+    def nut(x):
+        return Detection(x - 5, x + 5, 110, 120, 121, float(x), 115.0)
+
+    for cycle in range(10):
+        first_frame = cycle * 7
+        for offset, x in ((0, 130), (1, 142), (2, 174)):
+            result = counter.update_detections(first_frame + offset, [nut(x)])
+        for offset in (3, 4, 5, 6):
+            result = counter.update_detections(first_frame + offset, [])
+
+    assert result.total_count == 10
+    snapshot = counter.tracking_snapshot()
+    assert len(snapshot) == 3
+    assert all(track["finished"] for track in snapshot)
+    assert [track["track_id"] for track in snapshot] == [8, 9, 10]
+
+    # A fresh active track must continue to associate after old completions
+    # have been evicted from the display snapshot.
+    counter.update_detections(70, [nut(130)])
+    counter.update_detections(71, [nut(142)])
+    result = counter.update_detections(72, [nut(174)])
+    assert result.total_count == 11
+    assert result.events[0].track_id == 11
+    assert len([track for track in counter.tracking_snapshot()
+                if not track["finished"]]) == 1
+
+
+def test_completed_track_history_default_capacity_is_bounded():
+    counter = MaskCounter()
+    assert counter.max_completed_tracks == 128
+
+
+@pytest.mark.parametrize("capacity", [0, -1, True, 1.5, None])
+def test_completed_track_capacity_rejects_invalid_values(capacity):
+    with pytest.raises(ValueError):
+        MaskCounter(max_completed_tracks=capacity)
