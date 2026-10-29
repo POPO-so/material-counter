@@ -21,3 +21,12 @@
 G1 已有超过 10 分钟的稳定显示，但停机门禁未通过，G1 仍未完成。G1.5 未通过：至少一个采样的 30 秒以上窗口低于 10 FPS，且此运行未记录计划要求的 IPC、阶段耗时分位数及分核 CPU/CMA 证据。G2 及后续阶段未开始。
 
 原始板端报告：[`screen-run-failhold.json`](screen-run-failhold.json)，916166 字节，SHA256：`e112b7aee87dbd921333786cbf82d2d3591105f5bc863f7a7117cfd0f97d3daf`。
+
+## 停机修复候选的启动失败与资源诊断（2026-10-30）
+
+- 在候选部署 `/home/xilinx/standalone-g1-stopfix` 上启动 `material-display-g1-stopfix-20261030.service`，使用同一 boot ID `e48ff153-bd85-4dd6-98f6-438bd51da08d`。运行报告为 [`screen-stopfix-bo-failhold.json`](screen-stopfix-bo-failhold.json)，1157 字节；本地文件 SHA256 与板端一致：`476ec91dad83a7f3fd92536951567569adb9fa686f2245c9b9072f272ca3fd4b`。
+- 报告在 `setup_hardware` 运行 12.550 秒后进入 `FAIL_HOLD`，错误为 `BO allocation failed: std::bad_alloc`，`retained_count=0`。该函数的首项是一个 24 MiB CPU-only BO 探针，因此失败发生在 Overlay、时钟及 HDMI/VDMA 配置之前；没有据此运行有效显示或停机验收。
+- 释放前确认 unit 主进程 PID 30600 持有 `/dev/video0`，`SendSIGKILL=no`，报告 `retained_count=0`，MM2S 控制/状态为 `0x11000/0x11001`（halted、无错误位），监视器签名 `0x4D435631`，SLCR reset `0`。随后只对该 unit 发送 `SIGKILL` 以清除失败进程；unit 进入 `failed/result=signal`、`MainPID=0`，相机设备无占用，MM2S 仍 halted，CMA 空闲读数为 80,960 KiB。此强制释放是故障恢复记录，不计作应用正常停机证据。
+- 单独打开真实相机并读取一帧时，帧为 `(400, 640) uint8`；相机打开前/打开时 `CmaFree` 分别为 55,608/41,432 KiB。相机关闭返回 `OK`，随后 `/dev/video0` 无占用。这验证了候选版相机关闭在单独诊断中的返回，不替代整套显示服务的正常停机验收。
+- XRT 分配对照显示：无相机时 `CmaFree` 约 97 MiB，1、4、8、16 MiB 单块 BO 成功，24 MiB 单块 BO 失败；同一时段四个独立 `1280×720 uint8` BO 均成功并释放，合计 3,686,400 字节。故本次失败由 24 MiB 单块准入探针无法满足触发；板端结果不支持“CMA 总空闲量不足”这一解释。内核日志仅有通用 CMA 初始化信息，未提供更具体的 XRT 拒绝原因。
+- 后续修复将把准入探针改为与四个实际 Gray8 VDMA 帧槽一致的独立分配，并单测部分分配失败时的回收。完成修改前不重启显示服务；G1 的完整运行与正常停机门禁仍未通过，G1.5、G2 及后续阶段未开始。
