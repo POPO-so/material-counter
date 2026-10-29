@@ -214,3 +214,75 @@ def test_long_status_wraps_and_uses_readable_24_pixel_font():
     gray = np.zeros((400,640), dtype=np.uint8)
     a = c.render(gray,gray,uuid.uuid4(),5,status_lines=("ABCDEFGHIJKLMN" * 9,))
     assert np.any(a[164:190, 664:1260] != 16), "long status must wrap to another line"
+
+
+def test_status_updates_reuse_warmed_glyphs_without_drawing_static_header(monkeypatch):
+    c = _composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    c.render(gray, gray, session, 1, status_lines=("CPU 0123456789 / 运行",))
+    draws = []
+    real_text = compositor.ImageDraw.ImageDraw.text
+
+    def record_text(self, xy, text, *args, **kwargs):
+        draws.append(text)
+        return real_text(self, xy, text, *args, **kwargs)
+
+    monkeypatch.setattr(compositor.ImageDraw.ImageDraw, "text", record_text)
+    canvas = c.render(gray, gray, session, 2, status_lines=("CPU 9876543210 / 运行",))
+    assert draws == [], "cached status glyphs must not be rasterized again"
+    assert _decode_marker(canvas[0, 640:864]) == (session, 2)
+    assert _decode_marker(canvas[719, 640:864]) == (session, 2)
+
+
+@pytest.mark.parametrize("final_status", [("CPU 1 / 运行", "底行 gyp"), (), ("", "新行")])
+def test_shorter_wrapped_status_removes_old_text_and_preserves_other_rows(final_status):
+    c = _composer()
+    expected = _composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    c.render(gray, gray, session, 1,
+             status_lines=("CPU 0123456789 / 运行" * 8, "底行 gyp", "应当擦除"))
+    actual = c.render(gray, gray, session, 2, status_lines=final_status).copy()
+    clean = expected.render(gray, gray, session, 2, status_lines=final_status)
+    assert np.array_equal(actual, clean)
+
+
+def test_status_glyph_cache_has_a_fixed_memory_bound():
+    c = _composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    for index in range(300):
+        c.render(gray, gray, session, index, status_lines=(chr(0x4E00 + index),))
+    assert len(c._glyph_cache) <= 256
+
+
+def test_cached_glyphs_preserve_mixed_font_pixels_and_wrapping():
+    c = _composer()
+    latin = Path("C:/Windows/Fonts/consola.ttf")
+    if not latin.is_file():
+        pytest.skip("distinct Latin font is unavailable")
+    c = compositor.GrayComposer(FONT, latin_font_path=latin)
+    lines = ("运行 CPU 12.5% / gypj_", "帧 0000123456789 " * 8, "\u0301尾行")
+    # Independent Pillow rasterization checks the established glyph anchors,
+    # antialiasing and font selection without any timing or hardware comparison.
+    expected = compositor.Image.fromarray(c.canvas[:, 640:].copy())
+    draw = compositor.ImageDraw.Draw(expected)
+    y = 126
+    for line in lines:
+        if y + 32 >= 708:
+            break
+        x = 24.0
+        for ch in line:
+            font = c._small_latin_font if ord(ch) < 256 else c._small_font
+            advance = font.getlength(ch)
+            if x + advance > 616:
+                x, y = 24.0, y + 38
+            if y + 32 >= 708:
+                break
+            draw.text((round(x), y), ch, font=font, fill=255)
+            x += advance
+        y += 38
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    actual = c.render(gray, gray, uuid.uuid4(), 1, status_lines=lines)
+    assert np.array_equal(actual[1:719, 640:], np.asarray(expected)[1:719])
