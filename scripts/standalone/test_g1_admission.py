@@ -250,6 +250,5 @@ def test_producer_watchdog_still_detects_stall_after_first_publish():
     assert _producer_watchdog_expired(1, 100.0, 105.0)
 
 
-def test_sync_latency_sampling_uses_every_fourth_submitted_frame():
-    assert [_sync_sample_due(index) for index in range(10)] == [
-        True, False, False, False, True, False, False, False, True, False]
+def test_sync_latency_sampling_uses_every_sixteenth_submitted_frame():
+    assert [index for index in range(33) if _sync_sample_due(index)] == [0, 16, 32]
