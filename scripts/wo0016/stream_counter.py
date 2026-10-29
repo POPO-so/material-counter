@@ -113,6 +113,8 @@ class FrameResult:
     tracks: tuple[dict[str, Any], ...] = ()
     glare_rejected_count: int = 0
     glare_area_px: int = 0
+    diagnostics: dict[str, Any] = field(default_factory=dict, compare=False)
+    stage_timings_ms: dict[str, float] = field(default_factory=dict, compare=False)
 
 
 @dataclass
@@ -162,7 +164,8 @@ class MaskCounter:
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
                  discard_finished_tracks: bool = False,
-                 motion_timebase_s: float | None = None):
+                 motion_timebase_s: float | None = None,
+                 observability: bool = False):
         self.width = _integer(width, "width", minimum=1)
         self.height = _integer(height, "height", minimum=1)
         self.line_y = _integer(line_y, "line_y", minimum=0)
@@ -233,6 +236,9 @@ class MaskCounter:
         if not isinstance(discard_finished_tracks, bool):
             raise ValueError("discard_finished_tracks must be a bool")
         self.discard_finished_tracks = discard_finished_tracks
+        if not isinstance(observability, bool):
+            raise ValueError("observability must be a bool")
+        self.observability = observability
         self.motion_timebase_s = (None if motion_timebase_s is None else
                                   _positive_float(motion_timebase_s, "motion_timebase_s"))
         self._last_capture_monotonic_ns = None
@@ -249,6 +255,141 @@ class MaskCounter:
         self.rejected_contours: tuple[np.ndarray, ...] = ()
         self._split_origins: dict[Detection, int] = {}
         self._binary_validator = Binary8RoiValidator()
+        self.last_lost_tracks: list[dict[str, Any]] = []
+        self._frame_diagnostics: dict[str, list[dict[str, Any]]] = {}
+        self._last_t_ccl_ms = 0.0
+        self._last_t_split_ms = 0.0
+        self._last_t_diagnostic_ccl_ms = 0.0
+        self._last_split_calls = 0
+
+    def _begin_frame_observability(self) -> None:
+        self.last_lost_tracks = []
+        self._last_t_ccl_ms = 0.0
+        self._last_t_split_ms = 0.0
+        self._last_t_diagnostic_ccl_ms = 0.0
+        self._last_split_calls = 0
+        self._frame_diagnostics = ({
+            "rejected_components": [],
+            "split_attempts": [],
+            "ambiguous_associations": [],
+            "association_candidates": [],
+            "boundary_observations": [],
+            "lost_tracks": [],
+            "associations": [],
+        } if self.observability else {})
+
+    def _detection_record(self, detection: Detection) -> dict[str, Any]:
+        record = {
+            "x_min": detection.x_min,
+            "x_max": detection.x_max,
+            "y_min": detection.y_min,
+            "y_max": detection.y_max,
+            "area": detection.area,
+            "centroid_x": detection.centroid_x,
+            "centroid_y": detection.centroid_y,
+        }
+        clipped_edges = []
+        if detection.x_min <= 0:
+            clipped_edges.append("left")
+        if detection.x_max >= self.width - 1:
+            clipped_edges.append("right")
+        if detection.y_min <= 0:
+            clipped_edges.append("top")
+        if detection.y_max >= self.height - 1:
+            clipped_edges.append("bottom")
+        if clipped_edges:
+            record["frame_clipped_edges"] = clipped_edges
+        return record
+
+    def _record_rejected_component(self, detection: Detection, reason: str,
+                                   *, rejected: bool = True,
+                                   **details: Any) -> None:
+        if self.observability:
+            self._frame_diagnostics["rejected_components"].append({
+                "detection": self._detection_record(detection),
+                "reason": reason,
+                "rejected": rejected,
+                **details,
+            })
+
+    def _record_outside_roi_components(self, image: np.ndarray,
+                                      top: int, bottom: int) -> None:
+        """Run opt-in full-frame CCL to expose components clipped by the active ROI."""
+        if not self.observability:
+            return
+        started = time.perf_counter()
+        count, _, stats, centroids = cv2.connectedComponentsWithStats(
+            image, connectivity=8, ltype=cv2.CV_16U
+        )
+        self._last_t_diagnostic_ccl_ms += (time.perf_counter() - started) * 1000.0
+        for label in range(1, count):
+            x, y, box_width, box_height, area = (int(value) for value in stats[label])
+            y_max = y + box_height - 1
+            x_max = x + box_width - 1
+            frame_clipped_edges = []
+            if x <= 0:
+                frame_clipped_edges.append("left")
+            if x_max >= self.width - 1:
+                frame_clipped_edges.append("right")
+            if y <= 0:
+                frame_clipped_edges.append("top")
+            if y_max >= self.height - 1:
+                frame_clipped_edges.append("bottom")
+            roi_clipped_edges = []
+            if y < top:
+                roi_clipped_edges.append("top")
+            if y_max >= bottom:
+                roi_clipped_edges.append("bottom")
+            if not roi_clipped_edges and not frame_clipped_edges:
+                continue
+            detection = Detection(
+                x, x_max, y, y_max, area,
+                float(centroids[label, 0]), float(centroids[label, 1]),
+            )
+            intersects_roi = y < bottom and y_max >= top
+            if roi_clipped_edges:
+                reason = ("partially_outside_roi" if intersects_roi
+                          else "outside_roi")
+                self._record_rejected_component(
+                    detection, reason, source="full_frame_ccl",
+                    clipped_edges=roi_clipped_edges,
+                    rejected=reason == "outside_roi",
+                    partial_crop_only=reason == "partially_outside_roi",
+                )
+            if frame_clipped_edges:
+                self._frame_diagnostics["boundary_observations"].append({
+                    "detection": self._detection_record(detection),
+                    "frame_clipped_edges": frame_clipped_edges,
+                    "roi_clipped_edges": roi_clipped_edges,
+                    "visible_in_roi": intersects_roi,
+                })
+
+    def _record_small_roi_components(self, roi: np.ndarray, top: int) -> None:
+        """Diagnose components skipped by the foreground-count early return."""
+        if not self.observability:
+            return
+        started = time.perf_counter()
+        count, _, stats, centroids = cv2.connectedComponentsWithStats(
+            roi, connectivity=8, ltype=cv2.CV_16U
+        )
+        self._last_t_diagnostic_ccl_ms += (time.perf_counter() - started) * 1000.0
+        for label in range(1, count):
+            x, y, box_width, box_height, area = (int(value) for value in stats[label])
+            if area >= self.min_area:
+                continue
+            detection = Detection(
+                x, x + box_width - 1, y + top, y + top + box_height - 1, area,
+                float(centroids[label, 0]), float(centroids[label, 1] + top),
+            )
+            self._record_rejected_component(
+                detection, "below_min_area", source="roi_ccl",
+            )
+
+    def _diagnostics_snapshot(self) -> dict[str, Any]:
+        if not self.observability:
+            return {}
+        return {name: [dict(item) for item in records]
+                for name, records in self._frame_diagnostics.items()}
 
     def update_detections(self, frame_id: int, detections: Any, *,
                           capture_monotonic_ns: int | None = None) -> FrameResult:
@@ -258,6 +399,7 @@ class MaskCounter:
         Area filtering is identical to the live CCL path.
         """
         frame_id = _integer(frame_id, "frame_id", minimum=0)
+        self._begin_frame_observability()
         self._split_origins = {}
         if self.last_frame_id is not None and frame_id <= self.last_frame_id:
             raise ValueError("frame IDs must strictly increase")
@@ -273,6 +415,8 @@ class MaskCounter:
                     or detection.area > (detection.x_max-detection.x_min+1)*(detection.y_max-detection.y_min+1)):
                 raise ValueError("invalid recorded component geometry")
             if detection.area < self.min_area:
+                self._record_rejected_component(detection, "below_min_area",
+                                                source="recorded_detection")
                 continue
             if self._component_exceeds_limits(
                 detection.area,
@@ -280,6 +424,15 @@ class MaskCounter:
                 detection.y_max - detection.y_min + 1,
             ):
                 rejected.append(detection)
+                reason = self._component_rejection_reason(
+                    detection.area,
+                    detection.x_max - detection.x_min + 1,
+                    detection.y_max - detection.y_min + 1,
+                )
+                self._record_rejected_component(
+                    detection, reason or "component_limit",
+                    source="recorded_detection",
+                )
             else:
                 accepted.append(detection)
         self._set_rejected_components(rejected)
@@ -287,18 +440,31 @@ class MaskCounter:
         raw_detections = tuple(accepted)
         accepted = self._cluster_components(accepted)
         self.last_frame_id = frame_id
+        track_started = time.perf_counter()
         events = self._associate_and_update(frame_id, accepted, timestamp)
+        track_ms = (time.perf_counter() - track_started) * 1000.0
+        if self.observability:
+            self._frame_diagnostics["associations"] = [
+                dict(association) for association in self.last_associations
+            ]
         top, bottom = self._roi_bounds()
+        diagnostics = self._diagnostics_snapshot()
         return FrameResult(frame_id, self.total_count, tuple(accepted), tuple(events),
                            top, bottom, (), (), raw_detections=raw_detections,
                            suppressed_events=tuple(self.last_suppressed_events),
                            tracks=self.tracking_snapshot(),
                            glare_rejected_count=self.glare_rejected_count,
-                           glare_area_px=self.glare_area_px)
+                           glare_area_px=self.glare_area_px,
+                           diagnostics=diagnostics,
+                           stage_timings_ms={
+                               "t_ccl": 0.0,
+                               "t_split": 0.0,
+                               "t_track": track_ms,
+                               "split_calls": 0,
+                           })
 
-    def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
-        """Return serializable track state without mutating tracker behavior."""
-        return tuple({
+    def _track_record(self, track: _Track) -> dict[str, Any]:
+        return {
             "track_id": track.track_id,
             "detection": {
                 "x_min": track.detection.x_min,
@@ -317,7 +483,22 @@ class MaskCounter:
             "missed": track.missed,
             "finished": track.finished,
             "forward_velocity": track.forward_velocity,
-        } for track in sorted(self._tracks.values(), key=lambda item: item.track_id))
+        }
+
+    def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
+        """Return serializable track state without mutating tracker behavior."""
+        return tuple(self._track_record(track) for track in
+                     sorted(self._tracks.values(), key=lambda item: item.track_id))
+
+    def _finish_track(self, track: _Track, reason: str) -> None:
+        if track.finished:
+            return
+        track.finished = True
+        if self.observability:
+            lost = self._track_record(track)
+            lost["lost_reason"] = reason
+            self.last_lost_tracks.append(lost)
+            self._frame_diagnostics["lost_tracks"].append(dict(lost))
 
     def _area_allowed(self, area: int) -> bool:
         return area >= self.min_area and (self.max_area is None or area <= self.max_area)
@@ -328,6 +509,16 @@ class MaskCounter:
             or box_width > self.max_bbox_width
             or box_height > self.max_bbox_height
         )
+
+    def _component_rejection_reason(self, area: int, box_width: int,
+                                    box_height: int) -> str | None:
+        if self.max_area is not None and area > self.max_area:
+            return "max_area"
+        if box_width > self.max_bbox_width:
+            return "bbox_width"
+        if box_height > self.max_bbox_height:
+            return "bbox_height"
+        return None
 
     def _set_rejected_components(
         self,
@@ -361,9 +552,13 @@ class MaskCounter:
         if image.dtype != np.uint8 or image.ndim != 2 or image.shape != (self.height, self.width):
             raise ValueError(f"mask must be a uint8 array with shape {(self.height, self.width)}")
         roi_top, roi_bottom = self._roi_bounds()
+        self._begin_frame_observability()
         roi = image[roi_top:roi_bottom, :]
         self._binary_validator.validate(roi)
         validate_ms = (time.perf_counter() - validate_started) * 1000.0
+
+        if self.observability:
+            self._record_outside_roi_components(image, roi_top, roi_bottom)
 
         projection_started = time.perf_counter()
         row_projection, column_projection, foreground_pixels = self._project_roi(roi)
@@ -378,6 +573,11 @@ class MaskCounter:
         self.last_frame_id = frame_id
         events = self._associate_and_update(frame_id, detections, timestamp)
         track_ms = (time.perf_counter() - track_started) * 1000.0
+        if self.observability:
+            self._frame_diagnostics["associations"] = [
+                dict(association) for association in self.last_associations
+            ]
+        diagnostics = self._diagnostics_snapshot()
         return FrameResult(
             frame_id=frame_id,
             total_count=self.total_count,
@@ -400,6 +600,15 @@ class MaskCounter:
             tracks=self.tracking_snapshot(),
             glare_rejected_count=self.glare_rejected_count,
             glare_area_px=self.glare_area_px,
+            diagnostics=diagnostics,
+            stage_timings_ms={
+                "t_ccl": self._last_t_ccl_ms,
+                "t_split": self._last_t_split_ms,
+                "t_track": track_ms,
+                "split_calls": self._last_split_calls,
+                **({"t_diagnostic_ccl": self._last_t_diagnostic_ccl_ms}
+                   if self.observability else {}),
+            },
         )
 
     def _roi_bounds(self) -> tuple[int, int]:
@@ -430,12 +639,17 @@ class MaskCounter:
                         foreground_pixels: int) -> list[Detection]:
         self._set_rejected_components([])
         self._split_origins = {}
+        self._last_t_ccl_ms = 0.0
+        self._last_t_split_ms = 0.0
+        self._last_split_calls = 0
         if foreground_pixels < self.min_area:
+            self._record_small_roi_components(roi, top)
             return []
         if not roi.flags.c_contiguous:
             roi = np.ascontiguousarray(roi)
         fast_ccl = getattr(cv2, "connectedComponentsWithStatsWithAlgorithm", None)
         fast_algorithm = getattr(cv2, "CCL_GRANA", None)
+        ccl_started = time.perf_counter()
         if callable(fast_ccl) and fast_algorithm is not None:
             count, labels, stats, centroids = fast_ccl(
                 roi, 8, cv2.CV_16U, fast_algorithm
@@ -444,6 +658,23 @@ class MaskCounter:
             count, labels, stats, centroids = cv2.connectedComponentsWithStats(
                 roi, connectivity=8, ltype=cv2.CV_16U
             )
+        self._last_t_ccl_ms = (time.perf_counter() - ccl_started) * 1000.0
+        if self.observability:
+            for label in range(1, count):
+                x, y, box_width, box_height, area = (
+                    int(value) for value in stats[label]
+                )
+                if area >= self.min_area:
+                    continue
+                self._record_rejected_component(
+                    Detection(
+                        x_min=x, x_max=x + box_width - 1,
+                        y_min=y + top, y_max=y + top + box_height - 1,
+                        area=area, centroid_x=float(centroids[label, 0]),
+                        centroid_y=float(centroids[label, 1] + top),
+                    ),
+                    "below_min_area", source="roi_ccl",
+                )
         qualified_labels = np.flatnonzero(
             stats[1:count, cv2.CC_STAT_AREA] >= self.min_area
         ) + 1
@@ -465,6 +696,12 @@ class MaskCounter:
             )
             if self._component_exceeds_limits(area, box_width, box_height):
                 rejected.append(detection)
+                self._record_rejected_component(
+                    detection,
+                    self._component_rejection_reason(area, box_width, box_height)
+                    or "component_limit",
+                    source="roi_ccl",
+                )
                 component_mask = cv2.compare(labels, int(label), cv2.CMP_EQ)
                 contours, _ = cv2.findContours(
                     component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -474,13 +711,25 @@ class MaskCounter:
                     full_frame_contour[:, 0, 1] += top
                     rejected_contours.append(full_frame_contour)
                 continue
-            if (self.guarded_merge and self.single_intact_area < area <= self.max_split_area):
+            split_eligible = (self.guarded_merge and area > self.single_intact_area)
+            if split_eligible and area > self.max_split_area:
+                if self.observability:
+                    self._frame_diagnostics["split_attempts"].append({
+                        "detection": self._detection_record(detection),
+                        "split_attempted": False,
+                        "split_rejected_reason": "above_max_split_area",
+                        "accepted": False,
+                        "children": [],
+                    })
+            if split_eligible and area <= self.max_split_area:
                 cropped = labels[y:y + box_height, x:x + box_width] == label
+                split_started = time.perf_counter()
                 pieces = split_touching_component(cropped, min_child_area=self.min_split_child_area,
                                                   min_hole_area=self.split_min_hole_area,
                                                   recursive_item_area=self.split_recursive_item_area,
                                                   min_hole_distance=self.split_min_hole_distance,
                                                   hole_area_cap=self.split_hole_area_cap)
+                self._last_split_calls += 1
                 piece_masks = [np.asarray(piece) != 0 for piece in pieces]
                 valid_partition = (2 <= len(piece_masks) <= 3
                                    and all(piece.shape == cropped.shape
@@ -490,23 +739,56 @@ class MaskCounter:
                     coverage = np.sum(np.stack(piece_masks), axis=0)
                     valid_partition = (np.array_equal(coverage > 0, cropped)
                                        and not np.any(coverage > 1))
+                children = []
                 if valid_partition:
                     for piece in pieces:
                         ys, xs = np.nonzero(piece)
                         piece_area = len(xs)
-                        child = Detection(
+                        children.append(Detection(
                             x_min=x + int(xs.min()), x_max=x + int(xs.max()),
                             y_min=top + y + int(ys.min()),
                             y_max=top + y + int(ys.max()), area=piece_area,
                             centroid_x=x + float(np.mean(xs)),
                             centroid_y=top + y + float(np.mean(ys)),
-                        )
+                        ))
+                if self.observability:
+                    diagnostic_children = children
+                    if not valid_partition:
+                        for piece in pieces:
+                            ys, xs = np.nonzero(piece)
+                            if len(xs):
+                                diagnostic_children.append(Detection(
+                                    x_min=x + int(xs.min()), x_max=x + int(xs.max()),
+                                    y_min=top + y + int(ys.min()),
+                                    y_max=top + y + int(ys.max()), area=len(xs),
+                                    centroid_x=x + float(np.mean(xs)),
+                                    centroid_y=top + y + float(np.mean(ys)),
+                                ))
+                    split_rejected_reason = (
+                        None if valid_partition else
+                        "no_valid_partition" if len(piece_masks) < 2 else
+                        "invalid_partition"
+                    )
+                    self._frame_diagnostics["split_attempts"].append({
+                        "detection": self._detection_record(detection),
+                        "split_attempted": True,
+                        "split_rejected_reason": split_rejected_reason,
+                        "accepted": bool(valid_partition),
+                        "candidate_piece_count": len(piece_masks),
+                        "children": [self._detection_record(child)
+                                     for child in diagnostic_children],
+                    })
+                self._last_t_split_ms += (time.perf_counter() - split_started) * 1000.0
+                if valid_partition:
+                    for child in children:
                         detections.append(child)
                         self._split_origins[child] = int(label)
                     continue
             detections.append(detection)
         self._set_rejected_components(rejected, rejected_contours)
         detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
+        self._last_t_ccl_ms = max(0.0, (time.perf_counter() - ccl_started) * 1000.0
+                                 - self._last_t_split_ms)
         return detections
 
     def _extract_roi_detections(
@@ -706,7 +988,7 @@ class MaskCounter:
             if track.finished:
                 continue
             if frame_id - track.last_frame > self._missing_budget(track) + 1:
-                track.finished = True
+                self._finish_track(track, "association_gap_exceeded")
             else:
                 active.append(track)
 
@@ -742,6 +1024,47 @@ class MaskCounter:
                     area_ratio *= old_box/new_box
                 missing_frames = max(0, dt - 1)
                 gap = missing_frames > 0
+                candidate_record = None
+                if self.observability:
+                    candidate_predicted_x = old.centroid_x
+                    candidate_predicted_y = old.centroid_y
+                    if missing_frames and velocity is not None:
+                        candidate_prediction = self.direction * velocity * motion_dt
+                        if self.count_axis == "x":
+                            candidate_predicted_x += candidate_prediction
+                        else:
+                            candidate_predicted_y += candidate_prediction
+                    candidate_record = {
+                        "track_id": track.track_id,
+                        "detection_index": index,
+                        "dt_frames": dt,
+                        "missing_frames": missing_frames,
+                        "inferred_gap": gap,
+                        "dx_px": dx,
+                        "dy_px": dy,
+                        "forward_px": forward,
+                        "lateral_px": lateral,
+                        "area_ratio": area_ratio,
+                        "max_lateral_px": None,
+                        "min_forward_px": -self.backward_tolerance,
+                        "max_forward_px": self.max_step * motion_dt,
+                        "min_area_ratio": 0.25,
+                        "max_area_ratio": 4.0,
+                        "predicted_centroid": {
+                            "x": candidate_predicted_x,
+                            "y": candidate_predicted_y,
+                        },
+                        "prediction_distance_squared": (
+                            (detection.centroid_x-candidate_predicted_x) ** 2
+                            + (detection.centroid_y-candidate_predicted_y) ** 2
+                        ),
+                        "eligible": False,
+                        "selected": False,
+                        "rejection_reasons": [],
+                    }
+                    self._frame_diagnostics["association_candidates"].append(
+                        candidate_record
+                    )
                 if missing_frames > self.max_missing:
                     velocity_ok = (
                         track.confirmed and track.armed and not track.counted
@@ -762,11 +1085,20 @@ class MaskCounter:
                         missing_frames <= self.prediction_max_missing and velocity_ok
                     )
                     if not (edge_recovery or predicted_recovery):
+                        if candidate_record is not None:
+                            candidate_record["velocity_ok"] = velocity_ok
+                            candidate_record["edge_recovery"] = edge_recovery
+                            candidate_record["predicted_recovery"] = predicted_recovery
+                            candidate_record["rejection_reasons"].append(
+                                "missing_frames_exceed_recovery_budget"
+                            )
                         continue
                 lateral_limit = (self.max_lateral_step if self.strict_lateral_gate
                                  else self.max_lateral_step * dt)
                 if self.motion_timebase_s is not None:
                     lateral_limit = self.max_lateral_step * motion_dt
+                if candidate_record is not None:
+                    candidate_record["max_lateral_px"] = lateral_limit
                 if (lateral <= lateral_limit
                         and -self.backward_tolerance <= forward <= self.max_step * motion_dt
                         and 0.25 <= area_ratio <= 4.0):
@@ -779,7 +1111,27 @@ class MaskCounter:
                             predicted_y += longitudinal_prediction
                     prediction_distance = ((detection.centroid_x-predicted_x) ** 2
                                            + (detection.centroid_y-predicted_y) ** 2)
+                    if candidate_record is not None:
+                        candidate_record["predicted_centroid"] = {
+                            "x": predicted_x, "y": predicted_y,
+                        }
+                        candidate_record["prediction_distance_squared"] = prediction_distance
+                        candidate_record["eligible"] = True
                     edges.append((prediction_distance, track.track_id, index, gap))
+                elif candidate_record is not None:
+                    if lateral > lateral_limit:
+                        candidate_record["rejection_reasons"].append(
+                            "lateral_step_exceeded"
+                        )
+                    if not (-self.backward_tolerance <= forward
+                            <= self.max_step * motion_dt):
+                        candidate_record["rejection_reasons"].append(
+                            "forward_step_out_of_range"
+                        )
+                    if not 0.25 <= area_ratio <= 4.0:
+                        candidate_record["rejection_reasons"].append(
+                            "area_ratio_out_of_range"
+                        )
 
         # An inferred gap must have a unique candidate in both directions.
         # Refuse nearest-neighbour guessing when more than one object fits.
@@ -793,12 +1145,54 @@ class MaskCounter:
         events = []
         for _, track_id, index, gap in sorted(edges):
             if gap and (track_id in ambiguous_tracks or index in ambiguous_detections):
+                if self.observability:
+                    reasons = []
+                    if track_id in ambiguous_tracks:
+                        reasons.append("track_has_multiple_candidates")
+                    if index in ambiguous_detections:
+                        reasons.append("detection_matches_multiple_tracks")
+                    candidate = next((item for item in self._frame_diagnostics[
+                        "association_candidates"]
+                        if item["track_id"] == track_id
+                        and item["detection_index"] == index), None)
+                    if candidate is not None:
+                        candidate["rejection_reasons"].append("ambiguous_gap_match")
+                    self._frame_diagnostics["ambiguous_associations"].append({
+                        "track_id": track_id,
+                        "detection_index": index,
+                        "inferred_gap": True,
+                        "prediction_distance_squared": prediction_distance,
+                        "predicted_centroid": (None if candidate is None else
+                                                candidate["predicted_centroid"]),
+                        "track_candidate_count": track_frequency[track_id],
+                        "detection_candidate_count": detection_frequency[index],
+                        "reason": "ambiguous_gap_match",
+                        "ambiguity_reasons": reasons,
+                    })
                 continue
             if track_id in used_tracks or index in used_detections:
+                if self.observability:
+                    candidate = next((item for item in self._frame_diagnostics[
+                        "association_candidates"]
+                        if item["track_id"] == track_id
+                        and item["detection_index"] == index), None)
+                    if candidate is not None:
+                        candidate["rejection_reasons"].append("association_conflict")
                 continue
             track = self._tracks[track_id]
             detection = detections[index]
             dt = frame_id - track.last_frame
+            if self.observability:
+                candidate = next((item for item in self._frame_diagnostics[
+                    "association_candidates"]
+                    if item["track_id"] == track_id
+                    and item["detection_index"] == index), None)
+                if candidate is not None:
+                    candidate["selected"] = True
+                    candidate["selected_kind"] = (
+                        "edge_gap_inferred" if gap and self._edge(track.detection)
+                        else "predicted_gap_inferred" if gap else "matched"
+                    )
             self.last_associations.append({"track_id": track_id, "detection_index": index,
                                            "previous_frame": track.last_frame,
                                            "kind": ("edge_gap_inferred" if gap and self._edge(track.detection)
@@ -843,7 +1237,7 @@ class MaskCounter:
                 track.missed = frame_id - track.last_frame
                 track.streak = 0
                 if track.missed > self._missing_budget(track):
-                    track.finished = True
+                    self._finish_track(track, "missed_frame_budget_exceeded")
 
         for index, detection in enumerate(detections):
             if index in used_detections:
