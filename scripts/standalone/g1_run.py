@@ -33,6 +33,7 @@ from .shared_frames import READING, WRITING, SharedFrames
 RLE_BIT_SHA256 = "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
 PRODUCER_STARTUP_TIMEOUT_SECONDS = 30
 PRODUCER_STALL_TIMEOUT_SECONDS = 5
+SYNC_SAMPLE_EVERY_SUBMITTED_FRAMES = 4
 
 
 def _probe_display_buffers(owner, allocate):
@@ -190,6 +191,10 @@ def _producer_watchdog_expired(published_count, last_published_at, now):
     timeout = (PRODUCER_STALL_TIMEOUT_SECONDS if published_count
                else PRODUCER_STARTUP_TIMEOUT_SECONDS)
     return now - last_published_at >= timeout
+
+
+def _sync_sample_due(submitted_count):
+    return submitted_count % SYNC_SAMPLE_EVERY_SUBMITTED_FRAMES == 0
 
 
 def _read_cpu_ticks():
@@ -403,6 +408,8 @@ def main(argv=None):
               "manifest_sha256": args.manifest_sha256, "ownership": ownership,
               "before_memory": _memory(), "samples": [], "buttons": deque(maxlen=2048),
               "button_counts": {}, "cpu_samples": [], "sync_missed": 0,
+              "sync_checked": 0,
+              "sync_sample_every_nth_submitted_frame": SYNC_SAMPLE_EVERY_SUBMITTED_FRAMES,
               "state": "STARTING"}
     session = uuid.UUID(report["session_id"])
     stages = {name: deque(maxlen=20000) for name in
@@ -550,12 +557,16 @@ def main(argv=None):
             frame = None  # DMA owns it; never read, modify or release it here.
             submit_returned_ns = time.monotonic_ns()
             stages["submit_ms"].append((submit_returned_ns-submit_started) / 1_000_000)
-            observed, observed_ns = _wait_for_output_identity(owner, hw.monitor,
-                                                               session.int, frame_id)
-            if observed_ns is None:
-                report["sync_missed"] += 1
-            else:
-                stages["sync_ms"].append((observed_ns-submit_returned_ns) / 1_000_000)
+            observed = None
+            if _sync_sample_due(submitted):
+                report["sync_checked"] += 1
+                observed, observed_ns = _wait_for_output_identity(owner, hw.monitor,
+                                                                   session.int, frame_id)
+                if observed_ns is None:
+                    report["sync_missed"] += 1
+                else:
+                    stages["sync_ms"].append(
+                        (observed_ns-submit_returned_ns) / 1_000_000)
             submitted += 1
             if observed is not None and observed["session"] == session.int:
                 report["last_synced_frame"] = observed["frame"]

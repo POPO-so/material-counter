@@ -12,6 +12,7 @@ from scripts.standalone.g1_run import (
     _parse_proc_stat,
     _probe_display_buffers,
     _producer_watchdog_expired,
+    _sync_sample_due,
     _wait_for_output_identity,
 )
 from scripts.standalone.shared_frames import READING, WRITING, SharedFrames
@@ -210,3 +211,8 @@ def test_producer_watchdog_allows_spawn_and_camera_startup_before_first_frame():
 def test_producer_watchdog_still_detects_stall_after_first_publish():
     assert not _producer_watchdog_expired(1, 100.0, 104.9)
     assert _producer_watchdog_expired(1, 100.0, 105.0)
+
+
+def test_sync_latency_sampling_uses_every_fourth_submitted_frame():
+    assert [_sync_sample_due(index) for index in range(10)] == [
+        True, False, False, False, True, False, False, False, True, False]
