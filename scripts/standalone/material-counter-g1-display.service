@@ -1,0 +1,19 @@
+[Unit]
+Description=G1 camera Gray8 HDMI split-screen (bounded 2-hour display run; not RLE system acceptance)
+# G1 picture/display run only: one bounded two-hour run, not RLE or G4 acceptance.
+After=local-fs.target
+RequiresMountsFor=/home/xilinx/standalone-20261029-g1 /home/xilinx/rle-20261028
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/xilinx/standalone-20261029-g1
+Environment=XILINX_XRT=/usr
+Environment=PYTHONPATH=/home/xilinx/standalone-20261029-g1:/home/xilinx/rle-20261028
+ExecStart=/usr/local/share/pynq-venv/bin/python3 -B -u /home/xilinx/standalone-20261029-g1/scripts/standalone/boot_autostart.py
+Restart=no
+TimeoutStopSec=45s
+SendSIGKILL=no
+
+[Install]
+WantedBy=multi-user.target
