@@ -1,0 +1,1485 @@
+{
+  "schema": "material-counter.g1-run.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "session_id": "70bb0185-cd4c-4404-9279-ae98430011b7",
+  "scope": "G1.5 independent display; three-slot compositor IPC; no RLE counting",
+  "source": "camera",
+  "camera": "/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0",
+  "pipeline": "spawned compositor -> ordinary-RAM SharedFrames -> HDMI CMA",
+  "shared_frame_slots": 3,
+  "shared_frame_shape": [
+    720,
+    1280
+  ],
+  "manifest_sha256": "685bb871fed4d0c1ed58ff9bb5c079b2a51748c1102c25b86dee5ca8a6e7c8d3",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "before_memory": {
+    "MemAvailable": "     396184 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           53988 kB"
+  },
+  "samples": [
+    {
+      "unique": 102453,
+      "scans": 688276,
+      "repeat": 550348,
+      "invalid": 35475,
+      "partial": 6,
+      "frame": 875,
+      "session": 134603655184926804470075316105472137555,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d436543b89467604614ab199f78aea05953000000000000036b837d",
+      "bottom_marker": "4d436543b89467604614ab199f78aea05953000000000000036b837d",
+      "sequence": 10205,
+      "capture_started": 103462.786172992,
+      "sampled_monotonic": 103462.787041226
+    },
+    {
+      "unique": 102453,
+      "scans": 688397,
+      "repeat": 550348,
+      "invalid": 35596,
+      "partial": 7,
+      "frame": 875,
+      "session": 134603655184926804470075316105472137555,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": true,
+      "bottom_invalid": true,
+      "top_marker": "00000000000000000000000000000000000000000000000000000000",
+      "bottom_marker": "00000000000000000000000000000000000000000000000000000000",
+      "sequence": 10206,
+      "capture_started": 103464.88086337,
+      "sampled_monotonic": 103464.881767949,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102453,
+      "scans": 688517,
+      "repeat": 550348,
+      "invalid": 35716,
+      "partial": 7,
+      "frame": 875,
+      "session": 134603655184926804470075316105472137555,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": true,
+      "bottom_invalid": true,
+      "top_marker": "00000000000000000000000000000000000000000000000000000000",
+      "bottom_marker": "00000000000000000000000000000000000000000000000000000000",
+      "sequence": 10207,
+      "capture_started": 103466.88246045,
+      "sampled_monotonic": 103466.883369706,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102453,
+      "scans": 688637,
+      "repeat": 550348,
+      "invalid": 35836,
+      "partial": 7,
+      "frame": 875,
+      "session": 134603655184926804470075316105472137555,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": true,
+      "bottom_invalid": true,
+      "top_marker": "00000000000000000000000000000000000000000000000000000000",
+      "bottom_marker": "00000000000000000000000000000000000000000000000000000000",
+      "sequence": 10208,
+      "capture_started": 103468.883758244,
+      "sampled_monotonic": 103468.884622934,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102453,
+      "scans": 688757,
+      "repeat": 550348,
+      "invalid": 35956,
+      "partial": 7,
+      "frame": 875,
+      "session": 134603655184926804470075316105472137555,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": true,
+      "bottom_invalid": true,
+      "top_marker": "00000000000000000000000000000000000000000000000000000000",
+      "bottom_marker": "00000000000000000000000000000000000000000000000000000000",
+      "sequence": 10209,
+      "capture_started": 103470.884712875,
+      "sampled_monotonic": 103470.885613251,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102453,
+      "scans": 688877,
+      "repeat": 550348,
+      "invalid": 36076,
+      "partial": 7,
+      "frame": 875,
+      "session": 134603655184926804470075316105472137555,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": true,
+      "bottom_invalid": true,
+      "top_marker": "00000000000000000000000000000000000000000000000000000000",
+      "bottom_marker": "00000000000000000000000000000000000000000000000000000000",
+      "sequence": 10210,
+      "capture_started": 103472.885001168,
+      "sampled_monotonic": 103472.885995426,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102458,
+      "scans": 688997,
+      "repeat": 550382,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 4,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000000486e4",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000000486e4",
+      "sequence": 10220,
+      "capture_started": 103474.886827226,
+      "sampled_monotonic": 103474.887710832,
+      "effective_fps": 2.49785758005474,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102475,
+      "scans": 689118,
+      "repeat": 550486,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 23,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000017a4b6",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000017a4b6",
+      "sequence": 10245,
+      "capture_started": 103476.890388497,
+      "sampled_monotonic": 103476.891245389,
+      "effective_fps": 8.485004633771275,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102495,
+      "scans": 689238,
+      "repeat": 550586,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 46,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000002e03cc",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000002e03cc",
+      "sequence": 10282,
+      "capture_started": 103478.891594605,
+      "sampled_monotonic": 103478.892474931,
+      "effective_fps": 9.99385606710195,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102512,
+      "scans": 689358,
+      "repeat": 550689,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 68,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000044ce20",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000044ce20",
+      "sequence": 10302,
+      "capture_started": 103480.898223279,
+      "sampled_monotonic": 103480.899105802,
+      "effective_fps": 8.471911922424011,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102532,
+      "scans": 689478,
+      "repeat": 550789,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 92,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000005c5d19",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000005c5d19",
+      "sequence": 10334,
+      "capture_started": 103482.901765651,
+      "sampled_monotonic": 103482.90265138,
+      "effective_fps": 9.982303482183891,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102549,
+      "scans": 689599,
+      "repeat": 550893,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 115,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000738894",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000738894",
+      "sequence": 10361,
+      "capture_started": 103484.910607734,
+      "sampled_monotonic": 103484.911601593,
+      "effective_fps": 8.462131062281532,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102567,
+      "scans": 689719,
+      "repeat": 550995,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 137,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000089c6c1",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000089c6c1",
+      "sequence": 10392,
+      "capture_started": 103486.917387448,
+      "sampled_monotonic": 103486.918250101,
+      "effective_fps": 8.9701808405147,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102585,
+      "scans": 689840,
+      "repeat": 551098,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 160,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000a0738a",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000a0738a",
+      "sequence": 10418,
+      "capture_started": 103488.926159304,
+      "sampled_monotonic": 103488.927316307,
+      "effective_fps": 8.959386179585582,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102603,
+      "scans": 689960,
+      "repeat": 551200,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 181,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000b5311e",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000b5311e",
+      "sequence": 10446,
+      "capture_started": 103490.926665455,
+      "sampled_monotonic": 103490.927798058,
+      "effective_fps": 8.997832642605003,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102624,
+      "scans": 690081,
+      "repeat": 551300,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 203,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000cbae47",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000cbae47",
+      "sequence": 10473,
+      "capture_started": 103492.945156159,
+      "sampled_monotonic": 103492.946004375,
+      "effective_fps": 10.40527909512474,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 102644,
+      "scans": 690201,
+      "repeat": 551400,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 228,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000e47bca",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000e47bca",
+      "sequence": 10509,
+      "capture_started": 103494.946160839,
+      "sampled_monotonic": 103494.94734727,
+      "effective_fps": 9.993290030371348,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102665,
+      "scans": 690322,
+      "repeat": 551500,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 250,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000fa8835",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000000fa8835",
+      "sequence": 10537,
+      "capture_started": 103496.956143692,
+      "sampled_monotonic": 103496.957469236,
+      "effective_fps": 10.447127266509886,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102684,
+      "scans": 690442,
+      "repeat": 551601,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 272,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000110e760",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000110e760",
+      "sequence": 10573,
+      "capture_started": 103498.951623381,
+      "sampled_monotonic": 103498.952653203,
+      "effective_fps": 9.522931375902097,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102703,
+      "scans": 690562,
+      "repeat": 551702,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 296,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000128503b",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000128503b",
+      "sequence": 10609,
+      "capture_started": 103500.951721661,
+      "sampled_monotonic": 103500.955915126,
+      "effective_fps": 9.484531094918838,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102720,
+      "scans": 690683,
+      "repeat": 551806,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 317,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000013d12af",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000013d12af",
+      "sequence": 10637,
+      "capture_started": 103502.9656622,
+      "sampled_monotonic": 103502.966580667,
+      "effective_fps": 8.45491189530316,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 102739,
+      "scans": 690803,
+      "repeat": 551907,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 340,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000154ef20",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000154ef20",
+      "sequence": 10675,
+      "capture_started": 103504.973124701,
+      "sampled_monotonic": 103504.974113661,
+      "effective_fps": 9.46435254452964,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102758,
+      "scans": 690924,
+      "repeat": 552009,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 362,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000016a38bd",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000016a38bd",
+      "sequence": 10706,
+      "capture_started": 103506.980314181,
+      "sampled_monotonic": 103506.981207769,
+      "effective_fps": 9.466422089638439,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102779,
+      "scans": 691044,
+      "repeat": 552108,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 384,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000018064d9",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000018064d9",
+      "sequence": 10737,
+      "capture_started": 103508.976550068,
+      "sampled_monotonic": 103508.977427028,
+      "effective_fps": 10.519886483056043,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102797,
+      "scans": 691164,
+      "repeat": 552210,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 407,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000197060f",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000197060f",
+      "sequence": 10772,
+      "capture_started": 103510.978985025,
+      "sampled_monotonic": 103510.979880015,
+      "effective_fps": 8.988975080497354,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102817,
+      "scans": 691285,
+      "repeat": 552311,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 431,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000001afb154",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000001afb154",
+      "sequence": 10809,
+      "capture_started": 103512.990512683,
+      "sampled_monotonic": 103512.991481926,
+      "effective_fps": 9.942325015025471,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102834,
+      "scans": 691405,
+      "repeat": 552414,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 452,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000001c46c99",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000001c46c99",
+      "sequence": 10846,
+      "capture_started": 103514.988165751,
+      "sampled_monotonic": 103514.989021056,
+      "effective_fps": 8.510471582118772,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102854,
+      "scans": 691527,
+      "repeat": 552516,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 476,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000001dcffa0",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000001dcffa0",
+      "sequence": 10884,
+      "capture_started": 103517.025901508,
+      "sampled_monotonic": 103517.027698406,
+      "effective_fps": 9.810282141965052,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102872,
+      "scans": 691647,
+      "repeat": 552618,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 498,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000001f23a0c",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000001f23a0c",
+      "sequence": 10908,
+      "capture_started": 103519.027323382,
+      "sampled_monotonic": 103519.028246945,
+      "effective_fps": 8.99753225133142,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102892,
+      "scans": 691767,
+      "repeat": 552718,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 521,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000209312b",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000209312b",
+      "sequence": 10940,
+      "capture_started": 103521.030675674,
+      "sampled_monotonic": 103521.031604025,
+      "effective_fps": 9.983242727748923,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102912,
+      "scans": 691888,
+      "repeat": 552819,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 543,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000021f43dc",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000021f43dc",
+      "sequence": 10979,
+      "capture_started": 103523.032792471,
+      "sampled_monotonic": 103523.035605757,
+      "effective_fps": 9.980031294709123,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102934,
+      "scans": 692008,
+      "repeat": 552917,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 566,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000236f697",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000236f697",
+      "sequence": 11024,
+      "capture_started": 103525.033113201,
+      "sampled_monotonic": 103525.034015121,
+      "effective_fps": 11.0087554614083,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102950,
+      "scans": 692129,
+      "repeat": 553022,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 590,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000024e0908",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000024e0908",
+      "sequence": 11053,
+      "capture_started": 103527.060310182,
+      "sampled_monotonic": 103527.061313265,
+      "effective_fps": 7.892277732952745,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102969,
+      "scans": 692249,
+      "repeat": 553123,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 611,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000263fcc7",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000263fcc7",
+      "sequence": 11075,
+      "capture_started": 103529.058656542,
+      "sampled_monotonic": 103529.059507459,
+      "effective_fps": 9.508585330261495,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 102987,
+      "scans": 692370,
+      "repeat": 553226,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 635,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000027b6ffe",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000027b6ffe",
+      "sequence": 11120,
+      "capture_started": 103531.063583813,
+      "sampled_monotonic": 103531.064535573,
+      "effective_fps": 8.977430228694736,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103007,
+      "scans": 692490,
+      "repeat": 553326,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 658,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000029203f9",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000029203f9",
+      "sequence": 11148,
+      "capture_started": 103533.071206758,
+      "sampled_monotonic": 103533.072152099,
+      "effective_fps": 9.962061848405812,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 103027,
+      "scans": 692610,
+      "repeat": 553426,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 682,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000002aab4a2",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000002aab4a2",
+      "sequence": 11185,
+      "capture_started": 103535.071432053,
+      "sampled_monotonic": 103535.072308047,
+      "effective_fps": 9.999220320791652,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103046,
+      "scans": 692730,
+      "repeat": 553527,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 705,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000002c1696f",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000002c1696f",
+      "sequence": 11215,
+      "capture_started": 103537.075565373,
+      "sampled_monotonic": 103537.076501361,
+      "effective_fps": 9.480123432834699,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103066,
+      "scans": 692851,
+      "repeat": 553628,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 726,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000002d60bb9",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000002d60bb9",
+      "sequence": 11246,
+      "capture_started": 103539.08026918,
+      "sampled_monotonic": 103539.081150404,
+      "effective_fps": 9.976808693710637,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103083,
+      "scans": 692971,
+      "repeat": 553731,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 748,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000002ec9ca0",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000002ec9ca0",
+      "sequence": 11276,
+      "capture_started": 103541.085189017,
+      "sampled_monotonic": 103541.086237312,
+      "effective_fps": 8.47843548933869,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103102,
+      "scans": 693092,
+      "repeat": 553833,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 772,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000304d3b7",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000304d3b7",
+      "sequence": 11304,
+      "capture_started": 103543.092204023,
+      "sampled_monotonic": 103543.093111475,
+      "effective_fps": 9.467459569885008,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103122,
+      "scans": 693212,
+      "repeat": 553933,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 798,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000031e60cc",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000031e60cc",
+      "sequence": 11346,
+      "capture_started": 103545.093896371,
+      "sampled_monotonic": 103545.096784592,
+      "effective_fps": 9.981668082655332,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103142,
+      "scans": 693335,
+      "repeat": 554036,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 823,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000337d587",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000337d587",
+      "sequence": 11378,
+      "capture_started": 103547.147373986,
+      "sampled_monotonic": 103547.148229783,
+      "effective_fps": 9.749224638200287,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103162,
+      "scans": 693455,
+      "repeat": 554136,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 844,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000034c1a7b",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b7000000000000034c1a7b",
+      "sequence": 11406,
+      "capture_started": 103549.147713725,
+      "sampled_monotonic": 103549.148634525,
+      "effective_fps": 9.997976699417576,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 103183,
+      "scans": 693575,
+      "repeat": 554235,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 867,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000363cff6",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b70000000000000363cff6",
+      "sequence": 11439,
+      "capture_started": 103551.148044177,
+      "sampled_monotonic": 103551.149677057,
+      "effective_fps": 10.494529558594856,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 103199,
+      "scans": 693838,
+      "repeat": 554482,
+      "invalid": 36157,
+      "partial": 7,
+      "frame": 886,
+      "session": 149844525923748435161517838960831762871,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000003768d62",
+      "bottom_marker": "4d4370bb0185cd4c44049279ae98430011b700000000000003768d62",
+      "sequence": 11466,
+      "capture_started": 103555.521996084,
+      "sampled_monotonic": 103555.522849149
+    }
+  ],
+  "buttons": [],
+  "button_counts": {},
+  "cpu_samples": [
+    {
+      "time": 3.0001234850060428,
+      "per_core_percent": {
+        "cpu0": 92.48366013071896,
+        "cpu1": 92.61744966442953
+      }
+    },
+    {
+      "time": 6.000172674001078,
+      "per_core_percent": {
+        "cpu0": 76.20689655172414,
+        "cpu1": 100.0
+      }
+    },
+    {
+      "time": 9.00160560500808,
+      "per_core_percent": {
+        "cpu0": 76.14379084967321,
+        "cpu1": 100.0
+      }
+    },
+    {
+      "time": 12.007509299000958,
+      "per_core_percent": {
+        "cpu0": 83.22147651006712,
+        "cpu1": 84.36482084690553
+      }
+    },
+    {
+      "time": 15.010249041995849,
+      "per_core_percent": {
+        "cpu0": 97.97979797979798,
+        "cpu1": 96.62162162162163
+      }
+    },
+    {
+      "time": 18.019185530007235,
+      "per_core_percent": {
+        "cpu0": 95.47038327526133,
+        "cpu1": 93.9799331103679
+      }
+    },
+    {
+      "time": 21.01956675000838,
+      "per_core_percent": {
+        "cpu0": 94.94949494949495,
+        "cpu1": 93.51535836177474
+      }
+    },
+    {
+      "time": 24.02013951500703,
+      "per_core_percent": {
+        "cpu0": 95.60810810810811,
+        "cpu1": 95.34883720930233
+      }
+    },
+    {
+      "time": 27.022185577996424,
+      "per_core_percent": {
+        "cpu0": 96.98996655518394,
+        "cpu1": 95.90443686006826
+      }
+    },
+    {
+      "time": 30.0240335920098,
+      "per_core_percent": {
+        "cpu0": 96.95945945945945,
+        "cpu1": 96.01328903654485
+      }
+    },
+    {
+      "time": 33.04297777899774,
+      "per_core_percent": {
+        "cpu0": 96.0,
+        "cpu1": 94.53924914675768
+      }
+    },
+    {
+      "time": 36.04339114599861,
+      "per_core_percent": {
+        "cpu0": 96.28378378378379,
+        "cpu1": 95.9866220735786
+      }
+    },
+    {
+      "time": 39.061691203009104,
+      "per_core_percent": {
+        "cpu0": 93.89830508474576,
+        "cpu1": 94.63087248322148
+      }
+    },
+    {
+      "time": 42.0624929839978,
+      "per_core_percent": {
+        "cpu0": 96.27118644067797,
+        "cpu1": 94.98327759197325
+      }
+    },
+    {
+      "time": 45.0639613730018,
+      "per_core_percent": {
+        "cpu0": 96.64429530201342,
+        "cpu1": 95.578231292517
+      }
+    },
+    {
+      "time": 48.0731284450012,
+      "per_core_percent": {
+        "cpu0": 95.578231292517,
+        "cpu1": 93.89830508474576
+      }
+    },
+    {
+      "time": 51.07843957899604,
+      "per_core_percent": {
+        "cpu0": 95.90443686006826,
+        "cpu1": 94.5945945945946
+      }
+    },
+    {
+      "time": 54.08723509500851,
+      "per_core_percent": {
+        "cpu0": 96.33333333333333,
+        "cpu1": 95.0
+      }
+    },
+    {
+      "time": 57.09027394000441,
+      "per_core_percent": {
+        "cpu0": 96.67774086378738,
+        "cpu1": 94.96644295302013
+      }
+    },
+    {
+      "time": 60.09510257499642,
+      "per_core_percent": {
+        "cpu0": 96.94915254237289,
+        "cpu1": 95.30201342281879
+      }
+    },
+    {
+      "time": 63.10102333400573,
+      "per_core_percent": {
+        "cpu0": 95.9866220735786,
+        "cpu1": 96.27118644067797
+      }
+    },
+    {
+      "time": 66.1026676120091,
+      "per_core_percent": {
+        "cpu0": 95.56313993174061,
+        "cpu1": 94.57627118644068
+      }
+    },
+    {
+      "time": 69.10572211899853,
+      "per_core_percent": {
+        "cpu0": 94.19795221843003,
+        "cpu1": 93.95973154362416
+      }
+    },
+    {
+      "time": 72.11463982499845,
+      "per_core_percent": {
+        "cpu0": 96.56357388316151,
+        "cpu1": 94.89795918367346
+      }
+    },
+    {
+      "time": 75.11915492200933,
+      "per_core_percent": {
+        "cpu0": 95.9866220735786,
+        "cpu1": 95.50173010380622
+      }
+    },
+    {
+      "time": 78.11975808099669,
+      "per_core_percent": {
+        "cpu0": 97.3063973063973,
+        "cpu1": 94.98327759197325
+      }
+    },
+    {
+      "time": 81.12439490100951,
+      "per_core_percent": {
+        "cpu0": 94.61279461279462,
+        "cpu1": 92.97658862876254
+      }
+    },
+    {
+      "time": 84.13655624999956,
+      "per_core_percent": {
+        "cpu0": 94.91525423728814,
+        "cpu1": 94.6843853820598
+      }
+    },
+    {
+      "time": 87.14985947000969,
+      "per_core_percent": {
+        "cpu0": 98.00664451827242,
+        "cpu1": 96.35761589403974
+      }
+    }
+  ],
+  "sync_missed": 0,
+  "sync_checked": 187,
+  "sync_sample_every_nth_submitted_frame": 4,
+  "state": "STOPPED",
+  "clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "hp2_read32": {
+    "status": "HP2_READ_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/standalone-20261029-g1/export/display-diag.hwh",
+    "hwh_hp2_data_width_bits": 32,
+    "slcr_fpga_rst_ctrl": 0,
+    "vdma": {
+      "base": "0x43000000",
+      "control": 69632,
+      "status": 69633
+    },
+    "register": "AFI2_RDCHAN_CTRL",
+    "address": "0xF800A000",
+    "before": 1,
+    "write_value": null,
+    "after": 1,
+    "width_bit0": 1
+  },
+  "producer_pid": 6679,
+  "compositor_process": "separate spawn process",
+  "ipc": "three-slot non-blocking READY/READING lease",
+  "memory_samples": [
+    {
+      "time": 103465.878188649,
+      "MemAvailable": "     345040 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "           20460 kB"
+    },
+    {
+      "time": 103468.878237838,
+      "MemAvailable": "     341972 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "           16820 kB"
+    },
+    {
+      "time": 103471.879670769,
+      "MemAvailable": "     327868 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            9748 kB"
+    },
+    {
+      "time": 103474.885574463,
+      "MemAvailable": "     306660 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            7924 kB"
+    },
+    {
+      "time": 103477.888314206,
+      "MemAvailable": "     305772 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8200 kB"
+    },
+    {
+      "time": 103480.897250694,
+      "MemAvailable": "     305272 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            7916 kB"
+    },
+    {
+      "time": 103483.897631914,
+      "MemAvailable": "     305420 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            7992 kB"
+    },
+    {
+      "time": 103486.898204679,
+      "MemAvailable": "     305400 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8168 kB"
+    },
+    {
+      "time": 103489.900250742,
+      "MemAvailable": "     305268 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8008 kB"
+    },
+    {
+      "time": 103492.902098756,
+      "MemAvailable": "     305284 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8104 kB"
+    },
+    {
+      "time": 103495.921042943,
+      "MemAvailable": "     305040 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            7932 kB"
+    },
+    {
+      "time": 103498.92145631,
+      "MemAvailable": "     305552 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8108 kB"
+    },
+    {
+      "time": 103501.939756367,
+      "MemAvailable": "     306088 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            7752 kB"
+    },
+    {
+      "time": 103504.940558148,
+      "MemAvailable": "     305412 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8456 kB"
+    },
+    {
+      "time": 103507.942026537,
+      "MemAvailable": "     305296 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8300 kB"
+    },
+    {
+      "time": 103510.951193609,
+      "MemAvailable": "     305276 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8216 kB"
+    },
+    {
+      "time": 103513.956504743,
+      "MemAvailable": "     305172 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8160 kB"
+    },
+    {
+      "time": 103516.965300259,
+      "MemAvailable": "     305160 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8280 kB"
+    },
+    {
+      "time": 103519.968339104,
+      "MemAvailable": "     304928 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8072 kB"
+    },
+    {
+      "time": 103522.973167739,
+      "MemAvailable": "     305548 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8364 kB"
+    },
+    {
+      "time": 103525.979088498,
+      "MemAvailable": "     305120 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8188 kB"
+    },
+    {
+      "time": 103528.980732776,
+      "MemAvailable": "     305096 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8164 kB"
+    },
+    {
+      "time": 103531.983787283,
+      "MemAvailable": "     305200 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8208 kB"
+    },
+    {
+      "time": 103534.992704989,
+      "MemAvailable": "     305708 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8292 kB"
+    },
+    {
+      "time": 103537.997220086,
+      "MemAvailable": "     305356 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8180 kB"
+    },
+    {
+      "time": 103540.997823245,
+      "MemAvailable": "     304784 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            7892 kB"
+    },
+    {
+      "time": 103544.002460065,
+      "MemAvailable": "     304980 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8192 kB"
+    },
+    {
+      "time": 103547.014621414,
+      "MemAvailable": "     305652 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8288 kB"
+    },
+    {
+      "time": 103550.027924634,
+      "MemAvailable": "     304884 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8132 kB"
+    }
+  ],
+  "last_synced_frame": 884,
+  "producer": {
+    "pid": 6679,
+    "exitcode": 0,
+    "attempted": 888,
+    "published": 747,
+    "dropped_no_slot": 141,
+    "panel_redraws": 42,
+    "camera_released": true
+  },
+  "camera_released": true,
+  "submitted": 746,
+  "duration": 92.69492429900856,
+  "cpu_frame_owned": false,
+  "after_memory": {
+    "MemAvailable": "     353720 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           30736 kB"
+  },
+  "panel_redraws": 42,
+  "timings": {
+    "scale_ms": {
+      "p50": 49.4673415,
+      "p95": 62.86690025,
+      "p99": 98.65423799999996,
+      "count": 746,
+      "unit": "ms"
+    },
+    "draw_ms": {
+      "p50": 15.240766,
+      "p95": 54.54308475,
+      "p99": 70.87511849999994,
+      "count": 746,
+      "unit": "ms"
+    },
+    "compose_ms": {
+      "p50": 84.553455,
+      "p95": 133.72270450000002,
+      "p99": 162.00933179999998,
+      "count": 746,
+      "unit": "ms"
+    },
+    "ipc_handoff_ms": {
+      "p50": 3.1967939999999997,
+      "p95": 9.28884125,
+      "p99": 13.237015999999967,
+      "count": 746,
+      "unit": "ms"
+    },
+    "copy_ms": {
+      "p50": 4.4438555,
+      "p95": 10.819681000000001,
+      "p99": 13.494187949999993,
+      "count": 746,
+      "unit": "ms"
+    },
+    "submit_ms": {
+      "p50": 6.549723500000001,
+      "p95": 17.079618,
+      "p99": 22.85107124999999,
+      "count": 746,
+      "unit": "ms"
+    },
+    "sync_ms": {
+      "p50": 27.56603,
+      "p95": 37.04495409999999,
+      "p99": 40.89528704,
+      "count": 187,
+      "unit": "ms"
+    }
+  },
+  "cpu_percent_summary": {
+    "cpu0": {
+      "p50": 95.9866220735786,
+      "p95": 97.7104377104377,
+      "p99": 97.99912748749958
+    },
+    "cpu1": {
+      "p50": 94.98327759197325,
+      "p95": 98.64864864864865,
+      "p99": 100.0
+    }
+  },
+  "cma_free_kib_min": 7752
+}

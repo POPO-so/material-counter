@@ -3,6 +3,7 @@
 from multiprocessing import shared_memory
 from contextlib import contextmanager
 import os
+import time
 import uuid
 
 import numpy as np
@@ -21,21 +22,28 @@ _UINT64_MAX = (1 << 64) - 1
 class FrameLease:
     """A zero-copy view of a frame held in READING state until released."""
 
-    __slots__ = ("slot", "session_uuid", "frame_id", "sequence", "array")
+    __slots__ = ("slot", "session_uuid", "frame_id", "sequence", "array",
+                 "scale_ns", "draw_ns", "compose_ns", "published_ns")
 
-    def __init__(self, slot, session_uuid, frame_id, sequence, array):
+    def __init__(self, slot, session_uuid, frame_id, sequence, array,
+                 scale_ns, draw_ns, compose_ns, published_ns):
         self.slot = slot
         self.session_uuid = session_uuid
         self.frame_id = frame_id
         self.sequence = sequence
         self.array = array
+        self.scale_ns = scale_ns
+        self.draw_ns = draw_ns
+        self.compose_ns = compose_ns
+        self.published_ns = published_ns
 
 
 class SharedFrames:
     """Shared-memory frame slots with metadata transitions guarded by one lock."""
 
     def __init__(self, name, shape, lock, statuses, session_ids, frame_ids, sequences,
-                 next_sequence, owner_closed, owner_pid):
+                 next_sequence, owner_closed, owner_pid, scale_times, draw_times,
+                 compose_times, published_times):
         self.name = name
         self.shape = tuple(shape)
         self._lock = lock
@@ -46,6 +54,10 @@ class SharedFrames:
         self._next_sequence = next_sequence
         self._owner_closed = owner_closed
         self._owner_pid = owner_pid
+        self._scale_times = scale_times
+        self._draw_times = draw_times
+        self._compose_times = compose_times
+        self._published_times = published_times
         self._shm = shared_memory.SharedMemory(name=name, create=False)
         self._closed = False
 
@@ -67,6 +79,10 @@ class SharedFrames:
                 ctx.Value("Q", 0, lock=False),
                 ctx.Value("b", 0, lock=False),
                 os.getpid(),
+                ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
+                ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
+                ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
+                ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
             )
             shm.close()
             return instance
@@ -92,6 +108,10 @@ class SharedFrames:
             "next_sequence": self._next_sequence,
             "owner_closed": self._owner_closed,
             "owner_pid": self._owner_pid,
+            "scale_times": self._scale_times,
+            "draw_times": self._draw_times,
+            "compose_times": self._compose_times,
+            "published_times": self._published_times,
         }
 
     def __setstate__(self, state):
@@ -99,6 +119,8 @@ class SharedFrames:
             state["name"], state["shape"], state["lock"], state["statuses"],
             state["session_ids"], state["frame_ids"], state["sequences"],
             state["next_sequence"], state["owner_closed"], state["owner_pid"],
+            state["scale_times"], state["draw_times"], state["compose_times"],
+            state["published_times"],
         )
 
     def claim_write(self):
@@ -116,12 +138,15 @@ class SharedFrames:
         finally:
             self._lock.release()
 
-    def publish(self, slot, session_uuid, frame_id):
+    def publish(self, slot, session_uuid, frame_id, *, scale_ns=0, draw_ns=0, compose_ns=0):
         """Publish a WRITING slot as READY with validated identity and a monotonic sequence."""
         self._ensure_open()
         slot = _validate_slot(slot)
         identity = _validate_uuid(session_uuid)
         frame_id = _validate_uint64(frame_id, "frame_id")
+        scale_ns = _validate_stage_ns(scale_ns, "scale_ns")
+        draw_ns = _validate_stage_ns(draw_ns, "draw_ns")
+        compose_ns = _validate_stage_ns(compose_ns, "compose_ns")
         with self._locked():
             self._require_shared_open()
             self._require_status(slot, WRITING, "publish")
@@ -133,6 +158,10 @@ class SharedFrames:
             self._frame_ids[slot] = frame_id
             self._sequences[slot] = sequence
             self._next_sequence.value = sequence
+            self._scale_times[slot] = scale_ns
+            self._draw_times[slot] = draw_ns
+            self._compose_times[slot] = compose_ns
+            self._published_times[slot] = time.monotonic_ns()
             self._statuses[slot] = READY
             return sequence
 
@@ -166,6 +195,10 @@ class SharedFrames:
                 self._frame_ids[slot],
                 self._sequences[slot],
                 self._array(slot),
+                self._scale_times[slot],
+                self._draw_times[slot],
+                self._compose_times[slot],
+                self._published_times[slot],
             )
 
     def release_read(self, slot):
@@ -279,4 +312,10 @@ def _validate_uuid(value):
 def _validate_uint64(value, name):
     if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= _UINT64_MAX:
         raise ValueError("{} must be an integer from 0 to 2**64-1".format(name))
+    return value
+
+
+def _validate_stage_ns(value, name):
+    if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= _UINT64_MAX:
+        raise ValueError("{} must be a non-negative integer nanosecond duration".format(name))
     return value

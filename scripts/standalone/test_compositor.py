@@ -78,6 +78,100 @@ def test_render_preserves_fixed_geometry_scaling_padding_and_binary_values():
     assert _decode_marker(canvas[719, 640:864]) == (session, 8)
 
 
+def test_render_exposes_per_frame_scale_and_draw_timings(monkeypatch):
+    api = _api()
+    composer = _composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    ticks = iter((0, 10_000_000, 20_000_000, 50_000_000))
+    monkeypatch.setattr(api, "perf_counter_ns", lambda: next(ticks), raising=False)
+
+    composer.render(gray, binary, uuid.uuid4(), 1, status_lines=("更新状态",))
+
+    timings = composer.last_timings_ms
+    assert set(timings) == {"scale_ms", "draw_ms"}
+    assert timings["scale_ms"] == 10
+    assert timings["draw_ms"] == 30
+    assert all(value >= 0 for value in timings.values())
+
+    ticks = iter((100_000_000, 105_000_000, 110_000_000, 118_000_000))
+    composer.render(gray, binary, uuid.uuid4(), 2, status_lines=("更新状态",))
+    assert composer.last_timings_ms == {"scale_ms": 5, "draw_ms": 8}
+
+
+def test_render_can_write_complete_frame_directly_into_shared_slot():
+    composer = _composer()
+    session = uuid.uuid4()
+    gray = np.full((400, 640), 96, dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    options = {"boxes": ((12, 20, 80, 140),), "tracks": (("7", 20, 30),),
+               "status_lines": ("共享帧状态", "第二行遥测")}
+    expected = composer.render(gray, binary, session, 57, **options).copy()
+    target = np.full((720, 1280), 31, dtype=np.uint8)
+
+    actual = composer.render(gray, binary, session, 57, output=target, **options)
+
+    assert actual is target
+    assert np.array_equal(target, expected)
+
+
+def test_render_uses_configured_gray_interpolation_and_keeps_binary_nearest():
+    api = _api()
+    gray = np.tile(np.arange(640, dtype=np.uint8), (400, 1))
+    binary = np.where(gray >= 128, 255, 0).astype(np.uint8)
+    session = uuid.uuid4()
+
+    assert _composer().gray_interpolation == api.cv2.INTER_AREA
+    for interpolation in (api.cv2.INTER_AREA, api.cv2.INTER_LINEAR):
+        composer = api.GrayComposer(FONT, gray_interpolation=interpolation)
+
+        canvas = composer.render(gray, binary, session, 31)
+
+        expected_gray = api.cv2.resize(
+            gray, (api.VIEW_WIDTH, api.VIEW_HEIGHT), interpolation=interpolation
+        )
+        expected_binary = api.cv2.resize(
+            binary, (api.VIEW_WIDTH, api.VIEW_HEIGHT), interpolation=api.cv2.INTER_NEAREST
+        )
+        actual_binary = canvas[api.BOTTOM_Y:, api.VIEW_X:api.VIEW_X + api.VIEW_WIDTH]
+        unmarked = np.ones(expected_binary.shape, dtype=bool)
+        line_x = api._scale_coordinate(320)
+        unmarked[:, line_x - 3:line_x + 4] = False
+        assert np.array_equal(canvas[:api.VIEW_HEIGHT, api.VIEW_X:api.VIEW_X + api.VIEW_WIDTH],
+                              expected_gray)
+        assert np.array_equal(actual_binary[unmarked], expected_binary[unmarked])
+
+
+def test_render_keeps_reusable_canvas_panel_current_after_direct_output():
+    composer = _composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    target = np.empty((720, 1280), dtype=np.uint8)
+    session = uuid.uuid4()
+    composer.render(gray, binary, session, 1, status_lines=("最新遥测",), output=target)
+
+    reusable = composer.render(gray, binary, session, 2, status_lines=("最新遥测",))
+
+    assert np.array_equal(reusable[1:-1, 640:], target[1:-1, 640:])
+
+
+@pytest.mark.parametrize("output", [
+    np.empty((720, 1279), dtype=np.uint8),
+    np.empty((720, 1280), dtype=np.uint16),
+    np.empty((1440, 1280), dtype=np.uint8)[::2],
+    np.empty((720, 1280), dtype=np.uint8),
+])
+def test_render_rejects_incompatible_shared_slot_output(output):
+    composer = _composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    if output.shape == (720, 1280) and output.dtype == np.uint8:
+        output.flags.writeable = False
+
+    with pytest.raises((TypeError, ValueError), match="output must"):
+        composer.render(gray, binary, uuid.uuid4(), 1, output=output)
+
+
 def test_gray_background_mode_uses_gray_work_and_keeps_frame_identity():
     composer = _composer()
     session = uuid.uuid4()

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import binascii
 import math
+from time import perf_counter_ns
 import uuid
 from collections import OrderedDict
 from pathlib import Path
@@ -53,8 +54,13 @@ def _scale_coordinate(value: int) -> int:
 class GrayComposer:
     """Reuse one Gray8 canvas and two scaled work areas for each display frame."""
 
-    def __init__(self, font_path: str | Path, *, latin_font_path=None):
+    def __init__(self, font_path: str | Path, *, latin_font_path=None,
+                 gray_interpolation=cv2.INTER_AREA):
+        if (isinstance(gray_interpolation, bool) or not isinstance(gray_interpolation, int)
+                or gray_interpolation not in (cv2.INTER_AREA, cv2.INTER_LINEAR)):
+            raise ValueError("gray_interpolation must be INTER_AREA or INTER_LINEAR")
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
+        self.gray_interpolation = gray_interpolation
         self._gray_work = np.empty((VIEW_HEIGHT, VIEW_WIDTH), dtype=np.uint8)
         self._binary_work = np.empty((VIEW_HEIGHT, VIEW_WIDTH), dtype=np.uint8)
         self._font = ImageFont.truetype(str(font_path), 32)
@@ -66,6 +72,8 @@ class GrayComposer:
         self._glyph_cache = OrderedDict()
         self._status_glyphs = []
         self.panel_redraws = 0
+        self.last_timings_ms = {"scale_ms": 0.0, "draw_ms": 0.0}
+        self._canvas_panel_stale = False
         self._panel_draw.text((24, 22), "运行状态", font=self._font, fill=255)
         for index, value in enumerate((0, 128, 255)):
             x = 24 + index * 180
@@ -224,10 +232,19 @@ class GrayComposer:
         status_lines=(),
         *,
         binary_background: bool = True,
+        output=None,
     ) -> np.ndarray:
-        """Render a same-identity gray/binary pair into the reusable canvas."""
+        """Render a same-identity gray/binary pair into the reusable canvas or output."""
         if not isinstance(binary_background, bool):
             raise TypeError("binary_background must be bool")
+        if output is not None and (
+            not isinstance(output, np.ndarray)
+            or output.shape != (HEIGHT, WIDTH)
+            or output.dtype != np.uint8
+            or not output.flags.writeable
+            or not output.flags.c_contiguous
+        ):
+            raise TypeError("output must be a writable C-contiguous (720,1280) uint8 array")
         self._validate_image(gray, "gray")
         self._validate_image(binary, "binary")
         if not np.all((binary == 0) | (binary == 255)):
@@ -237,18 +254,41 @@ class GrayComposer:
             boxes, tracks, line_x, status_lines
         )
 
-        self.canvas[:VIEW_HEIGHT, :SOURCE_WIDTH].fill(0)
-        self.canvas[BOTTOM_Y:HEIGHT, :SOURCE_WIDTH].fill(0)
-        cv2.resize(gray, (VIEW_WIDTH, VIEW_HEIGHT), dst=self._gray_work, interpolation=cv2.INTER_AREA)
-        self.canvas[TOP_Y:TOP_Y + VIEW_HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH] = self._gray_work
-        if binary_background:
-            cv2.resize(binary, (VIEW_WIDTH, VIEW_HEIGHT), dst=self._binary_work, interpolation=cv2.INTER_NEAREST)
-            self.canvas[BOTTOM_Y:HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH] = self._binary_work
-        else:
-            self.canvas[BOTTOM_Y:HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH] = self._gray_work
-        self._draw_overlays(normalized_boxes, normalized_tracks, normalized_line)
+        reusable_canvas = self.canvas
+        if output is not None:
+            self.canvas = output
+        try:
+            self.canvas[:VIEW_HEIGHT, :SOURCE_WIDTH].fill(0)
+            self.canvas[BOTTOM_Y:HEIGHT, :SOURCE_WIDTH].fill(0)
+            scale_start_ns = perf_counter_ns()
+            cv2.resize(gray, (VIEW_WIDTH, VIEW_HEIGHT), dst=self._gray_work,
+                       interpolation=self.gray_interpolation)
+            self.canvas[TOP_Y:TOP_Y + VIEW_HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH] = self._gray_work
+            if binary_background:
+                cv2.resize(binary, (VIEW_WIDTH, VIEW_HEIGHT), dst=self._binary_work, interpolation=cv2.INTER_NEAREST)
+                self.canvas[BOTTOM_Y: BOTTOM_Y + VIEW_HEIGHT,
+                            VIEW_X: VIEW_X + VIEW_WIDTH] = self._binary_work
+            else:
+                self.canvas[BOTTOM_Y: BOTTOM_Y + VIEW_HEIGHT,
+                            VIEW_X: VIEW_X + VIEW_WIDTH] = self._gray_work
+            scale_ms = (perf_counter_ns() - scale_start_ns) / 1_000_000
 
-        if normalized_status != self._status_key:
-            self._redraw_panel(normalized_status)
-        self._write_markers(marker)
-        return self.canvas
+            draw_start_ns = perf_counter_ns()
+            self._draw_overlays(normalized_boxes, normalized_tracks, normalized_line)
+
+            if normalized_status != self._status_key:
+                self._redraw_panel(normalized_status)
+            if output is not None:
+                np.copyto(self.canvas[:, SOURCE_WIDTH:], np.asarray(self._panel_image))
+            elif self._canvas_panel_stale:
+                np.copyto(self.canvas[:, SOURCE_WIDTH:], np.asarray(self._panel_image))
+                self._canvas_panel_stale = False
+            self._write_markers(marker)
+            draw_ms = (perf_counter_ns() - draw_start_ns) / 1_000_000
+            self.last_timings_ms = {"scale_ms": scale_ms, "draw_ms": draw_ms}
+            return self.canvas
+        finally:
+            if output is not None:
+                if output is not reusable_canvas:
+                    self._canvas_panel_stale = True
+                self.canvas = reusable_canvas
