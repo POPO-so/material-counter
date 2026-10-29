@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import binascii
 import math
+from time import perf_counter_ns
 import uuid
 from collections import OrderedDict
 from pathlib import Path
@@ -66,6 +67,7 @@ class GrayComposer:
         self._glyph_cache = OrderedDict()
         self._status_glyphs = []
         self.panel_redraws = 0
+        self.last_timings_ms = {"scale_ms": 0.0, "draw_ms": 0.0}
         self._panel_draw.text((24, 22), "运行状态", font=self._font, fill=255)
         for index, value in enumerate((0, 128, 255)):
             x = 24 + index * 180
@@ -239,6 +241,7 @@ class GrayComposer:
 
         self.canvas[:VIEW_HEIGHT, :SOURCE_WIDTH].fill(0)
         self.canvas[BOTTOM_Y:HEIGHT, :SOURCE_WIDTH].fill(0)
+        scale_start_ns = perf_counter_ns()
         cv2.resize(gray, (VIEW_WIDTH, VIEW_HEIGHT), dst=self._gray_work, interpolation=cv2.INTER_AREA)
         self.canvas[TOP_Y:TOP_Y + VIEW_HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH] = self._gray_work
         if binary_background:
@@ -246,9 +249,14 @@ class GrayComposer:
             self.canvas[BOTTOM_Y:HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH] = self._binary_work
         else:
             self.canvas[BOTTOM_Y:HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH] = self._gray_work
+        scale_ms = (perf_counter_ns() - scale_start_ns) / 1_000_000
+
+        draw_start_ns = perf_counter_ns()
         self._draw_overlays(normalized_boxes, normalized_tracks, normalized_line)
 
         if normalized_status != self._status_key:
             self._redraw_panel(normalized_status)
         self._write_markers(marker)
+        draw_ms = (perf_counter_ns() - draw_start_ns) / 1_000_000
+        self.last_timings_ms = {"scale_ms": scale_ms, "draw_ms": draw_ms}
         return self.canvas
