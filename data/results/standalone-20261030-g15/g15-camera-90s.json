@@ -1,0 +1,154 @@
+{
+  "schema": "material-counter.g1-run.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "session_id": "9f17e584-f339-4c60-aaf2-46f0ead409f4",
+  "scope": "G1.5 independent display; three-slot compositor IPC; no RLE counting",
+  "source": "camera",
+  "camera": "/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0",
+  "pipeline": "spawned compositor -> ordinary-RAM SharedFrames -> HDMI CMA",
+  "shared_frame_slots": 3,
+  "shared_frame_shape": [
+    720,
+    1280
+  ],
+  "manifest_sha256": "685bb871fed4d0c1ed58ff9bb5c079b2a51748c1102c25b86dee5ca8a6e7c8d3",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "before_memory": {
+    "MemAvailable": "     393060 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           50624 kB"
+  },
+  "samples": [
+    {
+      "unique": 101706,
+      "scans": 671408,
+      "repeat": 546236,
+      "invalid": 23466,
+      "partial": 4,
+      "frame": 8300,
+      "session": 244532411922175298745203713972741687696,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false,
+      "top_marker": "4d43b7f73abd3266404d8d766ad80c514990000000000000206c8a31",
+      "bottom_marker": "4d43b7f73abd3266404d8d766ad80c514990000000000000206c8a31",
+      "sequence": 5463,
+      "capture_started": 102679.320266209,
+      "sampled_monotonic": 102679.321164695
+    },
+    {
+      "unique": 101706,
+      "scans": 671544,
+      "repeat": 546236,
+      "invalid": 23602,
+      "partial": 5,
+      "frame": 8300,
+      "session": 244532411922175298745203713972741687696,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": true,
+      "bottom_invalid": true,
+      "top_marker": "00000000000000000000000000000000000000000000000000000000",
+      "bottom_marker": "00000000000000000000000000000000000000000000000000000000",
+      "sequence": 5464,
+      "capture_started": 102681.673609916,
+      "sampled_monotonic": 102681.674516236,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 101706,
+      "scans": 671664,
+      "repeat": 546236,
+      "invalid": 23722,
+      "partial": 5,
+      "frame": 8300,
+      "session": 244532411922175298745203713972741687696,
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": true,
+      "bottom_invalid": true,
+      "top_marker": "00000000000000000000000000000000000000000000000000000000",
+      "bottom_marker": "00000000000000000000000000000000000000000000000000000000",
+      "sequence": 5465,
+      "capture_started": 102683.675011168,
+      "sampled_monotonic": 102683.675908319,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    }
+  ],
+  "buttons": [],
+  "button_counts": {},
+  "cpu_samples": [
+    {
+      "time": 3.0013348270003917,
+      "per_core_percent": {
+        "cpu0": 90.66666666666667,
+        "cpu1": 82.95081967213115
+      }
+    }
+  ],
+  "sync_missed": 0,
+  "state": "FAIL_HOLD",
+  "clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "hp2_read32": {
+    "status": "HP2_READ_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/standalone-20261029-g1/export/display-diag.hwh",
+    "hwh_hp2_data_width_bits": 32,
+    "slcr_fpga_rst_ctrl": 0,
+    "vdma": {
+      "base": "0x43000000",
+      "control": 69632,
+      "status": 69633
+    },
+    "register": "AFI2_RDCHAN_CTRL",
+    "address": "0xF800A000",
+    "before": 1,
+    "write_value": null,
+    "after": 1,
+    "width_bit0": 1
+  },
+  "producer_pid": 5344,
+  "compositor_process": "separate spawn process",
+  "ipc": "three-slot non-blocking READY/READING lease",
+  "memory_samples": [
+    {
+      "time": 102682.672104401,
+      "MemAvailable": "     341660 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "           17776 kB"
+    }
+  ],
+  "error": "TimeoutError: compositor has not published a frame for 5 seconds",
+  "driver_state": "RUNNING",
+  "failure": null,
+  "driver_job_finished": true,
+  "driver_diagnostics": {
+    "state": "RUNNING",
+    "failure": null,
+    "operation": null,
+    "submitted_at": null,
+    "started_at": null,
+    "completed_at": null,
+    "retained_count": 7
+  },
+  "producer_exitcode": 0,
+  "producer_alive": false,
+  "shared_frame_states_fail_hold": [
+    0,
+    0,
+    0
+  ]
+}
