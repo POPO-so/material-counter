@@ -54,8 +54,13 @@ def _scale_coordinate(value: int) -> int:
 class GrayComposer:
     """Reuse one Gray8 canvas and two scaled work areas for each display frame."""
 
-    def __init__(self, font_path: str | Path, *, latin_font_path=None):
+    def __init__(self, font_path: str | Path, *, latin_font_path=None,
+                 gray_interpolation=cv2.INTER_AREA):
+        if (isinstance(gray_interpolation, bool) or not isinstance(gray_interpolation, int)
+                or gray_interpolation not in (cv2.INTER_AREA, cv2.INTER_LINEAR)):
+            raise ValueError("gray_interpolation must be INTER_AREA or INTER_LINEAR")
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
+        self.gray_interpolation = gray_interpolation
         self._gray_work = np.empty((VIEW_HEIGHT, VIEW_WIDTH), dtype=np.uint8)
         self._binary_work = np.empty((VIEW_HEIGHT, VIEW_WIDTH), dtype=np.uint8)
         self._font = ImageFont.truetype(str(font_path), 32)
@@ -256,7 +261,8 @@ class GrayComposer:
             self.canvas[:VIEW_HEIGHT, :SOURCE_WIDTH].fill(0)
             self.canvas[BOTTOM_Y:HEIGHT, :SOURCE_WIDTH].fill(0)
             scale_start_ns = perf_counter_ns()
-            cv2.resize(gray, (VIEW_WIDTH, VIEW_HEIGHT), dst=self._gray_work, interpolation=cv2.INTER_AREA)
+            cv2.resize(gray, (VIEW_WIDTH, VIEW_HEIGHT), dst=self._gray_work,
+                       interpolation=self.gray_interpolation)
             self.canvas[TOP_Y:TOP_Y + VIEW_HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH] = self._gray_work
             if binary_background:
                 cv2.resize(binary, (VIEW_WIDTH, VIEW_HEIGHT), dst=self._binary_work, interpolation=cv2.INTER_NEAREST)

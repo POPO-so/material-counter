@@ -34,6 +34,7 @@ RLE_BIT_SHA256 = "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868
 PRODUCER_STARTUP_TIMEOUT_SECONDS = 30
 PRODUCER_STALL_TIMEOUT_SECONDS = 5
 SYNC_SAMPLE_EVERY_SUBMITTED_FRAMES = 16
+G15_GRAY_INTERPOLATION = cv2.INTER_LINEAR
 
 
 def _configure_opencv_threads(opencv):
@@ -258,7 +259,8 @@ def _compositor_process(frames, stop_event, updates, error_queue, counters, *, s
     frame_id = 0
     try:
         _configure_opencv_threads(cv2)
-        composer = GrayComposer(font_path, latin_font_path=latin_font_path)
+        composer = GrayComposer(font_path, latin_font_path=latin_font_path,
+                                gray_interpolation=G15_GRAY_INTERPOLATION)
         session = uuid.UUID(session_uuid)
         if source == "camera":
             camera = LatestCamera(camera_device)
@@ -428,6 +430,7 @@ def main(argv=None):
               "scope": "G1.5 independent display; three-slot compositor IPC; no RLE counting",
               "source": args.source, "camera": args.camera if args.source == "camera" else None,
               "pipeline": "spawned compositor -> ordinary-RAM SharedFrames -> HDMI CMA",
+              "gray_display_interpolation": "INTER_LINEAR",
               "shared_frame_slots": 3, "shared_frame_shape": [720, 1280],
               "manifest_sha256": args.manifest_sha256, "ownership": ownership,
               "before_memory": _memory(), "samples": [], "buttons": deque(maxlen=2048),

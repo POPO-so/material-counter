@@ -3,6 +3,7 @@ from pathlib import Path
 import time
 import uuid
 
+import cv2
 import numpy as np
 import pytest
 
@@ -183,6 +184,12 @@ def test_spawned_compositor_publishes_direct_gray8_frame_with_stage_metadata():
         assert lease.draw_ns >= 0
         assert lease.published_ns > 0
         assert np.all(lease.array[10, :32] == 0)
+        gray = np.tile(np.arange(640, dtype=np.uint32) * 256 // 640,
+                       (400, 1)).astype(np.uint8)
+        x = (lease.frame_id * 9) % 560
+        cv2.rectangle(gray, (x, 95), (x + 60, 165), 255, -1)
+        expected_gray = cv2.resize(gray, (576, 360), interpolation=cv2.INTER_LINEAR)
+        assert np.array_equal(lease.array[:360, 32:608], expected_gray)
         frames.release_read(lease.slot)
         lease = None
     finally:

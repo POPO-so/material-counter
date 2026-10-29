@@ -115,6 +115,33 @@ def test_render_can_write_complete_frame_directly_into_shared_slot():
     assert np.array_equal(target, expected)
 
 
+def test_render_uses_configured_gray_interpolation_and_keeps_binary_nearest():
+    api = _api()
+    gray = np.tile(np.arange(640, dtype=np.uint8), (400, 1))
+    binary = np.where(gray >= 128, 255, 0).astype(np.uint8)
+    session = uuid.uuid4()
+
+    assert _composer().gray_interpolation == api.cv2.INTER_AREA
+    for interpolation in (api.cv2.INTER_AREA, api.cv2.INTER_LINEAR):
+        composer = api.GrayComposer(FONT, gray_interpolation=interpolation)
+
+        canvas = composer.render(gray, binary, session, 31)
+
+        expected_gray = api.cv2.resize(
+            gray, (api.VIEW_WIDTH, api.VIEW_HEIGHT), interpolation=interpolation
+        )
+        expected_binary = api.cv2.resize(
+            binary, (api.VIEW_WIDTH, api.VIEW_HEIGHT), interpolation=api.cv2.INTER_NEAREST
+        )
+        actual_binary = canvas[api.BOTTOM_Y:, api.VIEW_X:api.VIEW_X + api.VIEW_WIDTH]
+        unmarked = np.ones(expected_binary.shape, dtype=bool)
+        line_x = api._scale_coordinate(320)
+        unmarked[:, line_x - 3:line_x + 4] = False
+        assert np.array_equal(canvas[:api.VIEW_HEIGHT, api.VIEW_X:api.VIEW_X + api.VIEW_WIDTH],
+                              expected_gray)
+        assert np.array_equal(actual_binary[unmarked], expected_binary[unmarked])
+
+
 def test_render_keeps_reusable_canvas_panel_current_after_direct_output():
     composer = _composer()
     gray = np.zeros((400, 640), dtype=np.uint8)
