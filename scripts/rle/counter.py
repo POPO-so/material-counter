@@ -43,39 +43,103 @@ class RleCounter(MaskCounter):
             self.invalid_frames += 1
             return None
 
+        self._begin_frame_observability()
         started = time.perf_counter()
         timestamp = self._motion_timestamp(capture_monotonic_ns)
         self._split_origins = {}
         detections, rejected = [], []
         if frame.total_fg >= self.min_area:
-            analysis = analyze_runs(frame.runs, library=self.library, min_area=self.min_area)
+            analyze_started = time.perf_counter()
+            analysis = analyze_runs(frame.runs, library=self.library,
+                min_area=1 if self.observability else self.min_area)
+            self._last_t_ccl_ms = (time.perf_counter() - analyze_started) * 1000.0
             for index, component in enumerate(analysis.components):
-                if component.area < self.min_area:
-                    continue
                 detection = Detection(component.x_min, component.x_max, component.y_min,
                     component.y_max, component.area, component.centroid_x, component.centroid_y)
+                if component.area < self.min_area:
+                    self._record_rejected_component(detection, "below_min_area",
+                        source="rle_ccl")
+                    continue
+                if self.observability:
+                    record = self._detection_record(detection)
+                    roi_clipped = []
+                    if component.y_min <= top:
+                        roi_clipped.append("top")
+                    if component.y_max >= bottom - 1:
+                        roi_clipped.append("bottom")
+                    frame_clipped = record.get("frame_clipped_edges", [])
+                    if roi_clipped or frame_clipped:
+                        self._frame_diagnostics["boundary_observations"].append({
+                            "detection": record,
+                            "frame_clipped_edges": frame_clipped,
+                            "roi_clipped_edges": roi_clipped,
+                            "visible_in_roi": True,
+                        })
                 if self._component_exceeds_limits(component.area,
                         component.x_max-component.x_min+1, component.y_max-component.y_min+1):
                     rejected.append(detection)
+                    self._record_rejected_component(detection,
+                        self._component_rejection_reason(component.area,
+                            component.x_max-component.x_min+1,
+                            component.y_max-component.y_min+1) or "component_limit",
+                        source="rle_ccl")
                     continue
-                if self.guarded_merge and self.single_intact_area < component.area <= self.max_split_area:
+                split_eligible = (self.guarded_merge
+                    and self.single_intact_area < component.area)
+                if split_eligible and component.area > self.max_split_area:
+                    if self.observability:
+                        self._frame_diagnostics["split_attempts"].append({
+                            "detection": self._detection_record(detection),
+                            "split_attempted": False,
+                            "split_rejected_reason": "above_max_split_area",
+                            "accepted": False,
+                            "children": [],
+                        })
+                if split_eligible and component.area <= self.max_split_area:
+                    split_started = time.perf_counter()
                     mask = local_mask(frame.runs, analysis.labels, index) != 0
                     pieces = split_touching_component(mask,
                         min_child_area=self.min_split_child_area, min_hole_area=self.split_min_hole_area,
                         recursive_item_area=self.split_recursive_item_area,
                         min_hole_distance=self.split_min_hole_distance, hole_area_cap=self.split_hole_area_cap)
+                    self._last_split_calls += 1
                     partitions = [np.asarray(piece) != 0 for piece in pieces]
                     valid = (2 <= len(partitions) <= 3 and all(piece.shape == mask.shape
                         and is_single_connected_component(piece) for piece in partitions))
                     if valid:
                         coverage = np.sum(np.stack(partitions), axis=0)
                         valid = np.array_equal(coverage > 0, mask) and not np.any(coverage > 1)
+                    children = []
                     if valid:
                         for piece in partitions:
                             ys, xs = np.nonzero(piece)
-                            child = Detection(component.x_min+int(xs.min()), component.x_min+int(xs.max()),
+                            children.append(Detection(component.x_min+int(xs.min()), component.x_min+int(xs.max()),
                                 component.y_min+int(ys.min()), component.y_min+int(ys.max()), len(xs),
-                                component.x_min+float(xs.mean()), component.y_min+float(ys.mean()))
+                                component.x_min+float(xs.mean()), component.y_min+float(ys.mean())))
+                    self._last_t_split_ms += (time.perf_counter() - split_started) * 1000.0
+                    if self.observability:
+                        diagnostic_children = list(children)
+                        if not valid:
+                            for piece in partitions:
+                                ys, xs = np.nonzero(piece)
+                                if len(xs):
+                                    diagnostic_children.append(Detection(
+                                        component.x_min+int(xs.min()), component.x_min+int(xs.max()),
+                                        component.y_min+int(ys.min()), component.y_min+int(ys.max()), len(xs),
+                                        component.x_min+float(xs.mean()), component.y_min+float(ys.mean())))
+                        self._frame_diagnostics["split_attempts"].append({
+                            "detection": self._detection_record(detection),
+                            "split_attempted": True,
+                            "split_rejected_reason": (None if valid else
+                                "no_valid_partition" if len(partitions) < 2 else
+                                "invalid_partition"),
+                            "accepted": bool(valid),
+                            "candidate_piece_count": len(partitions),
+                            "children": [self._detection_record(child)
+                                         for child in diagnostic_children],
+                        })
+                    if valid:
+                        for child in children:
                             detections.append(child)
                             self._split_origins[child] = index
                         continue
@@ -89,6 +153,9 @@ class RleCounter(MaskCounter):
         self.last_frame_id = frame.frame_id
         events = self._associate_and_update(frame.frame_id, detections, timestamp)
         track_ms = (time.perf_counter()-started)*1000
+        if self.observability:
+            self._frame_diagnostics["associations"] = [
+                dict(association) for association in self.last_associations]
         return FrameResult(frame_id=frame.frame_id, total_count=self.total_count,
             detections=tuple(detections), events=tuple(events), roi_top=top, roi_bottom=bottom,
             row_projection=tuple(frame.row_projection[top:bottom].tolist()),
@@ -97,4 +164,6 @@ class RleCounter(MaskCounter):
             roi_subtimings_ms={"rle_regions_ms": region_ms, "track_ms": track_ms},
             raw_detections=raw, suppressed_events=tuple(self.last_suppressed_events),
             tracks=self.tracking_snapshot(), glare_rejected_count=self.glare_rejected_count,
-            glare_area_px=self.glare_area_px)
+            glare_area_px=self.glare_area_px, diagnostics=self._diagnostics_snapshot(),
+            stage_timings_ms={"t_ccl": self._last_t_ccl_ms, "t_split": self._last_t_split_ms,
+                "t_track": track_ms, "split_calls": self._last_split_calls})
