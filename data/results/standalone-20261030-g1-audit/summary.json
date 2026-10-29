@@ -1,0 +1,184 @@
+{
+  "audit_schema": "material-counter.g1-audit.v1",
+  "source": {
+    "original_read_only_path": "data/results/standalone-20261029-g1/screen-hp2.json",
+    "raw_copy": "raw-run.json",
+    "bytes": 261245,
+    "sha256": "cb927a8d5d1a3bf82184f03ab90893f1727bea28f0ada1385e2338e8eed690dd",
+    "raw_copy_sha256_matches": true
+  },
+  "run": {
+    "schema": "material-counter.g1-run.v1",
+    "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+    "session_id": "03941431-4e74-4aee-9d85-7953950ca8ef",
+    "source": "camera",
+    "scope": "G1 independent display; no RLE counting"
+  },
+  "validation": {
+    "sample_count": 324,
+    "sampled_monotonic_strictly_increasing": true,
+    "session_identity_runs": [
+      {
+        "session": 0,
+        "samples": 2,
+        "classification": "启动前旧位流监测累计（session=0，稳定身份建立前）"
+      },
+      {
+        "session": 4756553477070358358030601743409916143,
+        "samples": 322,
+        "classification": "稳定同一身份区间"
+      }
+    ],
+    "uint64_counters_checked": [
+      "unique",
+      "scans",
+      "repeat",
+      "invalid",
+      "partial",
+      "frame"
+    ],
+    "observed_uint64_wraps": {
+      "unique": 0,
+      "scans": 0,
+      "repeat": 0,
+      "invalid": 0,
+      "partial": 0,
+      "frame": 0
+    }
+  },
+  "sampling": {
+    "first_sample_monotonic_s": 72090.684376552,
+    "last_sample_monotonic_s": 72752.054967093,
+    "total_span_s": 661.3705905410025
+  },
+  "stable_identity_interval": {
+    "first_sample_index": 2,
+    "last_sample_index": 323,
+    "sample_count": 322,
+    "session_counter": 4756553477070358358030601743409916143,
+    "start_monotonic_s": 72092.708276709,
+    "end_monotonic_s": 72752.054967093,
+    "span_s": 659.3466903840017,
+    "counter_deltas": {
+      "unique": {
+        "start": 19,
+        "end": 5488,
+        "delta": 5469,
+        "uint64_wraps": 0
+      },
+      "scans": {
+        "start": 23465,
+        "end": 63045,
+        "delta": 39580,
+        "uint64_wraps": 0
+      },
+      "repeat": {
+        "start": 71,
+        "end": 34182,
+        "delta": 34111,
+        "uint64_wraps": 0
+      },
+      "invalid": {
+        "start": 23375,
+        "end": 23375,
+        "delta": 0,
+        "uint64_wraps": 0
+      },
+      "partial": {
+        "start": 1,
+        "end": 1,
+        "delta": 0,
+        "uint64_wraps": 0
+      },
+      "frame": {
+        "start": 18,
+        "end": 5487,
+        "delta": 5469,
+        "uint64_wraps": 0
+      }
+    },
+    "effective_fps": 8.29457412884695,
+    "scan_hz": 60.02911757538165
+  },
+  "pre_stable_monitor_counters": {
+    "sample_indices": [
+      0,
+      1
+    ],
+    "session_counter": 0,
+    "first_sample": {
+      "unique": 0,
+      "scans": 23348,
+      "repeat": 0,
+      "invalid": 23348,
+      "partial": 0
+    },
+    "second_sample": {
+      "unique": 0,
+      "scans": 23348,
+      "repeat": 0,
+      "invalid": 23348,
+      "partial": 0
+    },
+    "first_stable_sample": {
+      "unique": 19,
+      "scans": 23465,
+      "repeat": 71,
+      "invalid": 23375,
+      "partial": 1
+    },
+    "note": "invalid=23375 is cumulative at the first stable-identity sample; the startup old-bitstream monitor recorded 23348 with session=0. The stable interval delta is 0; do not attribute the cumulative 23375 wholly to the stable interval."
+  },
+  "rolling_windows": {
+    "method": "Enumerate every pair of stable-identity samples (zero-based indices) whose sampled_monotonic interval is at least 30 s; effective FPS=(unique counter delta)/(interval). These sampled-point windows do not establish every arbitrary continuous 30 s interval.",
+    "candidate_window_count": 47278,
+    "minimum_effective_fps": {
+      "fps": 2.4821125401203883,
+      "start_index": 308,
+      "end_index": 323,
+      "duration_s": 30.61907901900122,
+      "new_frames": 76
+    },
+    "maximum_effective_fps": {
+      "fps": 11.143175422340866,
+      "start_index": 225,
+      "end_index": 242,
+      "duration_s": 34.46055414600414,
+      "new_frames": 384
+    }
+  },
+  "buttons": {
+    "button_counts": {
+      "pause": 4,
+      "clear": 2,
+      "background": 10,
+      "page": 8
+    },
+    "event_records": 24
+  },
+  "stop": {
+    "state": "FAIL_HOLD",
+    "driver_state": "FAIL_HOLD",
+    "error": "FailHold: driver call exceeded 2s; resources retained",
+    "failure": "driver call exceeded 2s; resources retained",
+    "driver_job_finished": false,
+    "stop_gate_passed": false,
+    "buffer_release_confirmed": false
+  },
+  "acceptance": {
+    "G0": "complete",
+    "G1": "continuous image evidence partially passes; stop gate fails",
+    "G1.5": "not passed / insufficient evidence: diagnostic run with strace measured below 10 FPS; do not infer normal untraced performance",
+    "G2_and_later": "pending prior gates"
+  },
+  "manual_evidence_source": "User confirmation already recorded in the 2026-10-29 G1 README: picture normal, four buttons tested, HDMI unplugged about 5 s and picture recovered after reconnect. No signature or new font/performance measurement is claimed.",
+  "diagnostic_context": {
+    "trace_attached": true,
+    "trace_source": "原仓库 camera-close-trace.txt",
+    "approximate_wall_time": "12:13:00–12:15:30",
+    "coverage": "本轮最后约150 s，包含停机后",
+    "performance_interpretation": "8.x FPS 是本次带 strace 诊断运行实测，不是字体/刷新优化后的正常无追踪性能基准；不可外推正常无追踪工况必然不达标。",
+    "image_integrity_counters_valid": true,
+    "G1_5": "未通过/证据不足；本次带诊断有效 FPS 低于10，缺少无追踪正常工况基准。"
+  }
+}
