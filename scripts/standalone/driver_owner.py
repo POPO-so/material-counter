@@ -10,6 +10,7 @@ import asyncio
 import math
 import queue
 import threading
+import time
 from dataclasses import dataclass, field
 
 
@@ -21,9 +22,13 @@ class FailHold(RuntimeError):
 class _Job:
     function: object
     args: tuple
+    operation: str
+    submitted_at: float
     done: threading.Event = field(default_factory=threading.Event)
     result: object = None
     error: BaseException | None = None
+    started_at: float | None = None
+    completed_at: float | None = None
 
 
 class DriverOwner:
@@ -33,6 +38,9 @@ class DriverOwner:
         self._poll = poll
         self._resources = []
         self._pending = None
+        self._active_job = None
+        self._last_failed = None
+        self._diagnostics_lock = threading.Lock()
         self._jobs = queue.Queue()
         self._serial = threading.Lock()
         self._hold = threading.Event()
@@ -47,9 +55,42 @@ class DriverOwner:
         self._resources.append(resource)
         return resource
 
-    def _fail(self, reason):
-        self.failure = str(reason)
-        self.state = "FAIL_HOLD"
+    def diagnostics(self):
+        """Return a read-only snapshot of driver state and task timing."""
+        with self._diagnostics_lock:
+            job = self._active_job
+            if job is not None and not job.done.is_set():
+                operation = job.operation
+                submitted_at = job.submitted_at
+                started_at = job.started_at
+                completed_at = job.completed_at
+            elif self._last_failed is not None:
+                operation, submitted_at, started_at, completed_at = self._last_failed
+            else:
+                operation = submitted_at = started_at = completed_at = None
+            return {
+                "state": self.state,
+                "failure": self.failure,
+                "operation": operation,
+                "submitted_at": submitted_at,
+                "started_at": started_at,
+                "completed_at": completed_at,
+                "retained_count": len(self._resources),
+            }
+
+    @staticmethod
+    def _operation_name(function):
+        name = getattr(function, "__qualname__", None)
+        return name if isinstance(name, str) and name else type(function).__name__
+
+    def _fail(self, reason, job=None):
+        failure = str(reason)
+        with self._diagnostics_lock:
+            self.failure = failure
+            self.state = "FAIL_HOLD"
+            if job is not None:
+                self._last_failed = (job.operation, job.submitted_at,
+                                     job.started_at, job.completed_at)
         return FailHold(self.failure)
 
     def _run(self):
@@ -71,13 +112,27 @@ class DriverOwner:
             if job is None:
                 loop.close()
                 return
+            with self._diagnostics_lock:
+                self._active_job = job
+                job.started_at = time.monotonic()
             try:
                 job.result = job.function(*job.args)
             except BaseException as exc:
                 job.error = exc
-                self._fail(exc)
+                self._fail(exc, job)
             finally:
+                with self._diagnostics_lock:
+                    job.completed_at = time.monotonic()
+                    if self._active_job is job:
+                        self._active_job = None
+                    if (self.state == "FAIL_HOLD" and self._last_failed is not None
+                            and self._last_failed[:2] == (job.operation, job.submitted_at)):
+                        self._last_failed = (job.operation, job.submitted_at,
+                                             job.started_at, job.completed_at)
                 job.done.set()
+            # Do not let the worker's loop variable keep a successful job's
+            # arguments or result alive while waiting for the next queue item.
+            del job
 
     def call(self, function, *args, timeout=2.0):
         if not isinstance(timeout, (int, float)) or not math.isfinite(timeout) or timeout <= 0:
@@ -85,11 +140,12 @@ class DriverOwner:
         with self._serial:
             if self.state != "RUNNING":
                 raise FailHold(self.failure or self.state)
-            job = _Job(function, args)
+            operation = self._operation_name(function)
+            job = _Job(function, args, operation, time.monotonic())
             self._pending = job
             self._jobs.put(job)
             if not job.done.wait(timeout):
-                raise self._fail(f"driver call exceeded {timeout}s; resources retained")
+                raise self._fail(f"{operation} exceeded {timeout}s; resources retained", job)
             if job.error is not None:
                 raise FailHold(str(job.error)) from job.error
             if self.state != "RUNNING":

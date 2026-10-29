@@ -309,7 +309,8 @@ def main(argv=None):
             owner.retain(frame)
         report.update(state="FAIL_HOLD", error=f"{type(exc).__name__}: {exc}",
                       driver_state=owner.state, failure=owner.failure,
-                      driver_job_finished=owner._pending is None or owner._pending.done.is_set())
+                      driver_job_finished=owner._pending is None or owner._pending.done.is_set(),
+                      driver_diagnostics=owner.diagnostics())
         _write_report(args.output, report)
         print("G1_FAIL_HOLD_RESOURCES_RETAINED " + str(exc), flush=True)
         # Never exit and let destructors release a buffer while VDMA might use it.
