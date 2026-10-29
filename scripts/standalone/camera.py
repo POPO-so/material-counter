@@ -49,6 +49,6 @@ class LatestCamera:
 
     def close(self):
         self._stop.set()
-        self._thread.join(timeout=2)
+        self._thread.join(timeout=12)
         if self._thread.is_alive():
             raise TimeoutError("camera reader did not stop; retain process until V4L2 release")
