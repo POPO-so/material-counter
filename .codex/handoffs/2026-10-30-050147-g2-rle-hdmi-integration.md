@@ -5,7 +5,7 @@
 - Generated At: 2026-10-30T05:01:47+08:00
 - Project Root: C:\w\mc-g2
 - Git Branch: feat/集成RLE与HDMI位流
-- Head Commit: 19a85d2
+- Review Base Commit: 8987964
 
 ## Original Goal
 
@@ -13,7 +13,7 @@
 
 ## Current State
 
-当前在隔离 worktree `C:\w\mc-g2`、分支 `feat/集成RLE与HDMI位流`，基于 `19a85d2 合入G1.5独立显示验收`。G1.5 证据与状态已合入原分支 `LJ-01`。G2 目前只完成独立 RLE RTL 回归及小参数 OOC 综合后的功能回归；尚未创建或验证 RLE+HDMI+buttons+monitor 集成 block design，也没有 G2 综合实现或板测结论。当前代码改动仅为进度/证据文档；本次 G2 基线与交接记录在此分支提交，尚未合回 `LJ-01`。
+当前在隔离 worktree `C:\w\mc-g2`、分支 `feat/集成RLE与HDMI位流`，基于 `19a85d2 合入G1.5独立显示验收`。G1.5 证据与状态已合入原分支 `LJ-01`。G2 目前只完成独立 RLE RTL 回归及小参数 OOC 综合后的功能回归；尚未创建或验证 RLE+HDMI+buttons+monitor 集成 block design，也没有 G2 综合实现或板测结论。本次已完成 G2 集成架构审查并形成待实例化候选；当前代码改动仅为进度/证据文档；本次 G2 基线与交接记录在此分支提交，尚未合回 `LJ-01`。
 
 原始工作区 `C:\Users\14173\Documents\material-counter` 有用户已有的 `.gitignore` 修改和未跟踪证据，另有早前运行产生的 `data/results/standalone-20261030-g2-baseline/` 原始目录。它们已保留；新会话只在 `C:\w\mc-g2` 继续，不清理或覆盖原始工作区内容。
 
@@ -24,8 +24,12 @@
 - 更新 `计划.md`、`PROJECT_INDEX.md`、`README.md`，明确 G2 仅基线通过、集成门禁未完成；修正基线报告中 `axis_dma_gray_adapter.v` 的目录路径。
 - 生成本交接文件，供新会话从当前分支继续。
 
+- Manager 已完成 G2 集成架构审查：确认单 PS7、11-MI 控制互连候选、FCLK/复位分域、HP0/HP1/HP2 路径、非重叠 AXI-Lite 地址及压缩流与 HDMI 像素流隔离；证据与未验证项见下文。
+
 ## Validated
 
+- MCP recovery: started a persistent Vivado 2026.1 Tcl/webserver session (PID 61604, `http://localhost:8088`), connected with `vivado_connect`, then `vivado_execute` returned `2026.1` for `version -short` in session `vivado-20261030-053811-6443592e`. The current control path works; this is an externally managed session.
+- Architecture evidence: `scripts/standalone/create_display.tcl` defines the nine existing control targets and FCLK0/1/2, while `scripts/gray8/create_bd.tcl` defines the two RLE AXI-Lite segments and HP0/HP1 data paths. Vivado 2026.1 local AXI Interconnect metadata allows NUM_MI 1–64. AMD [PG059 Clock Conversion](https://docs.amd.com/r/en-US/pg059-axi-interconnect/Clock-Conversion) documents per-SI/MI clocks and automatic clock converters. No integrated BD, CDC, DRC or implementation check was run.
 - Command: 使用 Vivado 2026.1 batch/XSim 执行 `scripts/rle/run_sim.tcl` 指向的完整 RTL 场景回归；原始输出在 `data/results/standalone-20261030-g2-baseline/rtl-xsim/`。
   Result: `RLE_ENCODER_PASS frames=4`、8 个 `RLE_PIPELINE_640X400_PASS` 和 `RLE_XSIM_ALL_PASS cases=8`；包含 baseline、ROI、erode、dilate、empty、overflow、bad_checksum、bad_header。
 - Command: 使用 `scripts/rle/run_netlist_sim.tcl` 对 `axis_rle_encoder`（WIDTH=5、HEIGHT=3、MAX_RUNS=2）执行 OOC 综合与综合网表仿真。
@@ -35,17 +39,26 @@
 
 ## Not Yet Validated
 
-- Assumption: 现有 RLE DMA/HP0+HP1 拓扑与独立显示/HP2 结构可组合为单一候选设计，具体时钟、复位、地址映射、互连和 PS 资源仍须根据现有 Tcl 与器件约束审查后决定；显示接口仍是 ADR-0005 的候选状态。
+- Architecture candidate (reviewed, not yet instantiated): 复用单一 PS7 与显示 control AXI Interconnect；NUM_MI 从 9 扩为 11 并保留 M00–M08，追加 M09→axi_dma_0/S_AXI_LITE（0x40400000）、M10→image_pipeline/s_axi（0x43C20000）。控制 ACLK/S00_ACLK 留在 FCLK1 100 MHz；新增 MI、RLE DMA、pipeline 和 RLE memory path 使用 FCLK0 50 MHz。新增 MI 使用 FCLK0 及 50 MHz 域复位，等待 Vivado 生成后确认 clock converter 配置、约束和 DRC。
 - Risk: G1.5 的 CPU0、CPU1 各约 96% P50；即使 G2 位流能构建，HDMI 持续扫描与有目标/高游程 RLE 并发也可能造成共享 DDR 争用、反压或 FPS/延迟退化，因此 G2.5 必须单独实测。
 - 集成 block design、综合/实现、时序、CDC、DRC、新制品一致性、板端 RLE+HDMI 行为、按钮和 monitor 联动均未验证。G2.5、G3、G4 尚未开始。
 
 ## Remaining Work
 
-- [ ] 阅读 `scripts/gray8/create_bd.tcl`、`scripts/standalone/create_display.tcl`、显示实现说明与 ADR-0005；由 Manager 先确定 G2 集成候选的时钟/复位、PS FCLK、HP0/HP1/HP2、AXI 地址与生成制品边界。保留 G1 独立显示入口，不提前冻结候选 Route 或接口。
+- [x] Manager 已审查两份 Tcl、显示实现说明和 ADR-0005，形成本文件 Decisions Made 中的集成候选；G1 独立显示入口与 Route/视频接口候选状态均保留。
 - [ ] 先建立可复核的 G2 设计/构建检查，再新增独立的集成构建入口并完成 Vivado block design、综合、实现、时序、CDC、DRC 与 BIT/HWH 一致性检查；按检查结果修正设计。
 - [ ] G2 验证通过后再执行 G2.5 板端并发压力测试（720p60 HDMI 持续扫描 + 有目标/高游程 RLE），记录 DDR 竞争、反压、错误率及 RLE 延迟分位数；随后按计划推进 G3/G4。
 
 ## Decisions Made
+
+- Candidate decision: reuse the single display PS7 and expand the existing GP0 AXI Interconnect from 9 to 11 MIs, preserving M00–M08 and appending M09 for DMA control and M10 for pipeline control. The AXI Interconnect IP supports up to 64 MIs; PG059 supports per-interface ACLKs with automatic conversion when an endpoint clock differs from the crossbar clock.
+  Reason: this keeps existing display addressing and wiring stable, avoids a second PS/GP0 master, and directly supports the 100 MHz GP0 to 50 MHz RLE controls.
+- Candidate decision: keep RLE control/data on FCLK0 50 MHz, display control on FCLK1 100 MHz, and display stream/HP2 on FCLK2 142.857 MHz. Use a 50 MHz proc_sys_reset output for the new RLE endpoints and verify generated clock-converter and reset behavior in the integrated BD.
+  Reason: these frequencies, widths and domains are already declared in the two source Tcl flows; PG059 handles per-interface clocks, but final timing/CDC evidence is still pending.
+- Candidate decision: retain AXI-Lite maps 0x40400000 for DMA and 0x43C20000 for the RLE pipeline; preserve display maps including 0x43000000, 0x43C10000, 0x43C30000, 0x43C40000, 0x43C60000 and 0x43C70000. Keep RLE M_AXIS connected to DMA S2MM/HP1 DDR and keep HDMI VDMA on HP2; do not connect the compressed RLE stream to the HDMI pixel stream.
+  Reason: the ranges do not overlap in the current Tcl maps, and the two streams carry different formats and functions.
+- Candidate decision: preserve the current Gray8 DMA interface with IRQ outputs left unconnected in this G2 candidate; keep the existing PYNQ channel-wait behavior. If future runtime requires DMA IRQs through the shared interrupt controller, add explicit 50-to-100 MHz CDC first.
+  Reason: the current Gray8 BD does not route DMA IRQs, and no integrated interrupt-driven requirement has been established. The optional cooperative adapter polls status; a direct 50 MHz IRQ connection to the 100 MHz interrupt controller would cross clock domains.
 
 - Decision: G1/G1.5 独立显示结果与 RLE 基线结果分别记账；当前不得宣称 G2 或整机通过。
   Reason: 目前没有把计数接入 HDMI 的集成证据，G2 的实现、时序/CDC/DRC、制品和板测门禁均未完成。
@@ -56,7 +69,7 @@
 
 ## Blockers / Open Questions
 
-没有外部阻塞。下一会话的首项工作是 Manager 主导的集成架构审查；检查现有 Tcl、规格与候选 ADR 后再确定具体连线和构建入口。Vivado MCP 本次启动返回 `child exited: exit status 1`，但同一 Vivado 2026.1 的 batch/XSim 回归成功；后续若 MCP 再失败，记录环境错误并按计划核对 batch 路径，不要把工具启动错误当作设计失败。
+架构审查已完成，当前无阻止继续实现的设计问题。MCP 的自动 `vivado_start` 路径仍会在握手后以 `child exited: exit status 1` 退出；这次通过 AMD 文档支持的手动 Vivado Tcl/webserver 启动与 `vivado_connect` 恢复了可用控制通道，且 `version -short` 已验证为 2026.1。自动启动根因仍未修复，不能把手动连接写成自动启动已恢复；当前 Vivado 会话可供后续 Tcl 工作复用。下一步建立独立的集成 BD/build 入口，再完成综合、实现、时序、CDC、DRC、制品校验和板测。
 
 ## Critical Files
 
@@ -70,6 +83,7 @@
 
 ## Recent Commits
 
+- 8987964 记录G2基线进度与新会话交接
 - 19a85d2 合入G1.5独立显示验收
 - e6ac2f6 记录G1.5板端验收通过
 - ed2657d 加快G1.5灰度缩放并保留AREA默认
@@ -96,5 +110,5 @@
 ## Next Command
 
 ```text
-Get-Content -LiteralPath 'PROJECT_INDEX.md' -TotalCount 45; Get-Content -LiteralPath '计划.md' -TotalCount 40; Get-Content -LiteralPath 'data/results/standalone-20261030-g2-baseline/README.md'; Get-Content -LiteralPath 'scripts/gray8/create_bd.tcl' -TotalCount 320; Get-Content -LiteralPath 'scripts/standalone/create_display.tcl' -TotalCount 300
+确认当前外部连接的 Vivado MCP 会话仍可用；按本交接的 Candidate decision 创建独立 G2 集成 BD/build 入口，保留 scripts/standalone/create_display.tcl 的 G1 入口与 M00–M08 映射。
 ```
