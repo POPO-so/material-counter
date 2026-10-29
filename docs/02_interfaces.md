@@ -6,6 +6,8 @@
 
 ## 状态
 
+2026-10-30 项目负责人决定以 `GRAY8_PACKET_V1`（`0x47525938` / `0x454E4438` / `0xC0DEC018`）作为新架构 320×240 Gray8 活动协议；旧 `WO14`（`0x574F3134` / `0x454E4434` / `0xC0DEC014`）仅保留为历史实验依据。决策见 [ADR-0006](adr/adr-0006-gray8-active-protocol.md)。本次只修正文档，不改动 RTL、DMA 实现、BIT/HWH 或板端环境，也不改变下方正式接口的签核状态。
+
 2026-10-29 用户授权按根目录《计划.md》实施脱机灰度 HDMI 分屏；候选显示地址、输出帧身份与原子快照定义见 [设计](superpowers/specs/2026-10-29-standalone-display.md) 与 [ADR-0005](adr/adr-0005-standalone-gray-display.md)。此增量尚未正式签核，不改变原接口或 Route 的冻结状态。
 
 2026-10-28 用户已批准实施 640×400 Gray8 输入、RLE 游程及帧尾元数据回传的候选接口；精确定义见 [RLE 设计](superpowers/specs/2026-10-28-rle-design.md)，运行和验收见 [RLE 入口](../scripts/rle/README.md)。其实现和板测状态独立记录，不把下方既有 320×240 历史接口或正式 Route 标记自动改成已冻结。
@@ -23,6 +25,7 @@
 
 - 输入为 320×240 Gray8，一像素一字节；raw MJPEG 直接解码为 Gray8，不复制 RGB，也无 RGB 回退。
 - MM2S TX 长度为 **76,832 字节**。16 字节小端头含 `0x47525938`、`(H<<16)|W`、payload 长度和 frame ID；其后是 Gray8 payload；16 字节小端尾含 `0x454e4438`、frame ID、payload sum 和 `0xc0dec018`。
+- 旧 `WO14` 格式（`0x574F3134` / `0x454E4434` / `0xC0DEC014`）不再作为活动协议；历史 320×240 测试与结果保留，见 [ADR-0006](adr/adr-0006-gray8-active-protocol.md)。
 - S2MM 输出为 320×240 Binary8，**76,800 字节**。PL threshold 生成掩膜，PS 逐像素校验后复用 MaskCounter。
 - Gray8 adapter、320×240 wrapper、S2MM guards 的 XSim 已通过；新 BIT 已加载，3/3 合成帧已在板端 DMA 并通过 Binary8 全像素校验。真实相机测试因板卡只枚举 USB root hub、未出现 `/dev/video*`，在 DMA 前失败且未留置 buffers。合成帧结果不作为帧率或准确率结论；当前没有 Gray8 性能或 YOLO 收益数据。
 - 旧 RGB RTL、编码、构建及回放代码已从当前实现移除；历史报告仍保留原结果，不能充当 Gray8 板测证据。
