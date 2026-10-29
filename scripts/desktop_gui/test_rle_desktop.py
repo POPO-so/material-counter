@@ -179,4 +179,3 @@ def test_self_test_timeout_reports_uncertain_hardware_ownership(tmp_path, monkey
     with pytest.raises(RuntimeError) as error:
         board_entry.self_test(config, tmp_path, "boot")
     assert type(error.value).__name__ == "SelfTestOwnershipUncertain"
-
