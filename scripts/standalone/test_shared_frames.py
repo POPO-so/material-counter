@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import time
 import uuid
 
 import numpy as np
@@ -80,6 +81,42 @@ def test_full_slots_drop_publish_without_backpressure(frames):
         frames.publish(slot, uuid.uuid4(), slot)
     assert frames.claim_write() is None
     assert list(frames.statuses()) == [READY, READY, READY]
+
+
+def test_publish_carries_producer_stage_times_and_monotonic_publish_time(frames):
+    slot, pixels = frames.claim_write()
+    pixels.fill(5)
+    published_after = time.monotonic_ns()
+
+    try:
+        frames.publish(slot, uuid.UUID(int=9), 81, scale_ns=2_500_000,
+                       draw_ns=1_250_000, compose_ns=4_000_000)
+        lease = frames.acquire_latest()
+        assert lease.frame_id == 81
+        assert lease.scale_ns == 2_500_000
+        assert lease.draw_ns == 1_250_000
+        assert lease.compose_ns == 4_000_000
+        assert lease.published_ns >= published_after
+        assert lease.published_ns <= time.monotonic_ns()
+        frames.release_read(lease.slot)
+    finally:
+        if frames.statuses()[slot] == WRITING:
+            frames.abort_write(slot)
+        elif frames.statuses()[slot] == READING:
+            frames.release_read(slot)
+
+
+@pytest.mark.parametrize("name,value", [("scale_ns", -1), ("draw_ns", True),
+                                         ("scale_ns", 1.5)])
+def test_publish_rejects_invalid_stage_times_without_losing_write_lease(frames, name, value):
+    slot, _pixels = frames.claim_write()
+    try:
+        with pytest.raises(ValueError):
+            frames.publish(slot, uuid.UUID(int=9), 82, **{name: value})
+        assert frames.statuses()[slot] == WRITING
+    finally:
+        if frames.statuses()[slot] == WRITING:
+            frames.abort_write(slot)
 
 
 def test_reader_lease_cannot_be_overwritten_and_old_ready_frames_are_dropped(frames):
