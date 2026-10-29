@@ -31,6 +31,19 @@ from .driver_owner import DriverOwner, FailHold
 RLE_BIT_SHA256 = "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
 
 
+def _probe_display_buffers(owner, allocate):
+    """Check the four Gray8 scan slots before touching display hardware."""
+    probes = []
+    try:
+        for _ in range(4):
+            buffer = allocate(shape=(720, 1280), dtype="u1")
+            probes.append(buffer)
+            owner.retain(buffer)
+    finally:
+        for buffer in probes:
+            buffer.freebuffer()
+
+
 def snapshot(mmio):
     capture_started = time.monotonic()
     previous = mmio.read(0x0C)
@@ -64,8 +77,7 @@ def setup_hardware(files, owner):
     from pynq import Clocks, MMIO, Overlay, PL, allocate
     from pynq.lib.video import PIXEL_GRAY, VideoMode
 
-    probe = owner.retain(allocate(shape=(24*1024*1024,), dtype="u1"))
-    probe.freebuffer()  # CPU-only admission allocation; never submitted to any DMA.
+    _probe_display_buffers(owner, allocate)
     live = PL.bitfile_name
     live_digest = sha256(live) if live and Path(live).is_file() else None
     if live_digest and live_digest in (files["digest"], files.get("previous_display_sha256")):
