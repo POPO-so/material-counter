@@ -5,6 +5,7 @@ from __future__ import annotations
 import binascii
 import math
 import uuid
+from collections import OrderedDict
 from pathlib import Path
 
 import cv2
@@ -62,32 +63,83 @@ class GrayComposer:
         self._panel_image = Image.new("L", (WIDTH - 640, HEIGHT), 16)
         self._panel_draw = ImageDraw.Draw(self._panel_image)
         self._status_key = None
+        self._glyph_cache = OrderedDict()
+        self._status_glyphs = []
         self.panel_redraws = 0
-        self._redraw_panel(())
-
-    def _redraw_panel(self, status_lines: tuple[str, ...]) -> None:
-        self._panel_image.paste(16, (0, 0, WIDTH - 640, HEIGHT))
         self._panel_draw.text((24, 22), "运行状态", font=self._font, fill=255)
         for index, value in enumerate((0, 128, 255)):
             x = 24 + index * 180
             self._panel_draw.rectangle((x, 70, x + 95, 98), fill=value)
             self._panel_draw.text((x + 104, 73), str(value), font=self._small_latin_font, fill=255)
+        self._panel_base = self._panel_image.copy()
+        np.copyto(self.canvas[:, 640:], np.asarray(self._panel_base))
+        self._redraw_panel(())
+
+    def _glyph(self, ch):
+        """Keep font measurement and rasterization off recurring status updates."""
+        cached = self._glyph_cache.get(ch)
+        if cached is not None:
+            self._glyph_cache.move_to_end(ch)
+            return cached
+        font = self._small_latin_font if ord(ch) < 256 else self._small_font
+        left, top, right, bottom = font.getbbox(ch)
+        mask = Image.new("L", (right - left, bottom - top))
+        if mask.width and mask.height:
+            ImageDraw.Draw(mask).text((-left, -top), ch, font=font, fill=255)
+        cached = (font.getlength(ch), left, top, mask)
+        self._glyph_cache[ch] = cached
+        if len(self._glyph_cache) > 256:
+            self._glyph_cache.popitem(last=False)
+        return cached
+
+    def _layout_status(self, status_lines):
+        glyphs = []
         y = 126
         for line in status_lines:
             if y + 32 >= HEIGHT - 12:
                 break
             x = 24.0
             for ch in line:
-                font = self._small_latin_font if ord(ch) < 256 else self._small_font
-                advance = font.getlength(ch)
+                advance, left, top, mask = self._glyph(ch)
                 if x + advance > 616:
                     x, y = 24.0, y + 38
                 if y + 32 >= HEIGHT - 12:
                     break
-                self._panel_draw.text((round(x), y), ch, font=font, fill=255)
+                if mask.width and mask.height:
+                    glyphs.append((round(x) + left, y + top, ch, mask))
                 x += advance
             y += 38
-        np.copyto(self.canvas[:, 640:], np.asarray(self._panel_image))
+        return glyphs
+
+    def _redraw_panel(self, status_lines: tuple[str, ...]) -> None:
+        glyphs = self._layout_status(status_lines)
+        previous = self._status_glyphs
+        shared = 0
+        # The unchanged prefix needs no repaint. Include both removed and added
+        # suffixes so shortened or differently wrapped text leaves no old pixels.
+        while (shared < min(len(previous), len(glyphs))
+               and previous[shared][:3] == glyphs[shared][:3]):
+            shared += 1
+        changed = previous[shared:] + glyphs[shared:]
+        if changed:
+            x0 = max(0, min(x for x, y, ch, mask in changed))
+            y0 = max(0, min(y for x, y, ch, mask in changed))
+            x1 = min(WIDTH - 640, max(x + mask.width for x, y, ch, mask in changed))
+            y1 = min(HEIGHT, max(y + mask.height for x, y, ch, mask in changed))
+            if x0 < x1 and y0 < y1:
+                dirty = (x0, y0, x1, y1)
+                self._panel_image.paste(self._panel_base.crop(dirty), (x0, y0))
+                # Redraw any retained glyph overlapping the dirty area, too.
+                # Clip masks to avoid blending unchanged antialiased edges twice.
+                for x, y, ch, mask in glyphs:
+                    left, top = max(x, x0), max(y, y0)
+                    right, bottom = min(x + mask.width, x1), min(y + mask.height, y1)
+                    if left < right and top < bottom:
+                        clipped = mask.crop((left - x, top - y, right - x, bottom - y))
+                        self._panel_image.paste(255, (left, top, right, bottom), clipped)
+                np.copyto(self.canvas[y0:y1, 640+x0:640+x1],
+                          np.asarray(self._panel_image.crop(dirty)))
+        self._status_glyphs = glyphs
         self._status_key = status_lines
         self.panel_redraws += 1
 
