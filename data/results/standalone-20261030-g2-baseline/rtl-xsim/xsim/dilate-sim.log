@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Fri Oct 30 04:51:18 2026
+# Process ID         : 27720
+# Current directory  : C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim
+# Command line       : xsim.exe -log dilate-sim.log -mode tcl -source {xsim.dir/rle_pipeline/xsim_script.tcl}
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/dilate-sim.log
+# Journal file       : C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 9944 MB
+#-----------------------------------------------------------
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/dilate-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/dilate-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/dilate-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=2 -testplusarg OFFSET=0 -testplusarg X0=10 -testplusarg Y0=5 -testplusarg X1=630 -testplusarg Y1=399 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=637 cycles=513208
+$finish called at time : 10264250 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:21 2026...
