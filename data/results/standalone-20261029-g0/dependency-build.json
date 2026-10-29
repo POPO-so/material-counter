@@ -1,0 +1,51 @@
+{
+  "schema": "material-counter.video-dependencies.v1",
+  "source_commit": "19ed17d4fd4ea71f95a97d30f8ccd0d62b8dbaaa",
+  "tool_version": "2026.1",
+  "ip": [
+    {
+      "name": "color_convert",
+      "summary": {
+        "EstimatedClockPeriod": "4.520",
+        "Interval-min": "1",
+        "Interval-max": "1",
+        "LUT": "1053",
+        "FF": "916",
+        "BRAM_18K": "0",
+        "DSP": "6"
+      },
+      "artifacts": [
+        {
+          "path": "data/results/standalone-20261029-g0/rebuilt-ip/color_convert/solution1/impl/ip/component.xml",
+          "sha256": "9f3c2a80eae18d5dec39ef3b0f2ddcd2b46eba18fac72e89e6cfba31bac5b292"
+        },
+        {
+          "path": "data/results/standalone-20261029-g0/rebuilt-ip/color_convert/solution1/impl/ip/xilinx_com_hls_color_convert_1_0.zip",
+          "sha256": "3ae15577a6133b468d8ada40286741f6b279f1c37b16c23ff8d2de4235ba130f"
+        }
+      ]
+    },
+    {
+      "name": "pixel_unpack",
+      "summary": {
+        "EstimatedClockPeriod": "3.552",
+        "Interval-min": "undef",
+        "Interval-max": "undef",
+        "LUT": "943",
+        "FF": "340",
+        "BRAM_18K": "0",
+        "DSP": "0"
+      },
+      "artifacts": [
+        {
+          "path": "data/results/standalone-20261029-g0/rebuilt-ip/pixel_unpack/solution1/impl/ip/component.xml",
+          "sha256": "c3bb297f4cd13e661c2cedad7ff01a0549291e0f75b1fabd51f7478b3256bb25"
+        },
+        {
+          "path": "data/results/standalone-20261029-g0/rebuilt-ip/pixel_unpack/solution1/impl/ip/xilinx_com_hls_pixel_unpack_1_0.zip",
+          "sha256": "6dd4f21af8f1f582463d629116c7c34b83e24473f6a9303a8f54901ef4b2ebbd"
+        }
+      ]
+    }
+  ]
+}

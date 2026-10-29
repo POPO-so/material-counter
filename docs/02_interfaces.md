@@ -6,6 +6,8 @@
 
 ## 状态
 
+2026-10-29 用户授权按根目录《计划.md》实施脱机灰度 HDMI 分屏；候选显示地址、输出帧身份与原子快照定义见 [设计](superpowers/specs/2026-10-29-standalone-display.md) 与 [ADR-0005](adr/adr-0005-standalone-gray-display.md)。此增量尚未正式签核，不改变原接口或 Route 的冻结状态。
+
 2026-10-28 用户已批准实施 640×400 Gray8 输入、RLE 游程及帧尾元数据回传的候选接口；精确定义见 [RLE 设计](superpowers/specs/2026-10-28-rle-design.md)，运行和验收见 [RLE 入口](../scripts/rle/README.md)。其实现和板测状态独立记录，不把下方既有 320×240 历史接口或正式 Route 标记自动改成已冻结。
 
 | 项 | 状态 |

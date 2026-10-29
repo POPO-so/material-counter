@@ -1,0 +1,22 @@
+{
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "sampled_monotonic": 61096.734305962,
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "bitfile": "/home/xilinx/rle-20261028/data/results/gray8-rle-20261028-verified-build/export/rle.bit",
+  "rle_dma_registers": {
+    "0x0": "0x10003",
+    "0x4": "0x1002",
+    "0x30": "0x10003",
+    "0x34": "0x1002"
+  },
+  "fclks_mhz": [
+    31.25,
+    100.0,
+    100.0,
+    100.0
+  ]
+}
