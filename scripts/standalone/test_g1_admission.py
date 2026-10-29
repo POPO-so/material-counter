@@ -7,11 +7,13 @@ import numpy as np
 import pytest
 
 from scripts.standalone.g1_run import (
+    _configure_opencv_threads,
     _compositor_process,
     _cpu_usage_percent,
     _parse_proc_stat,
     _probe_display_buffers,
     _producer_watchdog_expired,
+    _record_compositor_progress,
     _sync_sample_due,
     _wait_for_output_identity,
 )
@@ -33,6 +35,41 @@ class Owner:
     def retain(self, resource):
         self.resources.append(resource)
         return resource
+
+
+def test_compositor_configures_two_opencv_threads():
+    class OpenCV:
+        def __init__(self):
+            self.thread_count = None
+
+        def setNumThreads(self, count):
+            self.thread_count = count
+
+    opencv = OpenCV()
+
+    _configure_opencv_threads(opencv)
+
+    assert opencv.thread_count == 2
+
+
+def test_compositor_progress_sample_records_completed_rate_from_monotonic_counts():
+    previous = {
+        "compositor_attempted": 20,
+        "compositor_published": 12,
+        "compositor_dropped_no_slot": 8,
+        "compositor_sampled_monotonic": 100.0,
+    }
+    sample = {}
+
+    _record_compositor_progress(sample, previous, (30, 18, 12, 0), sampled_at=110.0)
+
+    assert sample == {
+        "compositor_attempted": 30,
+        "compositor_published": 18,
+        "compositor_dropped_no_slot": 12,
+        "compositor_sampled_monotonic": 110.0,
+        "compositor_processed_fps": 0.6,
+    }
 
 
 def test_display_admission_probe_allocates_and_releases_four_gray8_slots():

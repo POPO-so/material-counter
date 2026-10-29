@@ -36,6 +36,10 @@ PRODUCER_STALL_TIMEOUT_SECONDS = 5
 SYNC_SAMPLE_EVERY_SUBMITTED_FRAMES = 4
 
 
+def _configure_opencv_threads(opencv):
+    opencv.setNumThreads(2)
+
+
 def _probe_display_buffers(owner, allocate):
     """Check the four Gray8 scan slots before touching display hardware."""
     probes = []
@@ -187,6 +191,26 @@ def _cpu_usage_percent(previous, current):
     return usage
 
 
+def _record_compositor_progress(sample, previous, counters, *, sampled_at=None):
+    """Record cumulative producer counts and the completed-frame interval rate."""
+    if sampled_at is None:
+        sampled_at = time.monotonic()
+    attempted, published, dropped = (int(counters[index]) for index in range(3))
+    sample.update(compositor_attempted=attempted,
+                  compositor_published=published,
+                  compositor_dropped_no_slot=dropped,
+                  compositor_sampled_monotonic=sampled_at)
+    if ("compositor_published" not in previous
+            or "compositor_sampled_monotonic" not in previous):
+        return
+    elapsed = sampled_at - previous["compositor_sampled_monotonic"]
+    completed = published - previous["compositor_published"]
+    if completed < 0:
+        raise RuntimeError("compositor published counter moved backwards")
+    if elapsed > 0:
+        sample["compositor_processed_fps"] = completed / elapsed
+
+
 def _producer_watchdog_expired(published_count, last_published_at, now):
     timeout = (PRODUCER_STALL_TIMEOUT_SECONDS if published_count
                else PRODUCER_STARTUP_TIMEOUT_SECONDS)
@@ -233,7 +257,7 @@ def _compositor_process(frames, stop_event, updates, error_queue, counters, *, s
     attempted = published = dropped = 0
     frame_id = 0
     try:
-        cv2.setNumThreads(1)
+        _configure_opencv_threads(cv2)
         composer = GrayComposer(font_path, latin_font_path=latin_font_path)
         session = uuid.UUID(session_uuid)
         if source == "camera":
@@ -437,6 +461,7 @@ def main(argv=None):
             name="material-gray-compositor",
         )
         producer.start()
+        _record_compositor_progress(first, {}, producer_counters)
         report.update(state="RUNNING", producer_pid=producer.pid,
                       compositor_process="separate spawn process",
                       ipc="three-slot non-blocking READY/READING lease")
@@ -484,6 +509,7 @@ def main(argv=None):
             if begin >= next_metrics:
                 current = owner.call(snapshot, hw.monitor)
                 previous = report["samples"][-1]
+                _record_compositor_progress(current, previous, producer_counters)
                 elapsed = current["sampled_monotonic"] - previous["sampled_monotonic"]
                 rate = ((current["unique"] - previous["unique"]) & ((1 << 64)-1)) / elapsed
                 if rate > 65:
