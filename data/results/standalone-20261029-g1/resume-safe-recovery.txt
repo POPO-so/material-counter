@@ -1,0 +1,1 @@
+{"pid": 12634, "vdma_control": 69632, "vdma_status": 69633, "driver_state": "CLOSED", "action": "terminate stopped owner and release camera"}

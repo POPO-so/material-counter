@@ -1,0 +1,137 @@
+{
+  "schema": "material-counter.video-sources.v1",
+  "repository": "https://github.com/Xilinx/PYNQ.git",
+  "commit": "19ed17d4fd4ea71f95a97d30f8ccd0d62b8dbaaa",
+  "tag": "v3.1",
+  "tool_version": "2026.1",
+  "files": [
+    {
+      "path": "boards/ip/axi_dynclk_v1_0/component.xml",
+      "sha256_lf": "21813665c84b1b75d9076f7e772730df199bc3ca71215d2a48a383cb37da38cd"
+    },
+    {
+      "path": "boards/ip/axi_dynclk_v1_0/src/axi_dynclk.vhd",
+      "sha256_lf": "2b8d2de5d2731fd0b83c06efb0566f83bd64016e699d067e39dc396de681ecaf"
+    },
+    {
+      "path": "boards/ip/axi_dynclk_v1_0/src/axi_dynclk_S00_AXI.vhd",
+      "sha256_lf": "871c0b0a56ad7caefecc844d23faf5af6ad904019c2cdbbb3ef5edc5048495e0"
+    },
+    {
+      "path": "boards/ip/axi_dynclk_v1_0/src/mmcme2_drp.v",
+      "sha256_lf": "3833e1439bc56a53d682cd4a8c99b6a9d3e6378b9e27667df290f0f8896faeac"
+    },
+    {
+      "path": "boards/ip/axi_dynclk_v1_0/xgui/axi_dynclk_v1_0.tcl",
+      "sha256_lf": "729c79ebdf8c55ede738aa3047c3e26d25926fb14317da1a741e4e10c0c2d7c3"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/component.xml",
+      "sha256_lf": "1af6fd9c43ab6d824a7a2daff30b2cd12224afae7c8fa1a4982e0c1206e2cb22"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/docs/rgb2dvi_v1_2.pdf",
+      "sha256_lf": "63325751909f90a731069d81968a2cdf158468ff5019d08d7396c865954f4c39"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/ClockGen.vhd",
+      "sha256_lf": "a3ac3a940d9455b342d5217b008502ebeef2da35a2b27a4074eb9ab3c58e6b1b"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/DVI_Constants.vhd",
+      "sha256_lf": "d8dbbbc3c8696d4527ee0d3c4757f1a40d0acebc845899483bc61c2bb8270cde"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/OutputSERDES.vhd",
+      "sha256_lf": "6205d58405919d4f899a525256e2cafa725408f6644642755cd0de63e69b286e"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/rgb2dvi.vhd",
+      "sha256_lf": "7268a67d557e36200847d494536733026dc7e2ca0980b6d2138fe9bac735f0cc"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/rgb2dvi.xdc",
+      "sha256_lf": "51b9ac7f1229a2250cddb1d490e45e536dd836eb5c42851f67359c7a5aef6130"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/rgb2dvi_clocks.xdc",
+      "sha256_lf": "d39d2f58a6cf74c30eef3c4b7d37c436359ea3fcfaff3ddcc0a1a69388b73ac8"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/rgb2dvi_ooc.xdc",
+      "sha256_lf": "77f9820235b2c3ce1e99d369db4932a76705633eeb5f950908855183931dc1a2"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/SyncAsync.vhd",
+      "sha256_lf": "5561ac8099ed13f3114e97387aab5f7f30ad28a8be2fc540004cbee3f19eb3a7"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/SyncAsyncReset.vhd",
+      "sha256_lf": "3ce7ade3267959da59b4d448cc6641018e4f0ac3de9f8f998d0b9ff84a3794bc"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/src/TMDS_Encoder.vhd",
+      "sha256_lf": "b047a257c1172412d1b354a98e3cc77d013d0f3c1af6ff646233abf8b669c196"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/xgui/rgb2dvi_v1_1.tcl",
+      "sha256_lf": "44d93693f4a4eac11a86d7ff2be4dc03e2bab44a407c342bd3dd8f1477c55f92"
+    },
+    {
+      "path": "boards/ip/rgb2dvi_v1_2/xgui/rgb2dvi_v1_2.tcl",
+      "sha256_lf": "b5c7922f8ce09ca0022acd406397ec1d1e602914851ea33e38934612344210b2"
+    },
+    {
+      "path": "boards/ip/color_swap_1.1/color_swap.v",
+      "sha256_lf": "62706648f324e069e0b9021c569272cbf1d3d69b3b2802ff7c12f4f5e0558224"
+    },
+    {
+      "path": "boards/ip/color_swap_1.1/component.xml",
+      "sha256_lf": "5f903ea49b65bc5b4126d250346139c77788f310a1ce7168e32cb668af92e2d1"
+    },
+    {
+      "path": "boards/ip/color_swap_1.1/xgui/color_swap_v1_1.tcl",
+      "sha256_lf": "18493633870c7f2730edd8785fa12bcc244ccb7b63eb6711011b5e0396e4c49b"
+    },
+    {
+      "path": "boards/ip/hls/color_convert/color_convert.cpp",
+      "sha256_lf": "d195520884f9e5fa3e87a3e0437d8f68df4e7b69a0ff79b08bd6336156ae5e74"
+    },
+    {
+      "path": "boards/ip/hls/color_convert/color_convert.hpp",
+      "sha256_lf": "54a82a3c0dd116e84cf71be178265e37432832ea491da41095aaa2b79311d341"
+    },
+    {
+      "path": "boards/ip/hls/color_convert/color_convert_test.cpp",
+      "sha256_lf": "317654b01b6cdd0f63edf562ea08207a689eed5fe3e08330096eed2b9af1bf2b"
+    },
+    {
+      "path": "boards/ip/hls/color_convert/script.tcl",
+      "sha256_lf": "9927edb29a1cd4371f510ef9f1149b859ea4fa67cac58740ba1b5bb4c7fe0fa0"
+    },
+    {
+      "path": "boards/ip/hls/pixel_unpack/pixel_unpack.cpp",
+      "sha256_lf": "ca17b16421ab9686666af975557df819b61eba810613ac36e9c8d3ab72656c3f"
+    },
+    {
+      "path": "boards/ip/hls/pixel_unpack/pixel_unpack.hpp",
+      "sha256_lf": "6e0e1ca15caa3ab719f45a0caf4a351951db5e755070447b48ae0248677d79b2"
+    },
+    {
+      "path": "boards/ip/hls/pixel_unpack/pixel_unpack_test.cpp",
+      "sha256_lf": "3c975125f0657c484d49ac5e1fe7065b80cf29eb057d86682bf640b95584ac13"
+    },
+    {
+      "path": "boards/ip/hls/pixel_unpack/script.tcl",
+      "sha256_lf": "927d209998f65f0dd41f96b44e65e652c1f2e6f6d2d79723dd0d42c0dfa2f3b8"
+    },
+    {
+      "path": "boards/Pynq-Z2/base/vivado/constraints/base.xdc",
+      "sha256_lf": "05d99c9032ceb21b2f6850955dd897a14a30d77ebda21d57867daa65caef2d3b"
+    },
+    {
+      "path": "boards/Pynq-Z2/base/base.tcl",
+      "sha256_lf": "ab0a99865ce597b68e72f4db71b8d5d3d60929613183fae27ef44db6a985cfe3"
+    }
+  ]
+}
