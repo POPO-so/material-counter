@@ -159,4 +159,3 @@ def test_cli_brief_summarizes_failure_and_preserves_nonzero_exit(tmp_path, monke
     assert summary["status"] == "failed"
     assert summary["files"] == {"total": 1, "ok": 0, "failed": 1}
     assert summary["errors"] == {"count": 1, "by_kind": {"hash": 1}}
-

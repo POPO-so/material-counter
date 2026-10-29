@@ -3,7 +3,7 @@
 // Tool Version Limit: 2026.06
 // Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 // Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
-// 
+//
 // ==============================================================
 // control
 // 0x00 : reserved
@@ -84,4 +84,3 @@
 #define XCOLOR_CONVERT_CONTROL_BITS_BIAS_C2_DATA 10
 #define XCOLOR_CONVERT_CONTROL_ADDR_BIAS_C3_DATA 0x68
 #define XCOLOR_CONVERT_CONTROL_BITS_BIAS_C3_DATA 10
-

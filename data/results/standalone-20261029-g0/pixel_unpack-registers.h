@@ -3,7 +3,7 @@
 // Tool Version Limit: 2026.06
 // Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 // Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
-// 
+//
 // ==============================================================
 // control
 // 0x00 : reserved
@@ -17,4 +17,3 @@
 
 #define XPIXEL_UNPACK_CONTROL_ADDR_MODE_DATA 0x10
 #define XPIXEL_UNPACK_CONTROL_BITS_MODE_DATA 32
-

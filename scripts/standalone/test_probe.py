@@ -253,4 +253,3 @@ def test_cli_writes_json_only_to_a_new_explicit_output(tmp_path):
     with pytest.raises(FileExistsError):
         probe.main(["--root", str(tmp_path), "--pynq-root", str(tmp_path / "pynq"), "--output", str(output)])
     assert output.read_text(encoding="utf-8") == "keep"
-
