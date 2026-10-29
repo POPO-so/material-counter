@@ -31,6 +31,8 @@ from .shared_frames import READING, WRITING, SharedFrames
 
 
 RLE_BIT_SHA256 = "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
+PRODUCER_STARTUP_TIMEOUT_SECONDS = 30
+PRODUCER_STALL_TIMEOUT_SECONDS = 5
 
 
 def _probe_display_buffers(owner, allocate):
@@ -182,6 +184,12 @@ def _cpu_usage_percent(previous, current):
         if total > 0:
             usage[name] = 100.0 * max(0, total - idle) / total
     return usage
+
+
+def _producer_watchdog_expired(published_count, last_published_at, now):
+    timeout = (PRODUCER_STALL_TIMEOUT_SECONDS if published_count
+               else PRODUCER_STARTUP_TIMEOUT_SECONDS)
+    return now - last_published_at >= timeout
 
 
 def _read_cpu_ticks():
@@ -451,8 +459,10 @@ def main(argv=None):
             if published_count != last_published:
                 last_published = published_count
                 last_published_at = begin
-            elif begin - last_published_at > 5:
-                raise TimeoutError("compositor has not published a frame for 5 seconds")
+            elif _producer_watchdog_expired(published_count, last_published_at, begin):
+                if published_count:
+                    raise TimeoutError("compositor has not published a frame for 5 seconds")
+                raise TimeoutError("compositor has not published its first frame within 30 seconds")
             pending = []
             while True:
                 try:

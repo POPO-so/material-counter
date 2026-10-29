@@ -11,6 +11,7 @@ from scripts.standalone.g1_run import (
     _cpu_usage_percent,
     _parse_proc_stat,
     _probe_display_buffers,
+    _producer_watchdog_expired,
     _wait_for_output_identity,
 )
 from scripts.standalone.shared_frames import READING, WRITING, SharedFrames
@@ -199,3 +200,13 @@ def test_output_sync_marks_a_superseded_frame_as_missed_without_waiting():
     assert observed["frame"] == 18
     assert observed_ns is None
     assert time.monotonic() - started < 0.1
+
+
+def test_producer_watchdog_allows_spawn_and_camera_startup_before_first_frame():
+    assert not _producer_watchdog_expired(0, 100.0, 129.9)
+    assert _producer_watchdog_expired(0, 100.0, 130.0)
+
+
+def test_producer_watchdog_still_detects_stall_after_first_publish():
+    assert not _producer_watchdog_expired(1, 100.0, 104.9)
+    assert _producer_watchdog_expired(1, 100.0, 105.0)
