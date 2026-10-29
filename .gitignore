@@ -76,3 +76,17 @@ data/results/**/*.vpd
 *~
 Thumbs.db
 desktop.ini
+
+# 本机测试、安装、仿真临时产物（仅根目录）
+/.codex-test-*/
+/.debug-test-*/
+/pytest-of-*/
+/pip-build-tracker-*/
+/pip-ephem-wheel-cache-*/
+/pip-install-*/
+/pip-metadata-*/
+/pip-unpack-*/
+/material-counter-startup-status.json
+/xsim.dir/
+/xelab.pb
+/xvlog.pb
