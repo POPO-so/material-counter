@@ -2,6 +2,7 @@ from pathlib import Path
 import sys
 
 import numpy as np
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -154,3 +155,73 @@ def test_observability_retains_lost_tracks_when_finished_tracks_are_discarded():
     assert lost[0]["track_id"] == 1
     assert lost[0]["finished"] is True
     assert lost[0]["lost_reason"] == "missed_frame_budget_exceeded"
+
+
+def test_birth_semantics_defaults_to_baseline_and_rejects_unknown_values():
+    assert MaskCounter().birth_semantics == "baseline"
+    with pytest.raises(ValueError, match="birth_semantics"):
+        MaskCounter(birth_semantics="band")
+
+
+def test_baseline_treats_an_in_band_birth_as_already_counted():
+    counter = MaskCounter(observability=True, count_axis="x", line_x=160)
+    counter.update_detections(0, [_detection(154)])
+
+    result = counter.update_detections(1, [_detection(166)])
+
+    assert result.total_count == 0
+    assert result.tracks[0]["counted"] is True
+    assert result.tracks[0]["born_counted_without_event"] is True
+    assert result.tracks[0]["born_in_hysteresis_band"] is True
+
+
+def test_band_gate_counts_a_track_born_inside_the_hysteresis_band():
+    counter = MaskCounter(observability=True, count_axis="x", line_x=160,
+                          birth_semantics="band_gate")
+    counter.update_detections(0, [_detection(154)])
+
+    result = counter.update_detections(1, [_detection(166)])
+
+    assert result.total_count == 1
+    assert result.tracks[0]["born_in_hysteresis_band"] is True
+    assert result.tracks[0]["counted"] is True
+
+
+def test_band_gate_still_ignores_a_birth_inside_the_count_zone():
+    for semantics in ("baseline", "band_gate"):
+        counter = MaskCounter(count_axis="x", line_x=160, birth_semantics=semantics)
+        counter.update_detections(0, [_detection(170)])
+        result = counter.update_detections(1, [_detection(180)])
+
+        assert result.total_count == 0
+        assert result.tracks[0]["born_past_line"] is True
+        assert result.tracks[0]["born_counted_without_event"] is True
+
+
+def test_band_gate_requires_the_track_to_leave_the_band():
+    counter = MaskCounter(count_axis="x", line_x=160, max_missing=0,
+                          birth_semantics="band_gate")
+    counter.update_detections(0, [_detection(154)])
+    result = counter.update_detections(1, [_detection(156)])
+
+    assert result.total_count == 0
+    counter.update_detections(2, [])
+
+    assert counter.total_count == 0
+
+
+def test_band_gate_distinguishes_near_line_birth_from_past_line_birth():
+    counter = MaskCounter(observability=True, count_axis="x", line_x=160,
+                          birth_semantics="band_gate")
+
+    result = counter.update_detections(0, [_detection(154)])
+
+    track = result.tracks[0]
+    association = result.diagnostics["associations"][-1]
+    assert track["born_past_line"] is False
+    assert track["born_in_hysteresis_band"] is True
+    assert track["born_counted_without_event"] is False
+    assert track["counted"] is False
+    assert association["born_past_line"] is False
+    assert association["born_counted_without_event"] is False
+    assert association["born_in_hysteresis_band"] is True

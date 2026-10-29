@@ -131,6 +131,10 @@ class _Track:
     forward_velocity: float | None = None
     capture_monotonic_ns: int | None = None
     velocity_px_per_s: float | None = None
+    born_past_line: bool = False
+    born_counted_without_event: bool = False
+    born_in_hysteresis_band: bool = False
+    band_exit_observed: bool = False
 
 
 class MaskCounter:
@@ -145,6 +149,7 @@ class MaskCounter:
                  roi_mode: str = "lane", roi_top: int = 0, roi_bottom: int | None = None,
                  min_area: int = 12, direction: int = 1,
                  hysteresis: float = 2.0, confirm_hits: int = 2,
+                 birth_semantics: str = "baseline",
                  max_missing: int = 1, max_step: float = 24.0,
                  max_x_step: float = 20.0, backward_tolerance: float = 2.0,
                  count_axis: str = "y", line_x: int = 160,
@@ -194,6 +199,9 @@ class MaskCounter:
             raise ValueError("direction must be +1 (top to bottom) or -1")
         self.direction = direction
         self.hysteresis = _positive_float(hysteresis, "hysteresis")
+        if not isinstance(birth_semantics, str) or birth_semantics not in ("baseline", "band_gate"):
+            raise ValueError("birth_semantics must be baseline or band_gate")
+        self.birth_semantics = birth_semantics
         self.confirm_hits = _integer(confirm_hits, "confirm_hits", minimum=2)
         self.max_missing = _integer(max_missing, "max_missing", minimum=0)
         self.max_step = _positive_float(max_step, "max_step")
@@ -488,6 +496,9 @@ class MaskCounter:
             "missed": track.missed,
             "finished": track.finished,
             "forward_velocity": track.forward_velocity,
+            "born_past_line": track.born_past_line,
+            "born_counted_without_event": track.born_counted_without_event,
+            "born_in_hysteresis_band": track.born_in_hysteresis_band,
         }
 
     def tracking_snapshot(self) -> tuple[dict[str, Any], ...]:
@@ -1222,10 +1233,17 @@ class MaskCounter:
             track.last_frame = frame_id
             track.detection = detection
             track.armed = track.armed or self._side(detection) < -self.hysteresis
+            if (track.born_in_hysteresis_band
+                    and self._side(detection) >= self.hysteresis
+                    and self.direction * longitudinal > 0):
+                track.band_exit_observed = True
             used_tracks.add(track_id)
             used_detections.add(index)
-            if (track.armed and track.confirmed and not track.counted
-                    and self._side(detection) >= self.hysteresis):
+            crossing_ready = (track.armed and track.confirmed and not track.counted
+                              and self._side(detection) >= self.hysteresis)
+            if track.born_in_hysteresis_band:
+                crossing_ready = crossing_ready and track.band_exit_observed
+            if crossing_ready:
                 track.counted = True
                 event = CountEvent(track.track_id, frame_id,
                                    detection.centroid_x, detection.centroid_y, inferred_gap=gap)
@@ -1253,19 +1271,36 @@ class MaskCounter:
             if index in used_detections:
                 continue
             side = self._side(detection)
-            born_after_arming_zone = side >= -self.hysteresis
+            in_hysteresis_band = -self.hysteresis <= side <= self.hysteresis
+            born_past_count_zone = side > self.hysteresis
+            if self.birth_semantics == "band_gate":
+                # Candidate: a birth inside the band may still count once the
+                # track is observed leaving the band in the motion direction.
+                armed = side < -self.hysteresis or in_hysteresis_band
+                counted = born_past_count_zone
+            else:
+                # Baseline: any birth at or past the arming threshold is treated
+                # as already inside the count zone and never emits an event.
+                armed = side < -self.hysteresis
+                counted = side >= -self.hysteresis
             track = _Track(
                 track_id=self._next_track_id,
                 detection=detection,
                 last_frame=frame_id,
-                armed=side < -self.hysteresis,
-                counted=born_after_arming_zone,
+                armed=armed,
+                counted=counted,
                 confirmed=self.confirm_hits <= 1,
                 capture_monotonic_ns=capture_monotonic_ns,
+                born_past_line=side >= 0,
+                born_counted_without_event=counted,
+                born_in_hysteresis_band=in_hysteresis_band,
             )
             self._tracks[track.track_id] = track
             self.last_associations.append({"track_id": track.track_id, "detection_index": index,
-                                           "previous_frame": None, "kind": "new", "dx": None, "dy": None})
+                                           "previous_frame": None, "kind": "new", "dx": None, "dy": None,
+                                           "born_past_line": track.born_past_line,
+                                           "born_counted_without_event": counted,
+                                           "born_in_hysteresis_band": track.born_in_hysteresis_band})
             self._next_track_id += 1
         for track in finished_tracks:
             retained = self._tracks.pop(track.track_id, None)

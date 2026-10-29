@@ -1,0 +1,84 @@
+{
+  "settings": {
+    "width": 320,
+    "height": 240,
+    "count_axis": "x",
+    "line_x": 160,
+    "hysteresis": 4,
+    "confirm_hits": 2,
+    "max_missing": 1,
+    "max_step": 40,
+    "max_x_step": 40
+  },
+  "scenarios": [
+    {
+      "scenario": "late_birth_in_band",
+      "truth": 1,
+      "baseline_count": 0,
+      "band_gate_count": 1,
+      "baseline_error": -1,
+      "band_gate_error": 0,
+      "note": "real item first visible inside the hysteresis band"
+    },
+    {
+      "scenario": "birth_inside_count_zone",
+      "truth": 0,
+      "baseline_count": 0,
+      "band_gate_count": 0,
+      "baseline_error": 0,
+      "band_gate_error": 0,
+      "note": "segmentation artifact appears past the line"
+    },
+    {
+      "scenario": "duplicate_reentry",
+      "truth": 1,
+      "baseline_count": 1,
+      "band_gate_count": 1,
+      "baseline_error": 0,
+      "band_gate_error": 0,
+      "note": "item crosses, then a second blob appears past the line"
+    },
+    {
+      "scenario": "in_band_flicker",
+      "truth": 0,
+      "baseline_count": 0,
+      "band_gate_count": 0,
+      "baseline_error": 0,
+      "band_gate_error": 0,
+      "note": "artifact oscillates inside the band and never leaves it"
+    },
+    {
+      "scenario": "band_birth_then_forward",
+      "truth": null,
+      "baseline_count": 0,
+      "band_gate_count": 1,
+      "baseline_error": null,
+      "band_gate_error": null,
+      "note": "in-band birth wiggles back, then moves forward across; truth is ambiguous because the band rule cannot tell a late real item from a flicker that later recovers"
+    },
+    {
+      "scenario": "two_late_items",
+      "truth": 2,
+      "baseline_count": 0,
+      "band_gate_count": 2,
+      "baseline_error": -2,
+      "band_gate_error": 0,
+      "note": "two real items first visible inside the band"
+    },
+    {
+      "scenario": "fragment_after_crossing_in_band",
+      "truth": 1,
+      "baseline_count": 1,
+      "band_gate_count": 2,
+      "baseline_error": 0,
+      "band_gate_error": 1,
+      "note": "item crosses, then a fragment appears inside the band"
+    }
+  ],
+  "totals": {
+    "scored_scenarios": 6,
+    "ambiguous_scenarios": 1,
+    "baseline_abs_error": 3,
+    "band_gate_abs_error": 1
+  }
+}
