@@ -48,8 +48,8 @@ def test_mock_browser_reset_view_health_and_stop(tmp_path):
                 page.locator("#view-mode").select_option("binary")
                 playwright.expect(page.locator("#feedback")).to_contain_text("画面")
                 assert state.view_mode == "binary"
-                playwright.expect(page.locator("#rss")).not_to_have_text("--")
-                playwright.expect(page.locator("#cma-free")).to_have_text("--")
+                playwright.expect(page.locator("#resource-status")).to_have_text("采样已停止")
+                playwright.expect(page.locator("#resource-content")).to_be_hidden()
                 samples = []
                 started = time.monotonic()
                 while time.monotonic() - started < 30:
