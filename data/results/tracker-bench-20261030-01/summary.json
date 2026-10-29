@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "python": "CPython 3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "machine": "AMD64",
+    "cpu_count": 24,
+    "repo": "C:\\fpga\\mc-integration",
+    "baseline": "5b554617:scripts/wo0016/stream_counter.py",
+    "settings": {
+      "width": 320,
+      "height": 240,
+      "count_axis": "y",
+      "line_y": 120,
+      "roi_mode": "full",
+      "min_area": 12
+    },
+    "scenarios": [
+      {
+        "name": "replay-2k",
+        "kind": "replay",
+        "frames": 2000
+      },
+      {
+        "name": "replay-20k",
+        "kind": "replay",
+        "frames": 20000
+      },
+      {
+        "name": "masks-2k",
+        "kind": "masks",
+        "frames": 2000
+      }
+    ],
+    "warmup_runs": 1,
+    "timed_repeats": 3,
+    "timing_scope": "MaskCounter.update_detections/update only; scenario construction and memory pass excluded",
+    "note": "host CPython micro-benchmark, not PYNQ board throughput"
+  },
+  "rows": [
+    {
+      "scenario": "replay-2k",
+      "frames": 2000,
+      "module": "baseline",
+      "seconds": 0.07720890000928193,
+      "us_per_frame": 38.60445000464097,
+      "frames_per_second": 25903.749435098325,
+      "tracks": 114,
+      "retained": null,
+      "peak_traced_kib": 136.0205078125,
+      "memory_tracks": 114
+    },
+    {
+      "scenario": "replay-2k",
+      "frames": 2000,
+      "module": "current",
+      "seconds": 0.08908440000959672,
+      "us_per_frame": 44.54220000479836,
+      "frames_per_second": 22450.61985919586,
+      "tracks": 3,
+      "retained": 111,
+      "peak_traced_kib": 162.2939453125,
+      "memory_tracks": 3
+    },
+    {
+      "scenario": "replay-20k",
+      "frames": 20000,
+      "module": "baseline",
+      "seconds": 5.32980409997981,
+      "us_per_frame": 266.4902049989905,
+      "frames_per_second": 3752.4831353699774,
+      "tracks": 1127,
+      "retained": null,
+      "peak_traced_kib": 928.2041015625,
+      "memory_tracks": 1127
+    },
+    {
+      "scenario": "replay-20k",
+      "frames": 20000,
+      "module": "current",
+      "seconds": 1.5000235000043176,
+      "us_per_frame": 75.00117500021588,
+      "frames_per_second": 13333.124447678609,
+      "tracks": 3,
+      "retained": 128,
+      "peak_traced_kib": 184.8369140625,
+      "memory_tracks": 3
+    },
+    {
+      "scenario": "masks-2k",
+      "frames": 2000,
+      "module": "baseline",
+      "seconds": 0.6962962000106927,
+      "us_per_frame": 348.14810000534635,
+      "frames_per_second": 2872.34082272643,
+      "tracks": 114,
+      "retained": null,
+      "peak_traced_kib": 328.9091796875,
+      "memory_tracks": 114
+    },
+    {
+      "scenario": "masks-2k",
+      "frames": 2000,
+      "module": "current",
+      "seconds": 0.7194132000149693,
+      "us_per_frame": 359.70660000748467,
+      "frames_per_second": 2780.043513183223,
+      "tracks": 3,
+      "retained": 111,
+      "peak_traced_kib": 332.9716796875,
+      "memory_tracks": 3
+    }
+  ]
+}
