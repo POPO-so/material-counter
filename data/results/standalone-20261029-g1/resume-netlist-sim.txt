@@ -1,0 +1,33 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Thu Oct 29 18:56:49 2026
+# Process ID         : 51592
+# Current directory  : C:/Users/14173/Documents/material-counter/.runtime/g1-resume-netlist-20261029
+# Command line       : xsim.exe -log monitor-netlist.log -mode tcl -source {xsim.dir/monitor_netlist/xsim_script.tcl}
+# Log file           : C:/Users/14173/Documents/material-counter/.runtime/g1-resume-netlist-20261029/monitor-netlist.log
+# Journal file       : C:/Users/14173/Documents/material-counter/.runtime/g1-resume-netlist-20261029\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 8520 MB
+#-----------------------------------------------------------
+source xsim.dir/monitor_netlist/xsim_script.tcl
+# xsim {monitor_netlist} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+VIDEO_MONITOR_NETLIST_PASS
+$finish called at time : 38739510 ns : File "C:/Users/14173/Documents/material-counter/fpga/sim/standalone/tb_video_monitor_netlist.sv" Line 223
+run: Time (s): cpu = 00:00:01 ; elapsed = 00:02:51 . Memory (MB): peak = 230.719 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 53748 KB (Peak: 53748 KB), Simulation CPU Usage: 167046 ms
+INFO: [Common 17-206] Exiting xsim at Thu Oct 29 18:59:43 2026...

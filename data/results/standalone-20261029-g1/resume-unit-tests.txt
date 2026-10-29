@@ -1,0 +1,9 @@
+COMMAND: .venv/Scripts/python.exe -B -m pytest -p no:cacheprovider --basetemp .runtime/standalone-g1-resume-tests-20261029 scripts/standalone -q
+...........................................................              [100%]
+59 passed in 6.82s
+EXIT_CODE: 0
+
+Manager final software check:
+COMMAND: .venv/Scripts/python.exe -B -m pytest -p no:cacheprovider --basetemp .runtime/g1-resume-final-unit scripts/standalone -q
+72 passed in 6.19s
+EXIT_CODE: 0

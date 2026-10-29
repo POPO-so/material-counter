@@ -1,0 +1,8 @@
+{
+  "vdma_halted": true,
+  "hp2_rd_before": 0,
+  "hp2_rd_after": 1,
+  "hp2_wr_unchanged": 3840,
+  "hwh_width": 32,
+  "action": "match HP2 read width while DMA halted"
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "material-counter.display-build.v1",
+  "ready_for_board": true,
+  "scope": "G1 output diagnosis only; visible display, frame identity and offline acceptance pending",
+  "files": {
+    "bit": {
+      "path": "display-diag.bit",
+      "sha256": "c1829e1af595a22daf85da35449c93fe47808888ddf33b262a46252f7bc1e73f"
+    },
+    "hwh": {
+      "path": "display-diag.hwh",
+      "sha256": "dac5ea7e01543bdc3c3542f8d0f53619df49a8ead60af8bbed7336a849e0c670"
+    }
+  },
+  "runtime": {
+    "font_sha256": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8",
+    "latin_font_sha256": "252d320379dd882551c53b75dfb620cb0ffe2d6657445743d79f2100f1d96f21",
+    "sources": [
+      {
+        "path": "lib/video/common.py",
+        "sha256": "2c4d6c2cb3ede0aca97aa2980dec7d5147ce6f4d446635ddd7dd1e894282cbf7"
+      },
+      {
+        "path": "lib/video/dma.py",
+        "sha256": "94346a4ae6a7a7f9e4b78887179e2a55ff821c7ed3724b584a7bb4c228fea30f"
+      },
+      {
+        "path": "lib/video/frontend.py",
+        "sha256": "da4f3a4915820cdf124773d64a48a4e289c62cdb9ffcbd623b9f3f2b0c17d28b"
+      },
+      {
+        "path": "lib/video/dvi.py",
+        "sha256": "ed46cd6259037474762725d654a9a7e266d02d2052d8202b37a58085b4520cea"
+      },
+      {
+        "path": "lib/video/pipeline.py",
+        "sha256": "a176db13a567ffe080af7e4691a8ce49382450fcb47c1bea6bca76422b37b7c3"
+      },
+      {
+        "path": "lib/video/hierarchies.py",
+        "sha256": "528106d7ea2c95cfd64ec27f2696f9daab76fb2c96341f1a48cd04b211f85950"
+      },
+      {
+        "path": "buffer.py",
+        "sha256": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463"
+      },
+      {
+        "path": "lib/_video.cpython-310-arm-linux-gnueabihf.so",
+        "sha256": "015bfa5c37a98da364dc2014d37c08dbe7cfad7333f72448fee2c9b7bca91829"
+      },
+      {
+        "path": "ps.py",
+        "sha256": "ac496806a79533b6be4c0bb29d3f246acfe85e13e933c95336eb67f783ffab9b"
+      }
+    ]
+  },
+  "review": {
+    "setup_ns": 0.066,
+    "hold_ns": 0.038,
+    "critical_methodology": 0,
+    "monitor_sim": "VIDEO_MONITOR_PASS",
+    "remaining_warnings": [
+      "LUTAR-1 vendor protocol converter reset implementation",
+      "TIMING-9 mailbox handshake CDC reviewed; 10 ns datapath bound",
+      "CDC-6 vendor VTC synchronizer",
+      "CDC-15 512-bit stable mailbox sampled only after synchronized ack",
+      "XDCB-5 vendor constraint query",
+      "XDCC-1/XDCC-7 explicit correction of invalid vendor serial clock constraint"
+    ],
+    "monitor_netlist": "VIDEO_MONITOR_NETLIST_PASS",
+    "cdc_warnings": {
+      "CDC-6": 1,
+      "CDC-15": 965
+    },
+    "clock_review": "Final SerialClk master is axi_dynclk CLKOUT0 (clock I); early generated-clock warning superseded by display_timing.xdc. No final DRC or methodology critical violations."
+  },
+  "sources": {
+    "fpga/experimental/standalone/video_frame_monitor.v": "85568ff91ecc0b718ca391bc9c21533c96dbcab18c46788c9d19214acd16166e",
+    "scripts/standalone/create_display.tcl": "f580617befbb7e2a7e671384d987741c5d9f6c9ae881c73a494bc3fa74b29b35",
+    "scripts/standalone/display_timing.xdc": "4ace486d68600ad81b3f76ef4d6838a2649d9106c96fc452c54bdfaf2579f3f7"
+  },
+  "validation_sources": {
+    "fpga/sim/standalone/tb_video_frame_monitor.sv": "71671ea127ff29807f9a39ed2fe23d346ee92758872f0eedab88846d446e4e35",
+    "fpga/sim/standalone/tb_video_monitor_netlist.sv": "d320de521f4bd52b513b0b3b7e1d017617e2cbd15b68124a138b765463d12b4a"
+  }
+}
