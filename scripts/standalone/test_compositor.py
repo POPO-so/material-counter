@@ -78,6 +78,27 @@ def test_render_preserves_fixed_geometry_scaling_padding_and_binary_values():
     assert _decode_marker(canvas[719, 640:864]) == (session, 8)
 
 
+def test_render_exposes_per_frame_scale_and_draw_timings(monkeypatch):
+    api = _api()
+    composer = _composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    ticks = iter((0, 10_000_000, 20_000_000, 50_000_000))
+    monkeypatch.setattr(api, "perf_counter_ns", lambda: next(ticks), raising=False)
+
+    composer.render(gray, binary, uuid.uuid4(), 1, status_lines=("更新状态",))
+
+    timings = composer.last_timings_ms
+    assert set(timings) == {"scale_ms", "draw_ms"}
+    assert timings["scale_ms"] == 10
+    assert timings["draw_ms"] == 30
+    assert all(value >= 0 for value in timings.values())
+
+    ticks = iter((100_000_000, 105_000_000, 110_000_000, 118_000_000))
+    composer.render(gray, binary, uuid.uuid4(), 2, status_lines=("更新状态",))
+    assert composer.last_timings_ms == {"scale_ms": 5, "draw_ms": 8}
+
+
 def test_gray_background_mode_uses_gray_work_and_keeps_frame_identity():
     composer = _composer()
     session = uuid.uuid4()
