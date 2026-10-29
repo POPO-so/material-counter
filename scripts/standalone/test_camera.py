@@ -1,3 +1,4 @@
+import threading
 import time
 import numpy as np
 import pytest
@@ -35,3 +36,16 @@ def test_camera_failure_and_timeout_are_explicit():
             c.read(timeout=.3)
     finally:
         c.close()
+
+def test_close_waits_for_blocking_camera_read_to_finish():
+    if LatestCamera is None:
+        pytest.fail("live Gray8 camera source is not implemented")
+    reading = threading.Event()
+    def frames(device,count):
+        reading.set()
+        time.sleep(2.2)
+        if False:
+            yield None
+    c=LatestCamera("camera",frames=frames)
+    assert reading.wait(timeout=.5), "camera reader did not enter its blocking read"
+    c.close()
