@@ -94,8 +94,11 @@ def main() -> int:
     for vector_id, expected_name, source_name, _ in VECTORS:
         source_info = source_by_name[source_name]
         expected_info = expected_by_name[expected_name]
-        if source_info["vector_id"] != vector_id or expected_info["vector_id"] != vector_id:
+        if expected_info["vector_id"] != vector_id:
             raise RuntimeError(f"Manifest vector identity mismatch for {vector_id}")
+        if (expected_info["source_path"] != source_info["path"]
+                or expected_info["source_sha256"] != source_info["sha256"]):
+            raise RuntimeError(f"Manifest expected/source linkage mismatch for {vector_id}")
         for info, expected_size, label in ((source_info, 640 * 400, "source"),
                                            (expected_info, TARGET_PIXELS, "expected")):
             path = HERE / info["path"]
