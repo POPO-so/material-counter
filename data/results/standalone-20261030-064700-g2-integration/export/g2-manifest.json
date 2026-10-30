@@ -1,0 +1,161 @@
+{
+  "schema": "material-counter.g2-integration.v1",
+  "created_at": "2026-10-30T07:42:31+08:00",
+  "build_id": "standalone-20261030-064700-g2-integration",
+  "status": "STATIC_BUILD_PASS_BOARD_SMOKE_PENDING",
+  "scope": "G2 integrated BIT/HWH identity and Vivado static implementation evidence; not Route/interface freeze or G2.5",
+  "source": {
+    "branch": "fix/初始化G2原生日志",
+    "commit": "b989cd1e81457ed71e970171ea7593139d7f78d2",
+    "parent_commit": "0bff5a84f9a1d1713c122c95a90fac03016f2554",
+    "tracked_worktree_clean": true
+  },
+  "tool": {
+    "vivado": "2026.1",
+    "build": "6511674",
+    "top": "display_wrapper",
+    "part": "xc7z020clg400-1",
+    "speed_grade": "-1"
+  },
+  "architecture": {
+    "control_mi_count": 11,
+    "control_windows": [
+      {
+        "size": "0x00010000",
+        "base": "0x43000000",
+        "mi": "M00",
+        "name": "VDMA"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x43C10000",
+        "mi": "M01",
+        "name": "HDMI dynamic clock"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x43C30000",
+        "mi": "M02",
+        "name": "HDMI VTC"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x43C60000",
+        "mi": "M03",
+        "name": "color convert"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x43C70000",
+        "mi": "M04",
+        "name": "pixel unpack"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x41210000",
+        "mi": "M05",
+        "name": "HDMI HPD GPIO"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x41200000",
+        "mi": "M06",
+        "name": "buttons GPIO"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x40000000",
+        "mi": "M07",
+        "name": "video interrupt controller"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x43C40000",
+        "mi": "M08",
+        "name": "frame monitor"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x40400000",
+        "mi": "M09",
+        "name": "RLE AXI DMA"
+      },
+      {
+        "size": "0x00010000",
+        "base": "0x43C20000",
+        "mi": "M10",
+        "name": "RLE image pipeline"
+      }
+    ],
+    "clocks_mhz": {
+      "FCLK0_RLE": 50.0,
+      "FCLK1_GP0": 100.0,
+      "FCLK2_display": 142.857132
+    },
+    "resets": {
+      "RLE": "dedicated reset_rle, synchronous release on FCLK0, external reset from FCLK_RESET0_N",
+      "display": "existing reset_stream/reset_pixel domains retained"
+    },
+    "hp": {
+      "RLE_MM2S": "HP0, 64-bit",
+      "RLE_S2MM": "HP1, 32-bit",
+      "HDMI_VDMA_MM2S": "HP2, 32-bit"
+    },
+    "rle_irq": "disconnected; software polling",
+    "buffer_ownership": "RLE input/output buffers distinct from display buffers; VDMA frame slots remain owned by PYNQ four-slot scheduler",
+    "rle_stream_to_hdmi": "not connected"
+  },
+  "reports": {
+    "timing": {
+      "setup_wns_ns": 0.054,
+      "setup_tns_ns": 0.0,
+      "hold_whs_ns": 0.024,
+      "hold_ths_ns": 0.0,
+      "setup_failing_endpoints": 0,
+      "hold_failing_endpoints": 0
+    },
+    "utilization": {
+      "slice_luts": 12068,
+      "slice_registers": 15437,
+      "bram_tiles": 4.5,
+      "dsps": 9
+    },
+    "drc": {
+      "errors": 0,
+      "checks": 33,
+      "critical_warnings": 0
+    },
+    "methodology": {
+      "checks": 8,
+      "critical_warnings": 0
+    },
+    "cdc": {
+      "cdc3_info": 102,
+      "cdc6_warning": 1,
+      "cdc15_warning": 965
+    },
+    "synthesis": {
+      "warnings": 566,
+      "critical_warnings": 0,
+      "errors": 0
+    },
+    "warning_review": "See reports-g2-integrated and README: effective SerialClk source verified after late XDC override; monitor CDC warnings map to handshake mailbox/max-delay paths; VTC CDC-6 and vendor IP warnings retained as reviewed residuals."
+  },
+  "artifacts": {
+    "bit": {
+      "path": "g2-integrated.bit",
+      "sha256": "2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18",
+      "bytes": 4045770
+    },
+    "hwh": {
+      "path": "g2-integrated.hwh",
+      "sha256": "a663072734f2b16be9f37be0699ba897b5902c0b46398a4be914f6ee40fa852f",
+      "bytes": 811935
+    }
+  },
+  "board_smoke": {
+    "status": "PENDING",
+    "previous_display_bit_sha256": "c1829e1af595a22daf85da35449c93fe47808888ddf33b262a46252f7bc1e73f",
+    "expected_boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d"
+  }
+}

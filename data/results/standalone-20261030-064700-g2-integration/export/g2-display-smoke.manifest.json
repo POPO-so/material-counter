@@ -1,0 +1,49 @@
+{
+  "schema": "material-counter.display-build.v1",
+  "ready_for_board": true,
+  "review_scope": "G2 bounded HDMI/camera/monitor smoke harness only; does not declare G2.5 or final G2 release",
+  "files": {
+    "bit": {
+      "path": "g2-integrated.bit",
+      "sha256": "2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18"
+    },
+    "hwh": {
+      "path": "g2-integrated.hwh",
+      "sha256": "a663072734f2b16be9f37be0699ba897b5902c0b46398a4be914f6ee40fa852f"
+    }
+  },
+  "runtime": {
+    "font_sha256": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8",
+    "latin_font_sha256": "252d320379dd882551c53b75dfb620cb0ffe2d6657445743d79f2100f1d96f21",
+    "sources": [
+      {
+        "path": "lib/video/common.py",
+        "sha256": "2c4d6c2cb3ede0aca97aa2980dec7d5147ce6f4d446635ddd7dd1e894282cbf7"
+      },
+      {
+        "path": "lib/video/dma.py",
+        "sha256": "94346a4ae6a7a7f9e4b78887179e2a55ff821c7ed3724b584a7bb4c228fea30f"
+      },
+      {
+        "path": "lib/video/frontend.py",
+        "sha256": "da4f3a4915820cdf124773d64a48a4e289c62cdb9ffcbd623b9f3f2b0c17d28b"
+      },
+      {
+        "path": "lib/video/dvi.py",
+        "sha256": "ed46cd6259037474762725d654a9a7e266d02d2052d8202b37a58085b4520cea"
+      },
+      {
+        "path": "lib/video/pipeline.py",
+        "sha256": "a176db13a567ffe080af7e4691a8ce49382450fcb47c1bea6bca76422b37b7c3"
+      },
+      {
+        "path": "lib/video/hierarchies.py",
+        "sha256": "528106d7ea2c95cfd64ec27f2696f9daab76fb2c96341f1a48cd04b211f85950"
+      },
+      {
+        "path": "buffer.py",
+        "sha256": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463"
+      }
+    ]
+  }
+}

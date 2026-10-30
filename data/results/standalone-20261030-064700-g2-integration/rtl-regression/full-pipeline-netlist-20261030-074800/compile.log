@@ -1,0 +1,11 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/full-pipeline-netlist-20261030-074800/axis_dma_rle_pipeline_bd_netlist.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_rle_pipeline_bd
+INFO: [VRFC 10-311] analyzing module display_image_pipeline_0_axis_dma_gray_adapter
+INFO: [VRFC 10-311] analyzing module display_image_pipeline_0_axis_dma_rle_pipeline_bd
+INFO: [VRFC 10-311] analyzing module display_image_pipeline_0_axis_morphology3x3
+INFO: [VRFC 10-311] analyzing module display_image_pipeline_0_axis_morphology3x3__parameterized0
+INFO: [VRFC 10-311] analyzing module display_image_pipeline_0_axis_rle_encoder
+INFO: [VRFC 10-311] analyzing module glbl
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/full-pipeline-netlist-20261030-074800/tb_axis_rle_pipeline.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_axis_rle_pipeline
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/AMDDesignTools/2026.1/data/verilog/src/glbl.v" into library work

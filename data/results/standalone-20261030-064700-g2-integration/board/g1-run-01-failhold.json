@@ -1,0 +1,36 @@
+{
+  "schema": "material-counter.g1-run.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "session_id": "243ba2bf-8c63-4aba-8e98-d5f6f110a235",
+  "scope": "G1 independent display; no RLE counting",
+  "source": "camera",
+  "camera": "/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0",
+  "manifest_sha256": "c115950a342535961f3de32b3b3e038d892e4bd8ef7491871a1c49291f47c4d9",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "before_memory": {
+    "MemAvailable": "     396668 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           28488 kB"
+  },
+  "samples": [],
+  "buttons": [],
+  "button_counts": {},
+  "state": "FAIL_HOLD",
+  "error": "ModuleNotFoundError: No module named 'scripts.rle'",
+  "driver_state": "RUNNING",
+  "failure": null,
+  "driver_job_finished": true,
+  "driver_diagnostics": {
+    "state": "RUNNING",
+    "failure": null,
+    "operation": null,
+    "submitted_at": null,
+    "started_at": null,
+    "completed_at": null,
+    "retained_count": 0
+  }
+}
