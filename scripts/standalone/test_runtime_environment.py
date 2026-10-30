@@ -190,6 +190,48 @@ def test_current_runtime_rejects_missing_native_extension(monkeypatch, tmp_path)
         runtime_environment.current_runtime()
 
 
+def test_current_runtime_rejects_native_extension_path_escape(monkeypatch, tmp_path):
+    _patch_runtime_probes(
+        monkeypatch,
+        lambda command, **kwargs: SimpleNamespace(
+            returncode=0, stdout="ii \t{}".format(OS_PACKAGE_VERSIONS[command[-1]])
+        ),
+        tmp_path,
+    )
+    pynq_root = (tmp_path / "pynq").resolve()
+    native_path = pynq_root / NATIVE_VIDEO_FILE
+    escaped_path = tmp_path / "escaped-native.so"
+    escaped_path.write_bytes(NATIVE_VIDEO_BYTES)
+    original_resolve = runtime_environment.Path.resolve
+
+    def resolve_with_escape(path, *args, **kwargs):
+        if path == native_path:
+            return escaped_path.resolve()
+        return original_resolve(path, *args, **kwargs)
+
+    monkeypatch.setattr(runtime_environment.Path, "resolve", resolve_with_escape)
+
+    with pytest.raises(
+        RuntimeError, match="_video.cpython-310-arm-linux-gnueabihf.so"
+    ):
+        runtime_environment.current_runtime()
+
+
+def test_current_runtime_rejects_non_regular_native_extension(monkeypatch, tmp_path):
+    _patch_runtime_probes(
+        monkeypatch,
+        lambda command, **kwargs: SimpleNamespace(
+            returncode=0, stdout="ii \t{}".format(OS_PACKAGE_VERSIONS[command[-1]])
+        ),
+        tmp_path,
+        native_exists=False,
+    )
+    (tmp_path / "pynq" / NATIVE_VIDEO_FILE).mkdir()
+
+    with pytest.raises(RuntimeError, match="not a regular file"):
+        runtime_environment.current_runtime()
+
+
 def test_runtime_observation_rejects_native_hash_mismatch():
     expected = observation()
     expected["native_files"][NATIVE_VIDEO_FILE] = "0" * 64
