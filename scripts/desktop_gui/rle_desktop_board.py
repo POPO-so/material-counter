@@ -30,6 +30,82 @@ def heartbeat_due(now: float, last_logged_at: float, interval_s: float = 60.0) -
     return now - last_logged_at >= interval_s
 
 
+_PREVIEW_DETECTION_LIMIT = 64
+_PREVIEW_TRACK_LIMIT = 64
+_PREVIEW_EVENT_LIMIT = 32
+
+
+def _item_mapping(item):
+    if isinstance(item, dict):
+        return item
+    try:
+        return vars(item)
+    except TypeError:
+        return {}
+
+
+def _bounded_items(items, limit, fields):
+    items = tuple(items or ())
+    bounded = []
+    for item in items[:limit]:
+        values = _item_mapping(item)
+        bounded.append({key: values[key] for key in fields if key in values})
+    return bounded, len(items), len(items) > limit
+
+
+def _preview_result(result):
+    detection_fields = (
+        "x_min", "x_max", "y_min", "y_max", "area", "centroid_x", "centroid_y"
+    )
+    detections, detection_count, detections_truncated = _bounded_items(
+        result.detections, _PREVIEW_DETECTION_LIMIT, detection_fields
+    )
+    events, event_count, events_truncated = _bounded_items(
+        result.events, _PREVIEW_EVENT_LIMIT,
+        ("track_id", "frame_id", "centroid_x", "centroid_y", "inferred_gap"),
+    )
+    all_tracks = tuple(result.tracks or ())
+    tracks = []
+    for item in all_tracks[:_PREVIEW_TRACK_LIMIT]:
+        values = _item_mapping(item)
+        track = {key: values[key] for key in (
+            "track_id", "finished", "last_frame", "streak", "confirmed",
+            "armed", "counted", "missed", "forward_velocity",
+        ) if key in values}
+        detection = _item_mapping(values.get("detection"))
+        if detection:
+            track["detection"] = {
+                key: detection[key] for key in detection_fields if key in detection
+            }
+        tracks.append(track)
+    return {
+        "frame_id": result.frame_id,
+        "total_count": result.total_count,
+        "detections": detections,
+        "detection_count": detection_count,
+        "detections_truncated": detections_truncated,
+        "events": events,
+        "event_count": event_count,
+        "events_truncated": events_truncated,
+        "tracks": tracks,
+        "track_count": len(all_tracks),
+        "tracks_truncated": len(all_tracks) > _PREVIEW_TRACK_LIMIT,
+        "row_projection": list(result.row_projection),
+        "column_projection": list(result.column_projection),
+    }
+
+
+def create_rle_counter(counter_type, *, library):
+    """Create the desktop tracker with bounded finished-track retention."""
+    return counter_type(
+        library=library, count_axis="x", line_y=200, line_x=320,
+        roi_mode="full", min_area=48, max_area=3600,
+        max_bbox_width=170, max_bbox_height=170, max_step=48,
+        max_x_step=40, hysteresis=4, component_cluster_dx=0,
+        discard_finished_tracks=True,
+    )
+
+
 def read_camera_frame(capture):
     """Validate/decode with the shared intake and retain its same-frame JPEG."""
     class RememberPacket:
@@ -133,10 +209,18 @@ class RleDesktopRuntime(DesktopRuntime):
             self.last_heartbeat_at = now
             log_first_frame(self.session_id, result.frame_id, displayed.total_count)
         elif heartbeat_due(now, self.last_heartbeat_at):
+            tracks = tuple(result.tracks or ())
+            active_tracks = sum(not bool(_item_mapping(track).get("finished"))
+                                for track in tracks)
+            finished_tracks = sum(bool(_item_mapping(track).get("finished"))
+                                  for track in tracks)
             board_entry.log_event(
                 "runtime.heartbeat", session_id=self.session_id,
                 frame_id=result.frame_id, total_count=displayed.total_count,
-                interval_s=60,
+                interval_s=60, detection_count=len(result.detections),
+                active_tracks=active_tracks, finished_tracks=finished_tracks,
+                metadata_bytes=getattr(self.hub, "latest_metadata_size", None),
+                stage_ms=self.stage_times[-1] if self.stage_times else None,
             )
             self.last_heartbeat_at = now
         if self.last_health is None or now - self.last_health >= 1.0:
@@ -147,12 +231,8 @@ class RleDesktopRuntime(DesktopRuntime):
             from scripts.rle.protocol import reconstruct
 
             mask = reconstruct(frame)
-            # publish() serializes synchronously into immutable bytes. The
-            # completed result can be read directly; recursively copying its
-            # 1040 projection values costs ~24 ms on this board's Python 3.10.
-            wire_result = dict(vars(displayed))
-            for key in ("detections", "events", "raw_detections", "suppressed_events"):
-                wire_result[key] = [vars(item) for item in getattr(displayed, key)]
+            # Serialize only UI-consumed fields and cap variable-length arrays.
+            wire_result = _preview_result(displayed)
             self.hub.publish({
                 "session_id": self.session_id,
                 "frame_id": result.frame_id,
@@ -348,21 +428,7 @@ def run_session(config, session_dir):
 
         native = session_dir / "rle_components_v2.so"
         build_native(native)
-        counter = RleCounter(
-            library=native,
-            count_axis="x",
-            line_y=200,
-            line_x=320,
-            roi_mode="full",
-            min_area=48,
-            max_area=3600,
-            max_bbox_width=170,
-            max_bbox_height=170,
-            max_step=48,
-            max_x_step=40,
-            hysteresis=4,
-            component_cluster_dx=0,
-        )
+        counter = create_rle_counter(RleCounter, library=native)
 
         stage = "camera.configure"
         subprocess.run(
@@ -439,6 +505,7 @@ def run_session(config, session_dir):
 
         last_health = time.monotonic()
         while not runtime.state.stop.is_set():
+            stage = "runtime.process_frame"
             capture_started = time.perf_counter()
             gray, jpeg = read_camera_frame(capture)
             capture_ms = (time.perf_counter() - capture_started) * 1000

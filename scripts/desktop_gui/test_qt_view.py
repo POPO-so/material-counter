@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numpy as np
 import pytest
+from PIL import Image
 from qt_view import DesktopWindow, QtRootAdapter
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
@@ -50,6 +51,23 @@ def test_frame_previews_and_count_are_rendered_together(application):
         "total_count": 99, "detections": 9}, "capabilities": {}})
     assert window.count_value.text() == "5"
     assert window.metric_values["detections"].text() == "1"
+    window.deleteLater()
+
+
+def test_finished_tracks_are_not_drawn_in_tracking_overlay(application):
+    window = DesktopWindow(FakeController())
+    base = np.zeros((240, 320), np.uint8)
+    result = {"detections": [], "tracks": [
+        {"track_id": 1, "finished": True,
+         "detection": {"x_min": 20, "y_min": 20, "x_max": 40, "y_max": 40}},
+        {"track_id": 2, "finished": False,
+         "detection": {"x_min": 80, "y_min": 80, "x_max": 100, "y_max": 100}},
+    ]}
+
+    overlay = window._annotate(Image.fromarray(base), result, {}, tracks=True)
+
+    assert overlay.getpixel((20, 20)) == 0
+    assert overlay.getpixel((80, 80)) != 0
     window.deleteLater()
 
 

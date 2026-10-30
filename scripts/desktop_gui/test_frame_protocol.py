@@ -1,4 +1,5 @@
 import io
+import json
 import struct
 import threading
 import time
@@ -178,6 +179,30 @@ def test_hub_only_retains_latest_frame_and_clients_are_counted():
         assert read_frame(io.BytesIO(encoded))["frame_id"] == 2
         assert hub.wait_next(after_seq=seq, timeout_s=0) is None
     assert hub.client_count == 0
+    hub.close()
+
+
+def test_hub_metadata_size_tracks_latest_published_frame():
+    hub = LatestFrameHub()
+    first = make_frame(frame_id=1)
+    first["result"] = {"value": "a"}
+    hub.publish(first)
+    first_size = hub.latest_metadata_size
+    assert first_size == len(json.dumps(
+        {key: first[key] for key in (
+            "frame_id", "session_id", "source", "result", "config")},
+        ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8"))
+
+    second = make_frame(frame_id=2)
+    second["result"] = {"value": "b" * 137}
+    second["gray"] = np.zeros((400, 640), dtype=np.uint8)
+    second["mask"] = np.zeros((400, 640), dtype=np.uint8)
+    hub.publish(second)
+    expected_second_size = len(json.dumps(
+        {key: second[key] for key in (
+            "frame_id", "session_id", "source", "result", "config")},
+        ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8"))
+    assert hub.latest_metadata_size == expected_second_size > first_size
     hub.close()
 
 
