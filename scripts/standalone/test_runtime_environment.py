@@ -1,4 +1,5 @@
 import json
+import subprocess
 from types import SimpleNamespace
 
 import pytest
@@ -7,6 +8,18 @@ from scripts.standalone import runtime_environment
 from scripts.standalone.runtime_environment import (
     verify_runtime_observation,
 )
+
+
+OS_PACKAGE_VERSIONS = {
+    "python3-opencv:armhf": "4.5.4+dfsg-9ubuntu4",
+    "libopencv-core4.5d:armhf": "4.5.4+dfsg-9ubuntu4",
+    "libopencv-imgproc4.5d:armhf": "4.5.4+dfsg-9ubuntu4",
+    "libopencv-videoio4.5d:armhf": "4.5.4+dfsg-9ubuntu4",
+    "python3-cffi": "1.15.0-1build2",
+    "python3-numpy": "1:1.21.5-1build2",
+    "python3-pil:armhf": "9.0.1-1build1",
+    "python3-scipy": "1.8.0-1exp2ubuntu1",
+}
 
 
 def observation():
@@ -21,6 +34,7 @@ def observation():
             "pillow": "9.0.1",
             "cffi": "1.15.0",
         },
+        "os_packages": dict(OS_PACKAGE_VERSIONS),
     }
 
 
@@ -38,10 +52,11 @@ def current_runtime():
             "pillow": "9.0.1",
             "cffi": "1.15.0",
         },
+        "os_packages": dict(OS_PACKAGE_VERSIONS),
     }
 
 
-def test_current_runtime_collects_the_boot_environment(monkeypatch):
+def _patch_runtime_probes(monkeypatch, dpkg_query):
     package_versions = {
         "pynq": "3.1.1",
         "numpy": "1.21.5",
@@ -67,10 +82,68 @@ def test_current_runtime_collects_the_boot_environment(monkeypatch):
         "import_module",
         lambda name: SimpleNamespace(__version__="4.5.4"),
     )
+    monkeypatch.setattr(runtime_environment.subprocess, "run", dpkg_query)
+
+
+def test_current_runtime_collects_the_boot_environment(monkeypatch):
+    def dpkg_query(command, **kwargs):
+        assert command[:3] == [
+            "dpkg-query",
+            "-W",
+            "-f=${db:Status-Abbrev}\\t${Version}",
+        ]
+        assert kwargs["timeout"] == 5
+        return SimpleNamespace(
+            returncode=0,
+            stdout="ii \t{}".format(OS_PACKAGE_VERSIONS[command[-1]]),
+        )
+
+    _patch_runtime_probes(monkeypatch, dpkg_query)
 
     actual = runtime_environment.current_runtime()
 
     assert actual == current_runtime()
+
+
+@pytest.mark.parametrize(
+    ("response", "message"),
+    [
+        (SimpleNamespace(returncode=1, stdout=""), "missing or cannot be queried"),
+        (SimpleNamespace(returncode=0, stdout="rc \t9.0.1-1build1"), "not installed"),
+    ],
+)
+def test_current_runtime_rejects_missing_or_residual_dpkg_packages(
+    monkeypatch, response, message
+):
+    _patch_runtime_probes(monkeypatch, lambda command, **kwargs: response)
+
+    with pytest.raises(RuntimeError, match=message):
+        runtime_environment.current_runtime()
+
+
+def test_current_runtime_rejects_dpkg_query_timeout(monkeypatch):
+    def timeout(command, **kwargs):
+        raise subprocess.TimeoutExpired(command, kwargs["timeout"])
+
+    _patch_runtime_probes(monkeypatch, timeout)
+
+    with pytest.raises(RuntimeError, match="timed out"):
+        runtime_environment.current_runtime()
+
+
+def test_runtime_observation_rejects_dpkg_version_mismatch(monkeypatch):
+    def dpkg_query(command, **kwargs):
+        package = command[-1]
+        version = OS_PACKAGE_VERSIONS[package]
+        if package == "python3-numpy":
+            version = "1:9.9-1"
+        return SimpleNamespace(returncode=0, stdout="ii \t{}".format(version))
+
+    _patch_runtime_probes(monkeypatch, dpkg_query)
+    actual = runtime_environment.current_runtime()
+
+    with pytest.raises(RuntimeError, match="python3-numpy"):
+        verify_runtime_observation(observation(), actual)
 
 
 def test_runtime_observation_accepts_the_matching_target_profile():
@@ -124,6 +197,7 @@ def test_runtime_observation_rejects_version_or_platform_mismatches(
         lambda value: value.update(platform="Linux armv7l"),
         lambda value: value["packages"].pop("opencv"),
         lambda value: value["packages"].update(cffi=None),
+        lambda value: value.pop("os_packages"),
     ],
 )
 def test_invalid_runtime_observation_is_rejected(mutate):

@@ -7,6 +7,7 @@ import json
 import platform
 from pathlib import Path
 import re
+import subprocess
 
 
 OBSERVATION_SCHEMA = "material-counter.board-runtime-observation.v1"
@@ -17,6 +18,16 @@ REQUIRED_PACKAGES = {
     "pillow": "Pillow",
     "cffi": "cffi",
 }
+REQUIRED_OS_PACKAGES = (
+    "python3-opencv:armhf",
+    "libopencv-core4.5d:armhf",
+    "libopencv-imgproc4.5d:armhf",
+    "libopencv-videoio4.5d:armhf",
+    "python3-cffi",
+    "python3-numpy",
+    "python3-pil:armhf",
+    "python3-scipy",
+)
 _PLATFORM_PATTERN = re.compile(
     r"^(?P<system>\S+) (?P<release>\S+) (?P<machine>\S+) "
     r"(?P<libc_name>\S+) (?P<libc_version>\S+)$"
@@ -44,6 +55,43 @@ def current_runtime():
         raise RuntimeError("runtime module cv2 has no version")
     packages["opencv"] = cv2_version
 
+    os_packages = {}
+    for package in REQUIRED_OS_PACKAGES:
+        try:
+            result = subprocess.run(
+                ["dpkg-query", "-W", "-f=${db:Status-Abbrev}\\t${Version}", package],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+        except subprocess.TimeoutExpired as error:
+            raise RuntimeError(
+                "dpkg-query timed out for package: {}".format(package)
+            ) from error
+        except OSError as error:
+            raise RuntimeError("cannot run dpkg-query: {}".format(error)) from error
+        if result.returncode != 0:
+            raise RuntimeError(
+                "dpkg package is missing or cannot be queried: {}".format(package)
+            )
+        status_and_version = result.stdout.rstrip("\r\n")
+        if "\t" not in status_and_version:
+            raise RuntimeError(
+                "dpkg-query returned an invalid status/version for: {}".format(package)
+            )
+        status, version = status_and_version.split("\t", 1)
+        if status.strip() != "ii":
+            raise RuntimeError(
+                "dpkg package is not installed (status={!r}): {}".format(
+                    status, package
+                )
+            )
+        version = version.strip()
+        if not version:
+            raise RuntimeError("dpkg-query returned no version for: {}".format(package))
+        os_packages[package] = version
+
     libc_name, libc_version = platform.libc_ver()
     return {
         "python": platform.python_version(),
@@ -52,6 +100,7 @@ def current_runtime():
         "machine": platform.machine(),
         "libc": {"name": libc_name, "version": libc_version},
         "packages": packages,
+        "os_packages": os_packages,
     }
 
 
@@ -83,6 +132,25 @@ def _expected_runtime(observation):
             )
         packages[name] = version
 
+    observed_os_packages = observation.get("os_packages")
+    if not isinstance(observed_os_packages, dict):
+        raise ValueError("board runtime observation lacks os_packages")
+    if set(observed_os_packages) != set(REQUIRED_OS_PACKAGES):
+        missing = sorted(set(REQUIRED_OS_PACKAGES) - set(observed_os_packages))
+        unknown = sorted(set(observed_os_packages) - set(REQUIRED_OS_PACKAGES))
+        raise ValueError(
+            "board runtime observation os_packages must contain exactly the required packages"
+            " (missing={!r}, unknown={!r})".format(missing, unknown)
+        )
+    os_packages = {}
+    for name in REQUIRED_OS_PACKAGES:
+        version = observed_os_packages[name]
+        if not isinstance(version, str) or not version:
+            raise ValueError(
+                "board runtime observation lacks os package version: {}".format(name)
+            )
+        os_packages[name] = version
+
     return {
         "python": python_version,
         "system": match.group("system"),
@@ -93,6 +161,7 @@ def _expected_runtime(observation):
             "version": match.group("libc_version"),
         },
         "packages": packages,
+        "os_packages": os_packages,
     }
 
 
@@ -127,6 +196,16 @@ def verify_runtime_observation(observation, actual):
             mismatches.append(
                 "packages.{}: expected {!r}, got {!r}".format(
                     name, expected_version, actual_packages.get(name)
+                )
+            )
+    actual_os_packages = actual.get("os_packages")
+    if not isinstance(actual_os_packages, dict):
+        actual_os_packages = {}
+    for name, expected_version in expected["os_packages"].items():
+        if actual_os_packages.get(name) != expected_version:
+            mismatches.append(
+                "os_packages.{}: expected {!r}, got {!r}".format(
+                    name, expected_version, actual_os_packages.get(name)
                 )
             )
     if mismatches:
