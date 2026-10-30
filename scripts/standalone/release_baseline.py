@@ -111,6 +111,8 @@ def process_records(proc_root: Path, needles: list[str]) -> dict[str, object]:
     for entry in entries:
         if not entry.name.isdecimal():
             continue
+        if int(entry.name) == os.getpid():
+            continue
         try:
             raw = (entry / "cmdline").read_bytes()
             command = raw.replace(b"\0", b" ").decode("utf-8", errors="replace").strip()
