@@ -1,6 +1,18 @@
 # 缩放黄金向量准备稿
 
-> **状态：缩放候选向量已机器化，尚未执行。** [候选规则与期望样点 JSON](scaling-candidate-vectors.json) 使用 schema `material-counter.scaling-candidate-vectors.v1`、状态 `candidate_unexecuted`。这些解析推导不是从 `cv2.resize` 运行得到的结果，也不是已执行验证；`INTER_AREA` 与 `INTER_LINEAR` 均未冻结。没有生成完整输入/期望数组或 PNG，没有运行比较，也没有 runner 源码哈希绑定；该 JSON 不是黄金图或通过证据。
+> **状态：固定源输入已生成，缩放候选仍未执行。** [候选规则与期望样点 JSON](scaling-candidate-vectors.json) 使用 schema `material-counter.scaling-candidate-vectors.v1`、状态 `candidate_unexecuted`。以下三份源数组只是输入材料，不是期望输出或验证结果。解析推导不是从 `cv2.resize` 运行得到的结果；`INTER_AREA` 与 `INTER_LINEAR` 均未冻结。没有生成 expected arrays 或 PNG，没有运行比较，也没有 runner 源码哈希绑定；该 JSON 不是黄金图或通过证据。
+
+## 固定源数组
+
+由同目录 [标准库生成器](generate_scaling_candidate_sources.py) 生成到 `scaling-inputs/`。三者均为 C row-major uint8、shape `[400,640]`、256000 bytes：
+
+| 文件 | 定义 | SHA-256 |
+|---|---|---|
+| `constant-gray-73.raw` | 每个字节为 73 | `aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af` |
+| `gray-ramp-12.raw` | 每行 `min(12*x,255)`，`x=0..639` | `87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354` |
+| `binary-nearest-rect-points.raw` | 全零，指定 3×3 矩形和两个源点置 255（共 11 个非零像素） | `467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263` |
+
+这些固定源数组只记录输入内容；不代表期望数组已生成，也不表示候选执行、比较或验收完成。
 
 ## 已知边界与状态
 
@@ -10,7 +22,7 @@
 - 几何顺序为先裁剪，再缩放坐标；裁剪后的坐标按 `floor(0.9*x + 0.5)` 换算。
 - 首末行标记位于 `x=640..863`。右侧状态面板的像素会受字体及 Pillow 环境影响。
 - 现有 `test_compositor.py` 用 `cv2.resize` 生成预期灰度及二值数组。因此这些数组与实现共享缩放实现来源，不能单独充当独立 oracle。
-- G3 v2 缺少 runner 源码哈希，目标目录也没有固定源帧或黄金图；现阶段缺少可将结果绑定到固定输入和确切 runner 版本的材料。
+- G3 v2 缺少 runner 源码哈希；目标目录现有三份固定 raw 源输入，但尚无 expected arrays、PNG 或黄金图结果，因此仍缺少可将比较结果绑定到确切 runner 版本的材料。
 
 ## 静态检查记录
 
@@ -26,7 +38,7 @@
 4. 比较范围、比较方式和失败定位信息。图像区域、标记位、状态面板宜优先分别比较，以免字体栅格差异掩盖图像缩放问题。
 5. 输入、参考数组、生成工具及 runner 的版本或哈希记录，使后续结果可追溯。
 
-## 候选向量定义（文本手算；尚未生成数组）
+## 候选向量定义（文本手算；仅输入源数组已生成）
 
 - **常量灰度：** 输入为 `640×400 uint8`，所有像素均为 `73`。对 `INTER_AREA` 与 `INTER_LINEAR` 两种灰度插值候选，`576×360` 目标区域任意样点的解析预期均为 `73`。该向量只用于检查几何/放置以及常量保持，不用于区分两种插值策略。
 - **灰度横向 ramp：** 输入尺寸为 `640×400 uint8`，每行相同，定义为 `I[y,x] = min(12*x, 255)`，其中 `x=0..639`。以下只列目标第一行输出列 `j=0..8` 的手算候选值：
@@ -42,4 +54,4 @@
 
 ## 留待后续获准事项
 
-实际 source PNG、expected PNG、完整二进制数组、各自哈希及 compositor 比较列入后续黄金向量生成与验证工作。本轮将候选规则和期望样点写入 JSON，但没有生成完整数组或 PNG，也没有运行比较。本准备稿不改变算法、接口或路线，也不宣告任何验证通过。
+expected arrays、source/expected PNG、compositor 比较及 runner 源码哈希绑定列入后续黄金向量生成与验证工作。本轮只生成了三份固定 raw 输入材料并记录其哈希，没有生成 expected arrays 或 PNG，也没有运行比较。本准备稿不改变算法、接口或路线，也不宣告任何验证通过。

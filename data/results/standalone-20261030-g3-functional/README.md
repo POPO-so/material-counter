@@ -57,7 +57,15 @@
 
 ### 缩放黄金向量准备
 
-已形成[缩放黄金向量准备稿](scaling-golden-preparation.md)，并将候选规则及期望样点机器化记录在[缩放候选向量 JSON](scaling-candidate-vectors.json)（schema `material-counter.scaling-candidate-vectors.v1`，状态 `candidate_unexecuted`）。内容包括常量灰度、横向 ramp 的 `INTER_AREA`/`INTER_LINEAR` 手算候选值及二值 nearest 的矩形/边界坐标；灰度策略仍未冻结。JSON 只保存规则和期望样点，不是黄金图或通过证据。未生成完整输入/期望数组或 PNG，未进行比较，也没有 runner 源码哈希绑定；测试源码的二值输入夹具此前虽按坐标关系修正，但未运行。
+已形成[缩放黄金向量准备稿](scaling-golden-preparation.md)，并将候选规则及期望样点机器化记录在[缩放候选向量 JSON](scaling-candidate-vectors.json)（schema `material-counter.scaling-candidate-vectors.v1`，状态 `candidate_unexecuted`）。内容包括常量灰度、横向 ramp 的 `INTER_AREA`/`INTER_LINEAR` 手算候选值及二值 nearest 的矩形/边界坐标；灰度策略仍未冻结。已用[标准库生成器](generate_scaling_candidate_sources.py)生成三份固定 raw 源输入，JSON 记录其相对路径、C row-major uint8 布局、`[400,640]` 形状、字节数和 SHA-256：
+
+| 输入源 | SHA-256 |
+|---|---|
+| `scaling-inputs/constant-gray-73.raw` | `aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af` |
+| `scaling-inputs/gray-ramp-12.raw` | `87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354` |
+| `scaling-inputs/binary-nearest-rect-points.raw` | `467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263` |
+
+这些仅是输入材料；未生成 expected arrays 或 PNG，未进行比较，也没有 runner 源码哈希绑定。JSON 不是黄金图或通过证据；测试源码的二值输入夹具此前虽按坐标关系修正，但未运行。
 
 ### 后续注入场景及边界
 

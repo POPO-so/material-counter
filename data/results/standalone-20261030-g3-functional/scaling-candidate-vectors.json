@@ -2,6 +2,32 @@
   "schema": "material-counter.scaling-candidate-vectors.v1",
   "status": "candidate_unexecuted",
   "source": {"width": 640, "height": 400, "dtype": "uint8"},
+  "source_artifacts": [
+    {
+      "vector_id": "constant_gray_73",
+      "path": "scaling-inputs/constant-gray-73.raw",
+      "format": "C row-major uint8",
+      "shape": [400, 640],
+      "size_bytes": 256000,
+      "sha256": "aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af"
+    },
+    {
+      "vector_id": "gray_horizontal_ramp_first_row_cols_0_8",
+      "path": "scaling-inputs/gray-ramp-12.raw",
+      "format": "C row-major uint8",
+      "shape": [400, 640],
+      "size_bytes": 256000,
+      "sha256": "87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354"
+    },
+    {
+      "vector_id": "binary_nearest_rectangle_and_boundary_points",
+      "path": "scaling-inputs/binary-nearest-rect-points.raw",
+      "format": "C row-major uint8",
+      "shape": [400, 640],
+      "size_bytes": 256000,
+      "sha256": "467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263"
+    }
+  ],
   "target": {"width": 576, "height": 360},
   "scale": {"x": "9/10", "y": "9/10"},
   "vectors": [
@@ -55,8 +81,7 @@
     }
   ],
   "limitations": [
-    "Only textual/JSON candidate rules and expected samples exist.",
-    "No complete input or expected arrays or PNG files have been generated.",
+    "The three raw files are fixed source inputs only; no expected arrays or PNG files have been generated.",
     "No comparison has been run.",
     "No runner source hash is bound to these vectors.",
     "INTER_AREA and INTER_LINEAR remain candidates and are not frozen.",
