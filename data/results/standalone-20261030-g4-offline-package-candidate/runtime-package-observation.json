@@ -21,16 +21,74 @@
     ],
     "opencv_prefixed_pip_distribution_output": []
   },
+  "pip_show_metadata": [
+    {
+      "name": "pynq",
+      "version": "3.1.1",
+      "Requires": ["cffi", "grpcio", "grpcio-tools", "nest-asyncio", "numpy", "pynqmetadata", "pynqutils", "setuptools"],
+      "Required-by": ["pynq-peripherals"]
+    },
+    {
+      "name": "pynq-peripherals",
+      "version": "0.1.0",
+      "Requires": ["pynq", "simple-term-menu"]
+    },
+    {
+      "name": "pynqmetadata",
+      "version": "0.1.8",
+      "Requires": ["ipython", "jsonschema", "pydantic"],
+      "Required-by": ["pynq", "pynqutils"]
+    },
+    {
+      "name": "pynqutils",
+      "version": "0.1.1",
+      "Requires": ["cffi", "numpy", "pynqmetadata", "python-magic", "setuptools", "tqdm"],
+      "Required-by": ["pynq"]
+    },
+    {
+      "name": "numpy",
+      "version": "1.21.5",
+      "Requires": [],
+      "Required-by": ["deltasigma", "jupyterplot", "patsy", "pynq", "pynqutils"]
+    },
+    {
+      "name": "Pillow",
+      "version": "9.0.1",
+      "Requires": []
+    },
+    {
+      "name": "cffi",
+      "version": "1.15.0",
+      "Requires": [],
+      "Required-by": ["argon2-cffi-bindings", "PyNaCl", "pynq", "pynqutils"]
+    },
+    {
+      "name": "pycparser",
+      "version": "2.19",
+      "Requires": []
+    },
+    {
+      "name": "scipy",
+      "version": "1.8.0",
+      "Requires": [],
+      "Required-by": ["deltasigma"]
+    }
+  ],
   "dpkg_query_packages": [
     { "package": "python3-opencv:armhf", "version": "4.5.4+dfsg-9ubuntu4" },
     { "package": "libopencv-core4.5d:armhf", "version": "4.5.4+dfsg-9ubuntu4" },
     { "package": "libopencv-imgproc4.5d:armhf", "version": "4.5.4+dfsg-9ubuntu4" },
-    { "package": "libopencv-videoio4.5d:armhf", "version": "4.5.4+dfsg-9ubuntu4" }
+    { "package": "libopencv-videoio4.5d:armhf", "version": "4.5.4+dfsg-9ubuntu4" },
+    { "package": "python3-cffi", "version": "1.15.0-1build2" },
+    { "package": "python3-numpy", "version": "1:1.21.5-1build2" },
+    { "package": "python3-pil:armhf", "version": "9.0.1-1build1" },
+    { "package": "python3-scipy", "version": "1.8.0-1exp2ubuntu1" }
   ],
   "target_platform_reference": "Use Python/Linux/ARM/glibc values recorded in package/board-runtime.json.",
   "limitations": [
     "This is a selected-version observation, not a complete inventory.",
+    "pip show Requires and Required-by values record declared metadata edges only; they do not confirm the complete application or system-library closure.",
     "It is not a direct or transitive dependency lock and does not prove reproducibility.",
-    "The observation used read-only pip list and dpkg-query commands; no system or code tests were run."
+    "The observation used read-only pip list, pip show, and dpkg-query commands; no system or code tests were run."
   ]
 }
