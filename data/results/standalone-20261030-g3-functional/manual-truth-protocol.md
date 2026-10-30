@@ -2,6 +2,53 @@
 
 **状态：准备协议与空白记录模板；尚未执行。G3 未放行。** 本文件不记录样本结果，也不定义准确率门槛、样本轮次或通过标准。正式验收前由 Manager 确认这些项目。不得把历史回归、模拟输入或本模板视为真实物料验收证据。
 
+离线核对工具 [scripts/standalone/manual_truth.py](../../../scripts/standalone/manual_truth.py) 已写，**未运行、未验收**。接口为 `--report <integrated-run.json> --truth <truth.json> --output <new-summary.json>`；输入必须是完整、不超过 600 帧、无控制命令事件的 `STOPPED` 真实相机 integrated-run 报告，以及 schema 为 `material-counter.manual-truth.v1` 的人工真值 JSON。工具拒绝缺少完整证据、身份/哈希不符、输出路径已存在等情况；不得据此宣称 G3 放行。
+
+**封存顺序是独立作业要求：**人工逐物记录必须先封存，再显式与运行报告配对。验收时必须另行保留先封存的人工作业原件及其独立哈希和可核验时间证据。JSON 中的 `human_sealed_at`、`matched_at` 只是声明，单个 truth JSON 的时间戳及内容不能独立证明先封存。脚本只核对声明和已保存的报告、录像文件（包括报告 SHA 与视频 SHA）；它不独立审定视频中的物理真值，也不定义任何通过阈值。
+
+工具要求人工逐物记录 ID、类别、方向及进出帧锚点，并记录报告/录像配对、确认事件的 `match_basis`，以及 `pending`/`boundary` 项的 `reason`。缺少所需证据时拒绝生成结果；待定或边界关联事件保留为未分类，不暗算 TP。只有满足本协议逐物匹配证据前提的确认正向穿越，才能进入脚本的 TP/FN/FP 统计。
+
+### 工具输入结构示意（非真实样本）
+
+以下仅说明实际校验的字段名称和结构；哈希、路径、ID、时间及帧号均为占位值，不能作为样本或验收证据。顶层字段必须且只能是列出的八项。每条 `human_events` 至少需含 `id`、`material_id`、`material_label`、`direction`、`status`；`confirmed` 还必须显式给出 `enter_frame`、`exit_frame`、`matched_system_event`（事件键 `"frame_id:track_id"` 或 `null`）和非空 `match_basis`。`pending`/`boundary` 必须有非空 `reason` 和至少一个进出帧锚点；可选 `related_system_events` 是事件键数组，有关联时还须给出 `match_basis`；提供的帧锚点必须处于报告帧范围内。
+
+```json
+{
+  "schema": "material-counter.manual-truth.v1",
+  "report_sha256": "<64位报告SHA-256占位>",
+  "video_path": "<录像文件路径占位>",
+  "video_sha256": "<64位录像SHA-256占位>",
+  "alignment": "<帧对齐说明占位>",
+  "human_sealed_at": "<含时区ISO8601时间占位>",
+  "matched_at": "<晚于封存声明的含时区ISO8601时间占位>",
+  "human_events": [
+    {
+      "id": "<人工事件ID占位>",
+      "material_id": "<物料ID占位>",
+      "material_label": "<类别占位>",
+      "direction": "+y",
+      "status": "confirmed",
+      "enter_frame": 0,
+      "exit_frame": 1,
+      "matched_system_event": "0:0",
+      "match_basis": "<逐物配对依据占位>"
+    },
+    {
+      "id": "<另一人工事件ID占位>",
+      "material_id": "<另一物料ID占位>",
+      "material_label": "<类别占位>",
+      "direction": "unknown",
+      "status": "pending",
+      "enter_frame": 2,
+      "exit_frame": null,
+      "reason": "<证据不足原因占位>"
+    }
+  ]
+}
+```
+
+报告还必须符合 `material-counter.integrated-run.v1`：`state=STOPPED`、`source=camera`、`material_accuracy=NOT_MEASURED`；完整 `frame_trace` 为 0..N−1 连续帧且 N≤600、逐帧及全局注释均未截断、`processed=N`、顶层控制命令 `events` 数组为空且未截断，并通过报告自身的 trace SHA、系统身份字段校验。上例的帧号只为演示形状；实际锚点必须有录像与报告间可靠对齐证据。
+
 ## 目的与约束
 
 在真实相机、真实物料运行前，先固定人工判读口径和证据记录方式。人工观察者先独立记录逐物真值并封存，再核对系统输出；不得先看系统计数或事件来调整人工记录。保留原始录像和运行报告，记录文件哈希，任何更正均留痕。

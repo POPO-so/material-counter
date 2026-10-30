@@ -4,6 +4,8 @@
 
 真实相机/真实物料的人工真值执行前协议和空白记录模板见[人工真值协议](manual-truth-protocol.md)；尚未执行样本，不定义通过阈值，不构成 G3 放行证据。
 
+离线逐物核对工具 [manual_truth.py](../../../scripts/standalone/manual_truth.py) 已写但未运行、未验收，使用 `--report`、`--truth`、`--output` 接收报告、真值和新建输出路径。它只接受完整且不超过 600 帧、无控制命令的 STOPPED 真实相机 integrated-run 报告及 `material-counter.manual-truth.v1` 输入；校验报告/录像 SHA、人工 ID/方向/帧锚点、明确配对依据及 pending/boundary 原因。核对仅验证声明与已保存文件，不证明物理真值；`human_sealed_at`/`matched_at` 不能替代独立封存原件的哈希与时间证据。该工具不定义通过阈值，不改变 G3 未放行状态。
+
 ### 最新代码阶段事实（2026-10-30）
 
 本分支集成绘图从 `LINEAR` 改用 `AREA`。此前固定 ramp 的本地 AREA 比较匹配，但本次代码未测试或板验；灰度正式策略及黄金验收仍未冻结。历史 `346 passed` 属于旧代码版本，不是本分支测试结果。运行报告新增有界原始 GPIO 采样变化、总数和截断字段；实物 GPIO 未测。G3/G4 均未放行。
