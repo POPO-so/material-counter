@@ -58,6 +58,31 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
 
 
+def start_drawing_child(ctx, inputs, outputs, errors, counters, font, latin_font):
+    """Start the drawing worker and retain a child that acquired a PID on error."""
+    stop = None
+    child = None
+    try:
+        stop = ctx.Event()
+        child = ctx.Process(
+            target=drawing_process,
+            args=(inputs, outputs, stop, errors, counters, font, latin_font),
+        )
+        child.start()
+        return child, stop, None
+    except Exception as error:
+        # A failed Process.start() may still leave a live child if the platform
+        # raised after launching it. Keep that handle so the owner can join it.
+        if child is not None and child.pid is not None:
+            return child, stop, error
+        if child is not None:
+            try:
+                child.close()
+            except (ValueError, AssertionError):
+                pass
+        return None, None, error
+
+
 def source_identity(project_root):
     root=Path(project_root).resolve()
     scoped_roots=tuple((root/relative).resolve() for relative in
@@ -254,29 +279,10 @@ def main(argv=None):
             inputs=PreviewInputs.create(ctx);outputs=SharedFrames.create(ctx)
             def start_drawing(frame):
                 nonlocal process,stop_drawing,next_drawing_retry
-                candidate=None
-                process=None
-                stop_drawing=None
-                report['drawing_pid']=None
-                try:
-                    stop_drawing=ctx.Event()
-                    candidate=ctx.Process(target=drawing_process,args=(inputs,outputs,stop_drawing,
-                        drawing_errors,drawing_counts,args.font,args.latin_font))
-                    process=candidate
-                    process.start()
-                    report['drawing_pid']=process.pid
-                    return
-                except Exception as error:
-                    # Keep a process object if it acquired a PID: start() may
-                    # have launched the child before reporting an error.
-                    if candidate is not None and candidate.pid is not None:
-                        process=candidate
-                    else:
-                        process=None
-                        if candidate is not None:
-                            try:candidate.close()
-                            except (ValueError,AssertionError):pass
-                    report['drawing_pid']=candidate.pid if candidate is not None else None
+                process,stop_drawing,error=start_drawing_child(ctx,inputs,outputs,
+                    drawing_errors,drawing_counts,args.font,args.latin_font)
+                report['drawing_pid']=process.pid if process is not None else None
+                if error is not None:
                     failed_at=time.monotonic()
                     report['recoveries'].append(dict(kind='drawing_start_failed',frame=frame,
                         error=repr(error),monotonic=failed_at))

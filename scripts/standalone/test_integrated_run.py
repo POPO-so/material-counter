@@ -7,10 +7,90 @@ import numpy as np
 import pytest
 
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
-from scripts.standalone.integrated_run import rasterize_into, result_metadata, drawing_process
+from scripts.standalone.integrated_run import (
+    drawing_process,
+    rasterize_into,
+    result_metadata,
+    start_drawing_child,
+)
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
 from scripts.wo0016.stream_counter import MaskCounter
+
+
+class _StartFailureProcess:
+    def __init__(self, *, pid_before_error=None, error=None):
+        self.pid = None
+        self.pid_before_error = pid_before_error
+        self.error = error
+        self.closed = False
+
+    def start(self):
+        if self.error is not None:
+            self.pid = self.pid_before_error
+            raise self.error
+        self.pid = 1234
+
+    def close(self):
+        self.closed = True
+
+
+class _StartFailureContext:
+    def __init__(self, *, process=None, factory_error=None):
+        self.stop = object()
+        self.process = process
+        self.factory_error = factory_error
+
+    def Event(self):
+        return self.stop
+
+    def Process(self, **_kwargs):
+        if self.factory_error is not None:
+            raise self.factory_error
+        return self.process
+
+
+def test_drawing_process_creation_failure_returns_retryable_error():
+    error = OSError("process factory failed")
+    child, stop, caught = start_drawing_child(
+        _StartFailureContext(factory_error=error), None, None, None, None, "font", "latin"
+    )
+
+    assert child is None and stop is None and caught is error
+
+
+def test_drawing_process_start_failure_without_pid_closes_child():
+    error = OSError("process start failed")
+    candidate = _StartFailureProcess(error=error)
+    child, stop, caught = start_drawing_child(
+        _StartFailureContext(process=candidate), None, None, None, None, "font", "latin"
+    )
+
+    assert child is None and stop is None and caught is error
+    assert candidate.closed
+
+
+def test_drawing_process_start_failure_after_pid_retains_join_handle():
+    error = OSError("process start reported late failure")
+    candidate = _StartFailureProcess(pid_before_error=1234, error=error)
+    context = _StartFailureContext(process=candidate)
+    child, stop, caught = start_drawing_child(
+        context, None, None, None, None, "font", "latin"
+    )
+
+    assert child is candidate and stop is context.stop and caught is error
+    assert child.pid == 1234 and not candidate.closed
+
+
+def test_drawing_process_success_returns_child_and_stop_event():
+    candidate = _StartFailureProcess()
+    context = _StartFailureContext(process=candidate)
+    child, stop, error = start_drawing_child(
+        context, None, None, None, None, "font", "latin"
+    )
+
+    assert child is candidate and stop is context.stop and error is None
+    assert child.pid == 1234 and not candidate.closed
 
 
 def test_raster_reuses_storage_and_matches_protocol_reference():
