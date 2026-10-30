@@ -1,8 +1,8 @@
 {
   "schema": "material-counter.offline-package-source.v1",
   "status": "CANDIDATE_NOT_BOARD_ACCEPTED",
-  "source_commit": "18d04b57929e78b53e75aae0d51b728f0b07dfc9",
-  "source_branch": "fix/修复真实相机首帧等待",
+  "source_commit": "bf817ca98b3a1032f83ac732424314d926e3da52",
+  "source_branch": "feat/统一灰度缩放策略",
   "module_files": [
     "scripts/gray8/packet_codec.py",
     "scripts/rle/__init__.py",
