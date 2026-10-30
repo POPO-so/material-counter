@@ -144,7 +144,8 @@ def main(argv=None):
                 raise RuntimeError('existing DMA is active or faulty before overlay load')
             overlay=Overlay(str(bit),download=args.load_overlay)
             report['overlay']=preflight.inspect_pynq_global_state(pynq.__file__,require_empty_shutdown=True,
-                expected_bit_path=bit,expected_bit_sha256=manifest['bit_sha256'],require_loaded_bit=True)
+                expected_bit_path=bit,expected_bit_sha256=manifest['bit_sha256'],require_loaded_bit=True,
+                allow_equivalent_bit_path=True)
             api=SimpleNamespace(read_phys32=board_once.read_phys32_readonly,write_phys32=board_once.write_afi1_phys32)
             report['afi1']=board_once.sync_afi1_hp1_32bit(api,SimpleNamespace(hwh_path=bit.with_suffix('.hwh')),stage='rle-start')
             tx=allocate(shape=(TX_BYTES,),dtype=np.uint8);allocated.append(tx)
