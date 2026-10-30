@@ -8,7 +8,7 @@
 |---|---|---|
 | G2 | 已放行 | [G2 集成报告](../standalone-20261030-123000-g2-integration/README.md)。构建与板端复验、告警说明、BIT/HWH/manifest 摘要均见报告；具体文件在该目录的 `export/`。板端准入、相机冒烟和 RLE+HDMI 像素冒烟原始记录在 `board/`。 |
 | G2.5 | 已放行 | [G2.5 并发压力报告](../standalone-20261030-g25-concurrency/README.md)。moving/high_runs off/scan、dynamic、高游程像素检查及 180 秒追加轮数据在同目录 JSON、控制台、`summary.json` 和 `post-long-readback.json`；初始轮 runner 快照与来源说明见 `source-provenance.json`、`g25_run-before-memory-diagnostics.py`。追加 180 秒轮的源码 SHA 有记录，但此目录未保存该轮对应源码快照。 |
-| G3 | **未放行** | [G3 部分报告](../standalone-20261030-g3-functional/README.md)。当前源码身份回放、协作式绘图退出、遥测冻结等报告在该目录；本地回归为 372 passed，见 `local-pytest-20261031.txt` 及命令/环境记录 `local-pytest-20261031-command.json`。旧固定回放的 on/off 成对 JSON、控制台也在该目录，但其 Python runner 身份无法由旧报告唯一复原。 |
+| G3 | **未放行** | [G3 部分报告](../standalone-20261030-g3-functional/README.md)。当前源码身份回放、协作式绘图退出、遥测冻结等报告在该目录；[人工真值执行前协议与空白模板](../standalone-20261030-g3-functional/manual-truth-protocol.md)仅定义准备和记录口径，尚未执行样本或确定通过标准。本地回归为 372 passed，见 `local-pytest-20261031.txt` 及命令/环境记录 `local-pytest-20261031-command.json`。旧固定回放的 on/off 成对 JSON、控制台也在该目录，但其 Python runner 身份无法由旧报告唯一复原。 |
 | G4 | **未放行** | [G4 候选包报告](../standalone-20261030-g4-offline-package-candidate/README.md)。候选 package、索引、源码对应报告及命令记录均在该目录；仅证明所述文件完整性和 37 个应用模块与来源 Git blob 对应，不证明离线闭包或部署验收。 |
 
 G3 未完成项包括实物 GPIO 边界、HDMI 拔插/硬件恢复、真实相机有目标输入及人工物料真值、缩放黄金验收；`scripts/standalone/test_integrated_run.py` 中 Process 创建/启动失败对应单元用例属于本轮 372 passed 执行范围，本地单元用例已运行，但板端故障注入/运行证据尚缺。G4 未完成项包括既有板端环境下离线依赖闭包/准入的现场确认、部署/安装、自启动验收、拔电脑和网线后的五次冷启动、≥60 分钟有目标运行、故障恢复及安全停止验收；wheelhouse、OS 镜像等干净环境重建材料尚未形成，属于更强的重建目标。不得用单项回归、候选索引或历史独立显示结果替代这些门禁。
