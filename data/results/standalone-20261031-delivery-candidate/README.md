@@ -26,6 +26,12 @@ G3 未完成项包括实物 GPIO 边界、HDMI 拔插/硬件恢复、真实相�
 | 报告/演示视频 | 各门禁报告、日志和 JSON 已按上表定位。上述 G3 目录未见 `video/` 或 `demo/` 子目录；本次范围内未找到独立视频/演示材料路径。 | 本映射不为缺少的演示材料生成哈希。 |
 | 离线部署包 | G4 `package/` 存在，含 `deployment-index.json`、`package-source.json`、`board-runtime.json`、启动配置、systemd 文件、BIT/HWH/manifest、native library、字体及列入包的运行源码。 | package 索引、来源对应及依赖 readback 的记录路径见 G4 README、`source-correspondence-20261031.json`、`dependency-readback.json`。第三方依赖未形成完整离线闭包，包未部署。 |
 
+## 干净检出本地核验（2026-10-31）
+
+- 首次在干净检出 `d059b9d` 上运行：372 项本地软件回归通过；旧 `verify_delivery.py` 因历史 Gray8 RTL 快照末尾 CRLF 与当前 LF 源码的原始字节 SHA 不同而失败，后续核对按停止条件未运行。原始命令、输出和退出码见 [首次失败记录](clean-checkout-20261031-003608-771.json)。历史快照自身与 manifest 的 SHA 一致；三份不一致源码在换行规范化后与快照内容相同。
+- 修复核验器后，在干净检出 `16b0e91` 上重放：`376 passed`、Gray8 `verify_delivery.py` 为 `PASS`（6 份中 3 份原始字节一致、3 份仅 CRLF/LF 等价）、G4 候选包 37 个应用模块来源核对成功。命令、完整输出、退出码及检出状态见 [复验记录](clean-checkout-rerun-20261031-004544.5324828.json)。该记录通过 Windows 控制台捕获的来源输出中，中文分支名发生转码损坏；[工具直接写入的 UTF-8 来源报告](clean-checkout-source-correspondence-20261031.json)保留正确分支名及全部 37 文件摘要，其 SHA-256 与 G4 候选目录的 `source-correspondence-20261031.json` 相同。
+- 上述步骤没有安装或下载依赖，也没有将 Windows 环境隔离为离线依赖环境；因此只完成干净检出本地核验，未完成 Task 6 的离线环境重放、板端验收或最终提交包冻结。
+
 ## 来源与身份边界
 
 - G2/G2.5 板端记录使用 boot ID `e48ff153-bd85-4dd6-98f6-438bd51da08d`；G3 当前源码回放记录的 boot ID 及临时包/index 身份见 G3 README。不同阶段的运行报告不能拼接成同一次端到端验收。
