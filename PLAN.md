@@ -86,9 +86,9 @@
 
 清理范围、首次状态检查误判和合成测试见 [Gray8 清理记录](data/results/gray8-cleanup-20261027/README.md)。最新 boot ID 下的真实相机运行、像素校验、FPS、分阶段计时及限制见 [相机板测记录](data/results/gray8-camera-20261027-122633/README.md)。首次构建时序/资源见 [构建记录](data/results/gray8-dma-20261027/README.md)。历史 RGB 板测和仿真记录保持原样，仅作为其当时配置下的历史证据。
 
-## G3 缩放候选固定源输入（2026-10-30；候选未执行）
+## G3 缩放候选参考数组（2026-10-30；候选未执行）
 
-- 已新增标准库生成器 `data/results/standalone-20261030-g3-functional/generate_scaling_candidate_sources.py`，并生成三份 C row-major uint8、shape `[400,640]`、各 256000 bytes 的固定 raw 输入材料。
+- 已新增标准库生成器 `data/results/standalone-20261030-g3-functional/generate_scaling_candidate_sources.py`，生成三份 C row-major uint8、shape `[400,640]`、各 256000 bytes 的固定 raw 输入材料，并生成常量灰度与二值 nearest 两份 `[360,576]`、各 207360 bytes 的候选 expected raw。
 - `constant-gray-73.raw` SHA-256：`aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af`；`gray-ramp-12.raw`：`87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354`；`binary-nearest-rect-points.raw`：`467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263`。
-- JSON 与说明文档已登记源制品信息；`candidate_unexecuted` 状态保留。尚无 expected arrays 或 PNG，未比较，未绑定 runner 源码哈希；`INTER_AREA`/`INTER_LINEAR` 灰度策略仍未冻结。
-- 本次只运行源数据生成器并进行静态字节数、SHA-256 和 JSON 解析检查；未运行测试、仿真、构建或板端任务。
+- JSON 与说明文档已登记三个源制品及两份候选输出的路径、映射、格式、尺寸、字节数和 SHA-256。常量灰度输出保持 73，不区分 `INTER_AREA`/`INTER_LINEAR`；二值数组按 `src_index=floor(10*dst_index/9)` 从固定源数据推导。两份数组均是候选参考数据，不是 compositor 实测或黄金证据。灰度 ramp expected outputs 和 PNG 未生成；未比较，runner hash 未绑定。`candidate_unexecuted` 状态保留，灰度策略仍未冻结，G3 未放行。
+- 本次只运行候选数据生成脚本并进行静态文件长度/SHA-256/JSON 解析检查；未运行测试、compositor、PNG 比较、仿真、构建或板端任务。
