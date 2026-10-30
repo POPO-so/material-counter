@@ -82,12 +82,19 @@ def systemd_record(unit: str) -> dict[str, object]:
             key, sep, value = line.partition("=")
             if sep:
                 fields[key] = value
+    if observed_enabled in known_enabled:
+        enabled_state = observed_enabled
+    elif (fields.get("LoadState") == "not-found" and not observed_enabled
+          and enabled.get("returncode") not in {None, 0}):
+        enabled_state = "not-found"
+    else:
+        enabled_state = "unknown"
     return {
         "unit": unit,
         "load_state": fields.get("LoadState", "unknown"),
         "active_state": fields.get("ActiveState", "unknown"),
         "sub_state": fields.get("SubState", "unknown"),
-        "enabled_state": observed_enabled if observed_enabled in known_enabled else "unknown",
+        "enabled_state": enabled_state,
         "show_result": show,
         "is_enabled_result": enabled,
     }
