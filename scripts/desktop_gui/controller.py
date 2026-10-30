@@ -290,6 +290,7 @@ class DesktopController:
         self.latest_frame = None
         self.frame_times = deque(maxlen=60)
         self.session = None
+        self._mismatch_log_times = {}
         self.paused = threading.Event()
         self.shutdown = threading.Event()
         self.busy = threading.Lock()
@@ -306,6 +307,20 @@ class DesktopController:
 
     def _status(self, data):
         self.events.put(("status", data))
+
+    def _log_mismatch(self, event, expected_session_id, actual_session_id, **fields):
+        now = time.monotonic()
+        stream = (event, expected_session_id)
+        last_logged_at = self._mismatch_log_times.get(stream)
+        if last_logged_at is not None and now - last_logged_at < 5.0:
+            return
+        self._mismatch_log_times[stream] = now
+        _log_event(
+            event,
+            expected_session_id=expected_session_id,
+            actual_session_id=actual_session_id,
+            **fields,
+        )
 
     def _pump(self):
         if self.shutdown.is_set():
@@ -434,10 +449,10 @@ class DesktopController:
                 if self.session is not session:
                     break
                 if status.get("session_id") != session_id:
-                    _log_event(
+                    self._log_mismatch(
                         "status.session_mismatch",
-                        expected_session_id=session_id,
-                        actual_session_id=status.get("session_id"),
+                        session_id,
+                        status.get("session_id"),
                     )
                     raise RuntimeError("会话身份不一致")
                 self.latest_status = status
@@ -467,10 +482,10 @@ class DesktopController:
                 while not self.paused.is_set() and self.session and self.session["id"] == session_id:
                     frame = read_frame(response)
                     if frame["session_id"] != session_id:
-                        _log_event(
+                        self._log_mismatch(
                             "frames.session_mismatch",
-                            expected_session_id=session_id,
-                            actual_session_id=frame["session_id"],
+                            session_id,
+                            frame["session_id"],
                             frame_id=frame["frame_id"],
                         )
                         raise RuntimeError("帧会话或序号不一致")

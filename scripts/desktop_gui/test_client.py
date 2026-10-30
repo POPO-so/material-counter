@@ -256,3 +256,92 @@ def test_frame_session_mismatch_log_omits_frame_content(monkeypatch, caplog):
     assert "expected-frame-session" in messages
     assert "actual-frame-session" in messages
     assert "private-frame-bytes" not in messages
+
+
+def test_repeated_status_mismatch_events_are_limited_to_five_seconds(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+    current_time = [100.0]
+    calls = [0]
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "expected-status-session", "token": "private-token", "dir": "/session", "pid": 12}
+
+    def request(*_args, **_kwargs):
+        calls[0] += 1
+        return {"session_id": f"actual-status-{calls[0]}"}
+
+    def sleep(_duration):
+        current_time[0] += 1.5
+        if calls[0] >= 5:
+            app.shutdown.set()
+
+    monkeypatch.setattr(controller, "_request", request)
+    monkeypatch.setattr(controller.time, "monotonic", lambda: current_time[0])
+    monkeypatch.setattr(controller.time, "sleep", sleep)
+
+    app._poll("expected-status-session")
+
+    events = [record.message for record in caplog.records
+              if '"event": "status.session_mismatch"' in record.message]
+    assert len(events) == 2
+    assert "expected-status-session" in events[0]
+    assert "actual-status-1" in events[0]
+    assert "private-token" not in "\n".join(events)
+
+
+def test_repeated_frame_mismatch_events_are_limited_to_five_seconds(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+    current_time = [100.0]
+    frames = [0]
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    class Response:
+        status = 200
+        def close(self):
+            pass
+
+    class Connection:
+        def __init__(self, *_args, **_kwargs):
+            pass
+        def request(self, *_args, **_kwargs):
+            pass
+        def getresponse(self):
+            return Response()
+        def close(self):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "expected-frame-session", "token": "private-token", "dir": "/session", "pid": 12}
+
+    def read_frame(_response):
+        frames[0] += 1
+        return {
+            "session_id": f"actual-frame-{frames[0]}", "frame_id": frames[0],
+            "image": b"private-frame-bytes",
+        }
+
+    def sleep(_duration):
+        current_time[0] += 1.5
+        if frames[0] >= 5:
+            app.shutdown.set()
+
+    monkeypatch.setattr(controller.http.client, "HTTPConnection", Connection)
+    monkeypatch.setattr(controller, "read_frame", read_frame)
+    monkeypatch.setattr(controller.time, "monotonic", lambda: current_time[0])
+    monkeypatch.setattr(controller.time, "sleep", sleep)
+
+    app._receive("expected-frame-session")
+
+    events = [record.message for record in caplog.records
+              if '"event": "frames.session_mismatch"' in record.message]
+    assert len(events) == 2
+    assert "expected-frame-session" in events[0]
+    assert "actual-frame-1" in events[0]
+    assert "private-frame-bytes" not in "\n".join(events)
