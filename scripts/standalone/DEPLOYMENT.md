@@ -108,3 +108,18 @@ G1 systemd 单元中的现存启动命令（仅说明代码配置，不代表 G4
 ```
 
 `boot_autostart.py` 内部再以当前 boot ID、固定 by-id 相机路径和固定 manifest SHA-256 调用 `scripts.standalone.g1_run --execute`，时长固定 7200 秒、请求 20 FPS。G4 首次安装的实际配置与原始基线见本文开头；本节不提供可直接执行的启停或回退脚本。G4 service 虽已启用，其真实开机、自停及安全释放行为仍待用户最终测试。
+
+## 用户最终测试交接
+
+- 当前只读观察到板端 G4 unit/env/`current` 已安装，service 为 `loaded/enabled/inactive`；桌面 `board_entry.py` PID 4225 当时正在运行。PID 会变化，这只是观察快照；板卡时钟未校准，日志时间戳不可信。G3/G4 尚未放行。
+- 完成桌面测试后，通过现有程序正常退出。由用户在同一轮确认唯一硬件 owner 已释放，DMA idle、VDMA halted、无错误，且相机与缓冲资源均已释放；如任一项未知，不进入下一步。
+- 随后由用户自行安排一次真正脱机开机，观察 HDMI 显示及真实物料计数。不要在当前长时间运行的 boot 手动启动 G4；首次配置要求 boot uptime 不超过 300 秒，手动 start 不能替代脱机开机观察。
+- 记录人工真值、显示数、该次 boot ID、G4 service 状态，以及对应 boot 的 `/var/lib/material-counter` 报告与 journal。可用以下只读命令留存状态；其中日志时间戳不能作为可信时钟：
+
+  ```sh
+  cat /proc/sys/kernel/random/boot_id
+  systemctl show material-counter-integrated.service -p LoadState -p ActiveState -p UnitFileState -p SubState
+  journalctl -b -u material-counter-integrated.service
+  ```
+
+五次冷启动、连续 ≥60 分钟运行和故障恢复已由用户豁免，不列为本次必做项。
