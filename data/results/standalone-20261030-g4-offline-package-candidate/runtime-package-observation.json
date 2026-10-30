@@ -1,0 +1,36 @@
+{
+  "observation_type": "selected_version_read_only_observation",
+  "observed_date": "2026-10-30",
+  "source_board": "192.168.2.99",
+  "python_interpreter": "/usr/local/share/pynq-venv/bin/python3",
+  "pip_list_freeze_filter": {
+    "pattern": "^(numpy|opencv|pillow|pynq|scipy|cffi|pycparser|pip|setuptools)",
+    "case_insensitive": true,
+    "observed_distributions": [
+      { "name": "cffi", "version": "1.15.0" },
+      { "name": "numpy", "version": "1.21.5" },
+      { "name": "Pillow", "version": "9.0.1" },
+      { "name": "pip", "version": "22.0.2" },
+      { "name": "pycparser", "version": "2.19" },
+      { "name": "pynq", "version": "3.1.1" },
+      { "name": "pynq-peripherals", "version": "0.1.0" },
+      { "name": "pynqmetadata", "version": "0.1.8" },
+      { "name": "pynqutils", "version": "0.1.1" },
+      { "name": "scipy", "version": "1.8.0" },
+      { "name": "setuptools", "version": "59.6.0" }
+    ],
+    "opencv_prefixed_pip_distribution_output": []
+  },
+  "dpkg_query_packages": [
+    { "package": "python3-opencv:armhf", "version": "4.5.4+dfsg-9ubuntu4" },
+    { "package": "libopencv-core4.5d:armhf", "version": "4.5.4+dfsg-9ubuntu4" },
+    { "package": "libopencv-imgproc4.5d:armhf", "version": "4.5.4+dfsg-9ubuntu4" },
+    { "package": "libopencv-videoio4.5d:armhf", "version": "4.5.4+dfsg-9ubuntu4" }
+  ],
+  "target_platform_reference": "Use Python/Linux/ARM/glibc values recorded in package/board-runtime.json.",
+  "limitations": [
+    "This is a selected-version observation, not a complete inventory.",
+    "It is not a direct or transitive dependency lock and does not prove reproducibility.",
+    "The observation used read-only pip list and dpkg-query commands; no system or code tests were run."
+  ]
+}
