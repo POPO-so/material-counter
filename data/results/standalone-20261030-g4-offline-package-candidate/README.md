@@ -44,3 +44,8 @@
 
 - 候选包 37 模块来源为 `bf817ca98b3a1032f83ac732424314d926e3da52` / `feat/统一灰度缩放策略`。本地 `delivery.py --build-index` 退出码 0，索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件；索引 SHA-256 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 与 `package.env.candidate` 一致。此结果仅为文件完整性核对和候选包准备，未运行软件测试、仿真或板端任务；G3/G4 仍未放行，离线依赖闭包或自启动未证明。
 - 启动前增加已观察 8 个 dpkg 包状态/版本的只读准入；仅覆盖已观察兼容性，不代表完整离线依赖闭包。G4 仍未验收。
+
+## 本地源码对应核对补记（2026-10-31）
+
+- 本地源码核对工具命令退出码 0；37 个应用模块内容与来源提交 `bf817ca98b3a1032f83ac732424314d926e3da52` 的 Git blob 匹配。报告记录的 index SHA-256 为 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d`。报告：[source-correspondence-20261031.json](source-correspondence-20261031.json)；命令记录：[source-correspondence-20261031-command.json](source-correspondence-20261031-command.json)。
+- 此项范围仅为本地源码对应核对，不证明离线依赖闭包、板端安装或冷启动；G4 未放行，离线依赖和现场验收仍缺。
