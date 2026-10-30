@@ -16,12 +16,12 @@
 - 36 个运行入口及传递导入所需的应用 Python 模块；来源提交写入 `package/package-source.json`。
 - manifest 锁定的 7 个 PYNQ 运行源码和 2 个字体。从板卡只读复制后，本地计算的 13 项依赖/制品 SHA-256 全部与来源 manifest 或 G2 记录一致；逐项记录见 [dependency-readback.json](dependency-readback.json)。
 - `boot-config.json` 使用 `continuous`、固定相机 by-id 路径；候选 systemd 单元和占位环境模板位于 package/deployment/。同目录外的 [package.env.candidate](package.env.candidate) 填入了拟安装 release 路径及当前索引 SHA-256，不属于已索引包，也没有安装到板端。
-- [board-runtime.json](package/board-runtime.json) 记录板端现有运行时的只读版本观测：CPython 3.10.4、PYNQ 3.1.1、NumPy 1.21.5、OpenCV 4.5.4、Pillow 9.0.1、SciPy 1.8.0、cffi 1.15.0。
+- [board-runtime.json](package/board-runtime.json) 记录板端目标平台基线和既有运行时观测。本次选定版本的只读查询明细见 [runtime-package-observation.json](runtime-package-observation.json)；该文件位于 `package/` 外，不属于 deployment index，不改变候选包索引或其哈希。
 
 ## 离线依赖静态清点
 
-- 板端只读观测还包括 Linux `6.6.10-xilinx-v2024.1`、`armv7l` 和 glibc `2.35`。Python 运行时观测为 CPython 3.10.4、PYNQ 3.1.1、NumPy 1.21.5、OpenCV 4.5.4、Pillow 9.0.1、SciPy 1.8.0、cffi 1.15.0。这些是环境版本观测，不是依赖锁或离线重建证据。
-- 静态导入证据显示，集成运行器直接导入 `cv2` 和 `numpy`，compositor 使用 `PIL`，硬件入口延迟导入 PYNQ。SciPy 和 cffi 是板端观测到的版本，但现有静态导入证据没有证明它们是集成运行器的直接依赖；OpenCV 对应的 pip distribution 名称也未锁定。
+- 板端目标平台以 [board-runtime.json](package/board-runtime.json) 记载的 Python/Linux/ARM/glibc 为准。本次 JSON 是选定版本的只读观察：筛选到的发行包均标为“已安装版本观察”，direct/transitive 关系未确认；`dpkg-query -W` 观察到 `python3-opencv:armhf` 及三个 OpenCV 库均为 `4.5.4+dfsg-9ubuntu4`。OpenCV 来自系统 Python 包，而不是本次筛选命中的 pip distribution；筛选输出没有 `opencv` 开头的 pip distribution。
+- 静态导入证据显示，集成运行器直接导入 `cv2` 和 `numpy`，compositor 使用 `PIL`，硬件入口延迟导入 PYNQ。SciPy 和 cffi 是板端“已安装版本观察”，但现有静态导入证据没有证明它们是集成运行器的直接依赖。该观察不是完整清单、direct/transitive 依赖锁或可重建证明。
 - 已核验的 13 项仅包括 7 个 PYNQ 源文件、2 个字体，以及 BIT、HWH、manifest 和 native library；哈希与来源记录见上文及 [dependency-readback.json](dependency-readback.json)。以下为**静态缺口分析**：当前没有 wheelhouse、完整 Python 依赖锁、完整 PYNQ 运行时离线制品、OS 包/镜像基线，亦没有 native library 的重建工具链资料。
 - 后续依赖锁清单可记录 direct/transitive、distribution 名称/版本、Python/ABI/平台标签、SHA-256/来源，以及 OS 包/版本/离线制品来源；未锁定的信息留空待证，不填未经核实的猜测。
 
