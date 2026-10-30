@@ -1,16 +1,21 @@
 """Fail-closed compatibility check for the observed offline board runtime."""
 from __future__ import annotations
 
+import hashlib
 import importlib
+import importlib.util
 from importlib import metadata
 import json
 import platform
 from pathlib import Path
 import re
+import stat
 import subprocess
 
 
-OBSERVATION_SCHEMA = "material-counter.board-runtime-observation.v1"
+OBSERVATION_SCHEMA = "material-counter.board-runtime-observation.v2"
+NATIVE_VIDEO_FILE = "lib/_video.cpython-310-arm-linux-gnueabihf.so"
+_SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 REQUIRED_PACKAGES = {
     "pynq": "pynq",
     "numpy": "numpy",
@@ -36,6 +41,35 @@ _PLATFORM_PATTERN = re.compile(
 
 def current_runtime():
     """Read compatibility fields without importing PYNQ or accessing hardware."""
+    try:
+        pynq_spec = importlib.util.find_spec("pynq")
+    except Exception as error:
+        raise RuntimeError("cannot locate installed PYNQ package") from error
+    pynq_origin = getattr(pynq_spec, "origin", None)
+    if not isinstance(pynq_origin, str):
+        raise RuntimeError("cannot locate installed PYNQ package")
+    try:
+        pynq_root = Path(pynq_origin).resolve(strict=True).parent
+        native_path = pynq_root / NATIVE_VIDEO_FILE
+        resolved_native_path = native_path.resolve(strict=True)
+        resolved_native_path.relative_to(pynq_root)
+        native_stat = resolved_native_path.stat()
+        if not stat.S_ISREG(native_stat.st_mode):
+            raise RuntimeError(
+                "PYNQ native extension is not a regular file: {}".format(
+                    NATIVE_VIDEO_FILE
+                )
+            )
+        digest = hashlib.sha256()
+        with resolved_native_path.open("rb") as native_file:
+            for chunk in iter(lambda: native_file.read(1024 * 1024), b""):
+                digest.update(chunk)
+        native_files = {NATIVE_VIDEO_FILE: digest.hexdigest()}
+    except (OSError, ValueError) as error:
+        raise RuntimeError(
+            "cannot safely read PYNQ native extension: {}".format(NATIVE_VIDEO_FILE)
+        ) from error
+
     packages = {}
     for name, distribution in REQUIRED_PACKAGES.items():
         if distribution is not None:
@@ -101,6 +135,7 @@ def current_runtime():
         "libc": {"name": libc_name, "version": libc_version},
         "packages": packages,
         "os_packages": os_packages,
+        "native_files": native_files,
     }
 
 
@@ -151,6 +186,27 @@ def _expected_runtime(observation):
             )
         os_packages[name] = version
 
+    observed_native_files = observation.get("native_files")
+    if not isinstance(observed_native_files, dict):
+        raise ValueError("board runtime observation lacks native_files")
+    if set(observed_native_files) != {NATIVE_VIDEO_FILE}:
+        missing = sorted({NATIVE_VIDEO_FILE} - set(observed_native_files))
+        unknown = sorted(set(observed_native_files) - {NATIVE_VIDEO_FILE})
+        raise ValueError(
+            "board runtime observation native_files must contain exactly the required file"
+            " (missing={!r}, unknown={!r})".format(missing, unknown)
+        )
+    native_digest = observed_native_files[NATIVE_VIDEO_FILE]
+    if (
+        not isinstance(native_digest, str)
+        or _SHA256_PATTERN.fullmatch(native_digest) is None
+    ):
+        raise ValueError(
+            "board runtime observation has invalid SHA-256 for: {}".format(
+                NATIVE_VIDEO_FILE
+            )
+        )
+
     return {
         "python": python_version,
         "system": match.group("system"),
@@ -162,6 +218,7 @@ def _expected_runtime(observation):
         },
         "packages": packages,
         "os_packages": os_packages,
+        "native_files": {NATIVE_VIDEO_FILE: native_digest},
     }
 
 
@@ -208,6 +265,17 @@ def verify_runtime_observation(observation, actual):
                     name, expected_version, actual_os_packages.get(name)
                 )
             )
+    actual_native_files = actual.get("native_files")
+    if not isinstance(actual_native_files, dict):
+        actual_native_files = {}
+    if actual_native_files != expected["native_files"]:
+        mismatches.append(
+            "native_files.{}: expected {!r}, got {!r}".format(
+                NATIVE_VIDEO_FILE,
+                expected["native_files"][NATIVE_VIDEO_FILE],
+                actual_native_files.get(NATIVE_VIDEO_FILE),
+            )
+        )
     if mismatches:
         raise RuntimeError(
             "runtime compatibility mismatch; refusing hardware initialization: "
