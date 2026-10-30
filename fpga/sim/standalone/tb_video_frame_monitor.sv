@@ -324,7 +324,10 @@ module tb_video_frame_monitor;
     end
     set_vsync(1); set_vsync(0);
     repeat (10) @(posedge pixel_clk);
-    if (full_dut.unique_count != 1) $fatal(1,"full-resolution frame was not accepted");
+    if (full_dut.unique_count != 1) begin
+      $display("FULL_MONITOR_DIAG unique=%0d partial=%0d invalid=%0d flags=%h top=%h bottom=%h expected=%h",full_dut.unique_count,full_dut.partial_count,full_dut.invalid_count,full_dut.last_diag_flags,full_dut.last_top_marker,full_dut.last_bottom_marker,full_marker);
+      $fatal(1,"full-resolution frame was not accepted");
+    end
 
     // Pixel-only reset invalidates the AXI snapshot until a fresh mailbox request.
     @(negedge pixel_clk); pixel_resetn = 0;
