@@ -383,7 +383,10 @@ def main(argv=None):
                     if now<next_camera_retry:time.sleep(.01);continue
                     camera=LatestCamera(args.camera);camera_index=-1
                 try:
-                    camera_index,gray,captured=camera.read(after=camera_index,timeout=.25)
+                    # V4L2 camera startup and its two discarded warm-up frames
+                    # can exceed the steady-state fresh-frame timeout.
+                    camera_timeout=15.0 if camera_index<0 else .25
+                    camera_index,gray,captured=camera.read(after=camera_index,timeout=camera_timeout)
                 except (RuntimeError,TimeoutError) as error:
                     camera.close();camera=None;next_camera_retry=time.monotonic()+5
                     report['recoveries'].append(dict(kind='camera',frame=index,error=repr(error),monotonic=now))
