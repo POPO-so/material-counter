@@ -2,6 +2,10 @@
 
 **状态：G3 未放行。** 旧 v2 显示开/关回放已通过；本轮当前源码在同一 G2 制品上重跑 2,400 帧，轨迹、事件、计数与源码身份一致。346 项相关软件回归通过；本地 AREA ramp、常量灰度和二值 nearest 候选比较通过，LINEAR 候选有 640 个像素差异。绘图协作退出恢复和遥测冻结场景已通过。实体按钮消抖/长按、HDMI 热插拔、真实相机有目标输入及物料真值仍待完成。绘图进程创建/启动故障的单元用例和 runner 注入参数已加入当前分支，尚未执行；G3 未放行，G4 未验收。
 
+真实相机/真实物料的人工真值执行前协议和空白记录模板见[人工真值协议](manual-truth-protocol.md)；尚未执行样本，不定义通过阈值，不构成 G3 放行证据。
+
+离线逐物核对工具 [manual_truth.py](../../../scripts/standalone/manual_truth.py) 已写但未运行、未验收，使用 `--report`、`--truth`、`--output` 接收报告、真值和新建输出路径。它只接受完整且不超过 600 帧、无控制命令的 STOPPED 真实相机 integrated-run 报告及 `material-counter.manual-truth.v1` 输入；校验报告/录像 SHA、人工 ID/方向/帧锚点、明确配对依据及 pending/boundary 原因。核对仅验证声明与已保存文件，不证明物理真值；`human_sealed_at`/`matched_at` 不能替代独立封存原件的哈希与时间证据。该工具不定义通过阈值，不改变 G3 未放行状态。
+
 ### 最新代码阶段事实（2026-10-30）
 
 本分支集成绘图从 `LINEAR` 改用 `AREA`。此前固定 ramp 的本地 AREA 比较匹配，但本次代码未测试或板验；灰度正式策略及黄金验收仍未冻结。历史 `346 passed` 属于旧代码版本，不是本分支测试结果。运行报告新增有界原始 GPIO 采样变化、总数和截断字段；实物 GPIO 未测。G3/G4 均未放行。
@@ -141,3 +145,15 @@
 - 根因定位到集成主循环对相机**首帧也只等待 250ms**。板端相机初始化/丢弃前两帧可能需要数秒；已有相同设备运行曾出现约 12 秒首帧延迟，250ms 会在取到首帧前触发关闭和重试。
 - 修复已提交在 `fix/修复真实相机首帧等待`：首次取帧（包括重连）最多等 15 秒，稳定运行后仍以 250ms 检测新帧。源码提交 `18d04b57929e78b53e75aae0d51b728f0b07dfc9`；G4 候选包源码副本已刷新，索引尚未重建。
 - 本轮没有运行测试、构建或仿真。修复后已在板端启动真实相机 + HDMI 连续运行；快照 `/tmp/material-counter-user-display-20261030-fixed.snapshot-0.json` 记录 `processed=1532`、`submitted=1267`、`total_count=0`、`drawing_pid=841`，相机恢复错误列表为空。运行器主 PID 为 795，当前保持运行供用户测试。此记录证明帧处理及显示发布持续发生，尚无人工确认屏幕可见性，也没有真实物料计数真值；G3 仍未放行。
+
+### 本地验证补记（2026-10-31）
+
+- CPython 3.12.10 / pytest 9.1.1 本地软件回归命令退出码 0，`372 passed`。控制台日志：[local-pytest-20261031.txt](local-pytest-20261031.txt)；命令与环境记录：[local-pytest-20261031-command.json](local-pytest-20261031-command.json)。此结果仅说明所列本地软件回归通过，不构成 G3 放行。
+- 板端只读查询显示当前 boot ID 为 `8b380359-59a7-46f8-8f5a-f172fd1398dd`，旧真实相机运行器 PID 795/841 已不在进程列表；另有桌面计数入口 `board_entry.py`（PID 1213）在运行。上节“当前保持运行”仅指 10/30 当时的状态。本轮没有启动、停止或切换板端计数器。
+- 实物 GPIO、HDMI 拔插/硬件恢复、真实相机有目标与人工真值、缩放黄金验收仍未完成；灰度缩放策略未冻结。
+
+### 本地当前源码缩放候选比较（2026-10-31）
+
+- 修复初次清单 ID 预检问题后，以 CPython 3.12.10、OpenCV 4.10.0、NumPy 2.3.5、Pillow 12.3.0 对固定输入和 expected 执行本地当前源码比较。初次预检失败记录 [scaling-current-20261031-command.json](scaling-current-20261031-command.json) 保留；成功报告 [comparison.json](scaling-current-20261031/comparison.json) 为 `status=PASS`、退出码 0，绑定 git HEAD `b28e67632da711ea649cf1534d57c8a902822923`、runner SHA-256 `a62194733151dab7ce2f2ce2bf209ab38892ec38ed308d58d4d05f5f1dfa8389`、compositor SHA-256 `68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1`。命令与运行环境记录见 [rerun command JSON](scaling-current-20261031-rerun-command.json)。
+- 常量灰度和 AREA ramp 各比较 207,360 像素、零差异；binary nearest 排除 count-line 遮挡的 2,520 像素后比较 204,840 像素、零差异。三例 actual raw/PNG 和 SHA-256 均保存在 `scaling-current-20261031/`。
+- 这只是本地当前源码缩放候选比较，不是板端黄金验收或 HDMI 通过证据；不勾选 G3 Task 4，也不冻结灰度插值策略。实物 GPIO、HDMI 热插拔/硬件恢复、真实相机有目标与人工真值等仍未完成，G3 未放行。

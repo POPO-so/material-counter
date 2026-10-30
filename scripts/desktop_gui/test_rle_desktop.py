@@ -4,6 +4,7 @@ import sys
 from dataclasses import replace
 from types import SimpleNamespace
 import subprocess
+import json
 
 import numpy as np
 import pytest
@@ -179,3 +180,58 @@ def test_self_test_timeout_reports_uncertain_hardware_ownership(tmp_path, monkey
     with pytest.raises(RuntimeError) as error:
         board_entry.self_test(config, tmp_path, "boot")
     assert type(error.value).__name__ == "SelfTestOwnershipUncertain"
+
+
+def test_board_log_event_redacts_credentials_and_retains_session_id(capsys):
+    import board_entry
+
+    board_entry.log_event(
+        "board.test", session_id="session-board", password="pw-hidden",
+        token="token-hidden", authorization="Bearer header-hidden",
+    )
+
+    line = capsys.readouterr().out.strip()
+    assert line.startswith("DESKTOP_EVENT ")
+    event = json.loads(line.removeprefix("DESKTOP_EVENT "))
+    assert event["event"] == "board.test"
+    assert event["session_id"] == "session-board"
+    assert "pw-hidden" not in line
+    assert "token-hidden" not in line
+    assert "header-hidden" not in line
+
+
+def test_board_failure_log_contains_stage_and_type(capsys):
+    import board_entry
+
+    board_entry.log_failure("camera.open", "session-fail", ValueError("private detail"))
+
+    event = json.loads(capsys.readouterr().out.strip().removeprefix("DESKTOP_EVENT "))
+    assert event["event"] == "failure"
+    assert event["stage"] == "camera.open"
+    assert event["session_id"] == "session-fail"
+    assert event["exception_type"] == "ValueError"
+    assert "private detail" not in json.dumps(event)
+
+
+def test_first_processed_frame_logs_session_frame_and_count(capsys):
+    hub = LatestFrameHub()
+    runtime = RleDesktopRuntime(
+        "session-first-frame", FakeCounter(), FakeTransport(), hub,
+    )
+
+    runtime.process_frame(np.zeros((400, 640), np.uint8))
+
+    events = [json.loads(line.removeprefix("DESKTOP_EVENT "))
+              for line in capsys.readouterr().out.splitlines()]
+    first_frame = next(event for event in events if event["event"] == "first_frame")
+    assert first_frame["session_id"] == "session-first-frame"
+    assert first_frame["frame_id"] == 0
+    assert first_frame["total_count"] == 0
+    hub.close()
+
+
+def test_runtime_heartbeat_due_at_sixty_seconds():
+    from rle_desktop_board import heartbeat_due
+
+    assert heartbeat_due(159.9, 100.0) is False
+    assert heartbeat_due(160.0, 100.0) is True

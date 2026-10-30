@@ -1,0 +1,36 @@
+{
+  "worktree": "C:\\w\\mc-delivery-clean",
+  "expectedCommit": "d059b9d1238ff1c19b5a8814a5597135276790a7",
+  "commit": "d059b9d1238ff1c19b5a8814a5597135276790a7",
+  "python": "C:\\Users\\14173\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "pythonVersion": "Python 3.12.10",
+  "startedAt": "2026-10-31T00:36:08.7774757+08:00",
+  "finishedAt": "2026-10-31T00:36:24.4176641+08:00",
+  "startGitStatusPorcelain": [],
+  "endGitStatusPorcelain": [],
+  "tempBase": "C:\\Users\\14173\\AppData\\Local\\Temp\\material-counter-clean-checkout-c8c70d25d598440ba8ea2e5c87d208f9",
+  "checks": [
+    {
+      "name": "pytest",
+      "command": "\"C:\\Users\\14173\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -B -m pytest -p no:cacheprovider --basetemp C:\\Users\\14173\\AppData\\Local\\Temp\\material-counter-clean-checkout-c8c70d25d598440ba8ea2e5c87d208f9\\pytest-tmp scripts/standalone scripts/rle scripts/gray8 -q",
+      "workingDirectory": "C:\\w\\mc-delivery-clean",
+      "startedAt": "2026-10-31T00:36:09.1864146+08:00",
+      "finishedAt": "2026-10-31T00:36:24.1804878+08:00",
+      "exitCode": 0,
+      "stdout": "........................................................................ [ 19%]\r\n........................................................................ [ 38%]\r\n........................................................................ [ 58%]\r\n........................................................................ [ 77%]\r\n........................................................................ [ 96%]\r\n............                                                             [100%]\r\n372 passed in 14.63s\r\n",
+      "stderr": ""
+    },
+    {
+      "name": "verify_delivery",
+      "command": "\"C:\\Users\\14173\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -B scripts/delivery/verify_delivery.py",
+      "workingDirectory": "C:\\w\\mc-delivery-clean",
+      "startedAt": "2026-10-31T00:36:24.1915357+08:00",
+      "finishedAt": "2026-10-31T00:36:24.2980606+08:00",
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\r\n  File \"C:\\w\\mc-delivery-clean\\scripts\\delivery\\verify_delivery.py\", line 57, in <module>\r\n    print(json.dumps(verify_current(args.manifest), indent=2))\r\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\w\\mc-delivery-clean\\scripts\\delivery\\verify_delivery.py\", line 44, in verify_current\r\n    check(sources[Path(snapshot).name], digest)\r\n  File \"C:\\w\\mc-delivery-clean\\scripts\\delivery\\verify_delivery.py\", line 26, in check\r\n    require(hashlib.sha256(raw).hexdigest() == expected, \"SHA-256 mismatch: \" + str(path))\r\n  File \"C:\\w\\mc-delivery-clean\\scripts\\delivery\\verify_delivery.py\", line 17, in require\r\n    raise RuntimeError(message)\r\nRuntimeError: SHA-256 mismatch: fpga/experimental/gray8/axis_dma_gray_adapter.v\r\n"
+    }
+  ],
+  "stoppedAfterFailure": true,
+  "outcome": "check failed; later checks stopped"
+}

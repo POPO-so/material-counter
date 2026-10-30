@@ -1,0 +1,14 @@
+{
+  "command": "\"C:\\Users\\14173\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -B \"data/results/standalone-20261030-g3-functional/verify_current_scaling.py\" --output-dir \"data/results/standalone-20261030-g3-functional/scaling-current-20261031\"",
+  "working_directory": "C:\\w\\mc-g3-code",
+  "stdout": "",
+  "stderr": "",
+  "exit_code": 0,
+  "versions": {
+    "python": "3.12.10",
+    "opencv": "4.10.0",
+    "numpy": "2.3.5",
+    "pillow": "12.3.0"
+  },
+  "git_head_before": "b28e67632da711ea649cf1534d57c8a902822923"
+}

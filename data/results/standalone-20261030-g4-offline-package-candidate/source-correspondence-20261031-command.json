@@ -1,0 +1,20 @@
+{
+  "command": "\"C:\\Users\\14173\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -B -m scripts.delivery.verify_standalone_source --package-root data/results/standalone-20261030-g4-offline-package-candidate/package --source-root . --index-sha256 63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d --output data/results/standalone-20261030-g4-offline-package-candidate/source-correspondence-20261031.json",
+  "arguments": [
+    "-B",
+    "-m",
+    "scripts.delivery.verify_standalone_source",
+    "--package-root",
+    "data/results/standalone-20261030-g4-offline-package-candidate/package",
+    "--source-root",
+    ".",
+    "--index-sha256",
+    "63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d",
+    "--output",
+    "data/results/standalone-20261030-g4-offline-package-candidate/source-correspondence-20261031.json"
+  ],
+  "exit_code": 0,
+  "started_at": "2026-10-31T00:23:58.9454177+08:00",
+  "finished_at": "2026-10-31T00:24:01.0258661+08:00",
+  "output_path": "data/results/standalone-20261030-g4-offline-package-candidate/source-correspondence-20261031.json"
+}

@@ -1,0 +1,13 @@
+COMMAND: "C:\Users\14173\AppData\Local\Programs\Python\Python312\python.exe" -B -m pytest -p no:cacheprovider --basetemp C:\Users\14173\AppData\Local\Temp\mc-g3-first-batch-pytest-114baff4a2744d32910d74a26fb02b28 scripts/standalone scripts/rle scripts/gray8 -q
+BASETEMP: C:\Users\14173\AppData\Local\Temp\mc-g3-first-batch-pytest-114baff4a2744d32910d74a26fb02b28
+EXIT_CODE: 0
+=== STDOUT ===
+........................................................................ [ 19%]
+........................................................................ [ 38%]
+........................................................................ [ 58%]
+........................................................................ [ 77%]
+........................................................................ [ 96%]
+............                                                             [100%]
+372 passed in 13.56s
+
+=== STDERR ===

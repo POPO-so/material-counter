@@ -1,0 +1,14 @@
+{
+  "command": "\"C:\\Users\\14173\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -B \"data/results/standalone-20261030-g3-functional/verify_current_scaling.py\" --output-dir \"data/results/standalone-20261030-g3-functional/scaling-current-20261031\"",
+  "working_directory": "C:\\w\\mc-g3-code",
+  "stdout": "",
+  "stderr": "ERROR: Manifest vector identity mismatch for gray_ramp_inter_area\r\n",
+  "exit_code": 2,
+  "versions": {
+    "python": "3.12 (指定解释器目录)",
+    "opencv": null,
+    "numpy": null,
+    "pillow": null
+  },
+  "git_head": "9e9acc520358b50ca924bfa21d69ccc099cdc7d8"
+}

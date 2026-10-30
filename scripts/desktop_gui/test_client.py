@@ -1,7 +1,9 @@
 """Checks for independent deployment configuration and desktop control client."""
 from pathlib import Path
 import json
+import logging
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -71,3 +73,275 @@ def test_stop_accepts_already_stopped_matching_session(monkeypatch):
         "session_id": "ours", "status": "STOPPED", "standard_profile_restored": True, "total_count": 4})
     app._stop()
     assert app.session is None
+
+
+def test_log_event_redacts_secret_fields(caplog):
+    caplog.set_level(logging.INFO)
+    controller._log_event(
+        "test.redaction", session_id="session-1", password="pw-hidden",
+        token="token-hidden", authorization="Bearer header-hidden",
+    )
+
+    record = caplog.records[-1]
+    assert "desktop_event=" in record.message
+    assert '"session_id": "session-1"' in record.message
+    assert "pw-hidden" not in record.message
+    assert "token-hidden" not in record.message
+    assert "header-hidden" not in record.message
+
+
+def test_ssh_failure_logs_stage_and_exception_type(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+    class Client:
+        def load_system_host_keys(self):
+            pass
+        def set_missing_host_key_policy(self, _policy):
+            pass
+        def connect(self, *_args, **_kwargs):
+            raise TimeoutError("sensitive password text")
+
+    fake_paramiko = SimpleNamespace(
+        SSHClient=Client, RejectPolicy=lambda: object(),
+    )
+    monkeypatch.setitem(sys.modules, "paramiko", fake_paramiko)
+
+    with pytest.raises(TimeoutError):
+        controller._ssh(sample_config(), session_id="session-ssh")
+
+    messages = "\n".join(record.message for record in caplog.records)
+    assert "ssh.failure" in messages
+    assert "TimeoutError" in messages
+    assert "session-ssh" in messages
+    assert "sensitive password text" not in messages
+
+
+def test_http_403_log_contains_status_without_token(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+    class Response:
+        status = 403
+        def read(self):
+            return b'{"error":"forbidden"}'
+
+    class Connection:
+        def __init__(self, *_args, **_kwargs):
+            pass
+        def request(self, *_args, **_kwargs):
+            pass
+        def getresponse(self):
+            return Response()
+        def close(self):
+            pass
+
+    monkeypatch.setattr(controller.http.client, "HTTPConnection", Connection)
+    with pytest.raises(RuntimeError):
+        controller._request(
+            sample_config(), "secret-token", "GET", "/status.json",
+            expected_session_id="session-403",
+        )
+
+    messages = "\n".join(record.message for record in caplog.records)
+    assert "http.response" in messages
+    assert "403" in messages
+    assert "/status.json" in messages
+    assert "secret-token" not in messages
+
+
+def test_readiness_session_mismatch_logs_both_ids(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+    class Response:
+        status = 200
+        def read(self):
+            return b'{"session_id":"other-session"}'
+
+    class Connection:
+        def __init__(self, *_args, **_kwargs):
+            pass
+        def request(self, *_args, **_kwargs):
+            pass
+        def getresponse(self):
+            return Response()
+        def close(self):
+            pass
+
+    monkeypatch.setattr(controller.http.client, "HTTPConnection", Connection)
+    with pytest.raises(RuntimeError, match="会话"):
+        controller._request(
+            sample_config(), "secret-token", "GET", "/status.json",
+            expected_session_id="expected-session",
+        )
+
+    messages = "\n".join(record.message for record in caplog.records)
+    assert "expected-session" in messages
+    assert "other-session" in messages
+    assert "secret-token" not in messages
+
+
+def test_status_poll_mismatch_logs_expected_and_actual_session(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "expected-session", "token": "private-token", "dir": "/session", "pid": 12}
+    monkeypatch.setattr(controller, "_request", lambda *_args, **_kwargs: {
+        "session_id": "actual-session",
+    })
+    monkeypatch.setattr(controller.time, "sleep", lambda _duration: app.shutdown.set())
+
+    app._poll("expected-session")
+
+    messages = "\n".join(record.message for record in caplog.records)
+    assert '"event": "status.session_mismatch"' in messages
+    assert "expected-session" in messages
+    assert "actual-session" in messages
+    assert "private-token" not in messages
+
+
+def test_successful_status_poll_stays_structurally_quiet(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "same-session", "token": "private-token", "dir": "/session", "pid": 12}
+    monkeypatch.setattr(controller, "_request", lambda *_args, **_kwargs: {
+        "session_id": "same-session", "telemetry": {"phase": "running"},
+    })
+    monkeypatch.setattr(controller.time, "sleep", lambda _duration: app.shutdown.set())
+
+    app._poll("same-session")
+
+    assert not any("desktop_event=" in record.message for record in caplog.records)
+
+
+def test_frame_session_mismatch_log_omits_frame_content(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    class Response:
+        status = 200
+        def close(self):
+            pass
+
+    class Connection:
+        def __init__(self, *_args, **_kwargs):
+            pass
+        def request(self, *_args, **_kwargs):
+            pass
+        def getresponse(self):
+            return Response()
+        def close(self):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "expected-frame-session", "token": "private-token", "dir": "/session", "pid": 12}
+    monkeypatch.setattr(controller.http.client, "HTTPConnection", Connection)
+    monkeypatch.setattr(controller, "read_frame", lambda _response: {
+        "session_id": "actual-frame-session", "frame_id": 8,
+        "image": b"private-frame-bytes",
+    })
+    monkeypatch.setattr(controller.time, "sleep", lambda _duration: app.shutdown.set())
+
+    app._receive("expected-frame-session")
+
+    messages = "\n".join(record.message for record in caplog.records)
+    assert '"event": "frames.session_mismatch"' in messages
+    assert "expected-frame-session" in messages
+    assert "actual-frame-session" in messages
+    assert "private-frame-bytes" not in messages
+
+
+def test_repeated_status_mismatch_events_are_limited_to_five_seconds(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+    current_time = [100.0]
+    calls = [0]
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "expected-status-session", "token": "private-token", "dir": "/session", "pid": 12}
+
+    def request(*_args, **_kwargs):
+        calls[0] += 1
+        return {"session_id": f"actual-status-{calls[0]}"}
+
+    def sleep(_duration):
+        current_time[0] += 1.5
+        if calls[0] >= 5:
+            app.shutdown.set()
+
+    monkeypatch.setattr(controller, "_request", request)
+    monkeypatch.setattr(controller.time, "monotonic", lambda: current_time[0])
+    monkeypatch.setattr(controller.time, "sleep", sleep)
+
+    app._poll("expected-status-session")
+
+    events = [record.message for record in caplog.records
+              if '"event": "status.session_mismatch"' in record.message]
+    assert len(events) == 2
+    assert "expected-status-session" in events[0]
+    assert "actual-status-1" in events[0]
+    assert "private-token" not in "\n".join(events)
+
+
+def test_repeated_frame_mismatch_events_are_limited_to_five_seconds(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+    current_time = [100.0]
+    frames = [0]
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    class Response:
+        status = 200
+        def close(self):
+            pass
+
+    class Connection:
+        def __init__(self, *_args, **_kwargs):
+            pass
+        def request(self, *_args, **_kwargs):
+            pass
+        def getresponse(self):
+            return Response()
+        def close(self):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "expected-frame-session", "token": "private-token", "dir": "/session", "pid": 12}
+
+    def read_frame(_response):
+        frames[0] += 1
+        return {
+            "session_id": f"actual-frame-{frames[0]}", "frame_id": frames[0],
+            "image": b"private-frame-bytes",
+        }
+
+    def sleep(_duration):
+        current_time[0] += 1.5
+        if frames[0] >= 5:
+            app.shutdown.set()
+
+    monkeypatch.setattr(controller.http.client, "HTTPConnection", Connection)
+    monkeypatch.setattr(controller, "read_frame", read_frame)
+    monkeypatch.setattr(controller.time, "monotonic", lambda: current_time[0])
+    monkeypatch.setattr(controller.time, "sleep", sleep)
+
+    app._receive("expected-frame-session")
+
+    events = [record.message for record in caplog.records
+              if '"event": "frames.session_mismatch"' in record.message]
+    assert len(events) == 2
+    assert "expected-frame-session" in events[0]
+    assert "actual-frame-1" in events[0]
+    assert "private-frame-bytes" not in "\n".join(events)

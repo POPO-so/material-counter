@@ -17,6 +17,33 @@ class SelfTestOwnershipUncertain(RuntimeError):
     """The self-test child still owns a possibly active hardware transaction."""
 
 
+_SECRET_FIELDS = {"token", "password", "authorization", "auth", "secret",
+                  "private_key", "privatekey", "auth_header"}
+
+
+def _redact_fields(fields):
+    result = {}
+    for key, value in fields.items():
+        if str(key).casefold() in _SECRET_FIELDS:
+            result[key] = "[REDACTED]"
+        elif isinstance(value, dict):
+            result[key] = _redact_fields(value)
+        else:
+            result[key] = value
+    return result
+
+
+def log_event(event: str, **fields: object) -> None:
+    payload = {"event": event, "pid": os.getpid(), "monotonic": time.monotonic()}
+    payload.update(_redact_fields(fields))
+    print("DESKTOP_EVENT " + json.dumps(payload, ensure_ascii=False, default=str), flush=True)
+
+
+def log_failure(stage: str, session_id: str, exc: BaseException) -> None:
+    log_event("failure", stage=stage, session_id=session_id,
+              exception_type=type(exc).__name__)
+
+
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
@@ -30,6 +57,9 @@ def check_artifacts(config):
 
 
 def self_test(config, session_dir, boot):
+    started = time.monotonic()
+    session_id = config.get("session_id")
+    log_event("self_test.start", session_id=session_id)
     root = Path(config["runtime_root"])
     sys.path.insert(0, str(root / "scripts/wo0015"))
     sys.path.insert(0, str(session_dir / "scripts/wo0015"))
@@ -98,11 +128,15 @@ def self_test(config, session_dir, boot):
         raise RuntimeError("FPGA 自检结果不满足启动条件")
     if preflight.read_boot_id() != boot:
         raise RuntimeError("板卡启动 ID 已变化")
+    log_event("self_test.pass", session_id=session_id,
+              elapsed_ms=round((time.monotonic() - started) * 1000))
 
 
 def run(config, session_dir):
     session_dir = Path(session_dir).resolve(strict=True)
     os.environ["XILINX_XRT"] = "/usr"
+    session_id = config.get("session_id")
+    log_event("process.entry", session_id=session_id, protocol=config.get("protocol"))
     if config["protocol"] == "RLE_PACKET_V1":
         from rle_desktop_board import run_session
 
@@ -130,18 +164,26 @@ def run(config, session_dir):
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError as exc:
+        log_failure("lock.acquire", session_id, exc)
         summary.update(status="FAILED", error="已有桌面采集任务正在运行")
         camera.write_state(status_path, summary)
         os.chmod(status_path, 0o644)
         lock.close()
         raise RuntimeError("已有桌面采集任务正在运行") from exc
+    log_event("lock.acquired", session_id=session_id)
     capture = server = resources = hub = controls = runtime = None
+    stage = "artifacts.check"
     try:
         check_artifacts(config)
+        log_event("artifacts.checked", session_id=session_id)
+        stage = "self_test"
         self_test(config, session_dir, boot)
+        stage = "camera.preflight"
         camera.require_dma_idle_and_error_free(camera.read_dma_statuses())
         memory = camera.startup_memory_snapshot()
         camera.require_preview_memory(memory, calibration_mode=True, startup=True)
+        stage = "camera.open"
+        log_event("camera.open.start", session_id=session_id)
         subprocess.run(["v4l2-ctl", "-d", camera.CAMERA_PATH,
             "--set-fmt-video=width=640,height=400,pixelformat=MJPG", "--set-parm=60",
             "--set-ctrl=auto_exposure=1,exposure_time_absolute=50,brightness=0"],
@@ -151,6 +193,7 @@ def run(config, session_dir):
         capture = cv2.VideoCapture(camera.CAMERA_INDEX, cv2.CAP_V4L2)
         if not capture.isOpened():
             raise RuntimeError("无法打开相机 /dev/video0")
+        log_event("camera.open.success", session_id=session_id)
         settings = [(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG")),
                     (cv2.CAP_PROP_FRAME_WIDTH, 640), (cv2.CAP_PROP_FRAME_HEIGHT, 400),
                     (cv2.CAP_PROP_FPS, 60), (cv2.CAP_PROP_BUFFERSIZE, 1),
@@ -159,6 +202,7 @@ def run(config, session_dir):
             raise RuntimeError("相机拒绝 MJPG 或单帧缓冲配置")
         first = camera.read_frame(capture)
         camera.require_profile(camera.query_v4l2(), "after first frame")
+        log_event("camera.first_frame", session_id=session_id)
         counter = MaskCounter(count_axis="x", line_x=160, hysteresis=15.0,
             line_y=120, roi_half_height=24, min_area=12, max_step=60.0,
             max_lateral_step=10.0, max_area=900, max_bbox_width=85,
@@ -177,6 +221,8 @@ def run(config, session_dir):
         for sig in (signal.SIGINT, signal.SIGTERM):
             signal.signal(sig, lambda *_: runtime.state.stop.set())
         server = DesktopServer(runtime, config["token"], host="0.0.0.0", port=config["board_port"]).start()
+        stage = "http.ready"
+        log_event("http.ready", session_id=session_id, port=config["board_port"])
         summary["status"] = "RUNNING"
         camera.write_state(status_path, summary)
         print("DESKTOP_READY session=" + config["session_id"], flush=True)
@@ -193,6 +239,7 @@ def run(config, session_dir):
         summary.update(status="STOPPED", frames=runtime.frame_id,
                        total_count=runtime.state.snapshot()["dashboard"]["total_count"])
     except BaseException as exc:
+        log_failure(stage, session_id, exc)
         summary.update(status="FAILED", error=f"{type(exc).__name__}: {exc}")
         traceback.print_exc()
         raise
@@ -217,6 +264,9 @@ def run(config, session_dir):
         if os.geteuid() == 0:
             os.chmod(status_path, 0o644)
         lock.close()
+        log_event("cleanup.complete", session_id=session_id,
+                  result=summary.get("status"),
+                  standard_profile_restored=summary.get("standard_profile_restored"))
 
 
 def main():

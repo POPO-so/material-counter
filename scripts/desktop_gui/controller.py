@@ -115,28 +115,77 @@ def connection_error(exc):
     return str(exc)
 
 
-def _ssh(config):
+_SECRET_FIELDS = {"token", "password", "authorization", "auth", "secret",
+                  "private_key", "privatekey", "auth_header"}
+
+
+def _redact_fields(fields):
+    result = {}
+    for key, value in fields.items():
+        if str(key).casefold() in _SECRET_FIELDS:
+            result[key] = "[REDACTED]"
+        elif isinstance(value, dict):
+            result[key] = _redact_fields(value)
+        else:
+            result[key] = value
+    return result
+
+
+def _log_event(event: str, **fields: object) -> None:
+    payload = {"event": event, "pid": os.getpid(), "monotonic": time.monotonic()}
+    payload.update(_redact_fields(fields))
+    logging.info("desktop_event=%s", json.dumps(payload, ensure_ascii=False, default=str))
+
+
+def _ssh(config, *, session_id=None):
+    started = time.monotonic()
+    _log_event("ssh.start", session_id=session_id, host=config["host"], port=22)
     import paramiko
     client = paramiko.SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.RejectPolicy())
-    client.connect(config["host"], username="xilinx", password="xilinx", timeout=8,
-                   look_for_keys=False, allow_agent=False)
+    try:
+        client.connect(config["host"], username="xilinx", password="xilinx", timeout=8,
+                       look_for_keys=False, allow_agent=False)
+    except Exception as exc:
+        _log_event("ssh.failure", session_id=session_id, host=config["host"], port=22,
+                   elapsed_ms=round((time.monotonic() - started) * 1000),
+                   exception_type=type(exc).__name__)
+        raise
+    _log_event("ssh.success", session_id=session_id, host=config["host"], port=22,
+               elapsed_ms=round((time.monotonic() - started) * 1000))
     return client
 
 
-def _request(config, token, method, path, payload=None, timeout=4):
+def _request(config, token, method, path, payload=None, timeout=4, *,
+             expected_session_id=None):
     connection = http.client.HTTPConnection(config["host"], config["board_port"], timeout=timeout)
     body = None if payload is None else json.dumps(payload).encode("utf-8")
     headers = {"Authorization": "Bearer " + token}
     if body is not None:
         headers["Content-Type"] = "application/json"
+    started = time.monotonic()
     try:
         connection.request(method, path, body=body, headers=headers)
         response = connection.getresponse()
         data = json.loads(response.read().decode("utf-8"))
+        actual_session_id = data.get("session_id") if isinstance(data, dict) else None
+        is_status_poll = method == "GET" and path == "/status.json"
+        if (expected_session_id is not None
+                or (response.status != 200 and not is_status_poll)):
+            _log_event(
+                "http.response", method=method, endpoint=path,
+                status=response.status,
+                expected_session_id=expected_session_id,
+                actual_session_id=actual_session_id,
+                session_match=(actual_session_id == expected_session_id)
+                if expected_session_id is not None else None,
+                elapsed_ms=round((time.monotonic() - started) * 1000),
+            )
         if response.status != 200:
             raise RuntimeError(data.get("error", f"HTTP {response.status}"))
+        if expected_session_id is not None and actual_session_id != expected_session_id:
+            raise RuntimeError("HTTP 会话身份不一致")
         return data
     finally:
         connection.close()
@@ -148,8 +197,12 @@ def deploy(config, session_id, token):
     remote_dir = remote_root + "/" + session_id
     if not re.fullmatch(r"[0-9a-f]{32}", session_id):
         raise ValueError("invalid session identity")
-    client = _ssh(config)
+    deploy_started = time.monotonic()
+    _log_event("deploy.start", session_id=session_id, host=config["host"],
+               port=config["board_port"])
+    client = _ssh(config, session_id=session_id)
     try:
+        sftp_started = time.monotonic()
         with client.open_sftp() as sftp:
             try:
                 sftp.mkdir(remote_root, mode=0o700)
@@ -183,6 +236,9 @@ def deploy(config, session_id, token):
             with sftp.open(config_path, "w") as stream:
                 stream.write(json.dumps(remote_config))
             sftp.chmod(config_path, 0o600)
+        _log_event("deploy.sftp_complete", session_id=session_id,
+                   file_count=len(all_files) + 1,
+                   elapsed_ms=round((time.monotonic() - sftp_started) * 1000))
         runner = ("import os,subprocess,sys; f=open(sys.argv[1],'ab',buffering=0); "
                   "p=subprocess.Popen([sys.argv[2],'-u',sys.argv[3],sys.argv[4]], "
                   "stdin=subprocess.DEVNULL,stdout=f,stderr=f,start_new_session=True); print(p.pid)")
@@ -196,14 +252,24 @@ def deploy(config, session_id, token):
         error = stderr.read().decode("utf-8", "replace").strip()
         code = stdout.channel.recv_exit_status()
         if code or not output.isdigit():
+            _log_event("board.launch_failure", session_id=session_id, exit_code=code)
             raise RuntimeError("板端启动命令失败：" + (error or output or str(code)))
-        return remote_dir, int(output)
+        pid = int(output)
+        _log_event("board.launch_result", session_id=session_id, result="started",
+                   board_pid=pid,
+                   elapsed_ms=round((time.monotonic() - deploy_started) * 1000))
+        return remote_dir, pid
+    except Exception as exc:
+        _log_event("deploy.failure", session_id=session_id,
+                   exception_type=type(exc).__name__,
+                   elapsed_ms=round((time.monotonic() - deploy_started) * 1000))
+        raise
     finally:
         client.close()
 
 
 def read_remote_result(config, remote_dir):
-    client = _ssh(config)
+    client = _ssh(config, session_id=PurePosixPath(remote_dir).name)
     try:
         with client.open_sftp() as sftp:
             try:
@@ -224,6 +290,7 @@ class DesktopController:
         self.latest_frame = None
         self.frame_times = deque(maxlen=60)
         self.session = None
+        self._mismatch_log_times = {}
         self.paused = threading.Event()
         self.shutdown = threading.Event()
         self.busy = threading.Lock()
@@ -240,6 +307,20 @@ class DesktopController:
 
     def _status(self, data):
         self.events.put(("status", data))
+
+    def _log_mismatch(self, event, expected_session_id, actual_session_id, **fields):
+        now = time.monotonic()
+        stream = (event, expected_session_id)
+        last_logged_at = self._mismatch_log_times.get(stream)
+        if last_logged_at is not None and now - last_logged_at < 5.0:
+            return
+        self._mismatch_log_times[stream] = now
+        _log_event(
+            event,
+            expected_session_id=expected_session_id,
+            actual_session_id=actual_session_id,
+            **fields,
+        )
 
     def _pump(self):
         if self.shutdown.is_set():
@@ -303,16 +384,27 @@ class DesktopController:
         if self.session is not None:
             raise RuntimeError("本 GUI 已拥有运行任务")
         session_id, token = uuid.uuid4().hex, secrets.token_urlsafe(32)
+        _log_event("gui.start", session_id=session_id, board_host=self.config["host"],
+                   board_port=self.config["board_port"])
         self._message("正在通过 SSH 部署独立桌面服务并验证板卡")
         remote_dir, pid = deploy(self.config, session_id, token)
+        _log_event("board.process_started", session_id=session_id, board_pid=pid)
         self.session = {"id": session_id, "token": token, "dir": remote_dir, "pid": pid}
         deadline = time.monotonic() + 120
         last_result_check = 0
+        last_retry_log = 0
+        readiness_started = time.monotonic()
         while time.monotonic() < deadline:
             try:
-                status = _request(self.config, token, "GET", "/status.json", timeout=2)
+                status = _request(
+                    self.config, token, "GET", "/status.json", timeout=2,
+                    expected_session_id=session_id,
+                )
                 if status.get("session_id") != session_id:
                     raise RuntimeError("端口属于其他任务，不接管")
+                _log_event("readiness.ready", session_id=session_id,
+                           board_pid=pid, result="ready",
+                           elapsed_ms=round((time.monotonic() - readiness_started) * 1000))
                 self.latest_status = status
                 self._status(status)
                 source = status.get("telemetry", {}).get("source")
@@ -321,15 +413,29 @@ class DesktopController:
                 threading.Thread(target=self._poll, args=(session_id,), daemon=True).start()
                 threading.Thread(target=self._receive, args=(session_id,), daemon=True).start()
                 return
-            except (OSError, http.client.HTTPException):
-                pass
+            except (OSError, http.client.HTTPException) as exc:
+                now = time.monotonic()
+                if now - last_retry_log >= 5:
+                    last_retry_log = now
+                    _log_event("readiness.transport_retry", session_id=session_id,
+                               board_pid=pid, exception_type=type(exc).__name__)
+            except RuntimeError as exc:
+                if "HTTP 会话身份不一致" in str(exc):
+                    _log_event("readiness.session_mismatch", session_id=session_id,
+                               board_pid=pid, result="refused")
+                    raise
+                raise
             if time.monotonic() - last_result_check >= 5:
                 last_result_check = time.monotonic()
                 result = read_remote_result(self.config, remote_dir)
                 if result and result.get("status") == "FAILED":
+                    _log_event("board.remote_failure", session_id=session_id,
+                               board_pid=pid, result_status="FAILED")
                     self.session = None
                     raise RuntimeError("板端启动失败：" + result.get("error", "请检查 viewer.log"))
                 if result and result.get("status") == "FAIL_HOLD":
+                    _log_event("board.remote_failure", session_id=session_id,
+                               board_pid=pid, result_status="FAIL_HOLD")
                     raise RuntimeError("DMA 所有权未确认，板端已保留缓冲区；请检查 "
                                        + remote_dir + "/viewer.log，不自动重启")
             time.sleep(0.5)
@@ -343,6 +449,11 @@ class DesktopController:
                 if self.session is not session:
                     break
                 if status.get("session_id") != session_id:
+                    self._log_mismatch(
+                        "status.session_mismatch",
+                        session_id,
+                        status.get("session_id"),
+                    )
                     raise RuntimeError("会话身份不一致")
                 self.latest_status = status
                 self._status(status)
@@ -352,6 +463,8 @@ class DesktopController:
             time.sleep(1.5)
 
     def _receive(self, session_id):
+        first_frame_logged = False
+        last_reconnect_log = 0
         while self.session and self.session["id"] == session_id and not self.shutdown.is_set():
             if self.paused.is_set():
                 time.sleep(0.1)
@@ -362,19 +475,38 @@ class DesktopController:
                 connection.request("GET", "/api/frames", headers={"Authorization": "Bearer " + self.session["token"]})
                 response = connection.getresponse()
                 if response.status != 200:
+                    _log_event("frames.http_failure", session_id=session_id,
+                               endpoint="/api/frames", status=response.status)
                     raise RuntimeError(f"图像连接返回 HTTP {response.status}")
                 last_frame = -1
                 while not self.paused.is_set() and self.session and self.session["id"] == session_id:
                     frame = read_frame(response)
-                    if frame["session_id"] != session_id or frame["frame_id"] <= last_frame:
+                    if frame["session_id"] != session_id:
+                        self._log_mismatch(
+                            "frames.session_mismatch",
+                            session_id,
+                            frame["session_id"],
+                            frame_id=frame["frame_id"],
+                        )
+                        raise RuntimeError("帧会话或序号不一致")
+                    if frame["frame_id"] <= last_frame:
                         raise RuntimeError("帧会话或序号不一致")
                     last_frame = frame["frame_id"]
+                    if not first_frame_logged:
+                        first_frame_logged = True
+                        _log_event("frames.first", session_id=session_id,
+                                   frame_id=last_frame)
                     with self.frame_lock:
                         self.latest_frame = frame
                         self.frame_times.append(time.monotonic())
             except Exception as exc:
                 if not self.paused.is_set() and self.session and self.session["id"] == session_id:
                     self._message("图像连接中断，正在重连：" + connection_error(exc))
+                    now = time.monotonic()
+                    if now - last_reconnect_log >= 5:
+                        last_reconnect_log = now
+                        _log_event("frames.reconnect", session_id=session_id,
+                                   exception_type=type(exc).__name__)
                     time.sleep(1)
             finally:
                 if response is not None:
@@ -396,9 +528,14 @@ class DesktopController:
         if self.session is None:
             return
         session = self.session
+        stop_started = time.monotonic()
+        _log_event("gui.stop.start", session_id=session["id"], board_pid=session["pid"])
         self._message("正在安全停止采集，等待相机释放与结果保存")
         try:
-            status = _request(self.config, session["token"], "GET", "/status.json")
+            status = _request(
+                self.config, session["token"], "GET", "/status.json",
+                expected_session_id=session["id"],
+            )
         except (OSError, http.client.HTTPException):
             result = read_remote_result(self.config, session["dir"])
             if (result and result.get("session_id") == session["id"]
@@ -406,6 +543,8 @@ class DesktopController:
                     and result.get("standard_profile_restored") is True):
                 self.session = None
                 self.latest_status = {}
+                _log_event("gui.stop.complete", session_id=session["id"],
+                           result="stopped", elapsed_ms=round((time.monotonic() - stop_started) * 1000))
                 self._message(f"采集已停止，最终计数 {result.get('total_count', '--')}；结果：{session['dir']}/result.json")
                 return
             raise
@@ -420,6 +559,8 @@ class DesktopController:
                     raise RuntimeError("板端停止未确认：" + json.dumps(result, ensure_ascii=False))
                 self.session = None
                 self.latest_status = {}
+                _log_event("gui.stop.complete", session_id=session["id"],
+                           result="stopped", elapsed_ms=round((time.monotonic() - stop_started) * 1000))
                 self._message(f"采集已停止，最终计数 {result.get('total_count', '--')}；结果：{session['dir']}/result.json")
                 return
             time.sleep(0.5)

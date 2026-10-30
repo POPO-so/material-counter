@@ -1,0 +1,88 @@
+{
+  "schema": "material-counter.current-scaling-local-comparison.v1",
+  "status": "PASS",
+  "scope": "local_current_source_scaling_candidate_only",
+  "board_actions": 0,
+  "G3_release": false,
+  "git_head": "b28e67632da711ea649cf1534d57c8a902822923",
+  "python_version": "3.12.10",
+  "opencv_version": "4.10.0",
+  "numpy_version": "2.3.5",
+  "pillow_version": "12.3.0",
+  "font_path": "C:\\Windows\\Fonts\\msyh.ttc",
+  "font_sha256": "d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f",
+  "runner_path": "scripts/standalone/integrated_run.py",
+  "runner_sha256": "a62194733151dab7ce2f2ce2bf209ab38892ec38ed308d58d4d05f5f1dfa8389",
+  "compositor_path": "scripts/standalone/compositor.py",
+  "compositor_sha256": "68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1",
+  "runner_gray_composer_constructor_ast_calls": 1,
+  "runner_area_constructor_ast_calls": 1,
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "frame_id": 1,
+  "target_shape": [
+    360,
+    576
+  ],
+  "binary_overlay": {
+    "source_line_x": 320,
+    "scaled_x": 288,
+    "overlay_columns_excluded": [
+      285,
+      286,
+      287,
+      288,
+      289,
+      290,
+      291
+    ],
+    "overlay_pixels_excluded": 2520,
+    "note": "Exactly seven columns are excluded from binary comparison; full image is not declared identical."
+  },
+  "comparisons": [
+    {
+      "vector_id": "constant_gray_73",
+      "kind": "gray",
+      "source_path": "scaling-inputs/constant-gray-73.raw",
+      "source_sha256": "aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af",
+      "expected_path": "scaling-expected-candidates/constant-gray-576x360.raw",
+      "expected_sha256": "ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2",
+      "actual_raw": "constant_gray_73.actual.raw",
+      "actual_png": "constant_gray_73.actual.png",
+      "actual_sha256": "ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2",
+      "compared_pixels": 207360,
+      "excluded_overlay_pixels": 0,
+      "differing_pixels": 0,
+      "identical_over_compared_pixels": true
+    },
+    {
+      "vector_id": "gray_ramp_inter_area",
+      "kind": "gray",
+      "source_path": "scaling-inputs/gray-ramp-12.raw",
+      "source_sha256": "87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354",
+      "expected_path": "scaling-expected-candidates/gray-ramp-inter-area-576x360.raw",
+      "expected_sha256": "81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8",
+      "actual_raw": "gray_ramp_inter_area.actual.raw",
+      "actual_png": "gray_ramp_inter_area.actual.png",
+      "actual_sha256": "81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8",
+      "compared_pixels": 207360,
+      "excluded_overlay_pixels": 0,
+      "differing_pixels": 0,
+      "identical_over_compared_pixels": true
+    },
+    {
+      "vector_id": "binary_nearest_rectangle_and_boundary_points",
+      "kind": "binary",
+      "source_path": "scaling-inputs/binary-nearest-rect-points.raw",
+      "source_sha256": "467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263",
+      "expected_path": "scaling-expected-candidates/binary-inter-nearest-576x360.raw",
+      "expected_sha256": "35264c92c0c52e311d0c63a5aea1ed662a78ee4ba9347f5ee2e89ab3588e792b",
+      "actual_raw": "binary_nearest_rectangle_and_boundary_points.actual.raw",
+      "actual_png": "binary_nearest_rectangle_and_boundary_points.actual.png",
+      "actual_sha256": "3dc41d4b46c3bd6787cdd56dba6c69bbe2bd05862d7e5d1ea0720f081c62fbb8",
+      "compared_pixels": 204840,
+      "excluded_overlay_pixels": 2520,
+      "differing_pixels": 0,
+      "identical_over_compared_pixels": true
+    }
+  ]
+}
