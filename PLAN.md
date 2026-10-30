@@ -1,6 +1,6 @@
 # 计数运行链路实施状态
 
-当前脱机集成状态（2026-10-30）：G0/G1/G1.5/G2/G2.5 已通过；G3 只完成固定回放显示开/关一致性及该回放的 30 秒窗口性能子项，完整 G3 未放行；G4 尚无冷启动或有目标脱机验收。Route/接口保持候选，物料准确率未验收。当前证据见 [G2](data/results/standalone-20261030-123000-g2-integration/README.md)、[G2.5](data/results/standalone-20261030-g25-concurrency/README.md)、[G3 部分记录](data/results/standalone-20261030-g3-functional/README.md)。更早段落属于历史阶段快照。
+当前脱机集成状态（2026-10-30）：G0/G1/G1.5/G2/G2.5 已通过；G3 只完成固定回放显示开/关一致性及该回放的 30 秒窗口性能子项，绘图启动故障时计数继续与有界重试代码已补入但未验证；GPIO/HDMI 实机恢复场景仍待后续统一验证，完整 G3 未放行。G4 尚无冷启动或有目标脱机验收。Route/接口保持候选，物料准确率未验收。当前证据见 [G2](data/results/standalone-20261030-123000-g2-integration/README.md)、[G2.5](data/results/standalone-20261030-g25-concurrency/README.md)、[G3 部分记录](data/results/standalone-20261030-g3-functional/README.md)。更早段落属于历史阶段快照。
 
 ## 脱机灰度 HDMI 实施（2026-10-29）
 
@@ -93,3 +93,9 @@
 - 两份 ramp 输出按标准库 `Fraction` 精确计算。AREA 对每列用源覆盖 `[10*j/9,10*(j+1)/9)` 进行精确 overlap 加权平均；LINEAR 在 `(20*j+1)/18` 插值。round-to-nearest ties-to-even 是候选生成舍入约定：LINEAR 列 `j=19` 唯一精确 `252.5` 取 `252`，尚未与 OpenCV 比较，未冻结运行时行为；AREA 576 列无精确 half tie。输出 SHA-256：AREA `81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8`；LINEAR `56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c`。
 - JSON 登记四份候选输出的源路径/SHA、公式、舍入约定、C row-major uint8、shape、字节数和输出 SHA。四份都不是 compositor 实测或黄金证据；没有 PNG、compositor comparison 或 runner hash 绑定。灰度策略未冻结，状态 `candidate_unexecuted`，G3 未放行。
 - 本次只运行候选生成器并进行静态文件长度、SHA-256、JSON 绑定、首行前九列与 JSON 手算值核对；未运行测试、compositor、PNG 比较、仿真、构建或板端任务。
+
+## G3 绘图启动失败恢复代码（2026-10-30；未验证）
+
+- `scripts/standalone/integrated_run.py` 现在捕获绘图子进程创建或启动异常，记录 `drawing_start_failed`、当前帧、错误和 monotonic 时间，并在确定没有子进程启动时保持 `process=None`；每次失败后等待 5 秒再重试。
+- 主循环可从 `process=None` 恢复；仅在确认旧子进程已退出后 join/reclaim 其共享帧 lease。绘图子进程不可用时跳过预览发布，RLE transfer 与 `advance_count` 仍按原流程进行；VideoPump/HDMI 按既有生命周期清理。
+- 本次按要求未运行检查、测试、仿真、构建或板端任务。实现尚未验证；GPIO/HDMI 实机恢复场景仍待统一验证，G3 未放行。
