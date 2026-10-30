@@ -606,6 +606,8 @@ class DesktopWindow(QMainWindow):
             if key == "tracks" and not tracks:
                 continue
             for item in result.get(key, []) if isinstance(result.get(key), list) else ():
+                if key == "tracks" and _mapping(item).get("finished") is True:
+                    continue
                 box = _box_from_item(item)
                 if box:
                     bounds = self._scale_box(box, width, height)

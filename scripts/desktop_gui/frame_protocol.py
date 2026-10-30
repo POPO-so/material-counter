@@ -251,6 +251,7 @@ class LatestFrameHub:
         self._condition = threading.Condition()
         self._seq = 0
         self._encoded = None
+        self._metadata_size = None
         self._client_count = 0
         self._closed = False
 
@@ -259,14 +260,24 @@ class LatestFrameHub:
         with self._condition:
             return self._client_count
 
+    @property
+    def latest_metadata_size(self):
+        """Byte length of the most recently published JSON metadata block."""
+        with self._condition:
+            return self._metadata_size
+
     def publish(self, frame):
         """Serialize immediately, then replace the only retained frame snapshot."""
         encoded = pack_frame(frame)
+        version = struct.unpack_from("!H", encoded, 4)[0]
+        metadata_offset = 8 if version == LEGACY_VERSION else 12
+        metadata_size = struct.unpack_from("!I", encoded, metadata_offset)[0]
         with self._condition:
             if self._closed:
                 raise RuntimeError("frame hub is closed")
             self._seq += 1
             self._encoded = encoded
+            self._metadata_size = metadata_size
             self._condition.notify_all()
             return self._seq
 

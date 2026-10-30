@@ -162,6 +162,42 @@ def test_preview_projection_metadata_does_not_require_recursive_copy():
     assert frame["result"]["row_projection"] == [0] * 400
 
 
+def test_preview_metadata_is_bounded_and_reports_truncated_counts():
+    from frame_protocol import MAX_METADATA_SIZE, read_frame
+    import io
+
+    counter = FakeCounter()
+    original = counter.update_rle
+    def crowded(*args, **kwargs):
+        result = original(*args, **kwargs)
+        detections = tuple(Detection(i, i + 3, 20, 23, 16, i + 1.5, 21.5)
+                           for i in range(1800))
+        tracks = tuple({"track_id": i, "finished": False, "detection": vars(detections[i])}
+                       for i in range(1800))
+        events = tuple(SimpleNamespace(track_id=i, frame_id=0, centroid_x=float(i),
+                                       centroid_y=1.0, inferred_gap=False)
+                       for i in range(1800))
+        return replace(result, detections=detections, tracks=tracks, events=events,
+                       raw_detections=detections, suppressed_events=events)
+    counter.update_rle = crowded
+    hub = LatestFrameHub()
+    runtime = RleDesktopRuntime("crowded-preview", counter, FakeTransport(), hub)
+    with hub.client():
+        runtime.process_frame(np.zeros((400, 640), np.uint8))
+    _, packet = hub.wait_next(0, 0)
+    assert hub.latest_metadata_size <= MAX_METADATA_SIZE
+    metadata = read_frame(io.BytesIO(packet))["result"]
+    assert metadata["detection_count"] == 1800
+    assert metadata["detections_truncated"] is True
+    assert metadata["track_count"] == 1800
+    assert metadata["tracks_truncated"] is True
+    assert metadata["event_count"] == 1800
+    assert metadata["events_truncated"] is True
+    assert "raw_detections" not in metadata
+    assert "suppressed_events" not in metadata
+    hub.close()
+
+
 def test_self_test_timeout_reports_uncertain_hardware_ownership(tmp_path, monkeypatch):
     import board_entry
     preflight = SimpleNamespace(
@@ -235,3 +271,50 @@ def test_runtime_heartbeat_due_at_sixty_seconds():
 
     assert heartbeat_due(159.9, 100.0) is False
     assert heartbeat_due(160.0, 100.0) is True
+
+
+def test_rle_counter_factory_discards_finished_tracks():
+    import rle_desktop_board
+
+    captured = {}
+    class CounterFactory:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+    factory = getattr(rle_desktop_board, "create_rle_counter", None)
+    assert callable(factory), "desktop counter factory must be defined"
+    factory(CounterFactory, library="components.so")
+    assert captured["discard_finished_tracks"] is True
+
+
+def test_runtime_heartbeat_reports_counts_metadata_and_stage_times(capsys):
+    class AlwaysSubscribedHub(LatestFrameHub):
+        @property
+        def client_count(self):
+            return 1
+
+    hub = AlwaysSubscribedHub()
+    counter = FakeCounter()
+    original = counter.update_rle
+    counter.update_rle = lambda *a, **kw: replace(original(*a, **kw), tracks=(
+        {"track_id": 1, "finished": False},
+        {"track_id": 2, "finished": True},
+    ))
+    runtime = RleDesktopRuntime(
+        "session-heartbeat", counter, FakeTransport(), hub,
+    )
+    runtime.clock = lambda: 120.0
+    runtime.process_frame(np.zeros((400, 640), np.uint8))
+    runtime.last_heartbeat_at = 0.0
+    runtime.process_frame(np.zeros((400, 640), np.uint8))
+
+    events = [json.loads(line.removeprefix("DESKTOP_EVENT "))
+              for line in capsys.readouterr().out.splitlines()]
+    heartbeat = next(event for event in events if event["event"] == "runtime.heartbeat")
+    assert heartbeat["detection_count"] == 1
+    assert heartbeat["active_tracks"] == 1
+    assert heartbeat["finished_tracks"] == 1
+    assert heartbeat["metadata_bytes"] > 0
+    assert set(heartbeat["stage_ms"]) >= {
+        "capture_ms", "dma_ms", "regions_tracking_ms", "monitor_preview_ms"
+    }
