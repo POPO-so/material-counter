@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Fri Oct 30 06:51:03 2026
+# Process ID         : 39628
+# Current directory  : C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim
+# Command line       : xsim.exe -log roi-sim.log -mode tcl -source {xsim.dir/rle_pipeline/xsim_script.tcl}
+# Log file           : C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/roi-sim.log
+# Journal file       : C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 12671 MB
+#-----------------------------------------------------------
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/roi-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/roi-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/roi-actual.hex -testplusarg WORDS=635 -testplusarg MORPH=0 -testplusarg OFFSET=10 -testplusarg X0=10 -testplusarg Y0=5 -testplusarg X1=630 -testplusarg Y1=399 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=635 cycles=257496
+$finish called at time : 5150010 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:06 2026...

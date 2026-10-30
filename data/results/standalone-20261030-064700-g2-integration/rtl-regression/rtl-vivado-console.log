@@ -1,0 +1,205 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:50:45 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source C:/w/mc-g2/scripts/rle/run_sim.tcl
+# set root [file normalize [file join [file dirname [info script]] ../..]]
+# if {![info exists ::env(RLE_OUT)]} {error "Set RLE_OUT to a new evidence directory"}
+# set work [file normalize [file join $::env(RLE_OUT) xsim]]
+# file mkdir $work
+# set bin [file dirname [info nameofexecutable]]
+# cd $work
+# set sources [list [file join $root fpga experimental rle axis_rle_encoder.v] \
+#     [file join $root fpga experimental gray8 axis_dma_gray_adapter.v] \
+#     [file join $root fpga rtl axis_morphology3x3.v] \
+#     [file join $root fpga experimental rle axis_dma_rle_pipeline_bd.v] \
+#     [file join $root fpga sim rle tb_axis_rle_encoder.sv] \
+#     [file join $root fpga sim rle tb_axis_rle_pipeline.sv]]
+# exec [file join $bin xvlog.exe] -sv {*}$sources -log compile.log
+# exec [file join $bin xelab.exe] tb_axis_rle_encoder -s rle_encoder -log elaborate.log
+# set result [exec [file join $bin xsim.exe] rle_encoder -R -log sim.log]
+# puts $result
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:50:56 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_encoder/xsim_script.tcl
+# xsim {rle_encoder} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_ENCODER_PASS frames=4
+$finish called at time : 6820 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_encoder.sv" Line 81
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:50:58 2026...
+# if {[string match {*Fatal:*} $result] || ![string match {*RLE_ENCODER_PASS*} $result]} {
+#     error "RLE encoder simulation failed"
+# }
+# exec [file join $bin xelab.exe] tb_axis_rle_pipeline -s rle_pipeline -log pipeline-elaborate.log
+# set vectors [file normalize [file join $::env(RLE_OUT) vectors]]
+# set stream [open [file join $vectors cases.txt] r]
+# set cases [split [string trim [read $stream]] "\n"]
+# close $stream
+# foreach line $cases {
+#     lassign $line name words mode offset x0 y0 x1 y1
+#     set result [exec [file join $bin xsim.exe] rle_pipeline -R -log ${name}-sim.log \
+#         -testplusarg INPUT=[file join $vectors ${name}-input.hex] \
+#         -testplusarg EXPECTED=[file join $vectors ${name}-expected.hex] \
+#         -testplusarg OUTPUT=[file join $work ${name}-actual.hex] \
+#         -testplusarg WORDS=$words -testplusarg MORPH=$mode -testplusarg OFFSET=$offset \
+#         -testplusarg X0=$x0 -testplusarg Y0=$y0 -testplusarg X1=$x1 -testplusarg Y1=$y1]
+#     puts $result
+#     if {[string match {*Fatal:*} $result] || ![string match {*RLE_PIPELINE_640X400_PASS*} $result]} {
+#         error "RLE full-resolution simulation failed: $name"
+#     }
+# }
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:51:01 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/baseline-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/baseline-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/baseline-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=637 cycles=257496
+$finish called at time : 5150010 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:03 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:51:04 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/roi-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/roi-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/roi-actual.hex -testplusarg WORDS=635 -testplusarg MORPH=0 -testplusarg OFFSET=10 -testplusarg X0=10 -testplusarg Y0=5 -testplusarg X1=630 -testplusarg Y1=399 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=635 cycles=257496
+$finish called at time : 5150010 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:06 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:51:06 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/erode-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/erode-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/erode-actual.hex -testplusarg WORDS=631 -testplusarg MORPH=1 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=631 cycles=513201
+$finish called at time : 10264110 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:09 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:51:09 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/dilate-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/dilate-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/dilate-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=2 -testplusarg OFFSET=0 -testplusarg X0=10 -testplusarg Y0=5 -testplusarg X1=630 -testplusarg Y1=399 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=637 cycles=513208
+$finish called at time : 10264250 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:12 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:51:12 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/empty-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/empty-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/empty-actual.hex -testplusarg WORDS=552 -testplusarg MORPH=0 -testplusarg OFFSET=-255 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=552 cycles=257430
+$finish called at time : 5148690 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:14 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:51:15 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/overflow-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/overflow-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/overflow-actual.hex -testplusarg WORDS=16936 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=16936 cycles=269717
+$finish called at time : 5394430 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:17 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:51:17 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/bad_checksum-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/bad_checksum-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/bad_checksum-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=637 cycles=257496
+$finish called at time : 5150010 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:20 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 06:51:20 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/bad_header-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/bad_header-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/bad_header-actual.hex -testplusarg WORDS=552 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=552 cycles=137184
+$finish called at time : 2743780 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:22 2026...
+# puts "RLE_XSIM_ALL_PASS cases=[llength $cases]"
+RLE_XSIM_ALL_PASS cases=8
+INFO: [Common 17-206] Exiting Vivado at Fri Oct 30 06:51:22 2026...

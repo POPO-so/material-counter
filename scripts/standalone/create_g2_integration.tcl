@@ -124,6 +124,9 @@ if {$g2_dry_run} {
     set ::env(DISPLAY_OUT) $g2_out
     set ::env(DISPLAY_NATIVE_LOG) [file join $g2_out vivado-native.log]
     set ::env(DISPLAY_TAG) g2-integrated
+    # ipcfg::capture snapshots this file before the first BD mutation.
+    set native_log_channel [open $::env(DISPLAY_NATIVE_LOG) {WRONLY CREAT EXCL}]
+    close $native_log_channel
     source $g2_display_tcl
 
     current_bd_design display
