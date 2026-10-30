@@ -76,7 +76,7 @@ def test_render_preserves_fixed_geometry_scaling_padding_and_binary_values():
     session = uuid.uuid4()
     gray = np.full((400, 640), 100, dtype=np.uint8)
     binary = np.zeros((400, 640), dtype=np.uint8)
-    binary[100, 100] = 255
+    binary[20:23, 10:13] = 255
 
     canvas = composer.render(gray, binary, session, 8, boxes=((10, 20, 12, 22),), line_x=320)
 
