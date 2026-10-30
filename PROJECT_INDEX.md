@@ -73,4 +73,6 @@ G4 代码阶段新增 [release_stage.py](scripts/standalone/release_stage.py)，
 
 部署前只读基线采集入口 [release_baseline.py](scripts/standalone/release_baseline.py) 已写、未运行；它记录系统文件、服务和进程现状，但不证明硬件资源已安全释放，也不激活 G4。相关边界见[部署说明](scripts/standalone/DEPLOYMENT.md)。
 
+G4 启动锁交接代码已在 [boot_integrated.py](scripts/standalone/boot_integrated.py) 与 [integrated_run.py](scripts/standalone/integrated_run.py) 修改：开机初始化到运行器间持续持有同一组锁，并校验继承描述符与当前锁文件 inode 一致。未运行验证，候选包源码及索引尚待刷新，G3/G4 未放行。
+
 初次清单 ID 预检失败记录 [command JSON](data/results/standalone-20261030-g3-functional/scaling-current-20261031-command.json) 保留。修复后比较报告 [comparison.json](data/results/standalone-20261030-g3-functional/scaling-current-20261031/comparison.json) 为 `status=PASS`、退出码 0，绑定 HEAD `b28e67632da711ea649cf1534d57c8a902822923`、runner SHA-256 `a62194733151dab7ce2f2ce2bf209ab38892ec38ed308d58d4d05f5f1dfa8389`、compositor SHA-256 `68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1`；环境为 CPython 3.12.10、OpenCV 4.10.0、NumPy 2.3.5、Pillow 12.3.0。常量灰度和 AREA ramp 各 207360 像素全匹配；binary nearest 排除 2520 个遮挡像素后 204840 像素全匹配。actual raw/PNG 和重跑命令记录分别见[输出目录](data/results/standalone-20261030-g3-functional/scaling-current-20261031/)与[rerun command JSON](data/results/standalone-20261030-g3-functional/scaling-current-20261031-rerun-command.json)。这是本地当前源码缩放候选比较，不是板端黄金/HDMI 验收，不勾选 G3 Task 4，灰度策略仍未冻结；实物 GPIO、HDMI、真实目标与人工真值仍缺，G3 未放行。

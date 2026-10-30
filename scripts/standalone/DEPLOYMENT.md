@@ -21,6 +21,7 @@
 以下实现是候选入口，尚未完成板端安装、启动或冷启动验收：
 
 - `scripts/standalone/boot_integrated.py`：校验部署包、包源码清单和运行时文件，对照 `board-runtime.json` 做 Python/平台/发行包版本准入，再读取 `boot-config.json` 并按启动策略初始化后进入运行入口；兼容性比对不安装依赖或证明依赖闭包。该文件自身不生成部署包或 index。
+- 开机入口与集成运行器之间的两把 owner 文件锁现通过可继承描述符跨 `exec` 交接；运行器检查锁文件身份并接管，直接启动运行器时仍按原路径获取锁。此项仅完成代码修改，尚未执行验证；候选包内对应源码与索引还须在代码阶段统一刷新。
 - `scripts/standalone/boot_policy.py`：候选启动策略模块。
 - `scripts/standalone/delivery.py`：除既有完整性验证外，当前有 `--build-index` 候选命令，可对**已组装**目录生成并复核 `deployment-index.json`；验证包内 `package-source.json` 的应用模块列表与索引中的 Python 源文件集合一致。它不收集/复制依赖，也不会安装文件或写入板端环境变量。
 - `scripts/standalone/release_stage.py`：把已组装且索引摘要由调用者固定的候选包复制到一个全新的本地目录，复制前后运行包完整性核验。只创建目标目录内的文件；不安装 systemd 单元或环境文件、不切换 `current`、不启动服务。代码尚未执行验证，不能据此宣称 G4 部署或离线依赖闭包已完成。

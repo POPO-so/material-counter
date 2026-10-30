@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import queue
 import signal
+import stat
 import sys
 import threading
 import time
@@ -195,6 +196,8 @@ def main(argv=None):
     parser.add_argument('--freeze-telemetry-at-frame',type=int,help='test staleness without stopping safety checks')
     parser.add_argument('--font',default='/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf')
     parser.add_argument('--latin-font',default='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
+    parser.add_argument('--inherited-lock-fds',nargs=2,type=int,metavar=('DESKTOP_FD','STANDALONE_FD'),
+        help=argparse.SUPPRESS)
     args=parser.parse_args(argv)
     if not args.execute or not 1<=args.duration<=7200 or not 1<=args.frames<=200000 or (args.continuous and args.source!='camera'):
         parser.error('requires execute, duration 1..7200 and frames 1..200000')
@@ -217,8 +220,39 @@ def main(argv=None):
     if boot!=args.boot_id:raise RuntimeError('boot changed')
     import fcntl
     locks=[]
-    for name in ('/tmp/material-counter-desktop.lock','/run/material-standalone.lock'):
-        stream=open(name,'a');fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB);locks.append(stream)
+    if args.inherited_lock_fds is None:
+        for name in ('/tmp/material-counter-desktop.lock','/run/material-standalone.lock'):
+            stream=open(name,'a');fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB);locks.append(stream)
+    else:
+        inherited_fds=args.inherited_lock_fds
+        try:
+            if any(fd<=0 for fd in inherited_fds) or inherited_fds[0]==inherited_fds[1]:
+                raise ValueError('inherited lock fds must be distinct positive integers')
+            expected_paths=('/tmp/material-counter-desktop.lock','/run/material-standalone.lock')
+            for fd,name in zip(inherited_fds,expected_paths):
+                descriptor=os.fstat(fd)
+                if not stat.S_ISREG(descriptor.st_mode):
+                    raise ValueError('inherited lock fd is not a regular file')
+                actual=os.path.realpath('/proc/self/fd/{}'.format(fd))
+                if actual!=os.path.realpath(name):
+                    raise ValueError('inherited lock fd does not refer to the expected lock file')
+                current=os.stat(name)
+                if (descriptor.st_dev,descriptor.st_ino)!=(current.st_dev,current.st_ino):
+                    raise ValueError('inherited lock file was replaced before runner admission')
+                fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+                stream=os.fdopen(fd,'a')
+                locks.append(stream)
+                os.set_inheritable(fd,False)
+        except BaseException:
+            owned={stream.fileno() for stream in locks if not stream.closed}
+            for stream in locks:
+                try:stream.close()
+                except OSError:pass
+            for fd in inherited_fds:
+                if fd not in owned:
+                    try:os.close(fd)
+                    except OSError:pass
+            raise
     import pynq
     from pynq import MMIO,allocate
     files['digest']=sha256(files['bit'])
