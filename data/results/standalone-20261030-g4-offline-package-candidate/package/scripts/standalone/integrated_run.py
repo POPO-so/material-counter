@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import argparse
 from collections import deque
+import hashlib
 import json
 import multiprocessing as mp
 import os
 from pathlib import Path
 import queue
 import signal
+import sys
 import time
 import uuid
 
@@ -54,6 +56,75 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
         boxes=[[d.x_min,d.y_min,d.x_max,d.y_max] for d in result.detections[:128]],
         tracks=[['{}:{}'.format(trajectory_epoch,t['track_id']),int(t['detection']['centroid_x']),
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
+
+
+def start_drawing_child(ctx, inputs, outputs, errors, counters, font, latin_font):
+    """Start the drawing worker and retain a child that acquired a PID on error."""
+    stop = None
+    child = None
+    try:
+        stop = ctx.Event()
+        child = ctx.Process(
+            target=drawing_process,
+            args=(inputs, outputs, stop, errors, counters, font, latin_font),
+        )
+        child.start()
+        return child, stop, None
+    except Exception as error:
+        # A failed Process.start() may still leave a live child if the platform
+        # raised after launching it. Keep that handle so the owner can join it.
+        if child is not None and child.pid is not None:
+            return child, stop, error
+        if child is not None:
+            try:
+                child.close()
+            except (ValueError, AssertionError):
+                pass
+        return None, None, error
+
+
+def source_identity(project_root):
+    root=Path(project_root).resolve()
+    scoped_roots=tuple((root/relative).resolve() for relative in
+        ('scripts/standalone','scripts/rle','scripts/wo0015'))
+    sources={}
+    errors=[]
+
+    def is_test_source(path):
+        parts=tuple(part.lower() for part in path.parts)
+        name=path.name.lower()
+        return 'tests' in parts or name.startswith('test_') or name.endswith('_test.py')
+
+    candidates={Path(__file__).resolve()}
+    for module in list(sys.modules.values()):
+        module_path=getattr(module,'__file__',None)
+        if not module_path:
+            continue
+        try:
+            path=Path(module_path).resolve()
+            relative=path.relative_to(root)
+        except (OSError,ValueError):
+            continue
+        if path.suffix.lower()!='.py' or is_test_source(relative):
+            continue
+        if any(path==directory or directory in path.parents for directory in scoped_roots):
+            candidates.add(path)
+
+    for path in sorted(candidates,key=lambda item:item.as_posix()):
+        try:
+            relative=path.relative_to(root).as_posix()
+            sources[relative]=sha256(path)
+        except Exception as error:
+            try:
+                relative=path.relative_to(root).as_posix()
+            except ValueError:
+                relative=path.as_posix()
+            errors.append(dict(path=relative,error=repr(error)))
+    canonical=json.dumps(sources,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode('utf-8')
+    return dict(schema='material-counter.project-source-identity.v1',sha256_by_path=sources,
+        digest=hashlib.sha256(canonical).hexdigest(),file_count=len(sources),
+        scope='Project-local Python sources under scripts/standalone, scripts/rle, and scripts/wo0015 that are loaded in sys.modules, plus this integrated_run.py; tests and paths outside the project root are excluded. This does not identify dependencies, ABI, or bitstreams.',
+        complete=not errors,errors=errors)
 
 
 def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
@@ -191,6 +262,7 @@ def main(argv=None):
         transport=RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,hw.overlay.axi_dma_0.recvchannel,dma,control,tx,rx)
         if pipeline['state']['done_seen']:transport._completed_frames=1
         counter=make_runtime_counter(args.native_lib)
+        report['source_identity']=source_identity(Path(__file__).resolve().parents[2])
         trace=TraceBuffer();report['frame_trace']=trace.frames
         if args.startup_record:
             try:
@@ -202,16 +274,19 @@ def main(argv=None):
             except OSError as error:
                 report['recoveries'].append(dict(kind='startup_record',error=repr(error),monotonic=time.monotonic()))
         binary=np.empty((400,640),np.uint8)
+        next_drawing_retry=0
         if args.display=='on':
             inputs=PreviewInputs.create(ctx);outputs=SharedFrames.create(ctx)
-            def start_drawing():
-                nonlocal process,stop_drawing
-                stop_drawing=ctx.Event()
-                process=ctx.Process(target=drawing_process,args=(inputs,outputs,stop_drawing,
-                    drawing_errors,drawing_counts,args.font,args.latin_font))
-                process.start()
-                report['drawing_pid']=process.pid
-            start_drawing()
+            def start_drawing(frame):
+                nonlocal process,stop_drawing,next_drawing_retry
+                process,stop_drawing,error=start_drawing_child(ctx,inputs,outputs,
+                    drawing_errors,drawing_counts,args.font,args.latin_font)
+                report['drawing_pid']=process.pid if process is not None else None
+                if error is not None:
+                    failed_at=time.monotonic()
+                    report['recoveries'].append(dict(kind='drawing_start_failed',frame=frame,
+                        error=repr(error),monotonic=failed_at))
+                    next_drawing_retry=failed_at+5
             video_pump=VideoPump(outputs,hw,video_owner,session)
         else:video_owner.call(hw.hdmi.close,timeout=3)
         if args.source=='camera':camera=LatestCamera(args.camera)
@@ -266,20 +341,22 @@ def main(argv=None):
                     fps=(index-last_performance_index)/(now-last_performance) if last_performance else 0
                     cache.record('performance',dict(processing_fps=fps,processed=index,**last_rle_stats),2,time.monotonic())
                     last_performance=now;last_performance_index=index
-            if args.display=='on' and not process.is_alive() and now>=next_drawing_retry:
-                process.join(timeout=0)
-                # Only the confirmed dead child held these leases. CMA remains
-                # with the owner and HDMI keeps scanning throughout recovery.
-                for slot,state in enumerate(inputs.statuses()):
-                    if state==READING:inputs._frames.reclaim_reader(slot,dead_consumer=True)
-                for slot,state in enumerate(outputs.statuses()):
-                    if state==WRITING:outputs.reclaim_writer(slot,dead_producer=True)
-                report['recoveries'].append(dict(kind='drawing',frame=index,exitcode=process.exitcode,monotonic=now))
-                process.close()
-                try:drawing_errors.get_nowait()
-                except queue.Empty:pass
-                start_drawing()
-                next_drawing_retry=now+5
+            if args.display=='on' and (process is None or not process.is_alive()) and now>=next_drawing_retry:
+                if process is not None:
+                    process.join(timeout=0)
+                    # Only a confirmed dead child held these leases. CMA remains
+                    # with the owner and HDMI keeps scanning throughout recovery.
+                    for slot,state in enumerate(inputs.statuses()):
+                        if state==READING:inputs._frames.reclaim_reader(slot,dead_consumer=True)
+                    for slot,state in enumerate(outputs.statuses()):
+                        if state==WRITING:outputs.reclaim_writer(slot,dead_producer=True)
+                    report['recoveries'].append(dict(kind='drawing',frame=index,exitcode=process.exitcode,monotonic=now))
+                    process.close()
+                    process=None
+                    try:drawing_errors.get_nowait()
+                    except queue.Empty:pass
+                start_drawing(index)
+                next_drawing_retry=time.monotonic()+5
             if args.source=='camera':
                 if camera is None:
                     if now<next_camera_retry:time.sleep(.01);continue
@@ -352,16 +429,19 @@ def main(argv=None):
                         if rails:metadata['status_lines'].append('INT {} / AUX {} / BRAM {} V'.format(rail_text('vccint'),rail_text('vccaux'),rail_text('vccbram')))
                         if performance:metadata['status_lines'].append('RLE {} runs / DMA {} B'.format(performance['value']['runs'],performance['value']['rx_bytes']))
                     last_gray=gray;last_metadata=metadata;last_valid_id=index
-                    if inputs.publish(gray,binary,session,index,metadata):published+=1
+                    if process is not None and process.is_alive():
+                        if inputs.publish(gray,binary,session,index,metadata):published+=1
+                        else:dropped+=1
                     else:dropped+=1
                     stages['publish_ms'].append((time.monotonic()-count_end)*1000)
             elif inputs is not None and last_gray is not None:
                 fault=dict(last_metadata);fault['status_lines']=['RLE帧无效 / 本帧拒计','累计 {}'.format(counter.total_count)]
-                inputs.publish(last_gray,binary,session,last_valid_id,fault)
+                if process is not None and process.is_alive():
+                    inputs.publish(last_gray,binary,session,last_valid_id,fault)
             index+=1
             if args.display=='on':
                 submitted=video_pump.submitted
-                if args.inject_drawing_exit is not None and index>=args.inject_drawing_exit and not injection_done:
+                if process is not None and args.inject_drawing_exit is not None and index>=args.inject_drawing_exit and not injection_done:
                     stop_drawing.set();injection_done=True
             if time.monotonic()-last_sample>=2:
                 sample_time=time.monotonic();cpu=_parse_proc_stat(Path('/proc/stat').read_text())
@@ -387,6 +467,7 @@ def main(argv=None):
                 if state==READING:inputs._frames.reclaim_reader(slot,dead_consumer=True)
             for slot,state in enumerate(outputs.statuses()):
                 if state==WRITING:outputs.reclaim_writer(slot,dead_producer=True)
+        if args.display=='on' and video_pump is not None:
             video_pump.request_stop()
             if not video_pump.join(3):display_held=True
             if video_pump.state==DISPLAY_FAIL_HOLD:display_held=True
