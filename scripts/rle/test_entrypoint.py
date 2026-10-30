@@ -1,9 +1,55 @@
+import hashlib
 import json
 from pathlib import Path
 import sys
 import numpy as np
 import pytest
 from scripts.rle.run_counter import main, synthetic_frames, golden_mask, decode_camera_frame
+
+
+def _pynq_state_for_bit(bit_path, status='GLOBAL_STATE_PRESENT'):
+    contents = bit_path.read_bytes()
+    return {
+        'pl_state_status': status,
+        'loaded_bit_path': str(bit_path),
+        'loaded_bit_sha1': hashlib.sha1(contents).hexdigest(),
+        'loaded_bit_sha256': hashlib.sha256(contents).hexdigest(),
+    }
+
+
+def test_preload_dma_check_is_skipped_for_verified_other_bitstream(tmp_path):
+    from scripts.rle.run_counter import should_check_preload_dma
+
+    loaded_bit = tmp_path / 'base.bit'
+    loaded_bit.write_bytes(b'verified other bitstream')
+    expected_hash = hashlib.sha256(b'pinned RLE bitstream').hexdigest()
+    assert not should_check_preload_dma(_pynq_state_for_bit(loaded_bit), expected_hash)
+
+
+def test_preload_dma_check_is_kept_for_expected_bitstream_and_cold_boot(tmp_path):
+    from scripts.rle.run_counter import should_check_preload_dma
+
+    expected_bit = tmp_path / 'rle.bit'
+    expected_bit.write_bytes(b'pinned RLE bitstream')
+    expected_hash = hashlib.sha256(expected_bit.read_bytes()).hexdigest()
+    assert should_check_preload_dma(_pynq_state_for_bit(expected_bit), expected_hash)
+    assert not should_check_preload_dma({
+        'pl_state_status': 'COLD_BOOT_NO_GLOBAL_STATE',
+        'loaded_bit_path': None,
+        'loaded_bit_sha1': None,
+        'loaded_bit_sha256': None,
+    }, expected_hash)
+
+
+def test_preload_dma_check_rejects_unverified_loaded_bit_metadata(tmp_path):
+    from scripts.rle.run_counter import should_check_preload_dma
+
+    loaded_bit = tmp_path / 'base.bit'
+    loaded_bit.write_bytes(b'actual bitstream')
+    state = _pynq_state_for_bit(loaded_bit)
+    state['loaded_bit_sha1'] = '0' * 40
+    with pytest.raises(RuntimeError, match='hashes do not match'):
+        should_check_preload_dma(state, hashlib.sha256(b'RLE bitstream').hexdigest())
 
 
 def test_offline_end_to_end_counter_and_overflow(tmp_path):

@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse
 from dataclasses import asdict
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -55,6 +56,28 @@ def decode_camera_frame(raw):
     if gray is None or gray.dtype!=np.uint8 or gray.shape!=(HEIGHT,WIDTH):
         raise ValueError("camera JPEG must decode directly to 640x400 Gray8")
     return gray
+
+
+def should_check_preload_dma(pynq_state, expected_bit_sha256):
+    """Check RLE DMA before load only when the pinned RLE BIT is already loaded."""
+    status = pynq_state.get('pl_state_status')
+    if status == 'COLD_BOOT_NO_GLOBAL_STATE':
+        return False
+    if status != 'GLOBAL_STATE_PRESENT':
+        raise RuntimeError('PYNQ global state does not establish the loaded BIT identity')
+    loaded_path = pynq_state.get('loaded_bit_path')
+    loaded_sha1 = pynq_state.get('loaded_bit_sha1')
+    loaded_sha256 = pynq_state.get('loaded_bit_sha256')
+    if not loaded_path or not isinstance(loaded_sha1, str) or not isinstance(loaded_sha256, str):
+        raise RuntimeError('PYNQ global state does not establish a verified loaded BIT')
+    path = Path(loaded_path)
+    if not path.is_file():
+        raise RuntimeError('PYNQ global state loaded BIT file is unavailable for verification')
+    contents = path.read_bytes()
+    if (hashlib.sha1(contents).hexdigest() != loaded_sha1.lower() or
+            hashlib.sha256(contents).hexdigest() != loaded_sha256.lower()):
+        raise RuntimeError('PYNQ global state BIT hashes do not match its loaded BIT file')
+    return loaded_sha256.lower() == expected_bit_sha256.lower()
 
 
 def camera_frames(device,count):
@@ -136,13 +159,21 @@ def main(argv=None):
             import pynq
             from pynq import Overlay,MMIO,allocate
             bit=args.manifest.resolve().parent/manifest['bit_path']
-            preflight.inspect_pynq_global_state(pynq.__file__,require_empty_shutdown=True,require_loaded_bit=False)
-            # Refuse to overwrite an active DMA transfer, even when reloading.
-            before=MMIO(manifest['dma_base'],0x10000)
-            before_status=[int(before.read(v)) for v in (0x04,0x34)]
-            if any(v&0x770 or not v&3 for v in before_status):
-                raise RuntimeError('existing DMA is active or faulty before overlay load')
-            overlay=Overlay(str(bit),download=args.load_overlay)
+            before_state=preflight.inspect_pynq_global_state(
+                pynq.__file__,require_empty_shutdown=True,require_loaded_bit=False)
+            expected_bit_loaded=should_check_preload_dma(before_state,manifest['bit_sha256'])
+            if expected_bit_loaded:
+                # Refuse to overwrite an active DMA transfer on the known RLE overlay.
+                before=MMIO(manifest['dma_base'],0x10000)
+                before_status=[int(before.read(v)) for v in (0x04,0x34)]
+                if any(v&0x770 or not v&3 for v in before_status):
+                    raise RuntimeError('existing DMA is active or faulty before overlay load')
+            # A cold boot or verified different BIT has no RLE DMA register map;
+            # explicitly load the pinned RLE artifact before touching its registers.
+            bit_path_matches=(before_state.get('loaded_bit_path') is not None and
+                Path(before_state['loaded_bit_path']).resolve()==bit.resolve())
+            overlay=Overlay(str(bit),download=(args.load_overlay or not expected_bit_loaded or
+                not bit_path_matches))
             report['overlay']=preflight.inspect_pynq_global_state(pynq.__file__,require_empty_shutdown=True,
                 expected_bit_path=bit,expected_bit_sha256=manifest['bit_sha256'],require_loaded_bit=True,
                 allow_equivalent_bit_path=True)
