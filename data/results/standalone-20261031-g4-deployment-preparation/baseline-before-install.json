@@ -1,0 +1,130 @@
+{
+  "schema": "material-counter-g4-release-baseline-v1",
+  "captured_at_utc": "2025-05-07T19:24:49.458490+00:00",
+  "purpose": "read-only pre-deployment observation; not deployment authorization",
+  "release_status": {
+    "G4_release": false
+  },
+  "hardware_safety": {
+    "hardware_safe_to_switch": false,
+    "state": "unproven",
+    "note": "This collector does not establish DMA idle, VDMA halted, error-free state, or owner/resource release."
+  },
+  "boot_id": {
+    "state": "known",
+    "path": "/proc/sys/kernel/random/boot_id",
+    "value": "8b380359-59a7-46f8-8f5a-f172fd1398dd"
+  },
+  "systemd": {
+    "unit": "material-counter-integrated.service",
+    "load_state": "not-found",
+    "active_state": "inactive",
+    "sub_state": "dead",
+    "enabled_state": "not-found",
+    "show_result": {
+      "state": "known",
+      "argv": [
+        "systemctl",
+        "show",
+        "material-counter-integrated.service",
+        "--property=LoadState",
+        "--property=ActiveState",
+        "--property=SubState"
+      ],
+      "returncode": 0,
+      "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead",
+      "stderr": ""
+    },
+    "is_enabled_result": {
+      "state": "unknown",
+      "argv": [
+        "systemctl",
+        "is-enabled",
+        "material-counter-integrated.service"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Failed to get unit file state for material-counter-integrated.service: No such file or directory",
+      "error": "command failed"
+    }
+  },
+  "fixed_paths": {
+    "unit_file": {
+      "path": "/etc/systemd/system/material-counter-integrated.service",
+      "state": "missing",
+      "exists": false
+    },
+    "environment_file": {
+      "path": "/etc/material-counter/package.env",
+      "state": "missing",
+      "exists": false
+    },
+    "current": {
+      "path": "/opt/material-counter/current",
+      "state": "missing",
+      "exists": false
+    }
+  },
+  "candidate_release": {
+    "root": {
+      "path": "/home/xilinx/material-counter-g4-upload-20261031-96b4661b",
+      "state": "present",
+      "exists": true,
+      "type": "directory"
+    },
+    "artifacts": [
+      {
+        "name": "index",
+        "path": "/home/xilinx/material-counter-g4-upload-20261031-96b4661b/deployment-index.json",
+        "state": "present",
+        "exists": true,
+        "type": "file",
+        "sha256": "96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088"
+      },
+      {
+        "name": "manifest",
+        "path": "/home/xilinx/material-counter-g4-upload-20261031-96b4661b/export/display-manifest.json",
+        "state": "present",
+        "exists": true,
+        "type": "file",
+        "sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966"
+      },
+      {
+        "name": "bit",
+        "path": "/home/xilinx/material-counter-g4-upload-20261031-96b4661b/export/g2-integrated.bit",
+        "state": "present",
+        "exists": true,
+        "type": "file",
+        "sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0"
+      },
+      {
+        "name": "hwh",
+        "path": "/home/xilinx/material-counter-g4-upload-20261031-96b4661b/export/g2-integrated.hwh",
+        "state": "present",
+        "exists": true,
+        "type": "file",
+        "sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243"
+      },
+      {
+        "name": "native[0]",
+        "path": "/home/xilinx/material-counter-g4-upload-20261031-96b4661b/native/rle_components_v2.so",
+        "state": "present",
+        "exists": true,
+        "type": "file",
+        "sha256": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7"
+      }
+    ],
+    "missing_artifacts": []
+  },
+  "related_processes": {
+    "state": "known",
+    "matches": [],
+    "errors": []
+  },
+  "operations_performed": [
+    "read files and metadata",
+    "systemctl show",
+    "systemctl is-enabled",
+    "read proc cmdline"
+  ]
+}
