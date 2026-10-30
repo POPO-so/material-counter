@@ -1,0 +1,47 @@
+{
+  "status": "FAILED",
+  "mode": "self-test",
+  "resolution": [
+    640,
+    400
+  ],
+  "frames": 0,
+  "pixel_verified_frames": 0,
+  "count_accuracy": "NOT_MEASURED",
+  "tx_bytes": 256032,
+  "rx_capacity": 67744,
+  "configuration": {
+    "roi": [
+      0,
+      0,
+      640,
+      400
+    ],
+    "threshold": 128,
+    "intensity_offset": 0,
+    "morph_mode": 0
+  },
+  "counter_configuration": {
+    "line_y": 200,
+    "roi_top": 0,
+    "roi_bottom": 400,
+    "min_area": 48
+  },
+  "pattern": "moving",
+  "frames_evidence": [],
+  "total_count": 0,
+  "invalid_frames": 0,
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "cma_before": {
+    "CmaTotal": 131072,
+    "CmaFree": 32880
+  },
+  "error": "PYNQ global state loaded BIT path differs from the reviewed artifact",
+  "error_type": "PreflightError",
+  "buffers_held": false
+}

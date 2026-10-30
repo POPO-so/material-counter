@@ -88,4 +88,12 @@ RLE 输入包、RLE 输出包和 HDMI 显示帧由 PS 分配为不同缓冲区�
 
 - Vivado 2026.1 集成 block design、综合/实现、HWH/BIT 及 11 个控制窗口 readback 已完成；静态报告和制品身份见同目录 `README.md`、`export/g2-manifest.json` 与 `reports-g2-integrated/`。
 - 从本次集成工程生成的 640×400 `display_image_pipeline_0` funcsim 网表运行全尺寸 wrapper 回归，8 个基线/ROI/形态/空图/overflow/坏包场景全部通过。证据位于 `rtl-regression/full-pipeline-netlist-20261030-074800/`。此结果只覆盖 RLE pipeline IP/wrapper，不覆盖整机 top 联合仿真。
-- 板端冒烟尚未成功：复用 G1 runner 后因依赖缺失进入 `FAIL_HOLD`；只读复核显示旧 G1 BIT 仍加载且 VDMA halted，详见 `board/g1-run-01-failhold.json` 与 README。故本记录的 G2 候选未获板端放行，Route/视频输入/正式接口仍保持候选状态；G2.5/G3/G4 均未通过。
+- 截至本节初次复核时，板端冒烟尚未成功：复用 G1 runner 后因依赖缺失进入 `FAIL_HOLD`；只读复核显示旧 G1 BIT 仍加载且 VDMA halted，详见 `board/g1-run-01-failhold.json` 与 README。故本记录的 G2 候选未获板端放行，Route/视频输入/正式接口仍保持候选状态；G2.5/G3/G4 均未通过。
+
+## 2026-10-30 板端续验增补
+
+- G2 集成 BD/BIT/HWH、静态时序/CDC/DRC 与制品身份检查已完成；本轮 board boot ID 为 `e48ff153-bd85-4dd6-98f6-438bd51da08d`，实际加载 BIT SHA-256 为 `2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18`。
+- HDMI/camera 使用 G2 display manifest 串行运行 61.296 s、提交 589 帧，报告正常停机并释放相机；32 个 monitor snapshot 无灰度、marker、pair 或上下路 invalid 标志。板端 FCLK0/1/2 为 50/100/142.857143 MHz；HP2 32-bit readback 通过。
+- RLE 使用内容与 G2 BIT/HWH 同哈希的专用 adapter manifest，在已加载 G2 BIT 上完成 12 帧 synthetic self-test；12/12 像素重建通过、0 invalid、缓冲释放，HP1 32-bit AFI1 检查通过。HP0 有 HWH/构建读回和成功 MM2S 功能路径证据，仍无独立 AFI0 板端宽度读回。
+- 退出后，VDMA halted、RLE DMA 两通道 idle 且无错误位（run/stop control bit 保持置位）、PYNQ `shutdown_ips={}`、owner FD audit 为空。额外单独探读 RLE pipeline AXI-Lite `0x43C20000` 时 Linux 报 external abort；根因未定，没有再次访问该页，也未写寄存器。详情与原始 report 位于集成记录的 `board/`。
+- 这两项是不同 runner 的先后功能冒烟，不含联合/并发执行；G2 完整板端门禁暂不放行，G2.5 DDR/反压/延迟压力测试仍未开始。上方原始审查结论与既有静态报告保留，本增补不冻结 Route、视频输入或正式接口。

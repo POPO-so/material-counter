@@ -112,3 +112,20 @@
 ```text
 确认当前外部连接的 Vivado MCP 会话仍可用；按本交接的 Candidate decision 创建独立 G2 集成 BD/build 入口，保留 scripts/standalone/create_display.tcl 的 G1 入口与 M00–M08 映射。
 ```
+
+## 2026-10-30 Board Smoke Follow-up
+
+This update supersedes the earlier `Remaining Work` / `Next Command` status above; those sections describe the pre-build handoff state.
+
+- G2 integration build, implementation, static timing/CDC/DRC, BIT/HWH/manifest validation, and full-size RLE wrapper post-synthesis 8/8 regression are complete. The integration decision remains a branch-local candidate; Route, video input, and formal interfaces are not frozen.
+- User authorized safe recovery/retry. On fresh recheck, prior Fail-Hold PID 28352 was already absent, so no termination signal was sent. G1 BIT was still loaded before the smoke; the isolated missing `scripts.rle` closure was staged and passed a no-hardware import check.
+- On the same boot ID `e48ff153-bd85-4dd6-98f6-438bd51da08d` and G2 BIT SHA-256 `2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18`, the display runner completed 61.296 s camera output / 589 submissions / 32 clean monitor snapshots and stopped normally. It used the legacy display-only runner and G2 display manifest; it is not a combined G2 runner.
+- A strict RLE manifest adapter was made from byte-identical G2 BIT/HWH and the build RTL snapshot. The first same-hash/different-path preflight was safely rejected before frames. Narrow opt-in SHA equivalence support was fixed on `fix/允许同哈希位流路径`, tested (25 passing), and merged into `feat/集成RLE与HDMI位流` (`2d64e9b`). With G2 already loaded, RLE then completed 12/12 pixel-verified moving synthetic frames, zero invalid frames, and released buffers.
+- Board `Clocks` readback is FCLK0/1/2 = 50/100/142.857143 MHz; HP1 and HP2 32-bit synchronization checks passed. HP0 has static HWH evidence and a working RLE MM2S path but no standalone AFI0 width readback yet. VDMA is halted; RLE DMA is idle/error-free with its run/stop bit still set; PYNQ shutdown IPs are empty; the `/proc` device-owner FD audit immediately before the optional pipeline probe was empty, and no runner remained after the probe process exited.
+- An additional post-run MMIO read of RLE pipeline page `0x43C20000` caused Linux external abort; root cause is unresolved. The failed read did not produce a full snapshot; no further access or register write was attempted. The concise record is `data/results/standalone-20261030-064700-g2-integration/board/g2-post-smoke-readback.json`; reports and byte-identical adapter are under the same `board/` directory.
+
+### Next Actions
+
+1. Diagnose the post-run external abort from HWH/address decode, clock/reset and Linux mapping evidence before attempting any further access to `0x43C20000`.
+2. After resolving it, obtain a clean read-only RLE pipeline signature/geometry/status snapshot and a direct HP0/AFI0 board width readback, alongside the already captured clocks/HP1/HP2/owner/CMA evidence.
+3. Keep G2 unaccepted until those board gates and coordinated stop evidence are closed. G2.5 remains a separate concurrent HDMI 720p60 plus target/high-run RLE DDR/backpressure/latency test; it has not started.

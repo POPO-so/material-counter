@@ -4,7 +4,7 @@
 
 > **当前状态：工程原型，尚未完成工业工况验收。** 历史 M6 螺母板测为 4/5（80%），计数准确率验收未通过；该数据绑定旧 RGB 实现。Gray8 合成和真实相机 DMA 输入均已通过全像素验证，并完成 900 帧持续运行测量；本次相机二值掩膜全黑、未检出前景，因此物料识别准确率及有目标时吞吐仍未验证。本文按代码和可追溯报告区分实现、离线验证、仿真与板端结果。
 
-> **2026-10-30 独立显示与 G2 进度：** G1 与 G1.5 已通过各自独立显示门禁。G1.5 验证三槽普通 RAM 共享帧 IPC 和绘图子进程，平均有效显示 13.5807 FPS；G1.5 CPU0/CPU1 的 P50 均约 96%，G2.5 必须专门验证 HDMI 扫描与 RLE 并发时的资源竞争。G2 已开始，目前仅完成独立 RLE 基线 RTL 八场景回归及小参数 OOC 综合后功能回归。RLE+HDMI+buttons+monitor block design、集成综合/实现、时序/CDC/DRC、新制品及板测未完成；因此不能称 G2 或整机通过。G2.5、G3、G4 尚未开始。详见 [G1.5 板端证据](data/results/standalone-20261030-g15/README.md) 与 [G2 RLE 基线报告](data/results/standalone-20261030-g2-baseline/README.md)。
+> **2026-10-30 独立显示与 G2 进度：** G1/G1.5 各自独立显示门禁通过。G2 集成 BD、实现、时序/CDC/DRC 报告、BIT/HWH/manifest 和完整尺寸 RLE wrapper 8/8 网表回归已完成。相同 G2 BIT 下，HDMI/camera 冒烟运行 61.296 s、提交 589 帧并正常停机；独立 RLE synthetic 自测 12/12 帧像素验证通过。退出后额外读取 RLE pipeline AXI-Lite 页 `0x43C20000` 触发 external abort，原因未定；HP0 尚无独立板端宽度读回，两套 runner 未并发。故 G2 整体仍不放行，G2.5/G3/G4 未开始。见 [G2 集成与板端记录](data/results/standalone-20261030-064700-g2-integration/README.md)。G2.5 仍需专测 HDMI 与有目标/高游程 RLE 并发资源竞争。
 
 > **2026-10-29 桌面入口更新：** `Python脚本/启动GUI.pyw` 默认使用 `RLE桌面部署.json`，接入 640×400 原分辨率 PL 游程链。PL 执行 ROI、强度偏移、阈值和可选形态学、游程与投影；PS 执行原生游程区域分析、跟踪和越线。GUI 显示 `pl_rle` 及该位流对应的 LUT 10.92% 静态报告。下方 2026-10-27 的 320×240 整帧 Binary8 通路保留为历史实验说明，不能代表新桌面会话。新入口仍为候选链，性能与准确率限制见 [桌面 RLE 验证记录](data/results/rle-desktop-20261029/README.md)。
 
@@ -12,7 +12,7 @@
 
 ## 项目概述
 
-脱机灰度 HDMI 分屏已按 [计划.md](计划.md) 开始实施，G0 环境与依赖证据见 [记录](data/results/standalone-20261029-g0/README.md)。G1、G1.5 已通过各自独立显示门禁。G2 已开始，目前仅 RLE 基线 RTL 与综合网表后功能回归通过；集成 RLE+HDMI+buttons+monitor 的 block design、综合/实现、时序/CDC/DRC、新制品和板测均未完成，故 G2 与整机尚未通过。G2.5/G3/G4 未开始；G2.5 并发压力需考虑 G1.5 CPU0、CPU1 均约 96% P50。证据见 [G1.5 报告](data/results/standalone-20261030-g15/README.md) 和 [G2 RLE 基线报告](data/results/standalone-20261030-g2-baseline/README.md)。
+脱机灰度 HDMI 分屏按 [计划.md](计划.md) 分阶段实施，G0/G1/G1.5 证据分别见对应记录。G2 集成构建、静态门禁和串行板端功能冒烟已有结果，但退出后 RLE pipeline AXI-Lite 读回 external abort 尚未定位，HP0 独立板端宽度读回与 HDMI/RLE 并发压力也未完成；G2 不放行，G2.5/G3/G4 未开始。详见 [G2 集成记录](data/results/standalone-20261030-064700-g2-integration/README.md)。
 
 生产线上螺母、垫圈等小零件连续移动时，目标可能相互接近、短时粘连或漏检。项目以 PYNQ-Z2（Zynq-7000 / XC7Z020）为平台，研究怎样把像素级、规则明确的处理放到 PL 数据流中，再由 PS 完成较灵活的区域提取、目标关联和越线计数。
 
