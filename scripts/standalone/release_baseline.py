@@ -74,18 +74,27 @@ def systemd_record(unit: str) -> dict[str, object]:
         "--property=ActiveState", "--property=SubState",
     ])
     enabled = command_record(["systemctl", "is-enabled", unit])
+    observed_enabled = str(enabled.get("stdout", "")).strip()
+    known_enabled = {"enabled", "disabled", "static", "masked", "indirect", "generated", "transient"}
     fields: dict[str, str] = {}
     if show["state"] == "known":
         for line in str(show["stdout"]).splitlines():
             key, sep, value = line.partition("=")
             if sep:
                 fields[key] = value
+    if observed_enabled in known_enabled:
+        enabled_state = observed_enabled
+    elif (fields.get("LoadState") == "not-found" and not observed_enabled
+          and enabled.get("returncode") not in {None, 0}):
+        enabled_state = "not-found"
+    else:
+        enabled_state = "unknown"
     return {
         "unit": unit,
         "load_state": fields.get("LoadState", "unknown"),
         "active_state": fields.get("ActiveState", "unknown"),
         "sub_state": fields.get("SubState", "unknown"),
-        "enabled_state": enabled["stdout"] if enabled["state"] == "known" else "unknown",
+        "enabled_state": enabled_state,
         "show_result": show,
         "is_enabled_result": enabled,
     }
@@ -101,6 +110,8 @@ def process_records(proc_root: Path, needles: list[str]) -> dict[str, object]:
     errors: list[str] = []
     for entry in entries:
         if not entry.name.isdecimal():
+            continue
+        if int(entry.name) == os.getpid():
             continue
         try:
             raw = (entry / "cmdline").read_bytes()

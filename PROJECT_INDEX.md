@@ -1,5 +1,13 @@
 # Project Index
 
+**2026-10-31 当前包身份：** G4 候选包运行模块来源提交 `544a6d44af74708ae17ab88af6419093a45859cb`，索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`，外置环境文件摘要已同步。55 个文件建索引、56 个文件经内建完整性核对；板端安装、自启动、离线第三方依赖及用户最终测试尚未完成，G3/G4 未放行。下文旧摘要和旧源码提交均为所标日期的历史快照。
+
+2026-10-31 用户调整：当前代理优先完成代码、候选包及部署准备，不安排软件/板端测试；最终测试由用户执行。五次冷启动、≥60 分钟有目标运行和故障恢复测试本轮不要求再执行。未执行的 G3/G4 门禁仍如实标记，不能写成通过；详情见[剩余进度计划](文档/计划-剩余进度重排-20261030.md)。
+
+G4 只读激活方案生成入口 [release_activation_plan.py](scripts/standalone/release_activation_plan.py) 已写、未运行。它核对暂存包、unit/env 与实测基线并明确阻止直接激活；仍缺实际安装、受控切换和现场安全终态。
+
+G4 预装环境只读快照入口 [offline_runtime_snapshot.py](scripts/standalone/offline_runtime_snapshot.py) 已写、未运行；它记录 Python/系统包及声明依赖和候选包身份，供后续离线依赖核对。该入口不证明依赖闭包或可离线重建。
+
 2026-10-31 板端只读现状：boot ID 已变为 `8b380359-59a7-46f8-8f5a-f172fd1398dd`，10/30 真实相机连续运行的 PID 795/841 已不在进程列表；另有桌面计数入口 `board_entry.py`（PID 1213）正在运行。下段 10/30“保持开启”是当时的状态，不能用于当前板卡所有权判断。当前没有启动第二个 G3/G4 runner，需等唯一 owner 的安全终态明确后再进行板端验收。
 
 2026-10-31 Task 6 本地进展：修正历史 Gray8 快照 CRLF/LF 差异造成的交付核验误报后，干净检出 `16b0e91` 上 376 项软件测试通过、Gray8 核验 PASS、G4 候选包 37 模块来源核对通过；原始失败、复验和 UTF-8 来源报告见 [候选证据目录映射](data/results/standalone-20261031-delivery-candidate/README.md)。这不是离线依赖隔离环境或板端运行证据，Task 6 仍未完成。
@@ -72,5 +80,7 @@ Agent navigation map for `material-counter`. Use linked documents as the source 
 G4 代码阶段新增 [release_stage.py](scripts/standalone/release_stage.py)，只负责对已组装候选包进行离线复制及复制前后完整性核验；尚未执行，也未安装或激活整机服务。现有 G4 候选包、依赖和现场验收状态见[部署说明](scripts/standalone/DEPLOYMENT.md)。
 
 部署前只读基线采集入口 [release_baseline.py](scripts/standalone/release_baseline.py) 已写、未运行；它记录系统文件、服务和进程现状，但不证明硬件资源已安全释放，也不激活 G4。相关边界见[部署说明](scripts/standalone/DEPLOYMENT.md)。
+
+G4 启动锁交接代码已在 [boot_integrated.py](scripts/standalone/boot_integrated.py) 与 [integrated_run.py](scripts/standalone/integrated_run.py) 修改：开机初始化到运行器间持续持有同一组锁，并校验继承描述符与当前锁文件 inode 一致。未运行验证，候选包源码及索引尚待刷新，G3/G4 未放行。
 
 初次清单 ID 预检失败记录 [command JSON](data/results/standalone-20261030-g3-functional/scaling-current-20261031-command.json) 保留。修复后比较报告 [comparison.json](data/results/standalone-20261030-g3-functional/scaling-current-20261031/comparison.json) 为 `status=PASS`、退出码 0，绑定 HEAD `b28e67632da711ea649cf1534d57c8a902822923`、runner SHA-256 `a62194733151dab7ce2f2ce2bf209ab38892ec38ed308d58d4d05f5f1dfa8389`、compositor SHA-256 `68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1`；环境为 CPython 3.12.10、OpenCV 4.10.0、NumPy 2.3.5、Pillow 12.3.0。常量灰度和 AREA ramp 各 207360 像素全匹配；binary nearest 排除 2520 个遮挡像素后 204840 像素全匹配。actual raw/PNG 和重跑命令记录分别见[输出目录](data/results/standalone-20261030-g3-functional/scaling-current-20261031/)与[rerun command JSON](data/results/standalone-20261030-g3-functional/scaling-current-20261031-rerun-command.json)。这是本地当前源码缩放候选比较，不是板端黄金/HDMI 验收，不勾选 G3 Task 4，灰度策略仍未冻结；实物 GPIO、HDMI、真实目标与人工真值仍缺，G3 未放行。

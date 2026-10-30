@@ -6,7 +6,7 @@
 
 - 候选 package 尚未复制到板端，候选 service 尚未注册或启动。实际部署前的 service、环境文件及 `current` 符号链接状态均未知。
 - 当前没有已确认的旧 G4 release。因此，本文所称的回滚目标仅为“恢复部署前实测记录的系统/service/env 状态”，不表示存在可重新启动的旧 G4 release。由于部署前状态尚未实测和保存，目前无法定义具体恢复值。
-- 候选 service 文件静态配置了 `WorkingDirectory=/opt/material-counter/current` 和 `EnvironmentFile=/etc/material-counter/package.env`。候选环境文件的 `PACKAGE_ROOT` 为 `/opt/material-counter/releases/standalone-20261030-g4-offline-package-candidate`，当前对应 deployment index SHA-256 为 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d`；原 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 仅属刷新前历史摘要。
+- 候选 service 文件静态配置了 `WorkingDirectory=/opt/material-counter/current` 和 `EnvironmentFile=/etc/material-counter/package.env`。候选环境文件的 `PACKAGE_ROOT` 为 `/opt/material-counter/releases/standalone-20261030-g4-offline-package-candidate`，当前对应 deployment index SHA-256 为 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`；此前的 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 和更早的 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 均为刷新前历史摘要。
 - 后续若获准部署，须先证明 `current` 的代码树与 `PACKAGE_ROOT` 指向同一 release。当前没有验证这条路径关系；不得据候选配置推断板端链接目标或目录内容。
 
 ## 停止配置与硬件安全边界

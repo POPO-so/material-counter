@@ -81,6 +81,8 @@ def main(argv=None):
     locks=[]
     for name in ('/tmp/material-counter-desktop.lock','/run/material-standalone.lock'):
         stream=open(name,'a');fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB);locks.append(stream)
+    lock_fds=[stream.fileno() for stream in locks]
+    command+=['--inherited-lock-fds',*(str(fd) for fd in lock_fds)]
     backend=BoardBackend(root,files,manifest)
     uptime=float(Path('/proc/uptime').read_text().split()[0])
     marker=Path('/run/material-counter')/(boot+'.json')
@@ -93,8 +95,8 @@ def main(argv=None):
         admission=admission,command=command,scope='initialization; not G4 acceptance')
     write_evidence(output.with_suffix('.admission.json'),record)
     print(json.dumps(record,separators=(',',':')),flush=True)
-    for stream in locks:stream.close()
     os.chdir(root)
+    for fd in lock_fds:os.set_inheritable(fd,True)
     os.execv(sys.executable,command)
 
 

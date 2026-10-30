@@ -1,8 +1,8 @@
 {
   "schema": "material-counter.offline-package-source.v1",
   "status": "CANDIDATE_NOT_BOARD_ACCEPTED",
-  "source_commit": "bf817ca98b3a1032f83ac732424314d926e3da52",
-  "source_branch": "feat/统一灰度缩放策略",
+  "source_commit": "544a6d44af74708ae17ab88af6419093a45859cb",
+  "source_branch": "feat/新增G4激活方案生成",
   "module_files": [
     "scripts/gray8/packet_codec.py",
     "scripts/rle/__init__.py",
