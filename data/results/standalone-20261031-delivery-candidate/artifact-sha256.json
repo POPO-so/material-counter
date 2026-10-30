@@ -1,0 +1,49 @@
+{
+  "schema": "material-counter.delivery-artifact-sha256.v1",
+  "hash_algorithm": "SHA-256",
+  "entries": [
+    {
+      "name": "G2 BIT",
+      "path": "data/results/standalone-20261030-123000-g2-integration/export/g2-integrated.bit",
+      "status": "present",
+      "sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0"
+    },
+    {
+      "name": "G2 HWH",
+      "path": "data/results/standalone-20261030-123000-g2-integration/export/g2-integrated.hwh",
+      "status": "present",
+      "sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243"
+    },
+    {
+      "name": "G2 display manifest",
+      "path": "data/results/standalone-20261030-123000-g2-integration/export/display-manifest.json",
+      "status": "present",
+      "sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966"
+    },
+    {
+      "name": "Current G4 deployment index",
+      "path": "data/results/standalone-20261030-g4-offline-package-candidate/package/deployment-index.json",
+      "status": "present",
+      "sha256": "96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088"
+    },
+    {
+      "name": "Current G4 source correspondence report",
+      "path": "data/results/standalone-20261030-g4-offline-package-candidate/source-correspondence-current-20261031.json",
+      "status": "present",
+      "sha256": "6f19f33a9727e034f047fa8cc0f4d1473ab7f640d73118ed2e128fa708ab7bd6"
+    },
+    {
+      "name": "Installed release package integrity report",
+      "path": "data/results/standalone-20261031-g4-deployment-preparation/release-package-integrity.json",
+      "status": "present",
+      "sha256": "8f472f9bde8763999999d0d49eebcc9efb2eb5c71d914c265cc410457d3c2289"
+    },
+    {
+      "name": "Offline runtime snapshot",
+      "path": "data/results/standalone-20261031-g4-deployment-preparation/offline-runtime-snapshot.json",
+      "status": "present",
+      "sha256": "891b81b08102761cfafbdd4889c9d3aebff7f5c174cf2d6f662629b7db721d4e"
+    }
+  ],
+  "missing": []
+}
