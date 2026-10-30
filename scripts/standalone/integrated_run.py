@@ -11,6 +11,7 @@ from pathlib import Path
 import queue
 import signal
 import sys
+import threading
 import time
 import uuid
 
@@ -229,15 +230,29 @@ def main(argv=None):
         manifest_sha256=args.manifest_sha256,native_sha256=sha256(args.native_lib),
         commands_sha256=sha256(args.commands) if args.commands else None,
         source=args.source,display=args.display,main_pid=os.getpid(),continuous=args.continuous,
-        diagnostic_limits={'samples':1800,'events':2048,'recoveries':2048,'frame_trace':600,'annotations_per_frame':128},
+        diagnostic_limits={'samples':1800,'events':2048,'recoveries':2048,'frame_trace':600,'annotations_per_frame':128,
+            'button_raw_transitions':2048},
         session_id=str(uuid.uuid4()),ownership=audit_process_ownership(),state='STARTING',
         material_accuracy='NOT_MEASURED',samples=deque(maxlen=1800),events=deque(maxlen=2048),
-        recoveries=deque(maxlen=2048),
+        recoveries=deque(maxlen=2048),button_raw_sample_count=0,
+        button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
         before_memory=_memory(),scope='G3 candidate; G4 physical disconnection/cold-start not asserted')
+    button_raw_lock=threading.Lock()
+    def report_snapshot():
+        with button_raw_lock:
+            result=dict(report)
+            transitions=list(report['button_raw_transitions'])
+            transition_total=report['button_raw_transition_total']
+            result['button_raw_sample_count']=report['button_raw_sample_count']
+            result['button_raw_transitions']=transitions
+            result['button_raw_transition_total']=transition_total
+            result['button_raw_transition_truncated']=transition_total-len(transitions)
+        return result
     report['cpu_scope']='system/core normalized 0..100%; process 100% equals one core'
     report['camera_configuration']=dict(by_id=args.camera,requested_format='MJPG',
         validated_decoded_shape=[400,640],decode='IMREAD_GRAYSCALE',negotiated_fps='NOT_QUERIED')
     controls=ControlState();decoder=ButtonDecoder();events=queue.Queue(maxsize=64)
+    previous_raw_button_bits=None
     hw=transport=camera=process=inputs=outputs=display_frame=video_pump=None
     display_held=False
     stop_drawing=None;running=True;export_requested=False;exports=0
@@ -250,8 +265,18 @@ def main(argv=None):
         export_requested=True
     if hasattr(signal,'SIGUSR1'):signal.signal(signal.SIGUSR1,request_export)
     def poll():
+        nonlocal previous_raw_button_bits
         if hw is not None:
-            for command in decoder.update(int(hw.buttons.read())&15,time.monotonic()):
+            bits=int(hw.buttons.read())&15
+            sampled_at=time.monotonic()
+            with button_raw_lock:
+                report['button_raw_sample_count']+=1
+                if previous_raw_button_bits is None or bits!=previous_raw_button_bits:
+                    report['button_raw_transition_total']+=1
+                    report['button_raw_transitions'].append(dict(monotonic=sampled_at,bits=bits))
+                    report['button_raw_transition_truncated']=report['button_raw_transition_total']-len(report['button_raw_transitions'])
+                    previous_raw_button_bits=bits
+            for command in decoder.update(bits,sampled_at):
                 events.put_nowait(command)
     # One manager controls the overlay lifetime. Separate driver domains prevent
     # a blocked display call from taking the RLE counting domain with it.
@@ -328,7 +353,7 @@ def main(argv=None):
                     export_monotonic=now,trace_sha256=trace.digest(),trace_frames=trace.frames_seen,
                     trace_annotations_truncated=trace.annotations_truncated)
                 exported=args.output.with_name(args.output.stem+'.snapshot-'+str(exports)+'.json')
-                try:write_evidence(exported,report)
+                try:write_evidence(exported,report_snapshot())
                 except OSError as error:
                     report['recoveries'].append(dict(kind='evidence_export',error=repr(error),monotonic=now))
                 exports+=1;export_requested=False
@@ -526,8 +551,8 @@ def main(argv=None):
         if process is not None:process.join(timeout=15)
         if display_frame is not None:owner.retain(display_frame)
         report.update(state='FAIL_HOLD',error=repr(error),diagnostics=owner.diagnostics())
-        fail_hold(lambda:write_evidence(args.output,report),'INTEGRATED_FAIL_HOLD '+repr(error))
-    write_evidence(args.output,report)
+        fail_hold(lambda:write_evidence(args.output,report_snapshot()),'INTEGRATED_FAIL_HOLD '+repr(error))
+    write_evidence(args.output,report_snapshot())
     print(json.dumps({k:report[k] for k in ('state','processed','submitted','duration_s','total_count')}),flush=True)
     if display_held:
         # Counting and its buffers stopped safely, but uncertain display CMA is
