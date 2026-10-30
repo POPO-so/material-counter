@@ -174,3 +174,85 @@ def test_readiness_session_mismatch_logs_both_ids(monkeypatch, caplog):
     assert "expected-session" in messages
     assert "other-session" in messages
     assert "secret-token" not in messages
+
+
+def test_status_poll_mismatch_logs_expected_and_actual_session(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "expected-session", "token": "private-token", "dir": "/session", "pid": 12}
+    monkeypatch.setattr(controller, "_request", lambda *_args, **_kwargs: {
+        "session_id": "actual-session",
+    })
+    monkeypatch.setattr(controller.time, "sleep", lambda _duration: app.shutdown.set())
+
+    app._poll("expected-session")
+
+    messages = "\n".join(record.message for record in caplog.records)
+    assert '"event": "status.session_mismatch"' in messages
+    assert "expected-session" in messages
+    assert "actual-session" in messages
+    assert "private-token" not in messages
+
+
+def test_successful_status_poll_stays_structurally_quiet(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "same-session", "token": "private-token", "dir": "/session", "pid": 12}
+    monkeypatch.setattr(controller, "_request", lambda *_args, **_kwargs: {
+        "session_id": "same-session", "telemetry": {"phase": "running"},
+    })
+    monkeypatch.setattr(controller.time, "sleep", lambda _duration: app.shutdown.set())
+
+    app._poll("same-session")
+
+    assert not any("desktop_event=" in record.message for record in caplog.records)
+
+
+def test_frame_session_mismatch_log_omits_frame_content(monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
+
+    class Root:
+        def after(self, *_args):
+            pass
+
+    class Response:
+        status = 200
+        def close(self):
+            pass
+
+    class Connection:
+        def __init__(self, *_args, **_kwargs):
+            pass
+        def request(self, *_args, **_kwargs):
+            pass
+        def getresponse(self):
+            return Response()
+        def close(self):
+            pass
+
+    app = DesktopController(Root(), sample_config())
+    app.session = {"id": "expected-frame-session", "token": "private-token", "dir": "/session", "pid": 12}
+    monkeypatch.setattr(controller.http.client, "HTTPConnection", Connection)
+    monkeypatch.setattr(controller, "read_frame", lambda _response: {
+        "session_id": "actual-frame-session", "frame_id": 8,
+        "image": b"private-frame-bytes",
+    })
+    monkeypatch.setattr(controller.time, "sleep", lambda _duration: app.shutdown.set())
+
+    app._receive("expected-frame-session")
+
+    messages = "\n".join(record.message for record in caplog.records)
+    assert '"event": "frames.session_mismatch"' in messages
+    assert "expected-frame-session" in messages
+    assert "actual-frame-session" in messages
+    assert "private-frame-bytes" not in messages

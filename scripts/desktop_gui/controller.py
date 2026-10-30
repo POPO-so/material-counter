@@ -434,6 +434,11 @@ class DesktopController:
                 if self.session is not session:
                     break
                 if status.get("session_id") != session_id:
+                    _log_event(
+                        "status.session_mismatch",
+                        expected_session_id=session_id,
+                        actual_session_id=status.get("session_id"),
+                    )
                     raise RuntimeError("会话身份不一致")
                 self.latest_status = status
                 self._status(status)
@@ -461,7 +466,15 @@ class DesktopController:
                 last_frame = -1
                 while not self.paused.is_set() and self.session and self.session["id"] == session_id:
                     frame = read_frame(response)
-                    if frame["session_id"] != session_id or frame["frame_id"] <= last_frame:
+                    if frame["session_id"] != session_id:
+                        _log_event(
+                            "frames.session_mismatch",
+                            expected_session_id=session_id,
+                            actual_session_id=frame["session_id"],
+                            frame_id=frame["frame_id"],
+                        )
+                        raise RuntimeError("帧会话或序号不一致")
+                    if frame["frame_id"] <= last_frame:
                         raise RuntimeError("帧会话或序号不一致")
                     last_frame = frame["frame_id"]
                     if not first_frame_logged:
