@@ -11,6 +11,7 @@ from scripts.standalone.bundle import required_addresses
 REQUIRED = (
     "export/display-manifest.json",
     "boot-config.json",
+    "board-runtime.json",
     "export/g2-integrated.bit",
     "export/g2-integrated.hwh",
     "native/rle_components_v2.so",
@@ -61,6 +62,20 @@ def make_package(root):
         "duration_s": 3600,
     }
     _write(root / "boot-config.json", json.dumps(boot_config).encode())
+    board_runtime = {
+        "schema": "material-counter.board-runtime-observation.v1",
+        "python": "3.10.4",
+        "platform": "Linux 6.6.10-xilinx-v2024.1 armv7l glibc 2.35",
+        "packages": {
+            "pynq": "3.1.1",
+            "numpy": "1.21.5",
+            "opencv": "4.5.4",
+            "pillow": "9.0.1",
+            "cffi": "1.15.0",
+        },
+        "scope": "observed baseline; not an installable dependency lock",
+    }
+    _write(root / "board-runtime.json", json.dumps(board_runtime).encode())
 
     # ELF32, little endian, ARM (EM_ARM = 40).
     elf = bytearray(20)

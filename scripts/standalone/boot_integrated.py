@@ -14,6 +14,7 @@ from .boot_policy import initialize_once,build_argv
 from .bundle import verify_bundle,verify_runtime,sha256
 from .delivery import verify_package
 from .evidence import write_evidence
+from .runtime_environment import verify_runtime_environment
 
 
 class BoardBackend:
@@ -65,6 +66,7 @@ def main(argv=None):
         raise RuntimeError('requires the admitted root PYNQ CPython 3.10 ARM32 runtime')
     if os.environ.get('XILINX_XRT')!='/usr':raise RuntimeError('requires XILINX_XRT=/usr')
     integrity=verify_package(root,args.index_sha256)
+    runtime_compatibility=verify_runtime_environment(root/'board-runtime.json')
     config=json.loads((root/'boot-config.json').read_text())
     boot=str(uuid.UUID(Path('/proc/sys/kernel/random/boot_id').read_text().strip()))
     run_root=Path('/var/lib/material-counter')/boot
@@ -87,7 +89,8 @@ def main(argv=None):
     record=dict(schema='material-counter.integrated-boot-admission.v1',boot_id=boot,
         package_index_sha256=args.index_sha256,manifest_sha256=manifest_digest,
         bit_sha256=sha256(files['bit']),native_sha256=sha256(root/'native/rle_components_v2.so'),
-        integrity=integrity,admission=admission,command=command,scope='initialization; not G4 acceptance')
+        integrity=integrity,runtime_compatibility=runtime_compatibility,
+        admission=admission,command=command,scope='initialization; not G4 acceptance')
     write_evidence(output.with_suffix('.admission.json'),record)
     print(json.dumps(record,separators=(',',':')),flush=True)
     for stream in locks:stream.close()

@@ -17,6 +17,7 @@ DISPLAY_MANIFEST = "export/display-manifest.json"
 REQUIRED_FILES = {
     DISPLAY_MANIFEST,
     "boot-config.json",
+    "board-runtime.json",
     "export/g2-integrated.bit",
     "export/g2-integrated.hwh",
     "native/rle_components_v2.so",
