@@ -1,13 +1,14 @@
-# G4 脱机包候选（未安装、未验收）
+# G4 脱机包候选（已部署准备，未验收）
 
 ## 本次候选包刷新（2026-10-31）
 
 - 37 个应用 Python 模块已按 `package/package-source.json` 清单，从本工作树基线 `544a6d44af74708ae17ab88af6419093a45859cb`（`feat/新增G4激活方案生成`）逐字节同步。来源提交记录已更新；包中未加入清单之外的主机部署工具。
 - 索引构建命令：`python -B -m scripts.standalone.delivery --root data/results/standalone-20261030-g4-offline-package-candidate/package --build-index`。
 - 构建结果：`INDEX_BUILT_CANDIDATE`，55 个包文件写入索引，内建完整性核对 56 个文件通过（`PASS`），索引 SHA-256 为 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`；父目录 `package.env.candidate` 已同步此 SHA。
-- 本次仅刷新候选包源码并准备索引；未运行软件测试、仿真或板端命令，未安装到板端，G3/G4 仍未放行。
+- 本地候选包刷新与索引生成时未运行软件测试、仿真或板端命令。后续部署准备记录确认：候选包已复制到板端 release 目录，`/opt/material-counter/current`、外置 env 与 systemd unit 已安装；G4 service 为 enabled、inactive。最新只读观察到 PID 4225 桌面计数进程正在运行。没有手动启动 G4、重启板卡或进行整机验收；G3/G4 仍未放行。详见[部署准备记录](../standalone-20261031-g4-deployment-preparation/README.md)。
 - 以下较早记录中的提交号、索引 SHA 和构建摘要是刷新前的历史快照，不代表当前包状态。
-状态：G4 候选，未验收。当前候选包的 37 个应用 Python 模块来源记录为提交 `544a6d44af74708ae17ab88af6419093a45859cb`（`feat/新增G4激活方案生成`）。启动前运行环境准入只读核对覆盖已观察的 8 个 dpkg 包状态/版本；它不安装依赖，也不构成完整离线依赖闭包。本地 `delivery.py --build-index` 索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件通过，当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与 `package.env.candidate` 一致。此项仅为候选包文件完整性核对，未运行软件测试、仿真或板端命令；G3/G4 均未放行，未证明离线依赖闭包或自启动。五次冷启动、60 分钟有目标运行及故障测试已由用户豁免，不作为代理执行项；最终现场测试由用户执行。部署/恢复文档目前仅为[审阅草稿](deployment-recovery-draft.md)，不构成可执行或已验证的 G4 回滚方案。
+
+状态：G4 候选，未验收。当前候选包的 37 个应用 Python 模块来源记录为提交 `544a6d44af74708ae17ab88af6419093a45859cb`（`feat/新增G4激活方案生成`）。启动前运行环境准入只读核对覆盖已观察的 8 个 dpkg 包状态/版本；它不安装依赖，也不构成完整离线依赖闭包。本地 `delivery.py --build-index` 索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件通过，当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与 `package.env.candidate` 一致。此项仅为候选包文件完整性核对，未运行软件测试或仿真；板端已做安装配置和只读完整性核对，但未启动 G4 业务。G3/G4 均未放行，未证明离线依赖闭包或自启动。五次冷启动、60 分钟有目标运行及故障测试已由用户豁免，不作为代理执行项；最终现场测试由用户执行。首次安装的配置恢复边界见[部署说明](../../../scripts/standalone/DEPLOYMENT.md#首次安装配置恢复边界未执行)；步骤尚未执行或验证，不代表运行态回滚能力。
 
 ## 包身份
 
@@ -23,7 +24,7 @@
 - 与 G2 manifest 配套的 BIT、HWH、manifest 和 ELF32 ARM 原生库；BIT SHA-256 `79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0`。
 - 37 个运行入口及传递导入所需的应用 Python 模块；来源提交和模块清单写入 `package/package-source.json`。`delivery.py` 现在要求包源码清单与索引中的应用 `.py` 文件集合一致。
 - manifest 锁定的 7 个 PYNQ 运行源码和 2 个字体。从板卡只读复制后，本地计算的 13 项依赖/制品 SHA-256 全部与来源 manifest 或 G2 记录一致；逐项记录见 [dependency-readback.json](dependency-readback.json)。
-- `boot-config.json` 使用 `continuous`、固定相机 by-id 路径；候选 systemd 单元和占位环境模板位于 package/deployment/。同目录外的 [package.env.candidate](package.env.candidate) 填入拟安装 release 路径及当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`；文件不属于包索引，也没有安装到板端。
+- `boot-config.json` 使用 `continuous`、固定相机 by-id 路径；候选 systemd 单元和占位环境模板位于 package/deployment/。同目录外的 [package.env.candidate](package.env.candidate) 填入拟安装 release 路径及当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`；它不属于包索引。部署准备记录确认其对应的 release 和外置环境文件已安装到板端。
 - [board-runtime.json](package/board-runtime.json) 记录板端目标平台基线和既有运行时观测。本次选定版本的只读查询明细见 [runtime-package-observation.json](runtime-package-observation.json)；该文件位于 `package/` 外，不属于 deployment index，不改变候选包索引或其哈希。
 - `boot_integrated.py` 在一次性硬件初始化前调用 `runtime_environment.py`，对照观察记录检查 Python、操作系统/内核、架构、libc、distribution 版本，以及已观察 8 个 dpkg 包的已安装状态和版本。此门只比对已观察环境，不安装依赖，也不形成完整依赖锁、wheelhouse 或干净环境重建能力。
 
@@ -34,17 +35,17 @@
 - 已核验的 13 项仅包括 7 个 PYNQ 源文件、2 个字体，以及 BIT、HWH、manifest 和 native library；哈希与来源记录见上文及 [dependency-readback.json](dependency-readback.json)。以下为**静态缺口分析**：当前没有 wheelhouse、完整 Python 依赖锁、完整 PYNQ 运行时离线制品、OS 包/镜像基线，亦没有 native library 的重建工具链资料。
 - 后续依赖锁清单可记录 direct/transitive、distribution 名称/版本、Python/ABI/平台标签、SHA-256/来源，以及 OS 包/版本/离线制品来源；未锁定的信息留空待证，不填未经核实的猜测。
 
-## 启动入口静态核对（未安装）
+## 启动入口静态核对（候选配置审查；当前部署状态见部署准备记录）
 
 - 候选 systemd 单元只声明 After=local-fs.target、WantedBy=multi-user.target，未依赖 network-online.target、network.target 或远端服务。
 - boot-config.json 固定相机 by-id 和 continuous 模式。boot_integrated.py 接收 package root 与 index SHA-256，核对 deployment index、manifest 和运行依赖哈希，读取本机 boot ID 后执行一次性初始化，再转入集成运行器。
-- package.env.candidate 当前索引哈希为 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`。文件仅供后续部署 review；目录未部署，systemd 未注册，入口未启动。
+- `package.env.candidate` 的索引哈希为 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`。此处描述的是候选配置；部署后的 release、外置环境文件和 systemd unit 已安装，service 为 enabled、inactive。未手动启动 G4。详见[部署准备记录](../standalone-20261031-g4-deployment-preparation/README.md)。
 - 以上是对候选配置和代码的静态核对，不证明目标板离线启动、相机打开、位流准入或 G4 门禁通过。
 ## 范围和未完成项
 
 - 第三方 Python 包由板端既有 PYNQ 运行环境提供，没有打包 wheelhouse，也没有安装或升级这些依赖；运行环境预检仅防止版本/平台与已观察基线不一致，不能证明完整依赖闭包或干净环境可离线重建。
-- `package/deployment/package.env.example` 保留安装时需填写的占位值。候选包尚未复制到板卡、注册 systemd、配置 `/etc/material-counter/package.env` 或启动。
-- G3 未放行，因此该包没有进入整机验收。本地仅执行索引生成与文件完整性核对；未运行软件测试、仿真或板端命令。五次冷启动、60 分钟有目标运行及故障测试已由用户豁免，不要求代理执行；最终现场测试由用户负责。
+- `package/deployment/package.env.example` 保留安装时需填写的占位值。部署准备记录显示候选包已复制到板端版本目录，`/etc/material-counter/package.env` 与 `/etc/systemd/system/material-counter-integrated.service` 已安装，`/opt/material-counter/current` 已指向该 release；service enabled 但 inactive。当前只读观察到 PID 4225 桌面计数进程正在运行；未手动启动 G4、未重启、未作整机验收。部署前后证据及边界见[部署准备记录](../standalone-20261031-g4-deployment-preparation/README.md)。
+- G3 未放行，因此该包没有进入整机验收。本地执行索引生成，板端执行安装和只读文件完整性核对；未运行软件测试、仿真或 G4 业务。五次冷启动、60 分钟有目标运行及故障测试已由用户豁免，不要求代理执行；最终现场测试由用户负责。
 - Route、视频源和 ADR-0005 接口状态不变；物料准确率未验收。
 
 ## 代码阶段记录（2026-10-30；包来源与索引已由 2026-10-31 刷新）
