@@ -22,8 +22,8 @@
 
 - `scripts/standalone/boot_integrated.py`：校验部署包和运行时文件，从包内读取 `boot-config.json`，然后按启动策略初始化并进入运行入口；该文件自身不生成部署包或 index。
 - `scripts/standalone/boot_policy.py`：候选启动策略模块。
-- `scripts/standalone/delivery.py`：除既有完整性验证外，当前有 `--build-index` 候选命令，可对**已组装**目录生成并复核 `deployment-index.json`；它不收集/复制依赖，也不会安装文件或写入板端环境变量。该命令尚未执行验证。
-- `scripts/standalone/material-counter-integrated.service`：候选 systemd 单元，从 `/etc/material-counter/package.env` 读取 `PACKAGE_ROOT` 与 `PACKAGE_INDEX_SHA256` 并传给入口。配置环境文件、安装步骤及参数值尚未形成经板端验收的流程。
+- `scripts/standalone/delivery.py`：除既有完整性验证外，当前有 `--build-index` 候选命令，可对**已组装**目录生成并复核 `deployment-index.json`；它不收集/复制依赖，也不会安装文件或写入板端环境变量。当前 G4 候选目录已执行并生成索引；该次本地核对范围和索引哈希见下文。
+- `scripts/standalone/material-counter-integrated.service`：候选 systemd 单元，从 `/etc/material-counter/package.env` 读取 `PACKAGE_ROOT` 与 `PACKAGE_INDEX_SHA256` 并传给入口。静态检查显示单元只依赖 local-fs.target，且不等待网络；G4 候选环境文件已填写拟安装目录和索引哈希，但尚未复制到板端、注册 service 或验证启动。
 
 候选索引生成调用形式（仅用于已经完整组装并包含有效 `boot-config.json` 的离线包目录）：
 
@@ -37,7 +37,7 @@ python -m scripts.standalone.delivery --root <assembled-package> --build-index
 
 - [ ] 候选目录已组装入口、36 个应用模块、匹配 BIT/HWH/manifest/native、7 个锁定 PYNQ 源和 2 个字体；板端已有运行环境的版本见包候选记录。第三方 Python 包没有封装或重装，仍须确认目标部署仅依赖现有板端环境，或另行准备可追溯的离线依赖集。
 - [x] 候选包已运行 `delivery.py --build-index` 生成并复核 `deployment-index.json`；SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a`。该检查只证明清单/文件完整性，不是启动或整机门禁。
-- [ ] `boot-config.json` 已在候选包中定义 `continuous` 模式、固定 by-id 相机和 7200 秒参数；安装环境文件仍为占位模板，需在板端部署时填写真实包根目录和索引 SHA-256，并核实服务参数与启动行为。
+- [ ] `boot-config.json` 已在候选包中定义 `continuous` 模式、固定 by-id 相机和 7200 秒参数；package.env.example 仍为占位模板；G4 目录另有环境值候选文件固定拟安装根目录和当前索引 SHA-256。仍须将包及环境文件安装到板端，并核实实际 service 启动行为。
 - [ ] 确认目标板离线依赖齐备及 ABI/哈希匹配；不得以启动时联网补包或现场编译替代。
 - [ ] 完成板端安装、正常启动/停止和冷启动验收，核对实际加载 BIT/HWH/manifest、唯一 owner、安全终态及逐次 boot ID。
 
