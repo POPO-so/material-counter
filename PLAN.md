@@ -1,5 +1,9 @@
 # 计数运行链路实施状态
 
+### 最新代码阶段状态（2026-10-30）
+
+G0/G1/G1.5/G2/G2.5 状态不变且已通过；G3/G4 均未放行。既有 346 项回归和 AREA ramp 比较来自此前代码版本。本分支集成绘图从 LINEAR 改用 AREA，但本次代码未测试或板验；此前固定 ramp 的本地 AREA 比较匹配，不代表本分支验收，灰度正式策略和黄金验收仍未冻结。运行报告新增有界原始 GPIO 采样变化、总数和截断字段，实物 GPIO 未测。G4 启动前增加对已观察 8 个 dpkg 包状态/版本的只读准入，仍非完整离线依赖闭包。候选包 37 模块源码指向 `bf817ca98b3a1032f83ac732424314d926e3da52`、分支 `feat/统一灰度缩放策略`；`deployment-index` 与 `package.env` 摘要仍过期，待代码阶段后刷新。Route/接口仍为候选，物料准确率未验收。
+
 当前脱机集成状态（2026-10-30）：G0/G1/G1.5/G2/G2.5 已通过。已有 G3 集中验证记录：相关软件回归 346 项通过；同输入显示开/关各 2,400 帧的轨迹与计数一致；新报告源码身份完整；遥测过期与协作式绘图退出场景已覆盖。缩放候选比较中常量灰度、AREA ramp 和 nearest overlay 外像素匹配，但 LINEAR ramp 有 640/207,360 像素差 1，插值策略未冻结。G3 仍未放行：实物 GPIO 消抖/浮空/长按与帧边界竞态、HDMI 热插拔和硬件恢复、Process.start 创建/启动异常的执行证据、真实相机有目标与人工真值仍缺；已新增对应启动异常用例，尚未执行。G4 尚未开始。候选包已刷新 37 个应用模块，运行环境预检和包源码清单校验代码已补齐；旧 deployment index 和 package.env 哈希已过期，待代码阶段结束后重建。Route/接口保持候选，物料准确率未验收。当前证据见 [G2](data/results/standalone-20261030-123000-g2-integration/README.md)、[G2.5](data/results/standalone-20261030-g25-concurrency/README.md)、[G3 部分记录](data/results/standalone-20261030-g3-functional/README.md) 与 [脱机部署缺口](scripts/standalone/DEPLOYMENT.md)。更早段落属于历史阶段快照。
 
 ## 脱机灰度 HDMI 实施（2026-10-29）

@@ -1,11 +1,11 @@
 # G4 脱机包候选（未安装、未验收）
 
-状态：候选目录已按 `feat/记录G3运行源码身份` 刷新 37 个应用 Python 模块，包含运行环境准入模块；此前的 `deployment-index.json` 和 `package.env.candidate` 哈希现在是旧版本，必须在代码阶段结束后重新生成/绑定。当前目录完整性尚未复核。本记录不代表 G3 完成或 G4 放行；计划要求的板端安装、独立供电/拔线冷启动、60 分钟有目标运行、故障恢复和安全停止证据仍缺。部署/恢复文档目前仅为[审阅草稿](deployment-recovery-draft.md)，未提供可执行或已验证的 G4 回滚命令，也不授权部署或测试。
+状态：G4 候选，未验收。候选包 37 个应用 Python 模块的来源现指向提交 `bf817ca98b3a1032f83ac732424314d926e3da52`、分支 `feat/统一灰度缩放策略`。启动前运行环境准入只读核对已观察的 8 个 dpkg 包状态/版本；它不安装依赖，也不构成完整离线依赖闭包。`deployment-index.json` 与 `package.env.candidate` 摘要仍过期，待代码阶段后刷新；当前目录完整性未复核。G3/G4 均未放行，板端安装、独立供电/拔线冷启动、60 分钟有目标运行、故障恢复和安全停止证据仍缺。部署/恢复文档目前仅为[审阅草稿](deployment-recovery-draft.md)，未提供可执行或已验证的 G4 回滚命令，也不授权部署或测试。
 
 ## 包身份
 
 - 候选目录：[package](package/)
-- 应用源码来源提交：`18d04b57929e78b53e75aae0d51b728f0b07dfc9`，分支 `fix/修复真实相机首帧等待`；`package-source.json` 当前列出 37 个应用 Python 模块，包含绘图进程启动故障注入和真实相机首帧等待修复。
+- 应用源码来源提交：`bf817ca98b3a1032f83ac732424314d926e3da52`，分支 `feat/统一灰度缩放策略`；`package-source.json` 当前列出 37 个应用 Python 模块，包含绘图进程启动故障注入、真实相机首帧等待修复及观察到的 OS 包状态/版本准入。
 - 上一版归档为 54 个包文件（不含 deployment index），索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a`。源码刷新后，该摘要及其 55 项核对结果仅为历史记录，不代表当前候选目录完整。
 - `python -B -m scripts.standalone.delivery --root <package> --build-index` 是已组装候选包的索引生成入口；本轮没有运行它，当前 deployment index 尚待代码阶段结束后重建。
 
@@ -16,7 +16,7 @@
 - manifest 锁定的 7 个 PYNQ 运行源码和 2 个字体。从板卡只读复制后，本地计算的 13 项依赖/制品 SHA-256 全部与来源 manifest 或 G2 记录一致；逐项记录见 [dependency-readback.json](dependency-readback.json)。
 - `boot-config.json` 使用 `continuous`、固定相机 by-id 路径；候选 systemd 单元和占位环境模板位于 package/deployment/。同目录外的 [package.env.candidate](package.env.candidate) 填入了拟安装 release 路径及旧索引 SHA-256；摘要已过期，文件不属于包索引，也没有安装到板端。
 - [board-runtime.json](package/board-runtime.json) 记录板端目标平台基线和既有运行时观测。本次选定版本的只读查询明细见 [runtime-package-observation.json](runtime-package-observation.json)；该文件位于 `package/` 外，不属于 deployment index，不改变候选包索引或其哈希。
-- `boot_integrated.py` 在一次性硬件初始化前调用 `runtime_environment.py`，对照该观察记录检查 Python、操作系统/内核、架构、libc 和所需 distribution 版本。此门只比对已观察环境，不安装依赖，也不形成完整依赖锁、wheelhouse 或干净环境重建能力。
+- `boot_integrated.py` 在一次性硬件初始化前调用 `runtime_environment.py`，对照观察记录检查 Python、操作系统/内核、架构、libc、distribution 版本，以及已观察 8 个 dpkg 包的已安装状态和版本。此门只比对已观察环境，不安装依赖，也不形成完整依赖锁、wheelhouse 或干净环境重建能力。
 
 ## 离线依赖静态清点
 
@@ -37,3 +37,8 @@
 - `package/deployment/package.env.example` 保留安装时需填写的占位值。候选包尚未复制到板卡、注册 systemd、配置 `/etc/material-counter/package.env` 或启动。
 - G3 未放行，因此该包没有进入整机验收。没有执行软件测试、仿真、构建或板端运行。
 - Route、视频源和 ADR-0005 接口状态不变；物料准确率未验收。
+
+## 最新代码阶段记录（2026-10-30）
+
+- 候选包 37 模块来源为 `bf817ca98b3a1032f83ac732424314d926e3da52` / `feat/统一灰度缩放策略`。`deployment-index.json` 与 `package.env.candidate` 摘要仍过期，待代码阶段后统一刷新。
+- 启动前增加已观察 8 个 dpkg 包状态/版本的只读准入；仅覆盖已观察兼容性，不代表完整离线依赖闭包。G4 仍未验收。
