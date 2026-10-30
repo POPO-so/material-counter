@@ -1,0 +1,25 @@
+{
+  "command": "\"C:\\Users\\14173\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -B -m pytest -p no:cacheprovider --basetemp C:\\Users\\14173\\AppData\\Local\\Temp\\mc-g3-first-batch-pytest-114baff4a2744d32910d74a26fb02b28 scripts/standalone scripts/rle scripts/gray8 -q",
+  "arguments": [
+    "-B",
+    "-m",
+    "pytest",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "C:\\Users\\14173\\AppData\\Local\\Temp\\mc-g3-first-batch-pytest-114baff4a2744d32910d74a26fb02b28",
+    "scripts/standalone",
+    "scripts/rle",
+    "scripts/gray8",
+    "-q"
+  ],
+  "python_version": "3.12.10",
+  "pytest_version": "9.1.1",
+  "exit_code": 0,
+  "started_at": "2026-10-31T00:23:33.1066719+08:00",
+  "finished_at": "2026-10-31T00:23:46.9939397+08:00",
+  "branch": "feat/统一灰度缩放策略",
+  "commit": "9731d62716bdb93f944193ec829669b7896a6205",
+  "basetemp": "C:\\Users\\14173\\AppData\\Local\\Temp\\mc-g3-first-batch-pytest-114baff4a2744d32910d74a26fb02b28",
+  "log_path": "data/results/standalone-20261030-g3-functional/local-pytest-20261031.txt"
+}

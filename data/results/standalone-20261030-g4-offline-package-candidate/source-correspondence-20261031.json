@@ -1,0 +1,196 @@
+{
+  "files": [
+    {
+      "bytes": 3791,
+      "path": "scripts/gray8/packet_codec.py",
+      "sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8"
+    },
+    {
+      "bytes": 0,
+      "path": "scripts/rle/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 11772,
+      "path": "scripts/rle/artifacts.py",
+      "sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7"
+    },
+    {
+      "bytes": 6607,
+      "path": "scripts/rle/components.py",
+      "sha256": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856"
+    },
+    {
+      "bytes": 5706,
+      "path": "scripts/rle/counter.py",
+      "sha256": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488"
+    },
+    {
+      "bytes": 15863,
+      "path": "scripts/rle/protocol.py",
+      "sha256": "74fd18aeca91283fea51302026d66e083d9012a4e7e1c8a3b88a476eec47ad04"
+    },
+    {
+      "bytes": 12256,
+      "path": "scripts/rle/run_counter.py",
+      "sha256": "062d37e7e3d0bc5999df3298dc236b455c80a2d7228844489f2fc2848a958e9c"
+    },
+    {
+      "bytes": 12863,
+      "path": "scripts/rle/transport.py",
+      "sha256": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86"
+    },
+    {
+      "bytes": 54,
+      "path": "scripts/standalone/__init__.py",
+      "sha256": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731"
+    },
+    {
+      "bytes": 5268,
+      "path": "scripts/standalone/boot_integrated.py",
+      "sha256": "07f3640a357a831728f1c8a49233164a96c9705994271699c7d438e3c8f6e469"
+    },
+    {
+      "bytes": 5837,
+      "path": "scripts/standalone/boot_policy.py",
+      "sha256": "bc9fee57006eb7121e151e8631b96f40cadb825c247811c41a1113daaeb78308"
+    },
+    {
+      "bytes": 4059,
+      "path": "scripts/standalone/bundle.py",
+      "sha256": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3"
+    },
+    {
+      "bytes": 2054,
+      "path": "scripts/standalone/camera.py",
+      "sha256": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2"
+    },
+    {
+      "bytes": 13652,
+      "path": "scripts/standalone/compositor.py",
+      "sha256": "68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1"
+    },
+    {
+      "bytes": 2295,
+      "path": "scripts/standalone/controls.py",
+      "sha256": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f"
+    },
+    {
+      "bytes": 1140,
+      "path": "scripts/standalone/count_controls.py",
+      "sha256": "3ad0b0e39ef19025a1037f5d444b9be94cb977437a77d5f07b8abd0858d54858"
+    },
+    {
+      "bytes": 15059,
+      "path": "scripts/standalone/delivery.py",
+      "sha256": "139ecb53b4bd9e389b3f678c3a0236371411ad1fbb5e4147d27dd72f0823ebc3"
+    },
+    {
+      "bytes": 6173,
+      "path": "scripts/standalone/driver_owner.py",
+      "sha256": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4"
+    },
+    {
+      "bytes": 2906,
+      "path": "scripts/standalone/evidence.py",
+      "sha256": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e"
+    },
+    {
+      "bytes": 33734,
+      "path": "scripts/standalone/g1_run.py",
+      "sha256": "312146dcea2ce1f19cba77c7e42e29addf15eff3a1724cf4ec844739941ce383"
+    },
+    {
+      "bytes": 2974,
+      "path": "scripts/standalone/g2_readback.py",
+      "sha256": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566"
+    },
+    {
+      "bytes": 3734,
+      "path": "scripts/standalone/hp2.py",
+      "sha256": "35764494f94468ddb10174886491dfd75a673942dc25982989b31cf8c882db2c"
+    },
+    {
+      "bytes": 35138,
+      "path": "scripts/standalone/integrated_run.py",
+      "sha256": "a62194733151dab7ce2f2ce2bf209ab38892ec38ed308d58d4d05f5f1dfa8389"
+    },
+    {
+      "bytes": 6487,
+      "path": "scripts/standalone/pressure.py",
+      "sha256": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696"
+    },
+    {
+      "bytes": 4874,
+      "path": "scripts/standalone/preview_inputs.py",
+      "sha256": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f"
+    },
+    {
+      "bytes": 23165,
+      "path": "scripts/standalone/probe.py",
+      "sha256": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52"
+    },
+    {
+      "bytes": 8926,
+      "path": "scripts/standalone/runtime_environment.py",
+      "sha256": "238b4762814f261db36943bf58128dece24cde3e23690297e8130ee414064d3c"
+    },
+    {
+      "bytes": 13134,
+      "path": "scripts/standalone/shared_frames.py",
+      "sha256": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c"
+    },
+    {
+      "bytes": 3133,
+      "path": "scripts/standalone/telemetry_cache.py",
+      "sha256": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a"
+    },
+    {
+      "bytes": 7614,
+      "path": "scripts/standalone/verify_sources.py",
+      "sha256": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929"
+    },
+    {
+      "bytes": 4795,
+      "path": "scripts/standalone/video_pump.py",
+      "sha256": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c"
+    },
+    {
+      "bytes": 93137,
+      "path": "scripts/wo0015/board_once.py",
+      "sha256": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9"
+    },
+    {
+      "bytes": 51712,
+      "path": "scripts/wo0015/board_preflight.py",
+      "sha256": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22"
+    },
+    {
+      "bytes": 778,
+      "path": "scripts/wo0016/binary_stats.py",
+      "sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44"
+    },
+    {
+      "bytes": 630,
+      "path": "scripts/wo0016/packet_encoder.py",
+      "sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8"
+    },
+    {
+      "bytes": 13912,
+      "path": "scripts/wo0016/split_touching.py",
+      "sha256": "b34ce5e74b689a863ed8d9175fa60f0ac22f5133638b6056e567912385d37412"
+    },
+    {
+      "bytes": 74249,
+      "path": "scripts/wo0016/stream_counter.py",
+      "sha256": "4bffd28dcee923f5c959b37ab97cdbd49ca2e64ae283c71173a8a20438b64872"
+    }
+  ],
+  "hardware_actions": 0,
+  "index_sha256": "63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d",
+  "module_count": 37,
+  "schema": "material-counter.standalone-source-verification.v1",
+  "scope": "local_git_source_correspondence_only",
+  "source_branch": "feat/统一灰度缩放策略",
+  "source_commit": "bf817ca98b3a1032f83ac732424314d926e3da52"
+}
