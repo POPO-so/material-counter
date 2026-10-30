@@ -1,6 +1,7 @@
-"""Generate fixed G3 scaling inputs and a binary nearest candidate reference array."""
+"""Generate fixed G3 scaling inputs and unexecuted candidate reference arrays."""
 
 import argparse
+from fractions import Fraction
 from pathlib import Path
 
 
@@ -46,6 +47,53 @@ def build_constant_gray_candidate(source):
     return bytes([source[0]]) * (TARGET_WIDTH * TARGET_HEIGHT)
 
 
+def round_fraction_ties_even(value):
+    """Round a nonnegative Fraction to the nearest integer, with ties to even."""
+    quotient, remainder = divmod(value.numerator, value.denominator)
+    doubled_remainder = 2 * remainder
+    if doubled_remainder > value.denominator or (
+        doubled_remainder == value.denominator and quotient % 2 == 1
+    ):
+        quotient += 1
+    return quotient
+
+
+def build_gray_ramp_area_candidate(source):
+    """Average exact overlap of each source pixel with every target column."""
+    if len(source) != WIDTH * HEIGHT:
+        raise ValueError("gray-ramp source must be a full-size array")
+    output = bytearray(TARGET_WIDTH * TARGET_HEIGHT)
+    for dst_x in range(TARGET_WIDTH):
+        left = Fraction(10 * dst_x, 9)
+        right = Fraction(10 * (dst_x + 1), 9)
+        weighted_sum = Fraction(0)
+        for src_x in range(left.numerator // left.denominator,
+                            (right.numerator + right.denominator - 1) // right.denominator):
+            overlap = min(right, Fraction(src_x + 1)) - max(left, Fraction(src_x))
+            weighted_sum += overlap * source[src_x]
+        value = round_fraction_ties_even(weighted_sum / (right - left))
+        for dst_y in range(TARGET_HEIGHT):
+            output[dst_y * TARGET_WIDTH + dst_x] = value
+    return bytes(output)
+
+
+def build_gray_ramp_linear_candidate(source):
+    """Linearly interpolate at the specified exact horizontal sample coordinate."""
+    if len(source) != WIDTH * HEIGHT:
+        raise ValueError("gray-ramp source must be a full-size array")
+    output = bytearray(TARGET_WIDTH * TARGET_HEIGHT)
+    for dst_x in range(TARGET_WIDTH):
+        coordinate = Fraction(20 * dst_x + 1, 18)
+        left_x = coordinate.numerator // coordinate.denominator
+        fraction = coordinate - left_x
+        value = round_fraction_ties_even(
+            (1 - fraction) * source[left_x] + fraction * source[left_x + 1]
+        )
+        for dst_y in range(TARGET_HEIGHT):
+            output[dst_y * TARGET_WIDTH + dst_x] = value
+    return bytes(output)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -80,6 +128,16 @@ def main():
     constant_expected_path = args.expected_dir / "constant-gray-576x360.raw"
     constant_expected_path.write_bytes(constant_expected)
     print(f"{constant_expected_path.name}: {len(constant_expected)} bytes")
+
+    ramp_source_path = args.output_dir / "gray-ramp-12.raw"
+    ramp_source = ramp_source_path.read_bytes()
+    for filename, builder in (
+        ("gray-ramp-inter-area-576x360.raw", build_gray_ramp_area_candidate),
+        ("gray-ramp-inter-linear-576x360.raw", build_gray_ramp_linear_candidate),
+    ):
+        expected_path = args.expected_dir / filename
+        expected_path.write_bytes(builder(ramp_source))
+        print(f"{expected_path.name}: {expected_path.stat().st_size} bytes")
 
 
 if __name__ == "__main__":

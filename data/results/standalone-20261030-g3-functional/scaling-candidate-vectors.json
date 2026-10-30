@@ -52,6 +52,36 @@
       "size_bytes": 207360,
       "sha256": "35264c92c0c52e311d0c63a5aea1ed662a78ee4ba9347f5ee2e89ab3588e792b",
       "basis": "candidate array generated from the recorded coordinate mapping; not compositor output or measured golden evidence"
+    },
+    {
+      "vector_id": "gray_ramp_inter_area",
+      "path": "scaling-expected-candidates/gray-ramp-inter-area-576x360.raw",
+      "source_path": "scaling-inputs/gray-ramp-12.raw",
+      "source_sha256": "87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354",
+      "method": "For each target column j, average source pixel values weighted by their exact overlap with [10*j/9, 10*(j+1)/9); repeat the row result for every target row.",
+      "formula": "value_j = sum_i(overlap([i,i+1), [10*j/9,10*(j+1)/9)) * I[i]) / (10/9), with I[i]=min(12*i,255)",
+      "rounding": "Exact fractions; round-to-nearest, ties-to-even. Static arithmetic finds no exact half ties among the 576 columns.",
+      "comparison_status": "Not compared with OpenCV or compositor; this is a candidate generation rounding convention, not frozen runtime behavior.",
+      "format": "C row-major uint8",
+      "shape": [360, 576],
+      "size_bytes": 207360,
+      "sha256": "81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8",
+      "basis": "exact Fraction arithmetic from the fixed ramp source; candidate only, not compositor output or measured golden evidence"
+    },
+    {
+      "vector_id": "gray_ramp_inter_linear",
+      "path": "scaling-expected-candidates/gray-ramp-inter-linear-576x360.raw",
+      "source_path": "scaling-inputs/gray-ramp-12.raw",
+      "source_sha256": "87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354",
+      "method": "For each target column j, linearly interpolate between adjacent source pixels at coordinate (20*j+1)/18; repeat the row result for every target row.",
+      "formula": "coordinate_j=(20*j+1)/18; value_j=(1-f)*I[floor(coordinate_j)] + f*I[floor(coordinate_j)+1], where f=coordinate_j-floor(coordinate_j) and I[i]=min(12*i,255)",
+      "rounding": "Exact fractions; round-to-nearest, ties-to-even. The unique exact half tie is target column j=19 (252.5), which this candidate convention rounds to 252.",
+      "comparison_status": "Not compared with OpenCV or compositor; this is a candidate generation rounding convention, not frozen runtime behavior.",
+      "format": "C row-major uint8",
+      "shape": [360, 576],
+      "size_bytes": 207360,
+      "sha256": "56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c",
+      "basis": "exact Fraction arithmetic from the fixed ramp source; candidate only, not compositor output or measured golden evidence"
     }
   ],
   "target": {"width": 576, "height": 360},
@@ -76,17 +106,17 @@
       "expected": {
         "INTER_AREA": {
           "source_coverage_interval": "[10*j/9,10*(j+1)/9)",
-          "rounding": "uint8 round-to-nearest as manually derived",
+          "rounding": "candidate convention: exact fractions rounded to nearest, ties-to-even; not compared with OpenCV and not frozen runtime behavior",
           "values": [1, 14, 28, 41, 54, 67, 80, 94, 107]
         },
         "INTER_LINEAR": {
           "source_sampling_coordinate": "(20*j+1)/18",
-          "rounding": "uint8 round-to-nearest as manually derived",
+          "rounding": "candidate convention: exact fractions rounded to nearest, ties-to-even; at j=19 exact 252.5 rounds to 252; not compared with OpenCV and not frozen runtime behavior",
           "values": [1, 14, 27, 41, 54, 67, 81, 94, 107]
         }
       },
       "different_candidate_columns": [2, 6],
-      "basis": "manual, not cv2 output"
+      "basis": "first nine columns manually derived and statically cross-checked against the two full candidate arrays; not cv2 output"
     },
     {
       "id": "binary_nearest_rectangle_and_boundary_points",
@@ -107,10 +137,10 @@
     }
   ],
   "limitations": [
-    "The three raw files are fixed source inputs. Candidate expected arrays exist for constant gray and binary nearest; the gray ramp has no candidate expected array and no PNG files have been generated.",
-    "No comparison has been run.",
-    "No runner source hash is bound to these vectors.",
-    "INTER_AREA and INTER_LINEAR remain candidates and are not frozen.",
-    "These vectors are not golden images or pass evidence."
+    "The three raw files are fixed source inputs. Four candidate expected arrays currently exist: constant gray, binary nearest, gray-ramp INTER_AREA, and gray-ramp INTER_LINEAR. No PNG files have been generated.",
+    "No OpenCV or compositor comparison has been run; no runner source hash is bound to these vectors.",
+    "The gray-ramp candidates use exact Fraction arithmetic and a ties-to-even generation convention; the INTER_LINEAR j=19 half tie resolves to 252, and this has not been compared with OpenCV or frozen as runtime behavior. INTER_AREA has no exact half tie across the target columns.",
+    "Gray interpolation strategy remains unfrozen, and G3 is not released.",
+    "These vectors are unexecuted candidate reference arrays, not golden images or pass evidence."
   ]
 }

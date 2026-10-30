@@ -65,16 +65,18 @@
 | `scaling-inputs/gray-ramp-12.raw` | `87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354` |
 | `scaling-inputs/binary-nearest-rect-points.raw` | `467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263` |
 
-表中三份 raw 文件仅是输入材料。此前未生成 expected arrays 或 PNG；JSON 不是黄金图或通过证据。测试源码的二值输入夹具此前虽按坐标关系修正，但未运行。
+表中三份 raw 文件仅是输入材料。JSON 不是黄金图或通过证据。测试源码的二值输入夹具此前虽按坐标关系修正，但未运行。
 
-现有两份候选 expected raw 均由标准库生成，C row-major uint8，shape `[360,576]`，各 207360 bytes：
+现有四份候选 expected raw 均由标准库生成，C row-major uint8，shape `[360,576]`，各 207360 bytes：
 
 | 候选输出 | 推导 | SHA-256 |
 |---|---|---|
 | [常量灰度](scaling-expected-candidates/constant-gray-576x360.raw) | 所有目标像素保持 73；对 `INTER_AREA` 和 `INTER_LINEAR` 均为候选不变量 | `ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2` |
 | [二值 nearest](scaling-expected-candidates/binary-inter-nearest-576x360.raw) | 按 `src_index=floor(10*dst_index/9)` 从固定二值源逐行逐列采样 | `35264c92c0c52e311d0c63a5aea1ed662a78ee4ba9347f5ee2e89ab3588e792b` |
+| [灰度 ramp INTER_AREA](scaling-expected-candidates/gray-ramp-inter-area-576x360.raw) | 精确 overlap 加权平均，源覆盖 `[10*j/9,10*(j+1)/9)`；Fraction 精确计算，round-to-nearest ties-to-even | `81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8` |
+| [灰度 ramp INTER_LINEAR](scaling-expected-candidates/gray-ramp-inter-linear-576x360.raw) | 坐标 `(20*j+1)/18` 线性插值；Fraction 精确计算，round-to-nearest ties-to-even | `56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c` |
 
-常量输出和二值输出均为按规则生成的候选期望数据，不是 compositor 输出、实测比较或黄金证据。灰度 ramp 的 expected outputs 和 PNG 未生成；未比较，runner hash 未绑定，状态仍为 `candidate_unexecuted`，G3 未放行。
+四份数组均为未执行的候选参考数据，不是 compositor 输出、实测比较或黄金证据。INTER_LINEAR 在目标列 `j=19` 有唯一精确值 `252.5`，本候选生成舍入约定取 `252`；尚未与 OpenCV 比较，不冻结运行时行为。INTER_AREA 576 列没有精确 half tie。PNG 未生成，没有 compositor comparison 或 runner hash 绑定；灰度策略未冻结，状态仍为 `candidate_unexecuted`，G3 未放行。
 
 ### 后续注入场景及边界
 

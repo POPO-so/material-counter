@@ -88,7 +88,8 @@
 
 ## G3 缩放候选参考数组（2026-10-30；候选未执行）
 
-- 已新增标准库生成器 `data/results/standalone-20261030-g3-functional/generate_scaling_candidate_sources.py`，生成三份 C row-major uint8、shape `[400,640]`、各 256000 bytes 的固定 raw 输入材料，并生成常量灰度与二值 nearest 两份 `[360,576]`、各 207360 bytes 的候选 expected raw。
+- 标准库生成器 `data/results/standalone-20261030-g3-functional/generate_scaling_candidate_sources.py` 生成三份 C row-major uint8、shape `[400,640]`、各 256000 bytes 的固定 raw 输入，以及四份 `[360,576]`、各 207360 bytes 的候选 expected raw：常量灰度、二值 nearest、灰度 ramp AREA、灰度 ramp LINEAR。
 - `constant-gray-73.raw` SHA-256：`aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af`；`gray-ramp-12.raw`：`87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354`；`binary-nearest-rect-points.raw`：`467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263`。
-- JSON 与说明文档已登记三个源制品及两份候选输出的路径、映射、格式、尺寸、字节数和 SHA-256。常量灰度输出保持 73，不区分 `INTER_AREA`/`INTER_LINEAR`；二值数组按 `src_index=floor(10*dst_index/9)` 从固定源数据推导。两份数组均是候选参考数据，不是 compositor 实测或黄金证据。灰度 ramp expected outputs 和 PNG 未生成；未比较，runner hash 未绑定。`candidate_unexecuted` 状态保留，灰度策略仍未冻结，G3 未放行。
-- 本次只运行候选数据生成脚本并进行静态文件长度/SHA-256/JSON 解析检查；未运行测试、compositor、PNG 比较、仿真、构建或板端任务。
+- 两份 ramp 输出按标准库 `Fraction` 精确计算。AREA 对每列用源覆盖 `[10*j/9,10*(j+1)/9)` 进行精确 overlap 加权平均；LINEAR 在 `(20*j+1)/18` 插值。round-to-nearest ties-to-even 是候选生成舍入约定：LINEAR 列 `j=19` 唯一精确 `252.5` 取 `252`，尚未与 OpenCV 比较，未冻结运行时行为；AREA 576 列无精确 half tie。输出 SHA-256：AREA `81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8`；LINEAR `56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c`。
+- JSON 登记四份候选输出的源路径/SHA、公式、舍入约定、C row-major uint8、shape、字节数和输出 SHA。四份都不是 compositor 实测或黄金证据；没有 PNG、compositor comparison 或 runner hash 绑定。灰度策略未冻结，状态 `candidate_unexecuted`，G3 未放行。
+- 本次只运行候选生成器并进行静态文件长度、SHA-256、JSON 绑定、首行前九列与 JSON 手算值核对；未运行测试、compositor、PNG 比较、仿真、构建或板端任务。
