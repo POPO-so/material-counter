@@ -1,4 +1,4 @@
-"""Offline integrity verification for a relocatable standalone RLE package."""
+"""Build a deployment index and verify a relocatable standalone RLE package."""
 from __future__ import annotations
 
 import argparse
@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import struct
+import sys
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from .bundle import verify_bundle
@@ -15,6 +16,7 @@ INDEX_SCHEMA = "material-counter.standalone-package.v1"
 DISPLAY_MANIFEST = "export/display-manifest.json"
 REQUIRED_FILES = {
     DISPLAY_MANIFEST,
+    "boot-config.json",
     "export/g2-integrated.bit",
     "export/g2-integrated.hwh",
     "native/rle_components_v2.so",
@@ -98,6 +100,19 @@ def _actual_files(root: Path) -> set[str]:
         except OSError as exc:
             raise ValueError(f"cannot inspect package directory: {directory}") from exc
     return result
+
+
+def _validate_boot_config(root: Path, manifest_sha256: str) -> dict:
+    config_path = _checked_file(root, "boot-config.json")
+    try:
+        config = json.loads(config_path.read_text(encoding="utf-8"),
+                            object_pairs_hook=_unique_json_object)
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("invalid boot-config.json") from exc
+    from .boot_policy import build_argv
+    build_argv(root, config, "00000000-0000-0000-0000-000000000000",
+               root / "candidate-session.json", manifest_sha256, sys.executable)
+    return config
 
 
 def verify_package(root, index_sha256):
@@ -199,6 +214,7 @@ def verify_package(root, index_sha256):
         if _sha256(packaged) != expected.lower():
             raise ValueError(f"runtime source hash mismatch: {source_relative}")
 
+    _validate_boot_config(package_root, declared[DISPLAY_MANIFEST]["sha256"])
     _validate_elf_arm(checked["native/rle_components_v2.so"])
     verify_bundle(manifest_path, declared[DISPLAY_MANIFEST]["sha256"])
     return {
@@ -209,12 +225,77 @@ def verify_package(root, index_sha256):
     }
 
 
+def build_deployment_index(root):
+    """Create and verify an index for an already assembled offline package.
+
+    This does not assemble or install dependencies and does not perform board
+    actions. The package must include a valid boot-config.json; the resulting
+    digest must be pinned separately by the deployment environment.
+    """
+    try:
+        package_root = Path(root).resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise ValueError("package root does not exist") from exc
+    if not package_root.is_dir():
+        raise ValueError("package root must be a directory")
+
+    index_path = package_root / "deployment-index.json"
+    if index_path.is_symlink() or index_path.exists():
+        raise ValueError("refusing to overwrite deployment-index.json")
+
+    actual = _actual_files(package_root)
+    missing = sorted(REQUIRED_FILES - actual)
+    if missing:
+        raise ValueError(f"required package files missing: {missing}")
+
+    manifest_path = _checked_file(package_root, DISPLAY_MANIFEST)
+    manifest_digest = _sha256(manifest_path)
+    _validate_boot_config(package_root, manifest_digest)
+
+    declared = {}
+    for relative in sorted(actual):
+        relative = _valid_relative_path(relative)
+        path = _checked_file(package_root, relative)
+        declared[relative] = {"sha256": _sha256(path), "bytes": path.stat().st_size}
+    payload = json.dumps({"schema": INDEX_SCHEMA, "files": declared},
+                         sort_keys=True, separators=(",", ":")) + "\n"
+
+    created = False
+    try:
+        with index_path.open("x", encoding="utf-8", newline="\n") as stream:
+            created = True
+            stream.write(payload)
+            stream.flush()
+        digest = _sha256(index_path)
+        verified = verify_package(package_root, digest)
+    except BaseException:
+        if created:
+            try:
+                index_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+        raise
+    return {
+        "status": "INDEX_BUILT_CANDIDATE",
+        "index_sha256": digest,
+        "files_indexed": len(declared),
+        "hardware_actions": 0,
+        "scope": "offline_package_preparation_only",
+        "verification": verified,
+    }
+
+
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Verify an offline standalone delivery package")
+    parser = argparse.ArgumentParser(description="Build an offline package index or verify a pinned package")
     parser.add_argument("--root", required=True, type=Path)
-    parser.add_argument("--index-sha256", required=True)
+    action = parser.add_mutually_exclusive_group(required=True)
+    action.add_argument("--index-sha256")
+    action.add_argument("--build-index", action="store_true",
+                        help="create and verify deployment-index.json in an assembled package")
     args = parser.parse_args(argv)
-    print(json.dumps(verify_package(args.root, args.index_sha256), sort_keys=True))
+    result = (build_deployment_index(args.root) if args.build_index
+              else verify_package(args.root, args.index_sha256))
+    print(json.dumps(result, sort_keys=True))
 
 
 if __name__ == "__main__":

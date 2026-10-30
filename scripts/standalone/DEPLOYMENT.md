@@ -12,8 +12,34 @@
   python scripts/standalone/verify_sources.py --source-root <PYNQ-checkout> --brief
   ```
 
-- **G2 集成制品**：制品目录为 `data/results/standalone-20261030-064700-g2-integration/export/`，含 `g2-integrated.bit`、`g2-integrated.hwh`、`g2-manifest.json` 和 `g2-display-smoke.manifest.json`。BIT SHA-256 为 `2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18`，HWH SHA-256 为 `a663072734f2b16be9f37be0699ba897b5902c0b46398a4be914f6ee40fa852f`，G2 manifest SHA-256 为 `43a894610c7ce33fb9baf4aa560e14511f94a13ba5d3b74221115590e796276e`，显示冒烟 manifest SHA-256 为 `c115950a342535961f3de32b3b3e038d892e4bd8ef7491871a1c49291f47c4d9`。原报告记录 HDMI/camera 串行显示和 12 帧 RLE 像素重建；后续 [G2 安全恢复记录](../../data/results/standalone-20261030-g2-recovery/README.md) 解释了页首未定义读的 external abort，并补齐 HP0 读回、安全寄存器快照及统一所有者正常停止。旧 BIT 的 G2 已放行；G2.5/G3/G4 未通过，不得跳级放行 G4。
-- `scripts/standalone/g2_readback.py` 是安全读回代码的一部分，不是部署/回退入口。G2 集成目录中没有已验收的统一启动服务或 G4 部署器；新增监测制品须重新验证，不能继承旧 BIT 的 G2 结论。
+- **历史：早期 G2 集成制品**：旧制品目录为 `data/results/standalone-20261030-064700-g2-integration/export/`，其旧 BIT SHA-256 为 `2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18`。本段保留早期制品与 [G2 安全恢复记录](../../data/results/standalone-20261030-g2-recovery/README.md) 的历史说明，不代表当前候选制品身份或后续门禁状态。
+- **当前 G2/G2.5/G3 证据**：最新 G2/G2.5 制品位于 `data/results/standalone-20261030-123000-g2-integration/`，BIT SHA-256 为 `79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0`。[G2 复验报告](../../data/results/standalone-20261030-123000-g2-integration/README.md)和 [G2.5 并发压力报告](../../data/results/standalone-20261030-g25-concurrency/README.md)记录的证据通过。 [G3 部分回归报告](../../data/results/standalone-20261030-g3-functional/README.md)仅记录固定回放的显示开关一致性及该回放 FPS 子项；G3 未放行，G4 未验收。不得将这些状态合并表述为整机部署验收。
+- `scripts/standalone/g2_readback.py` 是安全读回代码的一部分，不是部署/回退入口。最新制品通过 G2/G2.5 不代表统一启动服务、G3 或 G4 已验收。
+
+## 候选整合启动入口（未验收）
+
+以下实现是候选入口，尚未完成板端安装、启动或冷启动验收：
+
+- `scripts/standalone/boot_integrated.py`：校验部署包和运行时文件，从包内读取 `boot-config.json`，然后按启动策略初始化并进入运行入口；该文件自身不生成部署包或 index。
+- `scripts/standalone/boot_policy.py`：候选启动策略模块。
+- `scripts/standalone/delivery.py`：除既有完整性验证外，当前有 `--build-index` 候选命令，可对**已组装**目录生成并复核 `deployment-index.json`；它不收集/复制依赖，也不会安装文件或写入板端环境变量。该命令尚未执行验证。
+- `scripts/standalone/material-counter-integrated.service`：候选 systemd 单元，从 `/etc/material-counter/package.env` 读取 `PACKAGE_ROOT` 与 `PACKAGE_INDEX_SHA256` 并传给入口。配置环境文件、安装步骤及参数值尚未形成经板端验收的流程。
+
+候选索引生成调用形式（仅用于已经完整组装并包含有效 `boot-config.json` 的离线包目录；本轮未运行）：
+
+```sh
+python -m scripts.standalone.delivery --root <assembled-package> --build-index
+```
+
+输出的 `index_sha256` 需要经人工核对后固定到部署环境；生成索引不代表包组装、启动配置或启动行为通过。
+
+完整部署交付仍缺少并需另行验证：
+
+- [ ] 明确并实现可复核的包组装流程，包含该版本所需入口、模块、manifest、匹配 BIT/HWH、native 库、字体、锁定的 PYNQ 运行时源及其他依赖。
+- [ ] 使用 `delivery.py --build-index` 为已组装包生成并复核 `deployment-index.json`，再单独固定其 SHA-256；源码命令已准备，但尚未运行。
+- [ ] 定义 `boot-config.json` 的生成/安装内容及安装参数，并验证其与包版本、服务参数和启动行为一致。
+- [ ] 确认目标板离线依赖齐备及 ABI/哈希匹配；不得以启动时联网补包或现场编译替代。
+- [ ] 完成板端安装、正常启动/停止和冷启动验收，核对实际加载 BIT/HWH/manifest、唯一 owner、安全终态及逐次 boot ID。
 
 ## 离线依赖与完整性约束
 

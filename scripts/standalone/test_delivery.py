@@ -10,6 +10,7 @@ from scripts.standalone.bundle import required_addresses
 
 REQUIRED = (
     "export/display-manifest.json",
+    "boot-config.json",
     "export/g2-integrated.bit",
     "export/g2-integrated.hwh",
     "native/rle_components_v2.so",
@@ -53,6 +54,13 @@ def make_package(root):
     _write(root / "fonts/DejaVuSans.ttf", latin_font)
     monitor = b"# pinned source\n"
     _write(root / "runtime/pynq/rle_monitor.py", monitor)
+    boot_config = {
+        "schema": "material-counter.integrated-boot.v1",
+        "mode": "continuous",
+        "camera": "/dev/v4l/by-id/usb-Camera_ABC-video-index0",
+        "duration_s": 3600,
+    }
+    _write(root / "boot-config.json", json.dumps(boot_config).encode())
 
     # ELF32, little endian, ARM (EM_ARM = 40).
     elf = bytearray(20)
