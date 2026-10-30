@@ -74,6 +74,8 @@ def systemd_record(unit: str) -> dict[str, object]:
         "--property=ActiveState", "--property=SubState",
     ])
     enabled = command_record(["systemctl", "is-enabled", unit])
+    observed_enabled = str(enabled.get("stdout", "")).strip()
+    known_enabled = {"enabled", "disabled", "static", "masked", "indirect", "generated", "transient"}
     fields: dict[str, str] = {}
     if show["state"] == "known":
         for line in str(show["stdout"]).splitlines():
@@ -85,7 +87,7 @@ def systemd_record(unit: str) -> dict[str, object]:
         "load_state": fields.get("LoadState", "unknown"),
         "active_state": fields.get("ActiveState", "unknown"),
         "sub_state": fields.get("SubState", "unknown"),
-        "enabled_state": enabled["stdout"] if enabled["state"] == "known" else "unknown",
+        "enabled_state": observed_enabled if observed_enabled in known_enabled else "unknown",
         "show_result": show,
         "is_enabled_result": enabled,
     }

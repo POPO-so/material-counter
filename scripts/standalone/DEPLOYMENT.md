@@ -26,6 +26,7 @@
 - `scripts/standalone/delivery.py`：除既有完整性验证外，当前有 `--build-index` 候选命令，可对**已组装**目录生成并复核 `deployment-index.json`；验证包内 `package-source.json` 的应用模块列表与索引中的 Python 源文件集合一致。它不收集/复制依赖，也不会安装文件或写入板端环境变量。
 - `scripts/standalone/release_stage.py`：把已组装且索引摘要由调用者固定的候选包复制到一个全新的本地目录，复制前后运行包完整性核验。只创建目标目录内的文件；不安装 systemd 单元或环境文件、不切换 `current`、不启动服务。代码尚未执行验证，不能据此宣称 G4 部署或离线依赖闭包已完成。
 - `scripts/standalone/release_baseline.py`：未来部署前只读记录 boot ID、systemd 状态、unit/env/current 路径及目标、候选制品哈希和相关进程摘要到全新 JSON。采集结果固定标为硬件切换安全性未证明；脚本未运行，也不执行停机、激活或回退。必须另行核对同轮 DMA、VDMA、相机和 owner 的安全终态。
+- `scripts/standalone/release_activation_plan.py`：只读核对已暂存 release、索引摘要、候选 unit/env 与部署前基线，并独占写入包含目标身份和恢复目标的计划 JSON。它固定 `activation_allowed=false`，不改动 service/env/current；代码尚未运行。真实激活仍须同轮证明硬件安全、取得唯一 owner 并执行受控切换。
 - `scripts/standalone/material-counter-integrated.service`：候选 systemd 单元，从 `/etc/material-counter/package.env` 读取 `PACKAGE_ROOT` 与 `PACKAGE_INDEX_SHA256` 并传给入口。静态检查显示单元只依赖 local-fs.target，且不等待网络；G4 候选环境文件已填写拟安装目录和索引哈希，但尚未复制到板端、注册 service 或验证启动。
 
 候选索引生成调用形式（仅用于已经完整组装并包含有效 `boot-config.json` 的离线包目录）：
