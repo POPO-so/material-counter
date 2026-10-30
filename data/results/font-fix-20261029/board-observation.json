@@ -1,0 +1,40 @@
+{
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "hp2": {
+    "read_control": 1,
+    "write_control": 3840
+  },
+  "samples": [
+    {
+      "unique": 2286,
+      "scans": 38476,
+      "repeat": 12815,
+      "invalid": 23375,
+      "partial": 1,
+      "sequence": 318,
+      "sequence_after": 318,
+      "flags": 0,
+      "monotonic": 72343.073852059
+    },
+    {
+      "unique": 2310,
+      "scans": 38724,
+      "repeat": 13039,
+      "invalid": 23375,
+      "partial": 1,
+      "sequence": 320,
+      "sequence_after": 320,
+      "flags": 0,
+      "monotonic": 72348.080442766
+    }
+  ],
+  "scope": "Read-only observation of externally corrected running display; no restart or MMIO writes by this task.",
+  "user_visual_confirmation": "Chinese and numeric text is clear.",
+  "delta": {
+    "unique": 24,
+    "scans": 248,
+    "repeat": 224,
+    "invalid": 0,
+    "partial": 0
+  }
+}

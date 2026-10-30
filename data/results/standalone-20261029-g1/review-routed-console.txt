@@ -1,0 +1,77 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Thu Oct 29 17:15:31 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source data/results/standalone-20261029-g1/review-routed.tcl
+# open_checkpoint C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_routed.dcp
+Command: open_checkpoint C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_routed.dcp
+
+Starting open_checkpoint Task
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.038 . Memory (MB): peak = 323.883 ; gain = 0.000
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.073 . Memory (MB): peak = 849.512 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 531 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2026.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Read ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.038 . Memory (MB): peak = 969.531 ; gain = 3.344
+INFO: [Timing 38-478] Restoring timing data from binary archive.
+INFO: [Timing 38-479] Binary timing data restore complete.
+INFO: [Project 1-856] Restoring constraints from binary archive.
+INFO: [Project 1-853] Binary constraint restore complete.
+INFO: [Designutils 20-5722] Start Reading Physical Databases.
+Reading placement.
+Read Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.017 . Memory (MB): peak = 1575.355 ; gain = 0.000
+Reading placer database...
+Read Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.011 . Memory (MB): peak = 1575.355 ; gain = 0.000
+Read PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1575.355 ; gain = 0.000
+Read placeStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.302 . Memory (MB): peak = 1602.336 ; gain = 26.980
+Read PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1602.336 ; gain = 0.000
+Reading routing.
+Read RouteStorage: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.163 . Memory (MB): peak = 1602.336 ; gain = 0.000
+Read Physdb Files: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.526 . Memory (MB): peak = 1602.336 ; gain = 26.980
+Restored from archive | CPU: 1.000000 secs | Memory: 0.000000 MB |
+Finished XDEF File Restore: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.566 . Memory (MB): peak = 1602.336 ; gain = 28.547
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 1602.336 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 1 instances were transformed.
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 1 instance 
+
+INFO: [Project 1-604] Checkpoint was created with Vivado v2026.1 (64-bit) build 6511674
+WARNING: [Vivado 12-23575] Critical violations of the methodology design rules detected. Critical violations may contribute to timing failures or cause functional issues in hardware. Run report_methodology for more information.
+open_checkpoint: Time (s): cpu = 00:00:16 ; elapsed = 00:00:21 . Memory (MB): peak = 1602.336 ; gain = 1285.988
+# read_xdc C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc
+Parsing XDC File [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc]
+WARNING: [Constraints 18-619] A clock with name 'display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk' already exists, overwriting the previous clock with the same name. [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc:7]
+Finished Parsing XDC File [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc]
+# report_timing_summary -delay_type min_max -report_unconstrained -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/timing-reviewed.rpt
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+WARNING: [Timing 38-436] There are set_bus_skew constraint(s) in this design. Please run report_bus_skew to ensure that bus skew requirements are met.
+# report_methodology -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/methodology-reviewed.rpt
+Command: report_methodology -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/methodology-reviewed.rpt
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [DRC 23-133] Running Methodology with 2 threads
+INFO: [Vivado_Tcl 2-1520] The results of Report Methodology are in file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/methodology-reviewed.rpt.
+report_methodology completed successfully
+# report_cdc -details -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/cdc-reviewed.rpt
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [Timing 38-314] The report_cdc command only analyzes and reports clock domain crossing paths where clocks have been defined on both source and destination sides. Ports with no input delay constraint are skipped. Please run check_timing to verify there are no missing clock definitions in your design, nor any unconstrained input port.
+# report_bus_skew -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/bus-skew-reviewed.rpt
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+# set setup [get_property SLACK [get_timing_paths -delay_type max -max_paths 1]]
+# set hold [get_property SLACK [get_timing_paths -delay_type min -max_paths 1]]
+# if {$setup < 0 || $hold < 0} {error "TIMING_FAILED"}
+ERROR: [Vivado_Tcl 4-50] Result '' not found. Please be sure that 'report_drc' has been run before using 'get_drc_violations'.
+INFO: [Common 17-206] Exiting Vivado at Thu Oct 29 17:16:06 2026...

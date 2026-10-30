@@ -1,0 +1,114 @@
+{
+  "schema": "material-counter.g1-resume-runtime.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "old_owner_recovery": {
+    "unit": "material-display-open.service",
+    "pid": 26439,
+    "report": "/home/xilinx/standalone-20261029-g1/screen-open-20261029c.json",
+    "report_state": "FAIL_HOLD",
+    "driver_job_finished": false,
+    "termination": "systemctl kill --signal=SIGKILL --kill-who=all after exact precondition checks",
+    "verified_preconditions": {
+      "reset": 0,
+      "vdma_control": "0x11000",
+      "vdma_status": "0x11001",
+      "vdma_halted": true,
+      "vdma_error_mask": "0x0",
+      "monitor_signature": "0x4d435631",
+      "loaded_bit_sha256": "c1829e1af595a22daf85da35449c93fe47808888ddf33b262a46252f7bc1e73f"
+    },
+    "post_termination": {
+      "unit_state": "inactive/dead",
+      "main_pid": 0,
+      "CmaFree_kib": 77028,
+      "CmaTotal_kib": 131072
+    }
+  },
+  "artifact_hashes": {
+    "manifest_sha256": "685bb871fed4d0c1ed58ff9bb5c079b2a51748c1102c25b86dee5ca8a6e7c8d3",
+    "bit_sha256": "c1829e1af595a22daf85da35449c93fe47808888ddf33b262a46252f7bc1e73f",
+    "hwh_sha256": "dac5ea7e01543bdc3c3542f8d0f53619df49a8ead60af8bbed7336a849e0c670"
+  },
+  "synced_committed_sources": [
+    "scripts/standalone/__init__.py",
+    "scripts/standalone/bundle.py",
+    "scripts/standalone/camera.py",
+    "scripts/standalone/compositor.py",
+    "scripts/standalone/controls.py",
+    "scripts/standalone/driver_owner.py",
+    "scripts/standalone/g1_run.py",
+    "scripts/standalone/hp2.py",
+    "scripts/standalone/verify_sources.py",
+    "scripts/wo0015/board_preflight.py"
+  ],
+  "new_service": {
+    "unit": "material-display-g1-20261030.service",
+    "pid": 24847,
+    "state": "active/running",
+    "working_directory": "/home/xilinx/standalone-20261029-g1",
+    "entrypoint": "/usr/local/share/pynq-venv/bin/python3 -B -u -m scripts.standalone.g1_run",
+    "source": "camera",
+    "requested_fps": 20,
+    "duration_seconds": 7200,
+    "session_id": "3be156e9-c01b-4fce-8636-00d6794ac77d",
+    "report_path": "/home/xilinx/standalone-20261029-g1/screen-start-20261030b.json",
+    "report_status": "pending until process exit; service intentionally remains running",
+    "standard_gates": "verify_bundle and verify_runtime passed before start; 24 MiB admission allocation passed",
+    "CmaFree_before_start_kib": 71924,
+    "CmaFree_after_start_sample_kib": 19948,
+    "CmaTotal_kib": 131072
+  },
+  "interval_samples": [
+    {
+      "monotonic": 95345.651949094,
+      "unique": 64542,
+      "invalid": 23447,
+      "effective_fps": 8.210974371320333,
+      "vdma_status": "0x11000",
+      "session_int": 79594481351322292344471289229963085693
+    },
+    {
+      "monotonic": 95347.76293589,
+      "unique": 64568,
+      "invalid": 23447,
+      "effective_fps": 12.316514745244643,
+      "vdma_status": "0x11000",
+      "session_int": 79594481351322292344471289229963085693
+    },
+    {
+      "monotonic": 95349.842186404,
+      "unique": 64583,
+      "invalid": 23447,
+      "effective_fps": 7.214137930478635,
+      "vdma_status": "0x11000",
+      "session_int": 79594481351322292344471289229963085693
+    }
+  ],
+  "interval_deltas": {
+    "new_unique_frames": [
+      26,
+      15
+    ],
+    "invalid_frames": [
+      0,
+      0
+    ],
+    "interval_seconds": [
+      2.110986796,
+      2.079250514
+    ]
+  },
+  "final_readback": {
+    "service": "active/running",
+    "pid": 24847,
+    "vdma_control": "0x11009",
+    "vdma_status": "0x11000",
+    "vdma_error_mask": "0x0",
+    "monitor_signature": "0x4d435631",
+    "latest_unique": 64843,
+    "latest_invalid": 23447,
+    "latest_partial": 3,
+    "latest_effective_fps": 8.470444936252342
+  },
+  "scope_note": "G1 camera Gray8 display verification only; no RLE counting integration or PL count claim. Two sampled intervals pass identity/frame-growth/VDMA-fault/steady-invalid checks; these samples do not establish the G1 10-minute or G1.5 continuous FPS acceptance gates."
+}

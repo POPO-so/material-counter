@@ -1,0 +1,9 @@
+strace: Process 20766 attached
+11:54:37.686406 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=161243607}, NULL) = 0 (Timeout)
+11:54:37.850813 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL) = 0 (Timeout)
+11:54:38.352367 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL) = 0 (Timeout)
+11:54:38.853965 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL) = 0 (Timeout)
+11:54:39.355515 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL) = 0 (Timeout)
+11:54:39.857011 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULL) = 0 (Timeout)
+11:54:40.358272 pselect6(0, NULL, NULL, NULL, {tv_sec=0, tv_nsec=500000000}, NULLstrace: Process 20766 detached
+ <detached ...>

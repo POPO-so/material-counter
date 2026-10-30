@@ -1,0 +1,349 @@
+{
+  "schema": "material-counter.g1-run.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "session_id": "43ae646a-731d-4178-8c78-da4e2a230644",
+  "scope": "G1 independent display; no RLE counting",
+  "manifest_sha256": "689cd0bc91ffde62b0346f002b12ad61b042ba358861ec63bbeea0d00ad53bfc",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "before_memory": {
+    "MemAvailable": "     369152 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           15772 kB"
+  },
+  "samples": [
+    {
+      "unique": 0,
+      "scans": 0,
+      "repeat": 0,
+      "invalid": 0,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 1,
+      "capture_started": 65169.291515795,
+      "sampled_monotonic": 65169.292066995
+    },
+    {
+      "unique": 0,
+      "scans": 0,
+      "repeat": 0,
+      "invalid": 0,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 2,
+      "capture_started": 65169.29395086,
+      "sampled_monotonic": 65169.294489623,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 117,
+      "repeat": 0,
+      "invalid": 117,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 3,
+      "capture_started": 65171.345627491,
+      "sampled_monotonic": 65171.34607106,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 0,
+      "scans": 240,
+      "repeat": 0,
+      "invalid": 240,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 4,
+      "capture_started": 65173.406268017,
+      "sampled_monotonic": 65173.406712712,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 364,
+      "repeat": 0,
+      "invalid": 364,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 5,
+      "capture_started": 65175.472522955,
+      "sampled_monotonic": 65175.472997312,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 0,
+      "scans": 485,
+      "repeat": 0,
+      "invalid": 485,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 6,
+      "capture_started": 65177.485167045,
+      "sampled_monotonic": 65177.485601752,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 609,
+      "repeat": 0,
+      "invalid": 609,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 7,
+      "capture_started": 65179.54613386,
+      "sampled_monotonic": 65179.546568568,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 730,
+      "repeat": 0,
+      "invalid": 730,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 8,
+      "capture_started": 65181.562025137,
+      "sampled_monotonic": 65181.562487008,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 850,
+      "repeat": 0,
+      "invalid": 850,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 9,
+      "capture_started": 65183.564682777,
+      "sampled_monotonic": 65183.565121442,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 974,
+      "repeat": 0,
+      "invalid": 974,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 10,
+      "capture_started": 65185.624691371,
+      "sampled_monotonic": 65185.625119925,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 0,
+      "scans": 1098,
+      "repeat": 0,
+      "invalid": 1098,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 11,
+      "capture_started": 65187.684525645,
+      "sampled_monotonic": 65187.684960642,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 0,
+      "scans": 1221,
+      "repeat": 0,
+      "invalid": 1221,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 12,
+      "capture_started": 65189.746138842,
+      "sampled_monotonic": 65189.746570657,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 1345,
+      "repeat": 0,
+      "invalid": 1345,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 13,
+      "capture_started": 65191.808883306,
+      "sampled_monotonic": 65191.809311263,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 1466,
+      "repeat": 0,
+      "invalid": 1466,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 14,
+      "capture_started": 65193.81817278,
+      "sampled_monotonic": 65193.818621223,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 0,
+      "scans": 1589,
+      "repeat": 0,
+      "invalid": 1589,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 15,
+      "capture_started": 65195.873306666,
+      "sampled_monotonic": 65195.873758623,
+      "effective_fps": 0.0,
+      "vdma_status": 65536
+    },
+    {
+      "unique": 0,
+      "scans": 1712,
+      "repeat": 0,
+      "invalid": 1712,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 16,
+      "capture_started": 65197.929056793,
+      "sampled_monotonic": 65197.929501543,
+      "effective_fps": 0.0,
+      "vdma_status": 69632
+    },
+    {
+      "unique": 0,
+      "scans": 1802,
+      "repeat": 0,
+      "invalid": 1802,
+      "partial": 0,
+      "frame": 0,
+      "session": 0,
+      "sequence": 17,
+      "capture_started": 65199.415603406,
+      "sampled_monotonic": 65199.416060304
+    }
+  ],
+  "buttons": [],
+  "button_counts": {},
+  "state": "STOPPED",
+  "clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "memory_samples": [
+    {
+      "time": 65169.292697998,
+      "MemAvailable": "     328920 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            8508 kB"
+    },
+    {
+      "time": 65172.337132037,
+      "MemAvailable": "     325064 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            6700 kB"
+    },
+    {
+      "time": 65175.403452518,
+      "MemAvailable": "     318364 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            6232 kB"
+    },
+    {
+      "time": 65178.410114409,
+      "MemAvailable": "     329476 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            9104 kB"
+    },
+    {
+      "time": 65181.418101728,
+      "MemAvailable": "     329580 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            9104 kB"
+    },
+    {
+      "time": 65184.42195877,
+      "MemAvailable": "     329368 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            9104 kB"
+    },
+    {
+      "time": 65187.483718205,
+      "MemAvailable": "     329368 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            9104 kB"
+    },
+    {
+      "time": 65190.539284114,
+      "MemAvailable": "     329368 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            9104 kB"
+    },
+    {
+      "time": 65193.550587285,
+      "MemAvailable": "     329000 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            9104 kB"
+    },
+    {
+      "time": 65196.59283149,
+      "MemAvailable": "     329004 kB",
+      "CmaTotal": "         131072 kB",
+      "CmaFree": "            9104 kB"
+    }
+  ],
+  "submitted": 388,
+  "duration": 30.14927254599752,
+  "cpu_frame_owned": false,
+  "after_memory": {
+    "MemAvailable": "     332492 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           12068 kB"
+  },
+  "panel_redraws": 16,
+  "timings": {
+    "compose_ms": {
+      "p50": 51.55571700015571,
+      "p95": 58.2656440026767,
+      "p99": 313.1988150063989
+    },
+    "copy_ms": {
+      "p50": 3.184716999385273,
+      "p95": 3.757461049099218,
+      "p99": 4.266405193338869
+    },
+    "submit_ms": {
+      "p50": 3.475987999991048,
+      "p95": 4.042028252661112,
+      "p99": 5.135082800043165
+    }
+  }
+}

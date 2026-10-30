@@ -1,0 +1,1836 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Thu Oct 29 17:31:45 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source data/results/standalone-20261029-g1/rebuild-monitor.tcl
+# open_project C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.xpr
+INFO: [ProjectBase 1-489] The host OS only allows 260 characters in a normal path. The project is stored in a path with more than 80 characters. If you experience issues with IP, Block Designs, or files not being found, please consider moving the project to a location with a shorter path. Alternately consider using the OS subst command to map part of the path to a drive letter.
+Current project path is 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project'
+Scanning sources...
+Finished scanning sources
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/pynq-v3.1/boards/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/standalone-ip/color_convert/solution1/impl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/standalone-ip/pixel_unpack/solution1/impl/ip'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2026.1/Vivado/data/ip'.
+INFO: [Project 1-5698] Found the below utility IPs instantiated in block design C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.srcs/sources_1/bd/display/display.bd which have equivalent inline hdl with improved performance and reduced diskspace.
+It is recommended to migrate these utility IPs to inline hdl  using the command upgrade_project -migrate_to_inline_hdl.  The utility IPs may be deprecated in future releases.
+More information on inline hdl is available in UG994.
+Utility IP Component Instances:
+ display_video_interrupts_0
+display_one_0
+open_project: Time (s): cpu = 00:00:11 ; elapsed = 00:00:13 . Memory (MB): peak = 648.211 ; gain = 334.477
+# open_bd_design C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.srcs/sources_1/bd/display/display.bd
+Reading block design file <C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.srcs/sources_1/bd/display/display.bd>...
+Adding component instance block -- xilinx.com:ip:processing_system7:5.5 - ps7
+Adding component instance block -- xilinx.com:ip:axis_register_slice:1.1 - axis_register_slice_0
+Adding component instance block -- xilinx.com:hls:color_convert:1.0 - color_convert
+Adding component instance block -- digilentinc.com:ip:axi_dynclk:1.0 - axi_dynclk
+Adding component instance block -- xilinx.com:user:color_swap:1.1 - color_swap_0
+Adding component instance block -- xilinx.com:ip:axi_gpio:2.0 - hdmi_out_hpd_video
+Adding component instance block -- digilentinc.com:ip:rgb2dvi:1.2 - rgb2dvi_0
+Adding component instance block -- xilinx.com:ip:v_axi4s_vid_out:4.0 - v_axi4s_vid_out_0
+Adding component instance block -- xilinx.com:ip:v_tc:6.2 - vtc_out
+Adding component instance block -- xilinx.com:hls:pixel_unpack:1.0 - pixel_unpack
+Adding component instance block -- xilinx.com:ip:axi_vdma:6.3 - axi_vdma
+Adding component instance block -- xilinx.com:ip:axi_interconnect:2.1 - control
+Adding component instance block -- xilinx.com:ip:axi_crossbar:2.1 - xbar
+Adding component instance block -- xilinx.com:ip:axi_protocol_converter:2.1 - auto_pc
+Adding component instance block -- xilinx.com:ip:axi_clock_converter:2.1 - auto_cc
+Adding component instance block -- xilinx.com:ip:axi_clock_converter:2.1 - auto_cc
+Adding component instance block -- xilinx.com:ip:axi_interconnect:2.1 - memory
+Adding component instance block -- xilinx.com:ip:axi_protocol_converter:2.1 - auto_pc
+Adding component instance block -- xilinx.com:ip:axi_gpio:2.0 - btns_gpio
+Adding component instance block -- xilinx.com:ip:axi_intc:4.1 - system_interrupts
+Adding component instance block -- xilinx.com:ip:xlconcat:2.1 - video_interrupts
+Adding component instance block -- xilinx.com:ip:xlconstant:1.1 - one
+Adding component instance block -- xilinx.com:ip:proc_sys_reset:5.0 - reset_control
+Adding component instance block -- xilinx.com:ip:proc_sys_reset:5.0 - reset_stream
+Adding component instance block -- xilinx.com:ip:proc_sys_reset:5.0 - reset_pixel
+Adding component instance block -- xilinx.com:module_ref:video_frame_monitor:1.0 - frame_monitor
+Successfully read diagram <display> from block design file <C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.srcs/sources_1/bd/display/display.bd>
+open_bd_design: Time (s): cpu = 00:00:02 ; elapsed = 00:00:06 . Memory (MB): peak = 686.324 ; gain = 38.113
+# update_compile_order -fileset sources_1
+# update_module_reference [get_ips *frame_monitor*]
+INFO: [IP_Flow 19-5107] Inferred bus interface 'pixel_clk' of definition 'xilinx.com:signal:clock:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'pixel_clk' of definition 'xilinx.com:signal:clock:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'pixel_resetn' of definition 'xilinx.com:signal:reset:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'pixel_resetn' of definition 'xilinx.com:signal:reset:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi_aclk' of definition 'xilinx.com:signal:clock:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi_aclk' of definition 'xilinx.com:signal:clock:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi_aresetn' of definition 'xilinx.com:signal:reset:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi_aresetn' of definition 'xilinx.com:signal:reset:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'S_AXI' of definition 'xilinx.com:interface:aximm:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'S_AXI' of definition 'xilinx.com:interface:aximm:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi_aclk': Added interface parameter 'ASSOCIATED_BUSIF' with value 'S_AXI'.
+INFO: [IP_Flow 19-4728] Bus Interface 'pixel_clk': Added interface parameter 'ASSOCIATED_RESET' with value 'pixel_resetn'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi_aclk': Added interface parameter 'ASSOCIATED_RESET' with value 's_axi_aresetn'.
+INFO: [IP_Flow 19-4728] Bus Interface 'pixel_resetn': Added interface parameter 'POLARITY' with value 'ACTIVE_LOW'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi_aclk': Added interface parameter 'FREQ_HZ' with value '100000000'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi_aresetn': Added interface parameter 'POLARITY' with value 'ACTIVE_LOW'.
+INFO: [IP_Flow 19-4728] Bus Interface 'S_AXI': Added interface parameter 'PROTOCOL' with value 'AXI4LITE'.
+INFO: [IP_Flow 19-4728] Bus Interface 'S_AXI': Added interface parameter 'DATA_WIDTH' with value '32'.
+INFO: [IP_Flow 19-4728] Bus Interface 'S_AXI': Added interface parameter 'ADDR_WIDTH' with value '8'.
+WARNING: [IP_Flow 19-5661] Bus Interface 'pixel_clk' does not have any bus interfaces associated with it.
+WARNING: [IP_Flow 19-11770] Clock interface 'pixel_clk' has no FREQ_HZ parameter.
+INFO: [IP_Flow 19-7067] Note that bus interface 's_axi_aclk' has a fixed FREQ_HZ of '100000000'. This value will be respected whenever this IP is instantiated in IP Integrator.
+INFO: [IP_Flow 19-5107] Inferred bus interface 'pixel_clk' of definition 'xilinx.com:signal:clock:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'pixel_clk' of definition 'xilinx.com:signal:clock:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'pixel_resetn' of definition 'xilinx.com:signal:reset:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'pixel_resetn' of definition 'xilinx.com:signal:reset:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi_aclk' of definition 'xilinx.com:signal:clock:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi_aclk' of definition 'xilinx.com:signal:clock:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi_aresetn' of definition 'xilinx.com:signal:reset:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axi_aresetn' of definition 'xilinx.com:signal:reset:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'S_AXI' of definition 'xilinx.com:interface:aximm:1.0' (from X_INTERFACE_INFO parameter from HDL file).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'S_AXI' of definition 'xilinx.com:interface:aximm:1.0' (from 'X_INTERFACE_INFO' attribute).
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi_aclk': Added interface parameter 'ASSOCIATED_BUSIF' with value 'S_AXI'.
+INFO: [IP_Flow 19-4728] Bus Interface 'pixel_clk': Added interface parameter 'ASSOCIATED_RESET' with value 'pixel_resetn'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi_aclk': Added interface parameter 'ASSOCIATED_RESET' with value 's_axi_aresetn'.
+INFO: [IP_Flow 19-4728] Bus Interface 'pixel_resetn': Added interface parameter 'POLARITY' with value 'ACTIVE_LOW'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi_aclk': Added interface parameter 'FREQ_HZ' with value '100000000'.
+INFO: [IP_Flow 19-4728] Bus Interface 's_axi_aresetn': Added interface parameter 'POLARITY' with value 'ACTIVE_LOW'.
+INFO: [IP_Flow 19-4728] Bus Interface 'S_AXI': Added interface parameter 'PROTOCOL' with value 'AXI4LITE'.
+INFO: [IP_Flow 19-4728] Bus Interface 'S_AXI': Added interface parameter 'DATA_WIDTH' with value '32'.
+INFO: [IP_Flow 19-4728] Bus Interface 'S_AXI': Added interface parameter 'ADDR_WIDTH' with value '8'.
+WARNING: [IP_Flow 19-5661] Bus Interface 'pixel_clk' does not have any bus interfaces associated with it.
+WARNING: [IP_Flow 19-11770] Clock interface 'pixel_clk' has no FREQ_HZ parameter.
+INFO: [IP_Flow 19-7067] Note that bus interface 's_axi_aclk' has a fixed FREQ_HZ of '100000000'. This value will be respected whenever this IP is instantiated in IP Integrator.
+Upgrading 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.srcs/sources_1/bd/display/display.bd'INFO: [IP_Flow 19-3420] Updated display_frame_monitor_0 to use current project options
+Wrote  : <C:\Users\14173\Documents\material-counter\data\results\standalone-20261029-g1\project\display.srcs\sources_1\bd\display\display.bd> 
+# validate_bd_design
+WARNING: [BD 41-1271] The connection to the pin: /hdmi_out/frontend/v_axi4s_vid_out_0/vid_data has been overridden by the user. This pin will not be connected as a part of the interface connection: v_axi4s_vid_out_0_vid_io_out 
+WARNING: [BD 41-1271] The connection to the pin: /hdmi_out/frontend/v_axi4s_vid_out_0/vid_active_video has been overridden by the user. This pin will not be connected as a part of the interface connection: v_axi4s_vid_out_0_vid_io_out 
+WARNING: [BD 41-1271] The connection to the pin: /hdmi_out/frontend/v_axi4s_vid_out_0/vid_vsync has been overridden by the user. This pin will not be connected as a part of the interface connection: v_axi4s_vid_out_0_vid_io_out 
+# save_bd_design
+Wrote  : <C:\Users\14173\Documents\material-counter\data\results\standalone-20261029-g1\project\display.srcs\sources_1\bd\display\display.bd> 
+# generate_target all [get_files display.bd]
+INFO: [BD 41-1662] The design 'display.bd' is already validated. Therefore parameter propagation will not be re-run.
+WARNING: [BD 41-1271] The connection to the pin: /hdmi_out/frontend/v_axi4s_vid_out_0/vid_data has been overridden by the user. This pin will not be connected as a part of the interface connection: v_axi4s_vid_out_0_vid_io_out 
+WARNING: [BD 41-1271] The connection to the pin: /hdmi_out/frontend/v_axi4s_vid_out_0/vid_active_video has been overridden by the user. This pin will not be connected as a part of the interface connection: v_axi4s_vid_out_0_vid_io_out 
+WARNING: [BD 41-1271] The connection to the pin: /hdmi_out/frontend/v_axi4s_vid_out_0/vid_vsync has been overridden by the user. This pin will not be connected as a part of the interface connection: v_axi4s_vid_out_0_vid_io_out 
+Verilog Output written to : c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v
+Verilog Output written to : c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/sim/display.v
+Verilog Output written to : c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/hdl/display_wrapper.v
+INFO: [BD 41-1029] Generation completed for the IP Integrator block frame_monitor .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block control/s00_couplers/auto_pc .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block control/m01_couplers/auto_cc .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block control/m02_couplers/auto_cc .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block memory/s00_couplers/auto_pc .
+Exporting to file c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/hw_handoff/display.hwh
+Generated Hardware Definition File c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.hwdef
+INFO: [BD 41-3262] Generated VHDL Instantiation Template file c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/display.vho
+INFO: [BD 41-3262] Generated Verilog Instantiation Template file c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/display.veo
+INFO: [BD 41-3262] Generated System Verilog Instantiation Template file c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/display_sv.sveo
+# set monitor_runs [get_runs -quiet *frame_monitor*synth*]
+# if {[llength $monitor_runs]} {reset_run $monitor_runs}
+# reset_run synth_1
+# source scripts/standalone/build_display.tcl
+## foreach name {DISPLAY_OUT MONITOR_SIM_OUT} {
+##     if {![info exists ::env($name)]} {error "Missing environment variable $name"}
+## }
+## set out [file normalize $::env(DISPLAY_OUT)]
+## set tag display
+## if {[info exists ::env(DISPLAY_TAG)]} {set tag $::env(DISPLAY_TAG)}
+## if {![regexp {^[a-z][a-z0-9-]*$} $tag]} {error "Invalid DISPLAY_TAG"}
+## set reports [file join $out reports-$tag]
+## set repo [file normalize [file join [file dirname [info script]] ../..]]
+## set sim_log [file join $::env(MONITOR_SIM_OUT) monitor_sim.log]
+## set fd [open $sim_log]
+## set log [read $fd]
+## close $fd
+## if {[string first VIDEO_MONITOR_PASS $log] < 0} {error "MONITOR_SIMULATION_NOT_PASSED"}
+## foreach path [list [file join $repo fpga experimental standalone video_frame_monitor.v] \
+##     [file join $repo fpga sim standalone tb_video_frame_monitor.sv]] {
+##     if {[file mtime $path] > [file mtime $sim_log]} {error "MONITOR_SOURCE_NEWER_THAN_SIMULATION:$path"}
+## }
+## if {![llength [get_projects -quiet]]} {open_project [file join $out project display.xpr]}
+## file mkdir $reports
+## file mkdir [file join $out export]
+## set cdc_file [file join $out monitor-cdc.xdc]
+## set fd [open $cdc_file w]
+## puts $fd {# Request/acknowledge synchronizers terminate these CDC paths.}
+## puts $fd {set_false_path -to [get_pins -hier -regexp {.*frame_monitor.*(request_sync1|acknowledge_sync1|axi_reset_sync1)_reg/D}]}
+## puts $fd {# Mailbox is held until the next handshake; data settles before ack is used.}
+## puts $fd {set_max_delay -datapath_only 10 -from [get_cells -hier -regexp {.*frame_monitor.*mailbox_.*_reg.*}] -to [get_cells -hier -regexp {.*frame_monitor.*snap_.*_reg.*}]}
+## close $fd
+## add_files -fileset constrs_1 $cdc_file
+WARNING: [filemgmt 56-12] File 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/monitor-cdc.xdc' cannot be added to the project because it already exists in the project, skipping this file
+## set_property USED_IN_SYNTHESIS false [get_files $cdc_file]
+## set clock_file [file join $repo scripts standalone display_timing.xdc]
+## add_files -fileset constrs_1 $clock_file
+WARNING: [filemgmt 56-12] File 'C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc' cannot be added to the project because it already exists in the project, skipping this file
+## set_property USED_IN_SYNTHESIS false [get_files $clock_file]
+## set_property PROCESSING_ORDER LATE [get_files $clock_file]
+## launch_runs synth_1 -jobs 2
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP display_control_imp_auto_cc_0, cache-ID = 407226ec232fcb3a; cache size = 16.784 MB.
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP display_control_imp_auto_cc_1, cache-ID = 4ca70714405c6b96; cache size = 16.784 MB.
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP display_control_imp_auto_pc_0, cache-ID = 9d6913b14be8c945; cache size = 16.784 MB.
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP display_memory_imp_auto_pc_0, cache-ID = 19b288c5910e28c8; cache size = 16.785 MB.
+[Thu Oct 29 17:32:22 2026] Launched display_frame_monitor_0_synth_1...
+Run output will be captured here: C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/display_frame_monitor_0_synth_1/runme.log
+[Thu Oct 29 17:32:22 2026] Launched synth_1...
+Run output will be captured here: C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/runme.log
+## wait_on_run synth_1
+[Thu Oct 29 17:32:22 2026] Waiting for synth_1 to finish...
+
+
+*** Running vivado
+    with args -log display_wrapper.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source display_wrapper.tcl
+
+
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Thu Oct 29 17:35:18 2026
+# Process ID         : 5024
+# Current directory  : C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1
+# Command line       : vivado.exe -log display_wrapper.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source display_wrapper.tcl
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/display_wrapper.vds
+# Journal file       : C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1\vivado.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 12649 MB
+#-----------------------------------------------------------
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Thu Oct 29 17:35:18 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source display_wrapper.tcl -notrace
+create_project: Time (s): cpu = 00:00:12 ; elapsed = 00:00:14 . Memory (MB): peak = 585.324 ; gain = 269.203
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/pynq-v3.1/boards/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/standalone-ip/color_convert/solution1/impl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/standalone-ip/pixel_unpack/solution1/impl/ip'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2026.1/Vivado/data/ip'.
+WARNING: [IP_Flow 19-4995] The host OS only allows 260 characters in a normal path. The IP cache path is more than 80 characters. If you experience issues with IP caching, please consider changing the IP cache to a location with a shorter path. Alternately consider using the OS subst command to map part of the path to a drive letter. 
+Current IP cache path is c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.cache/ip 
+INFO: [Project 1-5698] Found the below utility IPs instantiated in block design C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.srcs/sources_1/bd/display/display.bd which have equivalent inline hdl with improved performance and reduced diskspace.
+It is recommended to migrate these utility IPs to inline hdl  using the command upgrade_project -migrate_to_inline_hdl.  The utility IPs may be deprecated in future releases.
+More information on inline hdl is available in UG994.
+Utility IP Component Instances:
+ display_video_interrupts_0
+display_one_0
+Command: synth_design -top display_wrapper -part xc7z020clg400-1
+Starting synth_design
+Attempting to get a license for feature 'Vivado_Synthesis' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Synthesis' and/or device 'xc7z020'
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+INFO: [Designutils 20-5008] Incremental synthesis strategy default
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 46504
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 1425.168 ; gain = 576.457
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'display_wrapper' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/hdl/display_wrapper.v:13]
+INFO: [Synth 8-6157] synthesizing module 'display' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:13]
+INFO: [Synth 8-6157] synthesizing module 'display_axi_vdma_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_axi_vdma_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_axi_vdma_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_axi_vdma_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mm2s_frame_ptr_out' of module 'display_axi_vdma_0' is unconnected for instance 'axi_vdma' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:345]
+WARNING: [Synth 8-7023] instance 'axi_vdma' of module 'display_axi_vdma_0' has 42 connections declared, but only 41 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:345]
+INFO: [Synth 8-6157] synthesizing module 'display_btns_gpio_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_btns_gpio_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_btns_gpio_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_btns_gpio_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_control_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:1011]
+INFO: [Synth 8-6157] synthesizing module 'm00_couplers_imp_KYH20Q' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3333]
+INFO: [Synth 8-6155] done synthesizing module 'm00_couplers_imp_KYH20Q' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3333]
+INFO: [Synth 8-6157] synthesizing module 'm01_couplers_imp_1KNIN95' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3442]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_auto_cc_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_control_imp_auto_cc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_auto_cc_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_control_imp_auto_cc_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'm_axi_awprot' of module 'display_control_imp_auto_cc_0' is unconnected for instance 'auto_cc' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3565]
+WARNING: [Synth 8-7071] port 'm_axi_arprot' of module 'display_control_imp_auto_cc_0' is unconnected for instance 'auto_cc' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3565]
+WARNING: [Synth 8-7023] instance 'auto_cc' of module 'display_control_imp_auto_cc_0' has 42 connections declared, but only 40 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3565]
+INFO: [Synth 8-6155] done synthesizing module 'm01_couplers_imp_1KNIN95' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3442]
+INFO: [Synth 8-6157] synthesizing module 'm02_couplers_imp_18B9DBX' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3608]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_auto_cc_1' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_control_imp_auto_cc_1_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_auto_cc_1' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_control_imp_auto_cc_1_stub.v:6]
+WARNING: [Synth 8-7071] port 'm_axi_awprot' of module 'display_control_imp_auto_cc_1' is unconnected for instance 'auto_cc' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3731]
+WARNING: [Synth 8-7071] port 'm_axi_arprot' of module 'display_control_imp_auto_cc_1' is unconnected for instance 'auto_cc' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3731]
+WARNING: [Synth 8-7023] instance 'auto_cc' of module 'display_control_imp_auto_cc_1' has 42 connections declared, but only 40 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3731]
+INFO: [Synth 8-6155] done synthesizing module 'm02_couplers_imp_18B9DBX' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3608]
+INFO: [Synth 8-6157] synthesizing module 'm03_couplers_imp_6OFM66' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3774]
+INFO: [Synth 8-6155] done synthesizing module 'm03_couplers_imp_6OFM66' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3774]
+INFO: [Synth 8-6157] synthesizing module 'm04_couplers_imp_FODOL1' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3901]
+INFO: [Synth 8-6155] done synthesizing module 'm04_couplers_imp_FODOL1' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3901]
+INFO: [Synth 8-6157] synthesizing module 'm05_couplers_imp_1H1CULY' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4016]
+INFO: [Synth 8-6155] done synthesizing module 'm05_couplers_imp_1H1CULY' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4016]
+INFO: [Synth 8-6157] synthesizing module 'm06_couplers_imp_1TOPHMA' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4131]
+INFO: [Synth 8-6155] done synthesizing module 'm06_couplers_imp_1TOPHMA' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4131]
+INFO: [Synth 8-6157] synthesizing module 'm07_couplers_imp_TPTB1T' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4246]
+INFO: [Synth 8-6155] done synthesizing module 'm07_couplers_imp_TPTB1T' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4246]
+INFO: [Synth 8-6157] synthesizing module 'm08_couplers_imp_1C5ZEN8' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4361]
+INFO: [Synth 8-6155] done synthesizing module 'm08_couplers_imp_1C5ZEN8' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4361]
+INFO: [Synth 8-6157] synthesizing module 's00_couplers_imp_1KSUWH2' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4476]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_auto_pc_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_control_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_auto_pc_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_control_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 's00_couplers_imp_1KSUWH2' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4476]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_xbar_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_control_imp_xbar_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_xbar_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_control_imp_xbar_0_stub.v:6]
+WARNING: [Synth 8-689] width (12) of port connection 'm_axi_arprot' does not match port width (27) of module 'display_control_imp_xbar_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2259]
+WARNING: [Synth 8-689] width (12) of port connection 'm_axi_awprot' does not match port width (27) of module 'display_control_imp_xbar_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2263]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_0' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:1011]
+INFO: [Synth 8-6157] synthesizing module 'display_frame_monitor_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_frame_monitor_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_frame_monitor_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_frame_monitor_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'hdmi_out_imp_OW3FF3' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2817]
+INFO: [Synth 8-6157] synthesizing module 'display_axis_register_slice_0_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_axis_register_slice_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_axis_register_slice_0_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_axis_register_slice_0_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_color_convert_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_color_convert_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_color_convert_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_color_convert_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'stream_out_24_TKEEP' of module 'display_color_convert_0' is unconnected for instance 'color_convert' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3189]
+WARNING: [Synth 8-7071] port 'stream_out_24_TSTRB' of module 'display_color_convert_0' is unconnected for instance 'color_convert' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3189]
+WARNING: [Synth 8-7023] instance 'color_convert' of module 'display_color_convert_0' has 33 connections declared, but only 31 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:3189]
+INFO: [Synth 8-6157] synthesizing module 'frontend_imp_NWXIHO' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2436]
+INFO: [Synth 8-6157] synthesizing module 'display_axi_dynclk_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_axi_dynclk_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_axi_dynclk_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_axi_dynclk_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_color_swap_0_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_color_swap_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_color_swap_0_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_color_swap_0_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_hdmi_out_hpd_video_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_hdmi_out_hpd_video_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_hdmi_out_hpd_video_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_hdmi_out_hpd_video_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_rgb2dvi_0_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_rgb2dvi_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_rgb2dvi_0_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_rgb2dvi_0_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_v_axi4s_vid_out_0_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_v_axi4s_vid_out_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_v_axi4s_vid_out_0_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_v_axi4s_vid_out_0_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'vid_vblank' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'vid_hblank' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'vid_field_id' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'vtg_ce' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'locked' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'overflow' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'underflow' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'fifo_read_level' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'status' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7071] port 'sof_state_out' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+WARNING: [Synth 8-7023] instance 'v_axi4s_vid_out_0' of module 'display_v_axi4s_vid_out_0_0' has 32 connections declared, but only 22 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2759]
+INFO: [Synth 8-6157] synthesizing module 'display_vtc_out_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_vtc_out_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_vtc_out_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_vtc_out_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'fsync_out' of module 'display_vtc_out_0' is unconnected for instance 'vtc_out' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2782]
+WARNING: [Synth 8-7023] instance 'vtc_out' of module 'display_vtc_out_0' has 33 connections declared, but only 32 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2782]
+INFO: [Synth 8-6155] done synthesizing module 'frontend_imp_NWXIHO' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2436]
+INFO: [Synth 8-6157] synthesizing module 'display_pixel_unpack_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_pixel_unpack_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_pixel_unpack_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_pixel_unpack_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'hdmi_out_imp_OW3FF3' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2817]
+INFO: [Synth 8-6157] synthesizing module 'display_memory_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2298]
+INFO: [Synth 8-6157] synthesizing module 's00_couplers_imp_LZ6OFR' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4722]
+INFO: [Synth 8-6157] synthesizing module 'display_memory_imp_auto_pc_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_memory_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_memory_imp_auto_pc_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_memory_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 's00_couplers_imp_LZ6OFR' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:4722]
+INFO: [Synth 8-6155] done synthesizing module 'display_memory_0' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:2298]
+INFO: [Synth 8-6157] synthesizing module 'display_one_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_one_0/synth/display_one_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'xlconstant_v1_1_11_xlconstant' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'xlconstant_v1_1_11_xlconstant' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'display_one_0' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_one_0/synth/display_one_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'display_ps7_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_ps7_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_ps7_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_ps7_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_ARREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_AWREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BVALID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RLAST' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RVALID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BRESP' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RRESP' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RDATA' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_ARREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_AWREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_BVALID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RLAST' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RVALID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_WREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_BRESP' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RRESP' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_BID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RDATA' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_WCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_WACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_AWREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_BVALID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_WREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_BRESP' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_BID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_RID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_RCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_WCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_RACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_WACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+WARNING: [Synth 8-7023] instance 'ps7' of module 'display_ps7_0' has 200 connections declared, but only 160 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:797]
+INFO: [Synth 8-6157] synthesizing module 'display_reset_control_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_reset_control_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_reset_control_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_reset_control_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mb_reset' of module 'display_reset_control_0' is unconnected for instance 'reset_control' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:958]
+WARNING: [Synth 8-7071] port 'bus_struct_reset' of module 'display_reset_control_0' is unconnected for instance 'reset_control' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:958]
+WARNING: [Synth 8-7071] port 'peripheral_reset' of module 'display_reset_control_0' is unconnected for instance 'reset_control' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:958]
+WARNING: [Synth 8-7023] instance 'reset_control' of module 'display_reset_control_0' has 10 connections declared, but only 7 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:958]
+INFO: [Synth 8-6157] synthesizing module 'display_reset_pixel_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_reset_pixel_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_reset_pixel_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_reset_pixel_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mb_reset' of module 'display_reset_pixel_0' is unconnected for instance 'reset_pixel' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:966]
+WARNING: [Synth 8-7071] port 'bus_struct_reset' of module 'display_reset_pixel_0' is unconnected for instance 'reset_pixel' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:966]
+WARNING: [Synth 8-7071] port 'interconnect_aresetn' of module 'display_reset_pixel_0' is unconnected for instance 'reset_pixel' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:966]
+WARNING: [Synth 8-7023] instance 'reset_pixel' of module 'display_reset_pixel_0' has 10 connections declared, but only 7 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:966]
+INFO: [Synth 8-6157] synthesizing module 'display_reset_stream_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_reset_stream_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_reset_stream_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_reset_stream_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mb_reset' of module 'display_reset_stream_0' is unconnected for instance 'reset_stream' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:974]
+WARNING: [Synth 8-7071] port 'bus_struct_reset' of module 'display_reset_stream_0' is unconnected for instance 'reset_stream' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:974]
+WARNING: [Synth 8-7071] port 'peripheral_reset' of module 'display_reset_stream_0' is unconnected for instance 'reset_stream' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:974]
+WARNING: [Synth 8-7023] instance 'reset_stream' of module 'display_reset_stream_0' has 10 connections declared, but only 7 given [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:974]
+INFO: [Synth 8-6157] synthesizing module 'display_system_interrupts_0' [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_system_interrupts_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_system_interrupts_0' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/.Xil/Vivado-5024-JiA/realtime/display_system_interrupts_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_video_interrupts_0' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_video_interrupts_0/synth/display_video_interrupts_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'xlconcat_v2_1_7_xlconcat' [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ipshared/9c1a/hdl/xlconcat_v2_1_rfs.v:59]
+INFO: [Synth 8-6155] done synthesizing module 'xlconcat_v2_1_7_xlconcat' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ipshared/9c1a/hdl/xlconcat_v2_1_rfs.v:59]
+INFO: [Synth 8-6155] done synthesizing module 'display_video_interrupts_0' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_video_interrupts_0/synth/display_video_interrupts_0.v:53]
+INFO: [Synth 8-6155] done synthesizing module 'display' (0#1) [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/synth/display.v:13]
+INFO: [Synth 8-6155] done synthesizing module 'display_wrapper' (0#1) [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/hdl/display_wrapper.v:13]
+WARNING: [Synth 8-7129] Port In3[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In4[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In5[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In6[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In7[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In8[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In9[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In10[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In11[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In12[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In13[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In14[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In15[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In16[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In17[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In18[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In19[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In20[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In21[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In22[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In23[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In24[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In25[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In26[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In27[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In28[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In29[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In30[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In31[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In32[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In33[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In34[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In35[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In36[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In37[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In38[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In39[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In40[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In41[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In42[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In43[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In44[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In45[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In46[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In47[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In48[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In49[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In50[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In51[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In52[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In53[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In54[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In55[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In56[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In57[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In58[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In59[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In60[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In61[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In62[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In63[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In64[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In65[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In66[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In67[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In68[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In69[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In70[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In71[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In72[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In73[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In74[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In75[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In76[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In77[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In78[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In79[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In80[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In81[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In82[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In83[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In84[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In85[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In86[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In87[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In88[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In89[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In90[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In91[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In92[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In93[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In94[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In95[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In96[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In97[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In98[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In99[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In100[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In101[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In102[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1567.105 ; gain = 718.395
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1567.105 ; gain = 718.395
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1567.105 ; gain = 718.395
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.017 . Memory (MB): peak = 1567.105 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_ps7_0/display_ps7_0/display_ps7_0_in_context.xdc] for cell 'display_i/ps7'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_ps7_0/display_ps7_0/display_ps7_0_in_context.xdc] for cell 'display_i/ps7'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axis_register_slice_0_0/display_axis_register_slice_0_0/display_axis_register_slice_0_0_in_context.xdc] for cell 'display_i/hdmi_out/axis_register_slice_0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axis_register_slice_0_0/display_axis_register_slice_0_0/display_axis_register_slice_0_0_in_context.xdc] for cell 'display_i/hdmi_out/axis_register_slice_0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_color_convert_0/display_color_convert_0/display_color_convert_0_in_context.xdc] for cell 'display_i/hdmi_out/color_convert'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_color_convert_0/display_color_convert_0/display_color_convert_0_in_context.xdc] for cell 'display_i/hdmi_out/color_convert'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_dynclk_0/display_axi_dynclk_0/display_axi_dynclk_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/axi_dynclk'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_dynclk_0/display_axi_dynclk_0/display_axi_dynclk_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/axi_dynclk'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_color_swap_0_0/display_color_swap_0_0/display_color_swap_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/color_swap_0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_color_swap_0_0/display_color_swap_0_0/display_color_swap_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/color_swap_0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/hdmi_out_hpd_video'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/hdmi_out_hpd_video'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/display_rgb2dvi_0_0/display_rgb2dvi_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/rgb2dvi_0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/display_rgb2dvi_0_0/display_rgb2dvi_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/rgb2dvi_0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/v_axi4s_vid_out_0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/v_axi4s_vid_out_0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0/display_vtc_out_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/vtc_out'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0/display_vtc_out_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/vtc_out'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_pixel_unpack_0/display_pixel_unpack_0/display_pixel_unpack_0_in_context.xdc] for cell 'display_i/hdmi_out/pixel_unpack'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_pixel_unpack_0/display_pixel_unpack_0/display_pixel_unpack_0_in_context.xdc] for cell 'display_i/hdmi_out/pixel_unpack'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0/display_axi_vdma_0_in_context.xdc] for cell 'display_i/axi_vdma'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0/display_axi_vdma_0_in_context.xdc] for cell 'display_i/axi_vdma'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_xbar_0/display_control_imp_xbar_0/display_control_imp_xbar_0_in_context.xdc] for cell 'display_i/control/xbar'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_xbar_0/display_control_imp_xbar_0/display_control_imp_xbar_0_in_context.xdc] for cell 'display_i/control/xbar'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0_in_context.xdc] for cell 'display_i/control/s00_couplers/auto_pc'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0_in_context.xdc] for cell 'display_i/control/s00_couplers/auto_pc'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0_in_context.xdc] for cell 'display_i/control/m01_couplers/auto_cc'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0_in_context.xdc] for cell 'display_i/control/m01_couplers/auto_cc'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1_in_context.xdc] for cell 'display_i/control/m02_couplers/auto_cc'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1_in_context.xdc] for cell 'display_i/control/m02_couplers/auto_cc'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0_in_context.xdc] for cell 'display_i/memory/s00_couplers/auto_pc'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0_in_context.xdc] for cell 'display_i/memory/s00_couplers/auto_pc'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_btns_gpio_0/display_btns_gpio_0/display_btns_gpio_0_in_context.xdc] for cell 'display_i/btns_gpio'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_btns_gpio_0/display_btns_gpio_0/display_btns_gpio_0_in_context.xdc] for cell 'display_i/btns_gpio'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0/display_system_interrupts_0_in_context.xdc] for cell 'display_i/system_interrupts'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0/display_system_interrupts_0_in_context.xdc] for cell 'display_i/system_interrupts'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_control_0/display_reset_control_0/display_reset_control_0_in_context.xdc] for cell 'display_i/reset_control'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_control_0/display_reset_control_0/display_reset_control_0_in_context.xdc] for cell 'display_i/reset_control'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_stream_0/display_reset_stream_0/display_reset_stream_0_in_context.xdc] for cell 'display_i/reset_stream'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_stream_0/display_reset_stream_0/display_reset_stream_0_in_context.xdc] for cell 'display_i/reset_stream'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_pixel_0/display_reset_pixel_0/display_reset_control_0_in_context.xdc] for cell 'display_i/reset_pixel'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_pixel_0/display_reset_pixel_0/display_reset_control_0_in_context.xdc] for cell 'display_i/reset_pixel'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_frame_monitor_0/display_frame_monitor_0/display_frame_monitor_0_in_context.xdc] for cell 'display_i/frame_monitor'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_frame_monitor_0/display_frame_monitor_0/display_frame_monitor_0_in_context.xdc] for cell 'display_i/frame_monitor'
+Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/display-pins.xdc]
+Finished Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/display-pins.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/display-pins.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/display_wrapper_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/display_wrapper_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/dont_touch.xdc]
+Finished Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/dont_touch.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1574.453 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.045 . Memory (MB): peak = 1574.453 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:20 ; elapsed = 00:00:23 . Memory (MB): peak = 1574.453 ; gain = 725.742
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7z020clg400-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:20 ; elapsed = 00:00:23 . Memory (MB): peak = 1574.453 ; gain = 725.742
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:21 ; elapsed = 00:00:24 . Memory (MB): peak = 1574.453 ; gain = 725.742
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:21 ; elapsed = 00:00:24 . Memory (MB): peak = 1574.453 ; gain = 725.742
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 220 (col length:60)
+BRAMs: 280 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:24 ; elapsed = 00:00:27 . Memory (MB): peak = 1588.840 ; gain = 740.129
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:30 ; elapsed = 00:00:33 . Memory (MB): peak = 1762.199 ; gain = 913.488
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:30 ; elapsed = 00:00:33 . Memory (MB): peak = 1763.766 ; gain = 915.055
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:30 ; elapsed = 00:00:33 . Memory (MB): peak = 1774.770 ; gain = 926.059
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 2048.660 ; gain = 1199.949
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 2048.660 ; gain = 1199.949
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 2048.660 ; gain = 1199.949
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 2048.660 ; gain = 1199.949
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 2048.660 ; gain = 1199.949
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 2048.660 ; gain = 1199.949
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++------+--------------------------------+----------+
+|      |BlackBox name                   |Instances |
++------+--------------------------------+----------+
+|1     |display_axi_vdma_0              |         1|
+|2     |display_btns_gpio_0             |         1|
+|3     |display_control_imp_xbar_0      |         1|
+|4     |display_control_imp_auto_cc_0   |         1|
+|5     |display_control_imp_auto_cc_1   |         1|
+|6     |display_control_imp_auto_pc_0   |         1|
+|7     |display_frame_monitor_0         |         1|
+|8     |display_memory_imp_auto_pc_0    |         1|
+|9     |display_ps7_0                   |         1|
+|10    |display_reset_control_0         |         1|
+|11    |display_reset_pixel_0           |         1|
+|12    |display_reset_stream_0          |         1|
+|13    |display_system_interrupts_0     |         1|
+|14    |display_axis_register_slice_0_0 |         1|
+|15    |display_color_convert_0         |         1|
+|16    |display_pixel_unpack_0          |         1|
+|17    |display_axi_dynclk_0            |         1|
+|18    |display_color_swap_0_0          |         1|
+|19    |display_hdmi_out_hpd_video_0    |         1|
+|20    |display_rgb2dvi_0_0             |         1|
+|21    |display_v_axi4s_vid_out_0_0     |         1|
+|22    |display_vtc_out_0               |         1|
++------+--------------------------------+----------+
+
+Report Cell Usage: 
++------+------------------------------+------+
+|      |Cell                          |Count |
++------+------------------------------+------+
+|1     |display_axi_dynclk            |     1|
+|2     |display_axi_vdma              |     1|
+|3     |display_axis_register_slice_0 |     1|
+|4     |display_btns_gpio             |     1|
+|5     |display_color_convert         |     1|
+|6     |display_color_swap_0          |     1|
+|7     |display_control_imp_auto_cc   |     2|
+|9     |display_control_imp_auto_pc   |     1|
+|10    |display_control_imp_xbar      |     1|
+|11    |display_frame_monitor         |     1|
+|12    |display_hdmi_out_hpd_video    |     1|
+|13    |display_memory_imp_auto_pc    |     1|
+|14    |display_pixel_unpack          |     1|
+|15    |display_ps7                   |     1|
+|16    |display_reset_control         |     1|
+|17    |display_reset_pixel           |     1|
+|18    |display_reset_stream          |     1|
+|19    |display_rgb2dvi_0             |     1|
+|20    |display_system_interrupts     |     1|
+|21    |display_v_axi4s_vid_out_0     |     1|
+|22    |display_vtc_out               |     1|
+|23    |IBUF                          |     4|
+|24    |OBUF                          |     1|
++------+------------------------------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 2048.660 ; gain = 1199.949
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 18 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:23 ; elapsed = 00:00:35 . Memory (MB): peak = 2048.660 ; gain = 1192.602
+Synthesis Optimization Complete : Time (s): cpu = 00:00:35 ; elapsed = 00:00:39 . Memory (MB): peak = 2048.660 ; gain = 1199.949
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 2057.793 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2061.453 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete | Checksum: 48527ed3
+INFO: [Common 17-83] Releasing license: Vivado_Synthesis
+107 Infos, 180 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:00:40 ; elapsed = 00:00:51 . Memory (MB): peak = 2061.477 ; gain = 1438.758
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.007 . Memory (MB): peak = 2061.477 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/synth_1/display_wrapper.dcp' has been generated.
+INFO: [Vivado 12-24828] Executing command : report_utilization -file display_wrapper_utilization_synth.rpt -pb display_wrapper_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Thu Oct 29 17:36:38 2026...
+[Thu Oct 29 17:36:43 2026] synth_1 finished
+wait_on_runs: Time (s): cpu = 00:00:01 ; elapsed = 00:04:21 . Memory (MB): peak = 771.801 ; gain = 0.000
+## if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "DISPLAY_SYNTH_FAILED"}
+## launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Thu Oct 29 17:36:46 2026] Launched impl_1...
+Run output will be captured here: C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/runme.log
+## wait_on_run impl_1
+[Thu Oct 29 17:36:46 2026] Waiting for impl_1 to finish...
+
+
+*** Running vivado
+    with args -log display_wrapper.vdi -applog -m64 -product Vivado -messageDb vivado.pb -mode batch -source display_wrapper.tcl -notrace
+
+
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Thu Oct 29 17:36:53 2026
+# Process ID         : 68004
+# Current directory  : C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1
+# Command line       : vivado.exe -log display_wrapper.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source display_wrapper.tcl -notrace
+# Log file           : C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper.vdi
+# Journal file       : C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1\vivado.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 11017 MB
+#-----------------------------------------------------------
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Thu Oct 29 17:36:53 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source display_wrapper.tcl -notrace
+create_project: Time (s): cpu = 00:00:12 ; elapsed = 00:00:15 . Memory (MB): peak = 587.527 ; gain = 270.734
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/pynq-v3.1/boards/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/standalone-ip/color_convert/solution1/impl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/standalone-ip/pixel_unpack/solution1/impl/ip'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2026.1/Vivado/data/ip'.
+WARNING: [IP_Flow 19-4995] The host OS only allows 260 characters in a normal path. The IP cache path is more than 80 characters. If you experience issues with IP caching, please consider changing the IP cache to a location with a shorter path. Alternately consider using the OS subst command to map part of the path to a drive letter. 
+Current IP cache path is C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.cache/ip 
+Command: link_design -top display_wrapper -part xc7z020clg400-1
+Design is defaulting to srcset: sources_1
+Design is defaulting to constrset: constrs_1
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+INFO: [Project 1-5699] Read binary netlist with skipMacroContent - 1
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0.dcp' for cell 'display_i/axi_vdma'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_btns_gpio_0/display_btns_gpio_0.dcp' for cell 'display_i/btns_gpio'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_frame_monitor_0/display_frame_monitor_0.dcp' for cell 'display_i/frame_monitor'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_ps7_0/display_ps7_0.dcp' for cell 'display_i/ps7'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_control_0/display_reset_control_0.dcp' for cell 'display_i/reset_control'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_pixel_0/display_reset_pixel_0.dcp' for cell 'display_i/reset_pixel'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_stream_0/display_reset_stream_0.dcp' for cell 'display_i/reset_stream'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0.dcp' for cell 'display_i/system_interrupts'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_xbar_0/display_control_imp_xbar_0.dcp' for cell 'display_i/control/xbar'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0.dcp' for cell 'display_i/control/m01_couplers/auto_cc'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1.dcp' for cell 'display_i/control/m02_couplers/auto_cc'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0.dcp' for cell 'display_i/control/s00_couplers/auto_pc'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axis_register_slice_0_0/display_axis_register_slice_0_0.dcp' for cell 'display_i/hdmi_out/axis_register_slice_0'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_color_convert_0/display_color_convert_0.dcp' for cell 'display_i/hdmi_out/color_convert'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_pixel_unpack_0/display_pixel_unpack_0.dcp' for cell 'display_i/hdmi_out/pixel_unpack'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_dynclk_0/display_axi_dynclk_0.dcp' for cell 'display_i/hdmi_out/frontend/axi_dynclk'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_color_swap_0_0/display_color_swap_0_0.dcp' for cell 'display_i/hdmi_out/frontend/color_swap_0'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0.dcp' for cell 'display_i/hdmi_out/frontend/hdmi_out_hpd_video'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/display_rgb2dvi_0_0.dcp' for cell 'display_i/hdmi_out/frontend/rgb2dvi_0'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0.dcp' for cell 'display_i/hdmi_out/frontend/v_axi4s_vid_out_0'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0.dcp' for cell 'display_i/hdmi_out/frontend/vtc_out'
+INFO: [Project 1-454] Reading design checkpoint 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0.dcp' for cell 'display_i/memory/s00_couplers/auto_pc'
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.098 . Memory (MB): peak = 920.188 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 592 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2026.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_ps7_0/display_ps7_0.xdc] for cell 'display_i/ps7/inst'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_ps7_0/display_ps7_0.xdc] for cell 'display_i/ps7/inst'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0_board.xdc] for cell 'display_i/hdmi_out/frontend/hdmi_out_hpd_video/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0_board.xdc] for cell 'display_i/hdmi_out/frontend/hdmi_out_hpd_video/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/src/rgb2dvi.xdc] for cell 'display_i/hdmi_out/frontend/rgb2dvi_0/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/src/rgb2dvi.xdc] for cell 'display_i/hdmi_out/frontend/rgb2dvi_0/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0.xdc] for cell 'display_i/axi_vdma/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0.xdc] for cell 'display_i/axi_vdma/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_btns_gpio_0/display_btns_gpio_0_board.xdc] for cell 'display_i/btns_gpio/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_btns_gpio_0/display_btns_gpio_0_board.xdc] for cell 'display_i/btns_gpio/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0.xdc] for cell 'display_i/system_interrupts/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0.xdc] for cell 'display_i/system_interrupts/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_control_0/display_reset_control_0_board.xdc] for cell 'display_i/reset_control/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_control_0/display_reset_control_0_board.xdc] for cell 'display_i/reset_control/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_stream_0/display_reset_stream_0_board.xdc] for cell 'display_i/reset_stream/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_stream_0/display_reset_stream_0_board.xdc] for cell 'display_i/reset_stream/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_pixel_0/display_reset_pixel_0_board.xdc] for cell 'display_i/reset_pixel/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_reset_pixel_0/display_reset_pixel_0_board.xdc] for cell 'display_i/reset_pixel/U0'
+Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/display-pins.xdc]
+Finished Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/display-pins.xdc]
+Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/monitor-cdc.xdc]
+Finished Parsing XDC File [C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/monitor-cdc.xdc]
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axis_register_slice_0_0/display_axis_register_slice_0_0_clocks.xdc] for cell 'display_i/hdmi_out/axis_register_slice_0/inst'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axis_register_slice_0_0/display_axis_register_slice_0_0_clocks.xdc] for cell 'display_i/hdmi_out/axis_register_slice_0/inst'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/src/rgb2dvi_clocks.xdc] for cell 'display_i/hdmi_out/frontend/rgb2dvi_0/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/src/rgb2dvi_clocks.xdc] for cell 'display_i/hdmi_out/frontend/rgb2dvi_0/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0_clocks.xdc] for cell 'display_i/hdmi_out/frontend/v_axi4s_vid_out_0/inst'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0_clocks.xdc] for cell 'display_i/hdmi_out/frontend/v_axi4s_vid_out_0/inst'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0_clocks.xdc] for cell 'display_i/hdmi_out/frontend/vtc_out/U0'
+INFO: [Timing 38-35] Done setting XDC timing constraints. [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0_clocks.xdc:2]
+INFO: [Timing 38-2] Deriving generated clocks [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0_clocks.xdc:2]
+CRITICAL WARNING: [Timing 38-249] Generated clock display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk has no logical paths from master clock hdmi_out_PXL_CLK_O. [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0_clocks.xdc:2]
+Resolution: Review the path between the master clock and the generated clock with the schematic viewer and correct the -source option. If it is correct and the master clock does not have a timing path to the generated clock, define the generated clock as a primary clock by using create_clock.
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0_clocks.xdc] for cell 'display_i/hdmi_out/frontend/vtc_out/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0_clocks.xdc] for cell 'display_i/axi_vdma/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0_clocks.xdc] for cell 'display_i/axi_vdma/U0'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0_clocks.xdc] for cell 'display_i/control/m01_couplers/auto_cc/inst'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0_clocks.xdc] for cell 'display_i/control/m01_couplers/auto_cc/inst'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1_clocks.xdc] for cell 'display_i/control/m02_couplers/auto_cc/inst'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1_clocks.xdc] for cell 'display_i/control/m02_couplers/auto_cc/inst'
+Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0_clocks.xdc] for cell 'display_i/system_interrupts/U0'
+Finished Parsing XDC File [c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0_clocks.xdc] for cell 'display_i/system_interrupts/U0'
+Parsing XDC File [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc]
+WARNING: [Constraints 18-619] A clock with name 'display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk' already exists, overwriting the previous clock with the same name. [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc:7]
+Finished Parsing XDC File [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc]
+WARNING: [XPM_CDC_SINGLE: TCL-1000] The source and destination clocks are the same. 
+     Instance: display_i/axi_vdma/U0/I_RST_MODULE/GEN_RESET_FOR_MM2S.RESET_I/GEN_RESET_FOR_ASYNC.AXIS_RESET_CDC_I 
+  This will add unnecessary latency to the design. Please check the design for the following: 
+ 1) Manually instantiated XPM_CDC modules: AMD recommends that you remove these modules. 
+ 2) AMD IP that contains XPM_CDC modules: Verify the connections to the IP to determine whether you can safely ignore this message.
+ [C:/AMDDesignTools/2026.1/Vivado/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_single.tcl:5]
+WARNING: [XPM_CDC_SINGLE: TCL-1000] The source and destination clocks are the same. 
+     Instance: display_i/axi_vdma/U0/I_RST_MODULE/GEN_RESET_FOR_MM2S.RESET_I/GEN_MIN_FOR_ASYNC.AXIS_IDLE_CDC_I 
+  This will add unnecessary latency to the design. Please check the design for the following: 
+ 1) Manually instantiated XPM_CDC modules: AMD recommends that you remove these modules. 
+ 2) AMD IP that contains XPM_CDC modules: Verify the connections to the IP to determine whether you can safely ignore this message.
+ [C:/AMDDesignTools/2026.1/Vivado/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_single.tcl:5]
+WARNING: [XPM_CDC_SINGLE: TCL-1000] The source and destination clocks are the same. 
+     Instance: display_i/axi_vdma/U0/I_RST_MODULE/GEN_RESET_FOR_MM2S.RESET_I/GEN_MIN_FOR_ASYNC.AXIS_MIN_CDC_I 
+  This will add unnecessary latency to the design. Please check the design for the following: 
+ 1) Manually instantiated XPM_CDC modules: AMD recommends that you remove these modules. 
+ 2) AMD IP that contains XPM_CDC modules: Verify the connections to the IP to determine whether you can safely ignore this message.
+ [C:/AMDDesignTools/2026.1/Vivado/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_single.tcl:5]
+INFO: [Project 1-1714] 62 XPM XDC files have been applied to the design.
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 1625.855 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 1 instances were transformed.
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 1 instance 
+
+38 Infos, 5 Warnings, 1 Critical Warnings and 0 Errors encountered.
+link_design completed successfully
+link_design: Time (s): cpu = 00:00:17 ; elapsed = 00:00:22 . Memory (MB): peak = 1625.855 ; gain = 1000.984
+Command: opt_design
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+Running DRC as a precondition to command opt_design
+
+Starting DRC Task
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Project 1-461] DRC finished with 0 Errors
+INFO: [Project 1-462] Please refer to the DRC report (report_drc) for more information.
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:01 . Memory (MB): peak = 1625.855 ; gain = 0.000
+
+Starting Cache Timing Information Task
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+Ending Cache Timing Information Task | Checksum: 24bacf112
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.876 . Memory (MB): peak = 1625.855 ; gain = 0.000
+
+Starting Logic Optimization Task
+
+Phase 1 Initialization
+
+Phase 1.1 Core Generation And Design Setup
+Phase 1.1 Core Generation And Design Setup | Checksum: 24bacf112
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.034 . Memory (MB): peak = 2105.289 ; gain = 0.000
+
+Phase 1.2 Setup Constraints And Sort Netlist
+Phase 1.2 Setup Constraints And Sort Netlist | Checksum: 24bacf112
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.067 . Memory (MB): peak = 2105.289 ; gain = 0.000
+Phase 1 Initialization | Checksum: 24bacf112
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.071 . Memory (MB): peak = 2105.289 ; gain = 0.000
+
+Phase 2 Timer Update And Timing Data Collection
+
+Phase 2.1 Detect if minReqCache needed
+Phase 2.1 Detect if minReqCache needed | Checksum: 24bacf112
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.106 . Memory (MB): peak = 2105.316 ; gain = 0.027
+
+Phase 2.2 Timer Update
+Phase 2.2 Timer Update | Checksum: 24bacf112
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.578 . Memory (MB): peak = 2105.316 ; gain = 0.027
+
+Phase 2.3 Timing Data Collection
+Phase 2.3 Timing Data Collection | Checksum: 24bacf112
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.599 . Memory (MB): peak = 2105.316 ; gain = 0.027
+Phase 2 Timer Update And Timing Data Collection | Checksum: 24bacf112
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.602 . Memory (MB): peak = 2105.316 ; gain = 0.027
+
+Phase 3 Retarget
+INFO: [Opt 31-1851] Number of loadless carry chains removed were: 0
+INFO: [Opt 31-1834] Total Chains To Be Transformed Were: 0 AND Number of Transformed insts Created are: 0
+INFO: [Opt 31-1566] Pulled 7 inverters resulting in an inversion of 35 pins
+INFO: [Opt 31-138] Pushed 2 inverter(s) to 12 load pin(s).
+INFO: [Opt 31-49] Retargeted 0 cell(s).
+Phase 3 Retarget | Checksum: fbb969e5
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:01 . Memory (MB): peak = 2105.316 ; gain = 0.027
+Retarget | Checksum: fbb969e5
+INFO: [Opt 31-389] Phase Retarget created 258 cells and removed 533 cells
+INFO: [Opt 31-1021] In phase Retarget, 59 netlist objects are constrained preventing optimization. Please run opt_design with -debug_log to get more detail. 
+
+Phase 4 Constant propagation
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Phase 4 Constant propagation | Checksum: 13fdec53d
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2105.316 ; gain = 0.027
+Constant propagation | Checksum: 13fdec53d
+INFO: [Opt 31-389] Phase Constant propagation created 19 cells and removed 453 cells
+INFO: [Opt 31-1021] In phase Constant propagation, 419 netlist objects are constrained preventing optimization. Please run opt_design with -debug_log to get more detail. 
+
+Phase 5 Sweep
+INFO: [Constraints 18-11670] Building netlist checker database with flags, 0x8
+Done building netlist checker database: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Constraints 18-11670] Building netlist checker database with flags, 0x8
+Done building netlist checker database: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 5 Sweep | Checksum: 170ba3823
+
+Time (s): cpu = 00:00:03 ; elapsed = 00:00:03 . Memory (MB): peak = 2105.316 ; gain = 0.027
+Sweep | Checksum: 170ba3823
+INFO: [Opt 31-389] Phase Sweep created 0 cells and removed 1257 cells
+INFO: [Opt 31-1021] In phase Sweep, 66 netlist objects are constrained preventing optimization. Please run opt_design with -debug_log to get more detail. 
+
+Phase 6 BUFG optimization
+Phase 6 BUFG optimization | Checksum: 170ba3823
+
+Time (s): cpu = 00:00:03 ; elapsed = 00:00:03 . Memory (MB): peak = 2105.316 ; gain = 0.027
+BUFG optimization | Checksum: 170ba3823
+INFO: [Opt 31-662] Phase BUFG optimization created 0 cells of which 0 are BUFGs and removed 0 cells.
+
+Phase 7 Shift Register Optimization
+INFO: [Opt 31-1064] SRL Remap converted 0 SRLs to 0 registers and converted 0 registers of register chains to 0 SRLs
+Phase 7 Shift Register Optimization | Checksum: 170ba3823
+
+Time (s): cpu = 00:00:03 ; elapsed = 00:00:03 . Memory (MB): peak = 2105.316 ; gain = 0.027
+Shift Register Optimization | Checksum: 170ba3823
+INFO: [Opt 31-389] Phase Shift Register Optimization created 0 cells and removed 0 cells
+
+Phase 8 Post Processing Netlist
+Phase 8 Post Processing Netlist | Checksum: 1b62b6b5f
+
+Time (s): cpu = 00:00:03 ; elapsed = 00:00:03 . Memory (MB): peak = 2105.316 ; gain = 0.027
+Post Processing Netlist | Checksum: 1b62b6b5f
+INFO: [Opt 31-389] Phase Post Processing Netlist created 0 cells and removed 0 cells
+INFO: [Opt 31-1021] In phase Post Processing Netlist, 11 netlist objects are constrained preventing optimization. Please run opt_design with -debug_log to get more detail. 
+
+Phase 9 Finalization
+
+Phase 9.1 Finalizing Design Cores and Updating Shapes
+Phase 9.1 Finalizing Design Cores and Updating Shapes | Checksum: 13b3e4cf3
+
+Time (s): cpu = 00:00:04 ; elapsed = 00:00:03 . Memory (MB): peak = 2105.316 ; gain = 0.027
+
+Phase 9.2 Verifying Netlist Connectivity
+
+Starting Connectivity Check Task
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.030 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 9.2 Verifying Netlist Connectivity | Checksum: 13b3e4cf3
+
+Time (s): cpu = 00:00:04 ; elapsed = 00:00:03 . Memory (MB): peak = 2105.316 ; gain = 0.027
+Phase 9 Finalization | Checksum: 13b3e4cf3
+
+Time (s): cpu = 00:00:04 ; elapsed = 00:00:03 . Memory (MB): peak = 2105.316 ; gain = 0.027
+Opt_design Change Summary
+=========================
+
+
+-------------------------------------------------------------------------------------------------------------------------
+|  Phase                        |  #Cells created  |  #Cells Removed  |  #Constrained objects preventing optimizations  |
+-------------------------------------------------------------------------------------------------------------------------
+|  Retarget                     |             258  |             533  |                                             59  |
+|  Constant propagation         |              19  |             453  |                                            419  |
+|  Sweep                        |               0  |            1257  |                                             66  |
+|  BUFG optimization            |               0  |               0  |                                              0  |
+|  Shift Register Optimization  |               0  |               0  |                                              0  |
+|  Post Processing Netlist      |               0  |               0  |                                             11  |
+-------------------------------------------------------------------------------------------------------------------------
+
+
+Ending Logic Optimization Task | Checksum: 13b3e4cf3
+
+Time (s): cpu = 00:00:04 ; elapsed = 00:00:03 . Memory (MB): peak = 2105.316 ; gain = 0.027
+
+Starting Power Optimization Task
+INFO: [Pwropt 34-132] Skipping clock gating for clocks with a period < 2.00 ns.
+INFO: [Pwropt 34-9] Applying IDT optimizations ...
+INFO: [Pwropt 34-10] Applying ODC optimizations ...
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+Running Vector-less Activity Propagation...
+
+Finished Running Vector-less Activity Propagation
+
+
+Starting PowerOpt Patch Enables Task
+INFO: [Pwropt 34-162] WRITE_MODE attribute of 0 BRAM(s) out of a total of 3 has been updated to save power. Run report_power_opt to get a complete listing of the BRAMs updated.
+INFO: [Pwropt 34-201] Structural ODC has moved 0 WE to EN ports
+Number of BRAM Ports augmented: 3 newly gated: 0 Total Ports: 6
+Ending PowerOpt Patch Enables Task | Checksum: 18dc5f677
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.105 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Ending Power Optimization Task | Checksum: 18dc5f677
+
+Time (s): cpu = 00:00:06 ; elapsed = 00:00:05 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Starting Final Cleanup Task
+Ending Final Cleanup Task | Checksum: 18dc5f677
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.022 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+69 Infos, 5 Warnings, 1 Critical Warnings and 0 Errors encountered.
+opt_design completed successfully
+opt_design: Time (s): cpu = 00:00:17 ; elapsed = 00:00:15 . Memory (MB): peak = 2105.316 ; gain = 479.461
+INFO: [Vivado 12-24828] Executing command : report_drc -file display_wrapper_drc_opted.rpt -pb display_wrapper_drc_opted.pb -rpx display_wrapper_drc_opted.rpx
+Command: report_drc -file display_wrapper_drc_opted.rpt -pb display_wrapper_drc_opted.pb -rpx display_wrapper_drc_opted.rpx
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 2-168] The results of DRC are in file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_drc_opted.rpt.
+report_drc completed successfully
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Writing XDEF routing.
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.024 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Writing XDEF routing logical nets.
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.049 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote PlaceStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.017 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.012 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.103 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_opt.dcp' has been generated.
+Command: place_design
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+Running DRC as a precondition to command place_design
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 4-198] DRC finished with 0 Errors, 4 Warnings
+INFO: [Vivado_Tcl 4-199] Please refer to the DRC report (report_drc) for more information.
+INFO: [Place 30-611] Multithreading enabled for place_design using a maximum of 2 CPUs
+
+Starting Placer Task
+
+Phase 1 Placer Initialization
+
+Phase 1.1 Placer Initialization Netlist Sorting
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 1.1 Placer Initialization Netlist Sorting | Checksum: 1296e0e83
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.021 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 1.2 IO Placement/ Clock Placement/ Build Placer Device
+Phase 1.2 IO Placement/ Clock Placement/ Build Placer Device | Checksum: 1a3509c10
+
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 1.3 Build Placer Netlist Model
+Phase 1.3 Build Placer Netlist Model | Checksum: 1c9765b60
+
+Time (s): cpu = 00:00:07 ; elapsed = 00:00:05 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 1.4 Constrain Clocks/Macros
+Phase 1.4 Constrain Clocks/Macros | Checksum: 1c9765b60
+
+Time (s): cpu = 00:00:07 ; elapsed = 00:00:05 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 1 Placer Initialization | Checksum: 1c9765b60
+
+Time (s): cpu = 00:00:07 ; elapsed = 00:00:05 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 2 Global Placement
+
+Phase 2.1 Floorplanning
+Phase 2.1 Floorplanning | Checksum: 1e11a8747
+
+Time (s): cpu = 00:00:10 ; elapsed = 00:00:07 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 2.2 Update Timing before SLR Path Opt
+Phase 2.2 Update Timing before SLR Path Opt | Checksum: 196903cbc
+
+Time (s): cpu = 00:00:12 ; elapsed = 00:00:09 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 2.3 Post-Processing in Floorplanning
+Phase 2.3 Post-Processing in Floorplanning | Checksum: 196903cbc
+
+Time (s): cpu = 00:00:12 ; elapsed = 00:00:09 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 2.4 Global Place Phase1
+Phase 2.4 Global Place Phase1 | Checksum: 12b05c082
+
+Time (s): cpu = 00:00:32 ; elapsed = 00:00:22 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 2.5 Global Place Phase2
+
+Phase 2.5.1 UpdateTiming Before Physical Synthesis
+Phase 2.5.1 UpdateTiming Before Physical Synthesis | Checksum: 1c1c58189
+
+Time (s): cpu = 00:00:35 ; elapsed = 00:00:24 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 2.5.2 Physical Synthesis In Placer
+INFO: [Physopt 32-1035] Found 54 LUTNM shape to break, 267 LUT instances to create LUTNM shape
+INFO: [Physopt 32-1044] Break lutnm for timing: one critical 34, two critical 20, total 54, new lutff created 0
+INFO: [Physopt 32-1138] End 1 Pass. Optimized 168 nets or LUTs. Breaked 54 LUTs, combined 114 existing LUTs and moved 0 existing LUT
+INFO: [Physopt 32-65] No nets found for high-fanout optimization.
+INFO: [Physopt 32-232] Optimized 0 net. Created 0 new instance.
+INFO: [Physopt 32-775] End 1 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+INFO: [Physopt 32-456] No candidate cells for DSP register optimization found in the design.
+INFO: [Physopt 32-775] End 2 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+INFO: [Physopt 32-1123] No candidate cells found for Shift Register to Pipeline optimization
+INFO: [Physopt 32-775] End 2 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+INFO: [Physopt 32-1401] No candidate cells found for Shift Register optimization.
+INFO: [Physopt 32-677] No candidate cells for Shift Register optimization found in the design
+INFO: [Physopt 32-775] End 1 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+INFO: [Physopt 32-526] No candidate cells for BRAM register optimization found in the design
+INFO: [Physopt 32-775] End 1 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+INFO: [Physopt 32-846] No candidate cells for URAM register optimization found in the design
+INFO: [Physopt 32-775] End 1 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+INFO: [Physopt 32-846] No candidate cells for URAM register optimization found in the design
+INFO: [Physopt 32-775] End 1 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+INFO: [Physopt 32-949] No candidate nets found for dynamic/static region interface net replication
+INFO: [Physopt 32-775] End 1 Pass. Optimized 0 net or cell. Created 0 new cell, deleted 0 existing cell and moved 0 existing cell
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Summary of Physical Synthesis Optimizations
+============================================
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|  Optimization                                     |  Added Cells  |  Removed Cells  |  Optimized Cells/Nets  |  Dont Touch  |  Iterations  |  Elapsed   |
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|  LUT Combining                                    |           54  |            114  |                   168  |           0  |           1  |  00:00:00  |
+|  Retime                                           |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  Very High Fanout                                 |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  DSP Register                                     |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  Shift Register to Pipeline                       |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  Shift Register                                   |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  BRAM Register                                    |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  URAM Register                                    |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  Dynamic/Static Region Interface Net Replication  |            0  |              0  |                     0  |           0  |           1  |  00:00:00  |
+|  Total                                            |           54  |            114  |                   168  |           0  |           9  |  00:00:01  |
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Phase 2.5.2 Physical Synthesis In Placer | Checksum: 19bcf9199
+
+Time (s): cpu = 00:00:39 ; elapsed = 00:00:26 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 2.5 Global Place Phase2 | Checksum: 2b77b4b50
+
+Time (s): cpu = 00:00:40 ; elapsed = 00:00:27 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 2 Global Placement | Checksum: 2b77b4b50
+
+Time (s): cpu = 00:00:40 ; elapsed = 00:00:27 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 3 Detail Placement
+
+Phase 3.1 Commit Multi Column Macros
+Phase 3.1 Commit Multi Column Macros | Checksum: 2300a10d9
+
+Time (s): cpu = 00:00:43 ; elapsed = 00:00:28 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 3.2 Commit Most Macros & LUTRAMs
+Phase 3.2 Commit Most Macros & LUTRAMs | Checksum: 276a67bc7
+
+Time (s): cpu = 00:00:47 ; elapsed = 00:00:31 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 3.3 Area Swap Optimization
+Phase 3.3 Area Swap Optimization | Checksum: 29716215e
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:31 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 3.4 Pipeline Register Optimization
+Phase 3.4 Pipeline Register Optimization | Checksum: 2411f128d
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:31 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 3.5 Fast Optimization
+Phase 3.5 Fast Optimization | Checksum: 26e001d01
+
+Time (s): cpu = 00:00:53 ; elapsed = 00:00:35 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 3.6 Small Shape Detail Placement
+Phase 3.6 Small Shape Detail Placement | Checksum: 1b95fe00f
+
+Time (s): cpu = 00:01:01 ; elapsed = 00:00:44 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 3.7 Re-assign LUT pins
+Phase 3.7 Re-assign LUT pins | Checksum: 1b2f52edf
+
+Time (s): cpu = 00:01:03 ; elapsed = 00:00:46 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 3.8 Pipeline Register Optimization
+Phase 3.8 Pipeline Register Optimization | Checksum: 1b66c0ec0
+
+Time (s): cpu = 00:01:03 ; elapsed = 00:00:46 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 3 Detail Placement | Checksum: 1b66c0ec0
+
+Time (s): cpu = 00:01:03 ; elapsed = 00:00:46 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 4 Post Placement Optimization and Clean-Up
+
+Phase 4.1 Post Commit Optimization
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+
+Phase 4.1.1 Post Placement Optimization
+Post Placement Optimization Initialization | Checksum: 17cf0217b
+
+Phase 4.1.1.1 BUFG Insertion
+
+Starting Physical Synthesis Task
+
+Phase 1 Physical Synthesis Initialization
+INFO: [Physopt 32-721] Multithreading enabled for phys_opt_design using a maximum of 2 CPUs
+INFO: [Physopt 32-619] Estimated Timing Summary | WNS=-0.846 | TNS=-183.861 |
+Phase 1 Physical Synthesis Initialization | Checksum: 1e420b192
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.548 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Place 46-33] Processed net display_i/frame_monitor/inst/clear, BUFG insertion was skipped due to placement/routing conflicts.
+INFO: [Place 46-56] BUFG insertion identified 1 candidate nets. Inserted BUFG: 0, Replicated BUFG Driver: 0, Skipped due to Placement/Routing Conflicts: 1, Skipped due to Timing Degradation: 0, Skipped due to netlist editing failed: 0.
+Ending Physical Synthesis Task | Checksum: 227d20cec
+
+Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.753 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 4.1.1.1 BUFG Insertion | Checksum: 17cf0217b
+
+Time (s): cpu = 00:01:09 ; elapsed = 00:00:50 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 4.1.1.2 Post Placement Timing Optimization
+INFO: [Place 30-746] Post Placement Timing Summary WNS=0.493. For the most accurate timing information please run report_timing.
+Phase 4.1.1.2 Post Placement Timing Optimization | Checksum: 26e7f833e
+
+Time (s): cpu = 00:02:13 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Time (s): cpu = 00:02:13 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 4.1 Post Commit Optimization | Checksum: 26e7f833e
+
+Time (s): cpu = 00:02:13 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 4.2 Post Placement Cleanup
+Phase 4.2 Post Placement Cleanup | Checksum: 26e7f833e
+
+Time (s): cpu = 00:02:14 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 4.3 Placer Reporting
+
+Phase 4.3.1 Print Estimated Congestion
+INFO: [Place 30-612] Post-Placement Estimated Congestion 
+ ____________________________________________________
+|           | Global Congestion | Short Congestion  |
+| Direction | Region Size       | Region Size       |
+|___________|___________________|___________________|
+|      North|                1x1|                4x4|
+|___________|___________________|___________________|
+|      South|                4x4|              16x16|
+|___________|___________________|___________________|
+|       East|                1x1|                2x2|
+|___________|___________________|___________________|
+|       West|                1x1|                1x1|
+|___________|___________________|___________________|
+
+Phase 4.3.1 Print Estimated Congestion | Checksum: 26e7f833e
+
+Time (s): cpu = 00:02:14 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 4.3 Placer Reporting | Checksum: 26e7f833e
+
+Time (s): cpu = 00:02:14 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 4.4 Final Placement Cleanup
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.032 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Time (s): cpu = 00:02:14 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Phase 4 Post Placement Optimization and Clean-Up | Checksum: 1ae95d9a8
+
+Time (s): cpu = 00:02:14 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Ending Placer Task | Checksum: ce041c16
+
+Time (s): cpu = 00:02:14 ; elapsed = 00:01:54 . Memory (MB): peak = 2105.316 ; gain = 0.000
+110 Infos, 5 Warnings, 1 Critical Warnings and 0 Errors encountered.
+place_design completed successfully
+place_design: Time (s): cpu = 00:02:18 ; elapsed = 00:01:58 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Vivado 12-24838] Running report commands "report_control_sets, report_io, report_utilization" in parallel.
+Running report generation with 2 threads.
+INFO: [Vivado 12-24828] Executing command : report_io -file display_wrapper_io_placed.rpt
+report_io: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.159 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Vivado 12-24828] Executing command : report_control_sets -verbose -file display_wrapper_control_sets_placed.rpt
+report_control_sets: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.091 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Vivado 12-24828] Executing command : report_utilization -file display_wrapper_utilization_placed.rpt -pb display_wrapper_utilization_placed.pb
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Writing XDEF routing.
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.035 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Writing XDEF routing logical nets.
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.046 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote PlaceStorage: Time (s): cpu = 00:00:03 ; elapsed = 00:00:00.720 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.031 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.013 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:03 ; elapsed = 00:00:00.830 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_placed.dcp' has been generated.
+Command: phys_opt_design
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+
+Starting Initial Update Timing Task
+
+Time (s): cpu = 00:00:07 ; elapsed = 00:00:04 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Vivado_Tcl 4-2279] Estimated Timing Summary | WNS= 0.493 | TNS= 0.000 | 
+INFO: [Vivado_Tcl 4-383] Design worst setup slack (WNS) is greater than or equal to 0.000 ns. All physical synthesis setup optimizations will be skipped.
+INFO: [Vivado_Tcl 4-232] No setup violation found. The netlist was not modified.
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+121 Infos, 5 Warnings, 1 Critical Warnings and 0 Errors encountered.
+phys_opt_design completed successfully
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Writing XDEF routing.
+Writing XDEF routing logical nets.
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.058 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.062 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote PlaceStorage: Time (s): cpu = 00:00:03 ; elapsed = 00:00:00.797 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.034 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.015 . Memory (MB): peak = 2105.316 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:03 ; elapsed = 00:00:00.942 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_physopt.dcp' has been generated.
+Command: route_design
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+
+
+Starting Routing Task
+INFO: [Route 35-254] Multithreading enabled for route_design using a maximum of 2 CPUs
+
+Phase 1 Build RT Design
+Checksum: PlaceDB: 272e7416 ConstDB: 0 ShapeSum: 90dc3510 RouteDB: 15f972f0
+Post Restoration Checksum: NetGraph: 7ed218ce | NumContArr: 3bee6e6b | Constraints: c2a8fa9d | Timing: c2a8fa9d
+Phase 1 Build RT Design | Checksum: 240127c73
+
+Time (s): cpu = 00:00:34 ; elapsed = 00:00:29 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 2 Router Initialization
+
+Phase 2.1 Fix Topology Constraints
+Phase 2.1 Fix Topology Constraints | Checksum: 240127c73
+
+Time (s): cpu = 00:00:35 ; elapsed = 00:00:29 . Memory (MB): peak = 2105.316 ; gain = 0.000
+
+Phase 2.2 Pre Route Cleanup
+Phase 2.2 Pre Route Cleanup | Checksum: 240127c73
+
+Time (s): cpu = 00:00:35 ; elapsed = 00:00:29 . Memory (MB): peak = 2105.316 ; gain = 0.000
+ Number of Nodes with overlaps = 0
+
+Phase 2.3 Update Timing
+Phase 2.3 Update Timing | Checksum: 1a3e7d439
+
+Time (s): cpu = 00:00:41 ; elapsed = 00:00:34 . Memory (MB): peak = 2105.316 ; gain = 0.000
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.703  | TNS=0.000  | WHS=-0.277 | THS=-98.730|
+
+
+Phase 2.4 Update Timing for Bus Skew
+
+Phase 2.4.1 Update Timing
+Phase 2.4.1 Update Timing | Checksum: 1df25bbb3
+
+Time (s): cpu = 00:00:47 ; elapsed = 00:00:37 . Memory (MB): peak = 2105.465 ; gain = 0.148
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.703  | TNS=0.000  | WHS=-0.223 | THS=-4.078 |
+
+Phase 2.4 Update Timing for Bus Skew | Checksum: 251275b11
+
+Time (s): cpu = 00:00:47 ; elapsed = 00:00:37 . Memory (MB): peak = 2105.465 ; gain = 0.148
+
+Phase 2.5 Soft Constraint Pins - Fast Budgeting
+Phase 2.5 Soft Constraint Pins - Fast Budgeting | Checksum: 251275b11
+
+Time (s): cpu = 00:00:47 ; elapsed = 00:00:37 . Memory (MB): peak = 2132.516 ; gain = 27.199
+
+Router Utilization Summary
+  Global Vertical Routing Utilization    = 0.00222636 %
+  Global Horizontal Routing Utilization  = 0.00025355 %
+  Routable Net Status*
+  *Does not include unroutable nets such as driverless and loadless.
+  Run report_route_status for detailed report.
+  Number of Failed Nets               = 15627
+    (Failed Nets is the sum of unrouted and partially routed nets)
+  Number of Unrouted Nets             = 15626
+  Number of Partially Routed Nets     = 1
+  Number of Node Overlaps             = 0
+
+Phase 2 Router Initialization | Checksum: 1f67086a4
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:38 . Memory (MB): peak = 2132.516 ; gain = 27.199
+
+Phase 3 Global Routing
+Phase 3 Global Routing | Checksum: 1f67086a4
+
+Time (s): cpu = 00:00:48 ; elapsed = 00:00:38 . Memory (MB): peak = 2132.516 ; gain = 27.199
+
+Phase 4 Initial Routing
+
+Phase 4.1 Initial Net Routing Pass
+Phase 4.1 Initial Net Routing Pass | Checksum: 1dcda3fa2
+
+Time (s): cpu = 00:00:51 ; elapsed = 00:00:40 . Memory (MB): peak = 2132.516 ; gain = 27.199
+Phase 4 Initial Routing | Checksum: 1dcda3fa2
+
+Time (s): cpu = 00:00:51 ; elapsed = 00:00:40 . Memory (MB): peak = 2132.516 ; gain = 27.199
+
+Phase 5 Rip-up And Reroute
+
+Phase 5.1 Global Iteration 0
+ Number of Nodes with overlaps = 2678
+ Number of Nodes with overlaps = 977
+ Number of Nodes with overlaps = 588
+ Number of Nodes with overlaps = 287
+ Number of Nodes with overlaps = 146
+ Number of Nodes with overlaps = 84
+ Number of Nodes with overlaps = 33
+ Number of Nodes with overlaps = 18
+ Number of Nodes with overlaps = 11
+ Number of Nodes with overlaps = 8
+ Number of Nodes with overlaps = 11
+ Number of Nodes with overlaps = 6
+ Number of Nodes with overlaps = 19
+ Number of Nodes with overlaps = 4
+ Number of Nodes with overlaps = 4
+ Number of Nodes with overlaps = 3
+ Number of Nodes with overlaps = 0
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=-0.067 | TNS=-1.256 | WHS=N/A    | THS=N/A    |
+
+Phase 5.1 Global Iteration 0 | Checksum: 234d93f29
+
+Time (s): cpu = 00:01:40 ; elapsed = 00:01:13 . Memory (MB): peak = 2135.684 ; gain = 30.367
+
+Phase 5.2 Global Iteration 1
+ Number of Nodes with overlaps = 554
+ Number of Nodes with overlaps = 270
+ Number of Nodes with overlaps = 171
+ Number of Nodes with overlaps = 81
+ Number of Nodes with overlaps = 51
+ Number of Nodes with overlaps = 32
+ Number of Nodes with overlaps = 14
+ Number of Nodes with overlaps = 24
+ Number of Nodes with overlaps = 10
+ Number of Nodes with overlaps = 6
+ Number of Nodes with overlaps = 4
+ Number of Nodes with overlaps = 0
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.037  | TNS=0.000  | WHS=N/A    | THS=N/A    |
+
+Phase 5.2 Global Iteration 1 | Checksum: 2c5d47e12
+
+Time (s): cpu = 00:02:19 ; elapsed = 00:01:45 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 5.3 Global Iteration 2
+ Number of Nodes with overlaps = 518
+ Number of Nodes with overlaps = 249
+ Number of Nodes with overlaps = 146
+ Number of Nodes with overlaps = 98
+ Number of Nodes with overlaps = 33
+ Number of Nodes with overlaps = 22
+ Number of Nodes with overlaps = 16
+ Number of Nodes with overlaps = 3
+ Number of Nodes with overlaps = 1
+ Number of Nodes with overlaps = 0
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=-0.011 | TNS=-0.034 | WHS=N/A    | THS=N/A    |
+
+Phase 5.3 Global Iteration 2 | Checksum: 2551971e6
+
+Time (s): cpu = 00:02:41 ; elapsed = 00:02:00 . Memory (MB): peak = 2135.691 ; gain = 30.375
+Phase 5 Rip-up And Reroute | Checksum: 2551971e6
+
+Time (s): cpu = 00:02:41 ; elapsed = 00:02:00 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 6 Delay and Skew Optimization
+
+Phase 6.1 Delay CleanUp
+
+Phase 6.1.1 Update Timing
+Phase 6.1.1 Update Timing | Checksum: 29682896c
+
+Time (s): cpu = 00:02:42 ; elapsed = 00:02:01 . Memory (MB): peak = 2135.691 ; gain = 30.375
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.061  | TNS=0.000  | WHS=N/A    | THS=N/A    |
+
+Phase 6.1 Delay CleanUp | Checksum: 2c81e5614
+
+Time (s): cpu = 00:02:42 ; elapsed = 00:02:01 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 6.2 Clock Skew Optimization
+Phase 6.2 Clock Skew Optimization | Checksum: 2c81e5614
+
+Time (s): cpu = 00:02:42 ; elapsed = 00:02:01 . Memory (MB): peak = 2135.691 ; gain = 30.375
+Phase 6 Delay and Skew Optimization | Checksum: 2c81e5614
+
+Time (s): cpu = 00:02:42 ; elapsed = 00:02:01 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 7 Post Hold Fix
+
+Phase 7.1 Hold Fix Iter
+INFO: [Route 35-416] Intermediate Timing Summary | WNS=0.061  | TNS=0.000  | WHS=0.037  | THS=0.000  |
+
+Phase 7.1 Hold Fix Iter | Checksum: 2cca71fe1
+
+Time (s): cpu = 00:02:43 ; elapsed = 00:02:02 . Memory (MB): peak = 2135.691 ; gain = 30.375
+Phase 7 Post Hold Fix | Checksum: 2cca71fe1
+
+Time (s): cpu = 00:02:43 ; elapsed = 00:02:02 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 8 Route finalize
+
+Router Utilization Summary
+  Global Vertical Routing Utilization    = 4.32893 %
+  Global Horizontal Routing Utilization  = 4.70597 %
+  Routable Net Status*
+  *Does not include unroutable nets such as driverless and loadless.
+  Run report_route_status for detailed report.
+  Number of Failed Nets               = 0
+    (Failed Nets is the sum of unrouted and partially routed nets)
+  Number of Unrouted Nets             = 0
+  Number of Partially Routed Nets     = 0
+  Number of Node Overlaps             = 0
+
+Phase 8 Route finalize | Checksum: 2cca71fe1
+
+Time (s): cpu = 00:02:43 ; elapsed = 00:02:02 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 9 Verifying routed nets
+
+ Verification completed successfully
+Phase 9 Verifying routed nets | Checksum: 2cca71fe1
+
+Time (s): cpu = 00:02:44 ; elapsed = 00:02:02 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 10 Depositing Routes
+Phase 10 Depositing Routes | Checksum: 252ccb621
+
+Time (s): cpu = 00:02:45 ; elapsed = 00:02:03 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 11 Post Process Routing
+Phase 11 Post Process Routing | Checksum: 252ccb621
+
+Time (s): cpu = 00:02:45 ; elapsed = 00:02:03 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Phase 12 Post Router Timing
+INFO: [Route 35-57] Estimated Timing Summary | WNS=0.061  | TNS=0.000  | WHS=0.037  | THS=0.000  |
+
+INFO: [Route 35-327] The final timing numbers are based on the router estimated timing analysis. For a complete and accurate timing signoff, please run report_timing_summary.
+Phase 12 Post Router Timing | Checksum: 252ccb621
+
+Time (s): cpu = 00:02:45 ; elapsed = 00:02:03 . Memory (MB): peak = 2135.691 ; gain = 30.375
+Total Elapsed time in route_design: 123.409 secs
+
+Phase 13 Post-Route Event Processing
+Phase 13 Post-Route Event Processing | Checksum: 179fdbcaf
+
+Time (s): cpu = 00:02:45 ; elapsed = 00:02:03 . Memory (MB): peak = 2135.691 ; gain = 30.375
+INFO: [Route 35-16] Router Completed Successfully
+Ending Routing Task | Checksum: 179fdbcaf
+
+Time (s): cpu = 00:02:45 ; elapsed = 00:02:04 . Memory (MB): peak = 2135.691 ; gain = 30.375
+
+Routing Is Done.
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+136 Infos, 5 Warnings, 1 Critical Warnings and 0 Errors encountered.
+route_design completed successfully
+route_design: Time (s): cpu = 00:02:46 ; elapsed = 00:02:04 . Memory (MB): peak = 2135.691 ; gain = 30.375
+INFO: [Vivado 12-24828] Executing command : report_drc -file display_wrapper_drc_routed.rpt -pb display_wrapper_drc_routed.pb -rpx display_wrapper_drc_routed.rpx
+Command: report_drc -file display_wrapper_drc_routed.rpt -pb display_wrapper_drc_routed.pb -rpx display_wrapper_drc_routed.rpx
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 2-168] The results of DRC are in file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_drc_routed.rpt.
+report_drc completed successfully
+report_drc: Time (s): cpu = 00:00:08 ; elapsed = 00:00:05 . Memory (MB): peak = 2135.691 ; gain = 0.000
+INFO: [Vivado 12-24828] Executing command : report_methodology -file display_wrapper_methodology_drc_routed.rpt -pb display_wrapper_methodology_drc_routed.pb -rpx display_wrapper_methodology_drc_routed.rpx
+Command: report_methodology -file display_wrapper_methodology_drc_routed.rpt -pb display_wrapper_methodology_drc_routed.pb -rpx display_wrapper_methodology_drc_routed.rpx
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [DRC 23-133] Running Methodology with 2 threads
+INFO: [Vivado_Tcl 2-1520] The results of Report Methodology are in file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_methodology_drc_routed.rpt.
+report_methodology completed successfully
+report_methodology: Time (s): cpu = 00:00:11 ; elapsed = 00:00:07 . Memory (MB): peak = 2135.691 ; gain = 0.000
+INFO: [Vivado 12-24828] Executing command : report_timing_summary -max_paths 10 -routable_nets -report_unconstrained -file display_wrapper_timing_summary_routed.rpt -pb display_wrapper_timing_summary_routed.pb -rpx display_wrapper_timing_summary_routed.rpx -warn_on_violation 
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+WARNING: [Timing 38-436] There are set_bus_skew constraint(s) in this design. Please run report_bus_skew to ensure that bus skew requirements are met.
+INFO: [Vivado 12-24838] Running report commands "report_incremental_reuse, report_route_status" in parallel.
+Running report generation with 2 threads.
+INFO: [Vivado 12-24828] Executing command : report_incremental_reuse -file display_wrapper_incremental_reuse_routed.rpt
+INFO: [Vivado_Tcl 4-1062] Incremental flow is disabled. No incremental reuse Info to report.
+INFO: [Vivado 12-24828] Executing command : report_route_status -file display_wrapper_route_status.rpt -pb display_wrapper_route_status.pb
+INFO: [Vivado 12-24828] Executing command : report_power -file display_wrapper_power_routed.rpt -pb display_wrapper_power_summary_routed.pb -rpx display_wrapper_power_routed.rpx
+Command: report_power -file display_wrapper_power_routed.rpt -pb display_wrapper_power_summary_routed.pb -rpx display_wrapper_power_routed.rpx
+Running Vector-less Activity Propagation...
+
+Finished Running Vector-less Activity Propagation
+WARNING: [Power 33-332] Found switching activity that implies high-fanout reset nets being asserted for excessive periods of time which may result in inaccurate power analysis.
+Resolution: To review and fix problems, please run Power Constraints Advisor in the GUI from Tools > Power Constraints Advisor or run report_power with the -advisory option to generate a text report.
+153 Infos, 7 Warnings, 1 Critical Warnings and 0 Errors encountered.
+report_power completed successfully
+INFO: [Vivado 12-24828] Executing command : report_clock_utilization -file display_wrapper_clock_utilization_routed.rpt
+INFO: [Vivado 12-24828] Executing command : report_bus_skew -warn_on_violation -file display_wrapper_bus_skew_routed.rpt -pb display_wrapper_bus_skew_routed.pb -rpx display_wrapper_bus_skew_routed.rpx
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+generate_parallel_reports: Time (s): cpu = 00:00:32 ; elapsed = 00:00:22 . Memory (MB): peak = 2135.691 ; gain = 0.000
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2135.691 ; gain = 0.000
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2135.691 ; gain = 0.000
+Writing XDEF routing.
+Writing XDEF routing logical nets.
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.046 . Memory (MB): peak = 2135.691 ; gain = 0.000
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.218 . Memory (MB): peak = 2135.691 ; gain = 0.000
+Wrote PlaceStorage: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.584 . Memory (MB): peak = 2135.691 ; gain = 0.000
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.019 . Memory (MB): peak = 2135.691 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.008 . Memory (MB): peak = 2135.691 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:02 ; elapsed = 00:00:00.850 . Memory (MB): peak = 2135.691 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_routed.dcp' has been generated.
+INFO: [Memdata 28-208] The XPM instance: <display_i/hdmi_out/frontend/v_axi4s_vid_out_0/inst/COUPLER_INST/generate_async_fifo.FIFO_INST/XPM_FIFO_ASYNC_INST/gnuram_async_fifo.xpm_fifo_base_inst/gen_sdpram.xpm_memory_base_inst> is part of IP: <display_i/hdmi_out/frontend/v_axi4s_vid_out_0>. This XPM instance will be excluded from the .mmi because updatemem is prohibited from making changes to an XPM that is part of an IP.
+INFO: [Memdata 28-208] The XPM instance: <display_i/axi_vdma/U0/GEN_SPRT_FOR_MM2S.MM2S_LINEBUFFER_I/GEN_LINEBUF_NO_SOF.GEN_LINEBUFFER.GEN_SYNC_FIFO.I_LINEBUFFER_FIFO/xpm_fifo_sync_inst/xpm_fifo_base_inst/gen_sdpram.xpm_memory_base_inst> is part of IP: <display_i/axi_vdma>. This XPM instance will be excluded from the .mmi because updatemem is prohibited from making changes to an XPM that is part of an IP.
+Command: write_bitstream -force display_wrapper.bit
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+Running DRC as a precondition to command write_bitstream
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado 12-3199] DRC finished with 0 Errors
+INFO: [Vivado 12-3200] Please refer to the DRC report (report_drc) for more information.
+Integrating Hard IP ELF/MEM with the PDI.
+INFO: [Designutils 20-2272] Running write_bitstream with 2 threads.
+Initializing bitstream generation complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.864 . Memory (MB): peak = 2278.270 ; gain = 74.301
+Loading data files...
+Loading site data...
+Loading route data...
+Processing options...
+Creating bitmap...
+Creating bitstream...
+Writing bitstream ./display_wrapper.bit...
+Generate Bitstream complete. Time (s): cpu = 00:00:17 ; elapsed = 00:00:12 . Memory (MB): peak = 2549.168 ; gain = 345.199
+INFO: [Vivado 12-1842] Bitgen Completed Successfully.
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+169 Infos, 7 Warnings, 1 Critical Warnings and 0 Errors encountered.
+write_bitstream completed successfully
+write_bitstream: Time (s): cpu = 00:00:25 ; elapsed = 00:00:27 . Memory (MB): peak = 2549.168 ; gain = 413.477
+INFO: [Common 17-206] Exiting Vivado at Thu Oct 29 17:43:04 2026...
+[Thu Oct 29 17:43:06 2026] impl_1 finished
+wait_on_runs: Time (s): cpu = 00:00:03 ; elapsed = 00:06:20 . Memory (MB): peak = 771.801 ; gain = 0.000
+## if {[get_property PROGRESS [get_runs impl_1]] ne "100%" ||
+##     ![string match {*write_bitstream Complete*} [get_property STATUS [get_runs impl_1]]]} {error "DISPLAY_IMPL_FAILED"}
+## open_run impl_1
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.142 . Memory (MB): peak = 1020.777 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 565 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2026.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Read ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.060 . Memory (MB): peak = 1141.656 ; gain = 3.410
+INFO: [Timing 38-478] Restoring timing data from binary archive.
+INFO: [Timing 38-479] Binary timing data restore complete.
+INFO: [Project 1-856] Restoring constraints from binary archive.
+INFO: [Project 1-853] Binary constraint restore complete.
+INFO: [Designutils 20-5722] Start Reading Physical Databases.
+Reading placement.
+Read Netlist Cache: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.022 . Memory (MB): peak = 1744.270 ; gain = 0.000
+Reading placer database...
+Read Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.017 . Memory (MB): peak = 1744.270 ; gain = 0.000
+Read PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1744.270 ; gain = 0.000
+Read placeStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.393 . Memory (MB): peak = 1771.539 ; gain = 27.270
+Read PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1771.539 ; gain = 0.000
+Reading routing.
+Read RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.178 . Memory (MB): peak = 1771.539 ; gain = 0.000
+Read Physdb Files: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.631 . Memory (MB): peak = 1771.539 ; gain = 27.270
+Restored from archive | CPU: 1.000000 secs | Memory: 0.000000 MB |
+Finished XDEF File Restore: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.682 . Memory (MB): peak = 1771.539 ; gain = 27.824
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.013 . Memory (MB): peak = 1771.539 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 1 instances were transformed.
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 1 instance 
+
+open_run: Time (s): cpu = 00:00:13 ; elapsed = 00:00:15 . Memory (MB): peak = 1771.539 ; gain = 999.738
+## if {[llength [get_pins -quiet display_i/hdmi_out/frontend/axi_dynclk/U0/Inst_mmcme2_drp/mmcm_adv_inst/CLKOUT0]] != 1 ||
+##     [llength [get_pins -quiet display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk]] != 1} {error "VIDEO_CLOCK_TOPOLOGY_CHANGED"}
+## if {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-3]\]/D}]] != 4} {error "BUTTON_SYNCHRONIZERS_CHANGED"}
+## report_timing_summary -delay_type min_max -report_unconstrained -file [file join $reports timing.rpt]
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+WARNING: [Timing 38-436] There are set_bus_skew constraint(s) in this design. Please run report_bus_skew to ensure that bus skew requirements are met.
+report_timing_summary: Time (s): cpu = 00:00:08 ; elapsed = 00:00:05 . Memory (MB): peak = 1835.172 ; gain = 63.633
+## report_utilization -file [file join $reports utilization.rpt]
+## report_drc -file [file join $reports drc.rpt]
+Command: report_drc -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports-display-diag/drc.rpt
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 2-168] The results of DRC are in file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports-display-diag/drc.rpt.
+report_drc completed successfully
+report_drc: Time (s): cpu = 00:00:09 ; elapsed = 00:00:06 . Memory (MB): peak = 1904.277 ; gain = 68.602
+## report_methodology -file [file join $reports methodology.rpt]
+Command: report_methodology -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports-display-diag/methodology.rpt
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [DRC 23-133] Running Methodology with 2 threads
+INFO: [Vivado_Tcl 2-1520] The results of Report Methodology are in file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports-display-diag/methodology.rpt.
+report_methodology completed successfully
+## report_cdc -details -file [file join $reports cdc.rpt]
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [Timing 38-314] The report_cdc command only analyzes and reports clock domain crossing paths where clocks have been defined on both source and destination sides. Ports with no input delay constraint are skipped. Please run check_timing to verify there are no missing clock definitions in your design, nor any unconstrained input port.
+## report_bus_skew -file [file join $reports bus-skew.rpt]
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+## set setup [get_property SLACK [get_timing_paths -delay_type max -max_paths 1]]
+## set hold [get_property SLACK [get_timing_paths -delay_type min -max_paths 1]]
+## if {$setup eq "" || $hold eq "" || $setup < 0 || $hold < 0} {error "DISPLAY_TIMING_FAILED setup=$setup hold=$hold"}
+## foreach violation [get_drc_violations] {
+##     if {[get_property SEVERITY $violation] in {Error {Critical Warning}}} {error "DISPLAY_DRC_FAILED:$violation"}
+## }
+## foreach violation [get_methodology_violations] {
+##     if {[get_property SEVERITY $violation] in {Error {Critical Warning}}} {error "DISPLAY_METHODOLOGY_FAILED:$violation"}
+## }
+## file copy [file join $out project display.runs impl_1 display_wrapper.bit] [file join $out export ${tag}.bit]
+## file copy [file join $out project display.gen sources_1 bd display hw_handoff display.hwh] [file join $out export ${tag}.hwh]
+## puts "DISPLAY_BUILD_COMPLETE:CDC_review_and_board_acceptance_pending"
+DISPLAY_BUILD_COMPLETE:CDC_review_and_board_acceptance_pending
+# exit
+INFO: [Common 17-206] Exiting Vivado at Thu Oct 29 17:43:42 2026...

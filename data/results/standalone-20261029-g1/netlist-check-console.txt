@@ -1,0 +1,19 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Thu Oct 29 17:33:41 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source data/results/standalone-20261029-g1/run-netlist-check.tcl
+# set repo [pwd]
+# cd C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/netlist-check
+# set bin [file join $::env(XILINX_VIVADO) bin]
+# exec [file join $bin xvlog.bat] -sv [file join $repo data results standalone-20261029-g1 project display.gen sources_1 bd display ip display_frame_monitor_0 display_frame_monitor_0_sim_netlist.v] [file join $repo fpga sim standalone tb_video_monitor_netlist.sv]
+ERROR: [XSIM 43-4316] Can not find file: C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.gen/sources_1/bd/display/ip/display_frame_monitor_0/display_frame_monitor_0_sim_netlist.v
+child process exited abnormally
+INFO: [Common 17-206] Exiting Vivado at Thu Oct 29 17:33:49 2026...

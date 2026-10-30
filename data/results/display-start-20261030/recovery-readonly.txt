@@ -1,0 +1,1 @@
+{"boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d", "reset": 0, "fclk0": 1053696, "fclk1": 1051136, "fclk2": 1050368, "vdma_control": 69632, "vdma_status": 69633, "monitor_signature": 1296258609}

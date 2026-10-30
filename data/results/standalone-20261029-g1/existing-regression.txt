@@ -1,0 +1,10 @@
+COMMAND: "C:\Users\14173\Documents\material-counter\.venv\Scripts\python.exe" -B -m pytest -p no:cacheprovider --basetemp .runtime/standalone-regression-20261029 scripts/desktop_gui scripts/rle scripts/gray8 scripts/wo0016/test_stream_counter.py scripts/wo0016/test_web_launcher_deployment.py -q
+
+EXIT CODE: 0
+===== STDOUT =====
+........................................................................ [ 25%]
+........................................................................ [ 50%]
+........................................................................ [ 75%]
+.......................................................................  [100%]
+287 passed in 8.31s
+===== STDERR =====

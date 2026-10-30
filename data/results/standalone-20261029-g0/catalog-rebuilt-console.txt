@@ -1,0 +1,52 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Thu Oct 29 16:25:57 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source scripts/standalone/check_catalog.tcl
+# foreach name {PYNQ_SOURCE VIDEO_IP_BUILT G0_CATALOG_OUT} {
+#     if {![info exists ::env($name)]} {error "Missing environment variable $name"}
+# }
+# if {[llength [get_projects -quiet]]} {error "Use a fresh Vivado session"}
+# set output [file normalize $::env(G0_CATALOG_OUT)]
+# if {[file exists $output]} {error "Evidence already exists: $output"}
+# create_project -in_memory -part xc7z020clg400-1
+create_project: Time (s): cpu = 00:00:08 ; elapsed = 00:00:10 . Memory (MB): peak = 587.613 ; gain = 270.770
+# set repos [list [file join $::env(PYNQ_SOURCE) boards ip] \
+#     [file join $::env(VIDEO_IP_BUILT) color_convert solution1 impl ip] \
+#     [file join $::env(VIDEO_IP_BUILT) pixel_unpack solution1 impl ip]]
+# foreach path $repos {if {![file isdirectory $path]} {error "Missing IP repository: $path"}}
+# set_property ip_repo_paths $repos [current_project]
+# update_ip_catalog
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/pynq-v3.1/boards/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g0/rebuilt-ip/color_convert/solution1/impl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g0/rebuilt-ip/pixel_unpack/solution1/impl/ip'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2026.1/Vivado/data/ip'.
+# set fd [open $output {WRONLY CREAT EXCL}]
+# puts $fd [list vivado_version [version -short] repositories $repos]
+# set missing {}
+# foreach vlnv {
+#     digilentinc.com:ip:axi_dynclk:1.0 digilentinc.com:ip:rgb2dvi:1.2
+#     xilinx.com:user:color_swap:1.1 xilinx.com:hls:color_convert:1.0
+#     xilinx.com:hls:pixel_unpack:1.0 xilinx.com:ip:axi_vdma:6.3
+#     xilinx.com:ip:v_axi4s_vid_out:4.0 xilinx.com:ip:v_tc:6.2
+#     xilinx.com:ip:axi_intc:4.1 xilinx.com:ip:axi_gpio:2.0
+# } {
+#     set found [get_ipdefs -all -quiet $vlnv]
+#     puts $fd [list vlnv $vlnv definitions $found]
+#     if {[llength $found] != 1} {lappend missing $vlnv}
+# }
+# puts $fd [list missing $missing]
+# close $fd
+# if {[llength $missing]} {error "G0_MISSING_IP:$missing"}
+# puts "G0_CATALOG_COMPLETE:hardware_acceptance_pending"
+G0_CATALOG_COMPLETE:hardware_acceptance_pending
+# exit
+INFO: [Common 17-206] Exiting Vivado at Thu Oct 29 16:26:15 2026...

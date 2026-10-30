@@ -90,3 +90,10 @@ desktop.ini
 /xsim.dir/
 /xelab.pb
 /xvlog.pb
+
+# 脱机显示的可重建工程、IP 与诊断原生日志；审阅过的报告另行提交。
+data/results/standalone-*/project/
+data/results/standalone-*/hls-*/
+data/results/standalone-*/rebuilt-ip/
+data/results/standalone-*/evidence/
+data/results/standalone-*/*.log

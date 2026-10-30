@@ -1,0 +1,129 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Thu Oct 29 17:16:54 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source data/results/standalone-20261029-g1/review-routed.tcl
+# open_checkpoint C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_routed.dcp
+Command: open_checkpoint C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/project/display.runs/impl_1/display_wrapper_routed.dcp
+
+Starting open_checkpoint Task
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.046 . Memory (MB): peak = 323.926 ; gain = 0.230
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.076 . Memory (MB): peak = 851.062 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 531 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2026.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Read ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.029 . Memory (MB): peak = 970.762 ; gain = 3.453
+INFO: [Timing 38-478] Restoring timing data from binary archive.
+INFO: [Timing 38-479] Binary timing data restore complete.
+INFO: [Project 1-856] Restoring constraints from binary archive.
+INFO: [Project 1-853] Binary constraint restore complete.
+INFO: [Designutils 20-5722] Start Reading Physical Databases.
+Reading placement.
+Read Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.027 . Memory (MB): peak = 1576.977 ; gain = 0.000
+Reading placer database...
+Read Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.020 . Memory (MB): peak = 1576.977 ; gain = 0.000
+Read PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1576.977 ; gain = 0.000
+Read placeStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.538 . Memory (MB): peak = 1602.996 ; gain = 26.020
+Read PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1602.996 ; gain = 0.000
+Reading routing.
+Read RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.221 . Memory (MB): peak = 1602.996 ; gain = 0.000
+Read Physdb Files: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.855 . Memory (MB): peak = 1602.996 ; gain = 26.020
+Restored from archive | CPU: 1.000000 secs | Memory: 0.000000 MB |
+Finished XDEF File Restore: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.922 . Memory (MB): peak = 1602.996 ; gain = 28.609
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.008 . Memory (MB): peak = 1602.996 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 1 instances were transformed.
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 1 instance 
+
+INFO: [Project 1-604] Checkpoint was created with Vivado v2026.1 (64-bit) build 6511674
+WARNING: [Vivado 12-23575] Critical violations of the methodology design rules detected. Critical violations may contribute to timing failures or cause functional issues in hardware. Run report_methodology for more information.
+open_checkpoint: Time (s): cpu = 00:00:21 ; elapsed = 00:00:26 . Memory (MB): peak = 1602.996 ; gain = 1286.121
+# read_xdc C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc
+Parsing XDC File [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc]
+WARNING: [Constraints 18-619] A clock with name 'display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk' already exists, overwriting the previous clock with the same name. [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc:7]
+Finished Parsing XDC File [C:/Users/14173/Documents/material-counter/scripts/standalone/display_timing.xdc]
+# report_timing_summary -delay_type min_max -report_unconstrained -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/timing-reviewed.rpt
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+WARNING: [Timing 38-436] There are set_bus_skew constraint(s) in this design. Please run report_bus_skew to ensure that bus skew requirements are met.
+report_timing_summary: Time (s): cpu = 00:00:10 ; elapsed = 00:00:06 . Memory (MB): peak = 1660.176 ; gain = 57.180
+# report_methodology -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/methodology-reviewed.rpt
+Command: report_methodology -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/methodology-reviewed.rpt
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [DRC 23-133] Running Methodology with 2 threads
+INFO: [Vivado_Tcl 2-1520] The results of Report Methodology are in file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/methodology-reviewed.rpt.
+report_methodology completed successfully
+report_methodology: Time (s): cpu = 00:00:09 ; elapsed = 00:00:06 . Memory (MB): peak = 1698.410 ; gain = 38.234
+# report_cdc -details -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/cdc-reviewed.rpt
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [Timing 38-314] The report_cdc command only analyzes and reports clock domain crossing paths where clocks have been defined on both source and destination sides. Ports with no input delay constraint are skipped. Please run check_timing to verify there are no missing clock definitions in your design, nor any unconstrained input port.
+# report_bus_skew -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/bus-skew-reviewed.rpt
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+# set setup [get_property SLACK [get_timing_paths -delay_type max -max_paths 1]]
+# set hold [get_property SLACK [get_timing_paths -delay_type min -max_paths 1]]
+# if {$setup < 0 || $hold < 0} {error "TIMING_FAILED"}
+# report_drc -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/drc-reviewed.rpt
+Command: report_drc -file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/drc-reviewed.rpt
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2026.1/Vivado/data/ip'.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 2-168] The results of DRC are in file C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/reports/drc-reviewed.rpt.
+report_drc completed successfully
+# foreach v [concat [get_drc_violations] [get_methodology_violations]] {if {[get_property SEVERITY $v] in {Error {Critical Warning}}} {error "REVIEW_FAILED:$v"}}
+# write_checkpoint C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/export/display-reviewed.dcp
+INFO: [Timing 38-480] Writing timing data to binary archive.
+Wrote PlaceDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1722.527 ; gain = 0.000
+Wrote PulsedLatchDB: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1731.559 ; gain = 0.000
+Writing XDEF routing.
+Writing XDEF routing logical nets.
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.042 . Memory (MB): peak = 1737.750 ; gain = 15.305
+Writing XDEF routing special nets.
+Wrote RouteStorage: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.196 . Memory (MB): peak = 1747.242 ; gain = 15.684
+Wrote PlaceStorage: Time (s): cpu = 00:00:02 ; elapsed = 00:00:00.467 . Memory (MB): peak = 1750.688 ; gain = 3.445
+Wrote Netlist Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.021 . Memory (MB): peak = 1750.688 ; gain = 0.000
+Wrote Device Cache: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 1750.688 ; gain = 0.000
+Write Physdb Complete: Time (s): cpu = 00:00:02 ; elapsed = 00:00:00.712 . Memory (MB): peak = 1750.688 ; gain = 28.242
+INFO: [Common 17-1381] The checkpoint 'C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/export/display-reviewed.dcp' has been generated.
+# write_bitstream C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/export/display-reviewed.bit
+Command: write_bitstream C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/export/display-reviewed.bit
+Attempting to get a license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Implementation' and/or device 'xc7z020'
+Running DRC as a precondition to command write_bitstream
+INFO: [IP_Flow 19-1839] IP Catalog is up to date.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado 12-3199] DRC finished with 0 Errors
+INFO: [Vivado 12-3200] Please refer to the DRC report (report_drc) for more information.
+Integrating Hard IP ELF/MEM with the PDI.
+INFO: [Designutils 20-2272] Running write_bitstream with 2 threads.
+Initializing bitstream generation complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.688 . Memory (MB): peak = 1938.559 ; gain = 80.383
+Loading data files...
+Loading site data...
+Loading route data...
+Processing options...
+Creating bitmap...
+Creating bitstream...
+Writing bitstream C:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g1/export/display-reviewed.bit...
+Generate Bitstream complete. Time (s): cpu = 00:00:13 ; elapsed = 00:00:10 . Memory (MB): peak = 2215.062 ; gain = 356.887
+INFO: [Vivado 12-1842] Bitgen Completed Successfully.
+INFO: [Common 17-83] Releasing license: Vivado_Implementation
+8 Infos, 0 Warnings, 0 Critical Warnings and 0 Errors encountered.
+write_bitstream completed successfully
+write_bitstream: Time (s): cpu = 00:00:19 ; elapsed = 00:00:24 . Memory (MB): peak = 2215.062 ; gain = 464.375
+# puts "DISPLAY_REVIEW_PASS setup=$setup hold=$hold"
+DISPLAY_REVIEW_PASS setup=0.129 hold=0.034
+# exit
+INFO: [Common 17-206] Exiting Vivado at Thu Oct 29 17:18:12 2026...

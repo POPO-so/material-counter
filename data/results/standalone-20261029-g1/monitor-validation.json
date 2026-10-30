@@ -1,0 +1,14 @@
+{
+  "simulation_log": "C:\\Users\\14173\\AppData\\Local\\Temp\\material-counter-monitor-20261029-final\\monitor_sim.log",
+  "log_sha256": "3d906f30a9f02bd2d2d7d1cd89776114f7858926af41aa82978ed433ac0b06d8",
+  "sources": [
+    {
+      "path": "fpga/experimental/standalone/video_frame_monitor.v",
+      "sha256": "8d20bc47f45cef992469093ac1bbed9eadfd82df09bd47d4af581ff0c10a6c6d"
+    },
+    {
+      "path": "fpga/sim/standalone/tb_video_frame_monitor.sv",
+      "sha256": "b817d0029896b080fd8cf19629fae9ed3f23729d8c2462667a5d8804a7b91e44"
+    }
+  ]
+}
