@@ -1,0 +1,19 @@
+{
+  "rtl-green/vectors/bad_checksum-expected.hex": "62613bedacabce971b6d51bd926b3c7aa3a645844071b6692fb5e02bdb048a67",
+  "rtl-green/vectors/bad_checksum-input.hex": "a7964d5b1090f848d71ca77f2eea0d854c4c8f9a5e424ac743e8f4c4a643f9ce",
+  "rtl-green/vectors/bad_header-expected.hex": "3131bfeb3d3638ff5e880eadcc30ecf91b6a4c945e606e0cfffa05d6da9ce45d",
+  "rtl-green/vectors/bad_header-input.hex": "d8fd73c6594771670121439e21c6007bfcec78506c3599f51c206df887d1f992",
+  "rtl-green/vectors/baseline-expected.hex": "c645f902c2445e8bf9162bf713ec9de6210129f005bec7d025f98b3492be3a95",
+  "rtl-green/vectors/baseline-input.hex": "d92224fa46d47f721c8c579ed936f6554012c863db38cce4a97414a3b4e882f1",
+  "rtl-green/vectors/cases.txt": "c96929ea7165b2d7ecbdd1b1c3538e4777de5e940ee8215202e007aea0149b5f",
+  "rtl-green/vectors/dilate-expected.hex": "e9ca720656b06d27c29cbc00900ea4c9e78d8d3785e60ed346dec084c22d5edf",
+  "rtl-green/vectors/dilate-input.hex": "d92224fa46d47f721c8c579ed936f6554012c863db38cce4a97414a3b4e882f1",
+  "rtl-green/vectors/empty-expected.hex": "a89a813222bf2119d7b97471edc2e03d539b43b5e4023d0c4f6e26380c282218",
+  "rtl-green/vectors/empty-input.hex": "d92224fa46d47f721c8c579ed936f6554012c863db38cce4a97414a3b4e882f1",
+  "rtl-green/vectors/erode-expected.hex": "d5a98d8e9b7a07e9cfc2a0cceb90cd7535582c8ba2a8e0b7010672db0b90191e",
+  "rtl-green/vectors/erode-input.hex": "d92224fa46d47f721c8c579ed936f6554012c863db38cce4a97414a3b4e882f1",
+  "rtl-green/vectors/overflow-expected.hex": "bf939d613326c40cdae506061156d96e7169cae304648008018ce8d74a78fdf9",
+  "rtl-green/vectors/overflow-input.hex": "6deac2f1eb82741cad41a76beee814c7032afbad3417d43f53c087ce3e4e43a3",
+  "rtl-green/vectors/roi-expected.hex": "5f0471a5d8c196fdf141a5979f0737db5925cbca4e193572e68692b018710e07",
+  "rtl-green/vectors/roi-input.hex": "d92224fa46d47f721c8c579ed936f6554012c863db38cce4a97414a3b4e882f1"
+}

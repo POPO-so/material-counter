@@ -1,0 +1,355 @@
+{
+  "schema": "material-counter.g25-summary.v1",
+  "material_accuracy": "NOT_MEASURED",
+  "runs": {
+    "high-off": {
+      "state": "STOPPED",
+      "pattern": "high_runs",
+      "display": "off",
+      "frames": 417,
+      "duration_s": 35.05530568299582,
+      "processing_fps": 11.895488910321298,
+      "pixel_verification": false,
+      "scan_hz": 0.0,
+      "effective_display_fps": 0.0,
+      "monitor_delta": {
+        "unique": 0,
+        "scans": 0,
+        "repeat": 0,
+        "invalid": 0,
+        "partial": 0
+      },
+      "latency_ms": {
+        "transfer_parse": {
+          "p50": 65.60687400633469,
+          "p95": 68.23859660071321,
+          "p99": 75.10136501747182
+        },
+        "total": {
+          "p50": 82.21623301506042,
+          "p95": 87.77504221652634,
+          "p99": 112.595251536695
+        }
+      },
+      "counter_delta": {
+        "total_cycles": 1752819334,
+        "active_cycles": 114508537,
+        "input_beats": 26691336,
+        "output_beats": 6902184,
+        "input_stall_cycles": 80064412,
+        "output_stall_cycles": 0
+      },
+      "counter_byte_check": true,
+      "cpu_percent": {
+        "cpu0": {
+          "p50": 29.850746268656717,
+          "p95": 76.55087459965509
+        },
+        "cpu1": {
+          "p50": 72.41379310344827,
+          "p95": 77.56470588235294
+        }
+      },
+      "cma_free_kib_range": [
+        12376,
+        28708
+      ],
+      "dma_idle": true,
+      "vdma_halted": true,
+      "buffers_released": true
+    },
+    "high-pixels": {
+      "state": "STOPPED",
+      "pattern": "high_runs",
+      "display": "scan",
+      "frames": 9,
+      "duration_s": 3.3608048320165835,
+      "processing_fps": 2.677929975064851,
+      "pixel_verification": true,
+      "scan_hz": 60.02045530350667,
+      "effective_display_fps": 0.0,
+      "monitor_delta": {
+        "unique": 0,
+        "scans": 202,
+        "repeat": 202,
+        "invalid": 0,
+        "partial": 0
+      },
+      "latency_ms": {
+        "transfer_parse": {
+          "p50": 64.63342800270766,
+          "p95": 65.72202700772323,
+          "p99": 66.182391816983
+        },
+        "total": {
+          "p50": 372.5196669984143,
+          "p95": 377.5530548184179,
+          "p99": 377.6117101754062
+        }
+      },
+      "counter_delta": {
+        "total_cycles": 168097433,
+        "active_cycles": 2462225,
+        "input_beats": 576072,
+        "output_beats": 148968,
+        "input_stall_cycles": 1728009,
+        "output_stall_cycles": 0
+      },
+      "counter_byte_check": true,
+      "cpu_percent": {
+        "cpu0": {
+          "p50": 17.194570135746606,
+          "p95": 17.194570135746606
+        },
+        "cpu1": {
+          "p50": 82.88288288288288,
+          "p95": 82.88288288288288
+        }
+      },
+      "cma_free_kib_range": [
+        32992,
+        32992
+      ],
+      "dma_idle": true,
+      "vdma_halted": true,
+      "buffers_released": true
+    },
+    "high-scan": {
+      "state": "STOPPED",
+      "pattern": "high_runs",
+      "display": "scan",
+      "frames": 417,
+      "duration_s": 35.00579613199807,
+      "processing_fps": 11.912312990328736,
+      "pixel_verification": false,
+      "scan_hz": 60.02187502201651,
+      "effective_display_fps": 0.0,
+      "monitor_delta": {
+        "unique": 0,
+        "scans": 2102,
+        "repeat": 2102,
+        "invalid": 0,
+        "partial": 0
+      },
+      "latency_ms": {
+        "transfer_parse": {
+          "p50": 65.76232597581111,
+          "p95": 66.58252299530432,
+          "p99": 72.14812008780426
+        },
+        "total": {
+          "p50": 82.47722999658436,
+          "p95": 84.34192439890467,
+          "p99": 112.71601021406217
+        }
+      },
+      "counter_delta": {
+        "total_cycles": 1750348893,
+        "active_cycles": 114443599,
+        "input_beats": 26691336,
+        "output_beats": 6902184,
+        "input_stall_cycles": 80064409,
+        "output_stall_cycles": 0
+      },
+      "counter_byte_check": true,
+      "cpu_percent": {
+        "cpu0": {
+          "p50": 23.78640776699029,
+          "p95": 74.34099661570778
+        },
+        "cpu1": {
+          "p50": 71.2871287128713,
+          "p95": 72.99163426416872
+        }
+      },
+      "cma_free_kib_range": [
+        14032,
+        31248
+      ],
+      "dma_idle": true,
+      "vdma_halted": true,
+      "buffers_released": true
+    },
+    "moving-dynamic": {
+      "state": "STOPPED",
+      "pattern": "moving",
+      "display": "dynamic",
+      "frames": 645,
+      "duration_s": 35.006379683996784,
+      "processing_fps": 18.425212941824505,
+      "pixel_verification": false,
+      "scan_hz": 60.01278385071948,
+      "effective_display_fps": 18.386409514682846,
+      "monitor_delta": {
+        "unique": 644,
+        "scans": 2102,
+        "repeat": 1458,
+        "invalid": 0,
+        "partial": 0
+      },
+      "latency_ms": {
+        "transfer_parse": {
+          "p50": 20.851551002124324,
+          "p95": 21.235233382321894,
+          "p99": 23.00559032009913
+        },
+        "total": {
+          "p50": 52.99716899753548,
+          "p95": 56.59277020022273,
+          "p99": 65.78227179474194
+        }
+      },
+      "counter_delta": {
+        "total_cycles": 1750368361,
+        "active_cycles": 176656614,
+        "input_beats": 41285160,
+        "output_beats": 366360,
+        "input_stall_cycles": 123840641,
+        "output_stall_cycles": 0
+      },
+      "counter_byte_check": true,
+      "cpu_percent": {
+        "cpu0": {
+          "p50": 54.22885572139303,
+          "p95": 60.89853761495552
+        },
+        "cpu1": {
+          "p50": 48.756218905472636,
+          "p95": 58.80597014925373
+        }
+      },
+      "cma_free_kib_range": [
+        29876,
+        29876
+      ],
+      "dma_idle": true,
+      "vdma_halted": true,
+      "buffers_released": true
+    },
+    "moving-off": {
+      "state": "STOPPED",
+      "pattern": "moving",
+      "display": "off",
+      "frames": 1447,
+      "duration_s": 35.02109680898138,
+      "processing_fps": 41.31795208735175,
+      "pixel_verification": false,
+      "scan_hz": 0.0,
+      "effective_display_fps": 0.0,
+      "monitor_delta": {
+        "unique": 0,
+        "scans": 0,
+        "repeat": 0,
+        "invalid": 0,
+        "partial": 0
+      },
+      "latency_ms": {
+        "transfer_parse": {
+          "p50": 20.93033801065758,
+          "p95": 21.240561007289216,
+          "p99": 23.479762917268086
+        },
+        "total": {
+          "p50": 23.80646698293276,
+          "p95": 24.752887201611884,
+          "p99": 27.43321298970841
+        }
+      },
+      "counter_delta": {
+        "total_cycles": 1751107767,
+        "active_cycles": 396293924,
+        "input_beats": 92619576,
+        "output_beats": 821896,
+        "input_stall_cycles": 277825435,
+        "output_stall_cycles": 0
+      },
+      "counter_byte_check": true,
+      "cpu_percent": {
+        "cpu0": {
+          "p50": 36.41025641025641,
+          "p95": 62.54010695187166
+        },
+        "cpu1": {
+          "p50": 41.83673469387755,
+          "p95": 68.75865251499769
+        }
+      },
+      "cma_free_kib_range": [
+        35968,
+        35968
+      ],
+      "dma_idle": true,
+      "vdma_halted": true,
+      "buffers_released": true
+    },
+    "moving-scan": {
+      "state": "STOPPED",
+      "pattern": "moving",
+      "display": "scan",
+      "frames": 1443,
+      "duration_s": 35.0124235660187,
+      "processing_fps": 41.21394216767398,
+      "pixel_verification": false,
+      "scan_hz": 60.02961565310181,
+      "effective_display_fps": 0.0,
+      "monitor_delta": {
+        "unique": 0,
+        "scans": 2104,
+        "repeat": 2104,
+        "invalid": 0,
+        "partial": 0
+      },
+      "latency_ms": {
+        "transfer_parse": {
+          "p50": 20.9351509984117,
+          "p95": 21.278276608791202,
+          "p99": 23.812934192246754
+        },
+        "total": {
+          "p50": 23.989445995539427,
+          "p95": 25.413700702483766,
+          "p99": 27.770338478730988
+        }
+      },
+      "counter_delta": {
+        "total_cycles": 1750673565,
+        "active_cycles": 395107891,
+        "input_beats": 92363544,
+        "output_beats": 819624,
+        "input_stall_cycles": 277057443,
+        "output_stall_cycles": 0
+      },
+      "counter_byte_check": true,
+      "cpu_percent": {
+        "cpu0": {
+          "p50": 36.633663366336634,
+          "p95": 63.47227592606913
+        },
+        "cpu1": {
+          "p50": 42.131979695431475,
+          "p95": 65.1678391959799
+        }
+      },
+      "cma_free_kib_range": [
+        33700,
+        33700
+      ],
+      "dma_idle": true,
+      "vdma_halted": true,
+      "buffers_released": true
+    }
+  },
+  "status": "G25_PASS",
+  "long_stress": {
+    "frames": 2169,
+    "duration_s": 180.03514189799898,
+    "processing_fps": 12.047647904367873,
+    "stable_dma_addresses": true,
+    "rss_kib_range": [
+      148612,
+      194440
+    ],
+    "total_clock_delta": 9001816524
+  },
+  "post_readback": "post-long-readback.json"
+}

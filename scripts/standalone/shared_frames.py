@@ -222,6 +222,25 @@ class SharedFrames:
             self._require_status(slot, WRITING, "reclaim_writer")
             self._statuses[slot] = FREE
 
+    def reclaim_reader(self, slot, *, dead_consumer=False):
+        """Reclaim READING after joining the consumer and confirming it is not alive.
+
+        The owner may pass ``dead_consumer=True`` only after ``consumer.join()``
+        has returned and ``consumer.is_alive()`` is false. This flag is the
+        caller's confirmation; this method does not inspect a process handle.
+        """
+        self._ensure_open()
+        self._require_owner()
+        if dead_consumer is not True:
+            raise ValueError(
+                "dead_consumer=True is required after consumer.join() and not consumer.is_alive()"
+            )
+        slot = _validate_slot(slot)
+        with self._locked():
+            self._require_shared_open()
+            self._require_status(slot, READING, "reclaim_reader")
+            self._statuses[slot] = FREE
+
     def statuses(self):
         """Return a consistent snapshot of the three slot states."""
         self._ensure_open()

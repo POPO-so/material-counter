@@ -630,7 +630,8 @@ def inspect_pynq_global_state(pynq_module_file: str | Path, *,
                               require_empty_shutdown: bool,
                               require_loaded_bit: bool = False,
                               expected_bit_path: str | Path | None = None,
-                              expected_bit_sha256: str | None = None) -> dict[str, Any]:
+                              expected_bit_sha256: str | None = None,
+                              allow_equivalent_bit_path: bool = False) -> dict[str, Any]:
     """Audit the PYNQ shutdown list before load and current BIT identity after it."""
     state_path = Path(pynq_module_file).resolve().parent / "pl_server" / "global_pl_state_.json"
     if state_path.is_symlink():
@@ -644,7 +645,8 @@ def inspect_pynq_global_state(pynq_module_file: str | Path, *,
         return {"pl_state_status": "COLD_BOOT_NO_GLOBAL_STATE",
                 "global_state_path": str(state_path), "shutdown_ips": {},
                 "loaded_bit_path": None, "loaded_bit_sha1": None,
-                "loaded_bit_sha256": None}
+                "loaded_bit_sha256": None,
+                "loaded_bit_path_matches_expected": None}
     except (OSError, UnicodeError) as exc:
         raise PreflightError(f"cannot read PYNQ global state: {exc}") from exc
     try:
@@ -666,6 +668,7 @@ def inspect_pynq_global_state(pynq_module_file: str | Path, *,
     bit_sha1 = state.get("bitfile_hash")
     resolved_bit = None
     bit_sha256 = None
+    path_matches_expected = None
     if bit_path_value:
         resolved_bit = Path(str(bit_path_value)).resolve()
         if resolved_bit.is_file():
@@ -674,9 +677,11 @@ def inspect_pynq_global_state(pynq_module_file: str | Path, *,
         if not bit_path_value or not bit_sha1 or expected_bit_path is None or expected_bit_sha256 is None:
             raise PreflightError("PYNQ global state does not identify the loaded WO-0015 BIT")
         expected_path = Path(expected_bit_path).resolve()
-        if resolved_bit != expected_path:
+        expected_digest = _require_digest(expected_bit_sha256, "expected BIT SHA-256")
+        path_matches_expected = resolved_bit == expected_path
+        if not path_matches_expected and not allow_equivalent_bit_path:
             raise PreflightError("PYNQ global state loaded BIT path differs from the reviewed artifact")
-        if bit_sha256 != expected_bit_sha256:
+        if bit_sha256 != expected_digest:
             raise PreflightError("PYNQ global state loaded BIT SHA-256 differs from the reviewed artifact")
         import hashlib
         sha1 = hashlib.sha1(expected_path.read_bytes()).hexdigest()
@@ -688,7 +693,8 @@ def inspect_pynq_global_state(pynq_module_file: str | Path, *,
             "shutdown_ips_empty": not shutdown_ips,
             "loaded_bit_path": str(resolved_bit) if resolved_bit else None,
             "loaded_bit_sha1": bit_sha1,
-            "loaded_bit_sha256": bit_sha256}
+            "loaded_bit_sha256": bit_sha256,
+            "loaded_bit_path_matches_expected": path_matches_expected}
 
 
 def read_kernel_log() -> list[str]:

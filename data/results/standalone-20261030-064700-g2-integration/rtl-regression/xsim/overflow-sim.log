@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Fri Oct 30 06:51:15 2026
+# Process ID         : 61992
+# Current directory  : C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim
+# Command line       : xsim.exe -log overflow-sim.log -mode tcl -source {xsim.dir/rle_pipeline/xsim_script.tcl}
+# Log file           : C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/overflow-sim.log
+# Journal file       : C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 12246 MB
+#-----------------------------------------------------------
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/overflow-input.hex -testplusarg EXPECTED=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/vectors/overflow-expected.hex -testplusarg OUTPUT=C:/w/mc-g2/data/results/standalone-20261030-064700-g2-integration/rtl-regression/xsim/overflow-actual.hex -testplusarg WORDS=16936 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=16936 cycles=269717
+$finish called at time : 5394430 ns : File "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 06:51:17 2026...

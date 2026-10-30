@@ -1,0 +1,1034 @@
+
+*** Running vivado
+    with args -log display_wrapper.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source display_wrapper.tcl
+
+
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Fri Oct 30 12:45:45 2026
+# Process ID         : 35532
+# Current directory  : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1
+# Command line       : vivado.exe -log display_wrapper.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source display_wrapper.tcl
+# Log file           : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/display_wrapper.vds
+# Journal file       : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1\vivado.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 9843 MB
+#-----------------------------------------------------------
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:45:45 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source display_wrapper.tcl -notrace
+create_project: Time (s): cpu = 00:00:07 ; elapsed = 00:00:07 . Memory (MB): peak = 587.621 ; gain = 270.184
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/.runtime/pynq-v3.1/boards/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g0/rebuilt-ip/color_convert/solution1/impl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/14173/Documents/material-counter/data/results/standalone-20261029-g0/rebuilt-ip/pixel_unpack/solution1/impl/ip'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2026.1/Vivado/data/ip'.
+WARNING: [IP_Flow 19-4995] The host OS only allows 260 characters in a normal path. The IP cache path is more than 80 characters. If you experience issues with IP caching, please consider changing the IP cache to a location with a shorter path. Alternately consider using the OS subst command to map part of the path to a drive letter. 
+Current IP cache path is c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.cache/ip 
+INFO: [Project 1-5698] Found the below utility IPs instantiated in block design C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.srcs/sources_1/bd/display/display.bd which have equivalent inline hdl with improved performance and reduced diskspace.
+It is recommended to migrate these utility IPs to inline hdl  using the command upgrade_project -migrate_to_inline_hdl.  The utility IPs may be deprecated in future releases.
+More information on inline hdl is available in UG994.
+Utility IP Component Instances:
+ display_video_interrupts_0
+display_one_0
+display_zero_0
+Command: synth_design -top display_wrapper -part xc7z020clg400-1
+Starting synth_design
+Attempting to get a license for feature 'Vivado_Synthesis' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Vivado_Synthesis' and/or device 'xc7z020'
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+INFO: [Designutils 20-5008] Incremental synthesis strategy default
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 25360
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 1430.633 ; gain = 576.102
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'display_wrapper' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/hdl/display_wrapper.v:13]
+INFO: [Synth 8-6157] synthesizing module 'display' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:13]
+INFO: [Synth 8-6157] synthesizing module 'display_axi_dma_0_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_axi_dma_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_axi_dma_0_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_axi_dma_0_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mm2s_prmry_reset_out_n' of module 'display_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:452]
+WARNING: [Synth 8-7071] port 's2mm_prmry_reset_out_n' of module 'display_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:452]
+WARNING: [Synth 8-7071] port 'mm2s_introut' of module 'display_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:452]
+WARNING: [Synth 8-7071] port 's2mm_introut' of module 'display_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:452]
+WARNING: [Synth 8-7071] port 'axi_dma_tstvec' of module 'display_axi_dma_0_0' is unconnected for instance 'axi_dma_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:452]
+WARNING: [Synth 8-7023] instance 'axi_dma_0' of module 'display_axi_dma_0_0' has 64 connections declared, but only 59 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:452]
+INFO: [Synth 8-6157] synthesizing module 'display_axi_vdma_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_axi_vdma_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_axi_vdma_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_axi_vdma_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mm2s_frame_ptr_out' of module 'display_axi_vdma_0' is unconnected for instance 'axi_vdma' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:512]
+WARNING: [Synth 8-7023] instance 'axi_vdma' of module 'display_axi_vdma_0' has 42 connections declared, but only 41 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:512]
+INFO: [Synth 8-6157] synthesizing module 'display_btns_gpio_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_btns_gpio_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_btns_gpio_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_btns_gpio_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_control_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1338]
+INFO: [Synth 8-6157] synthesizing module 'm00_couplers_imp_KYH20Q' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4052]
+INFO: [Synth 8-6155] done synthesizing module 'm00_couplers_imp_KYH20Q' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4052]
+INFO: [Synth 8-6157] synthesizing module 'm01_couplers_imp_1KNIN95' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4161]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_auto_cc_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_cc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_auto_cc_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_cc_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'm_axi_awprot' of module 'display_control_imp_auto_cc_0' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4284]
+WARNING: [Synth 8-7071] port 'm_axi_arprot' of module 'display_control_imp_auto_cc_0' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4284]
+WARNING: [Synth 8-7023] instance 'auto_cc' of module 'display_control_imp_auto_cc_0' has 42 connections declared, but only 40 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4284]
+INFO: [Synth 8-6155] done synthesizing module 'm01_couplers_imp_1KNIN95' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4161]
+INFO: [Synth 8-6157] synthesizing module 'm02_couplers_imp_18B9DBX' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4327]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_auto_cc_1' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_cc_1_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_auto_cc_1' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_cc_1_stub.v:6]
+WARNING: [Synth 8-7071] port 'm_axi_awprot' of module 'display_control_imp_auto_cc_1' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4450]
+WARNING: [Synth 8-7071] port 'm_axi_arprot' of module 'display_control_imp_auto_cc_1' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4450]
+WARNING: [Synth 8-7023] instance 'auto_cc' of module 'display_control_imp_auto_cc_1' has 42 connections declared, but only 40 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4450]
+INFO: [Synth 8-6155] done synthesizing module 'm02_couplers_imp_18B9DBX' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4327]
+INFO: [Synth 8-6157] synthesizing module 'm03_couplers_imp_6OFM66' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4493]
+INFO: [Synth 8-6155] done synthesizing module 'm03_couplers_imp_6OFM66' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4493]
+INFO: [Synth 8-6157] synthesizing module 'm04_couplers_imp_FODOL1' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4620]
+INFO: [Synth 8-6155] done synthesizing module 'm04_couplers_imp_FODOL1' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4620]
+INFO: [Synth 8-6157] synthesizing module 'm05_couplers_imp_1H1CULY' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4735]
+INFO: [Synth 8-6155] done synthesizing module 'm05_couplers_imp_1H1CULY' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4735]
+INFO: [Synth 8-6157] synthesizing module 'm06_couplers_imp_1TOPHMA' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4850]
+INFO: [Synth 8-6155] done synthesizing module 'm06_couplers_imp_1TOPHMA' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4850]
+INFO: [Synth 8-6157] synthesizing module 'm07_couplers_imp_TPTB1T' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4965]
+INFO: [Synth 8-6155] done synthesizing module 'm07_couplers_imp_TPTB1T' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:4965]
+INFO: [Synth 8-6157] synthesizing module 'm08_couplers_imp_1C5ZEN8' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5080]
+INFO: [Synth 8-6155] done synthesizing module 'm08_couplers_imp_1C5ZEN8' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5080]
+INFO: [Synth 8-6157] synthesizing module 'm09_couplers_imp_BPZ6W7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5195]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_auto_cc_2' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_cc_2_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_auto_cc_2' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_cc_2_stub.v:6]
+WARNING: [Synth 8-7071] port 'm_axi_awprot' of module 'display_control_imp_auto_cc_2' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5315]
+WARNING: [Synth 8-7071] port 'm_axi_wstrb' of module 'display_control_imp_auto_cc_2' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5315]
+WARNING: [Synth 8-7071] port 'm_axi_arprot' of module 'display_control_imp_auto_cc_2' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5315]
+WARNING: [Synth 8-7023] instance 'auto_cc' of module 'display_control_imp_auto_cc_2' has 42 connections declared, but only 39 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5315]
+INFO: [Synth 8-6155] done synthesizing module 'm09_couplers_imp_BPZ6W7' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5195]
+INFO: [Synth 8-6157] synthesizing module 'm10_couplers_imp_19QOUXN' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5357]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_auto_cc_3' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_cc_3_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_auto_cc_3' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_cc_3_stub.v:6]
+WARNING: [Synth 8-7071] port 'm_axi_awprot' of module 'display_control_imp_auto_cc_3' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5480]
+WARNING: [Synth 8-7071] port 'm_axi_arprot' of module 'display_control_imp_auto_cc_3' is unconnected for instance 'auto_cc' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5480]
+WARNING: [Synth 8-7023] instance 'auto_cc' of module 'display_control_imp_auto_cc_3' has 42 connections declared, but only 40 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5480]
+INFO: [Synth 8-6155] done synthesizing module 'm10_couplers_imp_19QOUXN' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5357]
+INFO: [Synth 8-6157] synthesizing module 's00_couplers_imp_1KSUWH2' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5523]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_auto_pc_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_auto_pc_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 's00_couplers_imp_1KSUWH2' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5523]
+INFO: [Synth 8-6157] synthesizing module 'display_control_imp_xbar_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_xbar_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_imp_xbar_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_control_imp_xbar_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_control_0' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1338]
+INFO: [Synth 8-6157] synthesizing module 'display_frame_monitor_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_frame_monitor_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_frame_monitor_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_frame_monitor_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'hdmi_out_imp_OW3FF3' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3536]
+INFO: [Synth 8-6157] synthesizing module 'display_axis_register_slice_0_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_axis_register_slice_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_axis_register_slice_0_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_axis_register_slice_0_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_color_convert_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_color_convert_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_color_convert_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_color_convert_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'stream_out_24_TKEEP' of module 'display_color_convert_0' is unconnected for instance 'color_convert' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3908]
+WARNING: [Synth 8-7071] port 'stream_out_24_TSTRB' of module 'display_color_convert_0' is unconnected for instance 'color_convert' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3908]
+WARNING: [Synth 8-7023] instance 'color_convert' of module 'display_color_convert_0' has 33 connections declared, but only 31 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3908]
+INFO: [Synth 8-6157] synthesizing module 'frontend_imp_NWXIHO' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3155]
+INFO: [Synth 8-6157] synthesizing module 'display_axi_dynclk_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_axi_dynclk_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_axi_dynclk_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_axi_dynclk_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_color_swap_0_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_color_swap_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_color_swap_0_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_color_swap_0_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_hdmi_out_hpd_video_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_hdmi_out_hpd_video_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_hdmi_out_hpd_video_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_hdmi_out_hpd_video_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_rgb2dvi_0_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_rgb2dvi_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_rgb2dvi_0_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_rgb2dvi_0_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_v_axi4s_vid_out_0_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_v_axi4s_vid_out_0_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_v_axi4s_vid_out_0_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_v_axi4s_vid_out_0_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'vid_vblank' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'vid_hblank' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'vid_field_id' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'vtg_ce' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'locked' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'overflow' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'underflow' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'fifo_read_level' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'status' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7071] port 'sof_state_out' of module 'display_v_axi4s_vid_out_0_0' is unconnected for instance 'v_axi4s_vid_out_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+WARNING: [Synth 8-7023] instance 'v_axi4s_vid_out_0' of module 'display_v_axi4s_vid_out_0_0' has 32 connections declared, but only 22 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3478]
+INFO: [Synth 8-6157] synthesizing module 'display_vtc_out_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_vtc_out_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_vtc_out_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_vtc_out_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'fsync_out' of module 'display_vtc_out_0' is unconnected for instance 'vtc_out' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3501]
+WARNING: [Synth 8-7023] instance 'vtc_out' of module 'display_vtc_out_0' has 33 connections declared, but only 32 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3501]
+INFO: [Synth 8-6155] done synthesizing module 'frontend_imp_NWXIHO' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3155]
+INFO: [Synth 8-6157] synthesizing module 'display_pixel_unpack_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_pixel_unpack_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_pixel_unpack_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_pixel_unpack_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'hdmi_out_imp_OW3FF3' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3536]
+INFO: [Synth 8-6157] synthesizing module 'display_hp0_protocol_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_hp0_protocol_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_hp0_protocol_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_hp0_protocol_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_hp1_fabric_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:2855]
+INFO: [Synth 8-6157] synthesizing module 's00_couplers_imp_TEAZGL' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5902]
+INFO: [Synth 8-6157] synthesizing module 'display_hp1_fabric_imp_auto_pc_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_hp1_fabric_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_hp1_fabric_imp_auto_pc_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_hp1_fabric_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 's00_couplers_imp_TEAZGL' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5902]
+INFO: [Synth 8-6155] done synthesizing module 'display_hp1_fabric_0' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:2855]
+INFO: [Synth 8-6157] synthesizing module 'display_image_pipeline_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_image_pipeline_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_image_pipeline_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_image_pipeline_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_memory_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3017]
+INFO: [Synth 8-6157] synthesizing module 's00_couplers_imp_LZ6OFR' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5769]
+INFO: [Synth 8-6157] synthesizing module 'display_memory_imp_auto_pc_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_memory_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_memory_imp_auto_pc_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_memory_imp_auto_pc_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 's00_couplers_imp_LZ6OFR' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:5769]
+INFO: [Synth 8-6155] done synthesizing module 'display_memory_0' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:3017]
+INFO: [Synth 8-6157] synthesizing module 'display_one_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_one_0/synth/display_one_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'xlconstant_v1_1_11_xlconstant' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'xlconstant_v1_1_11_xlconstant' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'display_one_0' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_one_0/synth/display_one_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'display_ps7_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_ps7_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_ps7_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_ps7_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_AWREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BVALID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BRESP' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_BID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_RACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP0_WACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_ARREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RLAST' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RVALID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RRESP' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_BID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RDATA' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_WCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_RACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP1_WACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_AWREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_BVALID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_WREADY' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_BRESP' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_BID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_RID' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_RCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_WCOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_RACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7071] port 'S_AXI_HP2_WACOUNT' of module 'display_ps7_0' is unconnected for instance 'ps7' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+WARNING: [Synth 8-7023] instance 'ps7' of module 'display_ps7_0' has 200 connections declared, but only 169 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1106]
+INFO: [Synth 8-6157] synthesizing module 'display_reset_control_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_reset_control_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_reset_control_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_reset_control_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mb_reset' of module 'display_reset_control_0' is unconnected for instance 'reset_control' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1276]
+WARNING: [Synth 8-7071] port 'bus_struct_reset' of module 'display_reset_control_0' is unconnected for instance 'reset_control' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1276]
+WARNING: [Synth 8-7071] port 'peripheral_reset' of module 'display_reset_control_0' is unconnected for instance 'reset_control' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1276]
+WARNING: [Synth 8-7023] instance 'reset_control' of module 'display_reset_control_0' has 10 connections declared, but only 7 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1276]
+INFO: [Synth 8-6157] synthesizing module 'display_reset_pixel_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_reset_pixel_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_reset_pixel_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_reset_pixel_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mb_reset' of module 'display_reset_pixel_0' is unconnected for instance 'reset_pixel' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1284]
+WARNING: [Synth 8-7071] port 'bus_struct_reset' of module 'display_reset_pixel_0' is unconnected for instance 'reset_pixel' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1284]
+WARNING: [Synth 8-7071] port 'interconnect_aresetn' of module 'display_reset_pixel_0' is unconnected for instance 'reset_pixel' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1284]
+WARNING: [Synth 8-7023] instance 'reset_pixel' of module 'display_reset_pixel_0' has 10 connections declared, but only 7 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1284]
+INFO: [Synth 8-6157] synthesizing module 'display_reset_rle_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_reset_rle_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_reset_rle_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_reset_rle_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mb_reset' of module 'display_reset_rle_0' is unconnected for instance 'reset_rle' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1292]
+WARNING: [Synth 8-7071] port 'bus_struct_reset' of module 'display_reset_rle_0' is unconnected for instance 'reset_rle' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1292]
+WARNING: [Synth 8-7071] port 'peripheral_reset' of module 'display_reset_rle_0' is unconnected for instance 'reset_rle' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1292]
+WARNING: [Synth 8-7071] port 'interconnect_aresetn' of module 'display_reset_rle_0' is unconnected for instance 'reset_rle' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1292]
+WARNING: [Synth 8-7023] instance 'reset_rle' of module 'display_reset_rle_0' has 10 connections declared, but only 6 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1292]
+INFO: [Synth 8-6157] synthesizing module 'display_reset_stream_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_reset_stream_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_reset_stream_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_reset_stream_0_stub.v:6]
+WARNING: [Synth 8-7071] port 'mb_reset' of module 'display_reset_stream_0' is unconnected for instance 'reset_stream' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1299]
+WARNING: [Synth 8-7071] port 'bus_struct_reset' of module 'display_reset_stream_0' is unconnected for instance 'reset_stream' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1299]
+WARNING: [Synth 8-7071] port 'peripheral_reset' of module 'display_reset_stream_0' is unconnected for instance 'reset_stream' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1299]
+WARNING: [Synth 8-7023] instance 'reset_stream' of module 'display_reset_stream_0' has 10 connections declared, but only 7 given [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:1299]
+INFO: [Synth 8-6157] synthesizing module 'display_system_interrupts_0' [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_system_interrupts_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'display_system_interrupts_0' (0#1) [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/.Xil/Vivado-35532-JiA/realtime/display_system_interrupts_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'display_video_interrupts_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_video_interrupts_0/synth/display_video_interrupts_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'xlconcat_v2_1_7_xlconcat' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ipshared/9c1a/hdl/xlconcat_v2_1_rfs.v:59]
+INFO: [Synth 8-6155] done synthesizing module 'xlconcat_v2_1_7_xlconcat' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ipshared/9c1a/hdl/xlconcat_v2_1_rfs.v:59]
+INFO: [Synth 8-6155] done synthesizing module 'display_video_interrupts_0' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_video_interrupts_0/synth/display_video_interrupts_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'display_zero_0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_zero_0/synth/display_zero_0.v:53]
+INFO: [Synth 8-6157] synthesizing module 'xlconstant_v1_1_11_xlconstant__parameterized0' [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'xlconstant_v1_1_11_xlconstant__parameterized0' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ipshared/ff42/hdl/xlconstant_v1_1_rfs.v:68]
+INFO: [Synth 8-6155] done synthesizing module 'display_zero_0' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_zero_0/synth/display_zero_0.v:53]
+INFO: [Synth 8-6155] done synthesizing module 'display' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/synth/display.v:13]
+INFO: [Synth 8-6155] done synthesizing module 'display_wrapper' (0#1) [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/hdl/display_wrapper.v:13]
+WARNING: [Synth 8-7129] Port In3[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In4[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In5[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In6[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In7[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In8[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In9[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In10[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In11[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In12[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In13[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In14[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In15[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In16[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In17[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In18[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In19[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In20[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In21[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In22[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In23[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In24[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In25[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In26[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In27[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In28[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In29[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In30[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In31[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In32[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In33[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In34[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In35[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In36[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In37[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In38[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In39[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In40[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In41[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In42[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In43[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In44[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In45[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In46[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In47[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In48[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In49[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In50[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In51[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In52[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In53[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In54[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In55[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In56[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In57[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In58[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In59[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In60[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In61[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In62[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In63[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In64[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In65[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In66[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In67[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In68[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In69[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In70[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In71[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In72[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In73[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In74[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In75[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In76[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In77[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In78[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In79[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In80[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In81[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In82[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In83[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In84[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In85[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In86[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In87[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In88[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In89[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In90[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In91[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In92[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In93[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In94[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In95[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In96[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In97[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In98[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In99[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In100[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In101[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In102[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In103[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In104[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In105[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In106[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In107[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In108[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In109[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In110[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In111[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In112[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In113[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In114[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In115[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In116[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In117[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In118[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In119[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In120[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In121[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In122[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In123[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In124[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In125[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In126[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port In127[0] in module xlconcat_v2_1_7_xlconcat is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module s00_couplers_imp_LZ6OFR is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module s00_couplers_imp_LZ6OFR is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ACLK in module display_memory_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ARESETN in module display_memory_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module s00_couplers_imp_TEAZGL is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module s00_couplers_imp_TEAZGL is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ACLK in module display_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ARESETN in module display_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[31] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[30] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[29] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[28] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[27] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[26] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[25] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[24] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[23] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[22] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[21] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[20] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[19] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[18] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[17] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[16] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[15] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[14] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[13] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[12] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[11] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[10] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_araddr[9] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[31] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[30] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[29] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[28] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[27] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[26] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[25] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[24] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[23] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[22] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[21] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[20] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[19] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[18] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[17] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[16] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[15] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[14] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[13] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[12] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[11] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[10] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S00_AXILite_awaddr[9] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[31] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[30] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[29] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[28] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[27] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[26] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[25] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[24] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[23] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[22] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[21] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[20] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[19] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[18] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[17] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[16] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[15] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[14] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[13] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[12] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[11] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[10] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_araddr[9] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[31] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[30] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[29] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[28] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[27] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[26] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[25] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[24] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[23] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[22] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[21] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[20] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[19] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[18] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[17] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[16] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[15] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[14] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[13] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[12] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[11] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[10] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S02_AXILite_awaddr[9] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[31] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[30] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[29] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[28] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[27] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[26] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[25] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[24] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[23] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[22] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[21] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[20] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[19] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[18] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[17] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[16] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[15] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[14] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[13] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[12] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[11] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[10] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[9] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[8] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[7] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[6] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_araddr[5] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[31] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[30] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[29] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[28] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[27] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[26] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[25] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[24] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[23] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[22] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[21] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[20] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[19] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[18] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[17] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[16] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[15] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[14] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[13] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[12] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[11] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[10] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[9] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[8] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[7] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[6] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S04_AXILite_awaddr[5] in module frontend_imp_NWXIHO is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module s00_couplers_imp_1KSUWH2 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module s00_couplers_imp_1KSUWH2 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[31] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[30] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[29] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[28] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[27] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[26] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[25] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[24] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[23] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[22] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[21] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[20] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[19] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[18] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[17] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[16] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[15] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[14] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[13] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[12] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[11] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[10] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[31] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[30] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[29] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[28] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[27] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[26] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[25] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[24] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[23] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[22] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[21] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[20] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[19] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[18] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[17] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[16] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[15] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[14] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[13] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[12] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[11] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[10] in module m09_couplers_imp_BPZ6W7 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module m08_couplers_imp_1C5ZEN8 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module m08_couplers_imp_1C5ZEN8 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ACLK in module m08_couplers_imp_1C5ZEN8 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ARESETN in module m08_couplers_imp_1C5ZEN8 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module m07_couplers_imp_TPTB1T is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module m07_couplers_imp_TPTB1T is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ACLK in module m07_couplers_imp_TPTB1T is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ARESETN in module m07_couplers_imp_TPTB1T is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module m06_couplers_imp_1TOPHMA is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module m06_couplers_imp_1TOPHMA is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ACLK in module m06_couplers_imp_1TOPHMA is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ARESETN in module m06_couplers_imp_1TOPHMA is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module m05_couplers_imp_1H1CULY is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module m05_couplers_imp_1H1CULY is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ACLK in module m05_couplers_imp_1H1CULY is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ARESETN in module m05_couplers_imp_1H1CULY is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module m04_couplers_imp_FODOL1 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module m04_couplers_imp_FODOL1 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ACLK in module m04_couplers_imp_FODOL1 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ARESETN in module m04_couplers_imp_FODOL1 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module m03_couplers_imp_6OFM66 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module m03_couplers_imp_6OFM66 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ACLK in module m03_couplers_imp_6OFM66 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ARESETN in module m03_couplers_imp_6OFM66 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[31] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[30] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[29] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[28] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[27] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[26] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[25] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[24] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[23] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[22] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[21] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[20] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[19] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[18] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[17] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[16] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[15] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[14] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[13] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[12] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[11] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[10] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[9] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[8] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[7] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[31] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[30] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[29] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[28] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[27] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[26] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[25] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[24] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[23] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[22] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[21] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[20] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[19] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[18] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[17] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[16] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[15] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[14] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[13] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[12] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[11] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[10] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[9] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[8] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[7] in module m02_couplers_imp_18B9DBX is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[31] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[30] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[29] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[28] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[27] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[26] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[25] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[24] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[23] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[22] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[21] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[20] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[19] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[18] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[17] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[16] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[15] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[14] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[13] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[12] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[11] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[10] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[9] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[8] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[7] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[6] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_araddr[5] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[31] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[30] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[29] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[28] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[27] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[26] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[25] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[24] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[23] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[22] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[21] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[20] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[19] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[18] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[17] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[16] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[15] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[14] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[13] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[12] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[11] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[10] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[9] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[8] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[7] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[6] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_AXI_awaddr[5] in module m01_couplers_imp_1KNIN95 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ACLK in module m00_couplers_imp_KYH20Q is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M_ARESETN in module m00_couplers_imp_KYH20Q is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ACLK in module m00_couplers_imp_KYH20Q is either unconnected or has no load
+WARNING: [Synth 8-7129] Port S_ARESETN in module m00_couplers_imp_KYH20Q is either unconnected or has no load
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 1576.672 ; gain = 722.141
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 1576.672 ; gain = 722.141
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 1576.672 ; gain = 722.141
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.015 . Memory (MB): peak = 1576.672 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_ps7_0/display_ps7_0/display_ps7_0_in_context.xdc] for cell 'display_i/ps7'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_ps7_0/display_ps7_0/display_ps7_0_in_context.xdc] for cell 'display_i/ps7'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_axis_register_slice_0_0/display_axis_register_slice_0_0/display_axis_register_slice_0_0_in_context.xdc] for cell 'display_i/hdmi_out/axis_register_slice_0'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_axis_register_slice_0_0/display_axis_register_slice_0_0/display_axis_register_slice_0_0_in_context.xdc] for cell 'display_i/hdmi_out/axis_register_slice_0'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_color_convert_0/display_color_convert_0/display_color_convert_0_in_context.xdc] for cell 'display_i/hdmi_out/color_convert'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_color_convert_0/display_color_convert_0/display_color_convert_0_in_context.xdc] for cell 'display_i/hdmi_out/color_convert'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_axi_dynclk_0/display_axi_dynclk_0/display_axi_dynclk_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/axi_dynclk'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_axi_dynclk_0/display_axi_dynclk_0/display_axi_dynclk_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/axi_dynclk'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_color_swap_0_0/display_color_swap_0_0/display_color_swap_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/color_swap_0'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_color_swap_0_0/display_color_swap_0_0/display_color_swap_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/color_swap_0'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/hdmi_out_hpd_video'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0/display_hdmi_out_hpd_video_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/hdmi_out_hpd_video'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/display_rgb2dvi_0_0/display_rgb2dvi_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/rgb2dvi_0'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_rgb2dvi_0_0/display_rgb2dvi_0_0/display_rgb2dvi_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/rgb2dvi_0'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/v_axi4s_vid_out_0'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0/display_v_axi4s_vid_out_0_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/v_axi4s_vid_out_0'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0/display_vtc_out_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/vtc_out'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_vtc_out_0/display_vtc_out_0/display_vtc_out_0_in_context.xdc] for cell 'display_i/hdmi_out/frontend/vtc_out'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_pixel_unpack_0/display_pixel_unpack_0/display_pixel_unpack_0_in_context.xdc] for cell 'display_i/hdmi_out/pixel_unpack'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_pixel_unpack_0/display_pixel_unpack_0/display_pixel_unpack_0_in_context.xdc] for cell 'display_i/hdmi_out/pixel_unpack'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0/display_axi_vdma_0_in_context.xdc] for cell 'display_i/axi_vdma'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_axi_vdma_0/display_axi_vdma_0/display_axi_vdma_0_in_context.xdc] for cell 'display_i/axi_vdma'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_xbar_0/display_control_imp_xbar_0/display_control_imp_xbar_0_in_context.xdc] for cell 'display_i/control/xbar'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_xbar_0/display_control_imp_xbar_0/display_control_imp_xbar_0_in_context.xdc] for cell 'display_i/control/xbar'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0_in_context.xdc] for cell 'display_i/control/s00_couplers/auto_pc'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0/display_control_imp_auto_pc_0_in_context.xdc] for cell 'display_i/control/s00_couplers/auto_pc'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0_in_context.xdc] for cell 'display_i/control/m01_couplers/auto_cc'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0/display_control_imp_auto_cc_0_in_context.xdc] for cell 'display_i/control/m01_couplers/auto_cc'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1_in_context.xdc] for cell 'display_i/control/m02_couplers/auto_cc'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1/display_control_imp_auto_cc_1_in_context.xdc] for cell 'display_i/control/m02_couplers/auto_cc'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_2/display_control_imp_auto_cc_2/display_control_imp_auto_cc_2_in_context.xdc] for cell 'display_i/control/m09_couplers/auto_cc'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_2/display_control_imp_auto_cc_2/display_control_imp_auto_cc_2_in_context.xdc] for cell 'display_i/control/m09_couplers/auto_cc'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_3/display_control_imp_auto_cc_3/display_control_imp_auto_cc_3_in_context.xdc] for cell 'display_i/control/m10_couplers/auto_cc'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_control_imp_auto_cc_3/display_control_imp_auto_cc_3/display_control_imp_auto_cc_3_in_context.xdc] for cell 'display_i/control/m10_couplers/auto_cc'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0_in_context.xdc] for cell 'display_i/memory/s00_couplers/auto_pc'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0/display_memory_imp_auto_pc_0_in_context.xdc] for cell 'display_i/memory/s00_couplers/auto_pc'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_btns_gpio_0/display_btns_gpio_0/display_btns_gpio_0_in_context.xdc] for cell 'display_i/btns_gpio'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_btns_gpio_0/display_btns_gpio_0/display_btns_gpio_0_in_context.xdc] for cell 'display_i/btns_gpio'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0/display_system_interrupts_0_in_context.xdc] for cell 'display_i/system_interrupts'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_system_interrupts_0/display_system_interrupts_0/display_system_interrupts_0_in_context.xdc] for cell 'display_i/system_interrupts'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_reset_control_0/display_reset_control_0/display_reset_control_0_in_context.xdc] for cell 'display_i/reset_control'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_reset_control_0/display_reset_control_0/display_reset_control_0_in_context.xdc] for cell 'display_i/reset_control'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_reset_stream_0/display_reset_stream_0/display_reset_stream_0_in_context.xdc] for cell 'display_i/reset_stream'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_reset_stream_0/display_reset_stream_0/display_reset_stream_0_in_context.xdc] for cell 'display_i/reset_stream'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_reset_pixel_0/display_reset_pixel_0/display_reset_control_0_in_context.xdc] for cell 'display_i/reset_pixel'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_reset_pixel_0/display_reset_pixel_0/display_reset_control_0_in_context.xdc] for cell 'display_i/reset_pixel'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_frame_monitor_0/display_frame_monitor_0/display_frame_monitor_0_in_context.xdc] for cell 'display_i/frame_monitor'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_frame_monitor_0/display_frame_monitor_0/display_frame_monitor_0_in_context.xdc] for cell 'display_i/frame_monitor'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_axi_dma_0_0/display_axi_dma_0_0/display_axi_dma_0_0_in_context.xdc] for cell 'display_i/axi_dma_0'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_axi_dma_0_0/display_axi_dma_0_0/display_axi_dma_0_0_in_context.xdc] for cell 'display_i/axi_dma_0'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_hp0_protocol_0/display_hp0_protocol_0/display_hp0_protocol_0_in_context.xdc] for cell 'display_i/hp0_protocol'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_hp0_protocol_0/display_hp0_protocol_0/display_hp0_protocol_0_in_context.xdc] for cell 'display_i/hp0_protocol'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_hp1_fabric_imp_auto_pc_0/display_hp1_fabric_imp_auto_pc_0/display_hp1_fabric_imp_auto_pc_0_in_context.xdc] for cell 'display_i/hp1_fabric/s00_couplers/auto_pc'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_hp1_fabric_imp_auto_pc_0/display_hp1_fabric_imp_auto_pc_0/display_hp1_fabric_imp_auto_pc_0_in_context.xdc] for cell 'display_i/hp1_fabric/s00_couplers/auto_pc'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_reset_rle_0/display_reset_rle_0/display_reset_rle_0_in_context.xdc] for cell 'display_i/reset_rle'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_reset_rle_0/display_reset_rle_0/display_reset_rle_0_in_context.xdc] for cell 'display_i/reset_rle'
+Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_image_pipeline_0/display_image_pipeline_0/display_image_pipeline_0_in_context.xdc] for cell 'display_i/image_pipeline'
+Finished Parsing XDC File [c:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.gen/sources_1/bd/display/ip/display_image_pipeline_0/display_image_pipeline_0/display_image_pipeline_0_in_context.xdc] for cell 'display_i/image_pipeline'
+Parsing XDC File [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/display-pins.xdc]
+Finished Parsing XDC File [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/display-pins.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/display-pins.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/display_wrapper_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/display_wrapper_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Parsing XDC File [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/dont_touch.xdc]
+Finished Parsing XDC File [C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/dont_touch.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1576.672 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.020 . Memory (MB): peak = 1576.672 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:13 ; elapsed = 00:00:14 . Memory (MB): peak = 1576.672 ; gain = 722.141
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7z020clg400-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:13 ; elapsed = 00:00:14 . Memory (MB): peak = 1576.672 ; gain = 722.141
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:14 ; elapsed = 00:00:14 . Memory (MB): peak = 1576.672 ; gain = 722.141
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:14 ; elapsed = 00:00:15 . Memory (MB): peak = 1576.672 ; gain = 722.141
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 220 (col length:60)
+BRAMs: 280 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7129] Port ACLK in module display_memory_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ARESETN in module display_memory_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M00_ACLK in module display_memory_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M00_ARESETN in module display_memory_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ACLK in module display_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ARESETN in module display_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M00_ACLK in module display_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M00_ARESETN in module display_hp1_fabric_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M00_ACLK in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M00_ARESETN in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M03_ACLK in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M03_ARESETN in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M04_ACLK in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M04_ARESETN in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M05_ACLK in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M05_ARESETN in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M06_ACLK in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M06_ARESETN in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M07_ACLK in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M07_ARESETN in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M08_ACLK in module display_control_0 is either unconnected or has no load
+WARNING: [Synth 8-7129] Port M08_ARESETN in module display_control_0 is either unconnected or has no load
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:15 ; elapsed = 00:00:16 . Memory (MB): peak = 1604.973 ; gain = 750.441
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:20 ; elapsed = 00:00:21 . Memory (MB): peak = 1768.762 ; gain = 914.230
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:20 ; elapsed = 00:00:21 . Memory (MB): peak = 1771.203 ; gain = 916.672
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:20 ; elapsed = 00:00:21 . Memory (MB): peak = 1782.750 ; gain = 928.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:23 ; elapsed = 00:00:24 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:23 ; elapsed = 00:00:24 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:23 ; elapsed = 00:00:24 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:23 ; elapsed = 00:00:24 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:23 ; elapsed = 00:00:24 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:23 ; elapsed = 00:00:24 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++------+---------------------------------+----------+
+|      |BlackBox name                    |Instances |
++------+---------------------------------+----------+
+|1     |display_axi_dma_0_0              |         1|
+|2     |display_axi_vdma_0               |         1|
+|3     |display_btns_gpio_0              |         1|
+|4     |display_control_imp_xbar_0       |         1|
+|5     |display_control_imp_auto_cc_0    |         1|
+|6     |display_control_imp_auto_cc_1    |         1|
+|7     |display_control_imp_auto_cc_2    |         1|
+|8     |display_control_imp_auto_cc_3    |         1|
+|9     |display_control_imp_auto_pc_0    |         1|
+|10    |display_frame_monitor_0          |         1|
+|11    |display_hp0_protocol_0           |         1|
+|12    |display_hp1_fabric_imp_auto_pc_0 |         1|
+|13    |display_image_pipeline_0         |         1|
+|14    |display_memory_imp_auto_pc_0     |         1|
+|15    |display_ps7_0                    |         1|
+|16    |display_reset_control_0          |         1|
+|17    |display_reset_pixel_0            |         1|
+|18    |display_reset_rle_0              |         1|
+|19    |display_reset_stream_0           |         1|
+|20    |display_system_interrupts_0      |         1|
+|21    |display_axis_register_slice_0_0  |         1|
+|22    |display_color_convert_0          |         1|
+|23    |display_pixel_unpack_0           |         1|
+|24    |display_axi_dynclk_0             |         1|
+|25    |display_color_swap_0_0           |         1|
+|26    |display_hdmi_out_hpd_video_0     |         1|
+|27    |display_rgb2dvi_0_0              |         1|
+|28    |display_v_axi4s_vid_out_0_0      |         1|
+|29    |display_vtc_out_0                |         1|
++------+---------------------------------+----------+
+
+Report Cell Usage: 
++------+-------------------------------+------+
+|      |Cell                           |Count |
++------+-------------------------------+------+
+|1     |display_axi_dma_0              |     1|
+|2     |display_axi_dynclk             |     1|
+|3     |display_axi_vdma               |     1|
+|4     |display_axis_register_slice_0  |     1|
+|5     |display_btns_gpio              |     1|
+|6     |display_color_convert          |     1|
+|7     |display_color_swap_0           |     1|
+|8     |display_control_imp_auto_cc    |     4|
+|12    |display_control_imp_auto_pc    |     1|
+|13    |display_control_imp_xbar       |     1|
+|14    |display_frame_monitor          |     1|
+|15    |display_hdmi_out_hpd_video     |     1|
+|16    |display_hp0_protocol           |     1|
+|17    |display_hp1_fabric_imp_auto_pc |     1|
+|18    |display_image_pipeline         |     1|
+|19    |display_memory_imp_auto_pc     |     1|
+|20    |display_pixel_unpack           |     1|
+|21    |display_ps7                    |     1|
+|22    |display_reset_control          |     1|
+|23    |display_reset_pixel            |     1|
+|24    |display_reset_rle              |     1|
+|25    |display_reset_stream           |     1|
+|26    |display_rgb2dvi_0              |     1|
+|27    |display_system_interrupts      |     1|
+|28    |display_v_axi4s_vid_out_0      |     1|
+|29    |display_vtc_out                |     1|
+|30    |IBUF                           |     4|
+|31    |OBUF                           |     1|
++------+-------------------------------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:23 ; elapsed = 00:00:24 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 22 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:14 ; elapsed = 00:00:21 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+Synthesis Optimization Complete : Time (s): cpu = 00:00:23 ; elapsed = 00:00:24 . Memory (MB): peak = 2055.766 ; gain = 1201.234
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 2064.914 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2068.551 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete | Checksum: eb31be15
+INFO: [Common 17-83] Releasing license: Vivado_Synthesis
+132 Infos, 566 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:00:26 ; elapsed = 00:00:32 . Memory (MB): peak = 2068.551 ; gain = 1439.379
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2068.551 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/synth_1/display_wrapper.dcp' has been generated.
+INFO: [Vivado 12-24828] Executing command : report_utilization -file display_wrapper_utilization_synth.rpt -pb display_wrapper_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Fri Oct 30 12:46:32 2026...

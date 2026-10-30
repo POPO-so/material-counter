@@ -76,6 +76,14 @@ module axis_dma_rle_pipeline_bd #(
     reg [3:0] wstrb_hold;
     reg aw_pending,w_pending,start_pulse,done_seen,input_window;
     reg [63:0] clock_ticks;
+    // Candidate monitor ABI: cumulative modulo-2^64 counters in the RLE aclk
+    // domain. Only aresetn clears them; per-frame start does not. AXI-Lite
+    // writes of 1 to 0x3c latch one atomic snapshot even while busy. 0x3c
+    // reads its modulo-2^32 sequence; 0x40..0x6c read low/high pairs. These
+    // diagnostics do not change the packet protocol or stream handshakes.
+    reg [63:0] active_ticks,input_beats,output_beats,input_stalls,output_stalls;
+    reg [63:0] snap_ticks,snap_active,snap_input,snap_output,snap_in_stalls,snap_out_stalls;
+    reg [31:0] snapshot_seq;
     wire aw_fire=s_axi_awvalid&&s_axi_awready;
     wire w_fire=s_axi_wvalid&&s_axi_wready;
     wire [31:0] wa=aw_pending?awaddr_hold:s_axi_awaddr;
@@ -143,8 +151,16 @@ module axis_dma_rle_pipeline_bd #(
         awaddr_hold<=0;wdata_hold<=0;wstrb_hold<=0;
         s_axi_bvalid<=0;s_axi_bresp<=0;s_axi_rvalid<=0;s_axi_rresp<=0;s_axi_rdata<=0;
         input_error_latched<=0;good_packet_seen<=0;
+        active_ticks<=0;input_beats<=0;output_beats<=0;input_stalls<=0;output_stalls<=0;
+        snap_ticks<=0;snap_active<=0;snap_input<=0;snap_output<=0;snap_in_stalls<=0;snap_out_stalls<=0;
+        snapshot_seq<=0;
       end else begin
         clock_ticks<=clock_ticks+1;start_pulse<=0;
+        if(busy||input_window)active_ticks<=active_ticks+1;
+        if(s_axis_tvalid&&s_axis_tready)input_beats<=input_beats+1;
+        if(m_axis_tvalid&&m_axis_tready)output_beats<=output_beats+1;
+        if(s_axis_tvalid&&!s_axis_tready)input_stalls<=input_stalls+1;
+        if(m_axis_tvalid&&!m_axis_tready)output_stalls<=output_stalls+1;
         if(done)done_seen<=1;
         // The parser drains rejected packets through DMA TLAST. Closing on an
         // early checksum/header error would strand MM2S with unread tail beats.
@@ -156,7 +172,17 @@ module axis_dma_rle_pipeline_bd #(
         end
         if(commit)begin
           aw_pending<=0;w_pending<=0;s_axi_bvalid<=1;s_axi_bresp<=0;
-          if(!valid_write_addr||ws!=15||busy||start_pulse||input_window)s_axi_bresp<=2;
+          if(!valid_write_addr||ws!=15)s_axi_bresp<=2;
+          else if(wa[7:0]==8'h3c)begin
+            if(wd!=1)s_axi_bresp<=2;
+            else begin
+              snap_ticks<=clock_ticks;snap_active<=active_ticks;
+              snap_input<=input_beats;snap_output<=output_beats;
+              snap_in_stalls<=input_stalls;snap_out_stalls<=output_stalls;
+              snapshot_seq<=snapshot_seq+1;
+            end
+          end
+          else if(busy||start_pulse||input_window)s_axi_bresp<=2;
           else case(wa[7:0])
             8'h00: if(wd!=1||roi_start[15:0]>=roi_end[15:0]||roi_start[31:16]>=roi_end[31:16]||
                       roi_end[15:0]>WIDTH||roi_end[31:16]>HEIGHT||threshold>255||
@@ -194,6 +220,19 @@ module axis_dma_rle_pipeline_bd #(
             8'h2c:s_axi_rdata<=(HEIGHT<<16)|WIDTH;
             8'h30:s_axi_rdata<=MAX_RUNS;
             8'h38:s_axi_rdata<={28'd0,packet_code};
+            8'h3c:s_axi_rdata<=snapshot_seq;
+            8'h40:s_axi_rdata<=snap_ticks[31:0];
+            8'h44:s_axi_rdata<=snap_ticks[63:32];
+            8'h48:s_axi_rdata<=snap_active[31:0];
+            8'h4c:s_axi_rdata<=snap_active[63:32];
+            8'h50:s_axi_rdata<=snap_input[31:0];
+            8'h54:s_axi_rdata<=snap_input[63:32];
+            8'h58:s_axi_rdata<=snap_output[31:0];
+            8'h5c:s_axi_rdata<=snap_output[63:32];
+            8'h60:s_axi_rdata<=snap_in_stalls[31:0];
+            8'h64:s_axi_rdata<=snap_in_stalls[63:32];
+            8'h68:s_axi_rdata<=snap_out_stalls[31:0];
+            8'h6c:s_axi_rdata<=snap_out_stalls[63:32];
             default:begin s_axi_rdata<=0;s_axi_rresp<=2;end
           endcase
         end else if(s_axi_rvalid&&s_axi_rready)s_axi_rvalid<=0;

@@ -1,0 +1,1213 @@
+{
+  "schema": "material-counter.g25-pressure.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "session_id": "1b114ace-8f83-4341-a809-bc87e7c51447",
+  "loaded": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/standalone-g25-20261030/export/g2-integrated.bit",
+    "loaded_bit_sha1": "67a592385e90e06fdb0e563e78ac7ef0c3deab58",
+    "loaded_bit_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+    "loaded_bit_path_matches_expected": true
+  },
+  "bit_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+  "hwh_sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243",
+  "manifest_sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966",
+  "native_sha256": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "before_memory": {
+    "MemAvailable": "     383644 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           52524 kB"
+  },
+  "pattern": "moving",
+  "display": "dynamic",
+  "pixel_verification": true,
+  "scope": "synthetic concurrency; no real material accuracy or G3/G4 acceptance",
+  "state": "STOPPED",
+  "samples": [
+    {
+      "monotonic": 136177.807359412,
+      "processed": 23,
+      "monitor": {
+        "unique": 693,
+        "scans": 3862,
+        "repeat": 2446,
+        "invalid": 723,
+        "partial": 1,
+        "frame": 22,
+        "session": 35978942196515012096675720103752700999,
+        "gray_error": false,
+        "marker_pixel_error": false,
+        "pair_mismatch": false,
+        "top_invalid": false,
+        "bottom_invalid": false,
+        "top_marker": "4d431b114ace8f834341a809bc87e7c514470000000000000016f7bd",
+        "bottom_marker": "4d431b114ace8f834341a809bc87e7c514470000000000000016f7bd",
+        "sequence": 290,
+        "capture_started": 136177.809883338,
+        "sampled_monotonic": 136177.81079607
+      },
+      "vdma_status": 65536,
+      "counters": {
+        "sequence": 3,
+        "clock_hz": 50000000,
+        "counters": {
+          "total_cycles": 17620534714,
+          "active_cycles": 6310662,
+          "input_beats": 1472184,
+          "output_beats": 13064,
+          "input_stall_cycles": 4416019,
+          "output_stall_cycles": 0
+        }
+      }
+    },
+    {
+      "monotonic": 136179.826254763,
+      "processed": 46,
+      "monitor": {
+        "unique": 716,
+        "scans": 3983,
+        "repeat": 2544,
+        "invalid": 723,
+        "partial": 1,
+        "frame": 45,
+        "session": 35978942196515012096675720103752700999,
+        "gray_error": false,
+        "marker_pixel_error": false,
+        "pair_mismatch": false,
+        "top_invalid": false,
+        "bottom_invalid": false,
+        "top_marker": "4d431b114ace8f834341a809bc87e7c51447000000000000002d7085",
+        "bottom_marker": "4d431b114ace8f834341a809bc87e7c51447000000000000002d7085",
+        "sequence": 291,
+        "capture_started": 136179.828733495,
+        "sampled_monotonic": 136179.829548757
+      },
+      "vdma_status": 65536,
+      "counters": {
+        "sequence": 4,
+        "clock_hz": 50000000,
+        "counters": {
+          "total_cycles": 17721476574,
+          "active_cycles": 12603077,
+          "input_beats": 2944368,
+          "output_beats": 26128,
+          "input_stall_cycles": 8832042,
+          "output_stall_cycles": 0
+        }
+      }
+    }
+  ],
+  "cpu_samples": [
+    {
+      "monotonic": 136177.807359412,
+      "per_core_percent": {
+        "cpu0": 34.44976076555024,
+        "cpu1": 74.12935323383084
+      },
+      "memory": {
+        "MemAvailable": "     355636 kB",
+        "CmaTotal": "         131072 kB",
+        "CmaFree": "           35880 kB"
+      }
+    },
+    {
+      "monotonic": 136179.826254763,
+      "per_core_percent": {
+        "cpu0": 31.067961165048544,
+        "cpu1": 74.0
+      },
+      "memory": {
+        "MemAvailable": "     355760 kB",
+        "CmaTotal": "         131072 kB",
+        "CmaFree": "           35920 kB"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "frame": 0,
+      "monotonic": 136175.861558559,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.765864028362557,
+      "total_ms": 101.40127301565371,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 1,
+      "monotonic": 136175.956115698,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.92599997902289,
+      "total_ms": 94.46039999602363,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 2,
+      "monotonic": 136176.048456375,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.610726001905277,
+      "total_ms": 92.26223398582079,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 3,
+      "monotonic": 136176.136490719,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.001033000880852,
+      "total_ms": 87.95446102158166,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 4,
+      "monotonic": 136176.22257974,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.863520021317527,
+      "total_ms": 86.00306999869645,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 5,
+      "monotonic": 136176.318013131,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.69489800487645,
+      "total_ms": 95.35054099978879,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 6,
+      "monotonic": 136176.405410712,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.057015004567802,
+      "total_ms": 87.31570400414057,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 7,
+      "monotonic": 136176.491260743,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.935828022425994,
+      "total_ms": 85.7595750130713,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 8,
+      "monotonic": 136176.578338349,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.68796902312897,
+      "total_ms": 86.99538401560858,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 9,
+      "monotonic": 136176.665317641,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.061137998709455,
+      "total_ms": 86.89378999406472,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 10,
+      "monotonic": 136176.7513699,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.013870991533622,
+      "total_ms": 85.9672189981211,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 11,
+      "monotonic": 136176.8386731,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.805778010981157,
+      "total_ms": 87.21883699763566,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 12,
+      "monotonic": 136176.925633542,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.01956300227903,
+      "total_ms": 86.87660901341587,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 13,
+      "monotonic": 136177.01186601,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.831587007502094,
+      "total_ms": 86.14533499348909,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 14,
+      "monotonic": 136177.099181259,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.783033018233255,
+      "total_ms": 87.23274400108494,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 15,
+      "monotonic": 136177.186174016,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.8947380122263,
+      "total_ms": 86.91313801682554,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 16,
+      "monotonic": 136177.280521437,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.7751390223857,
+      "total_ms": 94.2599750123918,
+      "count": 1,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 17,
+      "monotonic": 136177.374010988,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 24.17943999171257,
+      "total_ms": 93.38910799124278,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 18,
+      "monotonic": 136177.461520606,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.05352600826882,
+      "total_ms": 87.4274640227668,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 19,
+      "monotonic": 136177.547273234,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.95425799395889,
+      "total_ms": 85.66592598799616,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 20,
+      "monotonic": 136177.634482643,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.648486010031775,
+      "total_ms": 87.12761802598834,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 21,
+      "monotonic": 136177.721750249,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.00022798893042,
+      "total_ms": 87.1858769969549,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 22,
+      "monotonic": 136177.807359412,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.008455001516268,
+      "total_ms": 85.52420898922719,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 23,
+      "monotonic": 136177.899745227,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.732190983835608,
+      "total_ms": 87.13491700473242,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 24,
+      "monotonic": 136177.986920833,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.954677001805976,
+      "total_ms": 87.09384000394493,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 25,
+      "monotonic": 136178.073029768,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.82315699569881,
+      "total_ms": 86.01768600055948,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 26,
+      "monotonic": 136178.160454728,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.771470008185133,
+      "total_ms": 87.34291599830613,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 27,
+      "monotonic": 136178.247637061,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.90551399649121,
+      "total_ms": 87.10008699563332,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 28,
+      "monotonic": 136178.333804057,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.79727399884723,
+      "total_ms": 86.07896001194604,
+      "count": 2,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 29,
+      "monotonic": 136178.428170746,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.6651329935994,
+      "total_ms": 94.2842089862097,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 30,
+      "monotonic": 136178.515315854,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.90511399344541,
+      "total_ms": 87.06455398350954,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 31,
+      "monotonic": 136178.601471282,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.001335011329502,
+      "total_ms": 86.06639999197796,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 32,
+      "monotonic": 136178.689063263,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.703070011222735,
+      "total_ms": 87.50865201000124,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 33,
+      "monotonic": 136178.776321595,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.9797970126383,
+      "total_ms": 87.17080001952127,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 34,
+      "monotonic": 136178.862740795,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.960196979809552,
+      "total_ms": 86.33018500404432,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 35,
+      "monotonic": 136178.950211964,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.70078198448755,
+      "total_ms": 87.38951999112032,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 36,
+      "monotonic": 136179.03715693,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.003808982437477,
+      "total_ms": 86.86170398141257,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 37,
+      "monotonic": 136179.123565625,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.909551017917693,
+      "total_ms": 86.3198890001513,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 38,
+      "monotonic": 136179.210918524,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.701962988823652,
+      "total_ms": 87.2709359973669,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 39,
+      "monotonic": 136179.297983348,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.915710989153013,
+      "total_ms": 86.9832799944561,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 40,
+      "monotonic": 136179.384061231,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.81880600214936,
+      "total_ms": 85.98937198985368,
+      "count": 3,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 41,
+      "monotonic": 136179.478273379,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.684577990323305,
+      "total_ms": 94.12388899363577,
+      "count": 4,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 42,
+      "monotonic": 136179.565468394,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.980990007752553,
+      "total_ms": 87.11377199506387,
+      "count": 4,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 43,
+      "monotonic": 136179.651498474,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.97301500523463,
+      "total_ms": 85.94213501783088,
+      "count": 4,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 44,
+      "monotonic": 136179.73909688,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 20.758220984134823,
+      "total_ms": 87.5174029788468,
+      "count": 4,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 45,
+      "monotonic": 136179.826254763,
+      "runs": 16,
+      "rx_bytes": 2272,
+      "foreground": 320,
+      "transfer_ms": 19.96745800715871,
+      "total_ms": 87.07509501255117,
+      "count": 4,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    }
+  ],
+  "clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "pipeline_before": {
+    "signature": {
+      "offset": 4,
+      "value": 826625106
+    },
+    "state": {
+      "offset": 8,
+      "value": 0,
+      "busy": false,
+      "done_seen": false,
+      "error": false
+    },
+    "actual_bytes": {
+      "offset": 12,
+      "value": 0
+    },
+    "frame_id": {
+      "offset": 16,
+      "value": 0
+    },
+    "params_version": {
+      "offset": 20,
+      "value": 0
+    },
+    "roi_start": {
+      "offset": 24,
+      "value": 0
+    },
+    "roi_end": {
+      "offset": 28,
+      "value": 26215040
+    },
+    "threshold": {
+      "offset": 32,
+      "value": 128
+    },
+    "offset": {
+      "offset": 36,
+      "value": 0
+    },
+    "morph": {
+      "offset": 40,
+      "value": 0
+    },
+    "geometry": {
+      "offset": 44,
+      "value": 26215040
+    },
+    "max_runs": {
+      "offset": 48,
+      "value": 16384
+    },
+    "packet_code": {
+      "offset": 56,
+      "value": 0
+    }
+  },
+  "monitor_before": {
+    "unique": 671,
+    "scans": 3739,
+    "repeat": 2345,
+    "invalid": 723,
+    "partial": 1,
+    "frame": 0,
+    "session": 35978942196515012096675720103752700999,
+    "gray_error": false,
+    "marker_pixel_error": false,
+    "pair_mismatch": false,
+    "top_invalid": false,
+    "bottom_invalid": false,
+    "top_marker": "4d431b114ace8f834341a809bc87e7c514470000000000000000854a",
+    "bottom_marker": "4d431b114ace8f834341a809bc87e7c514470000000000000000854a",
+    "sequence": 289,
+    "capture_started": 136175.756996301,
+    "sampled_monotonic": 136175.757774178
+  },
+  "counters_before": {
+    "sequence": 2,
+    "clock_hz": 50000000,
+    "counters": {
+      "total_cycles": 17517851345,
+      "active_cycles": 0,
+      "input_beats": 0,
+      "output_beats": 0,
+      "input_stall_cycles": 0,
+      "output_stall_cycles": 0
+    }
+  },
+  "duration_s": 4.072518184984801,
+  "processed_frames": 46,
+  "processing_fps": 11.295222737027919,
+  "counters_after": {
+    "sequence": 5,
+    "clock_hz": 50000000,
+    "counters": {
+      "total_cycles": 17721523674,
+      "active_cycles": 12603077,
+      "input_beats": 2944368,
+      "output_beats": 26128,
+      "input_stall_cycles": 8832042,
+      "output_stall_cycles": 0
+    }
+  },
+  "counter_delta": {
+    "sequence_before": 2,
+    "sequence_after": 5,
+    "counters": {
+      "total_cycles": 203672329,
+      "active_cycles": 12603077,
+      "input_beats": 2944368,
+      "output_beats": 26128,
+      "input_stall_cycles": 8832042,
+      "output_stall_cycles": 0
+    }
+  },
+  "transfer_consistency": {
+    "valid": true,
+    "frames": 46,
+    "rx_bytes": [
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272,
+      2272
+    ],
+    "sequence_before": 2,
+    "sequence_after": 5,
+    "expected_input_beats": 2944368,
+    "observed_input_beats": 2944368,
+    "expected_output_beats": 26128,
+    "observed_output_beats": 26128,
+    "input_stall_cycles": 8832042,
+    "output_stall_cycles": 0,
+    "counter_deltas": {
+      "total_cycles": 203672329,
+      "active_cycles": 12603077,
+      "input_beats": 2944368,
+      "output_beats": 26128,
+      "input_stall_cycles": 8832042,
+      "output_stall_cycles": 0
+    }
+  },
+  "monitor_after": {
+    "unique": 716,
+    "scans": 3983,
+    "repeat": 2544,
+    "invalid": 723,
+    "partial": 1,
+    "frame": 45,
+    "session": 35978942196515012096675720103752700999,
+    "gray_error": false,
+    "marker_pixel_error": false,
+    "pair_mismatch": false,
+    "top_invalid": false,
+    "bottom_invalid": false,
+    "top_marker": "4d431b114ace8f834341a809bc87e7c51447000000000000002d7085",
+    "bottom_marker": "4d431b114ace8f834341a809bc87e7c51447000000000000002d7085",
+    "sequence": 292,
+    "capture_started": 136179.834625249,
+    "sampled_monotonic": 136179.83539483
+  },
+  "latency_ms": {
+    "transfer_parse": {
+      "p50": 20.00257199688349,
+      "p95": 20.780142265721224,
+      "p99": 22.661292100383424
+    },
+    "total": {
+      "p50": 87.1069294953486,
+      "p95": 94.41635224357015,
+      "p99": 98.67844360851448
+    }
+  },
+  "dma_after": {
+    "0x0": 65539,
+    "0x4": 4098,
+    "0x30": 65539,
+    "0x34": 4098
+  },
+  "vdma_after": {
+    "0x0": 69632,
+    "0x4": 69633
+  },
+  "pipeline_after": {
+    "signature": {
+      "offset": 4,
+      "value": 826625106
+    },
+    "state": {
+      "offset": 8,
+      "value": 2,
+      "busy": false,
+      "done_seen": true,
+      "error": false
+    },
+    "actual_bytes": {
+      "offset": 12,
+      "value": 2272
+    },
+    "frame_id": {
+      "offset": 16,
+      "value": 45
+    },
+    "params_version": {
+      "offset": 20,
+      "value": 0
+    },
+    "roi_start": {
+      "offset": 24,
+      "value": 0
+    },
+    "roi_end": {
+      "offset": 28,
+      "value": 26215040
+    },
+    "threshold": {
+      "offset": 32,
+      "value": 128
+    },
+    "offset": {
+      "offset": 36,
+      "value": 0
+    },
+    "morph": {
+      "offset": 40,
+      "value": 0
+    },
+    "geometry": {
+      "offset": 44,
+      "value": 26215040
+    },
+    "max_runs": {
+      "offset": 48,
+      "value": 16384
+    },
+    "packet_code": {
+      "offset": 56,
+      "value": 0
+    }
+  },
+  "buffers_released": true,
+  "after_memory": {
+    "MemAvailable": "     359244 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           39300 kB"
+  },
+  "total_count": 4,
+  "invalid_frames": 0,
+  "material_accuracy": "NOT_MEASURED"
+}

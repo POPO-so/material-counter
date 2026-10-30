@@ -421,6 +421,49 @@ def test_pynq_global_state_requires_audited_shutdown_list_and_loaded_bit_identit
     assert loaded["loaded_bit_sha256"] == file_sha256(bit)
 
 
+def test_pynq_global_state_accepts_identical_bit_at_an_alternate_path_only_when_opted_in(tmp_path):
+    module_file = tmp_path / "pynq" / "__init__.py"
+    module_file.parent.mkdir()
+    module_file.write_text("# test module")
+    state_path = module_file.parent / "pl_server" / "global_pl_state_.json"
+    state_path.parent.mkdir()
+    active_bit = tmp_path / "active" / "g2-integrated.bit"
+    expected_bit = tmp_path / "adapter" / "rle.bit"
+    active_bit.parent.mkdir()
+    expected_bit.parent.mkdir()
+    content = b"the same reviewed G2 bitstream"
+    active_bit.write_bytes(content)
+    expected_bit.write_bytes(content)
+    state_path.write_text(json.dumps({
+        "shutdown_ips": {}, "ip_dict": {}, "bitfile_name": str(active_bit),
+        "bitfile_hash": hashlib.sha1(content).hexdigest(),
+    }))
+    kwargs = dict(
+        require_empty_shutdown=True,
+        require_loaded_bit=True,
+        expected_bit_path=expected_bit,
+        expected_bit_sha256=file_sha256(expected_bit),
+    )
+
+    with pytest.raises(preflight.PreflightError, match="loaded BIT path differs"):
+        preflight.inspect_pynq_global_state(module_file, **kwargs)
+
+    loaded = preflight.inspect_pynq_global_state(
+        module_file, allow_equivalent_bit_path=True, **kwargs)
+    assert loaded["loaded_bit_path"] == str(active_bit.resolve())
+    assert loaded["loaded_bit_path_matches_expected"] is False
+    assert loaded["loaded_bit_sha256"] == file_sha256(expected_bit)
+
+    active_bit.write_bytes(b"a different bitstream")
+    state_path.write_text(json.dumps({
+        "shutdown_ips": {}, "ip_dict": {}, "bitfile_name": str(active_bit),
+        "bitfile_hash": hashlib.sha1(active_bit.read_bytes()).hexdigest(),
+    }))
+    with pytest.raises(preflight.PreflightError, match="SHA-256 differs"):
+        preflight.inspect_pynq_global_state(
+            module_file, allow_equivalent_bit_path=True, **kwargs)
+
+
 def test_kernel_log_delta_requires_continuity_and_rejects_new_health_errors():
     before = [f"line {index}" for index in range(12)]
     assert preflight.kernel_log_delta(before, before + ["new healthy line"]) == ["new healthy line"]

@@ -36,6 +36,22 @@ def _decode_marker(pixels):
     return uuid.UUID(bytes=payload[2:18]), int.from_bytes(payload[18:26], "big")
 
 
+def test_horizontal_count_line_uses_same_source_coordinates_as_y_counter():
+    composer=_composer()
+    gray=np.full((400,640),80,np.uint8)
+    binary=np.zeros_like(gray)
+    image=composer.render(gray,binary,uuid.uuid4(),1,line_y=200)
+    assert np.all(image[540,32:608]==255)
+    assert image[400,320]==0
+    assert np.all(image[:360,32:608]==80)
+
+
+def test_horizontal_count_line_requires_integer_source_coordinate():
+    composer=_composer();gray=np.zeros((400,640),np.uint8)
+    with pytest.raises(TypeError,match='line_y'):
+        composer.render(gray,gray,uuid.uuid4(),1,line_y=200.5)
+
+
 def test_marker_encoder_has_fixed_layout_crc_and_known_crc_vector():
     encode = _api().encode_marker
     session = uuid.UUID("00112233-4455-6677-8899-aabbccddeeff")
@@ -60,7 +76,7 @@ def test_render_preserves_fixed_geometry_scaling_padding_and_binary_values():
     session = uuid.uuid4()
     gray = np.full((400, 640), 100, dtype=np.uint8)
     binary = np.zeros((400, 640), dtype=np.uint8)
-    binary[100, 100] = 255
+    binary[20:23, 10:13] = 255
 
     canvas = composer.render(gray, binary, session, 8, boxes=((10, 20, 12, 22),), line_x=320)
 

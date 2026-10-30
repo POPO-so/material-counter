@@ -191,11 +191,16 @@ class GrayComposer:
         normalized_status = tuple(status_items)
         return normalized_boxes, normalized_tracks, _integer(line_x, "line_x"), normalized_status
 
-    def _draw_overlays(self, boxes, tracks, line_x: int) -> None:
+    def _draw_overlays(self, boxes, tracks, line_x: int, line_y=None) -> None:
         image = self.canvas[BOTTOM_Y:HEIGHT, VIEW_X:VIEW_X + VIEW_WIDTH]
-        x = _scale_coordinate(min(max(line_x, 0), SOURCE_WIDTH - 1))
-        cv2.line(image, (x, 0), (x, VIEW_HEIGHT - 1), 0, 3, cv2.LINE_8)
-        cv2.line(image, (x, 0), (x, VIEW_HEIGHT - 1), 255, 1, cv2.LINE_8)
+        if line_y is None:
+            x = _scale_coordinate(min(max(line_x, 0), SOURCE_WIDTH - 1))
+            first, last = (x, 0), (x, VIEW_HEIGHT - 1)
+        else:
+            y = _scale_coordinate(min(max(line_y, 0), SOURCE_HEIGHT - 1))
+            first, last = (0, y), (VIEW_WIDTH - 1, y)
+        cv2.line(image, first, last, 0, 3, cv2.LINE_8)
+        cv2.line(image, first, last, 255, 1, cv2.LINE_8)
 
         for x1, y1, x2, y2 in boxes:
             x1 = _scale_coordinate(min(max(x1, 0), SOURCE_WIDTH - 1))
@@ -233,6 +238,7 @@ class GrayComposer:
         *,
         binary_background: bool = True,
         output=None,
+        line_y=None,
     ) -> np.ndarray:
         """Render a same-identity gray/binary pair into the reusable canvas or output."""
         if not isinstance(binary_background, bool):
@@ -254,6 +260,8 @@ class GrayComposer:
             boxes, tracks, line_x, status_lines
         )
 
+        if line_y is not None:
+            line_y = _integer(line_y, "line_y")
         reusable_canvas = self.canvas
         if output is not None:
             self.canvas = output
@@ -274,7 +282,7 @@ class GrayComposer:
             scale_ms = (perf_counter_ns() - scale_start_ns) / 1_000_000
 
             draw_start_ns = perf_counter_ns()
-            self._draw_overlays(normalized_boxes, normalized_tracks, normalized_line)
+            self._draw_overlays(normalized_boxes, normalized_tracks, normalized_line, line_y)
 
             if normalized_status != self._status_key:
                 self._redraw_panel(normalized_status)

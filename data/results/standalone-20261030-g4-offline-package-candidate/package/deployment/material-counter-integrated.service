@@ -1,0 +1,23 @@
+[Unit]
+Description=Material counter standalone RLE and Gray8 HDMI
+After=local-fs.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/material-counter/current
+EnvironmentFile=/etc/material-counter/package.env
+Environment=XILINX_XRT=/usr
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/local/share/pynq-venv/bin/python3 -B -m scripts.standalone.boot_integrated --root ${PACKAGE_ROOT} --index-sha256 ${PACKAGE_INDEX_SHA256}
+Restart=no
+KillMode=process
+SendSIGKILL=no
+TimeoutStartSec=infinity
+TimeoutStopSec=infinity
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

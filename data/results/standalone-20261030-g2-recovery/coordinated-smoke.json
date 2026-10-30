@@ -1,0 +1,269 @@
+{
+  "schema": "material-counter.g2-coordinated-smoke.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "bit_sha256": "2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "frames": [
+    {
+      "frame": 0,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 0,
+      "elapsed_ms": 211.68377200956456,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 1,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 0,
+      "elapsed_ms": 93.38182100327685,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 2,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 0,
+      "elapsed_ms": 90.99940900341608,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 3,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 0,
+      "elapsed_ms": 90.77355600311421,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 4,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 0,
+      "elapsed_ms": 90.07760600070469,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 5,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 1,
+      "elapsed_ms": 90.5186950112693,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 6,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 1,
+      "elapsed_ms": 84.01247998699546,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 7,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 1,
+      "elapsed_ms": 83.61255397903733,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 8,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 1,
+      "elapsed_ms": 84.33874399634078,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 9,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 1,
+      "elapsed_ms": 83.69579000282101,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 10,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 1,
+      "elapsed_ms": 83.51230100379325,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 11,
+      "runs": 16,
+      "bytes": 2272,
+      "pixel_equal": true,
+      "count": 1,
+      "elapsed_ms": 83.95962999202311,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    }
+  ],
+  "session_id": "a627de09-ea37-4d05-9cd4-7f2dd1153594",
+  "state": "STOPPED",
+  "scope": "single hardware owner; synthetic smoke; no camera/accuracy/G3/G4 acceptance",
+  "clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "hp2_read32": {
+    "status": "HP2_READ_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/standalone-g2-smoke-20261030/g2-integrated.hwh",
+    "hwh_hp2_data_width_bits": 32,
+    "slcr_fpga_rst_ctrl": 0,
+    "vdma": {
+      "base": "0x43000000",
+      "control": 65538,
+      "status": 65537
+    },
+    "register": "AFI2_RDCHAN_CTRL",
+    "address": "0xF800A000",
+    "before": 1,
+    "write_value": null,
+    "after": 1,
+    "width_bit0": 1
+  },
+  "before_monitor": {
+    "unique": 0,
+    "scans": 0,
+    "repeat": 0,
+    "invalid": 0,
+    "partial": 0,
+    "frame": 0,
+    "session": 0,
+    "gray_error": false,
+    "marker_pixel_error": false,
+    "pair_mismatch": false,
+    "top_invalid": false,
+    "bottom_invalid": false,
+    "top_marker": "00000000000000000000000000000000000000000000000000000000",
+    "bottom_marker": "00000000000000000000000000000000000000000000000000000000",
+    "sequence": 1,
+    "capture_started": 133818.898207296,
+    "sampled_monotonic": 133818.899018472
+  },
+  "after_monitor": {
+    "unique": 12,
+    "scans": 70,
+    "repeat": 51,
+    "invalid": 7,
+    "partial": 0,
+    "frame": 11,
+    "session": 220858850358250713422785065212232152468,
+    "gray_error": false,
+    "marker_pixel_error": false,
+    "pair_mismatch": false,
+    "top_invalid": false,
+    "bottom_invalid": false,
+    "top_marker": "4d43a627de09ea374d059cd47f2dd1153594000000000000000beac6",
+    "bottom_marker": "4d43a627de09ea374d059cd47f2dd1153594000000000000000beac6",
+    "sequence": 2,
+    "capture_started": 133820.173342507,
+    "sampled_monotonic": 133820.174182784
+  },
+  "dma_after": {
+    "0x0": 65539,
+    "0x4": 4098,
+    "0x30": 65539,
+    "0x34": 4098
+  },
+  "vdma_after": {
+    "0x0": 69632,
+    "0x4": 69633
+  },
+  "buffers_released": true,
+  "camera_opened": false,
+  "accuracy": "NOT_MEASURED",
+  "count": 1
+}

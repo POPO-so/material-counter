@@ -1,0 +1,16 @@
+{
+  "schema": "material-counter.g3-retained-track-diagnostic.v1",
+  "uncompressed_sha256": "4cee395d4d9667b0441f0f198c522f405c7ac73de8dd2ccf42eb29a7f34a02fe",
+  "uncompressed_bytes": 61302753,
+  "compressed_sha256": "cdcd1c586931a996cee509464174a244667394926e8439bfcad966694605ae95",
+  "application_state": "STOPPED",
+  "processed": 2400,
+  "submitted": 1101,
+  "duration_s": 113.25369459399371,
+  "total_count": 158,
+  "trace_frames": 2400,
+  "max_tracks_in_trace": 200,
+  "buffers_released": true,
+  "coordinator_error": "read partially-written JSON; off case was not started",
+  "acceptance": "G3_NOT_PASSED; streaming tracker and bounded trace must be fixed and rerun"
+}

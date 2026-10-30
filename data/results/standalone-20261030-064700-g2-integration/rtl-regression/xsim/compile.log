@@ -1,0 +1,12 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/w/mc-g2/fpga/experimental/rle/axis_rle_encoder.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_rle_encoder
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/w/mc-g2/fpga/experimental/gray8/axis_dma_gray_adapter.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_gray_adapter
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/w/mc-g2/fpga/rtl/axis_morphology3x3.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_morphology3x3
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/w/mc-g2/fpga/experimental/rle/axis_dma_rle_pipeline_bd.v" into library work
+INFO: [VRFC 10-311] analyzing module axis_dma_rle_pipeline_bd
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_encoder.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_axis_rle_encoder
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/w/mc-g2/fpga/sim/rle/tb_axis_rle_pipeline.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_axis_rle_pipeline

@@ -1,0 +1,38 @@
+Vivado Simulator v2026.1
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: C:\AMDDesignTools\2026.1\Vivado\bin\unwrapped\win64.o\xelab.exe -L unisims_ver tb_axis_rle_pipeline glbl -s rle_pipeline_netlist -log elaborate.log 
+Multi-threading is on. Using 18 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module unisims_ver.GND
+Compiling module unisims_ver.VCC
+Compiling module unisims_ver.x_lut3_mux8
+Compiling module unisims_ver.LUT3
+Compiling module unisims_ver.LUT4
+Compiling module unisims_ver.LUT6
+Compiling module unisims_ver.LUT5
+Compiling module unisims_ver.x_lut2_mux4
+Compiling module unisims_ver.LUT2
+Compiling module unisims_ver.FDRE_default
+Compiling module unisims_ver.CARRY4
+Compiling module unisims_ver.x_lut1_mux2
+Compiling module unisims_ver.LUT1
+Compiling module work.display_image_pipeline_0_axis_dm...
+Compiling module unisims_ver.RAM128X1D
+Compiling module work.display_image_pipeline_0_axis_mo...
+Compiling module unisims_ver.RAM64M
+Compiling module unisims_ver.RAM64X1D
+Compiling module unisims_ver.MUXF7
+Compiling module work.display_image_pipeline_0_axis_rl...
+Compiling module work.display_image_pipeline_0_axis_mo...
+Compiling module unisims_ver.FDSE_default
+Compiling module work.display_image_pipeline_0_axis_dm...
+Compiling module work.axis_dma_rle_pipeline_bd
+Compiling module work.tb_axis_rle_pipeline
+Compiling module work.glbl
+Built simulation snapshot rle_pipeline_netlist

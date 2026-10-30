@@ -1,0 +1,6 @@
+{
+  "schema": "material-counter.integrated-boot.v1",
+  "mode": "continuous",
+  "camera": "/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0",
+  "duration_s": 7200
+}

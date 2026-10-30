@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Fri Oct 30 12:28:02 2026
+# Process ID         : 15972
+# Current directory  : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/xsim
+# Command line       : xsim.exe -log sim.log -mode tcl -source {xsim.dir/rle_encoder/xsim_script.tcl}
+# Log file           : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/xsim/sim.log
+# Journal file       : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/xsim\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 11199 MB
+#-----------------------------------------------------------
+source xsim.dir/rle_encoder/xsim_script.tcl
+# xsim {rle_encoder} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_ENCODER_PASS frames=4
+$finish called at time : 6820 ns : File "C:/w/mc-progress/fpga/sim/rle/tb_axis_rle_encoder.sv" Line 81
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:28:04 2026...

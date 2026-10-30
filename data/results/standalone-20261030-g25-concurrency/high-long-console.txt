@@ -1,0 +1,1 @@
+{"state": "STOPPED", "processed_frames": 2169, "duration_s": 180.03514189799898, "processing_fps": 12.047647904367873, "counter_delta": {"sequence_before": 105, "sequence_after": 194, "counters": {"total_cycles": 9001816524, "active_cycles": 594480870, "input_beats": 138833352, "output_beats": 35901288, "input_stall_cycles": 416450138, "output_stall_cycles": 0}}}

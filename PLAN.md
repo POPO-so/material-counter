@@ -1,5 +1,7 @@
 # 计数运行链路实施状态
 
+当前脱机集成状态（2026-10-30）：G0/G1/G1.5/G2/G2.5 已通过。已有 G3 集中验证记录：相关软件回归 346 项通过；同输入显示开/关各 2,400 帧的轨迹与计数一致；新报告源码身份完整；遥测过期与协作式绘图退出场景已覆盖。缩放候选比较中常量灰度、AREA ramp 和 nearest overlay 外像素匹配，但 LINEAR ramp 有 640/207,360 像素差 1，插值策略未冻结。G3 仍未放行：实物 GPIO 消抖/浮空/长按与帧边界竞态、HDMI 热插拔和硬件恢复、Process.start 创建/启动异常的执行证据、真实相机有目标与人工真值仍缺；已新增对应启动异常用例，尚未执行。G4 尚未开始。候选包已刷新 37 个应用模块，运行环境预检和包源码清单校验代码已补齐；旧 deployment index 和 package.env 哈希已过期，待代码阶段结束后重建。Route/接口保持候选，物料准确率未验收。当前证据见 [G2](data/results/standalone-20261030-123000-g2-integration/README.md)、[G2.5](data/results/standalone-20261030-g25-concurrency/README.md)、[G3 部分记录](data/results/standalone-20261030-g3-functional/README.md) 与 [脱机部署缺口](scripts/standalone/DEPLOYMENT.md)。更早段落属于历史阶段快照。
+
 ## 脱机灰度 HDMI 实施（2026-10-29）
 
 用户已授权按 [计划.md](计划.md) 逐阶段实施。G0 环境/依赖核对见 [记录](data/results/standalone-20261029-g0/README.md)；G1 正在实施，未完成显示或脱机验收。G1/G1.5 通过前不投入完整 RLE 集成。新接口见候选 ADR-0005，正式 Route/接口状态不变。
@@ -83,3 +85,35 @@
 - [ ] 按项目接口流程进行正式签核。当前 Route、机械/视频输入路线及接口冻结状态仍以 `docs/07_routes.md`、本 ADR 状态及正式审批记录为准。
 
 清理范围、首次状态检查误判和合成测试见 [Gray8 清理记录](data/results/gray8-cleanup-20261027/README.md)。最新 boot ID 下的真实相机运行、像素校验、FPS、分阶段计时及限制见 [相机板测记录](data/results/gray8-camera-20261027-122633/README.md)。首次构建时序/资源见 [构建记录](data/results/gray8-dma-20261027/README.md)。历史 RGB 板测和仿真记录保持原样，仅作为其当时配置下的历史证据。
+
+## G3 缩放候选比较（2026-10-30；策略未冻结）
+
+- 固定 C row-major uint8 输入、四份目标尺寸候选数组、compositor 实测 raw 和 PNG 已整理在 data/results/standalone-20261030-g3-functional/scaling-comparison/，比较绑定 OpenCV 4.10.0、runner SHA-256 2629d39f843ce02c3c9a654b0a2af63f4465117607262152e83ccdad8a4a2bd9 和源码身份 digest d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8。
+- 常量灰度在 AREA/LINEAR 下均 207,360/207,360 像素匹配；灰度 ramp AREA 为 207,360/207,360 匹配；二值 nearest 在七列计数线 overlay 之外 204,840/204,840 匹配，完整 crop 的 overlay 区域有 360 个差异。
+- 灰度 ramp LINEAR 有 640/207,360 像素相差 1，差异集中在输出列 0、6、9、12、15。内部舍入/量化原因未确定；AREA 和 nearest 结果也只是本轮候选比较，均未据此冻结运行时策略。JSON 状态为 comparison_complete_with_candidate_mismatch，候选不是黄金验收或 G3 放行证据。
+
+## G3 新运行报告源码身份（2026-10-30；已实测）
+
+- integrated_run.py 在创建运行计数器（触发懒加载项目模块）后、进入运行循环前，为新报告生成 source_identity：schema material-counter.project-source-identity.v1、项目相对路径到 SHA-256 的映射、规范化排序 JSON 整体 digest、file_count、范围说明、complete 与 errors。
+- 本次 on/off 两份新报告的 source_identity 均 complete，覆盖 25 个项目 Python 源文件，digest 为 69d2f9996c3bfd4e0ff5fddc610dc355d57b59fd53789fb822efe5eda017815a。范围仅包含 runner 及指定项目目录内 Python 源，不能追补旧 v2 记录，也不等于依赖/ABI/位流身份。
+- 相关软件回归使用项目记录的 CPython 3.12.10，scripts/standalone、scripts/rle、scripts/gray8 共 346 项通过。该软件回归和源码身份证据不代表 G3 整体放行。
+
+## G3 绘图退出与遥测过期验证（2026-10-30）
+
+- 集中验证期间运行了协作式绘图子进程退出场景：注入后共处理 800 帧，STOPPED、count 67、invalid 0；frame 338 记录绘图退出事件，exit code 0，DMA/VDMA 及 RLE/显示缓冲区安全释放。
+- 遥测冻结场景在 frame 300 注入、显示关闭，共处理 1,200 帧，STOPPED、count 100、invalid 0；性能、资源和 XADC 样本出现 stale 标记，最终样本全 stale。
+- 当前代码仍包含绘图创建/启动异常捕获、process=None 恢复与 5 秒退避；本轮没有触发 Process.start() 创建或启动异常。协作式退出不代表 HDMI/VDMA 故障或热插拔恢复，实物 GPIO、HDMI 和真实相机有目标场景仍未完成，G3 未放行。
+
+## G3 集中验证结果（2026-10-30）
+
+- 使用 CPython 3.12.10 运行 scripts/standalone、scripts/rle、scripts/gray8 软件回归：346 passed in 15.27s。
+- PYNQ-Z2 boot ID e48ff153-bd85-4dd6-98f6-438bd51da08d。隔离临时包基于源码提交 838f5ebb2a5562f72d7695b80d3c93c8265d9b76，package index SHA-256 12e4e93f553270c7a6028dd63e2f461fa5331e04597cf8fb95fa50740d31d70d，包 SHA-256 682c3f08521e7ad8145dcc25fb8762a37d32c965b63ebc499e2e9ec2d31492e6；包只在独立板端目录运行，没有系统安装、service 变更或 bitstream reload。
+- 显示 on/off 共用输入 SHA-256 2d2656815ac70479f8e00eb27bf07684a3557c8a7ee1ebaec66d8b40817f4e95，各处理 2,400 帧，均 STOPPED、count 158、invalid_frames 0；trace SHA-256 同为 94249f6cbaaf69db09c61bfdfd38720b0d703ade7772204b52c4556c6efb7427，七个命令事件及源码身份 digest 均一致，transfer_consistency.valid 为 true。
+- 四份板端报告：[显示开启回放](data/results/standalone-20261030-g3-functional/replay-on-current.json)、[显示关闭回放](data/results/standalone-20261030-g3-functional/replay-off-current.json)、[绘图退出](data/results/standalone-20261030-g3-functional/drawing-exit-current.json)、[遥测冻结](data/results/standalone-20261030-g3-functional/telemetry-freeze-current.json)。报告 SHA-256 和注入边界见 [G3 部分记录](data/results/standalone-20261030-g3-functional/README.md)。
+- G3 未放行；G4 依赖 G3，尚未开始。真实 GPIO 边界、HDMI 拔插/硬件恢复、Process.start() 异常、相机有目标及人工真值仍是后续门禁。
+
+## G3 绘图启动异常恢复实现（2026-10-30；启动异常路径尚未注入）
+
+- `scripts/standalone/integrated_run.py` 现在捕获绘图子进程创建或启动异常，记录 `drawing_start_failed`、当前帧、错误和 monotonic 时间，并在确定没有子进程启动时保持 `process=None`；每次失败后等待 5 秒再重试。
+- 主循环可从 `process=None` 恢复；仅在确认旧子进程已退出后 join/reclaim 其共享帧 lease。绘图子进程不可用时跳过预览发布，RLE transfer 与 `advance_count` 仍按原流程进行；VideoPump/HDMI 按既有生命周期清理。
+- 本节记录实现时的代码状态。后续板端协作式子进程退出和遥测冻结场景已在上方集中验证记录中执行；Process.start() 创建/启动异常、实物 GPIO 与 HDMI/VDMA 恢复仍未覆盖，G3 未放行。

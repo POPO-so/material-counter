@@ -1,0 +1,167 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:50:56 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source {C:\w\mc-g15\scripts\rle\run_sim.tcl} -notrace
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:06 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_encoder/xsim_script.tcl
+# xsim {rle_encoder} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_ENCODER_PASS frames=4
+$finish called at time : 6820 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_encoder.sv" Line 81
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:08 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:10 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/baseline-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/baseline-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/baseline-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=637 cycles=257496
+$finish called at time : 5150010 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:13 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:13 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/roi-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/roi-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/roi-actual.hex -testplusarg WORDS=635 -testplusarg MORPH=0 -testplusarg OFFSET=10 -testplusarg X0=10 -testplusarg Y0=5 -testplusarg X1=630 -testplusarg Y1=399 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=635 cycles=257496
+$finish called at time : 5150010 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:15 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:15 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/erode-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/erode-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/erode-actual.hex -testplusarg WORDS=631 -testplusarg MORPH=1 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=631 cycles=513201
+$finish called at time : 10264110 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:18 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:18 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/dilate-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/dilate-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/dilate-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=2 -testplusarg OFFSET=0 -testplusarg X0=10 -testplusarg Y0=5 -testplusarg X1=630 -testplusarg Y1=399 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=637 cycles=513208
+$finish called at time : 10264250 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:21 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:21 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/empty-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/empty-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/empty-actual.hex -testplusarg WORDS=552 -testplusarg MORPH=0 -testplusarg OFFSET=-255 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=552 cycles=257430
+$finish called at time : 5148690 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:23 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:23 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/overflow-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/overflow-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/overflow-actual.hex -testplusarg WORDS=16936 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=16936 cycles=269717
+$finish called at time : 5394430 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:26 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:26 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/bad_checksum-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/bad_checksum-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/bad_checksum-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=637 cycles=257496
+$finish called at time : 5150010 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:28 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 04:51:29 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/rle_pipeline/xsim_script.tcl
+# xsim {rle_pipeline} -testplusarg INPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/bad_header-input.hex -testplusarg EXPECTED=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/vectors/bad_header-expected.hex -testplusarg OUTPUT=C:/Users/14173/Documents/material-counter/data/results/standalone-20261030-g2-baseline/rle-rtl-retry1/xsim/bad_header-actual.hex -testplusarg WORDS=552 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_PIPELINE_640X400_PASS words=552 cycles=137184
+$finish called at time : 2743780 ns : File "C:/w/mc-g15/fpga/sim/rle/tb_axis_rle_pipeline.sv" Line 77
+exit
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 04:51:31 2026...
+RLE_XSIM_ALL_PASS cases=8
+INFO: [Common 17-206] Exiting Vivado at Fri Oct 30 04:51:31 2026...

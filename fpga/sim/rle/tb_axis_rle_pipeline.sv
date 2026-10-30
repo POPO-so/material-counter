@@ -8,6 +8,7 @@ module tb_axis_rle_pipeline;
   wire [1:0] bp,rp;wire [31:0] rd,md;wire [3:0] mk;
   integer n=0,cycles=0,input_count,expected_count,i,output_file;
   integer morph=0,offset=0,corrupt=0,roi_left=0,roi_top=0,roi_right=640,roi_bottom=400;
+  reg [31:0] observed,snapshot_seq,cycle_lo,cycle_hi;
   reg [31:0] input_words[0:64007];reg [31:0] expected[0:20000];
   reg [31:0] tslo,tshi,expected_word;
   reg stalled=0;reg [31:0] held;reg heldlast;
@@ -31,6 +32,16 @@ module tb_axis_rle_pipeline;
       join
       wait(bv);if(bp!=0)$fatal(1,"AXI write rejected %h",addr);
       @(negedge clk);
+    end
+  endtask
+  task read_reg;
+    input [31:0] addr; input [1:0] response;
+    begin
+      @(negedge clk);araddr=addr;arv=1;
+      do @(posedge clk);while(!arr);
+      @(negedge clk);arv=0;
+      wait(rv);if(rp!==response)$fatal(1,"AXI read response %h got %h expected %h",addr,rp,response);
+      observed=rd;@(negedge clk);
     end
   endtask
   always @(negedge clk) mr=(cycles%11<8);
@@ -64,9 +75,16 @@ module tb_axis_rle_pipeline;
     $readmemh(input_path,input_words);$readmemh(expected_path,expected,0,expected_count-1);
     output_file=$fopen(output_path,"w");
     repeat(5)@(negedge clk);rst=1;
+    // 0x00 is write-only; probing it must not be mistaken for a valid read.
+    read_reg(0,2);
+    write_reg('h3c,1);read_reg('h3c,0);
+    if(observed!=1)$fatal(1,"snapshot sequence after reset");
     write_reg('h10,17);write_reg('h14,3);
     write_reg('h18,(roi_top<<16)|roi_left);write_reg('h1c,(roi_bottom<<16)|roi_right);
     write_reg('h20,128);write_reg('h24,offset);write_reg('h28,morph);write_reg(0,1);
+    // Monitoring snapshots remain legal while a frame is active.
+    write_reg('h3c,1);read_reg('h3c,0);
+    if(observed!=2)$fatal(1,"snapshot while busy");
     for(i=0;i<64008;i=i+1)begin
       @(negedge clk);sv=1;sd=input_words[i];sl=(i==64007);
       do @(posedge clk);while(!sr);
@@ -74,6 +92,21 @@ module tb_axis_rle_pipeline;
       if(i%7==0)@(negedge clk);
     end
     input_done=1;wait(output_done);
+    write_reg('h3c,1);read_reg('h3c,0);snapshot_seq=observed;
+    if(snapshot_seq!=3)$fatal(1,"snapshot sequence completion");
+    read_reg('h50,0);if(observed!=64008)$fatal(1,"input beats %0d",observed);
+    read_reg('h54,0);if(observed!=0)$fatal(1,"input upper bits");
+    read_reg('h58,0);if(observed!=expected_count)$fatal(1,"output beats %0d expected %0d",observed,expected_count);
+    read_reg('h5c,0);if(observed!=0)$fatal(1,"output upper bits");
+    read_reg('h48,0);if(observed==0)$fatal(1,"active cycles missing");
+    read_reg('h68,0);if(observed==0)$fatal(1,"backpressure not counted");
+    read_reg('h40,0);cycle_lo=observed;read_reg('h44,0);cycle_hi=observed;
+    repeat(40)@(negedge clk);
+    read_reg('h40,0);if(observed!=cycle_lo)$fatal(1,"snapshot lower word unstable");
+    read_reg('h44,0);if(observed!=cycle_hi)$fatal(1,"snapshot upper word unstable");
+    write_reg('h3c,1);read_reg('h3c,0);if(observed!=snapshot_seq+1)$fatal(1,"snapshot did not advance");
+    read_reg('h40,0);if(observed<=cycle_lo)$fatal(1,"running clock counter did not advance");
+    $display("RLE_COUNTER_SNAPSHOT_PASS input=64008 output=%0d",expected_count);
     $display("RLE_PIPELINE_640X400_PASS words=%0d cycles=%0d",n,cycles);$finish;
   end
 endmodule

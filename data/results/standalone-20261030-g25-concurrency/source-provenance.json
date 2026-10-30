@@ -1,0 +1,10 @@
+{
+  "initial_six_runs": {
+    "commit": "38a52e7",
+    "runner_sha256": "eefc642732b19eaa5022c05b0d347f4a51f334de4335ec17ac54f48651fd484b",
+    "note": "Exact committed runner snapshot retained; latest staging index is for subsequent memory diagnostics, not the earlier deployment."
+  },
+  "long_memory_run": {
+    "runner_sha256": "d09a6ef6d889b93aed41932f13b9e31dc1420cd3b399d4d4e0aa0d9666a686b4"
+  }
+}

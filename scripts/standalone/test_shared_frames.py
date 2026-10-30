@@ -32,6 +32,25 @@ def _spawn_abandon_write(frames, ready):
     frames.close()
 
 
+def _spawn_abandon_read(frames, ready):
+    lease = frames.acquire_latest()
+    ready.put(lease.slot)
+    frames.close()
+
+
+def _spawn_reclaim_read(frames, slot, result):
+    try:
+        frames.reclaim_reader(slot, dead_consumer=True)
+    except PermissionError:
+        result.put("rejected")
+    except AttributeError:
+        result.put("missing")
+    else:
+        result.put("unexpected reclaim")
+    finally:
+        frames.close()
+
+
 def _spawn_try_claim_after_close(frames, attached, resume, result):
     attached.set()
     resume.wait(5)
@@ -152,6 +171,68 @@ def test_abandoned_writer_requires_explicit_dead_producer_reclaim(frames):
     assert frames.statuses()[slot] == WRITING
     frames.reclaim_writer(slot, dead_producer=True)
     assert frames.statuses()[slot] == FREE
+
+
+def test_abandoned_reader_reclaim_requires_confirmed_dead_consumer(frames):
+    slot, pixels = frames.claim_write()
+    pixels.fill(23)
+    frames.publish(slot, uuid.uuid4(), 1)
+    ctx = mp.get_context("spawn")
+    slot_queue = ctx.Queue()
+    process = ctx.Process(target=_spawn_abandon_read, args=(frames, slot_queue))
+    process.start()
+    process.join(10)
+    assert process.exitcode == 0
+    slot = slot_queue.get(timeout=2)
+    assert not process.is_alive()
+    assert frames.statuses()[slot] == READING
+
+    try:
+        with pytest.raises(ValueError):
+            frames.reclaim_reader(slot)
+        with pytest.raises(ValueError):
+            frames.reclaim_reader(slot, dead_consumer=False)
+        assert frames.statuses()[slot] == READING
+
+        frames.reclaim_reader(slot, dead_consumer=True)
+        assert frames.statuses()[slot] == FREE
+        replacement = frames.claim_write()
+        assert replacement is not None and replacement[0] == slot
+        frames.abort_write(replacement[0])
+    finally:
+        if frames.statuses()[slot] == READING:
+            frames.release_read(slot)
+
+
+@pytest.mark.parametrize("state", ["free", "ready"])
+def test_reader_reclaim_rejects_non_reading_slot(frames, state):
+    slot = 0
+    if state == "ready":
+        slot, pixels = frames.claim_write()
+        pixels.fill(8)
+        frames.publish(slot, uuid.uuid4(), 1)
+    with pytest.raises(RuntimeError):
+        frames.reclaim_reader(slot, dead_consumer=True)
+    assert frames.statuses()[slot] == (FREE if state == "free" else READY)
+
+
+def test_non_owner_cannot_reclaim_reader(frames):
+    slot, pixels = frames.claim_write()
+    pixels.fill(11)
+    frames.publish(slot, uuid.uuid4(), 1)
+    lease = frames.acquire_latest()
+    ctx = mp.get_context("spawn")
+    result = ctx.Queue()
+    process = ctx.Process(target=_spawn_reclaim_read, args=(frames, lease.slot, result))
+    process.start()
+    process.join(10)
+    assert process.exitcode == 0
+    try:
+        assert result.get(timeout=2) == "rejected"
+        assert frames.statuses()[lease.slot] == READING
+    finally:
+        if frames.statuses()[lease.slot] == READING:
+            frames.release_read(lease.slot)
 
 
 def test_invalid_identity_and_shape_are_rejected(frames):

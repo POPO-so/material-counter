@@ -1,0 +1,474 @@
+{
+  "status": "RLE_BOARD_COMPLETED",
+  "mode": "self-test",
+  "resolution": [
+    640,
+    400
+  ],
+  "frames": 12,
+  "pixel_verified_frames": 12,
+  "count_accuracy": "NOT_MEASURED",
+  "tx_bytes": 256032,
+  "rx_capacity": 67744,
+  "configuration": {
+    "roi": [
+      0,
+      0,
+      640,
+      400
+    ],
+    "threshold": 128,
+    "intensity_offset": 0,
+    "morph_mode": 0
+  },
+  "counter_configuration": {
+    "line_y": 200,
+    "roi_top": 0,
+    "roi_bottom": 400,
+    "min_area": 48
+  },
+  "pattern": "moving",
+  "frames_evidence": [
+    {
+      "frame_id": 0,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39744633295,
+      "capture_ms": 29.443217994412407,
+      "transfer_parse_ms": 80.55939699988812,
+      "verification_ms": 94.55956300371327,
+      "count_ms": 117.99096001777798,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 140,
+          "y_max": 155,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 147.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 1,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39756312485,
+      "capture_ms": 0.7420429901685566,
+      "transfer_parse_ms": 19.12878200528212,
+      "verification_ms": 28.94390100846067,
+      "count_ms": 2.0416739862412214,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 152,
+          "y_max": 167,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 159.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 2,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39758848860,
+      "capture_ms": 0.605729001108557,
+      "transfer_parse_ms": 19.176166009856388,
+      "verification_ms": 27.41119998972863,
+      "count_ms": 1.950473990291357,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 164,
+          "y_max": 179,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 171.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 3,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39761305805,
+      "capture_ms": 0.6095260032452643,
+      "transfer_parse_ms": 19.061975996010005,
+      "verification_ms": 27.347452007234097,
+      "count_ms": 1.820258010411635,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 176,
+          "y_max": 191,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 183.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 4,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39763756374,
+      "capture_ms": 0.7329049985855818,
+      "transfer_parse_ms": 18.986651994055137,
+      "verification_ms": 27.582437003729865,
+      "count_ms": 1.84038799488917,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 188,
+          "y_max": 203,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 195.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 5,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39766214578,
+      "capture_ms": 0.602104002609849,
+      "transfer_parse_ms": 19.150979002006352,
+      "verification_ms": 27.517445996636525,
+      "count_ms": 1.8812369962688535,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 200,
+          "y_max": 215,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 207.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 6,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39768669271,
+      "capture_ms": 0.6037290149834007,
+      "transfer_parse_ms": 19.18880597804673,
+      "verification_ms": 27.930523006943986,
+      "count_ms": 1.7972560017369688,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 212,
+          "y_max": 227,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 219.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 7,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39771173197,
+      "capture_ms": 0.7806270150467753,
+      "transfer_parse_ms": 19.512129976646975,
+      "verification_ms": 27.589575009187683,
+      "count_ms": 1.8019569979514927,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 224,
+          "y_max": 239,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 231.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 8,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39773631086,
+      "capture_ms": 0.604197004577145,
+      "transfer_parse_ms": 19.149169005686417,
+      "verification_ms": 27.59594499366358,
+      "count_ms": 1.7860489897429943,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 236,
+          "y_max": 251,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 243.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 9,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39776085574,
+      "capture_ms": 0.5997040134388953,
+      "transfer_parse_ms": 19.077864999417216,
+      "verification_ms": 27.492805995279923,
+      "count_ms": 1.8064370087813586,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 248,
+          "y_max": 263,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 255.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 10,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39778535399,
+      "capture_ms": 0.6009780045133084,
+      "transfer_parse_ms": 19.665526982862502,
+      "verification_ms": 27.557752997381613,
+      "count_ms": 1.786954002454877,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 260,
+          "y_max": 275,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 267.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame_id": 11,
+      "runs": 16,
+      "total_runs": 16,
+      "total_fg": 320,
+      "status": 0,
+      "rx_bytes": 2272,
+      "hw_timestamp": 39781015984,
+      "capture_ms": 0.6029910000506788,
+      "transfer_parse_ms": 19.181740994099528,
+      "verification_ms": 27.951256022788584,
+      "count_ms": 1.78307099849917,
+      "total_count": 1,
+      "detections": [
+        {
+          "x_min": 200,
+          "x_max": 219,
+          "y_min": 272,
+          "y_max": 287,
+          "area": 320,
+          "centroid_x": 209.5,
+          "centroid_y": 279.5
+        }
+      ],
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 2272,
+        "actual_hw_bytes": 2272,
+        "pipeline_state": 2
+      }
+    }
+  ],
+  "total_count": 1,
+  "invalid_frames": 0,
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "cma_before": {
+    "CmaTotal": 131072,
+    "CmaFree": 33540
+  },
+  "overlay": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/standalone-g2-smoke-20261030/g2-integrated.bit",
+    "loaded_bit_sha1": "507c9f5e7a570c72ce8c48f9d20bc37749d51331",
+    "loaded_bit_sha256": "2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18",
+    "loaded_bit_path_matches_expected": false
+  },
+  "afi1": {
+    "stage": "rle-start",
+    "status": "AFI1_HP1_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/standalone-g2-smoke-20261030/rle-g2-adapter/export/rle.hwh",
+    "hwh_sha256": "a663072734f2b16be9f37be0699ba897b5902c0b46398a4be914f6ee40fa852f",
+    "hwh_hp1_data_width_bits": 32,
+    "fpga_rst_ctrl": 0,
+    "fpga_rst_ctrl_raw_hex": "0x00000000",
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xf8009000",
+        "before": 1,
+        "before_raw_hex": "0x00000001",
+        "write_value": 1,
+        "write_raw_hex": "0x00000001",
+        "readback": 1,
+        "readback_raw_hex": "0x00000001",
+        "width_bit0": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xf8009014",
+        "before": 3841,
+        "before_raw_hex": "0x00000f01",
+        "write_value": 3841,
+        "write_raw_hex": "0x00000f01",
+        "readback": 3841,
+        "readback_raw_hex": "0x00000f01",
+        "width_bit0": 1
+      }
+    }
+  },
+  "manifest_sha256": "9eeb76496f3bbc2a90992b0d2030078daea2b01430e69ac8b536e66377cbaa15",
+  "elapsed_s": 0.8665600969980005,
+  "throughput_fps": 13.847856647878501,
+  "buffers_held": false
+}

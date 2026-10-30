@@ -1,0 +1,267 @@
+{
+  "schema": "material-counter.scaling-candidate-vectors.v1",
+  "status": "comparison_complete_candidate_only",
+  "source": {
+    "width": 640,
+    "height": 400,
+    "dtype": "uint8"
+  },
+  "source_artifacts": [
+    {
+      "vector_id": "constant_gray_73",
+      "path": "scaling-inputs/constant-gray-73.raw",
+      "format": "C row-major uint8",
+      "shape": [
+        400,
+        640
+      ],
+      "size_bytes": 256000,
+      "sha256": "aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af"
+    },
+    {
+      "vector_id": "gray_horizontal_ramp_first_row_cols_0_8",
+      "path": "scaling-inputs/gray-ramp-12.raw",
+      "format": "C row-major uint8",
+      "shape": [
+        400,
+        640
+      ],
+      "size_bytes": 256000,
+      "sha256": "87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354"
+    },
+    {
+      "vector_id": "binary_nearest_rectangle_and_boundary_points",
+      "path": "scaling-inputs/binary-nearest-rect-points.raw",
+      "format": "C row-major uint8",
+      "shape": [
+        400,
+        640
+      ],
+      "size_bytes": 256000,
+      "sha256": "467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263"
+    }
+  ],
+  "expected_artifacts": [
+    {
+      "vector_id": "constant_gray_73",
+      "path": "scaling-expected-candidates/constant-gray-576x360.raw",
+      "source_path": "scaling-inputs/constant-gray-73.raw",
+      "source_sha256": "aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af",
+      "mapping": "all_target_pixels=73; constant preservation candidate shared by INTER_AREA and INTER_LINEAR",
+      "format": "C row-major uint8",
+      "shape": [
+        360,
+        576
+      ],
+      "size_bytes": 207360,
+      "sha256": "ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2",
+      "basis": "candidate array derived from constant-preservation rule; not compositor output or measured golden evidence",
+      "comparison_status": "Matched all 207360 target pixels under both INTER_AREA and INTER_LINEAR.",
+      "comparison_source_identity_digest": "d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8"
+    },
+    {
+      "vector_id": "binary_nearest_rectangle_and_boundary_points",
+      "path": "scaling-expected-candidates/binary-inter-nearest-576x360.raw",
+      "source_path": "scaling-inputs/binary-nearest-rect-points.raw",
+      "source_sha256": "467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263",
+      "mapping": "src_index=floor(10*dst_index/9)",
+      "format": "C row-major uint8",
+      "shape": [
+        360,
+        576
+      ],
+      "size_bytes": 207360,
+      "sha256": "35264c92c0c52e311d0c63a5aea1ed662a78ee4ba9347f5ee2e89ab3588e792b",
+      "basis": "candidate array generated from the recorded coordinate mapping; not compositor output or measured golden evidence",
+      "comparison_status": "Matched all 204840 pixels outside the compositor count-line overlay; the overlay columns were excluded.",
+      "comparison_source_identity_digest": "d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8"
+    },
+    {
+      "vector_id": "gray_ramp_inter_area",
+      "path": "scaling-expected-candidates/gray-ramp-inter-area-576x360.raw",
+      "source_path": "scaling-inputs/gray-ramp-12.raw",
+      "source_sha256": "87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354",
+      "method": "For each target column j, average source pixel values weighted by their exact overlap with [10*j/9, 10*(j+1)/9); repeat the row result for every target row.",
+      "formula": "value_j = sum_i(overlap([i,i+1), [10*j/9,10*(j+1)/9)) * I[i]) / (10/9), with I[i]=min(12*i,255)",
+      "rounding": "Exact fractions; round-to-nearest, ties-to-even. Static arithmetic finds no exact half ties among the 576 columns.",
+      "comparison_status": "Matched all 207360 target pixels under INTER_AREA.",
+      "format": "C row-major uint8",
+      "shape": [
+        360,
+        576
+      ],
+      "size_bytes": 207360,
+      "sha256": "81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8",
+      "basis": "exact Fraction arithmetic from the fixed ramp source; candidate only, not compositor output or measured golden evidence",
+      "comparison_source_identity_digest": "d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8"
+    },
+    {
+      "vector_id": "gray_ramp_inter_linear",
+      "path": "scaling-expected-candidates/gray-ramp-inter-linear-576x360.raw",
+      "source_path": "scaling-inputs/gray-ramp-12.raw",
+      "source_sha256": "87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354",
+      "method": "For each target column j, linearly interpolate between adjacent source pixels at coordinate (20*j+1)/18; repeat the row result for every target row.",
+      "formula": "coordinate_j=(20*j+1)/18; value_j=(1-f)*I[floor(coordinate_j)] + f*I[floor(coordinate_j)+1], where f=coordinate_j-floor(coordinate_j) and I[i]=min(12*i,255)",
+      "rounding": "Exact fractions; round-to-nearest, ties-to-even. The unique exact half tie is target column j=19 (252.5), which this candidate convention rounds to 252.",
+      "comparison_status": "Compared; 640 of 207360 pixels differ. This remains an unaccepted candidate.",
+      "format": "C row-major uint8",
+      "shape": [
+        360,
+        576
+      ],
+      "size_bytes": 207360,
+      "sha256": "56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c",
+      "basis": "exact Fraction arithmetic from the fixed ramp source; candidate only, not compositor output or measured golden evidence",
+      "comparison_source_identity_digest": "d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8"
+    }
+  ],
+  "target": {
+    "width": 576,
+    "height": 360
+  },
+  "scale": {
+    "x": "9/10",
+    "y": "9/10"
+  },
+  "vectors": [
+    {
+      "id": "constant_gray_73",
+      "kind": "constant_gray",
+      "input": {
+        "all_pixels": 73
+      },
+      "expected": {
+        "INTER_AREA": {
+          "all_target_pixels": 73
+        },
+        "INTER_LINEAR": {
+          "all_target_pixels": 73
+        }
+      },
+      "purpose": [
+        "constant_preservation",
+        "geometry"
+      ],
+      "basis": "manual"
+    },
+    {
+      "id": "gray_horizontal_ramp_first_row_cols_0_8",
+      "kind": "gray_ramp",
+      "input": {
+        "definition": "I[y,x]=min(12*x,255)",
+        "same_for_every_row": true
+      },
+      "sample": {
+        "target_row": 0,
+        "target_columns": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "expected": {
+        "INTER_AREA": {
+          "source_coverage_interval": "[10*j/9,10*(j+1)/9)",
+          "rounding": "candidate convention: exact fractions rounded to nearest, ties-to-even; not compared with OpenCV and not frozen runtime behavior",
+          "values": [
+            1,
+            14,
+            28,
+            41,
+            54,
+            67,
+            80,
+            94,
+            107
+          ]
+        },
+        "INTER_LINEAR": {
+          "source_sampling_coordinate": "(20*j+1)/18",
+          "rounding": "candidate convention: exact fractions rounded to nearest, ties-to-even; at j=19 exact 252.5 rounds to 252; not compared with OpenCV and not frozen runtime behavior",
+          "values": [
+            1,
+            14,
+            27,
+            41,
+            54,
+            67,
+            81,
+            94,
+            107
+          ]
+        }
+      },
+      "different_candidate_columns": [
+        2,
+        6
+      ],
+      "basis": "first nine columns manually derived and statically cross-checked against the two full candidate arrays; not cv2 output"
+    },
+    {
+      "id": "binary_nearest_rectangle_and_boundary_points",
+      "kind": "binary_nearest",
+      "input": {
+        "all_pixels": 0,
+        "foreground_value": 255,
+        "foreground_rectangles": [
+          {
+            "x": "[10,13)",
+            "y": "[20,23)"
+          }
+        ],
+        "foreground_points_xy": [
+          [
+            0,
+            0
+          ],
+          [
+            638,
+            398
+          ]
+        ],
+        "rectangle_bounds": "half-open"
+      },
+      "mapping": "src_index=floor(10*dst_index/9)",
+      "expected": {
+        "foreground_rectangle": {
+          "x": "[9,12)",
+          "y": "[18,21)"
+        },
+        "foreground_points_xy": [
+          [
+            0,
+            0
+          ],
+          [
+            575,
+            359
+          ]
+        ]
+      },
+      "basis": "coordinate mapping derivation; unexecuted"
+    }
+  ],
+  "limitations": [
+    "These are independent mathematical candidate arrays; compositor comparisons and rendered PNG/raw outputs are recorded separately in scaling-comparison/comparison.json.",
+    "The INTER_LINEAR ramp candidate differs from OpenCV 4.10.0 on 640 of 207360 pixels; the candidate is not accepted as runtime golden evidence and the cause of the per-pixel difference has not been assigned to a specific internal arithmetic rule.",
+    "The current default INTER_AREA ramp, constant gray under both methods, and binary nearest pixels outside the count-line overlay matched the recorded local compositor comparison.",
+    "Gray interpolation strategy remains unfrozen; no physical board-display, HDMI hotplug, or material-accuracy conclusion follows from this local comparison."
+  ],
+  "comparison_record": "scaling-comparison/comparison.json",
+  "comparison_summary": {
+    "candidate_outcomes": {
+      "constant_gray_73": "Matched all 207360 target pixels under both INTER_AREA and INTER_LINEAR.",
+      "binary_nearest_rectangle_and_boundary_points": "Matched all 204840 pixels outside the compositor count-line overlay; the overlay columns were excluded.",
+      "gray_ramp_inter_area": "Matched all 207360 target pixels under INTER_AREA.",
+      "gray_ramp_inter_linear": "Compared; 640 of 207360 pixels differ. This remains an unaccepted candidate."
+    },
+    "default_gray_path": "INTER_AREA matched the recorded independent candidate for this fixed ramp.",
+    "strategy_status": "INTER_AREA and INTER_LINEAR remain unfrozen; comparison does not make an architecture or route decision."
+  }
+}
