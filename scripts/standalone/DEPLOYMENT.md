@@ -2,6 +2,8 @@
 
 本文记录当前可核对的独立显示/G2 制品、离线依赖和安全边界。它不是安装器或回退脚本；下文标为“未实现”的步骤不能当作现成命令执行。
 
+2026-10-31 用户调整执行范围：代理完成代码与候选包准备，最终现场测试由用户执行；五次冷启动、连续 ≥60 分钟有目标运行和故障恢复测试不再要求执行。下文这些条目的复选框是历史验收口径，未执行即保持未执行，不据此宣称 G4 通过。当前板端桌面计数进程由用户继续使用，保持运行，未获资源安全释放证据前不切换服务或硬件 owner。
+
 ## 当前状态和入口
 
 - **G1 有限显示入口**：`scripts/standalone/material-counter-g1-display.service` 启动 `scripts/standalone/boot_autostart.py`，再执行 `scripts/standalone/g1_run.py` 的 camera 显示路径。服务描述和入口均限定为最多 7200 秒（2 小时）的 G1 显示。它不含 G2 RLE 联合验收能力，**G1 service 不能作为 G4 整机自启动**。
@@ -27,6 +29,7 @@
 - `scripts/standalone/release_stage.py`：把已组装且索引摘要由调用者固定的候选包复制到一个全新的本地目录，复制前后运行包完整性核验。只创建目标目录内的文件；不安装 systemd 单元或环境文件、不切换 `current`、不启动服务。代码尚未执行验证，不能据此宣称 G4 部署或离线依赖闭包已完成。
 - `scripts/standalone/release_baseline.py`：未来部署前只读记录 boot ID、systemd 状态、unit/env/current 路径及目标、候选制品哈希和相关进程摘要到全新 JSON。采集结果固定标为硬件切换安全性未证明；脚本未运行，也不执行停机、激活或回退。必须另行核对同轮 DMA、VDMA、相机和 owner 的安全终态。
 - `scripts/standalone/release_activation_plan.py`：只读核对已暂存 release、索引摘要、候选 unit/env 与部署前基线，并独占写入包含目标身份和恢复目标的计划 JSON。它固定 `activation_allowed=false`，不改动 service/env/current；代码尚未运行。真实激活仍须同轮证明硬件安全、取得唯一 owner 并执行受控切换。
+- 本版候选运行器灰度缩放选用 `INTER_AREA`、二值图选用 `INTER_NEAREST`。这是代码阶段实现选择；本地固定输入像素比较支持 AREA，板端屏幕效果和物料计数由用户最终测试。
 - `scripts/standalone/material-counter-integrated.service`：候选 systemd 单元，从 `/etc/material-counter/package.env` 读取 `PACKAGE_ROOT` 与 `PACKAGE_INDEX_SHA256` 并传给入口。静态检查显示单元只依赖 local-fs.target，且不等待网络；G4 候选环境文件已填写拟安装目录和索引哈希，但尚未复制到板端、注册 service 或验证启动。
 
 候选索引生成调用形式（仅用于已经完整组装并包含有效 `boot-config.json` 的离线包目录）：
@@ -35,12 +38,12 @@
 python -m scripts.standalone.delivery --root <assembled-package> --build-index
 ```
 
-旧索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 及其 55 项记录是历史完整性结果。当前本地 `delivery.py --build-index` 已以退出码 0 完成，索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件；新索引 SHA-256 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 与 `package.env.candidate` 一致。此结果仅证明本地文件完整性并完成候选包准备，不代表离线依赖闭包、目标板运行、service 安装或 G4 通过。候选状态见 [G4 包候选记录](../../data/results/standalone-20261030-g4-offline-package-candidate/README.md)。
+旧索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 和 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 均为历史完整性结果。当前 37 个运行模块取自提交 `544a6d44af74708ae17ab88af6419093a45859cb`；本地 `delivery.py --build-index` 已以退出码 0 完成，索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件；当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与 `package.env.candidate` 一致。此结果仅证明本地文件完整性并完成候选包准备，不代表离线依赖闭包、目标板运行、service 安装或 G4 通过。候选状态见 [G4 包候选记录](../../data/results/standalone-20261030-g4-offline-package-candidate/README.md)。
 
 本地源码来源核对工具 `scripts/delivery/verify_standalone_source.py` 已加入代码，但尚未执行。总体核验阶段可从仓库根目录运行：
 
 ```sh
-python -B -m scripts.delivery.verify_standalone_source --package-root data/results/standalone-20261030-g4-offline-package-candidate/package --source-root . --index-sha256 63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d
+python -B -m scripts.delivery.verify_standalone_source --package-root data/results/standalone-20261030-g4-offline-package-candidate/package --source-root . --index-sha256 96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088
 ```
 
 它先核对包索引，再将包内 37 个应用 Python 模块逐字节与 `package-source.json` 声明的 Git 提交对应；结果只证明本地源码对应关系，不证明板端安装或运行。
@@ -48,7 +51,7 @@ python -B -m scripts.delivery.verify_standalone_source --package-root data/resul
 完整部署交付仍缺少并需另行验证：
 
 - [ ] 候选目录已组装入口、37 个应用模块、匹配 BIT/HWH/manifest/native、7 个锁定 PYNQ 源和 2 个字体；板端已有运行环境的版本见包候选记录。第三方 Python 包没有封装或重装，仍须确认目标部署仅依赖现有板端环境，或另行准备可追溯的离线依赖集。
-- [x] 本地运行 `delivery.py --build-index`（退出码 0），更新 `deployment-index.json` 和外置 `package.env.candidate` 摘要；索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件，新索引 SHA-256 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 与环境文件一致。此项只关闭候选包文件完整性/准备子项，不代表离线依赖闭包或板端验收。
+- [x] 本地运行 `delivery.py --build-index`（退出码 0），更新 `deployment-index.json` 和外置 `package.env.candidate` 摘要；索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件，当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与环境文件一致。此项只关闭候选包文件完整性/准备子项，不代表离线依赖闭包或板端验收。
 - [ ] `boot-config.json` 已在候选包中定义 `continuous` 模式、固定 by-id 相机和 7200 秒参数；package.env.example 仍为占位模板；G4 目录的环境值候选文件已绑定当前索引。仍须将包及环境文件安装到板端，并核实实际 service 启动行为。
 - [ ] 确认目标板离线依赖齐备及 ABI/哈希匹配；不得以启动时联网补包或现场编译替代。
 - [ ] 完成板端安装、正常启动/停止和冷启动验收，核对实际加载 BIT/HWH/manifest、唯一 owner、安全终态及逐次 boot ID。
