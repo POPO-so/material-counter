@@ -28,6 +28,32 @@
       "sha256": "467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263"
     }
   ],
+  "expected_artifacts": [
+    {
+      "vector_id": "constant_gray_73",
+      "path": "scaling-expected-candidates/constant-gray-576x360.raw",
+      "source_path": "scaling-inputs/constant-gray-73.raw",
+      "source_sha256": "aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af",
+      "mapping": "all_target_pixels=73; constant preservation candidate shared by INTER_AREA and INTER_LINEAR",
+      "format": "C row-major uint8",
+      "shape": [360, 576],
+      "size_bytes": 207360,
+      "sha256": "ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2",
+      "basis": "candidate array derived from constant-preservation rule; not compositor output or measured golden evidence"
+    },
+    {
+      "vector_id": "binary_nearest_rectangle_and_boundary_points",
+      "path": "scaling-expected-candidates/binary-inter-nearest-576x360.raw",
+      "source_path": "scaling-inputs/binary-nearest-rect-points.raw",
+      "source_sha256": "467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263",
+      "mapping": "src_index=floor(10*dst_index/9)",
+      "format": "C row-major uint8",
+      "shape": [360, 576],
+      "size_bytes": 207360,
+      "sha256": "35264c92c0c52e311d0c63a5aea1ed662a78ee4ba9347f5ee2e89ab3588e792b",
+      "basis": "candidate array generated from the recorded coordinate mapping; not compositor output or measured golden evidence"
+    }
+  ],
   "target": {"width": 576, "height": 360},
   "scale": {"x": "9/10", "y": "9/10"},
   "vectors": [
@@ -81,7 +107,7 @@
     }
   ],
   "limitations": [
-    "The three raw files are fixed source inputs only; no expected arrays or PNG files have been generated.",
+    "The three raw files are fixed source inputs. Candidate expected arrays exist for constant gray and binary nearest; the gray ramp has no candidate expected array and no PNG files have been generated.",
     "No comparison has been run.",
     "No runner source hash is bound to these vectors.",
     "INTER_AREA and INTER_LINEAR remain candidates and are not frozen.",
