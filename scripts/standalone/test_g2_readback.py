@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.standalone.g2_readback import READ_OFFSETS, read_pipeline
+from scripts.standalone.g2_readback import READ_OFFSETS, read_pipeline, snapshot_counters
 
 
 EXPECTED_VALUES = {
@@ -33,6 +33,22 @@ class FakeMMIO:
 
     def write(self, offset, value):
         raise AssertionError(f"MMIO write attempted at {offset:#x}: {value:#x}")
+
+
+class CounterMMIO:
+    def __init__(self, sequence_reads, counter_values):
+        self.sequence_reads = iter(sequence_reads)
+        self.counter_values = dict(counter_values)
+        self.events = []
+
+    def read(self, offset):
+        self.events.append(("read", offset))
+        if offset == 0x3C:
+            return next(self.sequence_reads)
+        return self.counter_values[offset]
+
+    def write(self, offset, value):
+        self.events.append(("write", offset, value))
 
 
 def test_reads_only_defined_registers_and_returns_offsets_with_values():
@@ -94,3 +110,66 @@ def test_done_seen_is_allowed():
     assert result["state"]["done_seen"] is True
     assert result["state"]["busy"] is False
     assert result["state"]["error"] is False
+
+
+def test_snapshot_counters_latches_once_and_reads_only_counter_page():
+    values = {
+        0x40: 0x89ABCDEF,
+        0x44: 0x01234567,
+        0x48: 0x76543210,
+        0x4C: 0xFEDCBA98,
+        0x50: 3,
+        0x54: 0,
+        0x58: 5,
+        0x5C: 0,
+        0x60: 7,
+        0x64: 0,
+        0x68: 11,
+        0x6C: 0,
+    }
+    mmio = CounterMMIO([0xFFFFFFFF, 0, 0], values)
+
+    result = snapshot_counters(mmio)
+
+    assert result == {
+        "sequence": 0,
+        "clock_hz": 50_000_000,
+        "counters": {
+            "total_cycles": 0x0123456789ABCDEF,
+            "active_cycles": 0xFEDCBA9876543210,
+            "input_beats": 3,
+            "output_beats": 5,
+            "input_stall_cycles": 7,
+            "output_stall_cycles": 11,
+        },
+    }
+    assert mmio.events == [
+        ("read", 0x3C),
+        ("write", 0x3C, 1),
+        ("read", 0x3C),
+        *[("read", offset) for offset in range(0x40, 0x70, 4)],
+        ("read", 0x3C),
+    ]
+
+
+@pytest.mark.parametrize("sequence_reads", [[4, 4], [8, 10]])
+def test_snapshot_counters_rejects_unexpected_sequence(sequence_reads):
+    values = {offset: 0 for offset in range(0x40, 0x70, 4)}
+    mmio = CounterMMIO(sequence_reads, values)
+
+    with pytest.raises(RuntimeError, match="sequence"):
+        snapshot_counters(mmio)
+
+    assert mmio.events == [("read", 0x3C), ("write", 0x3C, 1), ("read", 0x3C)]
+
+
+def test_snapshot_counters_rejects_sequence_change_while_reading():
+    values = {offset: 0 for offset in range(0x40, 0x70, 4)}
+    mmio = CounterMMIO([10, 11, 12], values)
+
+    with pytest.raises(RuntimeError, match="sequence"):
+        snapshot_counters(mmio)
+
+    assert mmio.events[0:3] == [("read", 0x3C), ("write", 0x3C, 1), ("read", 0x3C)]
+    assert mmio.events[-1] == ("read", 0x3C)
+    assert [event for event in mmio.events if event[0] == "write"] == [("write", 0x3C, 1)]

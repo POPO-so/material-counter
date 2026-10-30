@@ -67,3 +67,47 @@ def read_pipeline(mmio) -> dict:
         error=error,
     )
     return result
+
+
+_COUNTER_NAMES = (
+    "total_cycles",
+    "active_cycles",
+    "input_beats",
+    "output_beats",
+    "input_stall_cycles",
+    "output_stall_cycles",
+)
+
+
+def snapshot_counters(mmio) -> dict:
+    """Atomically latch and read the candidate RLE counters page.
+
+    This API writes the latch command at 0x3C. Callers must first admit the
+    device using the new BIT hash; older BITs do not support this page's
+    offsets. All counters are in the 50 MHz RLE clock domain.
+    """
+    sequence_before = mmio.read(0x3C)
+    mmio.write(0x3C, 1)
+    sequence = mmio.read(0x3C)
+    expected_sequence = (sequence_before + 1) & 0xFFFFFFFF
+    if sequence != expected_sequence:
+        raise RuntimeError("counter snapshot sequence did not advance as expected")
+
+    halves = {
+        offset: mmio.read(offset)
+        for offset in range(0x40, 0x70, 4)
+    }
+    sequence_after = mmio.read(0x3C)
+    if sequence_after != sequence:
+        raise RuntimeError("counter snapshot sequence changed while reading")
+
+    counters = {}
+    for index, name in enumerate(_COUNTER_NAMES):
+        low_offset = 0x40 + index * 8
+        counters[name] = (halves[low_offset + 4] << 32) | halves[low_offset]
+
+    return {
+        "sequence": sequence,
+        "clock_hz": 50_000_000,
+        "counters": counters,
+    }
