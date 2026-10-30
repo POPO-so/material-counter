@@ -31,13 +31,13 @@
 python -m scripts.standalone.delivery --root <assembled-package> --build-index
 ```
 
-此前本地候选目录索引 SHA-256 为 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a`，55 项文件清单曾核对通过。当前候选包源码已刷新，该索引不再对应现有文件，须在代码阶段结束后重建；本轮未执行包索引生成或核验。旧结果仅为历史离线文件完整性记录，不代表包组装可在目标板运行、服务已安装或 G4 通过。候选状态见 [G4 包候选记录](../../data/results/standalone-20261030-g4-offline-package-candidate/README.md)。
+旧索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 及其 55 项记录是历史完整性结果。当前本地 `delivery.py --build-index` 已以退出码 0 完成，索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件；新索引 SHA-256 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 与 `package.env.candidate` 一致。此结果仅证明本地文件完整性并完成候选包准备，不代表离线依赖闭包、目标板运行、service 安装或 G4 通过。候选状态见 [G4 包候选记录](../../data/results/standalone-20261030-g4-offline-package-candidate/README.md)。
 
 完整部署交付仍缺少并需另行验证：
 
 - [ ] 候选目录已组装入口、37 个应用模块、匹配 BIT/HWH/manifest/native、7 个锁定 PYNQ 源和 2 个字体；板端已有运行环境的版本见包候选记录。第三方 Python 包没有封装或重装，仍须确认目标部署仅依赖现有板端环境，或另行准备可追溯的离线依赖集。
-- [ ] 在源码刷新完成后运行 `delivery.py --build-index`，更新 `deployment-index.json` 和外置 `package.env.candidate` 的索引摘要，再复核源码清单及包文件哈希。历史索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 已过期。
-- [ ] `boot-config.json` 已在候选包中定义 `continuous` 模式、固定 by-id 相机和 7200 秒参数；package.env.example 仍为占位模板；G4 目录的环境值候选文件当前仍绑定旧索引。仍须更新后将包及环境文件安装到板端，并核实实际 service 启动行为。
+- [x] 本地运行 `delivery.py --build-index`（退出码 0），更新 `deployment-index.json` 和外置 `package.env.candidate` 摘要；索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件，新索引 SHA-256 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 与环境文件一致。此项只关闭候选包文件完整性/准备子项，不代表离线依赖闭包或板端验收。
+- [ ] `boot-config.json` 已在候选包中定义 `continuous` 模式、固定 by-id 相机和 7200 秒参数；package.env.example 仍为占位模板；G4 目录的环境值候选文件已绑定当前索引。仍须将包及环境文件安装到板端，并核实实际 service 启动行为。
 - [ ] 确认目标板离线依赖齐备及 ABI/哈希匹配；不得以启动时联网补包或现场编译替代。
 - [ ] 完成板端安装、正常启动/停止和冷启动验收，核对实际加载 BIT/HWH/manifest、唯一 owner、安全终态及逐次 boot ID。
 
