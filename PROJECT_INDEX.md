@@ -69,4 +69,6 @@ Agent navigation map for `material-counter`. Use linked documents as the source 
 
 ### 2026-10-31 本地当前源码缩放候选比较
 
+G4 代码阶段新增 [release_stage.py](scripts/standalone/release_stage.py)，只负责对已组装候选包进行离线复制及复制前后完整性核验；尚未执行，也未安装或激活整机服务。现有 G4 候选包、依赖和现场验收状态见[部署说明](scripts/standalone/DEPLOYMENT.md)。
+
 初次清单 ID 预检失败记录 [command JSON](data/results/standalone-20261030-g3-functional/scaling-current-20261031-command.json) 保留。修复后比较报告 [comparison.json](data/results/standalone-20261030-g3-functional/scaling-current-20261031/comparison.json) 为 `status=PASS`、退出码 0，绑定 HEAD `b28e67632da711ea649cf1534d57c8a902822923`、runner SHA-256 `a62194733151dab7ce2f2ce2bf209ab38892ec38ed308d58d4d05f5f1dfa8389`、compositor SHA-256 `68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1`；环境为 CPython 3.12.10、OpenCV 4.10.0、NumPy 2.3.5、Pillow 12.3.0。常量灰度和 AREA ramp 各 207360 像素全匹配；binary nearest 排除 2520 个遮挡像素后 204840 像素全匹配。actual raw/PNG 和重跑命令记录分别见[输出目录](data/results/standalone-20261030-g3-functional/scaling-current-20261031/)与[rerun command JSON](data/results/standalone-20261030-g3-functional/scaling-current-20261031-rerun-command.json)。这是本地当前源码缩放候选比较，不是板端黄金/HDMI 验收，不勾选 G3 Task 4，灰度策略仍未冻结；实物 GPIO、HDMI、真实目标与人工真值仍缺，G3 未放行。
