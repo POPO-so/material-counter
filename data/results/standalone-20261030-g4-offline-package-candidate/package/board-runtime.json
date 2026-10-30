@@ -12,5 +12,15 @@
     "scipy": "1.8.0",
     "cffi": "1.15.0"
   },
+  "os_packages": {
+    "python3-opencv:armhf": "4.5.4+dfsg-9ubuntu4",
+    "libopencv-core4.5d:armhf": "4.5.4+dfsg-9ubuntu4",
+    "libopencv-imgproc4.5d:armhf": "4.5.4+dfsg-9ubuntu4",
+    "libopencv-videoio4.5d:armhf": "4.5.4+dfsg-9ubuntu4",
+    "python3-cffi": "1.15.0-1build2",
+    "python3-numpy": "1:1.21.5-1build2",
+    "python3-pil:armhf": "9.0.1-1build1",
+    "python3-scipy": "1.8.0-1exp2ubuntu1"
+  },
   "scope": "Read-only inventory of the existing board environment; these packages are not included in the candidate package or reinstalled."
 }
