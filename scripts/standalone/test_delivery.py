@@ -12,12 +12,20 @@ REQUIRED = (
     "export/display-manifest.json",
     "boot-config.json",
     "board-runtime.json",
+    "package-source.json",
     "export/g2-integrated.bit",
     "export/g2-integrated.hwh",
     "native/rle_components_v2.so",
     "fonts/DroidSansFallbackFull.ttf",
     "fonts/DejaVuSans.ttf",
     "runtime/pynq/rle_monitor.py",
+    "scripts/standalone/boot_integrated.py",
+    "scripts/standalone/boot_policy.py",
+    "scripts/standalone/bundle.py",
+    "scripts/standalone/delivery.py",
+    "scripts/standalone/evidence.py",
+    "scripts/standalone/integrated_run.py",
+    "scripts/standalone/runtime_environment.py",
 )
 
 
@@ -62,6 +70,17 @@ def make_package(root):
         "duration_s": 3600,
     }
     _write(root / "boot-config.json", json.dumps(boot_config).encode())
+    module_files = sorted(path for path in REQUIRED if path.startswith("scripts/"))
+    package_source = {
+        "schema": "material-counter.offline-package-source.v1",
+        "status": "CANDIDATE_NOT_BOARD_ACCEPTED",
+        "source_commit": "0" * 40,
+        "source_branch": "feat/test-package",
+        "module_files": module_files,
+    }
+    _write(root / "package-source.json", json.dumps(package_source).encode())
+    for path in module_files:
+        _write(root / path, b"# synthetic packaged module\n")
     board_runtime = {
         "schema": "material-counter.board-runtime-observation.v1",
         "python": "3.10.4",
@@ -140,6 +159,19 @@ def test_unlisted_extra_file_is_rejected(tmp_path):
 
     with pytest.raises(ValueError, match="file set|unexpected|extra"):
         verify_package(tmp_path, digest)
+
+
+def test_package_source_inventory_must_match_indexed_application_modules(tmp_path):
+    make_package(tmp_path)
+    source_path = tmp_path / "package-source.json"
+    source = json.loads(source_path.read_text())
+    source["module_files"].remove("scripts/standalone/runtime_environment.py")
+    source_path.write_text(json.dumps(source))
+    _refresh_package_index(tmp_path, source_path)
+
+    index_path = tmp_path / "deployment-index.json"
+    with pytest.raises(ValueError, match="module inventory"):
+        verify_package(tmp_path, _sha(index_path.read_bytes()))
 
 
 def test_escaping_index_path_is_rejected(tmp_path):

@@ -14,8 +14,10 @@ from .bundle import verify_bundle
 
 INDEX_SCHEMA = "material-counter.standalone-package.v1"
 DISPLAY_MANIFEST = "export/display-manifest.json"
+PACKAGE_SOURCE = "package-source.json"
 REQUIRED_FILES = {
     DISPLAY_MANIFEST,
+    PACKAGE_SOURCE,
     "boot-config.json",
     "board-runtime.json",
     "export/g2-integrated.bit",
@@ -23,8 +25,17 @@ REQUIRED_FILES = {
     "native/rle_components_v2.so",
     "fonts/DroidSansFallbackFull.ttf",
     "fonts/DejaVuSans.ttf",
+    "scripts/standalone/boot_integrated.py",
+    "scripts/standalone/boot_policy.py",
+    "scripts/standalone/bundle.py",
+    "scripts/standalone/delivery.py",
+    "scripts/standalone/evidence.py",
+    "scripts/standalone/integrated_run.py",
+    "scripts/standalone/runtime_environment.py",
 }
+PACKAGE_SOURCE_SCHEMA = "material-counter.offline-package-source.v1"
 SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+GIT_COMMIT_RE = re.compile(r"^[0-9a-fA-F]{40,64}$")
 
 
 def _sha256(path: Path) -> str:
@@ -116,6 +127,41 @@ def _validate_boot_config(root: Path, manifest_sha256: str) -> dict:
     return config
 
 
+def _validate_package_source(checked: dict[str, Path]) -> None:
+    source_path = checked[PACKAGE_SOURCE]
+    try:
+        source = json.loads(source_path.read_text(encoding="utf-8"),
+                            object_pairs_hook=_unique_json_object)
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("invalid package-source.json") from exc
+    if not isinstance(source, dict) or source.get("schema") != PACKAGE_SOURCE_SCHEMA:
+        raise ValueError("unknown package source schema")
+    if source.get("status") != "CANDIDATE_NOT_BOARD_ACCEPTED":
+        raise ValueError("package source must retain candidate acceptance status")
+    if not isinstance(source.get("source_commit"), str) or not GIT_COMMIT_RE.fullmatch(
+        source["source_commit"]
+    ):
+        raise ValueError("package source commit must be a full Git object ID")
+    if not isinstance(source.get("source_branch"), str) or not source["source_branch"]:
+        raise ValueError("package source branch is missing")
+
+    raw_modules = source.get("module_files")
+    if not isinstance(raw_modules, list):
+        raise ValueError("package source module_files must be a list")
+    modules = [_valid_relative_path(value) for value in raw_modules]
+    if modules != sorted(set(modules)):
+        raise ValueError("package source module_files must be unique and sorted")
+    if any(not value.startswith("scripts/") or not value.endswith(".py")
+           for value in modules):
+        raise ValueError("package source module path is outside application scripts")
+    packaged_modules = {
+        path for path in checked
+        if path.startswith("scripts/") and path.endswith(".py")
+    }
+    if set(modules) != packaged_modules:
+        raise ValueError("package source module inventory differs from indexed Python files")
+
+
 def verify_package(root, index_sha256):
     """Validate package contents using the caller-pinned deployment-index digest."""
     if not isinstance(index_sha256, str) or not SHA256_RE.fullmatch(index_sha256):
@@ -174,6 +220,7 @@ def verify_package(root, index_sha256):
         raise ValueError(f"required package files missing: {missing}")
     if _actual_files(package_root) != set(checked) | {"deployment-index.json"}:
         raise ValueError("package file set contains missing or unexpected files")
+    _validate_package_source(checked)
 
     manifest_path = checked[DISPLAY_MANIFEST]
     try:
