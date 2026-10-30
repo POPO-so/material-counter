@@ -6,6 +6,10 @@
 
     python scripts/delivery/verify_delivery.py
 
+检查会先按 manifest SHA-256 校验历史 RTL 快照原始字节，再比较当前源码。当前源码允许仅有 CRLF→LF 的换行差异；实质内容差异仍会失败。输出分别列出逐字节一致与换行归一化后一致的文件数和路径，不表示这两类文件的原始字节都一致。离线回归测试：
+
+    python -B -m pytest -p no:cacheprovider --basetemp <可写临时目录> scripts/delivery/test_verify_delivery.py -q
+
 准备可移动的自包含 XSim 源码包（目录须不存在或为空）：
 
     python scripts/delivery/prepare_replay.py --out data/results/gray8-replay-new
