@@ -57,7 +57,7 @@
 
 ### 缩放黄金向量准备
 
-已形成[缩放黄金向量准备稿](scaling-golden-preparation.md)，其中列出固定几何、候选插值策略和独立 oracle 规则；现补入常量灰度、横向 ramp 的 `INTER_AREA`/`INTER_LINEAR` 手算候选值及二值 nearest 的矩形/边界坐标。解析推导仅以文本记录，灰度策略仍未冻结。测试源码的二值输入夹具已按坐标关系修正，但未运行；当前没有源帧、预期 PNG、二进制数组或图像哈希，也没有执行像素比较或新增黄金图通过项。
+已形成[缩放黄金向量准备稿](scaling-golden-preparation.md)，并将候选规则及期望样点机器化记录在[缩放候选向量 JSON](scaling-candidate-vectors.json)（schema `material-counter.scaling-candidate-vectors.v1`，状态 `candidate_unexecuted`）。内容包括常量灰度、横向 ramp 的 `INTER_AREA`/`INTER_LINEAR` 手算候选值及二值 nearest 的矩形/边界坐标；灰度策略仍未冻结。JSON 只保存规则和期望样点，不是黄金图或通过证据。未生成完整输入/期望数组或 PNG，未进行比较，也没有 runner 源码哈希绑定；测试源码的二值输入夹具此前虽按坐标关系修正，但未运行。
 
 ### 后续注入场景及边界
 

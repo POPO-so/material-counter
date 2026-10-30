@@ -1,0 +1,65 @@
+{
+  "schema": "material-counter.scaling-candidate-vectors.v1",
+  "status": "candidate_unexecuted",
+  "source": {"width": 640, "height": 400, "dtype": "uint8"},
+  "target": {"width": 576, "height": 360},
+  "scale": {"x": "9/10", "y": "9/10"},
+  "vectors": [
+    {
+      "id": "constant_gray_73",
+      "kind": "constant_gray",
+      "input": {"all_pixels": 73},
+      "expected": {
+        "INTER_AREA": {"all_target_pixels": 73},
+        "INTER_LINEAR": {"all_target_pixels": 73}
+      },
+      "purpose": ["constant_preservation", "geometry"],
+      "basis": "manual"
+    },
+    {
+      "id": "gray_horizontal_ramp_first_row_cols_0_8",
+      "kind": "gray_ramp",
+      "input": {"definition": "I[y,x]=min(12*x,255)", "same_for_every_row": true},
+      "sample": {"target_row": 0, "target_columns": [0, 1, 2, 3, 4, 5, 6, 7, 8]},
+      "expected": {
+        "INTER_AREA": {
+          "source_coverage_interval": "[10*j/9,10*(j+1)/9)",
+          "rounding": "uint8 round-to-nearest as manually derived",
+          "values": [1, 14, 28, 41, 54, 67, 80, 94, 107]
+        },
+        "INTER_LINEAR": {
+          "source_sampling_coordinate": "(20*j+1)/18",
+          "rounding": "uint8 round-to-nearest as manually derived",
+          "values": [1, 14, 27, 41, 54, 67, 81, 94, 107]
+        }
+      },
+      "different_candidate_columns": [2, 6],
+      "basis": "manual, not cv2 output"
+    },
+    {
+      "id": "binary_nearest_rectangle_and_boundary_points",
+      "kind": "binary_nearest",
+      "input": {
+        "all_pixels": 0,
+        "foreground_value": 255,
+        "foreground_rectangles": [{"x": "[10,13)", "y": "[20,23)"}],
+        "foreground_points_xy": [[0, 0], [638, 398]],
+        "rectangle_bounds": "half-open"
+      },
+      "mapping": "src_index=floor(10*dst_index/9)",
+      "expected": {
+        "foreground_rectangle": {"x": "[9,12)", "y": "[18,21)"},
+        "foreground_points_xy": [[0, 0], [575, 359]]
+      },
+      "basis": "coordinate mapping derivation; unexecuted"
+    }
+  ],
+  "limitations": [
+    "Only textual/JSON candidate rules and expected samples exist.",
+    "No complete input or expected arrays or PNG files have been generated.",
+    "No comparison has been run.",
+    "No runner source hash is bound to these vectors.",
+    "INTER_AREA and INTER_LINEAR remain candidates and are not frozen.",
+    "These vectors are not golden images or pass evidence."
+  ]
+}
