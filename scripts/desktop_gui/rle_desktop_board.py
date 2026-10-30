@@ -14,10 +14,20 @@ import cv2
 import numpy as np
 
 import camera_only_preview as camera
+import board_entry
 from desktop_board import DesktopRuntime, DesktopServer
 from frame_protocol import LatestFrameHub
 from live_calibration import CalibrationControls
 from live_monitor_state import LiveMonitorState
+
+
+def log_first_frame(session_id: str, frame_id: int, total_count: int) -> None:
+    board_entry.log_event("first_frame", session_id=session_id,
+                          frame_id=frame_id, total_count=total_count)
+
+
+def heartbeat_due(now: float, last_logged_at: float, interval_s: float = 60.0) -> bool:
+    return now - last_logged_at >= interval_s
 
 
 def read_camera_frame(capture):
@@ -84,6 +94,8 @@ class RleDesktopRuntime(DesktopRuntime):
         self.last_rle = None
         self.last_health = None
         self.stage_times = deque(maxlen=120)
+        self.first_frame_logged = False
+        self.last_heartbeat_at = None
 
     def process_frame(self, gray, *, preview_jpeg=None, capture_ms=0.0):
         captured_at_ns = time.time_ns()
@@ -116,6 +128,17 @@ class RleDesktopRuntime(DesktopRuntime):
         counted = time.perf_counter()
         displayed = self.state.complete_frame(result)
         now = self.clock()
+        if not self.first_frame_logged:
+            self.first_frame_logged = True
+            self.last_heartbeat_at = now
+            log_first_frame(self.session_id, result.frame_id, displayed.total_count)
+        elif heartbeat_due(now, self.last_heartbeat_at):
+            board_entry.log_event(
+                "runtime.heartbeat", session_id=self.session_id,
+                frame_id=result.frame_id, total_count=displayed.total_count,
+                interval_s=60,
+            )
+            self.last_heartbeat_at = now
         if self.last_health is None or now - self.last_health >= 1.0:
             self.state.update_health(dma_status=self.transport.snapshot())
             self.last_health = now
@@ -250,23 +273,31 @@ def run_session(config, session_dir):
         "frames": 0,
         "total_count": 0,
     }
+    session_id = config["session_id"]
+    stage = "lock.acquire"
     _write_state(status_path, summary)
 
     lock = open("/tmp/material-counter-desktop.lock", "a")
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError as exc:
+        board_entry.log_failure(stage, session_id, exc)
         summary.update(status="FAILED", error="已有桌面采集任务正在运行")
         _write_state(status_path, summary)
         lock.close()
         raise RuntimeError("已有桌面采集任务正在运行") from exc
+    board_entry.log_event("lock.acquired", session_id=session_id)
 
     capture = server = resources = hub = controls = runtime = transport = None
     allocated = []
     self_test_ownership_uncertain = False
     try:
+        stage = "artifacts.check"
         board_entry.check_artifacts(config)
+        board_entry.log_event("artifacts.checked", session_id=session_id)
+        stage = "self_test"
         board_entry.self_test(config, session_dir, boot)
+        stage = "hardware.startup"
         camera.require_dma_idle_and_error_free(camera.read_dma_statuses())
         memory = camera.startup_memory_snapshot()
         camera.require_preview_memory(memory, calibration_mode=True, startup=True)
@@ -333,6 +364,7 @@ def run_session(config, session_dir):
             component_cluster_dx=0,
         )
 
+        stage = "camera.configure"
         subprocess.run(
             [
                 "v4l2-ctl", "-d", camera.CAMERA_PATH,
@@ -345,11 +377,16 @@ def run_session(config, session_dir):
             stderr=subprocess.STDOUT,
             timeout=10,
         )
+        stage = "camera.profile"
         camera.require_profile(camera.query_v4l2(), "before camera")
         cv2.setNumThreads(1)
+        stage = "camera.open"
+        board_entry.log_event("camera.open.start", session_id=session_id)
         capture = cv2.VideoCapture(camera.CAMERA_INDEX, cv2.CAP_V4L2)
         if not capture.isOpened():
             raise RuntimeError("无法打开相机 /dev/video0")
+        board_entry.log_event("camera.open.success", session_id=session_id)
+        stage = "camera.configure"
         settings = [
             (cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG")),
             (cv2.CAP_PROP_FRAME_WIDTH, 640),
@@ -360,8 +397,10 @@ def run_session(config, session_dir):
         ]
         if not all(capture.set(key, value) for key, value in settings):
             raise RuntimeError("相机拒绝 MJPG 或单帧缓冲配置")
+        stage = "camera.first_frame"
         first_gray, first_jpeg = read_camera_frame(capture)
         camera.require_profile(camera.query_v4l2(), "after first frame")
+        board_entry.log_event("camera.first_frame", session_id=session_id)
 
         hub = LatestFrameHub()
         runtime = RleDesktopRuntime(
@@ -378,16 +417,22 @@ def run_session(config, session_dir):
         )
         runtime.resources = resources
         runtime.calibration_controls = controls
+        stage = "runtime.first_process"
         runtime.process_frame(first_gray, preview_jpeg=first_jpeg)
+        stage = "camera.drop_to_xilinx"
         camera.drop_to_xilinx()
         if camera.live_boot_id() != boot:
             raise RuntimeError("相机启动时板卡启动 ID 已变化")
 
         for sig in (signal.SIGINT, signal.SIGTERM):
             signal.signal(sig, lambda *_: runtime.state.stop.set())
+        stage = "http.start"
         server = DesktopServer(
             runtime, config["token"], host="0.0.0.0", port=config["board_port"]
         ).start()
+        stage = "http.ready"
+        board_entry.log_event("http.ready", session_id=session_id,
+                              port=config["board_port"])
         summary["status"] = "RUNNING"
         _write_state(status_path, summary)
         print("DESKTOP_RLE_READY session=" + config["session_id"], flush=True)
@@ -413,6 +458,7 @@ def run_session(config, session_dir):
             total_count=runtime.state.snapshot()["dashboard"]["total_count"],
         )
     except BaseException as exc:
+        board_entry.log_failure(stage, session_id, exc)
         self_test_ownership_uncertain = isinstance(
             exc, board_entry.SelfTestOwnershipUncertain)
         held = bool(transport and transport.dma_may_be_active) or self_test_ownership_uncertain
@@ -443,6 +489,7 @@ def run_session(config, session_dir):
                     standard_profile_restored=False,
                     restore_error=str(exc),
                 )
+                board_entry.log_failure("camera.restore", session_id, exc)
         if capture is not None:
             capture.release()
         if transport is not None and not held:
@@ -458,6 +505,11 @@ def run_session(config, session_dir):
                 "RLE_FAIL_HOLD: retaining DMA-owned CMA buffers",
                 flush=True,
             )
+            board_entry.log_event("cleanup.complete", session_id=session_id,
+                                  result="FAIL_HOLD", buffers_held=True)
             while True:
                 time.sleep(1)
         lock.close()
+        board_entry.log_event("cleanup.complete", session_id=session_id,
+                              result=summary.get("status"), buffers_held=False,
+                              standard_profile_restored=summary.get("standard_profile_restored"))
