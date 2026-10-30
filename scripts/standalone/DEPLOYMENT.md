@@ -56,6 +56,8 @@ python -m scripts.standalone.delivery --root <assembled-package> --build-index
 - 只有上述安全条件全部成立，且旧包的身份与目标 BIT/HWH/manifest 三者匹配并通过哈希校验后，才可由获授权的唯一 owner 切换到旧版。切换后重新核对加载 BIT 身份和新 boot/session 记录。任何一项状态未知、读回异常或 hash 不匹配时，不切换，保持 `FAIL_HOLD` 并交 Manager 决策。
 - 当前仓库没有已实现、已验证的通用 G2→G1 自动回退脚本、旧包重装命令或安全停机命令序列；此节是必须满足的人工安全门，不代表脚本已具备这些动作。已有 G1 runner 只允许特定已识别 BIT 身份下进行受控迁移，不能推广为 G2 回退流程。
 
+G4 部署/恢复边界另见[审阅草稿](../../data/results/standalone-20261030-g4-offline-package-candidate/deployment-recovery-draft.md)。候选包尚未复制到板端，候选 service 尚未注册或启动，部署前 service/env/current 状态未知，也没有已确认的旧 G4 release。该草稿仅记录静态事实和待实测项；仓库仍没有可执行或已验证的 G4 回滚命令或步骤。不得将其视为部署、测试或恢复授权。
+
 ## G4 整机自启动尚缺的验收证据
 
 以下项目尚未完成；G1 两小时 service 与 G2 串行冒烟不能替代它们：
