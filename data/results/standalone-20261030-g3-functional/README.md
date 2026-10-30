@@ -147,3 +147,9 @@
 - CPython 3.12.10 / pytest 9.1.1 本地软件回归命令退出码 0，`372 passed`。控制台日志：[local-pytest-20261031.txt](local-pytest-20261031.txt)；命令与环境记录：[local-pytest-20261031-command.json](local-pytest-20261031-command.json)。此结果仅说明所列本地软件回归通过，不构成 G3 放行。
 - 板端只读查询显示当前 boot ID 为 `8b380359-59a7-46f8-8f5a-f172fd1398dd`，旧真实相机运行器 PID 795/841 已不在进程列表；另有桌面计数入口 `board_entry.py`（PID 1213）在运行。上节“当前保持运行”仅指 10/30 当时的状态。本轮没有启动、停止或切换板端计数器。
 - 实物 GPIO、HDMI 拔插/硬件恢复、真实相机有目标与人工真值、缩放黄金验收仍未完成；灰度缩放策略未冻结。
+
+### 本地当前源码缩放候选比较（2026-10-31）
+
+- 修复初次清单 ID 预检问题后，以 CPython 3.12.10、OpenCV 4.10.0、NumPy 2.3.5、Pillow 12.3.0 对固定输入和 expected 执行本地当前源码比较。初次预检失败记录 [scaling-current-20261031-command.json](scaling-current-20261031-command.json) 保留；成功报告 [comparison.json](scaling-current-20261031/comparison.json) 为 `status=PASS`、退出码 0，绑定 git HEAD `b28e67632da711ea649cf1534d57c8a902822923`、runner SHA-256 `a62194733151dab7ce2f2ce2bf209ab38892ec38ed308d58d4d05f5f1dfa8389`、compositor SHA-256 `68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1`。命令与运行环境记录见 [rerun command JSON](scaling-current-20261031-rerun-command.json)。
+- 常量灰度和 AREA ramp 各比较 207,360 像素、零差异；binary nearest 排除 count-line 遮挡的 2,520 像素后比较 204,840 像素、零差异。三例 actual raw/PNG 和 SHA-256 均保存在 `scaling-current-20261031/`。
+- 这只是本地当前源码缩放候选比较，不是板端黄金验收或 HDMI 通过证据；不勾选 G3 Task 4，也不冻结灰度插值策略。实物 GPIO、HDMI 热插拔/硬件恢复、真实相机有目标与人工真值等仍未完成，G3 未放行。
