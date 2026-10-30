@@ -4,6 +4,18 @@ import math
 import numbers
 
 
+def parse_process_stat(text,*,page_size):
+    """Read Linux /proc/PID/stat utime/stime and resident pages after comm."""
+    try:
+        fields=text.rsplit(')',1)[1].split()
+        ticks=int(fields[11])+int(fields[12])
+        rss=int(fields[21])*page_size//1024
+    except (IndexError,TypeError,ValueError) as error:
+        raise ValueError('invalid process stat') from error
+    if ticks<0 or rss<0:raise ValueError('negative process counters')
+    return dict(cpu_ticks=ticks,rss_kib=rss)
+
+
 class TelemetryCache:
     """Store caller-supplied telemetry values with monotonic sample times."""
 

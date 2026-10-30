@@ -1,0 +1,331 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 19-sep-2027.
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Fri Oct 30 12:44:48 2026
+# Process ID         : 54936
+# Current directory  : C:/w/mc-progress
+# Command line       : vivado.exe -mode tcl -log .vivado-ai\vivado_35487394_c17491d3.log -journal .vivado-ai\vivado_35487394_c17491d3.jou -notrace -source .vivado-ai\init_35487394_c17491d3.tcl
+# Log file           : C:/w/mc-progress/.vivado-ai/vivado_35487394_c17491d3.log
+# Journal file       : C:/w/mc-progress\.vivado-ai\vivado_35487394_c17491d3.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 7081 MB
+#-----------------------------------------------------------
+Sourcing tcl script 'C:/Users/14173/AppData/Roaming/Xilinx/Vivado/2026.1/Vivado_init.tcl'
+source {.vivado-ai\init_35487394_c17491d3.tcl} -notrace
+VAI_EVENT ready 3ki7fmkd84ss
+set_param -quiet messaging.defaultLimit 10000000
+puts "MCPPROBE:bm9jvo10w7iy:[get_param messaging.defaultLimit]"
+MCPPROBE:bm9jvo10w7iy:10000000
+set_param -quiet messaging.defaultLimit 10000000
+send_msg_id {MCP 00-100} INFO {===MCP_CMD_START:tbkucuukjfk0===}
+INFO: [MCP 00-100] ===MCP_CMD_START:tbkucuukjfk0===
+puts "VSCSTART" ; set exitCode [catch {set ::env(RLE_OUT) C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist; set ::env(RLE_VECTORS) C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors; set ::env(RLE_CHECKPOINT) C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/display_image_pipeline_0_synth_1/display_image_pipeline_0.dcp} result] ; catch {flush stdout} ; catch {flush stderr} ; puts $result ; puts "VSCEND:$exitCode"
+VSCSTART
+C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/display_image_pipeline_0_synth_1/display_image_pipeline_0.dcp
+VSCEND:0
+send_msg_id {MCP 00-101} INFO "===MCP_CMD_END:tbkucuukjfk0:$exitCode==="
+INFO: [MCP 00-101] ===MCP_CMD_END:tbkucuukjfk0:0===
+set_param -quiet messaging.defaultLimit 10000000
+send_msg_id {MCP 00-100} INFO {===MCP_CMD_START:je5akmanng71===}
+INFO: [MCP 00-100] ===MCP_CMD_START:je5akmanng71===
+puts "VSCSTART" ; set exitCode [catch {source C:/w/mc-progress/scripts/rle/run_full_pipeline_netlist.tcl} result] ; catch {flush stdout} ; catch {flush stderr} ; puts $result ; puts "VSCEND:$exitCode"
+VSCSTART
+# foreach name {RLE_OUT RLE_CHECKPOINT RLE_VECTORS} {
+#     if {![info exists ::env($name)]} {error "Missing $name"}
+# }
+# set repo [file normalize [file join [file dirname [info script]] ../..]]
+# set work [file normalize $::env(RLE_OUT)]
+# file mkdir $work
+# set netlist [file join $work pipeline-netlist.v]
+# if {[file exists $netlist]} {error "Use a new RLE_OUT; never overwrite netlist evidence"}
+# open_checkpoint [file normalize $::env(RLE_CHECKPOINT)]
+Command: open_checkpoint C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/display_image_pipeline_0_synth_1/display_image_pipeline_0.dcp
+
+Starting open_checkpoint Task
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.036 . Memory (MB): peak = 323.496 ; gain = 0.000
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 834.668 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 909 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2026.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Read ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.019 . Memory (MB): peak = 941.090 ; gain = 1.293
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 941.090 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 438 instances were transformed.
+  RAM128X1D => RAM128X1D (MUXF7(x2), RAMD64E(x4)): 30 instances
+  RAM64M => RAM64M (RAMD64E(x4)): 340 instances
+  RAM64X1D => RAM64X1D (RAMD64E(x2)): 68 instances
+
+INFO: [Project 1-604] Checkpoint was created with Vivado v2026.1 (64-bit) build 6511674
+open_checkpoint: Time (s): cpu = 00:00:11 ; elapsed = 00:00:13 . Memory (MB): peak = 949.156 ; gain = 634.387
+# if {[get_property NAME [current_design]] ne "display_image_pipeline_0"} {error "Unexpected IP checkpoint top"}
+Unexpected IP checkpoint top
+VSCEND:1
+send_msg_id {MCP 00-101} INFO "===MCP_CMD_END:je5akmanng71:$exitCode==="
+INFO: [MCP 00-101] ===MCP_CMD_END:je5akmanng71:1===
+set_param -quiet messaging.defaultLimit 10000000
+send_msg_id {MCP 00-100} INFO {===MCP_CMD_START:0a85p8on9omy===}
+INFO: [MCP 00-100] ===MCP_CMD_START:0a85p8on9omy===
+puts "VSCSTART" ; set exitCode [catch {puts "NAME=[get_property NAME [current_design]] TOP=[get_property TOP [current_fileset]] PART=[get_property PART [current_design]]"; puts [get_property REF_NAME [get_cells -hier -filter {IS_PRIMITIVE==0}]]} result] ; catch {flush stdout} ; catch {flush stderr} ; puts $result ; puts "VSCEND:$exitCode"
+VSCSTART
+NAME=checkpoint_display_image_pipeline_0 TOP= PART=xc7z020clg400-1
+display_image_pipeline_0_axis_dma_rle_pipeline_bd display_image_pipeline_0_axis_dma_gray_adapter display_image_pipeline_0_axis_morphology3x3__parameterized0 display_image_pipeline_0_axis_rle_encoder display_image_pipeline_0_axis_morphology3x3
+
+VSCEND:0
+send_msg_id {MCP 00-101} INFO "===MCP_CMD_END:0a85p8on9omy:$exitCode==="
+INFO: [MCP 00-101] ===MCP_CMD_END:0a85p8on9omy:0===
+set_param -quiet messaging.defaultLimit 10000000
+send_msg_id {MCP 00-100} INFO {===MCP_CMD_START:6onkcktmotn5===}
+INFO: [MCP 00-100] ===MCP_CMD_START:6onkcktmotn5===
+puts "VSCSTART" ; set exitCode [catch {close_design} result] ; catch {flush stdout} ; catch {flush stderr} ; puts $result ; puts "VSCEND:$exitCode"
+VSCSTART
+
+VSCEND:0
+send_msg_id {MCP 00-101} INFO "===MCP_CMD_END:6onkcktmotn5:$exitCode==="
+INFO: [MCP 00-101] ===MCP_CMD_END:6onkcktmotn5:0===
+set_param -quiet messaging.defaultLimit 10000000
+send_msg_id {MCP 00-100} INFO {===MCP_CMD_START:bjvyve0gc6wd===}
+INFO: [MCP 00-100] ===MCP_CMD_START:bjvyve0gc6wd===
+puts "VSCSTART" ; set exitCode [catch {source C:/w/mc-progress/scripts/rle/run_full_pipeline_netlist.tcl} result] ; catch {flush stdout} ; catch {flush stderr} ; puts $result ; puts "VSCEND:$exitCode"
+VSCSTART
+# foreach name {RLE_OUT RLE_CHECKPOINT RLE_VECTORS} {
+#     if {![info exists ::env($name)]} {error "Missing $name"}
+# }
+# set repo [file normalize [file join [file dirname [info script]] ../..]]
+# set work [file normalize $::env(RLE_OUT)]
+# file mkdir $work
+# set netlist [file join $work pipeline-netlist.v]
+# if {[file exists $netlist]} {error "Use a new RLE_OUT; never overwrite netlist evidence"}
+# open_checkpoint [file normalize $::env(RLE_CHECKPOINT)]
+Command: open_checkpoint C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/project/display.runs/display_image_pipeline_0_synth_1/display_image_pipeline_0.dcp
+
+Starting open_checkpoint Task
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 949.156 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.014 . Memory (MB): peak = 949.156 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 909 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2026.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Read ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.011 . Memory (MB): peak = 949.156 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 949.156 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 438 instances were transformed.
+  RAM128X1D => RAM128X1D (MUXF7(x2), RAMD64E(x4)): 30 instances
+  RAM64M => RAM64M (RAMD64E(x4)): 340 instances
+  RAM64X1D => RAM64X1D (RAMD64E(x2)): 68 instances
+
+INFO: [Project 1-604] Checkpoint was created with Vivado v2026.1 (64-bit) build 6511674
+# if {[get_property NAME [current_design]] ni {display_image_pipeline_0 checkpoint_display_image_pipeline_0}} {
+#     error "Unexpected IP checkpoint design"
+# }
+# write_verilog -mode funcsim $netlist
+# set source [open [file join $repo fpga sim rle tb_axis_rle_pipeline.sv] r]
+# set tb_text [read $source]
+# close $source
+# if {[string first {axis_dma_rle_pipeline_bd dut(} $tb_text] < 0} {error "Unexpected testbench DUT name"}
+# set tb [file join $work tb_pipeline.sv]
+# set target [open $tb {WRONLY CREAT EXCL}]
+# puts $target [string map {{axis_dma_rle_pipeline_bd dut(} {display_image_pipeline_0 dut(}} $tb_text]
+# close $target
+# set bin [file dirname [info nameofexecutable]]
+# cd $work
+# exec [file join $bin xvlog.exe] -sv $netlist $tb \
+#     [file join $::env(XILINX_VIVADO) data verilog src glbl.v] -log compile.log
+# exec [file join $bin xelab.exe] -L unisims_ver tb_axis_rle_pipeline glbl -s full_pipeline -log elaborate.log
+# set vectors [file normalize $::env(RLE_VECTORS)]
+# set handle [open [file join $vectors cases.txt] r]
+# set cases [split [string trim [read $handle]] "\n"]
+# close $handle
+# foreach line $cases {
+#     lassign $line name words mode offset x0 y0 x1 y1
+#     set result [exec [file join $bin xsim.exe] full_pipeline -R -log ${name}-sim.log \
+#         -testplusarg INPUT=[file join $vectors ${name}-input.hex] \
+#         -testplusarg EXPECTED=[file join $vectors ${name}-expected.hex] \
+#         -testplusarg OUTPUT=[file join $work ${name}-actual.hex] \
+#         -testplusarg WORDS=$words -testplusarg MORPH=$mode -testplusarg OFFSET=$offset \
+#         -testplusarg X0=$x0 -testplusarg Y0=$y0 -testplusarg X1=$x1 -testplusarg Y1=$y1]
+#     puts $result
+#     if {[string match {*Fatal:*} $result] || ![string match {*RLE_COUNTER_SNAPSHOT_PASS*} $result] ||
+#         ![string match {*RLE_PIPELINE_640X400_PASS*} $result]} {error "Full pipeline regression failed: $name"}
+# }
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:46:16 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/baseline-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/baseline-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/baseline-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=637
+RLE_PIPELINE_640X400_PASS words=637 cycles=257591
+$finish called at time : 5151920 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:43 . Memory (MB): peak = 232.676 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 56388 KB (Peak: 56388 KB), Simulation CPU Usage: 42468 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:47:01 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:47:01 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/roi-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/roi-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/roi-actual.hex -testplusarg WORDS=635 -testplusarg MORPH=0 -testplusarg OFFSET=10 -testplusarg X0=10 -testplusarg Y0=5 -testplusarg X1=630 -testplusarg Y1=399 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=635
+RLE_PIPELINE_640X400_PASS words=635 cycles=257580
+$finish called at time : 5151700 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:44 . Memory (MB): peak = 232.766 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 55308 KB (Peak: 55308 KB), Simulation CPU Usage: 44061 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:47:48 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:47:48 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/erode-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/erode-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/erode-actual.hex -testplusarg WORDS=631 -testplusarg MORPH=1 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=631
+RLE_PIPELINE_640X400_PASS words=631 cycles=513302
+$finish called at time : 10266140 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:01:06 . Memory (MB): peak = 232.773 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 55284 KB (Peak: 55284 KB), Simulation CPU Usage: 66093 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:48:56 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:48:57 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/dilate-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/dilate-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/dilate-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=2 -testplusarg OFFSET=0 -testplusarg X0=10 -testplusarg Y0=5 -testplusarg X1=630 -testplusarg Y1=399 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=637
+RLE_PIPELINE_640X400_PASS words=637 cycles=513308
+$finish called at time : 10266260 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:01:09 . Memory (MB): peak = 232.637 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 55228 KB (Peak: 55228 KB), Simulation CPU Usage: 67968 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:50:07 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:50:08 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/empty-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/empty-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/empty-actual.hex -testplusarg WORDS=552 -testplusarg MORPH=0 -testplusarg OFFSET=-255 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=552
+RLE_PIPELINE_640X400_PASS words=552 cycles=257524
+$finish called at time : 5150580 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:44 . Memory (MB): peak = 232.285 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 55304 KB (Peak: 55304 KB), Simulation CPU Usage: 43500 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:50:54 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:50:54 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/overflow-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/overflow-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/overflow-actual.hex -testplusarg WORDS=16936 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=16936
+RLE_PIPELINE_640X400_PASS words=16936 cycles=269812
+$finish called at time : 5396340 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:01:07 . Memory (MB): peak = 232.512 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 55208 KB (Peak: 55208 KB), Simulation CPU Usage: 65921 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:52:03 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:52:03 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/bad_checksum-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/bad_checksum-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/bad_checksum-actual.hex -testplusarg WORDS=637 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=637
+RLE_PIPELINE_640X400_PASS words=637 cycles=257591
+$finish called at time : 5151920 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:43 . Memory (MB): peak = 233.324 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 55304 KB (Peak: 55304 KB), Simulation CPU Usage: 42218 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:52:48 2026...
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 30 12:52:48 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/bad_header-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/bad_header-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/bad_header-actual.hex -testplusarg WORDS=552 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=552
+RLE_PIPELINE_640X400_PASS words=552 cycles=137284
+$finish called at time : 2745780 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:11 . Memory (MB): peak = 232.852 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 55232 KB (Peak: 55232 KB), Simulation CPU Usage: 10718 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:53:01 2026...
+# puts "RLE_FULL_PIPELINE_POST_SYNTH_NETLIST_PASS cases=[llength $cases]"
+RLE_FULL_PIPELINE_POST_SYNTH_NETLIST_PASS cases=8
+
+VSCEND:0
+send_msg_id {MCP 00-101} INFO "===MCP_CMD_END:bjvyve0gc6wd:$exitCode==="
+INFO: [MCP 00-101] ===MCP_CMD_END:bjvyve0gc6wd:0===

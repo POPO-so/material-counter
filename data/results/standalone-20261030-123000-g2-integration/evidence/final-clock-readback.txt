@@ -1,0 +1,2 @@
+NAME display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk PERIOD 2.000 SOURCE display_i/hdmi_out/frontend/axi_dynclk/U0/Inst_mmcme2_drp/mmcm_adv_inst/CLKOUT0 MASTER I
+NAME hdmi_out_PXL_CLK_O PERIOD 10.000 SOURCE display_i/hdmi_out/frontend/axi_dynclk/U0/BUFR_inst/I MASTER I

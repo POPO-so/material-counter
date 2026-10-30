@@ -1,0 +1,18 @@
+Vivado Simulator v2026.1
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: C:\AMDDesignTools\2026.1\Vivado\bin\unwrapped\win64.o\xelab.exe tb_axis_rle_pipeline -s rle_pipeline -log pipeline-elaborate.log 
+Multi-threading is on. Using 18 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module work.axis_dma_gray_adapter(WIDTH=640,...
+Compiling module work.axis_morphology3x3(FRAME_WIDTH=6...
+Compiling module work.axis_morphology3x3(FRAME_WIDTH=6...
+Compiling module work.axis_rle_encoder_default
+Compiling module work.axis_dma_rle_pipeline_bd
+Compiling module work.tb_axis_rle_pipeline
+Built simulation snapshot rle_pipeline

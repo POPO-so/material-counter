@@ -1,12 +1,14 @@
 # 高速小型物料智能视觉计数系统
 
-当前脱机集成状态（2026-10-30）：G0/G1/G1.5 已通过，G2 现已完成安全寄存器读回、HP0/1/2 与时钟复核及统一所有者 RLE+HDMI 冒烟和正常停止，见 [G2 放行记录](data/results/standalone-20261030-g2-recovery/README.md)。G2.5/G3/G4 尚未通过；Route/接口保持候选，物料准确率未验收。更早段落属于历史阶段快照。
+当前脱机集成状态（2026-10-30）：G0/G1/G1.5/G2/G2.5 已通过。G2 当前候选制品及板端复验见 [G2 记录](data/results/standalone-20261030-123000-g2-integration/README.md)，G2.5 并发证据见 [G2.5 报告](data/results/standalone-20261030-g25-concurrency/README.md)。G3 仅有固定回放显示开/关一致性和回放 FPS 窗口子项记录，尚未放行；其余 G3 和全部 G4 验收仍待完成。Route/接口保持候选，物料准确率未验收。更早段落属于历史阶段快照。
 
 面向螺母、垫圈等小型物料连续输送场景的 PYNQ-Z2 视觉计数原型，探索由 FPGA PL 承担流式像素变换、ARM PS 承担区域分析与跨帧计数的实现路径。
 
 > **当前状态：工程原型，尚未完成工业工况验收。** 历史 M6 螺母板测为 4/5（80%），计数准确率验收未通过；该数据绑定旧 RGB 实现。Gray8 合成和真实相机 DMA 输入均已通过全像素验证，并完成 900 帧持续运行测量；本次相机二值掩膜全黑、未检出前景，因此物料识别准确率及有目标时吞吐仍未验证。本文按代码和可追溯报告区分实现、离线验证、仿真与板端结果。
 
-> **2026-10-30 独立显示与 G2 进度：** G1/G1.5 各自独立显示门禁通过。G2 集成 BD、实现、时序/CDC/DRC 报告、BIT/HWH/manifest 和完整尺寸 RLE wrapper 8/8 网表回归已完成。相同 G2 BIT 下，HDMI/camera 冒烟运行 61.296 s、提交 589 帧并正常停机；独立 RLE synthetic 自测 12/12 帧像素验证通过。退出后额外读取 RLE pipeline AXI-Lite 页 `0x43C20000` 触发 external abort，原因未定；HP0 尚无独立板端宽度读回，两套 runner 未并发。故 G2 整体仍不放行，G2.5/G3/G4 未开始。见 [G2 集成与板端记录](data/results/standalone-20261030-064700-g2-integration/README.md)。G2.5 仍需专测 HDMI 与有目标/高游程 RLE 并发资源竞争。
+> **早期 G2 诊断记录（历史，已由后续复验解决）：** 初次 runner 曾在读 AXI-Lite 未定义页首时触发 external abort，并缺少 HP0 独立读回。后续限定为 RTL 明确定义的只读偏移，并在统一 owner 冒烟中关闭该缺口；原始过程保留在 [G2 recovery 记录](data/results/standalone-20261030-g2-recovery/README.md)。初始状态和失败日志见 [早期 G2 集成记录](data/results/standalone-20261030-064700-g2-integration/README.md)。
+
+> **G2/G2.5/G3 最新进度（2026-10-30）：** G2 新监测候选 BIT SHA-256 为 `79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0`，已完成静态实现、制品核对、板端准入、camera/display 与 RLE+HDMI 像素冒烟及安全停止。G2.5 在同一位流上完成 moving 和 high-runs 并发压力，动态显示有效新帧约 18.386 FPS，180 秒高游程固定画面扫描的处理速率最低 30 秒窗口为 11.873 FPS。G3 目前仅完成 2,400 帧 replay 的显示开/关一致性：两轮累计计数均为 158、全帧轨迹摘要相同；显示开启轮的 37 个 30 秒采样窗口最低处理/有效新帧速率为 21.668/13.521 FPS。G3 按钮、黄金图、故障恢复和真实相机有目标验收仍未完成，G4 尚未开始。详见 [G2](data/results/standalone-20261030-123000-g2-integration/README.md)、[G2.5](data/results/standalone-20261030-g25-concurrency/README.md)、[G3 部分记录](data/results/standalone-20261030-g3-functional/README.md)。
 
 > **2026-10-29 桌面入口更新：** `Python脚本/启动GUI.pyw` 默认使用 `RLE桌面部署.json`，接入 640×400 原分辨率 PL 游程链。PL 执行 ROI、强度偏移、阈值和可选形态学、游程与投影；PS 执行原生游程区域分析、跟踪和越线。GUI 显示 `pl_rle` 及该位流对应的 LUT 10.92% 静态报告。下方 2026-10-27 的 320×240 整帧 Binary8 通路保留为历史实验说明，不能代表新桌面会话。新入口仍为候选链，性能与准确率限制见 [桌面 RLE 验证记录](data/results/rle-desktop-20261029/README.md)。
 
@@ -14,7 +16,7 @@
 
 ## 项目概述
 
-脱机灰度 HDMI 分屏按 [计划.md](计划.md) 分阶段实施，G0/G1/G1.5 证据分别见对应记录。G2 集成构建、静态门禁和串行板端功能冒烟已有结果，但退出后 RLE pipeline AXI-Lite 读回 external abort 尚未定位，HP0 独立板端宽度读回与 HDMI/RLE 并发压力也未完成；G2 不放行，G2.5/G3/G4 未开始。详见 [G2 集成记录](data/results/standalone-20261030-064700-g2-integration/README.md)。
+脱机灰度 HDMI 分屏按 [计划.md](计划.md) 分阶段实施。G0/G1/G1.5/G2/G2.5 已有对应门禁记录；G3 仅通过同一 replay 显示开/关的计数/轨迹一致性与回放性能窗口子项，完整 G3 与 G4 仍未通过。详见 [剩余进度计划](文档/计划-剩余进度重排-20261030.md)。
 
 生产线上螺母、垫圈等小零件连续移动时，目标可能相互接近、短时粘连或漏检。项目以 PYNQ-Z2（Zynq-7000 / XC7Z020）为平台，研究怎样把像素级、规则明确的处理放到 PL 数据流中，再由 PS 完成较灵活的区域提取、目标关联和越线计数。
 

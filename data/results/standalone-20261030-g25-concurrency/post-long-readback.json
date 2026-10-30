@@ -1,0 +1,129 @@
+{
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "global_state": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/standalone-g25-20261030/export/g2-integrated.bit",
+    "loaded_bit_sha1": "67a592385e90e06fdb0e563e78ac7ef0c3deab58",
+    "loaded_bit_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+    "loaded_bit_path_matches_expected": true
+  },
+  "reset": 0,
+  "clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "dma": {
+    "0x0": 65539,
+    "0x4": 4098,
+    "0x30": 65539,
+    "0x34": 4098
+  },
+  "vdma": {
+    "0x0": 69632,
+    "0x4": 69633
+  },
+  "pipeline": {
+    "signature": {
+      "offset": 4,
+      "value": 826625106
+    },
+    "state": {
+      "offset": 8,
+      "value": 2,
+      "busy": false,
+      "done_seen": true,
+      "error": false
+    },
+    "actual_bytes": {
+      "offset": 12,
+      "value": 66208
+    },
+    "frame_id": {
+      "offset": 16,
+      "value": 2168
+    },
+    "params_version": {
+      "offset": 20,
+      "value": 0
+    },
+    "roi_start": {
+      "offset": 24,
+      "value": 0
+    },
+    "roi_end": {
+      "offset": 28,
+      "value": 26215040
+    },
+    "threshold": {
+      "offset": 32,
+      "value": 128
+    },
+    "offset": {
+      "offset": 36,
+      "value": 0
+    },
+    "morph": {
+      "offset": 40,
+      "value": 0
+    },
+    "geometry": {
+      "offset": 44,
+      "value": 26215040
+    },
+    "max_runs": {
+      "offset": 48,
+      "value": 16384
+    },
+    "packet_code": {
+      "offset": 56,
+      "value": 0
+    }
+  },
+  "counters": {
+    "sequence": 195,
+    "clock_hz": 50000000,
+    "counters": {
+      "total_cycles": 78421631081,
+      "active_cycles": 1806556737,
+      "input_beats": 422004744,
+      "output_beats": 51888632,
+      "input_stall_cycles": 1265862529,
+      "output_stall_cycles": 0
+    }
+  },
+  "memory": [
+    "CmaTotal:         131072 kB",
+    "CmaFree:           51624 kB"
+  ],
+  "dmesg": [
+    "[136820.213895] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(23691), ret: 0",
+    "[136820.217275] [drm] bitstream 5ae93f27-1e57-900b-b27f-c76dfb5cd490 locked, ref=1",
+    "[136820.217372] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(23691) add context Domain(65535) CU(0xffff) shared(true)",
+    "[136820.218392] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(23691) del context Domain(65535) CU(0xffff)",
+    "[136820.218454] [drm] bitstream 5ae93f27-1e57-900b-b27f-c76dfb5cd490 unlocked, ref=0",
+    "[136821.202972] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(23691)",
+    "[137130.022688] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(24182), ret: 0",
+    "[137130.022806] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(24182)",
+    "[137130.023637] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(24182), ret: 0",
+    "[137130.028337] [drm] bitstream 5ae93f27-1e57-900b-b27f-c76dfb5cd490 locked, ref=1",
+    "[137130.028446] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(24182) add context Domain(65535) CU(0xffff) shared(true)",
+    "[137130.030878] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(24182) del context Domain(65535) CU(0xffff)",
+    "[137130.030940] [drm] bitstream 5ae93f27-1e57-900b-b27f-c76dfb5cd490 unlocked, ref=0",
+    "[137315.039433] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(24182)",
+    "[137393.741900] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(24623), ret: 0",
+    "[137393.742021] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(24623)",
+    "[137393.742792] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(24623), ret: 0",
+    "[137393.746334] [drm] bitstream 5ae93f27-1e57-900b-b27f-c76dfb5cd490 locked, ref=1",
+    "[137393.746431] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(24623) add context Domain(65535) CU(0xffff) shared(true)",
+    "[137393.747482] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(24623) del context Domain(65535) CU(0xffff)"
+  ]
+}

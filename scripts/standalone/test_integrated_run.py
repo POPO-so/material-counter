@@ -40,6 +40,9 @@ def test_preview_metadata_contains_only_small_annotations_and_controls():
     assert metadata['boxes']==[[200,100,219,109]]
     assert metadata['paused'] and not metadata['binary_background'] and metadata['page']==1
     assert 'row_projection' not in metadata and 'gray' not in metadata
+    assert metadata['tracks'][0][0]=='0:1'
+    resumed=result_metadata(result,paused=False,binary_background=True,page=0,trajectory_epoch=2)
+    assert resumed['tracks'][0][0]=='2:1'
 
 
 def test_actual_drawing_child_preserves_frame_identity_and_renders_horizontal_line():

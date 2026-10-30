@@ -7,7 +7,7 @@ from scripts.rle.components import build_native
 from scripts.rle.counter import RleCounter
 from scripts.rle.protocol import encode_mask, decode_packet
 from scripts.standalone.controls import ControlState
-from scripts.standalone.count_controls import advance_count
+from scripts.standalone.count_controls import advance_count, make_runtime_counter
 
 
 @pytest.fixture(scope='module')
@@ -53,3 +53,19 @@ def test_clear_keeps_track_dedup_and_display_commands_do_not_change_count(librar
     assert result.total_count==0
     assert any(t['counted'] for t in result.tracks)
     assert controls.page==1 and not controls.binary_background
+
+
+def test_streaming_runtime_discards_finished_history_without_changing_events():
+    from scripts.wo0016.stream_counter import Detection
+    reference=RleCounter(library=None)
+    live=make_runtime_counter(None)
+    most_tracks=0
+    for i in range(1200):
+        y=140+(i%12)*12
+        detections=(Detection(200,219,y,y+15,320,209.5,y+7.5),)
+        stamp=(i+1)*33_333_333
+        expected=reference.update_detections(i,detections,capture_monotonic_ns=stamp)
+        actual=live.update_detections(i,detections,capture_monotonic_ns=stamp)
+        assert actual.events==expected.events and actual.total_count==expected.total_count
+        most_tracks=max(most_tracks,len(actual.tracks))
+    assert live.total_count==100 and most_tracks<=2

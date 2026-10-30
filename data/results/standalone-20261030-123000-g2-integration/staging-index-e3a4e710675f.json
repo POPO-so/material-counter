@@ -1,0 +1,346 @@
+{
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/boot_autostart.py": {
+    "sha256": "e4f71e986a3afbfb740b79b5781320600b50a137142d9bce26fec2133ec11e80",
+    "bytes": 2682
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/boot_integrated.py": {
+    "sha256": "5e7c39f28766f5fd3e98e92b726a2af6e4e25a50d129a34aca74c0f692485a7b",
+    "bytes": 5075
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/boot_policy.py": {
+    "sha256": "bc9fee57006eb7121e151e8631b96f40cadb825c247811c41a1113daaeb78308",
+    "bytes": 5837
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/bundle.py": {
+    "sha256": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3",
+    "bytes": 4059
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/camera.py": {
+    "sha256": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2",
+    "bytes": 2054
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/compositor.py": {
+    "sha256": "68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1",
+    "bytes": 13652
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/controls.py": {
+    "sha256": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f",
+    "bytes": 2295
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/count_controls.py": {
+    "sha256": "3ad0b0e39ef19025a1037f5d444b9be94cb977437a77d5f07b8abd0858d54858",
+    "bytes": 1140
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/delivery.py": {
+    "sha256": "86ee03965fabf90de99aa3fa1dd2582aa820714fda38010f1aa038d33a7ab003",
+    "bytes": 9430
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/driver_owner.py": {
+    "sha256": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4",
+    "bytes": 6173
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/evidence.py": {
+    "sha256": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e",
+    "bytes": 2906
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/g1_run.py": {
+    "sha256": "312146dcea2ce1f19cba77c7e42e29addf15eff3a1724cf4ec844739941ce383",
+    "bytes": 33734
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/g25_run.py": {
+    "sha256": "9a1751a523e91d7e9fe084e248532182883776c5c7a53c1bc868582c0fcc004b",
+    "bytes": 11668
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/g2_readback.py": {
+    "sha256": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566",
+    "bytes": 2974
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/hp2.py": {
+    "sha256": "35764494f94468ddb10174886491dfd75a673942dc25982989b31cf8c882db2c",
+    "bytes": 3734
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/integrated_run.py": {
+    "sha256": "2c63076f4d3ee9e609ef0f9d6850fd23df446a6d46048d37199f21e948e4cc08",
+    "bytes": 28445
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/pressure.py": {
+    "sha256": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696",
+    "bytes": 6487
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/preview_inputs.py": {
+    "sha256": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f",
+    "bytes": 4874
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/probe.py": {
+    "sha256": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52",
+    "bytes": 23165
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/shared_frames.py": {
+    "sha256": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c",
+    "bytes": 13134
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/telemetry_cache.py": {
+    "sha256": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a",
+    "bytes": 3133
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/verify_sources.py": {
+    "sha256": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929",
+    "bytes": 7614
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/video_pump.py": {
+    "sha256": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c",
+    "bytes": 4795
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/standalone/__init__.py": {
+    "sha256": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731",
+    "bytes": 54
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/artifacts.py": {
+    "sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+    "bytes": 11772
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/benchmark_regions.py": {
+    "sha256": "39d69d7f864159063a3fe11fdb8ef30188b6fe5fcd3403c3eef8f7ceb4b31251",
+    "bytes": 3226
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/components.py": {
+    "sha256": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856",
+    "bytes": 6607
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/counter.py": {
+    "sha256": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+    "bytes": 5706
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/protocol.py": {
+    "sha256": "74fd18aeca91283fea51302026d66e083d9012a4e7e1c8a3b88a476eec47ad04",
+    "bytes": 15863
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/run_counter.py": {
+    "sha256": "062d37e7e3d0bc5999df3298dc236b455c80a2d7228844489f2fc2848a958e9c",
+    "bytes": 12256
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/sim_vectors.py": {
+    "sha256": "d52b8fddbd6327c53419bded268b34da6bfc886cdd1e4593013a1e71ae9865f7",
+    "bytes": 3304
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/transport.py": {
+    "sha256": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+    "bytes": 12863
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/rle/__init__.py": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/gray8/dma_polling.py": {
+    "sha256": "a26c53bed5d4d6ec00fbb72310adc06b4cbdc221a358e91aefdc67afe6a458fb",
+    "bytes": 3042
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/gray8/finalize_build.py": {
+    "sha256": "0acaeeb73e578b13aac7d414aa413d1aad9b0cf9b6acf4a607d920c63cbbcbd2",
+    "bytes": 3568
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/gray8/hardware_checks.py": {
+    "sha256": "b95425d64413b2e6dab70a001e91299da69fbcf38abe3f18dc1caf7604d211f4",
+    "bytes": 6956
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/gray8/packet_codec.py": {
+    "sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+    "bytes": 3791
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/gray8/run_gray8_counter.py": {
+    "sha256": "35d7805fe8405d6c6d509987da4a2c22474aa19db4bca72281f9b00417daa821",
+    "bytes": 12870
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0015/board_once.py": {
+    "sha256": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9",
+    "bytes": 93137
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0015/board_preflight.py": {
+    "sha256": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+    "bytes": 51712
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0015/camera_adapter.py": {
+    "sha256": "3de607848ee6d10bcbbbb76395e0b52be8eb11fa33b99d946ed7d1c94e0a4fc8",
+    "bytes": 879
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0015/camera_dma_oneshot.py": {
+    "sha256": "1992bbdb255ac96409210cdd000d298d8486ddba443017164df1cff61f83969a",
+    "bytes": 45641
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0015/check_sim.py": {
+    "sha256": "e1ac891a5ee6991e22236543dc65fad3615a1e0371f2057008c6f7f2256a8d86",
+    "bytes": 9610
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0015/finalize_build.py": {
+    "sha256": "c27b775cb425a8fc85566ad795965925fc666b1b8819a8051fd73b20786ba2d4",
+    "bytes": 23351
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0015/prepare_board_bundle.py": {
+    "sha256": "9e2b20ca7affbe79510a005e8e34e92de4ea41ff399cc40db06e37dcc0d67849",
+    "bytes": 8721
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0015/prepare_vectors.py": {
+    "sha256": "2c65e3bf4d0973c2bc2d769a17be9a89a3e802c968cb3111487e9b7954be9139",
+    "bytes": 15259
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/ablate_split_datasets.py": {
+    "sha256": "46be8fe688ff85c8af705f5c63ef2898909463d66ce81f65a90654ff6b6dffbf",
+    "bytes": 69111
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/benchmark_monochrome.py": {
+    "sha256": "b076805645bdd2901a3caba376fb99e3bbd869eb42d07a7dd9b5a159ab09aaec",
+    "bytes": 2142
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/benchmark_packet_encoder.py": {
+    "sha256": "2e72d5b3f956a38668836fa9e3ae45620a6754bcc557c57e8db0b4aaac4a2f12",
+    "bytes": 2858
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/benchmark_tx_scratch.py": {
+    "sha256": "ab7f94ff625001cc0c046097734e449ad8d8ea29fe00167309f6d511929dedd4",
+    "bytes": 8150
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/binary_stats.py": {
+    "sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+    "bytes": 778
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/calibration_runtime_gate.py": {
+    "sha256": "af4c43565dfed7609cb861a9b4901d4b30eac424a7ebc857ff8bdefe2e6eacba",
+    "bytes": 5941
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/camera_only_preview.py": {
+    "sha256": "bced0f52ea39ae1ce293c8f27182cfac3c9bad57dd19d81ff77efd809480afdc",
+    "bytes": 28382
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/capture_dataset.py": {
+    "sha256": "1e3aee24e3f8c61841ac5b6ac6e83e92eb5c16a0e20f157359dfdc2a44aa6c16",
+    "bytes": 59307
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/capture_touching_camera_only.py": {
+    "sha256": "e4ad6a91a2fc749d2d369a699ac8c72fa0244267bd06d7a6e4b14aed8573ef9e",
+    "bytes": 7668
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/dashboard_state.py": {
+    "sha256": "c844a6a45301d775913596adb1d70c2f5bff82344b2fd01467e877fb61fb4f44",
+    "bytes": 3394
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/diagnose_touching_capture.py": {
+    "sha256": "ca96b0eb671d1403024c6d00dd3b7d6885d931ef294d37ac4257ba1291262653",
+    "bytes": 3979
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/image_debug.py": {
+    "sha256": "051b3263b07405b72dd5f6fa7141923c0d96dc317e74176059c43fae03c5fc05",
+    "bytes": 4257
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/lighting_profile.py": {
+    "sha256": "1c8e2ad1e73c8c91a08ecd0a605bc8bb46540a51baf82d2a83594b5736bd8d84",
+    "bytes": 12281
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/live_calibration.py": {
+    "sha256": "0f0f38845d0ece530abc4223c173b52070ecd609835ab20767936be8992f6889",
+    "bytes": 10193
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/live_monitor_state.py": {
+    "sha256": "06eb99fbc2a68dced2da2e59a760745e688929bb6e1823a51bc6c0d6982c662f",
+    "bytes": 14064
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/mjpeg_preview.py": {
+    "sha256": "e112aa0fb9c7ee89b8b63fe2f233aea8b7cd8672a11708c57b8d7bc2f07ca21d",
+    "bytes": 52050
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/offline_threshold.py": {
+    "sha256": "98f8b701e5a92b9d4735b5e2c16edde7b2f7432a93bdb0e05e7d22448b72d77c",
+    "bytes": 1915
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/operator_gate_launcher.py": {
+    "sha256": "85910cdfcf666d45c99480638d6611ce78abb03e7ae21e58c5a4030347994f93",
+    "bytes": 27744
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/packet_encoder.py": {
+    "sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+    "bytes": 630
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/physical_calibration_lock.py": {
+    "sha256": "b4787fe9537c46a9762882a8b95553407a3c5270127207e5c9dd43cd3fe3a1d0",
+    "bytes": 7599
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/prepare_physical_calibration.py": {
+    "sha256": "2bd1a93931791bb59f838b550b2070948315126143c449f89e4e64979567f71d",
+    "bytes": 3567
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/replay_capture_dataset.py": {
+    "sha256": "a2ab6074826994f7d799456ed205e0324c8419025adfff0cd5bc3697eee790a6",
+    "bytes": 5791
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/replay_recorded_components.py": {
+    "sha256": "a1213572caea354964aee955352d912a82ac3e08a355035e6d65425d1bbe9609",
+    "bytes": 4011
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/resource_monitor.py": {
+    "sha256": "e5d247b006b9819eb74f377ea5795efe349170d8a967aeb09945bb6f3a8ab09c",
+    "bytes": 13931
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/run_live_monitor.py": {
+    "sha256": "f50badc732281d00dc30f55e41af9c181a190c589654cafa86326830db4cb828",
+    "bytes": 19884
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/run_stream_counter.py": {
+    "sha256": "4be93481407d9602d25341c895e7f810016a7be5ffdec5482f00ad9129c71c22",
+    "bytes": 123230
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/scale_parameters.py": {
+    "sha256": "80d091c7e9b3b3396da009596cb36c34001ed616ec0c070452927cedf5756feb",
+    "bytes": 4232
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/split_touching.py": {
+    "sha256": "b34ce5e74b689a863ed8d9175fa60f0ac22f5133638b6056e567912385d37412",
+    "bytes": 13912
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/stageb1_calibration_preview_metrics.py": {
+    "sha256": "f50810e7236529dab2e03fe396e77e0c3a0e95d79f1c90492d4b456c2cade4d3",
+    "bytes": 10933
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/start_physical_calibration_standby.py": {
+    "sha256": "bec366ebe3b083258627e6fe51f44ed0acc78b5313f5ebf16aa1b832ed7989ff",
+    "bytes": 6246
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/stream_counter.py": {
+    "sha256": "4bffd28dcee923f5c959b37ab97cdbd49ca2e64ae283c71173a8a20438b64872",
+    "bytes": 74249
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/verify_algorithm_replay.py": {
+    "sha256": "de93265487728901ba50d28c4c2303d683a59e44542ab5dcaea0e5646531b0f3",
+    "bytes": 20625
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/web_preview_start.py": {
+    "sha256": "abbafcb01da31f10410b0419a0d6be2610aa89e6f0dac19caa62e7964539d62a",
+    "bytes": 4830
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/web_preview_stop.py": {
+    "sha256": "1a594d495a08e11321812ce64f6f0f6f121f3b48c4885630f8a25aaf4db03bbe",
+    "bytes": 1859
+  },
+  "/home/xilinx/standalone-g25-20261030/scripts/wo0016/wo0017_capture_profile.py": {
+    "sha256": "cefd8601b90cefa20cbe20ed830d05e8d99dc4524fccf72aabed4ed3650bdbef",
+    "bytes": 9908
+  },
+  "/home/xilinx/standalone-g25-20261030/export/build-manifest.json": {
+    "sha256": "b350c4b228c65f0764b190ac46c404fb9ac25e832e99abb978c57731a4c47fef",
+    "bytes": 2598
+  },
+  "/home/xilinx/standalone-g25-20261030/export/display-manifest.json": {
+    "sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966",
+    "bytes": 1923
+  },
+  "/home/xilinx/standalone-g25-20261030/export/g2-integrated.bit": {
+    "sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+    "bytes": 4045770
+  },
+  "/home/xilinx/standalone-g25-20261030/export/g2-integrated.hwh": {
+    "sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243",
+    "bytes": 811935
+  },
+  "/home/xilinx/standalone-g25-20261030/native/rle_components_v2.so": {
+    "sha256": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7",
+    "bytes": 12280
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "material-counter.g2-integration-monitor.v1",
+  "source_commit": "bec87bb9debc69382d0bc05437133595ba1c6bbf",
+  "scope": "candidate counters ABI; not route/interface freeze",
+  "files": {
+    "display-manifest.json": {
+      "sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966",
+      "bytes": 1923
+    },
+    "g2-integrated.bit": {
+      "sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+      "bytes": 4045770
+    },
+    "g2-integrated.hwh": {
+      "sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243",
+      "bytes": 811935
+    }
+  },
+  "rtl_sha256": {
+    "axis_dma_gray_adapter.v": "1d6f303af3ecbbd2fa72d9ff1921d23bce22f2e33bcfc90c03b4ff8a829137d4",
+    "axis_dma_rle_pipeline_bd.v": "2addeae7c6f7b8fad8daa97ac3c9c5b6fbb8ff91e467fbc7197eac009cee49f8",
+    "axis_morphology3x3.v": "41bd8ac2bd659357807c172ddc0e14b0b6a85d14afc8d5323836c60e8b277cb1",
+    "axis_rle_encoder.v": "2606fc95105671a0f0864f5af01207ae2a2415fa76c9f45523c5e06103ed1bb7"
+  },
+  "source_sha256": {
+    "fpga/experimental/rle/axis_dma_rle_pipeline_bd.v": "2addeae7c6f7b8fad8daa97ac3c9c5b6fbb8ff91e467fbc7197eac009cee49f8",
+    "fpga/experimental/standalone/video_frame_monitor.v": "85568ff91ecc0b718ca391bc9c21533c96dbcab18c46788c9d19214acd16166e",
+    "scripts/standalone/create_g2_integration.tcl": "ea1c06449f6ed64929600a336608a43598f7bc4df4a471a113196a9cd5292e00",
+    "scripts/standalone/build_g2_integration.tcl": "c961376fea142d698cc0b0637b48ab90df1d4c2bb5b2cd7434468b4933c371bd",
+    "scripts/rle/run_full_pipeline_netlist.tcl": "f177f8f425c3ac11d4f9990a261b5fc464cad46f2322a4e14d18df8d2d4723c4"
+  },
+  "report_sha256": {
+    "bus-skew.rpt": "894ef94d6d78c40e85b8c6f28a90d0f875f99a94e388322bab79692de07d448f",
+    "cdc.rpt": "e986d08348a5cd16c369b03bcfed811054b7e206192f7beb1ae0596331720285",
+    "drc.rpt": "cc9da616192299fbfa1a397dad6a9356175666ae2adda2315db2267adca3338d",
+    "methodology.rpt": "70bcea3d7f7cc4876bc50564d73353bf389686e757a1393c7cb1bf74ad985189",
+    "timing.rpt": "e27e93b27d9b31e1b86e23cff45dac3d3446b5523960e04d901a6c023bb6948f",
+    "utilization.rpt": "abe4838c7d2ba1de30a6ee89e8967f82670be09b0d17ddef33edebf55fe7ca27"
+  },
+  "rle_monitor": {
+    "abi": 1,
+    "clock_hz": 50000000
+  },
+  "resources": {
+    "lut": 12221,
+    "ff": 16174,
+    "bram_tiles": 4.5,
+    "dsp": 9,
+    "wns_ns": 0.188,
+    "whs_ns": 0.029
+  },
+  "timing": {
+    "wns_ns": 0.188,
+    "whs_ns": 0.029,
+    "tns": 0,
+    "ths": 0
+  },
+  "board_acceptance": "PENDING"
+}

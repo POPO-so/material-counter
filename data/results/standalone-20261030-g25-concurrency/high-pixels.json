@@ -1,0 +1,499 @@
+{
+  "schema": "material-counter.g25-pressure.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "session_id": "172c49c5-34be-4f21-8170-9d06cb237b29",
+  "loaded": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/standalone-g25-20261030/export/g2-integrated.bit",
+    "loaded_bit_sha1": "67a592385e90e06fdb0e563e78ac7ef0c3deab58",
+    "loaded_bit_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+    "loaded_bit_path_matches_expected": true
+  },
+  "bit_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+  "hwh_sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243",
+  "manifest_sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966",
+  "native_sha256": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "before_memory": {
+    "MemAvailable": "     380788 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           47684 kB"
+  },
+  "pattern": "high_runs",
+  "display": "scan",
+  "pixel_verification": true,
+  "scope": "synthetic concurrency; no real material accuracy or G3/G4 acceptance",
+  "state": "STOPPED",
+  "samples": [
+    {
+      "monotonic": 136271.773599863,
+      "processed": 6,
+      "monitor": {
+        "unique": 717,
+        "scans": 4128,
+        "repeat": 2679,
+        "invalid": 732,
+        "partial": 2,
+        "frame": 0,
+        "session": 30802201205000969475916910034493340457,
+        "gray_error": false,
+        "marker_pixel_error": false,
+        "pair_mismatch": false,
+        "top_invalid": false,
+        "bottom_invalid": false,
+        "top_marker": "4d43172c49c534be4f2181709d06cb237b29000000000000000089a7",
+        "bottom_marker": "4d43172c49c534be4f2181709d06cb237b29000000000000000089a7",
+        "sequence": 298,
+        "capture_started": 136271.77647462,
+        "sampled_monotonic": 136271.777347327
+      },
+      "vdma_status": 69632,
+      "counters": {
+        "sequence": 7,
+        "clock_hz": 50000000,
+        "counters": {
+          "total_cycles": 22318862539,
+          "active_cycles": 14244185,
+          "input_beats": 3328416,
+          "output_beats": 125440,
+          "input_stall_cycles": 9984048,
+          "output_stall_cycles": 0
+        }
+      }
+    }
+  ],
+  "cpu_samples": [
+    {
+      "monotonic": 136271.773599863,
+      "per_core_percent": {
+        "cpu0": 17.194570135746606,
+        "cpu1": 82.88288288288288
+      },
+      "memory": {
+        "MemAvailable": "     351840 kB",
+        "CmaTotal": "         131072 kB",
+        "CmaFree": "           32992 kB"
+      }
+    }
+  ],
+  "frames": [
+    {
+      "frame": 0,
+      "monotonic": 136269.916488265,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 66.29748301929794,
+      "total_ms": 377.62637401465327,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 1,
+      "monotonic": 136270.294016991,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 64.81275701662526,
+      "total_ms": 377.4430760240648,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 2,
+      "monotonic": 136270.665063489,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 64.85884299036115,
+      "total_ms": 370.9667259827256,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 3,
+      "monotonic": 136271.031867704,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 64.20934200286865,
+      "total_ms": 366.72611700487323,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 4,
+      "monotonic": 136271.404795131,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 64.76472000940703,
+      "total_ms": 372.8492000082042,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 5,
+      "monotonic": 136271.773599863,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 64.53873802092858,
+      "total_ms": 368.72353800572455,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 6,
+      "monotonic": 136272.153573265,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 64.37038199510425,
+      "total_ms": 374.396658007754,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 7,
+      "monotonic": 136272.525855615,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 64.42121899453923,
+      "total_ms": 372.2016609972343,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    },
+    {
+      "frame": 8,
+      "monotonic": 136272.898458476,
+      "runs": 16000,
+      "rx_bytes": 66208,
+      "foreground": 16000,
+      "transfer_ms": 64.63342800270766,
+      "total_ms": 372.5196669984143,
+      "count": 0,
+      "dma": {
+        "mm2s_status": 4098,
+        "s2mm_status": 4098,
+        "actual_dma_bytes": 66208,
+        "actual_hw_bytes": 66208,
+        "pipeline_state": 2
+      }
+    }
+  ],
+  "clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "pipeline_before": {
+    "signature": {
+      "offset": 4,
+      "value": 826625106
+    },
+    "state": {
+      "offset": 8,
+      "value": 2,
+      "busy": false,
+      "done_seen": true,
+      "error": false
+    },
+    "actual_bytes": {
+      "offset": 12,
+      "value": 2272
+    },
+    "frame_id": {
+      "offset": 16,
+      "value": 45
+    },
+    "params_version": {
+      "offset": 20,
+      "value": 0
+    },
+    "roi_start": {
+      "offset": 24,
+      "value": 0
+    },
+    "roi_end": {
+      "offset": 28,
+      "value": 26215040
+    },
+    "threshold": {
+      "offset": 32,
+      "value": 128
+    },
+    "offset": {
+      "offset": 36,
+      "value": 0
+    },
+    "morph": {
+      "offset": 40,
+      "value": 0
+    },
+    "geometry": {
+      "offset": 44,
+      "value": 26215040
+    },
+    "max_runs": {
+      "offset": 48,
+      "value": 16384
+    },
+    "packet_code": {
+      "offset": 56,
+      "value": 0
+    }
+  },
+  "monitor_before": {
+    "unique": 717,
+    "scans": 3994,
+    "repeat": 2545,
+    "invalid": 732,
+    "partial": 2,
+    "frame": 0,
+    "session": 30802201205000969475916910034493340457,
+    "gray_error": false,
+    "marker_pixel_error": false,
+    "pair_mismatch": false,
+    "top_invalid": false,
+    "bottom_invalid": false,
+    "top_marker": "4d43172c49c534be4f2181709d06cb237b29000000000000000089a7",
+    "bottom_marker": "4d43172c49c534be4f2181709d06cb237b29000000000000000089a7",
+    "sequence": 297,
+    "capture_started": 136269.535781546,
+    "sampled_monotonic": 136269.536570001
+  },
+  "counters_before": {
+    "sequence": 6,
+    "clock_hz": 50000000,
+    "counters": {
+      "total_cycles": 22206791191,
+      "active_cycles": 12603077,
+      "input_beats": 2944368,
+      "output_beats": 26128,
+      "input_stall_cycles": 8832042,
+      "output_stall_cycles": 0
+    }
+  },
+  "duration_s": 3.3608048320165835,
+  "processed_frames": 9,
+  "processing_fps": 2.677929975064851,
+  "counters_after": {
+    "sequence": 8,
+    "clock_hz": 50000000,
+    "counters": {
+      "total_cycles": 22374888624,
+      "active_cycles": 15065302,
+      "input_beats": 3520440,
+      "output_beats": 175096,
+      "input_stall_cycles": 10560051,
+      "output_stall_cycles": 0
+    }
+  },
+  "counter_delta": {
+    "sequence_before": 6,
+    "sequence_after": 8,
+    "counters": {
+      "total_cycles": 168097433,
+      "active_cycles": 2462225,
+      "input_beats": 576072,
+      "output_beats": 148968,
+      "input_stall_cycles": 1728009,
+      "output_stall_cycles": 0
+    }
+  },
+  "transfer_consistency": {
+    "valid": true,
+    "frames": 9,
+    "rx_bytes": [
+      66208,
+      66208,
+      66208,
+      66208,
+      66208,
+      66208,
+      66208,
+      66208,
+      66208
+    ],
+    "sequence_before": 6,
+    "sequence_after": 8,
+    "expected_input_beats": 576072,
+    "observed_input_beats": 576072,
+    "expected_output_beats": 148968,
+    "observed_output_beats": 148968,
+    "input_stall_cycles": 1728009,
+    "output_stall_cycles": 0,
+    "counter_deltas": {
+      "total_cycles": 168097433,
+      "active_cycles": 2462225,
+      "input_beats": 576072,
+      "output_beats": 148968,
+      "input_stall_cycles": 1728009,
+      "output_stall_cycles": 0
+    }
+  },
+  "monitor_after": {
+    "unique": 717,
+    "scans": 4196,
+    "repeat": 2747,
+    "invalid": 732,
+    "partial": 2,
+    "frame": 0,
+    "session": 30802201205000969475916910034493340457,
+    "gray_error": false,
+    "marker_pixel_error": false,
+    "pair_mismatch": false,
+    "top_invalid": false,
+    "bottom_invalid": false,
+    "top_marker": "4d43172c49c534be4f2181709d06cb237b29000000000000000089a7",
+    "bottom_marker": "4d43172c49c534be4f2181709d06cb237b29000000000000000089a7",
+    "sequence": 299,
+    "capture_started": 136272.901260667,
+    "sampled_monotonic": 136272.902089289
+  },
+  "latency_ms": {
+    "transfer_parse": {
+      "p50": 64.63342800270766,
+      "p95": 65.72202700772323,
+      "p99": 66.182391816983
+    },
+    "total": {
+      "p50": 372.5196669984143,
+      "p95": 377.5530548184179,
+      "p99": 377.6117101754062
+    }
+  },
+  "dma_after": {
+    "0x0": 65539,
+    "0x4": 4098,
+    "0x30": 65539,
+    "0x34": 4098
+  },
+  "vdma_after": {
+    "0x0": 69632,
+    "0x4": 69633
+  },
+  "pipeline_after": {
+    "signature": {
+      "offset": 4,
+      "value": 826625106
+    },
+    "state": {
+      "offset": 8,
+      "value": 2,
+      "busy": false,
+      "done_seen": true,
+      "error": false
+    },
+    "actual_bytes": {
+      "offset": 12,
+      "value": 66208
+    },
+    "frame_id": {
+      "offset": 16,
+      "value": 8
+    },
+    "params_version": {
+      "offset": 20,
+      "value": 0
+    },
+    "roi_start": {
+      "offset": 24,
+      "value": 0
+    },
+    "roi_end": {
+      "offset": 28,
+      "value": 26215040
+    },
+    "threshold": {
+      "offset": 32,
+      "value": 128
+    },
+    "offset": {
+      "offset": 36,
+      "value": 0
+    },
+    "morph": {
+      "offset": 40,
+      "value": 0
+    },
+    "geometry": {
+      "offset": 44,
+      "value": 26215040
+    },
+    "max_runs": {
+      "offset": 48,
+      "value": 16384
+    },
+    "packet_code": {
+      "offset": 56,
+      "value": 0
+    }
+  },
+  "buffers_released": true,
+  "after_memory": {
+    "MemAvailable": "     350812 kB",
+    "CmaTotal": "         131072 kB",
+    "CmaFree": "           32804 kB"
+  },
+  "total_count": 0,
+  "invalid_frames": 0,
+  "material_accuracy": "NOT_MEASURED"
+}

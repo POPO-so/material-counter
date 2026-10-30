@@ -1,0 +1,190 @@
+{
+  "schema": "material-counter.g2-monitor-admission.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "offline_import_and_staging_hashes": "PASS",
+  "files_checked": 82,
+  "before": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/standalone-g2-smoke-20261030/g2-integrated.bit",
+    "loaded_bit_sha1": "507c9f5e7a570c72ce8c48f9d20bc37749d51331",
+    "loaded_bit_sha256": "2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18",
+    "loaded_bit_path_matches_expected": true
+  },
+  "old_pipeline": {
+    "signature": {
+      "offset": 4,
+      "value": 826625106
+    },
+    "state": {
+      "offset": 8,
+      "value": 2,
+      "busy": false,
+      "done_seen": true,
+      "error": false
+    },
+    "actual_bytes": {
+      "offset": 12,
+      "value": 2272
+    },
+    "frame_id": {
+      "offset": 16,
+      "value": 11
+    },
+    "params_version": {
+      "offset": 20,
+      "value": 0
+    },
+    "roi_start": {
+      "offset": 24,
+      "value": 0
+    },
+    "roi_end": {
+      "offset": 28,
+      "value": 26215040
+    },
+    "threshold": {
+      "offset": 32,
+      "value": 128
+    },
+    "offset": {
+      "offset": 36,
+      "value": 0
+    },
+    "morph": {
+      "offset": 40,
+      "value": 0
+    },
+    "geometry": {
+      "offset": 44,
+      "value": 26215040
+    },
+    "max_runs": {
+      "offset": 48,
+      "value": 16384
+    },
+    "packet_code": {
+      "offset": 56,
+      "value": 0
+    }
+  },
+  "old_dma": {
+    "0x4": 4098,
+    "0x34": 4098
+  },
+  "after": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/standalone-g25-20261030/export/g2-integrated.bit",
+    "loaded_bit_sha1": "67a592385e90e06fdb0e563e78ac7ef0c3deab58",
+    "loaded_bit_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+    "loaded_bit_path_matches_expected": true
+  },
+  "clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "pipeline": {
+    "signature": {
+      "offset": 4,
+      "value": 826625106
+    },
+    "state": {
+      "offset": 8,
+      "value": 0,
+      "busy": false,
+      "done_seen": false,
+      "error": false
+    },
+    "actual_bytes": {
+      "offset": 12,
+      "value": 0
+    },
+    "frame_id": {
+      "offset": 16,
+      "value": 0
+    },
+    "params_version": {
+      "offset": 20,
+      "value": 0
+    },
+    "roi_start": {
+      "offset": 24,
+      "value": 0
+    },
+    "roi_end": {
+      "offset": 28,
+      "value": 26215040
+    },
+    "threshold": {
+      "offset": 32,
+      "value": 128
+    },
+    "offset": {
+      "offset": 36,
+      "value": 0
+    },
+    "morph": {
+      "offset": 40,
+      "value": 0
+    },
+    "geometry": {
+      "offset": 44,
+      "value": 26215040
+    },
+    "max_runs": {
+      "offset": 48,
+      "value": 16384
+    },
+    "packet_code": {
+      "offset": 56,
+      "value": 0
+    }
+  },
+  "counters": {
+    "sequence": 1,
+    "clock_hz": 50000000,
+    "counters": {
+      "total_cycles": 20818500,
+      "active_cycles": 0,
+      "input_beats": 0,
+      "output_beats": 0,
+      "input_stall_cycles": 0,
+      "output_stall_cycles": 0
+    }
+  },
+  "dma": {
+    "0x0": 65538,
+    "0x4": 1,
+    "0x30": 65538,
+    "0x34": 1
+  },
+  "vdma": {
+    "0x0": 65538,
+    "0x4": 65537
+  },
+  "afi": {
+    "0": {
+      "read": 0,
+      "write": 3840
+    },
+    "1": {
+      "read": 1,
+      "write": 3841
+    },
+    "2": {
+      "read": 1,
+      "write": 3840
+    }
+  }
+}

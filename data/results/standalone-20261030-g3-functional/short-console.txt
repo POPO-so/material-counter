@@ -1,0 +1,1 @@
+{"state": "STOPPED", "processed": 300, "submitted": 0, "duration_s": 10.102684218989452, "total_count": 25}

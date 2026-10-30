@@ -2,7 +2,18 @@ import math
 
 import pytest
 
-from scripts.standalone.telemetry_cache import TelemetryCache
+from scripts.standalone.telemetry_cache import TelemetryCache,parse_process_stat
+
+
+def test_process_cpu_and_rss_parse_handles_spaces_and_parentheses_in_comm():
+    fields=['R']+['0']*21
+    fields[11]='70';fields[12]='30';fields[21]='123'
+    result=parse_process_stat('123 (drawing worker (test)) '+' '.join(fields),page_size=4096)
+    assert result=={'cpu_ticks':100,'rss_kib':492}
+
+
+def test_truncated_process_stat_is_not_reported_as_zero_cpu():
+    with pytest.raises(ValueError):parse_process_stat('123 (worker) R 1 2',page_size=4096)
 
 
 @pytest.mark.parametrize("period,boundary_s", [(0.5, 2), (1, 3), (2, 5)])

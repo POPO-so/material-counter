@@ -1,6 +1,6 @@
 # 计数运行链路实施状态
 
-当前脱机集成状态（2026-10-30）：G0/G1/G1.5 已通过，G2 现已完成安全寄存器读回、HP0/1/2 与时钟复核及统一所有者 RLE+HDMI 冒烟和正常停止，见 [G2 放行记录](data/results/standalone-20261030-g2-recovery/README.md)。G2.5/G3/G4 尚未通过；Route/接口保持候选，物料准确率未验收。更早段落属于历史阶段快照。
+当前脱机集成状态（2026-10-30）：G0/G1/G1.5/G2/G2.5 已通过；G3 只完成固定回放显示开/关一致性及该回放的 30 秒窗口性能子项，完整 G3 未放行；G4 尚无冷启动或有目标脱机验收。Route/接口保持候选，物料准确率未验收。当前证据见 [G2](data/results/standalone-20261030-123000-g2-integration/README.md)、[G2.5](data/results/standalone-20261030-g25-concurrency/README.md)、[G3 部分记录](data/results/standalone-20261030-g3-functional/README.md)。更早段落属于历史阶段快照。
 
 ## 脱机灰度 HDMI 实施（2026-10-29）
 

@@ -133,3 +133,24 @@ def validate_transfers(delta: dict, frames: int, rx_bytes: Iterable[int]) -> dic
         "output_stall_cycles": checked["output_stall_cycles"],
         "counter_deltas": checked,
     }
+
+
+def validate_transfer_totals(delta: dict,frames: int,rx_total_bytes: int) -> dict:
+    """Validate a continuous session using constant-size cumulative totals."""
+    frames=_integer(frames,'frames',0,(1<<63)-1)
+    total=_integer(rx_total_bytes,'rx_total_bytes',0,(1<<64)-1)
+    if total%4:raise ValueError('rx_total_bytes must be 4-byte aligned')
+    if not isinstance(delta,dict) or not isinstance(delta.get('counters'),dict):
+        raise ValueError('delta must contain counters')
+    counters=delta['counters']
+    if set(counters)!=set(_COUNTER_NAMES):raise ValueError('expected six counter deltas')
+    checked={key:_integer(counters[key],key,0,_U64_MASK) for key in _COUNTER_NAMES}
+    expected_input=frames*INPUT_BEATS_PER_FRAME
+    expected_output=total//4
+    if checked['input_beats']!=expected_input:raise ValueError('input_beats total mismatch')
+    if checked['output_beats']!=expected_output:raise ValueError('output_beats total mismatch')
+    if not frames and total:raise ValueError('received bytes without processed frames')
+    return dict(valid=True,frames=frames,rx_total_bytes=total,
+        expected_input_beats=expected_input,observed_input_beats=checked['input_beats'],
+        expected_output_beats=expected_output,observed_output_beats=checked['output_beats'],
+        counter_deltas=checked)

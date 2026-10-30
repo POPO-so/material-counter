@@ -17,6 +17,7 @@ import numpy as np
 from .bundle import sha256, verify_bundle, verify_runtime
 from .compositor import GrayComposer
 from .driver_owner import DriverOwner
+from .evidence import write_evidence,fail_hold
 from .g1_run import setup_hardware, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
 from .g2_readback import read_pipeline, snapshot_counters
 from .pressure import make_input, counter_delta, validate_transfers
@@ -88,6 +89,10 @@ def main(argv=None):
         report['pipeline_before'] = owner.call(read_pipeline, control)
         tx = owner.retain(allocate(shape=(TX_BYTES,), dtype='u1'))
         rx = owner.retain(allocate(shape=(RX_CAPACITY,), dtype='u1'))
+        report['rle_buffers'] = {'tx_address': int(tx.physical_address),
+                                'rx_address': int(rx.physical_address),
+                                'tx_bytes': TX_BYTES, 'rx_bytes': RX_CAPACITY,
+                                'allocations': 2}
         transport = RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,
             hw.overlay.axi_dma_0.recvchannel, dma, control, tx, rx)
         if report['pipeline_before']['state']['done_seen']:
@@ -154,9 +159,16 @@ def main(argv=None):
                 report['cpu_samples'].append(dict(monotonic=ended,
                     per_core_percent=_cpu_usage_percent(previous_cpu, now_cpu), memory=_memory()))
                 previous_cpu = now_cpu
+                dma_addresses = {hex(offset): owner.call(dma.read, offset) for offset in (0x18,0x48)}
+                if dma_addresses['0x18'] != int(tx.physical_address) or dma_addresses['0x48'] != int(rx.physical_address):
+                    raise RuntimeError('RLE DMA buffer address changed during pressure run')
                 report['samples'].append(dict(monotonic=ended, processed=index,
                     monitor=owner.call(snapshot, hw.monitor),
                     vdma_status=owner.call(hw.vdma.read, 4),
+                    dma_addresses=dma_addresses,
+                    process_memory={line.split(':',1)[0]:line.split(':',1)[1].strip()
+                        for line in Path('/proc/self/status').read_text().splitlines()
+                        if line.startswith(('VmRSS:','VmSize:','RssAnon:','RssFile:','RssShmem:'))},
                     counters=owner.call(snapshot_counters, control)))
                 last_sample = ended
         report['duration_s'] = time.monotonic()-start
@@ -185,13 +197,8 @@ def main(argv=None):
                       material_accuracy='NOT_MEASURED')
     except BaseException as error:
         report.update(state='FAIL_HOLD', error=repr(error), diagnostics=owner.diagnostics())
-        args.output.parent.mkdir(parents=True,exist_ok=True)
-        args.output.write_text(json.dumps(report,indent=2))
-        print('G25_FAIL_HOLD '+repr(error),flush=True)
-        while True:
-            time.sleep(1)
-    args.output.parent.mkdir(parents=True,exist_ok=True)
-    args.output.write_text(json.dumps(report,indent=2))
+        fail_hold(lambda:write_evidence(args.output,report),'G25_FAIL_HOLD '+repr(error))
+    write_evidence(args.output,report)
     print(json.dumps({key: report[key] for key in ('state','processed_frames','duration_s','processing_fps','counter_delta')}),flush=True)
 
 

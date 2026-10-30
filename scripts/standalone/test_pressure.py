@@ -5,7 +5,7 @@ import pytest
 
 from scripts.rle.protocol import decode_packet, encode_mask
 from scripts.rle.run_counter import synthetic_frames
-from scripts.standalone.pressure import counter_delta, make_input, validate_transfers
+from scripts.standalone.pressure import counter_delta, make_input, validate_transfers,validate_transfer_totals
 
 
 def _snapshot(sequence, **overrides):
@@ -108,3 +108,19 @@ def test_validate_transfers_rejects_invalid_frame_count(frames):
     delta = counter_delta(_snapshot(1), _snapshot(2))
     with pytest.raises((TypeError, ValueError)):
         validate_transfers(delta, frames=frames, rx_bytes=[20])
+
+
+@pytest.mark.parametrize('frames',[0,1,1_000_000])
+def test_continuous_validation_uses_aggregate_bytes_without_growing_a_frame_list(frames):
+    delta=counter_delta(_snapshot(1,input_beats=0,output_beats=0),
+                        _snapshot(2,input_beats=frames*64008,output_beats=frames*568))
+    result=validate_transfer_totals(delta,frames,frames*2272)
+    assert result['valid'] and result['frames']==frames
+    assert 'rx_bytes' not in result
+
+
+def test_aggregate_validation_rejects_mismatch_and_misaligned_byte_totals():
+    delta=counter_delta(_snapshot(1,input_beats=0,output_beats=0),
+                        _snapshot(2,input_beats=64008,output_beats=568))
+    with pytest.raises(ValueError):validate_transfer_totals(delta,1,2273)
+    with pytest.raises(ValueError):validate_transfer_totals(delta,1,2280)

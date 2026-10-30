@@ -1,0 +1,34 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Fri Oct 30 12:50:54 2026
+# Process ID         : 10784
+# Current directory  : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist
+# Command line       : xsim.exe -log overflow-sim.log -mode tcl -source {xsim.dir/full_pipeline/xsim_script.tcl}
+# Log file           : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/overflow-sim.log
+# Journal file       : C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 32212 MB
+# Total Virtual      : 49070 MB
+# Available Virtual  : 6939 MB
+#-----------------------------------------------------------
+source xsim.dir/full_pipeline/xsim_script.tcl
+# xsim {full_pipeline} -testplusarg INPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/overflow-input.hex -testplusarg EXPECTED=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/rtl-green/vectors/overflow-expected.hex -testplusarg OUTPUT=C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/overflow-actual.hex -testplusarg WORDS=16936 -testplusarg MORPH=0 -testplusarg OFFSET=0 -testplusarg X0=0 -testplusarg Y0=0 -testplusarg X1=640 -testplusarg Y1=400 -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+RLE_COUNTER_SNAPSHOT_PASS input=64008 output=16936
+RLE_PIPELINE_640X400_PASS words=16936 cycles=269812
+$finish called at time : 5396340 ns : File "C:/w/mc-progress/data/results/standalone-20261030-123000-g2-integration/full-netlist/tb_pipeline.sv" Line 110
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:01:07 . Memory (MB): peak = 232.512 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 55208 KB (Peak: 55208 KB), Simulation CPU Usage: 65921 ms
+INFO: [Common 17-206] Exiting xsim at Fri Oct 30 12:52:03 2026...
