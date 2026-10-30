@@ -40,11 +40,13 @@ class _StartFailureContext:
         self.stop = object()
         self.process = process
         self.factory_error = factory_error
+        self.process_calls = 0
 
     def Event(self):
         return self.stop
 
     def Process(self, **_kwargs):
+        self.process_calls += 1
         if self.factory_error is not None:
             raise self.factory_error
         return self.process
@@ -90,6 +92,41 @@ def test_drawing_process_success_returns_child_and_stop_event():
     )
 
     assert child is candidate and stop is context.stop and error is None
+    assert child.pid == 1234 and not candidate.closed
+
+
+def test_injected_drawing_process_creation_failure_uses_no_process_factory():
+    context = _StartFailureContext()
+    child, stop, error = start_drawing_child(
+        context, None, None, None, None, "font", "latin", failure_mode="create"
+    )
+
+    assert child is None and stop is None
+    assert isinstance(error, OSError) and "creation" in str(error)
+    assert context.process_calls == 0
+
+
+def test_injected_drawing_start_failure_closes_unstarted_process():
+    candidate = _StartFailureProcess()
+    context = _StartFailureContext(process=candidate)
+    child, stop, error = start_drawing_child(
+        context, None, None, None, None, "font", "latin", failure_mode="start"
+    )
+
+    assert child is None and stop is None
+    assert isinstance(error, OSError) and "Process.start" in str(error)
+    assert candidate.pid is None and candidate.closed
+
+
+def test_injected_error_after_drawing_start_retains_live_process_handle():
+    candidate = _StartFailureProcess()
+    context = _StartFailureContext(process=candidate)
+    child, stop, error = start_drawing_child(
+        context, None, None, None, None, "font", "latin", failure_mode="after-start"
+    )
+
+    assert child is candidate and stop is context.stop
+    assert isinstance(error, OSError) and "after drawing Process.start" in str(error)
     assert child.pid == 1234 and not candidate.closed
 
 
