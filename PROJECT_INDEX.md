@@ -6,6 +6,8 @@
 
 G4 只读激活方案生成入口 [release_activation_plan.py](scripts/standalone/release_activation_plan.py) 已写、未运行。它核对暂存包、unit/env 与实测基线并明确阻止直接激活；仍缺实际安装、受控切换和现场安全终态。
 
+G4 预装环境只读快照入口 [offline_runtime_snapshot.py](scripts/standalone/offline_runtime_snapshot.py) 已写、未运行；它记录 Python/系统包及声明依赖和候选包身份，供后续离线依赖核对。该入口不证明依赖闭包或可离线重建。
+
 2026-10-31 板端只读现状：boot ID 已变为 `8b380359-59a7-46f8-8f5a-f172fd1398dd`，10/30 真实相机连续运行的 PID 795/841 已不在进程列表；另有桌面计数入口 `board_entry.py`（PID 1213）正在运行。下段 10/30“保持开启”是当时的状态，不能用于当前板卡所有权判断。当前没有启动第二个 G3/G4 runner，需等唯一 owner 的安全终态明确后再进行板端验收。
 
 2026-10-31 Task 6 本地进展：修正历史 Gray8 快照 CRLF/LF 差异造成的交付核验误报后，干净检出 `16b0e91` 上 376 项软件测试通过、Gray8 核验 PASS、G4 候选包 37 模块来源核对通过；原始失败、复验和 UTF-8 来源报告见 [候选证据目录映射](data/results/standalone-20261031-delivery-candidate/README.md)。这不是离线依赖隔离环境或板端运行证据，Task 6 仍未完成。
