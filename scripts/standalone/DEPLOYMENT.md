@@ -25,19 +25,19 @@
 - `scripts/standalone/delivery.py`：除既有完整性验证外，当前有 `--build-index` 候选命令，可对**已组装**目录生成并复核 `deployment-index.json`；它不收集/复制依赖，也不会安装文件或写入板端环境变量。该命令尚未执行验证。
 - `scripts/standalone/material-counter-integrated.service`：候选 systemd 单元，从 `/etc/material-counter/package.env` 读取 `PACKAGE_ROOT` 与 `PACKAGE_INDEX_SHA256` 并传给入口。配置环境文件、安装步骤及参数值尚未形成经板端验收的流程。
 
-候选索引生成调用形式（仅用于已经完整组装并包含有效 `boot-config.json` 的离线包目录；本轮未运行）：
+候选索引生成调用形式（仅用于已经完整组装并包含有效 `boot-config.json` 的离线包目录）：
 
 ```sh
 python -m scripts.standalone.delivery --root <assembled-package> --build-index
 ```
 
-输出的 `index_sha256` 需要经人工核对后固定到部署环境；生成索引不代表包组装、启动配置或启动行为通过。
+本地候选目录 `data/results/standalone-20261030-g4-offline-package-candidate/package/` 已生成索引，SHA-256 为 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a`，55 项文件清单校验通过。该结果范围仅为离线文件完整性，不代表包组装可在目标板运行、服务已安装或 G4 通过；对应内容和 13 项来源哈希读回见 [G4 包候选记录](../../data/results/standalone-20261030-g4-offline-package-candidate/README.md)。
 
 完整部署交付仍缺少并需另行验证：
 
-- [ ] 明确并实现可复核的包组装流程，包含该版本所需入口、模块、manifest、匹配 BIT/HWH、native 库、字体、锁定的 PYNQ 运行时源及其他依赖。
-- [ ] 使用 `delivery.py --build-index` 为已组装包生成并复核 `deployment-index.json`，再单独固定其 SHA-256；源码命令已准备，但尚未运行。
-- [ ] 定义 `boot-config.json` 的生成/安装内容及安装参数，并验证其与包版本、服务参数和启动行为一致。
+- [ ] 候选目录已组装入口、36 个应用模块、匹配 BIT/HWH/manifest/native、7 个锁定 PYNQ 源和 2 个字体；板端已有运行环境的版本见包候选记录。第三方 Python 包没有封装或重装，仍须确认目标部署仅依赖现有板端环境，或另行准备可追溯的离线依赖集。
+- [x] 候选包已运行 `delivery.py --build-index` 生成并复核 `deployment-index.json`；SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a`。该检查只证明清单/文件完整性，不是启动或整机门禁。
+- [ ] `boot-config.json` 已在候选包中定义 `continuous` 模式、固定 by-id 相机和 7200 秒参数；安装环境文件仍为占位模板，需在板端部署时填写真实包根目录和索引 SHA-256，并核实服务参数与启动行为。
 - [ ] 确认目标板离线依赖齐备及 ABI/哈希匹配；不得以启动时联网补包或现场编译替代。
 - [ ] 完成板端安装、正常启动/停止和冷启动验收，核对实际加载 BIT/HWH/manifest、唯一 owner、安全终态及逐次 boot ID。
 

@@ -1,0 +1,98 @@
+{
+  "schema": "material-counter.offline-dependency-readback.v1",
+  "source_board": "192.168.2.99",
+  "method": "read-only scp from existing PYNQ runtime and local copy; no board service or hardware operation",
+  "checks": [
+    {
+      "path": "runtime/pynq/lib/video/common.py",
+      "source_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/lib/video/common.py",
+      "expected_sha256": "2c4d6c2cb3ede0aca97aa2980dec7d5147ce6f4d446635ddd7dd1e894282cbf7",
+      "local_sha256": "2c4d6c2cb3ede0aca97aa2980dec7d5147ce6f4d446635ddd7dd1e894282cbf7",
+      "match": true
+    },
+    {
+      "path": "runtime/pynq/lib/video/dma.py",
+      "source_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/lib/video/dma.py",
+      "expected_sha256": "94346a4ae6a7a7f9e4b78887179e2a55ff821c7ed3724b584a7bb4c228fea30f",
+      "local_sha256": "94346a4ae6a7a7f9e4b78887179e2a55ff821c7ed3724b584a7bb4c228fea30f",
+      "match": true
+    },
+    {
+      "path": "runtime/pynq/lib/video/frontend.py",
+      "source_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/lib/video/frontend.py",
+      "expected_sha256": "da4f3a4915820cdf124773d64a48a4e289c62cdb9ffcbd623b9f3f2b0c17d28b",
+      "local_sha256": "da4f3a4915820cdf124773d64a48a4e289c62cdb9ffcbd623b9f3f2b0c17d28b",
+      "match": true
+    },
+    {
+      "path": "runtime/pynq/lib/video/dvi.py",
+      "source_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/lib/video/dvi.py",
+      "expected_sha256": "ed46cd6259037474762725d654a9a7e266d02d2052d8202b37a58085b4520cea",
+      "local_sha256": "ed46cd6259037474762725d654a9a7e266d02d2052d8202b37a58085b4520cea",
+      "match": true
+    },
+    {
+      "path": "runtime/pynq/lib/video/pipeline.py",
+      "source_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/lib/video/pipeline.py",
+      "expected_sha256": "a176db13a567ffe080af7e4691a8ce49382450fcb47c1bea6bca76422b37b7c3",
+      "local_sha256": "a176db13a567ffe080af7e4691a8ce49382450fcb47c1bea6bca76422b37b7c3",
+      "match": true
+    },
+    {
+      "path": "runtime/pynq/lib/video/hierarchies.py",
+      "source_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/lib/video/hierarchies.py",
+      "expected_sha256": "528106d7ea2c95cfd64ec27f2696f9daab76fb2c96341f1a48cd04b211f85950",
+      "local_sha256": "528106d7ea2c95cfd64ec27f2696f9daab76fb2c96341f1a48cd04b211f85950",
+      "match": true
+    },
+    {
+      "path": "runtime/pynq/buffer.py",
+      "source_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/buffer.py",
+      "expected_sha256": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463",
+      "local_sha256": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463",
+      "match": true
+    },
+    {
+      "path": "fonts/DroidSansFallbackFull.ttf",
+      "source_path": "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
+      "expected_sha256": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8",
+      "local_sha256": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8",
+      "match": true
+    },
+    {
+      "path": "fonts/DejaVuSans.ttf",
+      "source_path": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+      "expected_sha256": "252d320379dd882551c53b75dfb620cb0ffe2d6657445743d79f2100f1d96f21",
+      "local_sha256": "252d320379dd882551c53b75dfb620cb0ffe2d6657445743d79f2100f1d96f21",
+      "match": true
+    },
+    {
+      "path": "export/g2-integrated.bit",
+      "source_path": "G2 candidate evidence package",
+      "expected_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+      "local_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+      "match": true
+    },
+    {
+      "path": "export/g2-integrated.hwh",
+      "source_path": "G2 candidate evidence package",
+      "expected_sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243",
+      "local_sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243",
+      "match": true
+    },
+    {
+      "path": "export/display-manifest.json",
+      "source_path": "G2 candidate evidence package",
+      "expected_sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966",
+      "local_sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966",
+      "match": true
+    },
+    {
+      "path": "native/rle_components_v2.so",
+      "source_path": "G2 board-built native artifact",
+      "expected_sha256": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7",
+      "local_sha256": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7",
+      "match": true
+    }
+  ]
+}

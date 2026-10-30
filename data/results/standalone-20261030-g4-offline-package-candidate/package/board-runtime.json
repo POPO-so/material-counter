@@ -1,0 +1,16 @@
+{
+  "schema": "material-counter.board-runtime-observation.v1",
+  "source_board": "192.168.2.99",
+  "interpreter": "/usr/local/share/pynq-venv/bin/python3",
+  "python": "3.10.4",
+  "platform": "Linux 6.6.10-xilinx-v2024.1 armv7l glibc 2.35",
+  "packages": {
+    "pynq": "3.1.1",
+    "numpy": "1.21.5",
+    "opencv": "4.5.4",
+    "pillow": "9.0.1",
+    "scipy": "1.8.0",
+    "cffi": "1.15.0"
+  },
+  "scope": "Read-only inventory of the existing board environment; these packages are not included in the candidate package or reinstalled."
+}
