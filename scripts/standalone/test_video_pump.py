@@ -1,0 +1,183 @@
+import multiprocessing as mp
+import threading
+import time
+import uuid
+
+import numpy as np
+import pytest
+
+from scripts.standalone.shared_frames import FREE, SharedFrames
+from scripts.standalone.driver_owner import DriverOwner
+
+
+try:
+    from scripts.standalone.video_pump import DISPLAY_FAIL_HOLD, RUNNING, STOPPED, VideoPump
+except ModuleNotFoundError:
+    VideoPump = None
+    DISPLAY_FAIL_HOLD = "DISPLAY_FAIL_HOLD"
+    RUNNING = "RUNNING"
+    STOPPED = "STOPPED"
+
+
+class FakeHDMI:
+    def __init__(self, shape):
+        self.shape = shape
+        self.created = []
+        self.submitted = []
+
+    def newframe(self):
+        frame = np.zeros(self.shape, dtype=np.uint8)
+        self.created.append(frame)
+        return frame
+
+    def writeframe(self, frame):
+        self.submitted.append(frame)
+
+
+class FakeOwner:
+    def __init__(self):
+        self.retained = []
+        self.calls = []
+
+    def call(self, function, *args, timeout=2.0):
+        self.calls.append((function, args, timeout))
+        return function(*args)
+
+    def retain(self, resource):
+        self.retained.append(resource)
+        return resource
+
+
+@pytest.fixture
+def frames():
+    value = SharedFrames.create(ctx=mp.get_context("spawn"), shape=(8, 12))
+    yield value
+    if not value.closed:
+        assert value.statuses() == (FREE, FREE, FREE)
+        value.close()
+
+
+def _publish(frames, identity, pixels, *, scale_ns=2_000_000, draw_ns=3_000_000):
+    slot, target = frames.claim_write()
+    target[:] = pixels
+    frames.publish(slot, identity, 1, scale_ns=scale_ns, draw_ns=draw_ns)
+
+
+def _pump_type():
+    if VideoPump is None:
+        pytest.fail("VideoPump is not implemented")
+    return VideoPump
+
+
+def test_copies_only_matching_session_and_transfers_frame_once(frames):
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    hdmi = FakeHDMI((8, 12))
+    owner = FakeOwner()
+    _publish(frames, identity, 117)
+
+    pump = pump_type(frames, type("HW", (), {"hdmi": hdmi})(), owner, identity)
+    try:
+        deadline = time.monotonic() + 1
+        while pump.submitted == 0 and time.monotonic() < deadline:
+            time.sleep(0.001)
+        assert pump.submitted == 1
+        assert len(hdmi.created) == len(hdmi.submitted) == 1
+        assert hdmi.submitted[0] is hdmi.created[0]
+        assert np.all(hdmi.submitted[0] == 117)
+        assert [call[0] for call in owner.calls] == [hdmi.newframe, hdmi.writeframe]
+        assert owner.calls[1][2] == pump_type.DEFAULT_SUBMIT_TIMEOUT
+        assert list(pump.timings_ms["copy_submit_ms"])
+        assert list(pump.timings_ms["scale_ms"]) == [2.0]
+        assert list(pump.timings_ms["draw_ms"]) == [3.0]
+    finally:
+        pump.request_stop()
+        assert pump.join(1)
+    assert frames.statuses() == (FREE, FREE, FREE)
+    assert pump.state == STOPPED
+
+
+def test_request_stop_does_not_wait_for_blocked_writeframe(frames):
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    started = threading.Event()
+    release = threading.Event()
+    hdmi = FakeHDMI((8, 12))
+
+    def blocked_write(frame):
+        started.set()
+        release.wait(2)
+
+    hdmi.writeframe = blocked_write
+    owner = FakeOwner()
+    _publish(frames, identity, 42)
+    pump = pump_type(frames, type("HW", (), {"hdmi": hdmi})(), owner, identity)
+    try:
+        assert started.wait(1)
+        before = time.monotonic()
+        pump.request_stop()
+        assert time.monotonic() - before < 0.05
+        assert pump.state == RUNNING
+        assert not pump.join(0.01)
+    finally:
+        release.set()
+    assert pump.join(1)
+    assert pump.state == STOPPED
+    assert frames.statuses() == (FREE, FREE, FREE)
+
+
+def test_submit_timeout_enters_display_fail_hold_and_retains_frame(frames):
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    started = threading.Event()
+    never_release = threading.Event()
+    hdmi = FakeHDMI((8, 12))
+
+    def timed_out_write(frame):
+        started.set()
+        never_release.wait(1)
+
+    hdmi.writeframe = timed_out_write
+    owner = DriverOwner()
+    _publish(frames, identity, 231)
+    pump = pump_type(frames, type("HW", (), {"hdmi": hdmi})(), owner,
+                     identity, submit_timeout=0.03)
+    try:
+        assert started.wait(1)
+        assert pump.join(1)
+        assert pump.state == DISPLAY_FAIL_HOLD
+        assert "exceeded" in pump.error.lower() or "timeout" in pump.error.lower()
+        assert len(owner.retained) == 1
+        assert owner.retained[0] is hdmi.created[0]
+        assert pump.submitted == 0
+        assert frames.statuses() == (FREE, FREE, FREE)
+    finally:
+        never_release.set()
+
+
+def test_mismatched_session_is_released_without_hardware_access(frames):
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    _publish(frames, uuid.uuid4(), 9)
+    hdmi = FakeHDMI((8, 12))
+    owner = FakeOwner()
+    pump = pump_type(frames, type("HW", (), {"hdmi": hdmi})(), owner, identity)
+    try:
+        assert pump.join(1)
+        assert pump.state == DISPLAY_FAIL_HOLD
+        assert "session" in pump.error.lower()
+        assert owner.calls == []
+        assert frames.statuses() == (FREE, FREE, FREE)
+    finally:
+        pump.request_stop()
+
+
+def test_idle_stop_leaves_no_reading_lease(frames):
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    hdmi = FakeHDMI((8, 12))
+    pump = pump_type(frames, type("HW", (), {"hdmi": hdmi})(), FakeOwner(), identity)
+    time.sleep(0.01)
+    pump.request_stop()
+    assert pump.join(1)
+    assert frames.statuses() == (FREE, FREE, FREE)
