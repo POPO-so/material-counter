@@ -33,6 +33,14 @@ python -m scripts.standalone.delivery --root <assembled-package> --build-index
 
 旧索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 及其 55 项记录是历史完整性结果。当前本地 `delivery.py --build-index` 已以退出码 0 完成，索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件；新索引 SHA-256 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 与 `package.env.candidate` 一致。此结果仅证明本地文件完整性并完成候选包准备，不代表离线依赖闭包、目标板运行、service 安装或 G4 通过。候选状态见 [G4 包候选记录](../../data/results/standalone-20261030-g4-offline-package-candidate/README.md)。
 
+本地源码来源核对工具 `scripts/delivery/verify_standalone_source.py` 已加入代码，但尚未执行。总体核验阶段可从仓库根目录运行：
+
+```sh
+python -B -m scripts.delivery.verify_standalone_source --package-root data/results/standalone-20261030-g4-offline-package-candidate/package --source-root . --index-sha256 63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d
+```
+
+它先核对包索引，再将包内 37 个应用 Python 模块逐字节与 `package-source.json` 声明的 Git 提交对应；结果只证明本地源码对应关系，不证明板端安装或运行。
+
 完整部署交付仍缺少并需另行验证：
 
 - [ ] 候选目录已组装入口、37 个应用模块、匹配 BIT/HWH/manifest/native、7 个锁定 PYNQ 源和 2 个字体；板端已有运行环境的版本见包候选记录。第三方 Python 包没有封装或重装，仍须确认目标部署仅依赖现有板端环境，或另行准备可追溯的离线依赖集。

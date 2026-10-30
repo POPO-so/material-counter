@@ -9,6 +9,8 @@
 - 上一版归档为 54 个包文件（不含 deployment index），索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a`。源码刷新后，该摘要及其 55 项核对结果仅为历史记录，不代表当前候选目录完整。
 - `python -B -m scripts.standalone.delivery --root <package> --build-index` 是已组装候选包的索引生成入口；本地步骤已完成；当前索引 SHA-256 为 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d`，内建完整性结果为 55 个包文件建索引、56 个文件核对通过。
 
+本地源码对应核对工具 `scripts/delivery/verify_standalone_source.py` 已提交，调用方式见 [部署说明](../../../scripts/standalone/DEPLOYMENT.md)。它尚未运行；包源码清单的提交号仍是待核对声明，不能作为来源对应关系已验证的证据。
+
 ## 内容
 
 - 与 G2 manifest 配套的 BIT、HWH、manifest 和 ELF32 ARM 原生库；BIT SHA-256 `79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0`。
