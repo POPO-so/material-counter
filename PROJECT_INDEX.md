@@ -1,5 +1,7 @@
 # Project Index
 
+当前脱机集成状态（2026-10-30）：G0/G1/G1.5 已通过，G2 现已完成安全寄存器读回、HP0/1/2 与时钟复核及统一所有者 RLE+HDMI 冒烟和正常停止，见 [G2 放行记录](data/results/standalone-20261030-g2-recovery/README.md)。G2.5/G3/G4 尚未通过；Route/接口保持候选，物料准确率未验收。更早段落属于历史阶段快照。
+
 Agent navigation map for `material-counter`. Use linked documents as the source of project facts; this file only points to them.
 
 ## Start here
