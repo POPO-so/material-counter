@@ -1,0 +1,88 @@
+{
+  "schema": "material-counter.g2-board-post-smoke-readback.v1",
+  "boot_id": "e48ff153-bd85-4dd6-98f6-438bd51da08d",
+  "g2_bit": {
+    "path": "/home/xilinx/standalone-g2-smoke-20261030/g2-integrated.bit",
+    "sha256": "2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18"
+  },
+  "g2_hwh_sha256": "a663072734f2b16be9f37be0699ba897b5902c0b46398a4be914f6ee40fa852f",
+  "pynq_global_state": {
+    "loaded_bit_path": "/home/xilinx/standalone-g2-smoke-20261030/g2-integrated.bit",
+    "loaded_bit_sha1": "507c9f5e7a570c72ce8c48f9d20bc37749d51331",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true
+  },
+  "successful_post_run_register_reads": {
+    "rle_dma": {
+      "mm2s_dmacr": "0x00100003",
+      "mm2s_dmasr": "0x00001002",
+      "s2mm_dmacr": "0x00100003",
+      "s2mm_dmasr": "0x00001002",
+      "both_channels_idle": true,
+      "error_bits": 0,
+      "run_stop_bit_remains_set": true
+    },
+    "hdmi_vdma": {
+      "mm2s_dmacr": "0x00010002",
+      "mm2s_dmasr": "0x00010001",
+      "s2mm_dmacr": "0x00000000",
+      "s2mm_dmasr": "0x00000000",
+      "mm2s_halted": true,
+      "error_bits": 0
+    },
+    "frame_monitor_signature": "0x4d435631"
+  },
+  "ownership_and_memory": {
+    "proc_device_fd_findings_before_optional_pipeline_probe": [],
+    "proc_device_fd_denied": [],
+    "active_runner_process_after_probe": false,
+    "cma_total_kib_after_probe_process_exit": 131072,
+    "cma_free_kib_after_probe_process_exit": 46236
+  },
+  "rle_pipeline_post_run_probe": {
+    "address": "0x43c20000",
+    "result": "external_abort",
+    "snapshot_written": false,
+    "dmesg_excerpt": [
+      "Unhandled fault: external abort on non-linefetch (0x1018) at 0xb6f59000",
+      "[b6f59000] *pgd=05d95831, *pte=43c20703, *ppte=43c20e33"
+    ],
+    "root_cause": "unresolved; no further access to this page was attempted"
+  },
+  "rle_runner_preflight_and_functional_result": {
+    "signature_geometry_capacity_preflight": "passed by run_counter transport preflight",
+    "frames": 12,
+    "pixel_verified_frames": 12,
+    "invalid_frames": 0,
+    "count_accuracy": "NOT_MEASURED",
+    "buffers_held": false,
+    "report": "rle-g2-adapter/board/rle-run-02.json"
+  },
+  "clock_frequencies_measured_on_board": true,
+  "interpretation": "Sequential functional smoke evidence only. Board readback confirmed FCLK0/1/2 and HP1/HP2 widths; HP0 width is static HWH evidence only. This does not verify concurrent HDMI/RLE operation or G2.5 DDR/backpressure/latency gates.",
+  "board_clocks_mhz": {
+    "fclk0": 50.0,
+    "fclk1": 100.0,
+    "fclk2": 142.857143,
+    "source": "display runner Clocks readback and independent PYNQ Clocks query"
+  },
+  "board_hp_width_checks": {
+    "hp0": {
+      "bits": 64,
+      "source": "G2 HWH/build readback only",
+      "board_readback": false
+    },
+    "hp1": {
+      "bits": 32,
+      "status": "AFI1_HP1_32BIT_SYNC_PASS",
+      "source": "rle-run-02.json afi1",
+      "board_readback": true
+    },
+    "hp2": {
+      "bits": 32,
+      "status": "HP2_READ_32BIT_SYNC_PASS",
+      "source": "g2-display-run-01.json hp2_read32",
+      "board_readback": true
+    }
+  }
+}

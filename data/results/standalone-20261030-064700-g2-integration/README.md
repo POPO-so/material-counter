@@ -1,6 +1,6 @@
 # G2 集成构建与门禁记录
 
-**当前结论：静态构建与实现检查通过；G2 板端门禁未通过，本次未确认 G2 BIT 已加载。G2 整体不得标记为通过。** 本次实现用于验证已审查的集成候选，不构成 Route、视频输入或正式接口冻结；G2.5、G3、G4 仍未执行。
+**当前结论：G2 静态集成构建、实现报告和制品身份检查通过；同一 G2 BIT 下，HDMI/camera 运行与 RLE 12 帧自测已串行完成。额外读取 RLE pipeline AXI-Lite 页 `0x43C20000` 时发生 Linux external abort，根因未定，完整板端读回门禁仍未通过。G2 整体不放行；G2.5、G3、G4 尚未执行。** 本候选不冻结 Route、视频输入或正式接口。
 
 ## 构建身份
 
@@ -63,17 +63,38 @@ Vivado Tcl readback、HWH 均确认 11 个窗口大小为 64 KiB 且互不重叠
 
 ## 板端冒烟状态与限制
 
-设备 `192.168.2.99`（hostname `pynq`），boot ID `e48ff153-bd85-4dd6-98f6-438bd51da08d`。BIT/HWH/manifest 上传到新目录 `/home/xilinx/standalone-g2-smoke-20261030/`；板端 SHA-256、bundle 校验和 PYNQ runtime/font 源文件哈希检查均通过。板端 wall clock 显示 2025-05-07，验收时长不得依赖该系统时间。
+设备 `192.168.2.99`（hostname `pynq`），本轮 boot ID `e48ff153-bd85-4dd6-98f6-438bd51da08d`。板端 G2 BIT/HWH 位于 `/home/xilinx/standalone-g2-smoke-20261030/`。板端 BIT SHA-256 `2ec1f1dec5a2df2e07044e94ecacd5d20aeef19ec6787077c0728d24053a8b18`、HWH SHA-256 `a663072734f2b16be9f37be0699ba897b5902c0b46398a4be914f6ee40fa852f`，均与集成构建产物相同。板端 wall clock 显示 2025-05-07，运行时长以 monotonic 计时为准。
 
-尝试复用板端 SHA 为 `94b13d8e591e0b6d1747ee3b1283ee836e62c5129a2393b0b795540bc13069ea` 的 G1 runner 时，首次因旧部署缺少 `scripts.wo0015.board_preflight` 而在硬件操作前退出；该只读模块随后仅放到新 G2 隔离目录，板端 `/proc` owner 审计通过。按 `--duration 60 --fps 10 --source camera` 再次启动后，runner 报 `ModuleNotFoundError: No module named 'scripts.rle'` 并进入 `FAIL_HOLD`。原始报告为 [g1-run-01-failhold.json](board/g1-run-01-failhold.json)，独立寄存器/进程复核记录在 [post-failhold-readback.json](board/post-failhold-readback.json)。该报告声明范围是 G1 independent display，samples 为空；**不能作为 G2 冒烟结果，也不能证明 G2 BIT 已下载**。
+### Fail-Hold 恢复与隔离导入
 
-后续独立只读复核确认：PYNQ 仍报告旧 G1 BIT `/home/xilinx/standalone-20261029-g1/export/display-diag.bit`，SHA-256 `c1829e1af595a22daf85da35449c93fe47808888ddf33b262a46252f7bc1e73f`；FPGA manager 为 operating；VDMA CR `0x00011000`（run/stop=0）、MM2S SR `0x00011001`（halted、无错误）、S2MM SR `0`；monitor signature `0x4D435631`。runner PID 28352 仍处于 fail-hold，报告 driver job finished、无 pending operation、retained_count=0；根进程 FD 只见锁文件、pipe/tty/eventpoll/socket，无 `/dev/mem` 或 video FD。当前 board recovery 仍待用户确认，未启动第二个硬件任务。
+最初的 `g1-run-01-failhold.json` 记录缺失 `scripts.rle` 后的 Fail-Hold，scope 是 G1 independent display；当时 PYNQ 仍报告旧 G1 BIT。用户授权安全回收与重试后，重新检查发现旧 runner PID `28352` 已不存在，因此没有发送终止信号。`/proc` 设备 FD 审计无 owner，boot ID 未变，VDMA halted 且无错误，CMA 可用；G1 BIT 在加载 G2 前仍是当时已加载位流。原报告和只读复核保留在 `g1-run-01-failhold.json` 与 `post-failhold-readback.json`，不计作 G2 通过证据。
 
-因此 G2 的“新 BIT 上复核 FCLK/地址/DMA 所有权、相机/显示启动和正常停止”及“最小板端 RLE+HDMI 集成冒烟”仍未完成；G2 不能放行，G2.5/G3/G4 不得开始或标记通过。失败后硬件状态读回只表明旧 G1 remains loaded，不替代 G2 板测。
+将 `scripts.rle` 最小运行依赖放入独立目录 `/home/xilinx/standalone-g2-smoke-20261030/python-modules/` 后，板端无硬件触碰导入检查通过：display runner 与 RLE runner 可导入，未导入 PYNQ、未打开 `/dev/mem`/video 设备、未调用相机 API。首个 RLE 尝试发生在 G1 BIT 仍加载时，误探 RLE DMA 地址 `0x40400000` 导致 external abort；此后改为先加载 G2，再在已加载 G2 上运行 RLE。
+
+### HDMI/camera 串行冒烟
+
+使用已有 display runner 与 G2 display smoke manifest（SHA-256 `c115950a342535961f3de32b3b3e038d892e4bd8ef7491871a1c49291f47c4d9`）执行 60 秒 camera 冒烟。报告 `board/g2-display-run-01.json` 的状态为 `STOPPED`，monotonic duration `61.2964 s`，提交 `589` 帧，正常释放相机，关闭后 VDMA halted。32 个 monitor snapshot 的错误标志均为 false；最后读数 `unique=589`、`frame=588`，上下行 marker 一致。报告中的 scope 字符串沿用 G1 runner 的 `G1 independent display; no RLE counting`，所以它只证明显示链路本次运行，不代表已有 G2 联合 runner。
+
+报告同时记录板端 FCLK0/1/2 为 `50 / 100 / 142.857143 MHz`，HP2 读回为 `HP2_READ_32BIT_SYNC_PASS`；后续独立 `pynq.Clocks` 查询得到相同 FCLK 值。G2 loaded-bit 路径及 SHA-256 在 HDMI 后复核与本次 BIT 匹配。
+
+### RLE 串行自测
+
+RLE runner 使用独立的严格 schema；因此从完全相同的 G2 BIT/HWH 生成板端 adapter manifest `board/rle-g2-adapter/export/manifest.json`（SHA-256 `9eeb76496f3bbc2a90992b0d2030078daea2b01430e69ac8b536e66377cbaa15`）。`board/rle-g2-adapter/board/rle-run-01.json` 是安全拒绝：PYNQ 已加载的 BIT 与 adapter 路径不同，虽内容相同，旧检查只比较路径，0 帧启动且未持有 buffer。为允许“显式 opt-in 且 SHA-256 相同”的路径等价，`board_preflight` 和 RLE runner 加了窄范围兼容检查；`fix/允许同哈希位流路径` 的 25 项板端 preflight 测试通过，修改已合入当前 G2 分支（`2d64e9b`）。哈希不同仍拒绝。
+
+随后不重新下载位流，在已经加载的 G2 BIT 上完成 `board/rle-g2-adapter/board/rle-run-02.json`：`RLE_BOARD_COMPLETED`，640×400 moving synthetic pattern 12 帧，12/12 像素重建通过，0 invalid frame，`buffers_held=false`；运行报告的 DMA 实际回传长度与硬件长度一致，HP1 32-bit AFI1 同步检查通过。`count_accuracy=NOT_MEASURED`；该短自测不是计数准确率或持续性能验收。RLE 报告记录的 loaded-bit SHA-256 与 G2 BIT 相同；adapter 文件路径不同是有意的。
+
+### 退出后状态与未解决读回
+
+最后读回确认 PYNQ global state 指向 G2 BIT、`shutdown_ips={}`；RLE DMA MM2S/S2MM status 均为 `0x00001002`（idle、无错误位），control run/stop bit 仍置位，因此状态应称 **idle**，不称 halted。HDMI VDMA MM2S status 为 `0x00010001`（halted、无错误），S2MM 通道未启用；frame monitor signature 为 `0x4d435631`。设备 FD owner 审计 `findings=[]`、`denied=[]`，runner 结束后未发现活动 runner，CMA 在额外探读进程退出后为 `46236 KiB / 131072 KiB`。汇总见 `board/g2-post-smoke-readback.json`。
+
+尝试额外独立读取 RLE pipeline control 页 `0x43C20000` 时，PYNQ MMIO 进程触发 kernel external abort（`dmesg`：`Unhandled fault: external abort on non-linefetch (0x1018)`；映射 PTE 对应 `0x43c2xxxx` 页），未生成完整快照。根因尚未确定；没有再次访问该页，也未写寄存器。RLE runner 在 12 帧传输期间通过其 preflight 与每帧状态轮询完成签名/几何/状态访问，因此本事件与自测完成报告并存，需作为独立的退出后读回问题调查，不能隐去或推断为设计已无故障。
+
+本轮确认了 FCLK0/1/2、HP1 和 HP2；HP0 的宽度目前只有 HWH/构建读回及成功 RLE MM2S 功能路径证据，没有独立 AFI0 板端读回。Vivado 集成报告仍记录 CDC-6/CDC-15 warning；并发 DDR、反压和延迟未测。两条 runner 是先后独立运行，没有同一运行 session、并发协调或统一停机证据。因此本轮只支持 G2 功能冒烟的部分证据，不构成 G2 完整放行。
 
 ## 后续放行条件
 
-1. 按确认的安全恢复步骤释放旧 fail-hold runner，并验证相机、VDMA、锁和 CMA 资源状态。
-2. 补齐隔离 runner 的 Python 依赖；先做无硬件触碰的 import/runtime 检查，再核对 BIT/HWH/manifest 和 boot ID。
-3. 重新执行新 G2 BIT 上的最小 HDMI/相机/monitor 冒烟并记录正常停止；另需按 G2 目标执行 RLE 自检或板测，证明 RLE DMA 控制签名/几何及 DMA idle。
-4. 独立复核板端 FCLK0/1/2、M00–M10 地址、HP0/HP1/HP2 与显示/ RLE buffer ownership。通过后再评估是否放行 G2；G2.5 并发压力仍是单独门禁。
+1. 分析额外读取 `0x43C20000` 后发生的 external abort；先从构建 HWH、地址译码、时钟/复位和 Linux 映射证据定位根因，再决定如何安全复核。当前不要重复访问该页。
+2. 在原因消除后补齐退出后 pipeline signature/geometry/status 的安全只读读回，并保存寄存器、内核日志、owner、CMA、boot ID 和 BIT hash 一致的同轮证据；确认 RLE DMA idle、VDMA halted、缓冲释放。
+3. 补独立 HP0/AFI0 板端宽度读回；FCLK0/1/2、HP1/2 本轮已有板端读回。地址 M00–M10 仍以已通过的 HWH/Tcl readback 为静态证据，不把它当作所有寄存器的板端实读。
+4. G2 放行前明确记录 RLE 与 HDMI 的调用/所有权协调以及正常停机边界；本轮已有功能测试是两个 runner 的串行执行。
+5. G2.5 仍须另测 HDMI 720p60 扫描期间有目标及高游程 RLE 并发，量化共享 DDR 竞争、反压、错误率及 RLE 延迟分位数；之后才评估 G3/G4。G2.5、G3、G4 当前未开始。
