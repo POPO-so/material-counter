@@ -140,7 +140,7 @@ def source_identity(project_root):
 def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
     """Own ordinary RAM only; a drawing failure cannot free CMA or reload PL."""
     cv2.setNumThreads(2)
-    composer=GrayComposer(font,latin_font_path=latin_font,gray_interpolation=cv2.INTER_LINEAR)
+    composer=GrayComposer(font,latin_font_path=latin_font,gray_interpolation=cv2.INTER_AREA)
     try:
         while not stop.is_set():
             lease=inputs.acquire_latest()
