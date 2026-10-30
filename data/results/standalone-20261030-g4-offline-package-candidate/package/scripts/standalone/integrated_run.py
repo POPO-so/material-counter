@@ -58,17 +58,27 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
 
 
-def start_drawing_child(ctx, inputs, outputs, errors, counters, font, latin_font):
+def start_drawing_child(
+    ctx, inputs, outputs, errors, counters, font, latin_font, failure_mode=None
+):
     """Start the drawing worker and retain a child that acquired a PID on error."""
+    if failure_mode not in (None, "create", "start", "after-start"):
+        raise ValueError("unknown drawing process failure mode")
     stop = None
     child = None
     try:
         stop = ctx.Event()
+        if failure_mode == "create":
+            raise OSError("injected drawing Process creation failure")
         child = ctx.Process(
             target=drawing_process,
             args=(inputs, outputs, stop, errors, counters, font, latin_font),
         )
+        if failure_mode == "start":
+            raise OSError("injected drawing Process.start failure")
         child.start()
+        if failure_mode == "after-start":
+            raise OSError("injected error after drawing Process.start returned")
         return child, stop, None
     except Exception as error:
         # A failed Process.start() may still leave a live child if the platform
@@ -179,12 +189,16 @@ def main(argv=None):
     parser.add_argument('--continuous',action='store_true',help='camera service; bounded RAM diagnostics until explicit stop')
     parser.add_argument('--commands',type=Path,help='JSON map frame number -> ordered control commands')
     parser.add_argument('--inject-drawing-exit',type=int,help='cooperative drawing exit after this processed frame')
+    parser.add_argument('--inject-drawing-start-failure',choices=('create','start','after-start'),
+        help='inject one drawing process creation/start error on its first launch attempt')
     parser.add_argument('--freeze-telemetry-at-frame',type=int,help='test staleness without stopping safety checks')
     parser.add_argument('--font',default='/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf')
     parser.add_argument('--latin-font',default='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
     args=parser.parse_args(argv)
     if not args.execute or not 1<=args.duration<=7200 or not 1<=args.frames<=200000 or (args.continuous and args.source!='camera'):
         parser.error('requires execute, duration 1..7200 and frames 1..200000')
+    if args.inject_drawing_start_failure and args.display!='on':
+        parser.error('drawing process failure injection requires display on')
     if args.output.exists() or not args.native_lib.is_file():parser.error('new output and prebuilt library required')
     if args.startup_record and args.startup_record.exists():parser.error('startup record already exists')
     files=verify_bundle(args.manifest,args.manifest_sha256)
@@ -275,17 +289,24 @@ def main(argv=None):
                 report['recoveries'].append(dict(kind='startup_record',error=repr(error),monotonic=time.monotonic()))
         binary=np.empty((400,640),np.uint8)
         next_drawing_retry=0
+        drawing_start_injection_done=False
         if args.display=='on':
             inputs=PreviewInputs.create(ctx);outputs=SharedFrames.create(ctx)
             def start_drawing(frame):
-                nonlocal process,stop_drawing,next_drawing_retry
+                nonlocal process,stop_drawing,next_drawing_retry,drawing_start_injection_done
+                failure_mode=None
+                if args.inject_drawing_start_failure and not drawing_start_injection_done:
+                    failure_mode=args.inject_drawing_start_failure
+                    drawing_start_injection_done=True
                 process,stop_drawing,error=start_drawing_child(ctx,inputs,outputs,
-                    drawing_errors,drawing_counts,args.font,args.latin_font)
+                    drawing_errors,drawing_counts,args.font,args.latin_font,
+                    failure_mode=failure_mode)
                 report['drawing_pid']=process.pid if process is not None else None
                 if error is not None:
                     failed_at=time.monotonic()
                     report['recoveries'].append(dict(kind='drawing_start_failed',frame=frame,
-                        error=repr(error),monotonic=failed_at))
+                        error=repr(error),injected=failure_mode is not None,
+                        failure_mode=failure_mode,monotonic=failed_at))
                     next_drawing_retry=failed_at+5
             video_pump=VideoPump(outputs,hw,video_owner,session)
         else:video_owner.call(hw.hdmi.close,timeout=3)

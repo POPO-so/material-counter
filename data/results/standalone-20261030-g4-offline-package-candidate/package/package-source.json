@@ -1,7 +1,7 @@
 {
   "schema": "material-counter.offline-package-source.v1",
   "status": "CANDIDATE_NOT_BOARD_ACCEPTED",
-  "source_commit": "71c6af30374f59601c38cf9a78d2a2b2c486c1b9",
+  "source_commit": "68703d15a904c228a0a1740441f29951b3848921",
   "source_branch": "feat/记录G3运行源码身份",
   "module_files": [
     "scripts/gray8/packet_codec.py",

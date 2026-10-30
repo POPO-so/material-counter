@@ -5,7 +5,7 @@
 ## 包身份
 
 - 候选目录：[package](package/)
-- 应用源码来源提交：`71c6af30374f59601c38cf9a78d2a2b2c486c1b9`，分支 `feat/记录G3运行源码身份`；`package-source.json` 当前列出 37 个应用 Python 模块。
+- 应用源码来源提交：`68703d15a904c228a0a1740441f29951b3848921`，分支 `feat/记录G3运行源码身份`；`package-source.json` 当前列出 37 个应用 Python 模块，包含绘图进程启动故障注入入口。
 - 上一版归档为 54 个包文件（不含 deployment index），索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a`。源码刷新后，该摘要及其 55 项核对结果仅为历史记录，不代表当前候选目录完整。
 - `python -B -m scripts.standalone.delivery --root <package> --build-index` 是已组装候选包的索引生成入口；本轮没有运行它，当前 deployment index 尚待代码阶段结束后重建。
 
