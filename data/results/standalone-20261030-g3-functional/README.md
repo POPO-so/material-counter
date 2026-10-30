@@ -1,6 +1,6 @@
 # G3 功能回归进度（部分）
 
-**状态：G3 未放行。** 已有一组固定回放在显示开启/关闭时的逐帧输出比较；同序列结果一致，且本组显示开启回放的近 30 秒窗口处理速率和有效新帧速率均超过 10 FPS。绘图启动失败时计数继续与有界重试的代码已补入，但尚未验证；GPIO/HDMI 实机恢复场景、按钮竞态、缩放黄金图、遥测过期、真实相机有目标运行及其余放行项仍待完成。
+**状态：G3 未放行。** 旧 v2 显示开/关回放已通过；本轮当前源码在同一 G2 制品上重跑 2,400 帧，轨迹、事件、计数与源码身份一致。346 项相关软件回归通过；本地 AREA ramp、常量灰度和二值 nearest 候选比较通过，LINEAR 候选有 640 个像素差异。绘图协作退出恢复和遥测冻结场景已通过。物理按钮消抖/长按、HDMI 热插拔、绘图 Process.start 异常注入、真实相机有目标输入及物料真值仍待完成；G3 未放行，G4 未开始。
 
 ## 本组结果身份
 
@@ -11,9 +11,40 @@
 
 两份运行 JSON 记录了相同的 boot ID、BIT、HWH、manifest、native library 和 commands SHA-256，但没有记录 Python runner 的提交号或源码 SHA-256。`failed-track-retention/staging-index.json` 属于更早的失败尝试，不能作为这组 v2 运行的源码身份；未来新增的 `source_identity` 字段只适用于采用该字段后生成的新运行报告，不能追补或反向归属这两份旧 v2 记录。因此以下比较可证明所保存的这组开/关显示输出一致，但不能唯一复原其 Python runner 版本。
 
-runner 现已加入未来报告的 `source_identity` 候选实现：它记录指定项目内 Python 源文件的相对路径 SHA-256 映射、规范化排序 JSON 整体摘要、文件数及范围，并在源码不可读时标记不完整和错误。该实现尚未验证。身份范围仅包括项目内 Python 源，不代表第三方依赖、ABI 或位流身份；G3 仍未放行。
+旧 v2 报告仍没有 source_identity，不能追补。当前源码运行报告已记录完整 source_identity，每轮均为 25 个项目内 Python 文件，digest 69d2f9996c3bfd4e0ff5fddc610dc355d57b59fd53789fb822efe5eda017815a。该身份只覆盖项目内 Python 源，不代表第三方依赖、ABI 或位流身份。
 
-## 已完成的比较子项
+## 当前源码身份回放与故障场景（2026-10-30）
+
+本轮使用临时 G3 包，源码提交 838f5ebb2a5562f72d7695b80d3c93c8265d9b76，deployment index SHA-256 12e4e93f553270c7a6028dd63e2f461fa5331e04597cf8fb95fa50740d31d70d。该包使用既有 G2 BIT/HWH/manifest/native library；包仅用于本轮验证，没有安装 systemd 服务或改动板端系统部署。板卡 boot ID e48ff153-bd85-4dd6-98f6-438bd51da08d，BIT SHA-256 79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0。
+
+| 结果 | 关键结果 | 报告 SHA-256 |
+|---|---|---|
+| [当前源码显示开启回放](replay-on-current.json) | 2,400 帧，STOPPED，计数 158，无效帧 0，时长 104.386 s | 9e7a80f00338479716f58540e301b30e002f72af3cdd8ae4b90b6dfc943b6240 |
+| [当前源码显示关闭回放](replay-off-current.json) | 2,400 帧，STOPPED，计数 158，无效帧 0，时长 57.116 s | 29fe217f7a808b3361948572b696f1439c6a2536c21de492256c5df0d8815d5a |
+| [协作式绘图退出恢复](drawing-exit-current.json) | 800 帧，STOPPED，在帧 338 记录 drawing exit code 0，计数 67 | d9881640446981451e19f3f02a8d33bf8907ff2357850c9c664940e14dd22aca |
+| [遥测冻结](telemetry-freeze-current.json) | 1,200 帧，STOPPED，计数 100；遥测变旧后计数继续 | 99ce896d38b834b3ba4f7d7c91f36886e073afb0f90023b32ff37e7dcab2c3c4 |
+
+开/关回放使用相同命令输入 SHA-256 2d2656815ac70479f8e00eb27bf07684a3557c8a7ee1ebaec66d8b40817f4e95，两轮 trace_sha256 均为 94249f6cbaaf69db09c61bfdfd38720b0d703ade7772204b52c4556c6efb7427，trace_frames=2400、invalid_frames=0、命令事件和最终计数均一致。两轮传输校验均有效：接收 5,452,800 字节、输入 beat 153,619,200、输出 beat 1,363,200。两份报告的源码身份 digest 相同：69d2f9996c3bfd4e0ff5fddc610dc355d57b59fd53789fb822efe5eda017815a，覆盖 25 个已加载项目 Python 文件，complete=true、错误列表为空。显示负载不同导致总周期/时长不同，不要求硬件周期相同。
+
+绘图退出轮处理帧数和传输计数完整，buffers_released=true、rle_buffers_released=true；遥测冻结轮在样本中观测到 performance、resources、xadc 均转为 stale，处理到第 1,200 帧且传输校验有效。所有板端运行报告均为 STOPPED，之后没有 integrated_run 或预览进程。
+
+### 软件与缩放比较
+
+项目相关软件回归使用 CPython 3.12.10，命令 `python -B -m pytest -p no:cacheprovider --basetemp <系统临时目录> scripts/standalone scripts/rle scripts/gray8 -q`，结果 **346 passed**。Windows 默认 python 指向 LibreOffice 内嵌 Python 3.13 且无 pytest；本轮改用项目记录的 CPython 3.12。
+
+[缩放比较报告](scaling-comparison/comparison.json)绑定 OpenCV 4.10.0 和本地 source identity digest d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8。常量灰度在 AREA/LINEAR 下以及 AREA ramp 的 207,360 个像素均匹配；nearest 比较排除计数线遮盖的 7 列，其余 204,840 个像素均匹配。LINEAR ramp 候选有 640 个像素不匹配，差异出现在目标列 0、6、9、12、15；本轮只记录差异，不推断 OpenCV 内部舍入原因，也不冻结插值策略。实际输出 raw 和 PNG 位于 scaling-comparison/。
+
+### 尚未完成
+
+- 实体 GPIO 按钮的消抖、浮点、长按边界和真实帧边界竞态。
+- HDMI 实际拔插；协作退出不代表 HDMI/VDMA 故障或热插拔。Process.start 异常路径也未被实机注入。
+- 有目标真实相机输入和人工物料真值准确率。
+- LINEAR 候选需独立解释或替换候选规则；灰度插值策略仍未冻结。
+- G3 全部放行条件汇总，以及后续 G4 冷启动/有目标长时运行。
+
+板端系统时钟早于本机归档时间，解压时出现未来时间戳提示。本轮以 boot ID、源码/制品哈希和 monotonic 计时为准，不使用板端文件时间推断运行先后。
+
+## 已完成的比较子项（旧 v2 运行；当前源码回放见下节）
 
 | 指标 | Display on | Display off |
 |---|---:|---:|
@@ -47,7 +78,7 @@ runner 现已加入未来报告的 `source_identity` 候选实现：它记录指
 
 本次继续整理进度时未运行测试或板端任务；以上数字来自已保存的原始 JSON 和控制台日志。
 
-## G3 回归场景准备（2026-10-30；未执行）
+## G3 回归场景准备（2026-10-30；以下为运行前状态记录）
 
 ### 帧边界命令回放输入
 
@@ -59,7 +90,7 @@ runner 现已加入未来报告的 `source_identity` 候选实现：它记录指
 
 ### 缩放黄金向量准备
 
-已形成[缩放黄金向量准备稿](scaling-golden-preparation.md)，并将候选规则及期望样点机器化记录在[缩放候选向量 JSON](scaling-candidate-vectors.json)（schema `material-counter.scaling-candidate-vectors.v1`，状态 `candidate_unexecuted`）。内容包括常量灰度、横向 ramp 的 `INTER_AREA`/`INTER_LINEAR` 手算候选值及二值 nearest 的矩形/边界坐标；灰度策略仍未冻结。已用[标准库生成器](generate_scaling_candidate_sources.py)生成三份固定 raw 源输入，JSON 记录其相对路径、C row-major uint8 布局、`[400,640]` 形状、字节数和 SHA-256：
+已形成[缩放黄金向量准备稿](scaling-golden-preparation.md)，并将候选规则及期望样点机器化记录在[缩放候选向量 JSON](scaling-candidate-vectors.json)（schema `material-counter.scaling-candidate-vectors.v1`，当前状态 `comparison_complete_candidate_only`）。内容包括常量灰度、横向 ramp 的 `INTER_AREA`/`INTER_LINEAR` 数学候选及二值 nearest 的矩形/边界坐标；比较细节见下文，灰度策略仍未冻结。已用[标准库生成器](generate_scaling_candidate_sources.py)生成三份固定 raw 源输入，JSON 记录其相对路径、C row-major uint8 布局、`[400,640]` 形状、字节数和 SHA-256：
 
 | 输入源 | SHA-256 |
 |---|---|
@@ -78,7 +109,7 @@ runner 现已加入未来报告的 `source_identity` 候选实现：它记录指
 | [灰度 ramp INTER_AREA](scaling-expected-candidates/gray-ramp-inter-area-576x360.raw) | 精确 overlap 加权平均，源覆盖 `[10*j/9,10*(j+1)/9)`；Fraction 精确计算，round-to-nearest ties-to-even | `81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8` |
 | [灰度 ramp INTER_LINEAR](scaling-expected-candidates/gray-ramp-inter-linear-576x360.raw) | 坐标 `(20*j+1)/18` 线性插值；Fraction 精确计算，round-to-nearest ties-to-even | `56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c` |
 
-四份数组均为未执行的候选参考数据，不是 compositor 输出、实测比较或黄金证据。INTER_LINEAR 在目标列 `j=19` 有唯一精确值 `252.5`，本候选生成舍入约定取 `252`；尚未与 OpenCV 比较，不冻结运行时行为。INTER_AREA 576 列没有精确 half tie。PNG 未生成，也没有 compositor comparison。当前 v2 运行仍无 runner hash；未来新运行报告将带 `source_identity`，但它只覆盖项目内 Python 源，不等于依赖/ABI/位流身份。灰度策略未冻结；实现代码尚未验证，G3 未放行。
+四份数组仍是独立数学候选，比较结果记录在 [scaling-comparison/comparison.json](scaling-comparison/comparison.json)。OpenCV 4.10.0 下，常量灰度两种插值、AREA ramp 及 nearest 未覆盖计数线的 204840 个像素均匹配；LINEAR ramp 有 640/207360 个差异，集中在输出列 0、6、9、12、15，候选未接受为运行时黄金。五份实际区域 raw/PNG 已保存；比较绑定的本地 source identity digest 为 d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8。灰度策略仍未冻结；G3 未放行。
 
 ### 后续注入场景及边界
 
@@ -90,10 +121,10 @@ runner 现已加入未来报告的 `source_identity` 候选实现：它记录指
 | 物理按钮与 HDMI 热插拔 | 在同一 G2 制品上实际操作 GPIO 按钮及 HDMI 连接，保存按键/显示状态和计数记录 | --commands、display=off 与绘图退出注入都不能替代物理输入或热插拔 |
 | 缩放黄金图 | 固定源帧、预期输出图、缩放策略与像素比较结果并保存哈希 | 目前缺少可追溯的 G3 黄金图结果 |
 
-上述场景仅用于排定后续 G3 执行内容。本次只准备了命令输入并梳理现有运行记录，没有执行回放、按钮、遥测或显示故障场景；没有新增 G3 通过项。
+上表记录的是本轮执行前准备状态。当前源码回放、遥测冻结和协作式绘图退出的结果见本页“当前源码身份回放与故障场景”及新报告链接；物理 GPIO 与 HDMI 热插拔仍未执行。
 
-## 绘图启动失败恢复代码（2026-10-30；未验证）
+## 绘图启动失败恢复代码与协作退出验证（2026-10-30）
 
 - 初始启动与后续恢复启动均捕获子进程创建或 `process.start()` 异常，记录 `drawing_start_failed`、帧号、错误和 monotonic 时间；确认没有子进程启动时保持 `process=None`，每次失败后设置 5 秒重试间隔。
 - 主循环支持从 `process=None` 重试恢复。只有确认旧子进程已死亡后才 join/reclaim 该子进程持有的共享帧 lease；没有活绘图子进程时跳过显示发布，RLE transfer 与 `advance_count` 继续按原流程执行。
-- 记录启动错误后仍沿既有生命周期停止 VideoPump 并清理 HDMI 资源。此代码改动未运行任何检查或测试；GPIO/HDMI 实机恢复场景仍待后续统一验证，G3 未放行。
+- 本轮板端协作退出注入在处理帧 338 触发 drawing exit code 0；800 帧仍全部处理，计数为 67，传输校验有效，DMA/VDMA 和 RLE/显示缓冲释放标志均为真。该场景没有注入 Process.start 创建/启动异常，也不代表 HDMI 热插拔。物理 GPIO/HDMI 场景仍待执行，G3 未放行。

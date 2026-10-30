@@ -1,6 +1,6 @@
 # 缩放黄金向量准备稿
 
-> **状态：三份固定源输入及四份候选 expected arrays 已生成，缩放候选仍未执行。** [候选规则与期望样点 JSON](scaling-candidate-vectors.json) 使用 schema `material-counter.scaling-candidate-vectors.v1`、状态 `candidate_unexecuted`。四份候选数组都不是 compositor 输出、实测比较或黄金证据。灰度 ramp 采用标准库 `Fraction` 精确运算；候选生成约定为 round-to-nearest ties-to-even。`INTER_LINEAR` 的目标列 `j=19` 精确为 `252.5`，本约定取 `252`；尚未与 OpenCV 比较，不冻结运行时行为。`INTER_AREA` 所有 576 列均无精确 half tie。PNG 未生成，没有 compositor comparison，也没有 runner 源码哈希绑定；灰度策略未冻结，G3 未放行。
+> **状态：固定源输入及四份数学候选数组已与本地 GrayComposer 比较，候选仍未全部匹配。** [候选向量 JSON](scaling-candidate-vectors.json) 状态为 `comparison_complete_candidate_only`，详细报告见 [scaling-comparison/comparison.json](scaling-comparison/comparison.json)。常量灰度、默认 `INTER_AREA` ramp 与二值 nearest（排除计数线覆盖列）匹配；`INTER_LINEAR` ramp 有 640 个像素差异。实际 raw/PNG 和本地源码身份已保存。灰度策略未冻结，G3 未放行。
 
 ## 固定源数组
 
@@ -31,11 +31,23 @@
 - 几何顺序为先裁剪，再缩放坐标；裁剪后的坐标按 `floor(0.9*x + 0.5)` 换算。
 - 首末行标记位于 `x=640..863`。右侧状态面板的像素会受字体及 Pillow 环境影响。
 - 现有 `test_compositor.py` 用 `cv2.resize` 生成预期灰度及二值数组。因此这些数组与实现共享缩放实现来源，不能单独充当独立 oracle。
-- G3 v2 缺少 runner 源码哈希；未来采用新字段的运行报告会带 `source_identity`，不能追补旧 v2 记录。该字段只覆盖项目内 Python 源，不等于依赖/ABI/位流身份，当前实现尚未验证。目标目录现有三份固定 raw 源输入，以及常量灰度、二值 nearest、INTER_AREA ramp 和 INTER_LINEAR ramp 四份候选 expected arrays。PNG 和 compositor comparison 均未生成或运行；实际比较结果尚不存在。
+- 旧 v2 报告没有 runner 源码身份；本轮四份新板端报告均记录完整 source_identity，但不能追补旧记录。它只覆盖项目内 Python 源，不等于依赖/ABI/位流身份。缩放本地对照绑定 source identity digest d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8；五份实际图像区域 raw/PNG 和 comparison.json 已生成。
 
-## 静态检查记录
+## 本地 compositor 比较结果（OpenCV 4.10.0）
 
-静态查看发现 `test_render_preserves_fixed_geometry_scaling_padding_and_binary_values` 的输入曾将 `source binary[100,100]` 设为 `255`，但断言输出 `(x=9,y=18)` 与 `(x=11,y=20)`；按当前 0.9 缩放和最近邻采样，这些位置对应源区域 `x=[10,13), y=[20,23)`。已将夹具输入改为该 3×3 源区域，使输入与既有断言的坐标意图一致。此修改只依据源码和坐标关系静态判断，未运行测试；不据此声称测试通过，也未生成独立黄金向量。
+| 候选 | 比较范围 | 结果 |
+|---|---:|---|
+| 常量灰度 73，INTER_AREA | 207360 像素 | 0 差异 |
+| 常量灰度 73，INTER_LINEAR | 207360 像素 | 0 差异 |
+| ramp，INTER_AREA | 207360 像素 | 0 差异 |
+| ramp，INTER_LINEAR | 207360 像素 | 640 差异；目标列 0、6、9、12、15，差异值为 ±1 |
+| 二值 nearest | 排除计数线遮挡的 7 列后 204840 像素 | 0 差异 |
+
+LINEAR 候选差异只证明当前精确有理数 ties-to-even 数学数组与 OpenCV 4.10.0 compositor 输出不同；尚未归因到 OpenCV 内部某一种定点或舍入机制。AREA 是当前默认实现，本固定 ramp 全像素匹配；这不构成灰度策略冻结。五份 PNG/raw 输出与 source identity 位于 scaling-comparison/。
+
+## 静态检查与软件回归记录
+
+静态查看发现 test_render_preserves_fixed_geometry_scaling_padding_and_binary_values 的二值输入夹具与输出坐标断言不一致，已将输入改为源区域 x=[10,13)、y=[20,23)。该修改已包含在本轮 scripts/standalone、scripts/rle、scripts/gray8 软件回归中，346 项通过。
 
 ## 独立 oracle 的可审阅规则建议
 
@@ -47,14 +59,14 @@
 4. 比较范围、比较方式和失败定位信息。图像区域、标记位、状态面板宜优先分别比较，以免字体栅格差异掩盖图像缩放问题。
 5. 输入、参考数组、生成工具及 runner 的版本或哈希记录，使后续结果可追溯。
 
-## 候选向量定义（公式候选；未与 OpenCV 比较）
+## 数学候选定义与运行时比较状态
 
 - **常量灰度：** 输入为 `640×400 uint8`，所有像素均为 `73`。对 `INTER_AREA` 与 `INTER_LINEAR` 两种灰度插值候选，`576×360` 目标区域任意样点的解析预期均为 `73`；对应候选数组已生成并记录哈希。该向量只用于检查几何/放置以及常量保持，不用于区分或冻结两种插值策略。
 - **灰度横向 ramp：** 输入尺寸为 `640×400 uint8`，每行相同，定义为 `I[y,x] = min(12*x, 255)`，其中 `x=0..639`。生成器使用标准库 `Fraction` 精确计算两种公式，并采用候选生成舍入约定 round-to-nearest ties-to-even；这只是参考数组定义，不表示 OpenCV 的实际舍入或运行时行为。
   - `INTER_AREA`：将目标列 `j` 对应的源像素区间 `[10j/9, 10(j+1)/9)` 按与每个源像素区间的精确 overlap 加权平均。第一行列 `j=0..8` 为 `[1, 14, 28, 41, 54, 67, 80, 94, 107]`。静态精确计算确认 576 列没有 exact half tie。
   - `INTER_LINEAR`：在源采样坐标 `(20j+1)/18` 处作线性插值。第一行列 `j=0..8` 为 `[1, 14, 27, 41, 54, 67, 81, 94, 107]`。目标列 `j=19` 的唯一 exact half tie 为 `252.5`，本生成舍入约定取偶数 `252`。
 
-  两个完整输出已生成；前九列静态核对与 JSON 手算值一致。候选结果在输出列 `j=2` 和 `j=6` 不同。未与 OpenCV 或 compositor 比较，`INTER_AREA` 与 `INTER_LINEAR` 仍未冻结。
+  两个完整输出已生成；AREA 输出与 OpenCV 4.10.0 当前 compositor 比较全匹配。LINEAR 数学候选与 compositor 有 640 像素差异，详见上表；本轮不改生产算法，也不冻结 AREA/LINEAR 选择。
 - **二值 nearest：** 输入为 `640×400 uint8` 全零图，将源矩形 `x=[10,13), y=[20,23)` 设为 `255`，另将边界点 `(0,0)` 与 `(638,398)` 设为 `255`。按 `src_index = floor(10*dst_index/9)` 反查，矩形预计映射到目标 `x=[9,12), y=[18,21)`；两个边界点预计分别映射到 `(0,0)` 与 `(575,359)`。该规则已用于生成 `scaling-expected-candidates/binary-inter-nearest-576x360.raw`（C row-major uint8，shape `[360,576]`，207360 bytes）；源 SHA-256 为 `467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263`，候选输出 SHA-256 为 `35264c92c0c52e311d0c63a5aea1ed662a78ee4ba9347f5ee2e89ab3588e792b`。这是公式生成的候选期望数组，不是 compositor 实测结果，也未与其他输出比较。
 
 ## 画布比较与环境依赖
@@ -63,4 +75,4 @@
 
 ## 留待后续事项
 
-尚无 PNG 或 compositor comparison；灰度策略仍未冻结。当前 v2 运行没有 runner 源码身份，未来新运行报告将带 `source_identity`，不能追补旧 v2 记录。该字段仅记录项目内 Python 源，不等于依赖/ABI/位流身份，且新增代码尚未验证。四份现存输出分别是常量灰度、二值 nearest、AREA ramp 和 LINEAR ramp 的未执行候选数组，不构成验收证据。后续若进行 OpenCV/compositor 比较，须另行按授权执行并记录具体 runner 身份。本准备稿不改变算法、接口或路线，也不宣告任何验证通过；状态仍为 `candidate_unexecuted`，G3 未放行。
+缩放候选已有本地 compositor 比较，但 LINEAR ramp 有 640 个像素差异，所以数学候选不能整体作为运行时黄金。当前板端新运行已绑定完整项目 Python source_identity；旧 v2 不追补。该字段不涵盖依赖/ABI/位流。AREA 当前默认路径和二值 nearest 的固定输入比较通过；灰度插值策略仍未冻结，未改变算法、接口或路线。物理 GPIO/HDMI 验收、绘图启动异常注入和真实目标运行未完成，G3 未放行。

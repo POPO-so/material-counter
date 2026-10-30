@@ -1,0 +1,206 @@
+{
+  "comparison_summary": {
+    "candidate_outcomes": {
+      "binary_nearest_rectangle_and_boundary_points": "Matched all 204840 pixels outside the compositor count-line overlay; the overlay columns were excluded.",
+      "constant_gray_73": "Matched all 207360 target pixels under both INTER_AREA and INTER_LINEAR.",
+      "gray_ramp_inter_area": "Matched all 207360 target pixels under INTER_AREA.",
+      "gray_ramp_inter_linear": "Compared; 640 of 207360 pixels differ. This remains an unaccepted candidate."
+    },
+    "default_gray_path": "INTER_AREA matched the recorded independent candidate for this fixed ramp.",
+    "strategy_status": "INTER_AREA and INTER_LINEAR remain unfrozen; comparison does not make an architecture or route decision."
+  },
+  "compositor": "scripts/standalone/compositor.py:GrayComposer.render",
+  "limits": [
+    "Comparison binds this local runtime to the captured project source identity and installed OpenCV/NumPy versions.",
+    "The gray interpolation candidates remain alternatives; no architecture or route decision is implied.",
+    "Binary comparison excludes the compositor's known count-line overlay columns from the pixel comparison.",
+    "This local comparison does not validate the board display path, HDMI behavior, or full-frame runtime performance."
+  ],
+  "numpy_version": "2.3.5",
+  "opencv_version": "4.10.0",
+  "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "results": [
+    {
+      "actual_png_path": "scaling-comparison/constant-gray-area-actual.png",
+      "actual_raw_path": "scaling-comparison/constant-gray-area-actual.raw",
+      "actual_raw_sha256": "ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2",
+      "compared_pixels": 207360,
+      "expected_path": "scaling-expected-candidates/constant-gray-576x360.raw",
+      "expected_sha256": "ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2",
+      "interpolation": "INTER_AREA",
+      "match": true,
+      "mismatching_pixels_in_compared_region": 0,
+      "mismatching_pixels_total_including_overlay": 0,
+      "overlay_mask": "none",
+      "region": "gray",
+      "source_path": "scaling-inputs/constant-gray-73.raw",
+      "vector_id": "constant-gray-area"
+    },
+    {
+      "actual_png_path": "scaling-comparison/constant-gray-linear-actual.png",
+      "actual_raw_path": "scaling-comparison/constant-gray-linear-actual.raw",
+      "actual_raw_sha256": "ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2",
+      "compared_pixels": 207360,
+      "expected_path": "scaling-expected-candidates/constant-gray-576x360.raw",
+      "expected_sha256": "ace13c7b9c44a6d95fe0724be529c495d044513433d558e51bac5ab199653ea2",
+      "interpolation": "INTER_LINEAR",
+      "match": true,
+      "mismatching_pixels_in_compared_region": 0,
+      "mismatching_pixels_total_including_overlay": 0,
+      "overlay_mask": "none",
+      "region": "gray",
+      "source_path": "scaling-inputs/constant-gray-73.raw",
+      "vector_id": "constant-gray-linear"
+    },
+    {
+      "actual_png_path": "scaling-comparison/gray-ramp-area-actual.png",
+      "actual_raw_path": "scaling-comparison/gray-ramp-area-actual.raw",
+      "actual_raw_sha256": "81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8",
+      "compared_pixels": 207360,
+      "expected_path": "scaling-expected-candidates/gray-ramp-inter-area-576x360.raw",
+      "expected_sha256": "81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8",
+      "interpolation": "INTER_AREA",
+      "match": true,
+      "mismatching_pixels_in_compared_region": 0,
+      "mismatching_pixels_total_including_overlay": 0,
+      "overlay_mask": "none",
+      "region": "gray",
+      "source_path": "scaling-inputs/gray-ramp-12.raw",
+      "vector_id": "gray-ramp-area"
+    },
+    {
+      "actual_png_path": "scaling-comparison/gray-ramp-linear-actual.png",
+      "actual_raw_path": "scaling-comparison/gray-ramp-linear-actual.raw",
+      "actual_raw_sha256": "d6cf96065080d9752aaa2dfa2b0eb8706496f036bde07d288c31e335a2f4f36f",
+      "compared_pixels": 207360,
+      "expected_path": "scaling-expected-candidates/gray-ramp-inter-linear-576x360.raw",
+      "expected_sha256": "56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c",
+      "interpolation": "INTER_LINEAR",
+      "match": false,
+      "mismatch_details": {
+        "actual_unique_rows": 5,
+        "columns": [
+          {
+            "count": 80,
+            "value_pairs": [
+              {
+                "actual": 0,
+                "count": 80,
+                "expected": 1
+              }
+            ],
+            "x": 0
+          },
+          {
+            "count": 160,
+            "value_pairs": [
+              {
+                "actual": 80,
+                "count": 160,
+                "expected": 81
+              }
+            ],
+            "x": 6
+          },
+          {
+            "count": 80,
+            "value_pairs": [
+              {
+                "actual": 120,
+                "count": 80,
+                "expected": 121
+              }
+            ],
+            "x": 9
+          },
+          {
+            "count": 160,
+            "value_pairs": [
+              {
+                "actual": 160,
+                "count": 160,
+                "expected": 161
+              }
+            ],
+            "x": 12
+          },
+          {
+            "count": 160,
+            "value_pairs": [
+              {
+                "actual": 200,
+                "count": 160,
+                "expected": 201
+              }
+            ],
+            "x": 15
+          }
+        ],
+        "count": 640,
+        "expected_unique_rows": 1,
+        "interpretation": "Observed OpenCV 4.10.0 INTER_LINEAR output does not match this exact-rational ties-to-even candidate. The comparison establishes the mismatch, not its internal rounding/quantization cause.",
+        "rows_with_mismatch": 320
+      },
+      "mismatching_pixels_in_compared_region": 640,
+      "mismatching_pixels_total_including_overlay": 640,
+      "overlay_mask": "none",
+      "region": "gray",
+      "source_path": "scaling-inputs/gray-ramp-12.raw",
+      "vector_id": "gray-ramp-linear"
+    },
+    {
+      "actual_png_path": "scaling-comparison/binary-nearest-actual.png",
+      "actual_raw_path": "scaling-comparison/binary-nearest-actual.raw",
+      "actual_raw_sha256": "3dc41d4b46c3bd6787cdd56dba6c69bbe2bd05862d7e5d1ea0720f081c62fbb8",
+      "compared_pixels": 204840,
+      "expected_path": "scaling-expected-candidates/binary-inter-nearest-576x360.raw",
+      "expected_sha256": "35264c92c0c52e311d0c63a5aea1ed662a78ee4ba9347f5ee2e89ab3588e792b",
+      "interpolation": "gray unused; binary uses INTER_NEAREST",
+      "match": true,
+      "mismatching_pixels_in_compared_region": 0,
+      "mismatching_pixels_total_including_overlay": 360,
+      "overlay_mask": "excluded line x=[285,291] in crop coordinates",
+      "region": "binary",
+      "source_path": "scaling-inputs/binary-nearest-rect-points.raw",
+      "vector_id": "binary-nearest"
+    }
+  ],
+  "runner_source_sha256": "2629d39f843ce02c3c9a654b0a2af63f4465117607262152e83ccdad8a4a2bd9",
+  "schema": "material-counter.g3-scaling-comparison.v1",
+  "source_commit": "838f5ebb2a5562f72d7695b80d3c93c8265d9b76",
+  "source_identity": {
+    "complete": true,
+    "digest": "d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8",
+    "errors": [],
+    "file_count": 23,
+    "schema": "material-counter.project-source-identity.v1",
+    "scope": "Project-local Python sources under scripts/standalone, scripts/rle, and scripts/wo0015 that are loaded in sys.modules, plus this integrated_run.py; tests and paths outside the project root are excluded. This does not identify dependencies, ABI, or bitstreams.",
+    "sha256_by_path": {
+      "scripts/rle/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "scripts/rle/protocol.py": "74fd18aeca91283fea51302026d66e083d9012a4e7e1c8a3b88a476eec47ad04",
+      "scripts/rle/transport.py": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+      "scripts/standalone/__init__.py": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731",
+      "scripts/standalone/bundle.py": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3",
+      "scripts/standalone/camera.py": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2",
+      "scripts/standalone/compositor.py": "68f48a40dbdd757fded300dd9b0eeb5931464fe2f45e75ed5ea1060da93b8cc1",
+      "scripts/standalone/controls.py": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f",
+      "scripts/standalone/count_controls.py": "3ad0b0e39ef19025a1037f5d444b9be94cb977437a77d5f07b8abd0858d54858",
+      "scripts/standalone/driver_owner.py": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4",
+      "scripts/standalone/evidence.py": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e",
+      "scripts/standalone/g1_run.py": "312146dcea2ce1f19cba77c7e42e29addf15eff3a1724cf4ec844739941ce383",
+      "scripts/standalone/g2_readback.py": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566",
+      "scripts/standalone/hp2.py": "35764494f94468ddb10174886491dfd75a673942dc25982989b31cf8c882db2c",
+      "scripts/standalone/integrated_run.py": "2629d39f843ce02c3c9a654b0a2af63f4465117607262152e83ccdad8a4a2bd9",
+      "scripts/standalone/pressure.py": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696",
+      "scripts/standalone/preview_inputs.py": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f",
+      "scripts/standalone/probe.py": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52",
+      "scripts/standalone/shared_frames.py": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c",
+      "scripts/standalone/telemetry_cache.py": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a",
+      "scripts/standalone/verify_sources.py": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929",
+      "scripts/standalone/video_pump.py": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c",
+      "scripts/wo0015/board_preflight.py": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22"
+    }
+  },
+  "source_identity_digest": "d169e6841cf14935f2fdb378460921ee8c7d57a0554734dc77e501ce9b3204a8",
+  "status": "comparison_complete_with_candidate_mismatch"
+}
