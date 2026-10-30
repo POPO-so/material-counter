@@ -15,7 +15,9 @@
 
 ## 当前会话只读复核
 
-最新只读复核在当前会话观察到桌面计数进程 PID `4225` 正在运行；G4 service 为 `LoadState=loaded`、`ActiveState=inactive`、`UnitFileState=enabled`。该进程状态是当前会话观察，未使用未校准的板端时钟推定时间。PID 4225 表明板端当前有运行中的桌面计数进程；不得将其描述为板端空闲或可立即启动 G4。
+先前只读复核观察到桌面计数进程 PID `4225` 正在运行；G4 service 为 `LoadState=loaded`、`ActiveState=inactive`、`UnitFileState=enabled`。该进程状态是当时的会话观察，未使用未校准的板端时钟推定时间；不能据此推断后续板端是否空闲。
+
+后续会话中曾因 Windows 终端显示中文乱码而短暂禁用 G4 service；逐码点读取包内 `package-source.json` 后确认 UTF-8 分支名正确，遂重新启用。恢复后只读 `systemctl show` 为 `loaded/inactive/enabled`，未启动服务。再次查询时 PID 4225 已不在进程列表，`board_entry.py`、`integrated_run` 和 `boot_integrated` 无匹配进程；这仍不证明 DMA/VDMA、相机和缓冲已安全释放，也不能据此直接启动 G4。当前包源码对应报告见[候选包目录](../standalone-20261030-g4-offline-package-candidate/source-correspondence-current-20261031.json)。
 
 部署前/后 baseline 中的进程列表仅描述各自采集时点。其空列表不能代表当前无 owner，也不能证明目前硬件资源已释放或允许启动。部署前 `hardware_safe_to_switch=false` 仍是安全终态未证明的直接证据。
 

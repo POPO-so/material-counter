@@ -6,9 +6,9 @@
 
 部署基线记录的 boot ID 为 `8b380359-59a7-46f8-8f5a-f172fd1398dd`。状态从部署前 `not-found/inactive/dead`（enabled `not-found`）变为部署后 `loaded/enabled/inactive/dead`。部署后 unit `/etc/systemd/system/material-counter-integrated.service` 的 SHA-256 为 `30c22b6c869e95f13ed9692e15e854e3a4f67b0189217aa90d5f3604b2cb587a`；environment `/etc/material-counter/package.env` 的 SHA-256 为 `659364dc817a2d6edcda3e86af12e5de04b8e3835ad6de52f7d910a6e1cf9587`；`/opt/material-counter/current` 指向 `/opt/material-counter/releases/standalone-20261030-g4-offline-package-candidate`，该 release 的索引 SHA-256 为 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`。候选包 37 个运行模块来源提交为 `544a6d44af74708ae17ab88af6419093a45859cb`。已安装 release 的 56 文件完整性 `PASS` 有持久原始证据 [release-package-integrity.json](../../data/results/standalone-20261031-g4-deployment-preparation/release-package-integrity.json)，仅核对包文件，不是软件或整机测试。
 
-最新当前会话只读复核观察到桌面计数进程 PID `4225` 正在运行，G4 service 仍为 `LoadState=loaded`、`ActiveState=inactive`、`UnitFileState=enabled`。该观察时间以当前会话为准，板端时钟未校准。baseline 的进程列表只证明各自采集时点的状态，不能代表当前无 owner；当前不得视为板端空闲或可立即启动 G4。此次没有启动 G4 服务、重启或执行运行测试。部署前基线 `hardware_safe_to_switch=false`（`unproven`），不能据此宣称硬件安全终态已证明。两份基线 JSON 的 UTC 日期均为 `2025-05-07`，与项目记录的 `2026-10-31` 冲突；板卡时钟未校准，不能将其当作真实采集日期。五次冷启动、连续 60 分钟有目标运行和故障恢复测试已豁免；最终测试由用户执行，G4 仍未验收。详细证据见 [部署准备记录](../../data/results/standalone-20261031-g4-deployment-preparation/README.md)。
+先前会话只读复核曾观察到桌面计数进程 PID `4225` 正在运行；后续复核发现该 PID 已退出，`board_entry.py`、`integrated_run` 和 `boot_integrated` 无匹配进程，G4 service 为 `LoadState=loaded`、`ActiveState=inactive`、`UnitFileState=enabled`。这些进程列表只代表观察时点，不能证明当前 owner、DMA/VDMA、相机或缓冲的安全终态，不能据此直接启动 G4。没有启动 G4 服务、重启或执行运行测试。部署前基线 `hardware_safe_to_switch=false`（`unproven`），不能据此宣称硬件安全终态已证明。两份基线 JSON 的 UTC 日期均为 `2025-05-07`，与项目记录的 `2026-10-31` 冲突；板卡时钟未校准，不能将其当作真实采集日期。五次冷启动、连续 60 分钟有目标运行和故障恢复测试已豁免；最终测试由用户执行，G4 仍未验收。详细证据见 [部署准备记录](../../data/results/standalone-20261031-g4-deployment-preparation/README.md)。
 
-2026-10-31 用户调整执行范围：代理完成代码与候选包准备，最终现场测试由用户执行；五次冷启动、连续 ≥60 分钟有目标运行和故障恢复测试不再要求执行。下文这些条目的复选框是历史验收口径，未执行即保持未执行，不据此宣称 G4 通过。当前板端桌面计数进程由用户继续使用，保持运行，未获资源安全释放证据前不切换服务或硬件 owner。
+2026-10-31 用户调整执行范围：代理完成代码与候选包准备，最终现场测试由用户执行；五次冷启动、连续 ≥60 分钟有目标运行和故障恢复测试不再要求执行。下文这些条目的复选框是历史验收口径，未执行即保持未执行，不据此宣称 G4 通过。桌面计数进程的 PID 曾变化，不能用历史 PID 判断实时所有权；未获资源安全释放证据前不启动 G4 或切换硬件 owner。
 
 ## 当前状态和入口
 
@@ -39,7 +39,7 @@
 - 本版候选运行器灰度缩放选用 `INTER_AREA`、二值图选用 `INTER_NEAREST`。这是代码阶段实现选择；本地固定输入像素比较支持 AREA，板端屏幕效果和物料计数由用户最终测试。
 - `scripts/standalone/material-counter-integrated.service`：候选 systemd 单元，从 `/etc/material-counter/package.env` 读取 `PACKAGE_ROOT` 与 `PACKAGE_INDEX_SHA256` 并传给入口。单元只依赖 local-fs.target，且不等待网络；unit/env 已安装到板端，`systemd-analyze verify` 退出码为 0，service 已启用但保持 inactive。尚无实际启动或恢复行为证据。
 
-首次自动配置的代码门槛是本次 boot 的 uptime 不超过 300 秒；超过后，普通启动会拒绝重新配置。现有 service 不传 `--reuse-loaded`。release、unit/env 和 `current` 已准备，部署前 unit/env/current 与 enable/active 状态也已保存；同一长时间运行的 boot 上手动 `systemctl start` 不能替代自启动验证。最新只读观察有桌面计数进程 PID 4225，当前不启动 G4 或重启。实际开机行为由用户在最终测试中确认。
+首次自动配置的代码门槛是本次 boot 的 uptime 不超过 300 秒；超过后，普通启动会拒绝重新配置。现有 service 不传 `--reuse-loaded`。release、unit/env 和 `current` 已准备，部署前 unit/env/current 与 enable/active 状态也已保存；同一长时间运行的 boot 上手动 `systemctl start` 不能替代自启动验证。进程列表变化不等于硬件安全终态，当前不启动 G4 或重启。实际开机行为由用户在最终测试中确认。
 
 候选索引生成调用形式（仅用于已经完整组装并包含有效 `boot-config.json` 的离线包目录）：
 
@@ -81,7 +81,7 @@ python -B -m scripts.delivery.verify_standalone_source --package-root data/resul
 - 只有上述安全条件全部成立，且旧包的身份与目标 BIT/HWH/manifest 三者匹配并通过哈希校验后，才可由获授权的唯一 owner 切换到旧版。切换后重新核对加载 BIT 身份和新 boot/session 记录。任何一项状态未知、读回异常或 hash 不匹配时，不切换，保持 `FAIL_HOLD` 并交 Manager 决策。
 - 当前仓库没有已实现、已验证的通用 G2→G1 自动回退脚本、旧包重装命令或安全停机命令序列；此节是必须满足的人工安全门，不代表脚本已具备这些动作。已有 G1 runner 只允许特定已识别 BIT 身份下进行受控迁移，不能推广为 G2 回退流程。
 
-G4 部署/恢复边界另见[审阅草稿](../../data/results/standalone-20261030-g4-offline-package-candidate/deployment-recovery-draft.md)。草稿中的“候选包尚未复制、service 尚未注册、部署前状态未知”属于部署前快照，现由本文开头 2026-10-31 部署后状态补记取代；当前 service 已加载并启用但 inactive，且桌面计数进程 PID 4225 正在运行。仓库仍没有已执行或验证的 G4 自动回滚脚本。下述首次安装配置恢复步骤也尚未执行，不证明硬件或运行态可恢复。
+G4 部署/恢复边界另见[审阅草稿](../../data/results/standalone-20261030-g4-offline-package-candidate/deployment-recovery-draft.md)。草稿中的“候选包尚未复制、service 尚未注册、部署前状态未知”属于部署前快照，现由本文开头 2026-10-31 部署后状态补记取代；当前 service 已加载并启用但 inactive。桌面计数进程 PID 4225 曾运行、后续查询已退出；硬件安全终态仍未知。仓库没有已执行或验证的 G4 自动回滚脚本。下述首次安装配置恢复步骤也尚未执行，不证明硬件或运行态可恢复。
 
 ### 首次安装配置恢复边界（未执行）
 

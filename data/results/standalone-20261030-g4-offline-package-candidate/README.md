@@ -5,7 +5,7 @@
 - 37 个应用 Python 模块已按 `package/package-source.json` 清单，从本工作树基线 `544a6d44af74708ae17ab88af6419093a45859cb`（`feat/新增G4激活方案生成`）逐字节同步。来源提交记录已更新；包中未加入清单之外的主机部署工具。
 - 索引构建命令：`python -B -m scripts.standalone.delivery --root data/results/standalone-20261030-g4-offline-package-candidate/package --build-index`。
 - 构建结果：`INDEX_BUILT_CANDIDATE`，55 个包文件写入索引，内建完整性核对 56 个文件通过（`PASS`），索引 SHA-256 为 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`；父目录 `package.env.candidate` 已同步此 SHA。
-- 本地候选包刷新与索引生成时未运行软件测试、仿真或板端命令。后续部署准备记录确认：候选包已复制到板端 release 目录，`/opt/material-counter/current`、外置 env 与 systemd unit 已安装；G4 service 为 enabled、inactive。最新只读观察到 PID 4225 桌面计数进程正在运行。没有手动启动 G4、重启板卡或进行整机验收；G3/G4 仍未放行。详见[部署准备记录](../standalone-20261031-g4-deployment-preparation/README.md)。
+- 本地候选包刷新与索引生成时未运行软件测试、仿真或板端命令。后续部署准备记录确认：候选包已复制到板端 release 目录，`/opt/material-counter/current`、外置 env 与 systemd unit 已安装；G4 service 为 enabled、inactive。较早只读观察曾记录 PID 4225 桌面计数进程正在运行；后续只读会话在恢复 G4 service 为 enabled/inactive 后，PID 4225 已不在进程列表，且 board_entry.py、integrated_run、boot_integrated 均无匹配进程。安全终态仍未证明，不可据此启动。没有手动启动 G4、重启板卡或进行整机验收；G3/G4 仍未放行。详见[部署准备记录](../standalone-20261031-g4-deployment-preparation/README.md)。
 - 以下较早记录中的提交号、索引 SHA 和构建摘要是刷新前的历史快照，不代表当前包状态。
 
 状态：G4 候选，未验收。当前候选包的 37 个应用 Python 模块来源记录为提交 `544a6d44af74708ae17ab88af6419093a45859cb`（`feat/新增G4激活方案生成`）。启动前运行环境准入只读核对覆盖已观察的 8 个 dpkg 包状态/版本；它不安装依赖，也不构成完整离线依赖闭包。本地 `delivery.py --build-index` 索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件通过，当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与 `package.env.candidate` 一致。此项仅为候选包文件完整性核对，未运行软件测试或仿真；板端已做安装配置和只读完整性核对，但未启动 G4 业务。G3/G4 均未放行，未证明离线依赖闭包或自启动。五次冷启动、60 分钟有目标运行及故障测试已由用户豁免，不作为代理执行项；最终现场测试由用户执行。首次安装的配置恢复边界见[部署说明](../../../scripts/standalone/DEPLOYMENT.md#首次安装配置恢复边界未执行)；步骤尚未执行或验证，不代表运行态回滚能力。
@@ -44,7 +44,7 @@
 ## 范围和未完成项
 
 - 第三方 Python 包由板端既有 PYNQ 运行环境提供，没有打包 wheelhouse，也没有安装或升级这些依赖；运行环境预检仅防止版本/平台与已观察基线不一致，不能证明完整依赖闭包或干净环境可离线重建。
-- `package/deployment/package.env.example` 保留安装时需填写的占位值。部署准备记录显示候选包已复制到板端版本目录，`/etc/material-counter/package.env` 与 `/etc/systemd/system/material-counter-integrated.service` 已安装，`/opt/material-counter/current` 已指向该 release；service enabled 但 inactive。当前只读观察到 PID 4225 桌面计数进程正在运行；未手动启动 G4、未重启、未作整机验收。部署前后证据及边界见[部署准备记录](../standalone-20261031-g4-deployment-preparation/README.md)。
+- `package/deployment/package.env.example` 保留安装时需填写的占位值。部署准备记录显示候选包已复制到板端版本目录，`/etc/material-counter/package.env` 与 `/etc/systemd/system/material-counter-integrated.service` 已安装，`/opt/material-counter/current` 已指向该 release；service enabled 但 inactive。较早只读观察曾记录 PID 4225 桌面计数进程正在运行；后续只读会话在恢复 G4 service 为 enabled/inactive 后，PID 4225 已不在进程列表，且 board_entry.py、integrated_run、boot_integrated 均无匹配进程。安全终态仍未证明，不可据此启动；未手动启动 G4、未重启、未作整机验收。部署前后证据及边界见[部署准备记录](../standalone-20261031-g4-deployment-preparation/README.md)。
 - G3 未放行，因此该包没有进入整机验收。本地执行索引生成，板端执行安装和只读文件完整性核对；未运行软件测试、仿真或 G4 业务。五次冷启动、60 分钟有目标运行及故障测试已由用户豁免，不要求代理执行；最终现场测试由用户负责。
 - Route、视频源和 ADR-0005 接口状态不变；物料准确率未验收。
 
@@ -55,5 +55,6 @@
 
 ## 本地源码对应核对补记（2026-10-31）
 
-- 历史记录：本地源码核对工具命令退出码 0；37 个应用模块内容与旧来源提交 `bf817ca98b3a1032f83ac732424314d926e3da52` 的 Git blob 匹配。该报告记录的 index SHA-256 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 对应 2026-10-31 刷新前的旧候选包，不验证当前包。报告：[source-correspondence-20261031.json](source-correspondence-20261031.json)；命令记录：[source-correspondence-20261031-command.json](source-correspondence-20261031-command.json)。
-- 上述历史核对不证明当前包的源码对应、离线依赖闭包或板端状态。G4 未放行；五次冷启动、60 分钟有目标运行及故障测试已由用户豁免，最终现场测试归用户执行。
+- 当前候选包对应报告：[source-correspondence-current-20261031.json](source-correspondence-current-20261031.json)。报告记录 37 个模块、来源提交 `544a6d44af74708ae17ab88af6419093a45859cb`、分支 `feat/新增G4激活方案生成`（无 U+FFFD）及索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`；范围为本地 Git 源码对应核对，未执行板端操作。
+- 历史报告：[source-correspondence-20261031.json](source-correspondence-20261031.json) 及其[命令记录](source-correspondence-20261031-command.json)仍对应 2026-10-31 刷新前的旧候选包，记录旧来源提交 `bf817ca98b3a1032f83ac732424314d926e3da52` 和索引 SHA-256 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d`，不验证当前包。
+- 源码对应核对不证明离线依赖闭包或板端状态。G4 未放行；五次冷启动、60 分钟有目标运行及故障测试已由用户豁免，最终现场测试归用户执行。
