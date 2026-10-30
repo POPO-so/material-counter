@@ -9,7 +9,9 @@
 - 输入：同一 2,400 帧固定 replay，分别以 display=on 与 display=off 顺序运行。
 - 结果文件：[开启显示](replay-on-v2.json)、[关闭显示](replay-off-v2.json)、[控制台记录](replay-v2-console.txt)。
 
-两份运行 JSON 记录了相同的 boot ID、BIT、HWH、manifest、native library 和 commands SHA-256，但没有记录 Python runner 的提交号或源码 SHA-256。`failed-track-retention/staging-index.json` 属于更早的失败尝试，不能作为这组 v2 运行的源码身份。因此以下比较可证明所保存的这组开/关显示输出一致，但不能唯一复原其 Python runner 版本；G3 仍维持部分状态。
+两份运行 JSON 记录了相同的 boot ID、BIT、HWH、manifest、native library 和 commands SHA-256，但没有记录 Python runner 的提交号或源码 SHA-256。`failed-track-retention/staging-index.json` 属于更早的失败尝试，不能作为这组 v2 运行的源码身份；未来新增的 `source_identity` 字段只适用于采用该字段后生成的新运行报告，不能追补或反向归属这两份旧 v2 记录。因此以下比较可证明所保存的这组开/关显示输出一致，但不能唯一复原其 Python runner 版本。
+
+runner 现已加入未来报告的 `source_identity` 候选实现：它记录指定项目内 Python 源文件的相对路径 SHA-256 映射、规范化排序 JSON 整体摘要、文件数及范围，并在源码不可读时标记不完整和错误。该实现尚未验证。身份范围仅包括项目内 Python 源，不代表第三方依赖、ABI 或位流身份；G3 仍未放行。
 
 ## 已完成的比较子项
 
@@ -76,7 +78,7 @@
 | [灰度 ramp INTER_AREA](scaling-expected-candidates/gray-ramp-inter-area-576x360.raw) | 精确 overlap 加权平均，源覆盖 `[10*j/9,10*(j+1)/9)`；Fraction 精确计算，round-to-nearest ties-to-even | `81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8` |
 | [灰度 ramp INTER_LINEAR](scaling-expected-candidates/gray-ramp-inter-linear-576x360.raw) | 坐标 `(20*j+1)/18` 线性插值；Fraction 精确计算，round-to-nearest ties-to-even | `56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c` |
 
-四份数组均为未执行的候选参考数据，不是 compositor 输出、实测比较或黄金证据。INTER_LINEAR 在目标列 `j=19` 有唯一精确值 `252.5`，本候选生成舍入约定取 `252`；尚未与 OpenCV 比较，不冻结运行时行为。INTER_AREA 576 列没有精确 half tie。PNG 未生成，没有 compositor comparison 或 runner hash 绑定；灰度策略未冻结，状态仍为 `candidate_unexecuted`，G3 未放行。
+四份数组均为未执行的候选参考数据，不是 compositor 输出、实测比较或黄金证据。INTER_LINEAR 在目标列 `j=19` 有唯一精确值 `252.5`，本候选生成舍入约定取 `252`；尚未与 OpenCV 比较，不冻结运行时行为。INTER_AREA 576 列没有精确 half tie。PNG 未生成，也没有 compositor comparison。当前 v2 运行仍无 runner hash；未来新运行报告将带 `source_identity`，但它只覆盖项目内 Python 源，不等于依赖/ABI/位流身份。灰度策略未冻结；实现代码尚未验证，G3 未放行。
 
 ### 后续注入场景及边界
 

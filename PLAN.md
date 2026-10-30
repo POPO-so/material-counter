@@ -92,6 +92,12 @@
 - `constant-gray-73.raw` SHA-256：`aa33e56924504144d0ea31c71ad74281064ba96c7572c2b303325091eea954af`；`gray-ramp-12.raw`：`87d33b08d68a971d3d0c86ddf7ce671f5059a2b6af19599cde9c42cb81476354`；`binary-nearest-rect-points.raw`：`467bf9002e72f182da0c3a65dfb5454d6c04a15dc5647c02f373d4c0e6bc5263`。
 - 两份 ramp 输出按标准库 `Fraction` 精确计算。AREA 对每列用源覆盖 `[10*j/9,10*(j+1)/9)` 进行精确 overlap 加权平均；LINEAR 在 `(20*j+1)/18` 插值。round-to-nearest ties-to-even 是候选生成舍入约定：LINEAR 列 `j=19` 唯一精确 `252.5` 取 `252`，尚未与 OpenCV 比较，未冻结运行时行为；AREA 576 列无精确 half tie。输出 SHA-256：AREA `81e1988ffe0c929f88a500c88993e77cffb2e46e0b00f4f2c107e14ac92ae3f8`；LINEAR `56f24d8548a06030abd22ea9f6a6c875a24014979b63496507a230b3dc6c1b1c`。
 - JSON 登记四份候选输出的源路径/SHA、公式、舍入约定、C row-major uint8、shape、字节数和输出 SHA。四份都不是 compositor 实测或黄金证据；没有 PNG、compositor comparison 或 runner hash 绑定。灰度策略未冻结，状态 `candidate_unexecuted`，G3 未放行。
+
+## G3 新运行报告源码身份（2026-10-30；尚未验证）
+
+- `integrated_run.py` 在创建运行计数器（触发懒加载项目模块）后、进入运行循环前，为未来新报告生成 `source_identity`：schema `material-counter.project-source-identity.v1`、项目相对路径到 SHA-256 的 `sha256_by_path` 映射、排序紧凑 JSON 整体 `digest`、`file_count`、范围说明、`complete` 与 `errors`。
+- 范围为 runner 本身，以及当时已加载且位于项目根内 `scripts/standalone`、`scripts/rle`、`scripts/wo0015` 的 `.py` 源码；排除测试文件和根目录外路径。单文件摘要复用 `bundle.sha256`。不可读文件会记录错误并标记不完整，继续计数运行。
+- 该字段只适用于此后生成的新报告，不能追补旧 v2 记录；只覆盖项目内 Python 源，不等于依赖/ABI/位流身份。代码尚未验证，G3 不放行。
 - 本次只运行候选生成器并进行静态文件长度、SHA-256、JSON 绑定、首行前九列与 JSON 手算值核对；未运行测试、compositor、PNG 比较、仿真、构建或板端任务。
 
 ## G3 绘图启动失败恢复代码（2026-10-30；未验证）

@@ -31,7 +31,7 @@
 - 几何顺序为先裁剪，再缩放坐标；裁剪后的坐标按 `floor(0.9*x + 0.5)` 换算。
 - 首末行标记位于 `x=640..863`。右侧状态面板的像素会受字体及 Pillow 环境影响。
 - 现有 `test_compositor.py` 用 `cv2.resize` 生成预期灰度及二值数组。因此这些数组与实现共享缩放实现来源，不能单独充当独立 oracle。
-- G3 v2 缺少 runner 源码哈希；目标目录现有三份固定 raw 源输入，以及常量灰度、二值 nearest、INTER_AREA ramp 和 INTER_LINEAR ramp 四份候选 expected arrays。PNG 和 compositor comparison 均未生成或运行；实际比较结果尚不存在，也没有 runner hash 绑定。
+- G3 v2 缺少 runner 源码哈希；未来采用新字段的运行报告会带 `source_identity`，不能追补旧 v2 记录。该字段只覆盖项目内 Python 源，不等于依赖/ABI/位流身份，当前实现尚未验证。目标目录现有三份固定 raw 源输入，以及常量灰度、二值 nearest、INTER_AREA ramp 和 INTER_LINEAR ramp 四份候选 expected arrays。PNG 和 compositor comparison 均未生成或运行；实际比较结果尚不存在。
 
 ## 静态检查记录
 
@@ -63,4 +63,4 @@
 
 ## 留待后续事项
 
-尚无 PNG、compositor comparison 或 runner 源码哈希绑定；灰度策略仍未冻结。四份现存输出分别是常量灰度、二值 nearest、AREA ramp 和 LINEAR ramp 的未执行候选数组，不构成验收证据。后续若进行 OpenCV/compositor 比较，须另行按授权执行并记录具体 runner 身份。本准备稿不改变算法、接口或路线，也不宣告任何验证通过；状态仍为 `candidate_unexecuted`，G3 未放行。
+尚无 PNG 或 compositor comparison；灰度策略仍未冻结。当前 v2 运行没有 runner 源码身份，未来新运行报告将带 `source_identity`，不能追补旧 v2 记录。该字段仅记录项目内 Python 源，不等于依赖/ABI/位流身份，且新增代码尚未验证。四份现存输出分别是常量灰度、二值 nearest、AREA ramp 和 LINEAR ramp 的未执行候选数组，不构成验收证据。后续若进行 OpenCV/compositor 比较，须另行按授权执行并记录具体 runner 身份。本准备稿不改变算法、接口或路线，也不宣告任何验证通过；状态仍为 `candidate_unexecuted`，G3 未放行。

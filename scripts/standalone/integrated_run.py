@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import argparse
 from collections import deque
+import hashlib
 import json
 import multiprocessing as mp
 import os
 from pathlib import Path
 import queue
 import signal
+import sys
 import time
 import uuid
 
@@ -54,6 +56,50 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
         boxes=[[d.x_min,d.y_min,d.x_max,d.y_max] for d in result.detections[:128]],
         tracks=[['{}:{}'.format(trajectory_epoch,t['track_id']),int(t['detection']['centroid_x']),
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
+
+
+def source_identity(project_root):
+    root=Path(project_root).resolve()
+    scoped_roots=tuple((root/relative).resolve() for relative in
+        ('scripts/standalone','scripts/rle','scripts/wo0015'))
+    sources={}
+    errors=[]
+
+    def is_test_source(path):
+        parts=tuple(part.lower() for part in path.parts)
+        name=path.name.lower()
+        return 'tests' in parts or name.startswith('test_') or name.endswith('_test.py')
+
+    candidates={Path(__file__).resolve()}
+    for module in list(sys.modules.values()):
+        module_path=getattr(module,'__file__',None)
+        if not module_path:
+            continue
+        try:
+            path=Path(module_path).resolve()
+            relative=path.relative_to(root)
+        except (OSError,ValueError):
+            continue
+        if path.suffix.lower()!='.py' or is_test_source(relative):
+            continue
+        if any(path==directory or directory in path.parents for directory in scoped_roots):
+            candidates.add(path)
+
+    for path in sorted(candidates,key=lambda item:item.as_posix()):
+        try:
+            relative=path.relative_to(root).as_posix()
+            sources[relative]=sha256(path)
+        except Exception as error:
+            try:
+                relative=path.relative_to(root).as_posix()
+            except ValueError:
+                relative=path.as_posix()
+            errors.append(dict(path=relative,error=repr(error)))
+    canonical=json.dumps(sources,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode('utf-8')
+    return dict(schema='material-counter.project-source-identity.v1',sha256_by_path=sources,
+        digest=hashlib.sha256(canonical).hexdigest(),file_count=len(sources),
+        scope='Project-local Python sources under scripts/standalone, scripts/rle, and scripts/wo0015 that are loaded in sys.modules, plus this integrated_run.py; tests and paths outside the project root are excluded. This does not identify dependencies, ABI, or bitstreams.',
+        complete=not errors,errors=errors)
 
 
 def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
@@ -191,6 +237,7 @@ def main(argv=None):
         transport=RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,hw.overlay.axi_dma_0.recvchannel,dma,control,tx,rx)
         if pipeline['state']['done_seen']:transport._completed_frames=1
         counter=make_runtime_counter(args.native_lib)
+        report['source_identity']=source_identity(Path(__file__).resolve().parents[2])
         trace=TraceBuffer();report['frame_trace']=trace.frames
         if args.startup_record:
             try:
