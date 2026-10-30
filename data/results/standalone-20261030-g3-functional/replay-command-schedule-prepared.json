@@ -1,0 +1,9 @@
+{
+  "80": ["pause"],
+  "101": ["clear"],
+  "160": ["pause"],
+  "170": ["background"],
+  "190": ["page"],
+  "500": ["clear", "page"],
+  "501": ["background"]
+}
