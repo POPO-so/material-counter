@@ -458,6 +458,39 @@ def test_dashboard_labels_preview_rate_as_submission_rate(monkeypatch):
     assert "二值提交 FPS" in labels
 
 
+def test_dashboard_thread_summary_fits_right_panel_with_top_two_metrics(monkeypatch):
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    summary = (
+        "MainThread CPU1234ms run1234ms wait1234ms | "
+        "CaptureThread CPU1234ms run1234ms wait1234ms"
+    )
+    drawn = []
+    original = c._text
+
+    def capture_text(draw, xy, text, size, fill):
+        if xy[0] == 934 and size == 12:
+            drawn.append((text, size))
+        if xy == (934, 400):
+            drawn.append((text, size))
+        return original(draw, xy, text, size, fill)
+
+    monkeypatch.setattr(c, "_text", capture_text)
+    c.render(gray, gray, uuid.uuid4(), 1,
+             dashboard={"thread_text": summary,
+                        "queue_text": "IN 2/3  OUT 1/3",
+                        "exposure_latency_text": "曝光延迟 12.3 ms",
+                        "rle_fresh": True, "rle_activity_pct": 32,
+                        "input_mb_s": 12.5, "output_mb_s": 0.8,
+                        "input_stall_pct": 1, "output_stall_pct": 0})
+
+    assert drawn == [("MainThread CPU1234ms run1234ms wait1234ms", 12),
+                     ("CaptureThread CPU1234ms run1234ms wait1234ms", 12),
+                     ("IN 2/3  OUT 1/3 / 曝光延迟 12.3 ms", 18)]
+    assert all(c._latin[12].getlength(text) <= 1256 - 934
+               for text, size in drawn if size == 12)
+
+
 def test_dashboard_chrome_warmed_latin_strings_skip_all_text_rasterization(monkeypatch):
     api = _api()
     c = _dashboard_composer()

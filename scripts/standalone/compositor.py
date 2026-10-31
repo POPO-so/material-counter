@@ -319,9 +319,9 @@ class DashboardComposer:
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
         self._work = np.empty((320, 512), dtype=np.uint8)
         self._fonts = {size: ImageFont.truetype(str(font_path), size)
-                       for size in (18, 20, 24, 34)}
+                       for size in (12, 18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
-                       for size in (18, 20, 24, 28, 34)}
+                       for size in (12, 18, 20, 24, 28, 34)}
         self._text_cache = OrderedDict()
         self._key = None
         self._chrome = np.zeros_like(self.canvas)
@@ -474,7 +474,8 @@ class DashboardComposer:
         self._text(draw, (934, 279), "计数真值待人工核对", 18, 144)
         self._text(draw, (934, 310), button_status, 18, 170)
         self._text(draw, (934, 340), str(dashboard.get("preview_status", "预览 READY")), 18, 170)
-        self._text(draw, (934, 370), thread_text, 18, 170)
+        for index, thread_line in enumerate(thread_text.split(" | ")[:2]):
+            self._text(draw, (934, 370 + index * 15), thread_line, 12, 170)
         queue_line = queue_text
         if exposure_latency_text:
             queue_line += " / " + exposure_latency_text

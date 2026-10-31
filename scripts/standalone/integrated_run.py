@@ -141,7 +141,7 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
     if isinstance(runtime_diagnostics,dict):
         diagnostic_threads=runtime_diagnostics.get('threads',[])
         if diagnostic_threads:
-            thread_text=' | '.join('{} CPU{:.0f} R{:.0f} W{:.0f}ms'.format(
+            thread_text=' | '.join('{} CPU{:.0f}ms run{:.0f}ms wait{:.0f}ms'.format(
                 str(entry.get('name') or entry.get('tid','?'))[:4],
                 entry['cpu_time_ms'],entry['run_time_ms'],entry['wait_time_ms'])
                 for entry in diagnostic_threads[:2])

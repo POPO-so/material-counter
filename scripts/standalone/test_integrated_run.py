@@ -88,9 +88,9 @@ def test_dashboard_values_show_thread_run_wait_and_preview_pool_occupancy():
     })
 
     assert "capt" in values["thread_text"]
-    assert "CPU12" in values["thread_text"]
-    assert "R20" in values["thread_text"]
-    assert "W4ms" in values["thread_text"]
+    assert "CPU12ms" in values["thread_text"]
+    assert "run20ms" in values["thread_text"]
+    assert "wait4ms" in values["thread_text"]
     assert values["queue_text"] == "IN 2/3  OUT 1/3"
 
 
