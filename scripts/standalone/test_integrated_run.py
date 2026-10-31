@@ -8,6 +8,7 @@ import pytest
 
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
 from scripts.standalone.integrated_run import (
+    dashboard_values,
     drawing_process,
     rasterize_into,
     result_metadata,
@@ -17,6 +18,45 @@ from scripts.standalone.integrated_run import (
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
 from scripts.wo0016.stream_counter import MaskCounter
+
+
+def test_dashboard_unknown_metrics_stay_unknown():
+    values=dashboard_values(9,False,0,{})
+
+    assert values['count']==9
+    assert values['camera_fps'] is None
+    assert values['e2e_ms'] is None
+    assert values['drop_total'] is None
+    assert values['resolution_chain']=="640x400 -> 800x640 -> 1280x720"
+
+
+def test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown():
+    value=dict(camera_fps=29.5,effective_input_fps=24.1,
+        e2e_ms={'mean':12.3},drop_total=7,
+        resolution_chain="640x400 -> 800x640 -> 1280x720",
+        processing_fps=23.7,regions_ms={'mean':2.1},track_ms={'mean':1.2},
+        pl={'clock_hz':50_000_000},link_summary='link ok',page_lines=('PL 50 MHz',))
+    telemetry={'video_telemetry':{'value':value,'stale':False}}
+
+    values=dashboard_values(9,True,2,telemetry)
+    assert values['detail_page']==2 and values['state']=='PAUSED'
+    for key,item in value.items():
+        assert values[key]==item
+    assert dashboard_values(9,False,0,{
+        'video_telemetry':{'value':value,'stale':True}
+    })['camera_fps'] is None
+
+
+def test_telemetry_does_not_change_result_metadata_or_count():
+    mask=np.zeros((400,640),np.uint8);mask[100:110,200:220]=255
+    result=MaskCounter(width=640,height=400,roi_mode='full',min_area=10).update(0,mask)
+    common=dict(paused=False,binary_background=False,page=0)
+    empty=result_metadata(result,**common,telemetry={})
+    filled=result_metadata(result,**common,telemetry={
+        'camera_fps':29.5,'e2e_ms':{'mean':12.3},'drop_total':7,
+    })
+
+    assert (empty['count'],empty['boxes'],empty['tracks'])==(filled['count'],filled['boxes'],filled['tracks'])
 
 
 def test_source_identity_covers_loaded_counting_and_motion_code():

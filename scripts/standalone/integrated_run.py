@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 from collections import deque
+from dataclasses import replace
 import hashlib
 import json
 import multiprocessing as mp
@@ -35,6 +36,7 @@ from .pressure import make_input, counter_delta, validate_transfer_totals
 from .preview_inputs import PreviewInputs
 from .video_pump import VideoPump, DISPLAY_FAIL_HOLD
 from .telemetry_cache import TelemetryCache,parse_process_stat
+from .video_telemetry import FrameTelemetry,TelemetryWindow,pl_counters_snapshot
 from .probe import _collect_iio
 from .shared_frames import SharedFrames, WRITING, READING
 from scripts.rle.protocol import TX_BYTES, RX_CAPACITY
@@ -54,7 +56,7 @@ def rasterize_into(packet, output):
     return output
 
 
-def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=0,
+def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=0,telemetry=None,
                     count_axis='x',line_position=320,direction=1):
     return dict(count=result.total_count, paused=paused,
         binary_background=binary_background,page=page,
@@ -71,6 +73,8 @@ def dashboard_values(count, paused, page, telemetry):
     resources=telemetry.get('resources',{})
     perf=performance.get('value',{}) if not performance.get('stale',True) else {}
     resource=resources.get('value',{}) if not resources.get('stale',True) else {}
+    video_sample=telemetry.get('video_telemetry',{})
+    video=video_sample.get('value',{}) if not video_sample.get('stale',True) else {}
     memory=resource.get('memory',{})
     memory_percent=None
     try:
@@ -80,8 +84,15 @@ def dashboard_values(count, paused, page, telemetry):
             memory_percent=100*(total-available)/total
     except (KeyError,ValueError,TypeError,AttributeError):
         pass
-    return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
+    return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=int(page),
         display_fps=perf.get('display_fps'),processing_ms=perf.get('processing_ms'),
+        camera_fps=video.get('camera_fps'),
+        effective_input_fps=video.get('effective_input_fps'),
+        e2e_ms=video.get('e2e_ms'),drop_total=video.get('drop_total'),
+        resolution_chain=video.get('resolution_chain','640x400 -> 800x640 -> 1280x720'),
+        link_summary=video.get('link_summary'),page_lines=video.get('page_lines',()),
+        processing_fps=video.get('processing_fps'),regions_ms=video.get('regions_ms'),
+        track_ms=video.get('track_ms'),pl=video.get('pl'),
         cpu_percent=resource.get('cpu',{}).get('system'),memory_percent=memory_percent)
 
 
@@ -182,6 +193,7 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
                 meta=lease.metadata
                 lines=meta.get('status_lines',())
                 count_line=meta.get('count_line',dict(axis='x',position=320,direction=1))
+                render_started_ns=time.perf_counter_ns()
                 composer.render(lease.gray,lease.binary,lease.session_uuid,lease.frame_id,
                     boxes=meta['boxes'],tracks=meta['tracks'],status_lines=lines,
                     binary_background=meta['binary_background'],output=pixels,
@@ -190,7 +202,9 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
                     dashboard=meta.get('dashboard'))
                 timings=composer.last_timings_ms
                 outputs.publish(slot,lease.session_uuid,lease.frame_id,
-                    scale_ns=int(timings['scale_ms']*1e6),draw_ns=int(timings['draw_ms']*1e6))
+                    scale_ns=int(timings['scale_ms']*1e6),draw_ns=int(timings['draw_ms']*1e6),
+                    capture_time_ns=lease.capture_time_ns,
+                    compose_ns=int((time.perf_counter_ns()-render_started_ns)))
                 slot=None;counters[0]+=1
             finally:
                 if slot is not None:outputs.abort_write(slot)
@@ -306,6 +320,7 @@ def main(argv=None):
         diagnostic_limits={'samples':1800,'events':2048,'recoveries':2048,'frame_trace':600,'annotations_per_frame':128,
             'button_raw_transitions':2048},
         session_id=str(uuid.uuid4()),ownership=audit_process_ownership(),state='STARTING',
+        pl_counters=pl_counters_snapshot(None),
         material_accuracy='NOT_MEASURED',samples=deque(maxlen=1800),events=deque(maxlen=2048),
         recoveries=deque(maxlen=2048),button_raw_sample_count=0,
         button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
@@ -363,6 +378,7 @@ def main(argv=None):
     session=uuid.UUID(report['session_id'])
     previous_cpu=_parse_proc_stat(Path('/proc/stat').read_text())
     stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','snapshot_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms')}
+    telemetry_window=TelemetryWindow()
     try:
         dma=owner.retain(MMIO(0x40400000,0x1000))
         for offset in (4,0x34):
@@ -420,7 +436,7 @@ def main(argv=None):
                         error=repr(error),injected=failure_mode is not None,
                         failure_mode=failure_mode,monotonic=failed_at))
                     next_drawing_retry=failed_at+5
-            video_pump=VideoPump(outputs,hw,video_owner,session)
+            video_pump=VideoPump(outputs,hw,video_owner,session,telemetry=telemetry_window)
         else:video_owner.call(hw.hdmi.close,timeout=3)
         if args.source=='camera':camera=LatestCamera(args.camera)
         report['counters_before']=owner.call(snapshot_counters,control)
@@ -513,6 +529,9 @@ def main(argv=None):
                     # can exceed the steady-state fresh-frame timeout.
                     camera_timeout=15.0 if camera_index<0 else .25
                     camera_index,gray,captured=camera.read(after=camera_index,timeout=camera_timeout)
+                    capture_ns=int(captured*1e9)
+                    frame_telemetry=FrameTelemetry(frame_id=index,capture_ns=capture_ns,
+                        consume_ns=time.monotonic_ns())
                 except (RuntimeError,TimeoutError) as error:
                     camera.close();camera=None;next_camera_retry=time.monotonic()+5
                     report['recoveries'].append(dict(kind='camera',frame=index,error=repr(error),monotonic=now))
@@ -527,9 +546,9 @@ def main(argv=None):
                     trajectory_epoch+=1;camera_in_error=False
                     report['recoveries'].append(dict(kind='camera_resumed',frame=index,
                         trajectory_epoch=trajectory_epoch,monotonic=time.monotonic()))
-                capture_ns=int(captured*1e9)
             else:
                 gray=make_input('moving',index);capture_ns=(index+1)*33_333_333
+                frame_telemetry=None
             frame_start=time.monotonic()
             boundary=list(commands.get(str(index),()))
             while True:
@@ -539,8 +558,16 @@ def main(argv=None):
             rx_total_bytes+=packet.actual_bytes
             last_rle_stats={'runs':packet.run_count,'rx_bytes':packet.actual_bytes}
             transfer_end=time.monotonic()
+            transfer_done_ns=time.monotonic_ns()
             result=advance_count(counter,controls,packet,boundary,capture_monotonic_ns=capture_ns)
             count_end=time.monotonic()
+            count_done_ns=time.monotonic_ns()
+            if frame_telemetry is not None:
+                track_ms=float(result.roi_subtimings_ms.get('track_ms',0.0)) if result is not None else 0.0
+                regions_done_ns=max(transfer_done_ns,count_done_ns-int(track_ms*1e6))
+                frame_telemetry=FrameTelemetry(frame_id=index,capture_ns=frame_telemetry.capture_ns,
+                    consume_ns=frame_telemetry.consume_ns,transfer_done_ns=transfer_done_ns,
+                    regions_done_ns=regions_done_ns,track_done_ns=count_done_ns)
             if captures is not None:
                 captures.observe(gray,packet,result,counter,trajectory_epoch=trajectory_epoch,
                     capture_monotonic_ns=capture_ns,camera_sequence=camera_index if camera else index,
@@ -601,8 +628,12 @@ def main(argv=None):
                         if performance:metadata['status_lines'].append('RLE {} runs / DMA {} B'.format(performance['value']['runs'],performance['value']['rx_bytes']))
                     last_gray=gray;last_metadata=metadata;last_valid_id=index
                     if process is not None and process.is_alive():
-                        if inputs.publish(gray,binary,session,index,metadata):published+=1
+                        if inputs.publish(gray,binary,session,index,metadata,
+                                          capture_time_ns=frame_telemetry.capture_ns if frame_telemetry else 0):
+                            published+=1
                         else:dropped+=1
+                        if frame_telemetry is not None:
+                            frame_telemetry=replace(frame_telemetry,publish_ns=time.monotonic_ns())
                     else:dropped+=1
                     stages['publish_ms'].append((time.monotonic()-snapshot_end)*1000)
             elif inputs is not None and last_gray is not None:
@@ -610,6 +641,8 @@ def main(argv=None):
                 fault['dashboard']=dict(fault.get('dashboard',{}),state='INVALID FRAME')
                 if process is not None and process.is_alive():
                     inputs.publish(last_gray,binary,session,last_valid_id,fault)
+            if frame_telemetry is not None:
+                telemetry_window.record_frame(frame_telemetry)
             index+=1
             if args.display=='on':
                 submitted=video_pump.submitted
@@ -617,6 +650,28 @@ def main(argv=None):
                     stop_drawing.set();injection_done=True
             if time.monotonic()-last_sample>=2:
                 sample_time=time.monotonic();cpu=_parse_proc_stat(Path('/proc/stat').read_text())
+                sample_time_ns=time.monotonic_ns()
+                camera_stats=camera.stats() if camera is not None else {
+                    'captured_total':0,'overwrite_drops':0,'sequence_errors':0}
+                camera_sample=telemetry_window.record_camera(
+                    camera_stats['captured_total'],camera_stats['overwrite_drops'],
+                    camera_stats['sequence_errors'],sample_time_ns)
+                consumed_sample=telemetry_window.record_consumed(index,sample_time_ns)
+                pump_sample=telemetry_window.record_pump(
+                    video_pump.submitted if video_pump else 0,
+                    video_pump.skipped if video_pump else 0,
+                    video_pump.submit_failures if video_pump else 0,sample_time_ns)
+                counters_sample=owner.call(snapshot_counters,control)
+                video_sample=telemetry_window.sample(sample_time_ns)
+                video_sample.update(camera=camera_sample,pump=pump_sample,consumed=consumed_sample)
+                video_sample['drop_total']=(camera_stats['overwrite_drops']+
+                    (video_pump.skipped+video_pump.submit_failures if video_pump else 0))
+                video_sample.setdefault('resolution_chain','640x400 -> 800x640 -> 1280x720')
+                video_sample.setdefault('link_summary',None)
+                video_sample.setdefault('page_lines',())
+                video_sample['pl']=pl_counters_snapshot(counters_sample)
+                cache.record('video_telemetry',video_sample,2.0,time.monotonic())
+                cache_values=cache.snapshot(time.monotonic())
                 monitor=owner.call(snapshot,hw.monitor)
                 vdma_status=owner.call(hw.vdma.read,4)
                 if vdma_status&0x770:
@@ -625,9 +680,11 @@ def main(argv=None):
                 report['samples'].append(dict(monotonic=sample_time,processed=index,submitted=submitted,
                     monitor=monitor,count=counter.total_count,invalid=counter.invalid_frames,memory=_memory(),
                     cpu=_cpu_usage_percent(previous_cpu,cpu),vdma_status=vdma_status,
-                    video_state=video_pump.state if video_pump else 'OFF',telemetry=cache.snapshot(time.monotonic()),
+                    video_state=video_pump.state if video_pump else 'OFF',telemetry=cache_values,
+                    video_telemetry=cache_values.get('video_telemetry',{}),
+                    pl_counters=pl_counters_snapshot(counters_sample),
                     crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
-                    counters=owner.call(snapshot_counters,control)))
+                    counters=counters_sample))
                 previous_cpu=cpu;last_sample=sample_time
         report['duration_s']=time.monotonic()-started
         report.update(trace_sha256=trace.digest(),trace_frames=trace.frames_seen,
@@ -649,6 +706,8 @@ def main(argv=None):
             if not video_pump.is_alive:outputs.close()
         report['monitor_after']=owner.call(snapshot,hw.monitor)
         report['counters_after']=owner.call(snapshot_counters,control)
+        report['pl_counters']=pl_counters_snapshot(report['counters_after'])
+        report['video_telemetry']=cache.snapshot(time.monotonic()).get('video_telemetry',{})
         report['counter_delta']=counter_delta(report['counters_before'],report['counters_after'])
         report['received_bytes_total']=rx_total_bytes
         report['transfer_consistency']=validate_transfer_totals(report['counter_delta'],index,rx_total_bytes)
