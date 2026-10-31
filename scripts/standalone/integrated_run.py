@@ -203,6 +203,19 @@ def button_gpio_irq_configured(overlay, channel):
     return present and interrupt_available(channel)
 
 
+def button_input_poll_callback(mode, worker_getter):
+    """Create the 10 ms compatibility poll hook only when explicitly selected."""
+    if mode not in ('irq','polling','off'):
+        raise ValueError('unknown button input mode')
+    if mode != 'polling':
+        return None
+    def poll():
+        worker=worker_getter()
+        if worker is not None:
+            worker.poll()
+    return poll
+
+
 class ButtonInputWorker:
     """Use the overlay owner's loop for IRQ waits or its explicit polling hook."""
     def __init__(self, owner, mode, channel, read_bits, on_commands, on_error):
@@ -530,8 +543,8 @@ def main(argv=None):
         except queue.Full:pass
     # One manager controls the overlay lifetime. Separate driver domains prevent
     # a blocked display call from taking the RLE counting domain with it.
-    video_owner=DriverOwner(poll=lambda:button_worker.poll()
-                            if button_worker is not None else None)
+    video_owner=DriverOwner(poll=button_input_poll_callback(
+        args.button_input,lambda:button_worker))
     owner=DriverOwner()
     ctx=mp.get_context('spawn')
     drawing_errors=ctx.Queue(maxsize=1);drawing_counts=ctx.RawArray('Q',2)
