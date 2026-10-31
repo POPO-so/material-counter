@@ -155,8 +155,22 @@ module video_binary_overlay #(
   wire in_view=vid_active && display_valid && enable_p &&
        x>=VIEW_X && x<VIEW_X+VIEW_WIDTH && y>=VIEW_Y && y<VIEW_Y+VIEW_HEIGHT;
   wire [9:0] local_x=x-VIEW_X,local_y=y-VIEW_Y;
-  wire [9:0] source_x=(local_x*WIDTH)/VIEW_WIDTH;
-  wire [9:0] source_y=(local_y*HEIGHT)/VIEW_HEIGHT;
+  wire [9:0] source_x,source_y;
+  generate
+    // The production preview maps 512x320 source pixels onto a 640x400
+    // window. For this exact 5:4 scale, floor(v*5/4) == v + floor(v/4).
+    // Keep the generic parameterized mapping for other viewports.
+    if(WIDTH*4==VIEW_WIDTH*5) begin : g_source_x_5_4
+      assign source_x=local_x+(local_x>>2);
+    end else begin : g_source_x_generic
+      assign source_x=(local_x*WIDTH)/VIEW_WIDTH;
+    end
+    if(HEIGHT*4==VIEW_HEIGHT*5) begin : g_source_y_5_4
+      assign source_y=local_y+(local_y>>2);
+    end else begin : g_source_y_generic
+      assign source_y=(local_y*HEIGHT)/VIEW_HEIGHT;
+    end
+  endgenerate
   reg line_or_box;
   integer b;
   reg [9:0] bx0,bx1,by0,by1;
