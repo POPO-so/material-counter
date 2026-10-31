@@ -18,9 +18,14 @@ if {![file isfile $project_file] || ![file isfile $bd_file] || ![file isfile $re
 
 if {![llength [get_projects -quiet]]} {open_project $project_file}
 open_bd_design $bd_file
-if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != 11} {error "G2_BUILD_CONTROL_MI_MISMATCH"}
+set offload_candidate [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
+set expected_mi [expr {$offload_candidate ? 12 : 11}]
+if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != $expected_mi} {error "G2_BUILD_CONTROL_MI_MISMATCH"}
 foreach cell {axi_dma_0 image_pipeline hp0_protocol hp1_fabric reset_rle} {
     if {![llength [get_bd_cells -quiet $cell]]} {error "G2_BUILD_CELL_MISSING:$cell"}
+}
+if {$offload_candidate && (![llength [get_bd_cells -quiet binary_overlay]] || ![llength [get_bd_intf_pins -quiet control/M11_AXI]])} {
+    error "G2_BUILD_OFFLOAD_CELLS_MISSING"
 }
 if {[llength [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S]]] != 1 ||
     [llength [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins image_pipeline/m_axis]]] != 1} {
