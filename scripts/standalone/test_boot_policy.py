@@ -1,9 +1,21 @@
 import json
+import sys
+import types
 import uuid
+from pathlib import Path
 
 import pytest
 
 from scripts.standalone.boot_policy import build_argv, initialize_once
+# The boot entry is Linux-only; its backend unit tests do not exercise locking.
+_needs_fcntl_stub = sys.platform == "win32" and "fcntl" not in sys.modules
+if _needs_fcntl_stub:
+    sys.modules["fcntl"] = types.ModuleType("fcntl")
+try:
+    from scripts.standalone.boot_integrated import BoardBackend
+finally:
+    if _needs_fcntl_stub:
+        del sys.modules["fcntl"]
 
 
 class MockBackend:
@@ -202,3 +214,46 @@ def test_build_argv_normalizes_boot_uuid_and_acceptance_has_no_continuous_flag(t
 
     assert argv[argv.index("--boot-id") + 1] == str(boot)
     assert "--continuous" not in argv
+
+
+@pytest.mark.parametrize("download_error", [None, RuntimeError("download failed")])
+@pytest.mark.parametrize("relative_bit_path", [False, True])
+def test_board_backend_downloads_into_runtime_and_restores_cwd(
+    tmp_path, monkeypatch, download_error, relative_bit_path
+):
+    release = tmp_path / "release"
+    runtime = tmp_path / "runtime" / "session-1"
+    original_cwd = tmp_path / "caller"
+    release.mkdir()
+    runtime.mkdir(parents=True)
+    original_cwd.mkdir()
+    bit = original_cwd / "design.bit" if relative_bit_path else release / "design.bit"
+    bit.write_bytes(b"bitstream")
+    backend_bit = Path("design.bit") if relative_bit_path else bit
+    seen_paths = []
+
+    class FakeOverlay:
+        def __init__(self, bit_path, download):
+            seen_paths.append(bit_path)
+            assert download is True
+            Path("loaded.xclbin").write_bytes(b"generated xclbin")
+            if download_error:
+                raise download_error
+
+    class FakeClocks:
+        pass
+
+    monkeypatch.setitem(sys.modules, "pynq", types.SimpleNamespace(Overlay=FakeOverlay, Clocks=FakeClocks))
+    backend = BoardBackend(release, {"bit": backend_bit}, {}, runtime)
+    monkeypatch.chdir(original_cwd)
+
+    if download_error:
+        with pytest.raises(RuntimeError, match="download failed"):
+            backend.configure()
+    else:
+        backend.configure()
+
+    assert Path.cwd() == original_cwd
+    assert seen_paths == [str(bit.resolve())]
+    assert (runtime / "loaded.xclbin").read_bytes() == b"generated xclbin"
+    assert not (release / "loaded.xclbin").exists()

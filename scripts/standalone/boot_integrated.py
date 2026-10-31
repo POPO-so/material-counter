@@ -19,8 +19,8 @@ from .runtime_environment import verify_runtime_environment
 
 class BoardBackend:
     """Initial configuration only; allocates no counting or display CMA frames."""
-    def __init__(self,root,files,manifest):
-        self.root=root;self.files=files;self.manifest=manifest;self.overlay=None
+    def __init__(self,root,files,manifest,runtime_directory):
+        self.root=root;self.files=files;self.manifest=manifest;self.runtime_directory=Path(runtime_directory);self.overlay=None
 
     def audit(self):
         from scripts.wo0015.board_preflight import audit_process_ownership
@@ -29,9 +29,15 @@ class BoardBackend:
     def configure(self):
         # Only the once-per-new-boot policy reaches this path. There are no PL
         # register probes through stale metadata before the explicit download.
-        from pynq import Overlay,Clocks
-        self.overlay=Overlay(str(self.files['bit']),download=True)
-        Clocks.fclk0_mhz=50;Clocks.fclk1_mhz=100;Clocks.fclk2_mhz=142.857
+        original_directory=Path.cwd()
+        bit_path=Path(self.files['bit']).resolve()
+        try:
+            os.chdir(self.runtime_directory)
+            from pynq import Overlay,Clocks
+            self.overlay=Overlay(str(bit_path),download=True)
+            Clocks.fclk0_mhz=50;Clocks.fclk1_mhz=100;Clocks.fclk2_mhz=142.857
+        finally:
+            os.chdir(original_directory)
 
     def verify_loaded(self):
         import pynq
@@ -83,7 +89,7 @@ def main(argv=None):
         stream=open(name,'a');fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB);locks.append(stream)
     lock_fds=[stream.fileno() for stream in locks]
     command+=['--inherited-lock-fds',*(str(fd) for fd in lock_fds)]
-    backend=BoardBackend(root,files,manifest)
+    backend=BoardBackend(root,files,manifest,run_root)
     uptime=float(Path('/proc/uptime').read_text().split()[0])
     marker=Path('/run/material-counter')/(boot+'.json')
     marker.parent.mkdir(parents=True,exist_ok=True)
