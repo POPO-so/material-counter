@@ -107,7 +107,6 @@ class VideoPump:
                     submit_done_ns = time.monotonic_ns()
                     # A successful call transfers the CMA frame to the HDMI driver.
                     frame = None
-                    self.submitted += 1
                     self.timings_ms["copy_submit_ms"].append(
                         (submit_done_ns - copy_started_ns) / 1_000_000
                     )
@@ -116,15 +115,20 @@ class VideoPump:
                     )
                     self.timings_ms["scale_ms"].append(lease.scale_ns / 1_000_000)
                     self.timings_ms["draw_ms"].append(lease.draw_ns / 1_000_000)
-                    if self.telemetry is not None:
-                        self.telemetry.record_frame(
-                            FrameTelemetry(
-                                frame_id=lease.frame_id,
-                                capture_ns=lease.capture_time_ns,
-                                compose_done_ns=lease.published_ns,
-                                submit_done_ns=submit_done_ns,
+                    if self.telemetry is not None and lease.capture_time_ns > 0:
+                        try:
+                            self.telemetry.record_frame(
+                                FrameTelemetry(
+                                    frame_id=lease.frame_id,
+                                    capture_ns=lease.capture_time_ns,
+                                    # Published time is the available post-render boundary.
+                                    compose_done_ns=lease.published_ns,
+                                    submit_done_ns=submit_done_ns,
+                                )
                             )
-                        )
+                        except BaseException:
+                            pass
+                    self.submitted += 1
                 except BaseException as exc:
                     if session_mismatch:
                         self.skipped += 1

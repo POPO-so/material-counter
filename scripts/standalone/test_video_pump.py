@@ -206,6 +206,76 @@ def test_success_records_capture_to_submit_telemetry(frames):
         assert pump.join(1)
 
 
+def test_zero_capture_time_does_not_record_e2e_sample(frames):
+    class RecordingTelemetry(TelemetryWindow):
+        def __init__(self):
+            super().__init__(window_s=5)
+            self.record_calls = 0
+
+        def record_frame(self, frame):
+            self.record_calls += 1
+            super().record_frame(frame)
+
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    telemetry = RecordingTelemetry()
+    _publish(frames, identity, 29, capture_time_ns=0)
+    pump = pump_type(
+        frames, type("HW", (), {"hdmi": FakeHDMI((8, 12))})(), FakeOwner(),
+        identity, telemetry=telemetry,
+    )
+    try:
+        deadline = time.monotonic() + 1
+        while pump.submitted == 0 and time.monotonic() < deadline:
+            time.sleep(0.001)
+        sample = telemetry.sample(time.monotonic_ns())
+        assert pump.submitted == 1
+        assert telemetry.record_calls == 0
+        assert sample["e2e_ms"]["count"] == 0
+        assert sample["frame_count"] == 0
+    finally:
+        pump.request_stop()
+        assert pump.join(1)
+
+
+def test_telemetry_failure_does_not_fail_display_submission(frames):
+    class BrokenTelemetry:
+        def record_frame(self, frame):
+            raise RuntimeError("telemetry unavailable")
+
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    _publish(frames, identity, 91, capture_time_ns=time.monotonic_ns())
+    pump = pump_type(
+        frames, type("HW", (), {"hdmi": FakeHDMI((8, 12))})(), FakeOwner(),
+        identity, telemetry=BrokenTelemetry(),
+    )
+    try:
+        deadline = time.monotonic() + 1
+        while pump.submitted == 0 and time.monotonic() < deadline:
+            time.sleep(0.001)
+        assert pump.submitted == 1
+        assert pump.submit_failures == 0
+        assert pump.state != DISPLAY_FAIL_HOLD
+    finally:
+        pump.request_stop()
+        assert pump.join(1)
+
+
+def test_acquire_error_does_not_count_submit_failure():
+    class BrokenOutputs:
+        def acquire_latest(self):
+            raise OSError("output pool unavailable")
+
+    pump = _pump_type()(
+        BrokenOutputs(), type("HW", (), {"hdmi": FakeHDMI((8, 12))})(),
+        FakeOwner(), uuid.uuid4(),
+    )
+    assert pump.join(1)
+    assert pump.state == DISPLAY_FAIL_HOLD
+    assert pump.submit_failures == 0
+
+
 def test_idle_stop_leaves_no_reading_lease(frames):
     pump_type = _pump_type()
     identity = uuid.uuid4()
