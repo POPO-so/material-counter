@@ -162,7 +162,8 @@ def test_preview_metadata_contains_only_small_annotations_and_controls():
     assert resumed['tracks'][0][0]=='2:1'
 
 
-def test_actual_drawing_child_preserves_frame_identity_and_renders_horizontal_line():
+@pytest.mark.parametrize('axis,position', [('x',320),('y',200)])
+def test_actual_drawing_child_preserves_frame_identity_and_renders_count_line(axis,position):
     font=Path('C:/Windows/Fonts/msyh.ttc')
     if not font.is_file():pytest.skip('local font unavailable')
     ctx=mp.get_context('spawn');inputs=PreviewInputs.create(ctx);outputs=SharedFrames.create(ctx)
@@ -172,6 +173,7 @@ def test_actual_drawing_child_preserves_frame_identity_and_renders_horizontal_li
     try:
         session=uuid.uuid4();gray=np.full((400,640),80,np.uint8);binary=np.zeros_like(gray)
         metadata=dict(boxes=[],tracks=[],binary_background=True,status_lines=['测试'])
+        metadata['count_line']=dict(axis=axis,position=position,direction=1)
         assert inputs.publish(gray,binary,session,77,metadata)
         deadline=time.monotonic()+10
         while lease is None and time.monotonic()<deadline:
@@ -181,7 +183,13 @@ def test_actual_drawing_child_preserves_frame_identity_and_renders_horizontal_li
         marker=np.packbits((lease.array[0,640:864]==255).astype(np.uint8)).tobytes()
         assert uuid.UUID(bytes=marker[2:18])==session
         assert int.from_bytes(marker[18:26],'big')==77
-        assert np.all(lease.array[540,32:608]==255)
+        # Dashboard viewport is (256,144,768,480); both axes retain source coordinates.
+        if axis=='x':
+            assert lease.array[154,640]==248
+            assert lease.array[164,640]==0
+        else:
+            assert lease.array[384,266]==248
+            assert lease.array[384,276]==0
         outputs.release_read(lease.slot);lease=None
     finally:
         stop.set();child.join(timeout=10)

@@ -322,6 +322,7 @@ class DashboardComposer:
                        for size in (18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
                        for size in (18, 20, 24, 28, 34)}
+        self._text_cache = OrderedDict()
         self._key = None
         self._chrome = np.zeros_like(self.canvas)
         self.last_timings_ms = {"scale_ms": 0.0, "draw_ms": 0.0}
@@ -334,12 +335,36 @@ class DashboardComposer:
         return f"{value:,.{digits}f}{suffix}"
 
     def _text(self, draw, xy, text, size, fill):
-        # The packaged CJK fallback font does not contain Latin glyphs.
-        x, y = xy
-        for character in text:
-            font = self._latin[size] if ord(character) < 256 else self._fonts[size]
-            draw.text((x, y + size), character, font=font, fill=fill, anchor="ls")
-            x += font.getlength(character)
+        cached = self._text_cache.get((text, size))
+        if cached is None:
+            # Render at an integer offset so glyph bearings and fractional
+            # advances match the original per-character drawing path exactly.
+            margin = 64
+            width = margin * 2 + sum(
+                (self._latin[size] if ord(character) < 256 else self._fonts[size])
+                .getlength(character) for character in text)
+            mask = Image.new("L", (max(1, math.ceil(width)), size * 4 + margin * 2), 0)
+            mask_draw = ImageDraw.Draw(mask)
+            x = float(margin)
+            for character in text:
+                font = self._latin[size] if ord(character) < 256 else self._fonts[size]
+                mask_draw.text((x, margin + size), character, font=font,
+                               fill=255, anchor="ls")
+                x += font.getlength(character)
+            bounds = mask.getbbox()
+            if bounds is None:
+                cached = (0, 0, mask.crop((0, 0, 1, 1)))
+            else:
+                left, top, right, bottom = bounds
+                cached = (left - margin, top - margin,
+                          mask.crop((left, top, right, bottom)))
+            self._text_cache[(text, size)] = cached
+            if len(self._text_cache) > 128:
+                self._text_cache.popitem(last=False)
+        else:
+            self._text_cache.move_to_end((text, size))
+        offset_x, offset_y, mask = cached
+        draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
 
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
         values = (

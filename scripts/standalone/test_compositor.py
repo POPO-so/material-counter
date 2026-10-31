@@ -396,3 +396,80 @@ def test_cached_glyphs_preserve_mixed_font_pixels_and_wrapping():
     gray = np.zeros((400, 640), dtype=np.uint8)
     actual = c.render(gray, gray, uuid.uuid4(), 1, status_lines=lines)
     assert np.array_equal(actual[1:719, 640:], np.asarray(expected)[1:719])
+
+
+def _dashboard_composer():
+    api = _api()
+    latin = Path("C:/Windows/Fonts/consola.ttf")
+    if not FONT.is_file() or not latin.is_file():
+        pytest.skip("local CJK and Consolas fonts are required")
+    return api.DashboardComposer(FONT, latin_font_path=latin)
+
+
+def test_dashboard_text_cache_avoids_static_label_rasterization_on_value_updates(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    c.render(gray, gray, session, 1, boxes=((10, 10, 20, 20),),
+             dashboard={"count": 3, "display_fps": 30, "processing_ms": 4.2},
+             status_lines=())
+
+    calls = []
+    real_text = api.ImageDraw.ImageDraw.text
+    def track_text(draw, xy, text, *args, **kwargs):
+        calls.append(text)
+        return real_text(draw, xy, text, *args, **kwargs)
+    monkeypatch.setattr(api.ImageDraw.ImageDraw, "text", track_text)
+    metric_calls = []
+    fonts = list(c._fonts.values()) + list(c._latin.values())
+    originals = [(font, font.getlength) for font in fonts]
+    for font, original in originals:
+        def track_length(text, *args, _original=original, **kwargs):
+            metric_calls.append(text)
+            return _original(text, *args, **kwargs)
+        monkeypatch.setattr(font, "getlength", track_length)
+
+    c.render(gray, gray, session, 2, boxes=((10, 10, 20, 20),),
+             dashboard={"count": 4, "display_fps": 31, "processing_ms": 4.2},
+             status_lines=())
+    c.render(gray, gray, session, 3, boxes=((10, 10, 20, 20), (30, 30, 40, 40)),
+             dashboard={"count": 4, "display_fps": 31, "processing_ms": 4.2},
+             status_lines=())
+
+    assert not set("本次累计计数").intersection(calls)
+    assert metric_calls == []
+
+
+@pytest.mark.parametrize("size", [18, 20, 24, 34])
+@pytest.mark.parametrize("background,fills", [(12, (45, 225)), (238, (35, 210))])
+def test_dashboard_cached_mixed_text_matches_independent_legacy_pillow_pixels(
+        size, background, fills):
+    api = _api()
+    c = _dashboard_composer()
+    actual = api.Image.new("L", (800, 150), background)
+    expected = api.Image.new("L", (800, 150), background)
+    text = "混合 CPU 12.5% / gypj_ e\u0301，测试。"
+    # First draw populates the cache; the second hits the same text/size key
+    # while changing fill to check mask compositing on both dark and light gray.
+    for y0, fill in ((12, fills[0]), (78, fills[1])):
+        c._text(api.ImageDraw.Draw(actual), (27, y0), text, size, fill)
+
+        # Independent copy of the original per-character Pillow drawing path.
+        draw = api.ImageDraw.Draw(expected)
+        x, y = 27, y0
+        for character in text:
+            font = c._latin[size] if ord(character) < 256 else c._fonts[size]
+            draw.text((x, y + size), character, font=font, fill=fill, anchor="ls")
+            x += font.getlength(character)
+
+    assert np.array_equal(np.asarray(actual), np.asarray(expected))
+
+
+def test_dashboard_text_cache_has_a_fixed_memory_bound():
+    c = _dashboard_composer()
+    image = _api().Image.new("L", (400, 40), 0)
+    draw = _api().ImageDraw.Draw(image)
+    for index in range(300):
+        c._text(draw, (0, 0), f"标签{index}", 18, 170)
+    assert len(c._text_cache) <= 128
