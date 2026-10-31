@@ -145,3 +145,105 @@ def test_projection_neck_matches_legacy_for_random_and_recorded_masks():
         expected = _legacy_split_by_projection_neck(pixels, min_child_area=12)
         actual = split_touching._split_by_projection_neck(pixels, min_child_area=12)
         _assert_same_partition(actual, expected, pixels)
+
+
+def _legacy_geodesic_hole_assignments(pixels: np.ndarray,
+                               hole_centers: np.ndarray) -> np.ndarray | None:
+    """Assign foreground to hole seeds, validating connectivity before use.
+
+    Euclidean distance transforms handle ordinary hollow-piece clusters in
+    native code. If their Voronoi regions disconnect inside a concave shape,
+    a dilation-wave geodesic flood assigns each new pixel from an adjacent
+    label, keeping every child connected by construction.
+    """
+    ys, xs = np.nonzero(pixels)
+    if not len(xs):
+        return None
+    seeds: list[tuple[int, int]] = []
+    for index, (center_x, center_y) in enumerate(hole_centers):
+        distances = ((xs - center_x) ** 2 + (ys - center_y) ** 2)
+        for candidate in np.argsort(distances):
+            seed = (int(ys[candidate]), int(xs[candidate]))
+            if seed not in seeds:
+                break
+        else:
+            return None
+        seeds.append(seed)
+
+    distance_maps = []
+    for seed_y, seed_x in seeds:
+        distance_input = np.ones(pixels.shape, dtype=np.uint8)
+        distance_input[seed_y, seed_x] = 0
+        distance_maps.append(cv2.distanceTransform(distance_input, cv2.DIST_L2, 5))
+    labels = np.argmin(np.stack(distance_maps, axis=0), axis=0).astype(np.int8)
+    labels[~pixels] = -1
+    if all(split_touching.is_single_connected_component(labels == index)
+           for index in range(len(seeds))):
+        return labels
+
+    labels.fill(-1)
+    for index, seed in enumerate(seeds):
+        labels[seed] = index
+    kernel = np.ones((3, 3), dtype=np.uint8)
+    while np.any(pixels & (labels < 0)):
+        unassigned = pixels & (labels < 0)
+        claims = []
+        for index in range(len(seeds)):
+            region = (labels == index).astype(np.uint8)
+            adjacent = cv2.dilate(region, kernel) != 0
+            claims.append(adjacent & unassigned)
+        claim_stack = np.stack(claims, axis=0)
+        claimed = np.any(claim_stack, axis=0)
+        if not np.any(claimed):
+            return None
+        owners = np.argmax(claim_stack, axis=0)
+        labels[claimed] = owners[claimed]
+    return labels
+
+
+def test_geodesic_flood_preserves_ties_with_one_dilation_per_wave(monkeypatch):
+    pixels = np.ones((9, 15), dtype=bool)
+    centers = np.array([[2., 4.], [12., 4.]])
+    # Force the concave-mask fallback to isolate the multi-source wave itself.
+    monkeypatch.setattr(split_touching, 'is_single_connected_component', lambda _: False)
+    original = cv2.dilate
+    calls = []
+    def dilate(*args, **kwargs):
+        calls.append(1)
+        return original(*args, **kwargs)
+    monkeypatch.setattr(cv2, 'dilate', dilate)
+    expected = _legacy_geodesic_hole_assignments(pixels, centers)
+    old_calls = len(calls)
+    calls.clear()
+    actual = split_touching._geodesic_hole_assignments(pixels, centers)
+    np.testing.assert_array_equal(actual, expected)
+    assert len(calls) <= old_calls // len(centers)
+
+
+def test_projection_neck_does_not_build_a_strip_for_each_cut(monkeypatch):
+    pixels = np.ones((20, 50), dtype=bool)
+    pixels[:, 22:28] = False
+    pixels[9:11, 22:28] = True
+    expected = _legacy_split_by_projection_neck(pixels, 12)
+    assert expected is not None
+    class ForbiddenConcatenation:
+        def __getitem__(self, _):
+            raise AssertionError('per-cut strip concatenation')
+    monkeypatch.setattr(np, 'r_', ForbiddenConcatenation())
+    actual = split_touching._split_by_projection_neck(pixels, 12)
+    _assert_same_partition(actual, expected, pixels)
+
+
+
+def test_geodesic_flood_matches_legacy_on_seeded_masks_and_three_seeds(monkeypatch):
+    monkeypatch.setattr(split_touching, 'is_single_connected_component', lambda _: False)
+    rng = np.random.default_rng(20261031)
+    for count in (2, 3):
+        for _ in range(24):
+            pixels = rng.random((13, 19)) > .3
+            centers = rng.random((count, 2)) * (18, 12)
+            expected = _legacy_geodesic_hole_assignments(pixels, centers)
+            actual = split_touching._geodesic_hole_assignments(pixels, centers)
+            assert (actual is None) == (expected is None)
+            if expected is not None:
+                np.testing.assert_array_equal(actual, expected)

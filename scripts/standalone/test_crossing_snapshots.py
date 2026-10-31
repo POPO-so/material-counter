@@ -129,6 +129,66 @@ def test_new_id_already_beyond_line_is_saved_without_count_event(tmp_path):
     assert saved[0]['frames'][0]['tracks'][-1]['armed'] is False
 
 
+def test_parameter_signature_is_cached_but_values_are_read_each_frame(tmp_path, monkeypatch):
+    import inspect
+    from scripts.standalone import crossing_snapshots
+    from scripts.wo0016.stream_counter import MaskCounter
+
+    class CountingCounter(MaskCounter):
+        pass
+
+    tracker = counter()
+    tracker.__class__ = CountingCounter
+    signature_calls = []
+    original_signature = inspect.signature
+
+    def count_signature(target):
+        signature_calls.append(target)
+        return original_signature(target)
+
+    monkeypatch.setattr(crossing_snapshots.inspect, 'signature', count_signature)
+    capture = recorder(tmp_path, context_frames=5)
+    for i in range(3):
+        tracker.max_step = 80 + i
+        observe(capture, tracker, i, 315)
+    frames = list(capture._history)
+    assert capture.close(timeout=10)
+
+    assert len(signature_calls) == len(CountingCounter.__mro__)
+    assert [frame['metadata']['tracker_parameters']['max_step'] for frame in frames] == [80, 81, 82]
+
+
+def test_same_detection_is_converted_once_without_metadata_aliasing(tmp_path, monkeypatch):
+    from scripts.standalone import crossing_snapshots
+
+    capture = recorder(tmp_path, context_frames=1)
+    tracker = counter()
+    mask = np.zeros((400, 640), np.uint8)
+    mask[100:112, 315:327] = 255
+    result = tracker.update(0, mask)
+    detection = result.detections[0]
+    result = replace(result, raw_detections=(detection,))
+    packet = decode_packet(encode_mask(mask, frame_id=0))
+    original_asdict = crossing_snapshots.asdict
+    detection_conversions = []
+
+    def count_detection_conversion(value):
+        if value is detection:
+            detection_conversions.append(value)
+        return original_asdict(value)
+
+    monkeypatch.setattr(crossing_snapshots, 'asdict', count_detection_conversion)
+    capture.observe(mask, packet, result, tracker, capture_monotonic_ns=1,
+                    camera_sequence=0, paused=False, commands=[])
+    frame = capture._history[-1]['metadata']
+    assert capture.close(timeout=10)
+
+    assert len(detection_conversions) == 1
+    assert frame['detections'][0] is not frame['raw_detections'][0]
+    frame['detections'][0]['area'] = -1
+    assert frame['raw_detections'][0]['area'] == detection.area
+
+
 @pytest.mark.parametrize('limit', ['max_events', 'max_bytes', 'min_free_bytes'])
 def test_storage_limits_are_reported_without_affecting_tracker(tmp_path, limit):
     settings = {limit: 1 if limit != 'min_free_bytes' else 1 << 60}

@@ -8,6 +8,7 @@ import struct
 from typing import Any
 
 import numpy as np
+import cv2
 
 
 WIDTH = 640
@@ -109,7 +110,9 @@ def encode_gray_into(gray: Any, output: Any, *, frame_id: int = 0) -> None:
                      (HEIGHT << 16) | WIDTH, PIXELS, frame_id)
     payload = memoryview(np.ascontiguousarray(array)).cast("B")
     view[16:16 + PIXELS] = payload
-    checksum = int(array.sum(dtype=np.uint64)) & _U32_MAX
+    # Gray8 has at most 640*400*255 in total: OpenCV's native double sum is
+    # exact below 2**53 and avoids NumPy's slow uint64 reduction on ARM32.
+    checksum = int(cv2.sumElems(array)[0]) & _U32_MAX
     struct.pack_into("<4I", view, 16 + PIXELS,
                      GRAY_TRAILER_MAGIC, frame_id, checksum, GRAY_END_MAGIC)
 
@@ -291,32 +294,43 @@ def decode_packet(packet: Any, expected_frame_id: int | None = None,
     if t[7] != view.nbytes or t[7] != expected_bytes:
         raise ValueError("RLE actual length does not match the packet")
     checksum_offset = 16 + run_count + projection_count
-    checksum = int(words[:checksum_offset].sum(dtype=np.uint64)) & _U32_MAX
+    # The wire checksum is addition modulo 2**32; wrapping each partial
+    # uint32 sum is identical to masking the previous uint64 sum at the end.
+    checksum = int(words[:checksum_offset].sum(dtype=np.uint32)) & _U32_MAX
     if checksum != t[8]:
         raise ValueError("RLE packet checksum is invalid")
 
     runs = np.array(words[16:16 + run_count], dtype=np.uint32, copy=True)
-    run_rows = runs >> 20
-    run_starts = (runs >> 10) & 0x3FF
-    run_ends = runs & 0x3FF
-    if np.any(runs & 0xE0000000):
-        raise ValueError("RLE reserved run bits are nonzero")
-    if (np.any(run_rows < y0) or np.any(run_rows >= y1)
-            or np.any(run_starts < x0) or np.any(run_starts > run_ends)
-            or np.any(run_ends >= x1)):
-        raise ValueError("RLE run is outside the configured ROI")
-    if (np.any(run_rows[1:] < run_rows[:-1]) or
-            np.any((run_rows[1:] == run_rows[:-1]) &
-                   (run_starts[1:] <= run_ends[:-1] + 1))):
-        raise ValueError("RLE runs are not sorted and maximal")
-    lengths = run_ends.astype(np.int64) - run_starts + 1
-    run_foreground = int(lengths.sum(dtype=np.int64))
-    run_row_counts = np.bincount(run_rows.astype(np.intp), weights=lengths,
-                                  minlength=height).astype(np.uint32)
-    run_column_deltas = np.zeros(width + 1, dtype=np.int32)
-    np.add.at(run_column_deltas, run_starts, 1)
-    np.add.at(run_column_deltas, run_ends + 1, -1)
-    run_column_counts = np.cumsum(run_column_deltas[:-1], dtype=np.uint32)
+    if run_count:
+        run_rows = runs >> 20
+        run_starts = (runs >> 10) & 0x3FF
+        run_ends = runs & 0x3FF
+        if np.any(runs & 0xE0000000):
+            raise ValueError("RLE reserved run bits are nonzero")
+        if (np.any(run_rows < y0) or np.any(run_rows >= y1)
+                or np.any(run_starts < x0) or np.any(run_starts > run_ends)
+                or np.any(run_ends >= x1)):
+            raise ValueError("RLE run is outside the configured ROI")
+        if (np.any(run_rows[1:] < run_rows[:-1]) or
+                np.any((run_rows[1:] == run_rows[:-1]) &
+                       (run_starts[1:] <= run_ends[:-1] + 1))):
+            raise ValueError("RLE runs are not sorted and maximal")
+        lengths = run_ends.astype(np.int32) - run_starts.astype(np.int32) + 1
+        # Geometry and MAX_RUNS bound even malformed non-overlapping lengths well
+        # below int32; run coordinate/order validation above remains mandatory.
+        run_foreground = int(lengths.sum(dtype=np.int32))
+        run_row_counts = np.bincount(run_rows.astype(np.intp), weights=lengths,
+                                      minlength=height).astype(np.uint32)
+        run_column_deltas = np.zeros(width + 1, dtype=np.int32)
+        np.add.at(run_column_deltas, run_starts, 1)
+        np.add.at(run_column_deltas, run_ends + 1, -1)
+        run_column_counts = np.cumsum(run_column_deltas[:-1], dtype=np.uint32)
+    else:
+        # All run-coordinate/order checks are vacuously true for an empty run
+        # vector. Keep full header, status, checksum and projection checks.
+        run_foreground = 0
+        run_row_counts = np.zeros(height, dtype=np.uint32)
+        run_column_counts = np.zeros(width, dtype=np.uint32)
 
     projection_start = 16 + run_count
     projection_data = words[projection_start:projection_start + projection_count]
@@ -329,7 +343,7 @@ def decode_packet(packet: Any, expected_frame_id: int | None = None,
             or np.any(row_projection[:y0]) or np.any(row_projection[y1:])
             or np.any(column_projection[:x0]) or np.any(column_projection[x1:])):
         raise ValueError("RLE projections exceed geometry or ROI")
-    if int(row_projection.astype(np.uint64).sum()) != t[3] or int(column_projection.astype(np.uint64).sum()) != t[3]:
+    if int(row_projection.sum(dtype=np.uint32)) != t[3] or int(column_projection.sum(dtype=np.uint32)) != t[3]:
         raise ValueError("RLE projection totals disagree with foreground count")
     if np.any(run_row_counts > row_projection) or np.any(run_column_counts > column_projection):
         raise ValueError("RLE runs exceed their full-frame projections")
