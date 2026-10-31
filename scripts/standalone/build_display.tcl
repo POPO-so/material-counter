@@ -31,6 +31,12 @@ set clock_file [file join $repo scripts standalone display_timing.xdc]
 add_files -fileset constrs_1 $clock_file
 set_property USED_IN_SYNTHESIS false [get_files $clock_file]
 set_property PROCESSING_ORDER LATE [get_files $clock_file]
+if {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"} {
+    set offload_xdc [file join $repo scripts standalone offload_cdc.xdc]
+    add_files -fileset constrs_1 $offload_xdc
+    set_property USED_IN_SYNTHESIS false [get_files $offload_xdc]
+    set_property PROCESSING_ORDER LATE [get_files $offload_xdc]
+}
 launch_runs synth_1 -jobs 2
 wait_on_run synth_1
 if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "DISPLAY_SYNTH_FAILED"}

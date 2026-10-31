@@ -38,6 +38,12 @@ foreach {src dst} {
 # hsync pins from the live BD by function and require exactly one match.
 set video_out_cell hdmi_out/frontend/v_axi4s_vid_out_0
 set swap_cell hdmi_out/frontend/color_swap_0
+# All four signals are explicit below. Detach the bundled video interface so
+# HSync cannot bypass the overlay while data/active/VSYNC are delayed.
+set old_interface [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins ${swap_cell}/pixel_input]]
+if {[llength $old_interface]} {
+    disconnect_bd_intf_net $old_interface [get_bd_intf_pins ${swap_cell}/pixel_input]
+}
 foreach {src_pin swap_pin overlay_pin monitor_pin} {
     vid_data pixel_in vid_data24 vid_data
     vid_active_video vde_in vid_active vid_active
@@ -63,13 +69,19 @@ foreach p [get_bd_pins -of_objects [get_bd_cells $swap_cell]] {
 if {[llength $hsrc_candidates]!=1 || [llength $hdst_candidates]!=1} {error "OFFLOAD_HSYNC_PIN_DISCOVERY_AMBIGUOUS:src=$hsrc_candidates dst=$hdst_candidates"}
 set hdst [lindex $hdst_candidates 0]
 set oldnets [get_bd_nets -quiet -of_objects $hdst]
-if {[llength $oldnets]!=1} {error "OFFLOAD_HSYNC_OLD_NET_MISSING:$hdst:$oldnets"}
-disconnect_bd_net $oldnets $hdst
+if {[llength $oldnets]>1} {error "OFFLOAD_HSYNC_OLD_NET_AMBIGUOUS:$hdst:$oldnets"}
+if {[llength $oldnets]} {disconnect_bd_net $oldnets $hdst}
 connect_bd_net [lindex $hsrc_candidates 0] [get_bd_pins binary_overlay/vid_hsync]
 connect_bd_net [get_bd_pins binary_overlay/out_data24] [get_bd_pins ${swap_cell}/pixel_in]
 connect_bd_net [get_bd_pins binary_overlay/out_active] [get_bd_pins ${swap_cell}/vde_in]
 connect_bd_net [get_bd_pins binary_overlay/out_vsync] [get_bd_pins ${swap_cell}/vsync_in]
 connect_bd_net [get_bd_pins binary_overlay/out_hsync] $hdst
+# Interface expansion may restore observer nets; explicitly release each sink.
+foreach sink {frame_monitor/vid_data frame_monitor/vid_active frame_monitor/vid_vsync} {
+    set sink_pin [get_bd_pins $sink]
+    set prior_net [get_bd_nets -quiet -of_objects $sink_pin]
+    if {[llength $prior_net]} {disconnect_bd_net $prior_net $sink_pin}
+}
 connect_bd_net [get_bd_pins binary_overlay/out_data24] [get_bd_pins frame_monitor/vid_data]
 connect_bd_net [get_bd_pins binary_overlay/out_active] [get_bd_pins frame_monitor/vid_active]
 connect_bd_net [get_bd_pins binary_overlay/out_vsync] [get_bd_pins frame_monitor/vid_vsync]
@@ -81,13 +93,23 @@ foreach {off seg} {0x43C50000 binary_overlay/S_AXI/*} {
 }
 connect_bd_net [get_bd_pins btns_gpio/ip2intc_irpt] [get_bd_pins video_interrupts/In3]
 
-proc offload_require_shared_net {a b} {
-    set na [get_bd_nets -quiet -of_objects [get_bd_pins $a]]
-    set nb [get_bd_nets -quiet -of_objects [get_bd_pins $b]]
-    if {[llength $na]!=1 || [llength $nb]!=1 || [lindex $na 0] ne [lindex $nb 0]} {
-        error "OFFLOAD_EXPECTED_SHARED_NET:$a:$b:$na:$nb"
+proc offload_require_shared_net {source sink} {
+    set todo [get_bd_nets -quiet -boundary_type both -of_objects [get_bd_pins $source]]
+    set target [get_bd_nets -quiet -boundary_type both -of_objects [get_bd_pins $sink]]
+    if {![llength $todo] || ![llength $target]} {error "OFFLOAD_UNCONNECTED_PIN:$source:$sink"}
+    set visited [dict create]
+    while {[llength $todo]} {
+        set net [lindex $todo 0];set todo [lrange $todo 1 end]
+        if {[dict exists $visited $net]} {continue}
+        dict set visited $net 1
+        if {[lsearch -exact $target $net]>=0} {return [dict keys $visited]}
+        foreach pin [get_bd_pins -quiet -of_objects $net] {
+            foreach adjacent [get_bd_nets -quiet -boundary_type both -of_objects $pin] {
+                if {![dict exists $visited $adjacent]} {lappend todo $adjacent}
+            }
+        }
     }
-    return [get_property NAME [lindex $na 0]]
+    error "OFFLOAD_NET_PATH_MISMATCH:$source:$sink"
 }
 set video_readback {}
 foreach {source sink} {
