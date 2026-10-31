@@ -9,6 +9,7 @@ import pytest
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
 from scripts.standalone.integrated_run import (
     _live_drop_total,
+    telemetry_page_lines,
     _refresh_dashboard_telemetry,
     _sample_camera_telemetry,
     _with_publish_boundary,
@@ -46,7 +47,10 @@ def test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown():
     values=dashboard_values(9,True,2,telemetry)
     assert values['detail_page']==2 and values['state']=='PAUSED'
     for key,item in value.items():
+        if key=='page_lines':
+            continue
         assert values[key]==item
+    assert values['page_lines'] and values['page_lines'][0]=='PS 与丢帧'
     stale_values=dashboard_values(9,False,0,{
         'video_telemetry':{'value':value,'stale':True}
     })
@@ -81,6 +85,21 @@ def test_camera_absent_keeps_fps_unknown_not_zero():
         })
         assert values['camera_fps'] is None
 
+
+def test_telemetry_page_lines_cover_pl_and_ps_pages():
+    video={'pl':{'aggregate':{'total_cycles':16000,'active_cycles':12300}},
+        'regions_ms':{'mean':2.1},'track_ms':{'mean':1.2},
+        'camera':{'camera_overwrite_drops':3},
+        'pump':{'pump_submit_failures':1,'pump_skips':2}}
+    pl=telemetry_page_lines(1,video)
+    assert pl[0]=='PL 阶段与周期'
+    assert any('12300' in line for line in pl)
+    ps=telemetry_page_lines(2,video)
+    assert ps[0]=='PS 与丢帧'
+    assert any('2.1' in line and '1.2' in line for line in ps)
+    assert telemetry_page_lines(0,video)==()
+    unknown=telemetry_page_lines(1,{})
+    assert any('--' in line for line in unknown)
 
 def test_live_drop_total_is_unknown_until_all_sources_measured():
     assert _live_drop_total(None, {'pump_skips': 2, 'pump_submit_failures': 1}) is None
@@ -303,3 +322,5 @@ def test_actual_drawing_child_preserves_frame_identity_and_renders_count_line(ax
         if lease is not None:outputs.release_read(lease.slot)
         inputs.close();outputs.close()
     assert child.exitcode==0 and counts[0]==1
+
+

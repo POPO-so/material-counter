@@ -67,6 +67,44 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
 
 
+def _finite(value):
+    try:
+        number=float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if number==number and number not in (float('inf'),float('-inf')) else None
+
+
+def telemetry_page_lines(page, video):
+    """Build BTN3 detail lines from the latest telemetry sample (page 1/2)."""
+    video=video or {}
+    def mean(summary):
+        return summary.get('mean') if isinstance(summary,dict) else summary
+    def ms(value):
+        number=_finite(value)
+        return '--' if number is None else '{:.1f}'.format(number)
+    def whole(value):
+        return '--' if isinstance(value,bool) or not isinstance(value,int) else str(value)
+    if page==1:
+        aggregate=(video.get('pl') or {}).get('aggregate') or {}
+        total=aggregate.get('total_cycles');active=aggregate.get('active_cycles')
+        lines=['PL 阶段与周期']
+        if isinstance(total,int) and isinstance(active,int) and total>0:
+            lines.append('活动 {}/{} cyc'.format(active,total))
+            lines.append('活动率 {:.0f}% / 模块 unknown'.format(100.0*active/total))
+        else:
+            lines.append('活动 --/-- cyc')
+            lines.append('模块级 周期 unknown')
+        return tuple(lines)
+    if page==2:
+        pump=video.get('pump') or {};camera=video.get('camera') or {}
+        return ('PS 与丢帧',
+            'RLE {} / TRK {} ms'.format(ms(mean(video.get('regions_ms'))),ms(mean(video.get('track_ms')))),
+            '相机丢{} 提交失败{} 跳过{}'.format(whole(camera.get('camera_overwrite_drops')),
+                whole(pump.get('pump_submit_failures')),whole(pump.get('pump_skips'))))
+    return ()
+
+
 def dashboard_values(count, paused, page, telemetry):
     """Use measured telemetry only; unavailable or stale readings stay blank."""
     performance=telemetry.get('performance',{})
@@ -90,7 +128,7 @@ def dashboard_values(count, paused, page, telemetry):
         effective_input_fps=video.get('effective_input_fps'),
         e2e_ms=video.get('e2e_ms'),drop_total=video.get('drop_total'),
         resolution_chain=video.get('resolution_chain','640x400 -> 800x640 -> 1280x720'),
-        link_summary=video.get('link_summary'),page_lines=video.get('page_lines',()),
+        link_summary=video.get('link_summary'),page_lines=telemetry_page_lines(page,video) if page else (),
         processing_fps=video.get('processing_fps'),regions_ms=video.get('regions_ms'),
         track_ms=video.get('track_ms'),pl=video.get('pl'),
         cpu_percent=resource.get('cpu',{}).get('system'),memory_percent=memory_percent)
@@ -786,3 +824,4 @@ def main(argv=None):
 
 
 if __name__=='__main__':main()
+
