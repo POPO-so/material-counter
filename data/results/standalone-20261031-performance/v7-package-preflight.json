@@ -1,0 +1,102 @@
+{
+  "old_package": "/opt/material-counter/releases/standalone-20261031-v7-count-5272587",
+  "target": "/opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595",
+  "target_exists": false,
+  "deployment_index_sha256": "ca9348788e98efe187752a29dcbe3ddc0970efa8ff85a1f8e43bbee9142ae58a",
+  "indexed_file_count": 60,
+  "package_source": {
+    "schema": "material-counter.offline-package-source.v1",
+    "status": "CANDIDATE_NOT_BOARD_ACCEPTED",
+    "source_commit": "527258736b9b29bb37a118fd3023cc2436394a5d",
+    "source_branch": "LJ-01"
+  },
+  "module_count": 42,
+  "module_files": [
+    "scripts/gray8/packet_codec.py",
+    "scripts/rle/__init__.py",
+    "scripts/rle/artifacts.py",
+    "scripts/rle/components.py",
+    "scripts/rle/counter.py",
+    "scripts/rle/protocol.py",
+    "scripts/rle/run_counter.py",
+    "scripts/rle/transport.py",
+    "scripts/standalone/__init__.py",
+    "scripts/standalone/async_evidence.py",
+    "scripts/standalone/boot_integrated.py",
+    "scripts/standalone/boot_policy.py",
+    "scripts/standalone/bundle.py",
+    "scripts/standalone/camera.py",
+    "scripts/standalone/compositor.py",
+    "scripts/standalone/controls.py",
+    "scripts/standalone/count_controls.py",
+    "scripts/standalone/crossing_replay.py",
+    "scripts/standalone/crossing_snapshots.py",
+    "scripts/standalone/delivery.py",
+    "scripts/standalone/driver_owner.py",
+    "scripts/standalone/evidence.py",
+    "scripts/standalone/g1_run.py",
+    "scripts/standalone/g2_readback.py",
+    "scripts/standalone/hp2.py",
+    "scripts/standalone/integrated_run.py",
+    "scripts/standalone/pressure.py",
+    "scripts/standalone/preview_inputs.py",
+    "scripts/standalone/probe.py",
+    "scripts/standalone/render_crossing_snapshot.py",
+    "scripts/standalone/runtime_environment.py",
+    "scripts/standalone/shared_frames.py",
+    "scripts/standalone/telemetry_cache.py",
+    "scripts/standalone/verify_sources.py",
+    "scripts/standalone/video_pump.py",
+    "scripts/wo0015/board_once.py",
+    "scripts/wo0015/board_preflight.py",
+    "scripts/wo0016/binary_stats.py",
+    "scripts/wo0016/motion_association.py",
+    "scripts/wo0016/packet_encoder.py",
+    "scripts/wo0016/split_touching.py",
+    "scripts/wo0016/stream_counter.py"
+  ],
+  "static_file_sha256": {
+    "native/rle_components_v2.so": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7",
+    "export/g2-integrated.bit": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+    "export/g2-integrated.hwh": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243",
+    "fonts/DroidSansFallbackFull.ttf": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8",
+    "fonts/DejaVuSans.ttf": "252d320379dd882551c53b75dfb620cb0ffe2d6657445743d79f2100f1d96f21"
+  },
+  "runtime_files": [
+    [
+      "runtime/pynq/buffer.py",
+      "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463"
+    ],
+    [
+      "runtime/pynq/lib/video/common.py",
+      "2c4d6c2cb3ede0aca97aa2980dec7d5147ce6f4d446635ddd7dd1e894282cbf7"
+    ],
+    [
+      "runtime/pynq/lib/video/dma.py",
+      "94346a4ae6a7a7f9e4b78887179e2a55ff821c7ed3724b584a7bb4c228fea30f"
+    ],
+    [
+      "runtime/pynq/lib/video/dvi.py",
+      "ed46cd6259037474762725d654a9a7e266d02d2052d8202b37a58085b4520cea"
+    ],
+    [
+      "runtime/pynq/lib/video/frontend.py",
+      "da4f3a4915820cdf124773d64a48a4e289c62cdb9ffcbd623b9f3f2b0c17d28b"
+    ],
+    [
+      "runtime/pynq/lib/video/hierarchies.py",
+      "528106d7ea2c95cfd64ec27f2696f9daab76fb2c96341f1a48cd04b211f85950"
+    ],
+    [
+      "runtime/pynq/lib/video/pipeline.py",
+      "a176db13a567ffe080af7e4691a8ce49382450fcb47c1bea6bca76422b37b7c3"
+    ]
+  ],
+  "env_candidate_files": [],
+  "integrity_check": {
+    "files_checked": 61,
+    "hardware_actions": 0,
+    "scope": "integrity_only_no_gate",
+    "status": "PASS"
+  }
+}

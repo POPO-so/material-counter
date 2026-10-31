@@ -1,0 +1,446 @@
+{
+  "schema": "material-counter.pure-cpu-microbench-comparison.v1",
+  "claim_scope": "serial measurements of the actual v7/v8 temporary CPU copies; not full-system FPS",
+  "validation": {
+    "inputs_identical": true,
+    "native_library_sha256_identical": true,
+    "all_groups_five_warmups_thirty_samples": true,
+    "snapshot_writer_zero_events_and_errors": true,
+    "source_path_sets_identical": true
+  },
+  "reports": {
+    "v7": {
+      "sha256": "d12287d1d9a9b3ac7c1270c31aa311dbc2cc761a9d99fd922d029fa027d535d0",
+      "source": {
+        "root": "/tmp/material-perf-v7",
+        "sha256_by_path": {
+          "scripts/gray8/packet_codec.py": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+          "scripts/rle/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "scripts/rle/artifacts.py": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+          "scripts/rle/components.py": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856",
+          "scripts/rle/counter.py": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+          "scripts/rle/protocol.py": "74fd18aeca91283fea51302026d66e083d9012a4e7e1c8a3b88a476eec47ad04",
+          "scripts/rle/run_counter.py": "64a4736306d6d98a56dfc0707de72576fbefe388534ae1d72b5b274b3f4986a3",
+          "scripts/rle/transport.py": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+          "scripts/standalone/__init__.py": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731",
+          "scripts/standalone/async_evidence.py": "866457dd1440aba5891f3766f243f16ed31410b783de8dd0e118c84f7e3d82b1",
+          "scripts/standalone/boot_integrated.py": "85f377aafcdf26b57ffe6af9c3c936a308cdbd4fb4dea4328e71dfa170eec45f",
+          "scripts/standalone/boot_policy.py": "bc9fee57006eb7121e151e8631b96f40cadb825c247811c41a1113daaeb78308",
+          "scripts/standalone/bundle.py": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3",
+          "scripts/standalone/camera.py": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2",
+          "scripts/standalone/compositor.py": "0cf0a1d22413cc7766d35c3f18e70064715c57a06044e2d8559b27226c6aa053",
+          "scripts/standalone/controls.py": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f",
+          "scripts/standalone/count_controls.py": "c7a4cd2cb76a72137ed0b0ee0de856ea664995a1115bc6427c637dcfacc73233",
+          "scripts/standalone/crossing_replay.py": "c429ae6607c4a2a34db1bb8781c4afb73ea4d7971eb52267377b5cb54e43889c",
+          "scripts/standalone/crossing_snapshots.py": "30280b75458f86e86052c4fad5e31329d497d11ca64faaaa9049a832622e9ed4",
+          "scripts/standalone/delivery.py": "139ecb53b4bd9e389b3f678c3a0236371411ad1fbb5e4147d27dd72f0823ebc3",
+          "scripts/standalone/driver_owner.py": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4",
+          "scripts/standalone/evidence.py": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e",
+          "scripts/standalone/g1_run.py": "8e6098c63bdc926f5ee078054c685a5460d9026fe484fdfda482a7c2ca064cea",
+          "scripts/standalone/g2_readback.py": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566",
+          "scripts/standalone/hp2.py": "e676a0566ab2bdfc3c2846b1ba9af5afa06ed7fc4e515423e0d12a9f44246366",
+          "scripts/standalone/integrated_run.py": "0a10087b0f62cb0885ee424f98b201f73491ec2a653b8f65ec65391e3a7de1c5",
+          "scripts/standalone/performance_replay.py": "75a2562738d0fdd43e7cf8907d444ed76b703dc2861107e9c28e66035c933727",
+          "scripts/standalone/pressure.py": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696",
+          "scripts/standalone/preview_inputs.py": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f",
+          "scripts/standalone/probe.py": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52",
+          "scripts/standalone/render_crossing_snapshot.py": "215eeefe907663d819c0474d680385f9572ddada9f5f961b241e4b50baabbd2d",
+          "scripts/standalone/runtime_environment.py": "109dc0da68c34d4ff276846bcc4499d415591f728f9abaab2396dca04e4028f8",
+          "scripts/standalone/shared_frames.py": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c",
+          "scripts/standalone/telemetry_cache.py": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a",
+          "scripts/standalone/verify_sources.py": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929",
+          "scripts/standalone/video_pump.py": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c",
+          "scripts/wo0015/board_once.py": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9",
+          "scripts/wo0015/board_preflight.py": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+          "scripts/wo0016/binary_stats.py": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+          "scripts/wo0016/motion_association.py": "cdf79701c377b936696264a5f2bf5955cb01fcc4f47063a8058cce11a05240d6",
+          "scripts/wo0016/packet_encoder.py": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+          "scripts/wo0016/split_touching.py": "b34ce5e74b689a863ed8d9175fa60f0ac22f5133638b6056e567912385d37412",
+          "scripts/wo0016/stream_counter.py": "6fa83ac8904eb0f1a3e3c0c00c30b29a15f0ae7883dc0c126f1d5a94d5093ad1"
+        },
+        "native_library": {
+          "path": "/tmp/material-perf-v7/native/rle_components_v2.so",
+          "sha256": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7"
+        }
+      },
+      "snapshot_writer": {
+        "events": 0,
+        "saved": 0,
+        "write_errors": 0,
+        "closed_cleanly": true
+      }
+    },
+    "v8": {
+      "sha256": "35b3796b0d9b7b899bf3ca4822f021c61fe2389e612bd9e466f1f46342a0d324",
+      "source": {
+        "root": "/tmp/material-perf-v8",
+        "sha256_by_path": {
+          "scripts/gray8/packet_codec.py": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+          "scripts/rle/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "scripts/rle/artifacts.py": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+          "scripts/rle/components.py": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856",
+          "scripts/rle/counter.py": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+          "scripts/rle/protocol.py": "f4912bfdc699feffdba9349b69cea1a452a48ea9e61c97a7b16a67c347a15029",
+          "scripts/rle/run_counter.py": "64a4736306d6d98a56dfc0707de72576fbefe388534ae1d72b5b274b3f4986a3",
+          "scripts/rle/transport.py": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+          "scripts/standalone/__init__.py": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731",
+          "scripts/standalone/async_evidence.py": "866457dd1440aba5891f3766f243f16ed31410b783de8dd0e118c84f7e3d82b1",
+          "scripts/standalone/boot_integrated.py": "85f377aafcdf26b57ffe6af9c3c936a308cdbd4fb4dea4328e71dfa170eec45f",
+          "scripts/standalone/boot_policy.py": "bc9fee57006eb7121e151e8631b96f40cadb825c247811c41a1113daaeb78308",
+          "scripts/standalone/bundle.py": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3",
+          "scripts/standalone/camera.py": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2",
+          "scripts/standalone/compositor.py": "0cf0a1d22413cc7766d35c3f18e70064715c57a06044e2d8559b27226c6aa053",
+          "scripts/standalone/controls.py": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f",
+          "scripts/standalone/count_controls.py": "c7a4cd2cb76a72137ed0b0ee0de856ea664995a1115bc6427c637dcfacc73233",
+          "scripts/standalone/crossing_replay.py": "c429ae6607c4a2a34db1bb8781c4afb73ea4d7971eb52267377b5cb54e43889c",
+          "scripts/standalone/crossing_snapshots.py": "1de6c146b30558b5613c9fc8413b2af822999d328d2f3171da6f5185be2542b7",
+          "scripts/standalone/delivery.py": "139ecb53b4bd9e389b3f678c3a0236371411ad1fbb5e4147d27dd72f0823ebc3",
+          "scripts/standalone/driver_owner.py": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4",
+          "scripts/standalone/evidence.py": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e",
+          "scripts/standalone/g1_run.py": "8e6098c63bdc926f5ee078054c685a5460d9026fe484fdfda482a7c2ca064cea",
+          "scripts/standalone/g2_readback.py": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566",
+          "scripts/standalone/hp2.py": "e676a0566ab2bdfc3c2846b1ba9af5afa06ed7fc4e515423e0d12a9f44246366",
+          "scripts/standalone/integrated_run.py": "e47938841f8f09f075580aa4c7c1d5d7250344b318b378e4889529db16744221",
+          "scripts/standalone/performance_replay.py": "75a2562738d0fdd43e7cf8907d444ed76b703dc2861107e9c28e66035c933727",
+          "scripts/standalone/pressure.py": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696",
+          "scripts/standalone/preview_inputs.py": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f",
+          "scripts/standalone/probe.py": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52",
+          "scripts/standalone/render_crossing_snapshot.py": "215eeefe907663d819c0474d680385f9572ddada9f5f961b241e4b50baabbd2d",
+          "scripts/standalone/runtime_environment.py": "109dc0da68c34d4ff276846bcc4499d415591f728f9abaab2396dca04e4028f8",
+          "scripts/standalone/shared_frames.py": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c",
+          "scripts/standalone/telemetry_cache.py": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a",
+          "scripts/standalone/verify_sources.py": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929",
+          "scripts/standalone/video_pump.py": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c",
+          "scripts/wo0015/board_once.py": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9",
+          "scripts/wo0015/board_preflight.py": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+          "scripts/wo0016/binary_stats.py": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+          "scripts/wo0016/motion_association.py": "cdf79701c377b936696264a5f2bf5955cb01fcc4f47063a8058cce11a05240d6",
+          "scripts/wo0016/packet_encoder.py": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+          "scripts/wo0016/split_touching.py": "5a6e697de1fc3145b3a421faa2e9aeb0fb04f4a8b6dfee2a4d446fefa52eceaa",
+          "scripts/wo0016/stream_counter.py": "6fa83ac8904eb0f1a3e3c0c00c30b29a15f0ae7883dc0c126f1d5a94d5093ad1"
+        },
+        "native_library": {
+          "path": "/tmp/material-perf-v8/native/rle_components_v2.so",
+          "sha256": "a04fdd74bf0791358b803271757bdc89317fd8852231e8c572705f266db4f0f7"
+        }
+      },
+      "snapshot_writer": {
+        "events": 0,
+        "saved": 0,
+        "write_errors": 0,
+        "closed_cleanly": true
+      }
+    }
+  },
+  "source_hash_comparison": {
+    "scripts/gray8/packet_codec.py": {
+      "v7_sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+      "v8_sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+      "same": true
+    },
+    "scripts/rle/__init__.py": {
+      "v7_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "v8_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "same": true
+    },
+    "scripts/rle/artifacts.py": {
+      "v7_sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+      "v8_sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+      "same": true
+    },
+    "scripts/rle/components.py": {
+      "v7_sha256": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856",
+      "v8_sha256": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856",
+      "same": true
+    },
+    "scripts/rle/counter.py": {
+      "v7_sha256": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+      "v8_sha256": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+      "same": true
+    },
+    "scripts/rle/protocol.py": {
+      "v7_sha256": "74fd18aeca91283fea51302026d66e083d9012a4e7e1c8a3b88a476eec47ad04",
+      "v8_sha256": "f4912bfdc699feffdba9349b69cea1a452a48ea9e61c97a7b16a67c347a15029",
+      "same": false
+    },
+    "scripts/rle/run_counter.py": {
+      "v7_sha256": "64a4736306d6d98a56dfc0707de72576fbefe388534ae1d72b5b274b3f4986a3",
+      "v8_sha256": "64a4736306d6d98a56dfc0707de72576fbefe388534ae1d72b5b274b3f4986a3",
+      "same": true
+    },
+    "scripts/rle/transport.py": {
+      "v7_sha256": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+      "v8_sha256": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+      "same": true
+    },
+    "scripts/standalone/__init__.py": {
+      "v7_sha256": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731",
+      "v8_sha256": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731",
+      "same": true
+    },
+    "scripts/standalone/async_evidence.py": {
+      "v7_sha256": "866457dd1440aba5891f3766f243f16ed31410b783de8dd0e118c84f7e3d82b1",
+      "v8_sha256": "866457dd1440aba5891f3766f243f16ed31410b783de8dd0e118c84f7e3d82b1",
+      "same": true
+    },
+    "scripts/standalone/boot_integrated.py": {
+      "v7_sha256": "85f377aafcdf26b57ffe6af9c3c936a308cdbd4fb4dea4328e71dfa170eec45f",
+      "v8_sha256": "85f377aafcdf26b57ffe6af9c3c936a308cdbd4fb4dea4328e71dfa170eec45f",
+      "same": true
+    },
+    "scripts/standalone/boot_policy.py": {
+      "v7_sha256": "bc9fee57006eb7121e151e8631b96f40cadb825c247811c41a1113daaeb78308",
+      "v8_sha256": "bc9fee57006eb7121e151e8631b96f40cadb825c247811c41a1113daaeb78308",
+      "same": true
+    },
+    "scripts/standalone/bundle.py": {
+      "v7_sha256": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3",
+      "v8_sha256": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3",
+      "same": true
+    },
+    "scripts/standalone/camera.py": {
+      "v7_sha256": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2",
+      "v8_sha256": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2",
+      "same": true
+    },
+    "scripts/standalone/compositor.py": {
+      "v7_sha256": "0cf0a1d22413cc7766d35c3f18e70064715c57a06044e2d8559b27226c6aa053",
+      "v8_sha256": "0cf0a1d22413cc7766d35c3f18e70064715c57a06044e2d8559b27226c6aa053",
+      "same": true
+    },
+    "scripts/standalone/controls.py": {
+      "v7_sha256": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f",
+      "v8_sha256": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f",
+      "same": true
+    },
+    "scripts/standalone/count_controls.py": {
+      "v7_sha256": "c7a4cd2cb76a72137ed0b0ee0de856ea664995a1115bc6427c637dcfacc73233",
+      "v8_sha256": "c7a4cd2cb76a72137ed0b0ee0de856ea664995a1115bc6427c637dcfacc73233",
+      "same": true
+    },
+    "scripts/standalone/crossing_replay.py": {
+      "v7_sha256": "c429ae6607c4a2a34db1bb8781c4afb73ea4d7971eb52267377b5cb54e43889c",
+      "v8_sha256": "c429ae6607c4a2a34db1bb8781c4afb73ea4d7971eb52267377b5cb54e43889c",
+      "same": true
+    },
+    "scripts/standalone/crossing_snapshots.py": {
+      "v7_sha256": "30280b75458f86e86052c4fad5e31329d497d11ca64faaaa9049a832622e9ed4",
+      "v8_sha256": "1de6c146b30558b5613c9fc8413b2af822999d328d2f3171da6f5185be2542b7",
+      "same": false
+    },
+    "scripts/standalone/delivery.py": {
+      "v7_sha256": "139ecb53b4bd9e389b3f678c3a0236371411ad1fbb5e4147d27dd72f0823ebc3",
+      "v8_sha256": "139ecb53b4bd9e389b3f678c3a0236371411ad1fbb5e4147d27dd72f0823ebc3",
+      "same": true
+    },
+    "scripts/standalone/driver_owner.py": {
+      "v7_sha256": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4",
+      "v8_sha256": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4",
+      "same": true
+    },
+    "scripts/standalone/evidence.py": {
+      "v7_sha256": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e",
+      "v8_sha256": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e",
+      "same": true
+    },
+    "scripts/standalone/g1_run.py": {
+      "v7_sha256": "8e6098c63bdc926f5ee078054c685a5460d9026fe484fdfda482a7c2ca064cea",
+      "v8_sha256": "8e6098c63bdc926f5ee078054c685a5460d9026fe484fdfda482a7c2ca064cea",
+      "same": true
+    },
+    "scripts/standalone/g2_readback.py": {
+      "v7_sha256": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566",
+      "v8_sha256": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566",
+      "same": true
+    },
+    "scripts/standalone/hp2.py": {
+      "v7_sha256": "e676a0566ab2bdfc3c2846b1ba9af5afa06ed7fc4e515423e0d12a9f44246366",
+      "v8_sha256": "e676a0566ab2bdfc3c2846b1ba9af5afa06ed7fc4e515423e0d12a9f44246366",
+      "same": true
+    },
+    "scripts/standalone/integrated_run.py": {
+      "v7_sha256": "0a10087b0f62cb0885ee424f98b201f73491ec2a653b8f65ec65391e3a7de1c5",
+      "v8_sha256": "e47938841f8f09f075580aa4c7c1d5d7250344b318b378e4889529db16744221",
+      "same": false
+    },
+    "scripts/standalone/performance_replay.py": {
+      "v7_sha256": "75a2562738d0fdd43e7cf8907d444ed76b703dc2861107e9c28e66035c933727",
+      "v8_sha256": "75a2562738d0fdd43e7cf8907d444ed76b703dc2861107e9c28e66035c933727",
+      "same": true
+    },
+    "scripts/standalone/pressure.py": {
+      "v7_sha256": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696",
+      "v8_sha256": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696",
+      "same": true
+    },
+    "scripts/standalone/preview_inputs.py": {
+      "v7_sha256": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f",
+      "v8_sha256": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f",
+      "same": true
+    },
+    "scripts/standalone/probe.py": {
+      "v7_sha256": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52",
+      "v8_sha256": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52",
+      "same": true
+    },
+    "scripts/standalone/render_crossing_snapshot.py": {
+      "v7_sha256": "215eeefe907663d819c0474d680385f9572ddada9f5f961b241e4b50baabbd2d",
+      "v8_sha256": "215eeefe907663d819c0474d680385f9572ddada9f5f961b241e4b50baabbd2d",
+      "same": true
+    },
+    "scripts/standalone/runtime_environment.py": {
+      "v7_sha256": "109dc0da68c34d4ff276846bcc4499d415591f728f9abaab2396dca04e4028f8",
+      "v8_sha256": "109dc0da68c34d4ff276846bcc4499d415591f728f9abaab2396dca04e4028f8",
+      "same": true
+    },
+    "scripts/standalone/shared_frames.py": {
+      "v7_sha256": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c",
+      "v8_sha256": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c",
+      "same": true
+    },
+    "scripts/standalone/telemetry_cache.py": {
+      "v7_sha256": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a",
+      "v8_sha256": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a",
+      "same": true
+    },
+    "scripts/standalone/verify_sources.py": {
+      "v7_sha256": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929",
+      "v8_sha256": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929",
+      "same": true
+    },
+    "scripts/standalone/video_pump.py": {
+      "v7_sha256": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c",
+      "v8_sha256": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c",
+      "same": true
+    },
+    "scripts/wo0015/board_once.py": {
+      "v7_sha256": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9",
+      "v8_sha256": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9",
+      "same": true
+    },
+    "scripts/wo0015/board_preflight.py": {
+      "v7_sha256": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+      "v8_sha256": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+      "same": true
+    },
+    "scripts/wo0016/binary_stats.py": {
+      "v7_sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+      "v8_sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+      "same": true
+    },
+    "scripts/wo0016/motion_association.py": {
+      "v7_sha256": "cdf79701c377b936696264a5f2bf5955cb01fcc4f47063a8058cce11a05240d6",
+      "v8_sha256": "cdf79701c377b936696264a5f2bf5955cb01fcc4f47063a8058cce11a05240d6",
+      "same": true
+    },
+    "scripts/wo0016/packet_encoder.py": {
+      "v7_sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+      "v8_sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+      "same": true
+    },
+    "scripts/wo0016/split_touching.py": {
+      "v7_sha256": "b34ce5e74b689a863ed8d9175fa60f0ac22f5133638b6056e567912385d37412",
+      "v8_sha256": "5a6e697de1fc3145b3a421faa2e9aeb0fb04f4a8b6dfee2a4d446fefa52eceaa",
+      "same": false
+    },
+    "scripts/wo0016/stream_counter.py": {
+      "v7_sha256": "6fa83ac8904eb0f1a3e3c0c00c30b29a15f0ae7883dc0c126f1d5a94d5093ad1",
+      "v8_sha256": "6fa83ac8904eb0f1a3e3c0c00c30b29a15f0ae7883dc0c126f1d5a94d5093ad1",
+      "same": true
+    }
+  },
+  "measurements": {
+    "gray8_pack_into_640x400": {
+      "v7_p50_ms": 6.2345565,
+      "v8_p50_ms": 1.8306495,
+      "p50_delta_ms": -4.403907,
+      "p50_change_percent": -70.63705333330445,
+      "v7_p95_ms": 6.28668005,
+      "v8_p95_ms": 1.92454755,
+      "v7_max_ms": 6.304603,
+      "v8_max_ms": 2.011421,
+      "samples_each": [
+        5,
+        30
+      ]
+    },
+    "crossing_snapshots_observe_empty_frame": {
+      "v7_p50_ms": 6.3528525,
+      "v8_p50_ms": 1.740979,
+      "p50_delta_ms": -4.6118735,
+      "p50_change_percent": -72.59531840224528,
+      "v7_p95_ms": 6.5052722,
+      "v8_p95_ms": 1.84415845,
+      "v7_max_ms": 6.642264,
+      "v8_max_ms": 2.097828,
+      "samples_each": [
+        5,
+        30
+      ]
+    },
+    "rle_decode": {
+      "captured_frame": {
+        "runs": 681,
+        "total_foreground": 5004,
+        "packet_bytes": 4932,
+        "v7_p50_ms": 5.910849000000001,
+        "v8_p50_ms": 5.7994375,
+        "p50_delta_ms": -0.11141150000000088,
+        "p50_change_percent": -1.884864593901836,
+        "v7_p95_ms": 5.9664789,
+        "v8_p95_ms": 5.900869,
+        "v7_max_ms": 6.017403,
+        "v8_max_ms": 5.921704,
+        "samples_each": [
+          5,
+          30
+        ]
+      },
+      "empty": {
+        "runs": 0,
+        "total_foreground": 0,
+        "packet_bytes": 2208,
+        "v7_p50_ms": 4.001597,
+        "v8_p50_ms": 2.177378,
+        "p50_delta_ms": -1.8242190000000003,
+        "p50_change_percent": -45.587274280743415,
+        "v7_p95_ms": 4.312687649999999,
+        "v8_p95_ms": 2.23628365,
+        "v7_max_ms": 5.146954,
+        "v8_max_ms": 2.259908,
+        "samples_each": [
+          5,
+          30
+        ]
+      },
+      "high_runs_16000": {
+        "runs": 16000,
+        "total_foreground": 16000,
+        "packet_bytes": 66208,
+        "v7_p50_ms": 46.833636999999996,
+        "v8_p50_ms": 45.0694525,
+        "p50_delta_ms": -1.764184499999999,
+        "p50_change_percent": -3.766917568242667,
+        "v7_p95_ms": 53.07234695,
+        "v8_p95_ms": 45.2107157,
+        "v7_max_ms": 58.459015,
+        "v8_max_ms": 45.598271,
+        "samples_each": [
+          5,
+          30
+        ]
+      }
+    }
+  },
+  "runtime_claims": {
+    "full_system_fps_comparison": false,
+    "camera_or_hardware_access": false,
+    "PYNQ_MMIO_or_DMA": false,
+    "CPU_copy_matches_fixed_commit_byte_for_byte": false,
+    "note": "CPU microbenchmarks characterize the reported temporary copies only; fixed-commit release bytes are verified separately."
+  },
+  "planned_release_source": {
+    "commit": "e2fb5952bfc4f36c3eacd53a8bdb6bdeec6c4fe2",
+    "branch": "perf/board-performance-20261031"
+  }
+}
