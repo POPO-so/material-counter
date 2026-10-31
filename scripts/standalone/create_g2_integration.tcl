@@ -62,6 +62,7 @@ g2_require_source_text $g2_gray8_tcl {
 
 set g2_rtl_sources {
     fpga/experimental/gray8/axis_dma_gray_adapter.v
+    fpga/experimental/gray8/axis_raw_gray_adapter.v
     fpga/rtl/axis_morphology3x3.v
     fpga/experimental/rle/axis_rle_encoder.v
     fpga/experimental/rle/axis_dma_rle_pipeline_bd.v
