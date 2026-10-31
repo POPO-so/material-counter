@@ -120,3 +120,18 @@ def test_v4l2_backend_rejects_device_without_manual_menu(monkeypatch):
     backend.query()
     with pytest.raises(RuntimeError, match="unsupported"):
         backend.set_manual()
+
+
+def test_v4l2_commands_use_a_finite_timeout(monkeypatch):
+    captured = {}
+
+    class Result:
+        stdout = ""
+
+    def run(args, **kwargs):
+        captured.update(kwargs)
+        return Result()
+
+    monkeypatch.setattr("scripts.standalone.exposure.subprocess.run", run)
+    V4L2CtlBackend(timeout=.5)._run("--list-ctrls-menus")
+    assert captured["timeout"] == .5
