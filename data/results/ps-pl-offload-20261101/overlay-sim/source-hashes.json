@@ -1,0 +1,17 @@
+{
+  "schema": "material-counter.overlay-sim-evidence.v1",
+  "tests": [
+    "native-size:810 pixel checks,3 captures,1 intentional drop",
+    "4/5 nearest resize golden"
+  ],
+  "sha256": {
+    "fpga/experimental/standalone/video_binary_overlay.v": "bc9a0e8178cde7f4d2cf0530e92c7b10d6317ded172362e17404c0d6ecf54f18",
+    "fpga/sim/standalone/tb_video_binary_overlay.sv": "edf68b1b6abfe1b6c70ae0770e8650ddbcd72d61965a479153742f6ab15bc6f3",
+    "scripts/standalone/run_binary_overlay_sim.tcl": "4f47f6b28bb27fa2315a4b78d4771e21fe7c1b0ff75e27d8f8dddf75a32dc155"
+  },
+  "not_proven": [
+    "full display timing",
+    "physical HDMI output",
+    "new configuration final synthesis"
+  ]
+}

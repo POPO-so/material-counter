@@ -34,6 +34,8 @@ def counter_rates(before, after, dt_s, *, min_interval_s=0.1, max_interval_s=10.
             return result
         d = {k: right[k] - left[k] for k in COUNTERS}
         total = d["total_cycles"]
+        if any(d[key] > total for key in ("active_cycles", "input_stall_cycles", "output_stall_cycles", "input_beats", "output_beats")):
+            return result
         result.update(fresh=True, dt_s=dt,
             rle_activity_pct=(100.0 * d["active_cycles"] / total if total else None),
             input_mb_s=d["input_beats"] * 4 / dt / 1_000_000,
@@ -78,7 +80,8 @@ class RuntimeSampler:
     def _read_all(self):
         root = self.proc_root
         data = {"cpu": _read_cpu(root / "stat"), "softirqs": _read_label_counts(root / "softirqs"),
-                "interrupts": _read_label_counts(root / "interrupts"), "threads": {}}
+                "interrupts": _read_label_counts(root / "interrupts"),
+                "network": _read_network(root / "net/dev"), "threads": {}}
         task_root = root / self.pid / "task"
         try:
             paths = sorted(task_root.iterdir(), key=lambda p: p.name)
@@ -123,6 +126,23 @@ def _read_label_counts(path):
     return result or None
 
 
+def _read_network(path):
+    result = {}
+    try:
+        for line in path.read_text().splitlines():
+            if ':' not in line:
+                continue
+            name, fields = line.split(':', 1)
+            fields = fields.split()
+            if len(fields) != 16:
+                return None
+            result[name.strip()] = dict(rx_bytes=int(fields[0]), rx_packets=int(fields[1]),
+                                        tx_bytes=int(fields[8]), tx_packets=int(fields[9]))
+    except (OSError, ValueError):
+        return None
+    return result or None
+
+
 def _read_thread(path):
     raw = (path / "stat").read_text()
     close = raw.rfind(")")
@@ -162,6 +182,10 @@ def _deltas(old, new, dt):
             entry[key] = (value - previous_value if previous_value is not None
                           and value is not None and value >= previous_value else None)
         threads[tid] = entry
-    return {"interval_s": dt, "cpu": delta_map(old["cpu"], new["cpu"]),
+    network = None
+    if old.get("network") is not None and new.get("network") is not None:
+        network = {name: delta_map(old["network"].get(name), values)
+                   for name, values in new["network"].items()}
+    return {"interval_s": dt, "network": network, "cpu": delta_map(old["cpu"], new["cpu"]),
             "softirqs": delta_map(old["softirqs"], new["softirqs"]),
             "interrupts": delta_map(old["interrupts"], new["interrupts"]), "threads": threads}
