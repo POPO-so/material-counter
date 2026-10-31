@@ -72,12 +72,11 @@ class VideoPump:
         try:
             while not self._stop.is_set():
                 try:
-                    lease = self.outputs.acquire_latest()
+                    lease = self.outputs.wait_for_frame(timeout=0.5, stop=self._stop)
                 except BaseException as exc:
                     self._fail(exc)
                     break
                 if lease is None:
-                    self._stop.wait(0.001)
                     continue
 
                 frame = None
