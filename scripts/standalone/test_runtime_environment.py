@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 from types import SimpleNamespace
@@ -20,11 +21,14 @@ OS_PACKAGE_VERSIONS = {
     "python3-pil:armhf": "9.0.1-1build1",
     "python3-scipy": "1.8.0-1exp2ubuntu1",
 }
+NATIVE_VIDEO_FILE = "lib/_video.cpython-310-arm-linux-gnueabihf.so"
+NATIVE_VIDEO_BYTES = b"test PYNQ video native extension"
+NATIVE_VIDEO_SHA256 = hashlib.sha256(NATIVE_VIDEO_BYTES).hexdigest()
 
 
 def observation():
     return {
-        "schema": "material-counter.board-runtime-observation.v1",
+        "schema": "material-counter.board-runtime-observation.v2",
         "python": "3.10.4",
         "platform": "Linux 6.6.10-xilinx-v2024.1 armv7l glibc 2.35",
         "packages": {
@@ -35,6 +39,7 @@ def observation():
             "cffi": "1.15.0",
         },
         "os_packages": dict(OS_PACKAGE_VERSIONS),
+        "native_files": {NATIVE_VIDEO_FILE: NATIVE_VIDEO_SHA256},
     }
 
 
@@ -53,10 +58,22 @@ def current_runtime():
             "cffi": "1.15.0",
         },
         "os_packages": dict(OS_PACKAGE_VERSIONS),
+        "native_files": {NATIVE_VIDEO_FILE: NATIVE_VIDEO_SHA256},
     }
 
 
-def _patch_runtime_probes(monkeypatch, dpkg_query):
+def _patch_runtime_probes(monkeypatch, dpkg_query, tmp_path, *, native_exists=True):
+    pynq_root = tmp_path / "pynq"
+    native_path = pynq_root / NATIVE_VIDEO_FILE
+    native_path.parent.mkdir(parents=True, exist_ok=True)
+    (pynq_root / "__init__.py").write_text("", encoding="utf-8")
+    if native_exists:
+        native_path.write_bytes(NATIVE_VIDEO_BYTES)
+    monkeypatch.setattr(
+        runtime_environment.importlib.util,
+        "find_spec",
+        lambda name: SimpleNamespace(origin=str(pynq_root / "__init__.py")),
+    )
     package_versions = {
         "pynq": "3.1.1",
         "numpy": "1.21.5",
@@ -85,7 +102,7 @@ def _patch_runtime_probes(monkeypatch, dpkg_query):
     monkeypatch.setattr(runtime_environment.subprocess, "run", dpkg_query)
 
 
-def test_current_runtime_collects_the_boot_environment(monkeypatch):
+def test_current_runtime_collects_the_boot_environment(monkeypatch, tmp_path):
     def dpkg_query(command, **kwargs):
         assert command[:3] == [
             "dpkg-query",
@@ -98,7 +115,7 @@ def test_current_runtime_collects_the_boot_environment(monkeypatch):
             stdout="ii \t{}".format(OS_PACKAGE_VERSIONS[command[-1]]),
         )
 
-    _patch_runtime_probes(monkeypatch, dpkg_query)
+    _patch_runtime_probes(monkeypatch, dpkg_query, tmp_path)
 
     actual = runtime_environment.current_runtime()
 
@@ -113,25 +130,25 @@ def test_current_runtime_collects_the_boot_environment(monkeypatch):
     ],
 )
 def test_current_runtime_rejects_missing_or_residual_dpkg_packages(
-    monkeypatch, response, message
+    monkeypatch, tmp_path, response, message
 ):
-    _patch_runtime_probes(monkeypatch, lambda command, **kwargs: response)
+    _patch_runtime_probes(monkeypatch, lambda command, **kwargs: response, tmp_path)
 
     with pytest.raises(RuntimeError, match=message):
         runtime_environment.current_runtime()
 
 
-def test_current_runtime_rejects_dpkg_query_timeout(monkeypatch):
+def test_current_runtime_rejects_dpkg_query_timeout(monkeypatch, tmp_path):
     def timeout(command, **kwargs):
         raise subprocess.TimeoutExpired(command, kwargs["timeout"])
 
-    _patch_runtime_probes(monkeypatch, timeout)
+    _patch_runtime_probes(monkeypatch, timeout, tmp_path)
 
     with pytest.raises(RuntimeError, match="timed out"):
         runtime_environment.current_runtime()
 
 
-def test_runtime_observation_rejects_dpkg_version_mismatch(monkeypatch):
+def test_runtime_observation_rejects_dpkg_version_mismatch(monkeypatch, tmp_path):
     def dpkg_query(command, **kwargs):
         package = command[-1]
         version = OS_PACKAGE_VERSIONS[package]
@@ -139,7 +156,7 @@ def test_runtime_observation_rejects_dpkg_version_mismatch(monkeypatch):
             version = "1:9.9-1"
         return SimpleNamespace(returncode=0, stdout="ii \t{}".format(version))
 
-    _patch_runtime_probes(monkeypatch, dpkg_query)
+    _patch_runtime_probes(monkeypatch, dpkg_query, tmp_path)
     actual = runtime_environment.current_runtime()
 
     with pytest.raises(RuntimeError, match="python3-numpy"):
@@ -155,6 +172,75 @@ def test_runtime_observation_accepts_the_matching_target_profile():
     assert result["status"] == "PASS"
     assert result["actual"] == actual
     assert result["scope"] == "observed_runtime_compatibility_only"
+
+
+def test_current_runtime_rejects_missing_native_extension(monkeypatch, tmp_path):
+    _patch_runtime_probes(
+        monkeypatch,
+        lambda command, **kwargs: SimpleNamespace(
+            returncode=0, stdout="ii \t{}".format(OS_PACKAGE_VERSIONS[command[-1]])
+        ),
+        tmp_path,
+        native_exists=False,
+    )
+
+    with pytest.raises(
+        RuntimeError, match="_video.cpython-310-arm-linux-gnueabihf.so"
+    ):
+        runtime_environment.current_runtime()
+
+
+def test_current_runtime_rejects_native_extension_path_escape(monkeypatch, tmp_path):
+    _patch_runtime_probes(
+        monkeypatch,
+        lambda command, **kwargs: SimpleNamespace(
+            returncode=0, stdout="ii \t{}".format(OS_PACKAGE_VERSIONS[command[-1]])
+        ),
+        tmp_path,
+    )
+    pynq_root = (tmp_path / "pynq").resolve()
+    native_path = pynq_root / NATIVE_VIDEO_FILE
+    escaped_path = tmp_path / "escaped-native.so"
+    escaped_path.write_bytes(NATIVE_VIDEO_BYTES)
+    original_resolve = runtime_environment.Path.resolve
+
+    def resolve_with_escape(path, *args, **kwargs):
+        if path == native_path:
+            return escaped_path.resolve()
+        return original_resolve(path, *args, **kwargs)
+
+    monkeypatch.setattr(runtime_environment.Path, "resolve", resolve_with_escape)
+
+    with pytest.raises(
+        RuntimeError, match="_video.cpython-310-arm-linux-gnueabihf.so"
+    ):
+        runtime_environment.current_runtime()
+
+
+def test_current_runtime_rejects_non_regular_native_extension(monkeypatch, tmp_path):
+    _patch_runtime_probes(
+        monkeypatch,
+        lambda command, **kwargs: SimpleNamespace(
+            returncode=0, stdout="ii \t{}".format(OS_PACKAGE_VERSIONS[command[-1]])
+        ),
+        tmp_path,
+        native_exists=False,
+    )
+    (tmp_path / "pynq" / NATIVE_VIDEO_FILE).mkdir()
+
+    with pytest.raises(RuntimeError, match="not a regular file"):
+        runtime_environment.current_runtime()
+
+
+def test_runtime_observation_rejects_native_hash_mismatch():
+    expected = observation()
+    expected["native_files"][NATIVE_VIDEO_FILE] = "0" * 64
+
+    with pytest.raises(
+        RuntimeError,
+        match="native_files.*_video.cpython-310-arm-linux-gnueabihf.so",
+    ):
+        verify_runtime_observation(expected, current_runtime())
 
 
 def test_runtime_environment_reads_the_packaged_observation(tmp_path, monkeypatch):
@@ -198,6 +284,7 @@ def test_runtime_observation_rejects_version_or_platform_mismatches(
         lambda value: value["packages"].pop("opencv"),
         lambda value: value["packages"].update(cffi=None),
         lambda value: value.pop("os_packages"),
+        lambda value: value.pop("native_files"),
     ],
 )
 def test_invalid_runtime_observation_is_rejected(mutate):

@@ -82,7 +82,7 @@ def make_package(root):
     for path in module_files:
         _write(root / path, b"# synthetic packaged module\n")
     board_runtime = {
-        "schema": "material-counter.board-runtime-observation.v1",
+        "schema": "material-counter.board-runtime-observation.v2",
         "python": "3.10.4",
         "platform": "Linux 6.6.10-xilinx-v2024.1 armv7l glibc 2.35",
         "packages": {
@@ -91,6 +91,9 @@ def make_package(root):
             "opencv": "4.5.4",
             "pillow": "9.0.1",
             "cffi": "1.15.0",
+        },
+        "native_files": {
+            "lib/_video.cpython-310-arm-linux-gnueabihf.so": "a" * 64,
         },
         "scope": "observed baseline; not an installable dependency lock",
     }

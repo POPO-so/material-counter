@@ -1,0 +1,55 @@
+{
+  "schema": "material-counter.delivery-artifact-sha256.v1",
+  "hash_algorithm": "SHA-256",
+  "entries": [
+    {
+      "name": "G2 BIT",
+      "path": "data/results/standalone-20261030-123000-g2-integration/export/g2-integrated.bit",
+      "status": "present",
+      "sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0"
+    },
+    {
+      "name": "G2 HWH",
+      "path": "data/results/standalone-20261030-123000-g2-integration/export/g2-integrated.hwh",
+      "status": "present",
+      "sha256": "986de17a030540adc9e892cb6cd7b146ead7b5ddcf0aab2da80a9c0bf5027243"
+    },
+    {
+      "name": "G2 display manifest",
+      "path": "data/results/standalone-20261030-123000-g2-integration/export/display-manifest.json",
+      "status": "present",
+      "sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966"
+    },
+    {
+      "name": "Current G4 deployment index",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/package/deployment-index.json",
+      "status": "present",
+      "sha256": "c4c73cbb7c8df5ff2adb0f9df8be52ff1919faf38516747b039ee6b7910f2e31"
+    },
+    {
+      "name": "Current G4 source correspondence report",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/source-correspondence-20261031.json",
+      "status": "present",
+      "sha256": "0a6fff9406e589576cff965d847106ad41ca4c0a920e7d7336d8c8dde80b68f2"
+    },
+    {
+      "name": "Installed release package integrity report",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/installed-integrity-20261031.json",
+      "status": "present",
+      "sha256": "8f472f9bde8763999999d0d49eebcc9efb2eb5c71d914c265cc410457d3c2289"
+    },
+    {
+      "name": "Offline runtime snapshot",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/offline-runtime-snapshot-20261031.json",
+      "status": "present",
+      "sha256": "39b7a0f9eadec2fa0ca6e5ee6d9d4bac26f488df145816603fa05d2bba22955f"
+    },
+    {
+      "status": "present",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/deployment-after-20261031.json",
+      "name": "G4 v2 board deployment observation",
+      "sha256": "8108f31e6082008b4c0ed6a10469a57aa23bd9af70fefa139b4574f053db6162"
+    }
+  ],
+  "missing": []
+}
