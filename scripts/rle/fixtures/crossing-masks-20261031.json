@@ -1,0 +1,192 @@
+{
+  "schema": 1,
+  "source": "v6 crossing snapshots 2026-10-31; sparse diagnostic windows, not overall accuracy",
+  "sequences": {
+    "touching_side_front": [
+      {
+        "frame_id": 2485,
+        "capture_monotonic_ns": 2469228880844,
+        "array": "frame_2485",
+        "source_sha256": "919506fe42c9391b32c470e1d1e9bb1168d79a8f03d257bb6094f64f7c8ae731",
+        "expected_physical_objects": 2
+      },
+      {
+        "frame_id": 2486,
+        "capture_monotonic_ns": 2469306134832,
+        "array": "frame_2486",
+        "source_sha256": "37ff041143c0458f9204061caa33467af95ac70536b86f2eea05a747052785ba",
+        "expected_physical_objects": 2
+      },
+      {
+        "frame_id": 2487,
+        "capture_monotonic_ns": 2469447657890,
+        "array": "frame_2487",
+        "source_sha256": "664814625ca084184a4b994b402fb42b589494c813be86e3f222a0c011d20e1c",
+        "expected_physical_objects": 2
+      },
+      {
+        "frame_id": 2488,
+        "capture_monotonic_ns": 2469559581194,
+        "array": "frame_2488",
+        "source_sha256": "f1b76cb3cd57c6b4796c43c8b5c2479caf6c79952380cb408eb70a340a507432",
+        "expected_physical_objects": 2
+      },
+      {
+        "frame_id": 2489,
+        "capture_monotonic_ns": 2469696864702,
+        "array": "frame_2489",
+        "source_sha256": "a00ab2754333e49ea1e4cca745f585f6539128ecb3c9733ec9def6929b0ce0e1",
+        "expected_physical_objects": 2
+      }
+    ],
+    "touching_two_front": [
+      {
+        "frame_id": 2605,
+        "capture_monotonic_ns": 2485898859022,
+        "array": "frame_2605",
+        "source_sha256": "43f28419e53381fe75a74ec89e2a140bb4be40e2d3ceeff88a8c0dfa6f66aa18",
+        "expected_physical_objects": 2
+      },
+      {
+        "frame_id": 2606,
+        "capture_monotonic_ns": 2486028216918,
+        "array": "frame_2606",
+        "source_sha256": "60da0182f73d298f7a75a3b66ee41a76c9ff371c3097eaac10e3b1d2ede078ff",
+        "expected_physical_objects": 2
+      },
+      {
+        "frame_id": 2607,
+        "capture_monotonic_ns": 2486309846874,
+        "array": "frame_2607",
+        "source_sha256": "438abc8c7d6dc5e894c046bf10031dc655d505879b328bc16d2574117db93a5c",
+        "expected_physical_objects": 2
+      },
+      {
+        "frame_id": 2608,
+        "capture_monotonic_ns": 2486445210597,
+        "array": "frame_2608",
+        "source_sha256": "37695ace5e9ee6fa1693eb34b60f81ad9b3f498edf3a6f503c9cb1717d62a9f5",
+        "expected_physical_objects": 2
+      },
+      {
+        "frame_id": 2609,
+        "capture_monotonic_ns": 2486657999446,
+        "array": "frame_2609",
+        "source_sha256": "656ff3e0736a98a50c07956f7c19dfe96328216c4ee4a928b64248d72112a433",
+        "expected_physical_objects": 2
+      }
+    ]
+  },
+  "single_masks": [
+    {
+      "array": "single_2310_0",
+      "frame_id": 2310,
+      "area": 325
+    },
+    {
+      "array": "single_2312_0",
+      "frame_id": 2312,
+      "area": 302
+    },
+    {
+      "array": "single_2380_0",
+      "frame_id": 2380,
+      "area": 328
+    },
+    {
+      "array": "single_2444_0",
+      "frame_id": 2444,
+      "area": 289
+    },
+    {
+      "array": "single_857_0",
+      "frame_id": 857,
+      "area": 203
+    },
+    {
+      "array": "single_857_1",
+      "frame_id": 857,
+      "area": 308
+    },
+    {
+      "array": "single_857_2",
+      "frame_id": 857,
+      "area": 362
+    },
+    {
+      "array": "single_857_3",
+      "frame_id": 857,
+      "area": 239
+    },
+    {
+      "array": "single_1457_0",
+      "frame_id": 1457,
+      "area": 315
+    },
+    {
+      "array": "single_1457_1",
+      "frame_id": 1457,
+      "area": 270
+    },
+    {
+      "array": "single_1457_2",
+      "frame_id": 1457,
+      "area": 266
+    },
+    {
+      "array": "single_915_0",
+      "frame_id": 915,
+      "area": 333
+    },
+    {
+      "array": "single_915_1",
+      "frame_id": 915,
+      "area": 145
+    },
+    {
+      "array": "single_915_2",
+      "frame_id": 915,
+      "area": 261
+    },
+    {
+      "array": "single_858_0",
+      "frame_id": 858,
+      "area": 273
+    },
+    {
+      "array": "single_858_1",
+      "frame_id": 858,
+      "area": 343
+    },
+    {
+      "array": "single_858_2",
+      "frame_id": 858,
+      "area": 288
+    },
+    {
+      "array": "single_858_3",
+      "frame_id": 858,
+      "area": 255
+    },
+    {
+      "array": "single_2509_0",
+      "frame_id": 2509,
+      "area": 342
+    },
+    {
+      "array": "single_2509_1",
+      "frame_id": 2509,
+      "area": 336
+    },
+    {
+      "array": "single_2531_0",
+      "frame_id": 2531,
+      "area": 341
+    },
+    {
+      "array": "single_2531_1",
+      "frame_id": 2531,
+      "area": 306
+    }
+  ]
+}

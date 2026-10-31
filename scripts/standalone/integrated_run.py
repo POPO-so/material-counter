@@ -25,6 +25,7 @@ from .compositor import DashboardComposer
 from .controls import ButtonDecoder, ControlState
 from .count_controls import advance_count, make_runtime_counter
 from .crossing_snapshots import CrossingSnapshots
+from .async_evidence import EvidenceExporter
 from .driver_owner import DriverOwner
 from .evidence import write_evidence,fail_hold,TraceBuffer
 from .g1_run import setup_hardware, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
@@ -122,7 +123,7 @@ def start_drawing_child(
 def source_identity(project_root):
     root=Path(project_root).resolve()
     scoped_roots=tuple((root/relative).resolve() for relative in
-        ('scripts/standalone','scripts/rle','scripts/wo0015'))
+        ('scripts/standalone','scripts/rle','scripts/wo0015','scripts/wo0016'))
     sources={}
     errors=[]
 
@@ -159,7 +160,7 @@ def source_identity(project_root):
     canonical=json.dumps(sources,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode('utf-8')
     return dict(schema='material-counter.project-source-identity.v1',sha256_by_path=sources,
         digest=hashlib.sha256(canonical).hexdigest(),file_count=len(sources),
-        scope='Project-local Python sources under scripts/standalone, scripts/rle, and scripts/wo0015 that are loaded in sys.modules, plus this integrated_run.py; tests and paths outside the project root are excluded. This does not identify dependencies, ABI, or bitstreams.',
+        scope='Project-local Python sources under scripts/standalone, scripts/rle, scripts/wo0015, and scripts/wo0016 that are loaded in sys.modules, plus this integrated_run.py; tests and paths outside the project root are excluded. This does not identify dependencies, ABI, or bitstreams.',
         complete=not errors,errors=errors)
 
 
@@ -215,6 +216,10 @@ def main(argv=None):
         help='save bounded asynchronous crossing diagnostics beside the session report')
     parser.add_argument('--snapshot-max-events',type=int,default=1000)
     parser.add_argument('--snapshot-max-mib',type=int,default=512)
+    parser.add_argument('--snapshot-storage',choices=('compact','full'),default='compact',
+        help='compact writes shared gray/RLE only; render diagnostic overlays offline')
+    parser.add_argument('--counting-profile',choices=('legacy','field-v1'),default='field-v1',
+        help='field-v1 enables time-based ordered association and calibrated local splitting')
     parser.add_argument('--source',choices=('replay','camera'),default='replay')
     parser.add_argument('--camera',default='/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0')
     parser.add_argument('--display',choices=('on','off'),default='on')
@@ -305,7 +310,7 @@ def main(argv=None):
         recoveries=deque(maxlen=2048),button_raw_sample_count=0,
         button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
         before_memory=_memory(),scope='G3 candidate; G4 physical disconnection/cold-start not asserted')
-    captures=None
+    captures=exporter=None
     button_raw_lock=threading.Lock()
     def report_snapshot():
         with button_raw_lock:
@@ -317,6 +322,7 @@ def main(argv=None):
             result['button_raw_transition_total']=transition_total
             result['button_raw_transition_truncated']=transition_total-len(transitions)
         result['crossing_snapshots']=captures.status() if captures is not None else {'enabled':False}
+        result['report_exports']=exporter.status() if exporter is not None else {'enabled':False}
         return result
     report['cpu_scope']='system/core normalized 0..100%; process 100% equals one core'
     report['camera_configuration']=dict(by_id=args.camera,requested_format='MJPG',
@@ -371,7 +377,9 @@ def main(argv=None):
         rx=owner.retain(allocate(shape=(RX_CAPACITY,),dtype='u1'))
         transport=RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,hw.overlay.axi_dma_0.recvchannel,dma,control,tx,rx)
         if pipeline['state']['done_seen']:transport._completed_frames=1
-        counter=make_runtime_counter(args.native_lib)
+        counter=make_runtime_counter(args.native_lib,profile=args.counting_profile)
+        exporter=EvidenceExporter()
+        report['counting_profile']=args.counting_profile
         report['counting_configuration']=dict(axis=counter.count_axis,line_x=counter.line_x,
             line_y=counter.line_y,direction=counter.direction,motion='left_to_right')
         report['source_identity']=source_identity(Path(__file__).resolve().parents[2])
@@ -379,7 +387,8 @@ def main(argv=None):
             captures=CrossingSnapshots(args.output.with_suffix('.crossings'),
                 identity={name:report[name] for name in ('boot_id','session_id','bit_sha256',
                     'hwh_sha256','manifest_sha256','native_sha256','source_identity','camera_configuration')},
-                max_events=args.snapshot_max_events,max_bytes=args.snapshot_max_mib*1024**2)
+                max_events=args.snapshot_max_events,max_bytes=args.snapshot_max_mib*1024**2,
+                storage_mode=args.snapshot_storage)
         trace=TraceBuffer();report['frame_trace']=trace.frames
         if args.startup_record:
             try:
@@ -431,9 +440,15 @@ def main(argv=None):
                     export_monotonic=now,trace_sha256=trace.digest(),trace_frames=trace.frames_seen,
                     trace_annotations_truncated=trace.annotations_truncated)
                 exported=args.output.with_name(args.output.stem+'.snapshot-'+str(exports)+'.json')
-                try:write_evidence(exported,report_snapshot())
-                except OSError as error:
-                    report['recoveries'].append(dict(kind='evidence_export',error=repr(error),monotonic=now))
+                # Freeze while the raw-button producer is excluded; serialization
+                # and SD writes happen in a bounded background thread.
+                with button_raw_lock:
+                    immutable=dict(report)
+                    immutable['crossing_snapshots']=captures.status() if captures else {'enabled':False}
+                    immutable['report_exports']=exporter.status()
+                    accepted=exporter.submit(exported,immutable)
+                if not accepted:
+                    report['recoveries'].append(dict(kind='evidence_export_dropped',monotonic=now))
                 exports+=1;export_requested=False
             frozen=args.freeze_telemetry_at_frame is not None and index>=args.freeze_telemetry_at_frame
             if not frozen:
@@ -508,7 +523,7 @@ def main(argv=None):
                     camera_in_error=True
                     continue
                 if camera_in_error:
-                    old_total=counter.total_count;counter=make_runtime_counter(args.native_lib);counter.total_count=old_total
+                    old_total=counter.total_count;counter=make_runtime_counter(args.native_lib,profile=args.counting_profile);counter.total_count=old_total
                     trajectory_epoch+=1;camera_in_error=False
                     report['recoveries'].append(dict(kind='camera_resumed',frame=index,
                         trajectory_epoch=trajectory_epoch,monotonic=time.monotonic()))
@@ -639,6 +654,7 @@ def main(argv=None):
         owner.close()
         if not display_held:video_owner.close()
         if captures is not None:report['snapshot_writer_drained']=captures.close()
+        if exporter is not None:report['report_writer_drained']=exporter.close()
         report.update(state='COUNT_STOPPED_DISPLAY_FAIL_HOLD' if display_held else 'STOPPED',processed=index,submitted=submitted,published=published,
             dropped_preview=dropped,total_count=counter.total_count,invalid_frames=counter.invalid_frames,
             camera_released=True,buffers_released=not display_held,rle_buffers_released=True,after_memory=_memory(),
@@ -648,6 +664,7 @@ def main(argv=None):
         if video_pump is not None and not video_pump.is_alive:report['timings_ms'].update(video_pump.timing_percentiles_ms())
     except BaseException as error:
         if captures is not None:report['snapshot_writer_drained']=captures.close()
+        if exporter is not None:report['report_writer_drained']=exporter.close()
         if stop_drawing is not None:stop_drawing.set()
         if video_pump is not None:video_pump.request_stop()
         if process is not None:process.join(timeout=15)

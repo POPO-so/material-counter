@@ -12,10 +12,17 @@ from scripts.standalone.integrated_run import (
     rasterize_into,
     result_metadata,
     start_drawing_child,
+    source_identity,
 )
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
 from scripts.wo0016.stream_counter import MaskCounter
+
+
+def test_source_identity_covers_loaded_counting_and_motion_code():
+    identity=source_identity(Path(__file__).resolve().parents[2])
+    assert 'scripts/wo0016/stream_counter.py' in identity['sha256_by_path']
+    assert 'scripts/wo0016/motion_association.py' in identity['sha256_by_path']
 
 
 class _StartFailureProcess:

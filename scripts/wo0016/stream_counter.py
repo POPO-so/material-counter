@@ -17,9 +17,11 @@ import numpy as np
 try:
     from .split_touching import is_single_connected_component, split_touching_component
     from .binary_stats import Binary8RoiValidator
+    from .motion_association import ordered_matches
 except ImportError:
     from split_touching import is_single_connected_component, split_touching_component
     from binary_stats import Binary8RoiValidator
+    from motion_association import ordered_matches
 
 WIDTH = 320
 HEIGHT = 240
@@ -162,7 +164,9 @@ class MaskCounter:
                  cooldown_frames: int = 0, cooldown_lateral: float = 15.0,
                  edge_max_missing: int = 0, prediction_max_missing: int = 0,
                  discard_finished_tracks: bool = False,
-                 motion_timebase_s: float | None = None):
+                 motion_timebase_s: float | None = None,
+                 predictive_association: bool = False,
+                 max_association_interval_s: float = 0.5):
         self.width = _integer(width, "width", minimum=1)
         self.height = _integer(height, "height", minimum=1)
         self.line_y = _integer(line_y, "line_y", minimum=0)
@@ -235,6 +239,12 @@ class MaskCounter:
         self.discard_finished_tracks = discard_finished_tracks
         self.motion_timebase_s = (None if motion_timebase_s is None else
                                   _positive_float(motion_timebase_s, "motion_timebase_s"))
+        if not isinstance(predictive_association, bool):
+            raise ValueError('predictive_association must be bool')
+        if predictive_association and self.motion_timebase_s is None:
+            raise ValueError('predictive association requires motion_timebase_s')
+        self.predictive_association = predictive_association
+        self.max_association_interval_s = _positive_float(max_association_interval_s, 'max_association_interval_s')
         self._last_capture_monotonic_ns = None
         self._recent_events: list[CountEvent] = []
         self.last_suppressed_events: list[CountEvent] = []
@@ -705,7 +715,9 @@ class MaskCounter:
         for track in self._tracks.values():
             if track.finished:
                 continue
-            if frame_id - track.last_frame > self._missing_budget(track) + 1:
+            too_old = (self.predictive_association and
+                       (capture_monotonic_ns-track.capture_monotonic_ns)/1e9 > self.max_association_interval_s)
+            if frame_id - track.last_frame > self._missing_budget(track) + 1 or too_old:
                 track.finished = True
             else:
                 active.append(track)
@@ -765,13 +777,13 @@ class MaskCounter:
                         continue
                 lateral_limit = (self.max_lateral_step if self.strict_lateral_gate
                                  else self.max_lateral_step * dt)
-                if self.motion_timebase_s is not None:
+                if self.motion_timebase_s is not None and not (self.predictive_association and self.strict_lateral_gate):
                     lateral_limit = self.max_lateral_step * motion_dt
                 if (lateral <= lateral_limit
                         and -self.backward_tolerance <= forward <= self.max_step * motion_dt
                         and 0.25 <= area_ratio <= 4.0):
                     predicted_x, predicted_y = old.centroid_x, old.centroid_y
-                    if missing_frames and velocity is not None:
+                    if (missing_frames or self.predictive_association) and velocity is not None:
                         longitudinal_prediction = self.direction * velocity * motion_dt
                         if self.count_axis == "x":
                             predicted_x += longitudinal_prediction
@@ -779,6 +791,10 @@ class MaskCounter:
                             predicted_y += longitudinal_prediction
                     prediction_distance = ((detection.centroid_x-predicted_x) ** 2
                                            + (detection.centroid_y-predicted_y) ** 2)
+                    if self.predictive_association:
+                        # Transverse movement is a stronger identity cue than
+                        # proximity to another nut's previous longitudinal position.
+                        prediction_distance += 8 * lateral ** 2
                     edges.append((prediction_distance, track.track_id, index, gap))
 
         # An inferred gap must have a unique candidate in both directions.
@@ -787,6 +803,11 @@ class MaskCounter:
         detection_frequency = Counter(edge[2] for edge in edges)
         ambiguous_tracks = {key for key, count in track_frequency.items() if count > 1}
         ambiguous_detections = {key for key, count in detection_frequency.items() if count > 1}
+
+        if self.predictive_association:
+            edges = ordered_matches([edge for edge in edges if not edge[3] or
+                (edge[1] not in ambiguous_tracks and edge[2] not in ambiguous_detections)],
+                active, detections, axis=self.count_axis, lane_distance=self.max_lateral_step)
 
         used_tracks: set[int] = set()
         used_detections: set[int] = set()

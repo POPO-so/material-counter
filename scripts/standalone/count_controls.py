@@ -2,11 +2,22 @@
 from dataclasses import replace
 
 
-def make_runtime_counter(library):
+FIELD_V1_SETTINGS = dict(
+    predictive_association=True, motion_timebase_s=.1,
+    max_step=200, max_lateral_step=12, strict_lateral_gate=True,
+    max_association_interval_s=.5, guarded_merge=True,
+    single_intact_area=380, max_split_area=1200, min_split_child_area=80,
+)
+
+
+def make_runtime_counter(library, *, profile='legacy'):
     """Use streaming track retirement; never retain completed trajectory history."""
     from scripts.rle.counter import RleCounter
+    if profile not in ('legacy', 'field-v1'):
+        raise ValueError('unknown counting profile')
     return RleCounter(library=library,discard_finished_tracks=True,
-                      count_axis="x",line_x=320,direction=1)
+                      count_axis="x",line_x=320,direction=1,
+                      **(FIELD_V1_SETTINGS if profile=='field-v1' else {}))
 
 
 def advance_count(counter, controls, packet, commands=(), *, capture_monotonic_ns=None):

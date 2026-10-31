@@ -10,6 +10,7 @@ import hashlib
 import inspect
 import io
 import json
+import os
 from pathlib import Path
 import queue
 import shutil
@@ -31,13 +32,18 @@ def _parameters(counter):
 
 class CrossingSnapshots:
     def __init__(self, root, *, identity, context_frames=2, queue_size=8,
-                 max_events=1000, max_bytes=512*1024**2, min_free_bytes=256*1024**2):
+                 max_events=1000, max_bytes=512*1024**2, min_free_bytes=256*1024**2,
+                 storage_mode='full'):
         if any(type(v) is not int or v < 1 for v in (queue_size, max_events, max_bytes)):
             raise ValueError('positive queue and storage limits required')
         if type(context_frames) is not int or not 0 <= context_frames <= 5:
             raise ValueError('context_frames must be in 0..5')
         if type(min_free_bytes) is not int or min_free_bytes < 0:
             raise ValueError('min_free_bytes must be nonnegative')
+        if storage_mode not in ('full', 'compact'):
+            raise ValueError("storage_mode must be 'full' or 'compact'")
+        self.storage_mode = storage_mode
+        self._shared_frames = {}  # (epoch, frame_id) -> paths and digests only
         self.root = Path(root)
         self.identity = dict(identity)
         self.context_frames = context_frames
@@ -72,7 +78,7 @@ class CrossingSnapshots:
             return dict(self._stats, enabled=True, accepting=not self._stop.is_set() and not self._disabled.is_set(),
                         root=str(self.root), pending=len(self._pending),
                         queue_depth=self._queue.qsize(), writer_alive=self._thread.is_alive(),
-                        max_events=self.max_events, max_bytes=self.max_bytes,
+                        max_events=self.max_events, max_bytes=self.max_bytes, storage_mode=self.storage_mode,
                         min_free_bytes=self.min_free_bytes, context_frames=self.context_frames)
 
     def observe(self, gray, packet, result, counter, *, trajectory_epoch=0,
@@ -221,6 +227,11 @@ class CrossingSnapshots:
                 self._queue.task_done()
 
     def _write_job(self, job):
+        if self.storage_mode == 'compact':
+            return self._write_compact_job(job)
+        return self._write_full_job(job)
+
+    def _write_full_job(self, job):
         stats = self.status()
         if (stats['saved'] >= self.max_events or
                 shutil.disk_usage(self.root).free < self.min_free_bytes):
@@ -289,4 +300,104 @@ class CrossingSnapshots:
                     self._update(bytes_written=target.stat().st_size)
             if name == 'event.json':
                 target.rename(directory/'event.json')
+        self._update(saved=1)
+
+
+    def _write_compact_job(self, job):
+        stats = self.status()
+        if (stats['saved'] >= self.max_events or
+                shutil.disk_usage(self.root).free < self.min_free_bytes):
+            self._update(dropped_storage=1, last_error='snapshot count limit or free disk reserve reached')
+            self._disabled.set()
+            return
+        frame_payloads = {}
+        artifact_info = {}
+        new_bytes = 0
+        for frame in job['frames']:
+            meta = frame['metadata']
+            key = (meta['trajectory_epoch'], meta['frame_id'])
+            prefix = 'frame-{:010d}'.format(meta['frame_id'])
+            names = (prefix+'.gray.png', prefix+'.rle.npz')
+            if key not in self._shared_frames and key not in frame_payloads:
+                ok, encoded = cv2.imencode('.png', frame['gray'], [cv2.IMWRITE_PNG_COMPRESSION, 1])
+                if not ok:
+                    raise OSError('snapshot PNG encoding failed')
+                buffer = io.BytesIO()
+                np.savez(buffer, runs=frame['runs'], row_projection=frame['rows'],
+                         column_projection=frame['columns'])
+                blobs = (encoded.tobytes(), buffer.getvalue())
+                frame_payloads[key] = dict(zip(names, blobs))
+                new_bytes += sum(map(len, blobs))
+            cached = self._shared_frames.get(key)
+            fresh = frame_payloads.get(key)
+            for name in names:
+                if cached:
+                    digest=cached[name]['sha256']; size=cached[name]['bytes']
+                    path=cached[name]['path']
+                    if not path.is_file():
+                        raise OSError('shared frame index path is missing')
+                    stored=path.read_bytes()
+                    if len(stored)!=size or hashlib.sha256(stored).hexdigest()!=digest:
+                        raise OSError('shared frame index digest mismatch')
+                else:
+                    blob=fresh[name]; digest=hashlib.sha256(blob).hexdigest(); size=len(blob)
+                artifact_info[name] = dict(bytes=size, sha256=digest)
+        record = dict(schema='material-counter.crossing-snapshot.v1', identity=self.identity,
+            storage_mode='compact', trigger_frame_id=job['trigger_frame_id'],
+            trajectory_epoch=job['trajectory_epoch'], triggers=job['triggers'],
+            context_complete=job['context_complete'], context_end_reason=job['context_end_reason'],
+            requested_context_frames=self.context_frames,
+            available_pre_frames=sum(f['metadata']['frame_id'] < job['trigger_frame_id'] for f in job['frames']),
+            frames=[f['metadata'] for f in job['frames']], artifacts=artifact_info)
+        shared = {}
+        for frame in job['frames']:
+            meta=frame['metadata']; key=(meta['trajectory_epoch'],meta['frame_id'])
+            prefix='frame-{:010d}'.format(meta['frame_id'])
+            for suffix in ('gray.png','rle.npz'):
+                name=prefix+'.'+suffix
+                shared[name]=(Path('frames')/('e{}'.format(meta['trajectory_epoch']))/name).as_posix()
+        record['shared_frames'] = shared
+        event_bytes = json.dumps(record, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+        required = new_bytes + len(event_bytes)
+        if (stats['bytes_written']+required > self.max_bytes or
+                shutil.disk_usage(self.root).free-required < self.min_free_bytes):
+            self._update(dropped_storage=1, last_error='snapshot byte limit or free disk reserve reached')
+            self._disabled.set()
+            return
+        # Publish shared frame files atomically before event completion metadata.
+        for key, blobs in frame_payloads.items():
+            epoch, frame_id = key
+            shared_dir = self.root/'frames'/('e{}'.format(epoch))
+            shared_dir.mkdir(parents=True, exist_ok=True)
+            stored = {}
+            for name, blob in blobs.items():
+                target = shared_dir/name
+                partial = target.with_name(target.name+'.partial')
+                try:
+                    with partial.open('xb') as stream:
+                        stream.write(blob); stream.flush(); os.fsync(stream.fileno())
+                    partial.replace(target)
+                finally:
+                    accounted=partial if partial.exists() else target
+                    if accounted.is_file():
+                        self._update(bytes_written=accounted.stat().st_size)
+                digest=hashlib.sha256(blob).hexdigest()
+                stored[name]=dict(path=target, bytes=len(blob), sha256=digest)
+            self._shared_frames[key]=stored
+        directory=self.root/('event-{:06d}-e{}-f{}'.format(job['sequence'],job['trajectory_epoch'],job['trigger_frame_id']))
+        directory.mkdir()
+        # Hard links preserve legacy artifact paths without duplicating image payloads.
+        for name, rel in shared.items():
+            source=self.root/Path(rel)
+            os.link(source, directory/name)
+        partial=directory/'event.json.partial'
+        complete=directory/'event.json'
+        try:
+            with partial.open('xb') as stream:
+                stream.write(event_bytes)
+            partial.replace(complete)
+        finally:
+            accounted=partial if partial.exists() else complete
+            if accounted.is_file():
+                self._update(bytes_written=accounted.stat().st_size)
         self._update(saved=1)
