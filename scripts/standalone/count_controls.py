@@ -5,7 +5,8 @@ from dataclasses import replace
 def make_runtime_counter(library):
     """Use streaming track retirement; never retain completed trajectory history."""
     from scripts.rle.counter import RleCounter
-    return RleCounter(library=library,discard_finished_tracks=True)
+    return RleCounter(library=library,discard_finished_tracks=True,
+                      count_axis="x",line_x=320,direction=1)
 
 
 def advance_count(counter, controls, packet, commands=(), *, capture_monotonic_ns=None):

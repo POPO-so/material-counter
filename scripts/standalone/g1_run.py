@@ -154,7 +154,7 @@ def setup_hardware(files, owner):
 
 def _memory():
     return {key: value for line in Path("/proc/meminfo").read_text().splitlines()
-            for key, value in [line.split(":", 1)] if key in ("MemAvailable", "CmaFree", "CmaTotal")}
+            for key, value in [line.split(":", 1)] if key in ("MemTotal", "MemAvailable", "CmaFree", "CmaTotal")}
 
 
 def _parse_proc_stat(text):
