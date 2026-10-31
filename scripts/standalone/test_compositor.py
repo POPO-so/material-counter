@@ -441,6 +441,65 @@ def test_dashboard_text_cache_avoids_static_label_rasterization_on_value_updates
     assert metric_calls == []
 
 
+def test_dashboard_chrome_warmed_latin_strings_skip_all_text_rasterization(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    warm = {"count": 3, "display_fps": 30, "processing_ms": 4.2,
+            "cpu_percent": 20, "memory_percent": 41}
+    changed = {"count": 4, "display_fps": 31, "processing_ms": 4.2,
+               "cpu_percent": 21, "memory_percent": 41}
+    c.render(gray, gray, session, 1, dashboard=warm)
+    c.render(gray, gray, session, 2, dashboard=changed, boxes=((10, 10, 20, 20),))
+
+    calls = []
+    real_text = api.ImageDraw.ImageDraw.text
+    def track_text(draw, xy, text, *args, **kwargs):
+        calls.append(text)
+        return real_text(draw, xy, text, *args, **kwargs)
+    monkeypatch.setattr(api.ImageDraw.ImageDraw, "text", track_text)
+    metric_calls = []
+    fonts = list(c._fonts.values()) + list(c._latin.values())
+    for font in fonts:
+        for name in ("getlength", "getbbox"):
+            original = getattr(font, name)
+            def track_metric(text, *args, _original=original, **kwargs):
+                metric_calls.append(text)
+                return _original(text, *args, **kwargs)
+            monkeypatch.setattr(font, name, track_metric)
+
+    c.render(gray, gray, session, 3, dashboard=warm)
+    c.render(gray, gray, session, 4, dashboard=changed, boxes=((10, 10, 20, 20),))
+
+    assert calls == []
+    assert metric_calls == []
+
+
+@pytest.mark.parametrize("size", [18, 20, 24, 34])
+@pytest.mark.parametrize("background,fill", [(12, 242), (238, 35)])
+def test_dashboard_cached_whole_latin_text_matches_default_pillow_pixels(
+        size, background, fill):
+    api = _api()
+    c = _dashboard_composer()
+    actual = api.Image.new("L", (420, 100), background)
+    expected = api.Image.new("L", (420, 100), background)
+    text = "NUT VISION 0123456789 x 400"
+    draw_actual = api.ImageDraw.Draw(actual)
+    draw_expected = api.ImageDraw.Draw(expected)
+    c._whole_latin_text(draw_actual, (17, 19), text, size, fill)
+    draw_expected.text((17, 19), text, font=c._latin[size], fill=fill)
+    first = np.asarray(actual).copy()
+    assert np.array_equal(first, np.asarray(expected))
+
+    # Same cache entry, new fill and destination: the independent default
+    # Pillow call retains its normal kerning and anchor behavior.
+    c._whole_latin_text(draw_actual, (103, 53), text, size, 255 - fill)
+    draw_expected.text((103, 53), text, font=c._latin[size], fill=255 - fill)
+
+    assert np.array_equal(np.asarray(actual), np.asarray(expected))
+
+
 @pytest.mark.parametrize("size", [18, 20, 24, 34])
 @pytest.mark.parametrize("background,fills", [(12, (45, 225)), (238, (35, 210))])
 def test_dashboard_cached_mixed_text_matches_independent_legacy_pillow_pixels(

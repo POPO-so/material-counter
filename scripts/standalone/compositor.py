@@ -335,7 +335,8 @@ class DashboardComposer:
         return f"{value:,.{digits}f}{suffix}"
 
     def _text(self, draw, xy, text, size, fill):
-        cached = self._text_cache.get((text, size))
+        key = ("mixed", text, size)
+        cached = self._text_cache.get(key)
         if cached is None:
             # Render at an integer offset so glyph bearings and fractional
             # advances match the original per-character drawing path exactly.
@@ -358,11 +359,30 @@ class DashboardComposer:
                 left, top, right, bottom = bounds
                 cached = (left - margin, top - margin,
                           mask.crop((left, top, right, bottom)))
-            self._text_cache[(text, size)] = cached
-            if len(self._text_cache) > 128:
-                self._text_cache.popitem(last=False)
         else:
-            self._text_cache.move_to_end((text, size))
+            self._text_cache.move_to_end(key)
+        self._cache_text(key, cached)
+        offset_x, offset_y, mask = cached
+        draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
+
+    def _cache_text(self, key, cached):
+        self._text_cache[key] = cached
+        if len(self._text_cache) > 128:
+            self._text_cache.popitem(last=False)
+
+    def _whole_latin_text(self, draw, xy, text, size, fill):
+        """Draw cached complete Latin strings with Pillow's default text layout."""
+        key = ("latin", text, size)
+        cached = self._text_cache.get(key)
+        if cached is None:
+            font = self._latin[size]
+            left, top, right, bottom = font.getbbox(text)
+            mask = Image.new("L", (max(1, right - left), max(1, bottom - top)), 0)
+            ImageDraw.Draw(mask).text((-left, -top), text, font=font, fill=255)
+            cached = (left, top, mask)
+        else:
+            self._text_cache.move_to_end(key)
+        self._cache_text(key, cached)
         offset_x, offset_y, mask = cached
         draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
 
@@ -381,18 +401,18 @@ class DashboardComposer:
             return
         image = Image.new("L", (WIDTH, HEIGHT), 14)
         draw = ImageDraw.Draw(image)
-        draw.text((24, 12), "NUT VISION COUNTER", font=self._latin[28], fill=242)
+        self._whole_latin_text(draw, (24, 12), "NUT VISION COUNTER", 28, 242)
         draw.ellipse((1060, 25, 1070, 35), fill=224)
-        draw.text((1082, 19), state[:15], font=self._latin[18], fill=208)
+        self._whole_latin_text(draw, (1082, 19), state[:15], 18, 208)
         for x, label, value in zip((24, 440, 856),
                                    ("本次累计计数", "显示 FPS", "处理延迟 / RLE + 计数"),
                                    values[:3]):
             draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
-            draw.text((x + 16, 84), value, font=self._latin[34], fill=248)
+            self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
         draw.rounded_rectangle((24, 136, 1256, 632), radius=10, fill=25, outline=58)
-        draw.text((42, 157), "CAM 01", font=self._latin[24], fill=232)
-        draw.text((42, 194), "640 x 400", font=self._latin[18], fill=158)
+        self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
+        self._whole_latin_text(draw, (42, 194), "640 x 400", 18, 158)
         self._text(draw, (42, 222), "二值预览" if binary_background else "实时灰度画面", 20, 212)
         draw.line((44, 284, 100, 284), fill=240, width=2)
         self._text(draw, (42, 298), "实际计数线", 18, 175)
@@ -402,7 +422,7 @@ class DashboardComposer:
                             "BTN2  灰度 / 二值", "BTN3  详细状态")):
             self._text(draw, (42, y), text, 18, 144)
         self._text(draw, (1044, 158), "检测目标", 20, 170)
-        draw.text((1044, 190), str(target_count), font=self._latin[34], fill=242)
+        self._whole_latin_text(draw, (1044, 190), str(target_count), 34, 242)
         self._text(draw, (1044, 248), "跟踪 ID / 检测框", 18, 170)
         self._text(draw, (1044, 279), "计数真值待人工核对", 18, 144)
         for i, text in enumerate(detail):
@@ -414,7 +434,7 @@ class DashboardComposer:
                 (640, 616, "DDR 内存占用", values[4], "memory_percent")):
             draw.rounded_rectangle((x, 646, x + width, 704), radius=9, fill=40)
             self._text(draw, (x + 16, 650), label, 18, 178)
-            draw.text((x + width - 74, 674), text, font=self._latin[18], fill=238)
+            self._whole_latin_text(draw, (x + width - 74, 674), text, 18, 238)
             left, right = x + 16, x + width - 92
             draw.rounded_rectangle((left, 682, right, 689), radius=3, fill=82)
             percent = dashboard.get(field)
