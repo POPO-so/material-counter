@@ -87,13 +87,14 @@ def test_camera_absent_keeps_fps_unknown_not_zero():
 
 
 def test_telemetry_page_lines_cover_pl_and_ps_pages():
-    video={'pl':{'aggregate':{'total_cycles':16000,'active_cycles':12300}},
+    video={'pl':{'aggregate':{'total_cycles':16000,'active_cycles':12300,'input_beats':800,'output_beats':400}},
         'regions_ms':{'mean':2.1},'track_ms':{'mean':1.2},
         'camera':{'camera_overwrite_drops':3},
         'pump':{'pump_submit_failures':1,'pump_skips':2}}
     pl=telemetry_page_lines(1,video)
     assert pl[0]=='PL 阶段与周期'
     assert any('12300' in line for line in pl)
+    assert any('800' in line and '400' in line for line in pl)
     ps=telemetry_page_lines(2,video)
     assert ps[0]=='PS 与丢帧'
     assert any('2.1' in line and '1.2' in line for line in ps)

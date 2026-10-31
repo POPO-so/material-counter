@@ -88,14 +88,16 @@ def telemetry_page_lines(page, video):
     if page==1:
         aggregate=(video.get('pl') or {}).get('aggregate') or {}
         total=aggregate.get('total_cycles');active=aggregate.get('active_cycles')
-        lines=['PL 阶段与周期']
+        beat_in=aggregate.get('input_beats');beat_out=aggregate.get('output_beats')
         if isinstance(total,int) and isinstance(active,int) and total>0:
-            lines.append('活动 {}/{} cyc'.format(active,total))
-            lines.append('活动率 {:.0f}% / 模块 unknown'.format(100.0*active/total))
+            activity='活动 {}/{} cyc {:.0f}%'.format(active,total,100.0*active/total)
         else:
-            lines.append('活动 --/-- cyc')
-            lines.append('模块级 周期 unknown')
-        return tuple(lines)
+            activity='活动 --/-- cyc'
+        if isinstance(beat_in,int) and isinstance(beat_out,int):
+            beats='beat 入{} 出{}'.format(beat_in,beat_out)
+        else:
+            beats='beat --/--'
+        return ('PL 阶段与周期',activity,beats+' / 模块unknown')
     if page==2:
         pump=video.get('pump') or {};camera=video.get('camera') or {}
         return ('PS 与丢帧',
@@ -106,7 +108,6 @@ def telemetry_page_lines(page, video):
 
 
 def dashboard_values(count, paused, page, telemetry):
-    """Use measured telemetry only; unavailable or stale readings stay blank."""
     performance=telemetry.get('performance',{})
     resources=telemetry.get('resources',{})
     perf=performance.get('value',{}) if not performance.get('stale',True) else {}
