@@ -40,9 +40,9 @@
     },
     {
       "name": "Offline runtime snapshot",
-      "path": "data/results/standalone-20261031-g4-deployment-preparation/offline-runtime-snapshot.json",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/offline-runtime-snapshot-20261031.json",
       "status": "present",
-      "sha256": "891b81b08102761cfafbdd4889c9d3aebff7f5c174cf2d6f662629b7db721d4e"
+      "sha256": "39b7a0f9eadec2fa0ca6e5ee6d9d4bac26f488df145816603fa05d2bba22955f"
     },
     {
       "status": "present",
