@@ -9,6 +9,7 @@ import pytest
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
 from scripts.standalone.integrated_run import (
     _refresh_dashboard_telemetry,
+    _sample_camera_telemetry,
     _with_publish_boundary,
     dashboard_values,
     drawing_process,
@@ -17,7 +18,7 @@ from scripts.standalone.integrated_run import (
     start_drawing_child,
     source_identity,
 )
-from scripts.standalone.video_telemetry import FrameTelemetry
+from scripts.standalone.video_telemetry import FrameTelemetry,TelemetryWindow
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
 from scripts.wo0016.stream_counter import MaskCounter
@@ -63,6 +64,21 @@ def test_publish_failure_does_not_set_publish_boundary():
 
     assert result is frame
     assert result.publish_ns is None
+
+
+def test_camera_absent_keeps_fps_unknown_not_zero():
+    window=TelemetryWindow()
+    for sample_time_ns in (1_000_000_000,2_000_000_000):
+        camera_stats,camera_sample=_sample_camera_telemetry(
+            None,window,sample_time_ns)
+        assert camera_stats is None
+        video_sample=window.sample(sample_time_ns)
+        video_sample.update(camera=camera_sample)
+        video_sample['camera_fps']=camera_sample['camera_fps']
+        values=dashboard_values(0,False,0,{
+            'video_telemetry':{'value':video_sample,'stale':False}
+        })
+        assert values['camera_fps'] is None
 
 
 def test_two_second_snapshot_is_reused_without_per_frame_cache_snapshot():

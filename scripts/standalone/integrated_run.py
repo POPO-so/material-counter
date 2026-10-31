@@ -108,6 +108,17 @@ def _refresh_dashboard_telemetry(cache, sampled_at):
     return cache.snapshot(sampled_at)
 
 
+def _sample_camera_telemetry(camera, telemetry_window, sample_time_ns):
+    """Sample camera counters, preserving unknown rates when no camera exists."""
+    if camera is None:
+        return None, dict(camera_fps=None,camera_overwrite_drops=None,
+            camera_sequence_errors=None)
+    stats=camera.stats()
+    sample=telemetry_window.record_camera(stats['captured_total'],
+        stats['overwrite_drops'],stats['sequence_errors'],sample_time_ns)
+    return stats,sample
+
+
 def start_drawing_child(
     ctx, inputs, outputs, errors, counters, font, latin_font, failure_mode=None
 ):
@@ -668,11 +679,8 @@ def main(argv=None):
             if time.monotonic()-last_sample>=2:
                 sample_time=time.monotonic();cpu=_parse_proc_stat(Path('/proc/stat').read_text())
                 sample_time_ns=time.monotonic_ns()
-                camera_stats=camera.stats() if camera is not None else {
-                    'captured_total':0,'overwrite_drops':0,'sequence_errors':0}
-                camera_sample=telemetry_window.record_camera(
-                    camera_stats['captured_total'],camera_stats['overwrite_drops'],
-                    camera_stats['sequence_errors'],sample_time_ns)
+                camera_stats,camera_sample=_sample_camera_telemetry(
+                    camera,telemetry_window,sample_time_ns)
                 consumed_sample=telemetry_window.record_consumed(index,sample_time_ns)
                 pump_sample=telemetry_window.record_pump(
                     video_pump.submitted if video_pump else 0,
@@ -681,7 +689,9 @@ def main(argv=None):
                 counters_sample=owner.call(snapshot_counters,control)
                 video_sample=telemetry_window.sample(sample_time_ns)
                 video_sample.update(camera=camera_sample,pump=pump_sample,consumed=consumed_sample)
-                video_sample['drop_total']=(camera_stats['overwrite_drops']+
+                video_sample['camera_fps']=(camera_sample.get('camera_fps')
+                    if camera_sample is not None else None)
+                video_sample['drop_total']=((camera_stats['overwrite_drops'] if camera_stats else 0)+
                     (video_pump.skipped+video_pump.submit_failures if video_pump else 0))
                 video_sample.setdefault('resolution_chain','640x400 -> 800x640 -> 1280x720')
                 video_sample.setdefault('link_summary',None)
