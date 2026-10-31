@@ -4,7 +4,12 @@ module tb_rle_region_features;
   reg resetn=0, start=0, run_valid=0, finish=0, result_ready=0;
   reg [31:0] frame_id=0;
   reg [9:0] run_y=0, run_x0=0, run_x1=0;
+  reg [23:0] cfg_max_area=0;
+  reg [15:0] cfg_max_w=0, cfg_max_h=0;
+  reg [7:0] cfg_aspect_x16=0;
   wire run_ready, result_valid, done, overflow, busy;
+  wire candidate_flag;
+  wire [2:0] candidate_reason;
   wire [31:0] result_area, result_sum_x, result_sum_y;
   wire [9:0] result_x0, result_y0, result_x1, result_y1;
   wire [31:0] result_frame_id;
@@ -16,7 +21,9 @@ module tb_rle_region_features;
     .finish(finish),.result_valid(result_valid),.result_ready(result_ready),
     .result_area(result_area),.result_sum_x(result_sum_x),.result_sum_y(result_sum_y),
     .result_x0(result_x0),.result_y0(result_y0),.result_x1(result_x1),.result_y1(result_y1),
-    .result_frame_id(result_frame_id),.done(done),.overflow(overflow),.record_count(record_count),.busy(busy)
+    .result_frame_id(result_frame_id),.done(done),.overflow(overflow),.record_count(record_count),.busy(busy),
+    .candidate_flag(candidate_flag),.candidate_reason(candidate_reason),
+    .cfg_max_area(cfg_max_area),.cfg_max_w(cfg_max_w),.cfg_max_h(cfg_max_h),.cfg_aspect_x16(cfg_aspect_x16)
   );
 
   task automatic begin_frame(input [31:0] fid);
@@ -150,7 +157,39 @@ module tb_rle_region_features;
     resetn=1;
     begin_frame(15); end_input(); expect_done(0,0);
 
-    $display("RLE_FEATURE_PASS cases=12");
+    // Candidate thresholds are disabled by zero and must preserve legacy behavior.
+    $display("CASE candidate defaults disabled");
+    cfg_max_area=0; cfg_max_w=0; cfg_max_h=0; cfg_aspect_x16=0;
+    begin_frame(16); send_run(0,10,12); end_input();
+    expect_region(3,33,0,10,0,12,0,16);
+    if (candidate_flag !== 1'b0 || candidate_reason !== 3'b000)
+      $fatal(1,"candidate defaults enabled unexpectedly flag=%b reason=%b",candidate_flag,candidate_reason);
+    expect_done(1,0);
+
+    $display("CASE candidate area upper bound");
+    cfg_max_area=2; cfg_max_w=0; cfg_max_h=0; cfg_aspect_x16=0;
+    begin_frame(17); send_run(0,10,12); end_input(); expect_region(3,33,0,10,0,12,0,17);
+    if (candidate_flag !== 1'b1 || candidate_reason !== 3'b001)
+      $fatal(1,"candidate area reason mismatch flag=%b reason=%b",candidate_flag,candidate_reason);
+    expect_done(1,0);
+
+    $display("CASE candidate width and height upper bounds");
+    cfg_max_area=0; cfg_max_w=2; cfg_max_h=1; cfg_aspect_x16=0;
+    begin_frame(18); send_run(0,10,12); send_run(1,10,12); end_input();
+    expect_region(6,66,3,10,0,12,1,18);
+    if (candidate_flag !== 1'b1 || candidate_reason !== 3'b010)
+      $fatal(1,"candidate width-height reason mismatch flag=%b reason=%b",candidate_flag,candidate_reason);
+    expect_done(1,0);
+
+    $display("CASE candidate aspect upper bound");
+    cfg_max_area=0; cfg_max_w=0; cfg_max_h=0; cfg_aspect_x16=16;
+    begin_frame(19); send_run(0,10,12); send_run(1,10,12); end_input();
+    expect_region(6,66,3,10,0,12,1,19);
+    if (candidate_flag !== 1'b1 || candidate_reason !== 3'b100)
+      $fatal(1,"candidate aspect reason mismatch flag=%b reason=%b",candidate_flag,candidate_reason);
+    expect_done(1,0);
+
+    $display("RLE_FEATURE_PASS cases=16");
     $finish;
   end
   initial begin #200000; $fatal(1,"watchdog timeout"); end

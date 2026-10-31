@@ -27,7 +27,13 @@ module rle_region_features #(
     output reg [FRAME_ID_W-1:0] result_frame_id,
     output reg done, output reg overflow,
     output reg [COUNT_W-1:0] record_count,
-    output reg busy
+    output reg busy,
+    output reg candidate_flag,
+    output reg [2:0] candidate_reason,
+    input wire [23:0] cfg_max_area,
+    input wire [15:0] cfg_max_w,
+    input wire [15:0] cfg_max_h,
+    input wire [7:0] cfg_aspect_x16
 );
     localparam [3:0] S_IDLE=0, S_ACCEPT=1, S_COMPARE=2, S_FIND=3,
                      S_APPLY=4, S_EMIT=5, S_DONE=6;
@@ -98,6 +104,17 @@ module rle_region_features #(
     reg [LABEL_W-1:0] low_root, high_root;
     reg [10:0] row_delta;
 
+    wire [LABEL_W-1:0] emit_label = emit_index[LABEL_W-1:0];
+    wire [10:0] emit_bbox_w = {1'b0,bbox_x1[emit_label]} - {1'b0,bbox_x0[emit_label]} + 11'd1;
+    wire [10:0] emit_bbox_h = {1'b0,bbox_y1[emit_label]} - {1'b0,bbox_y0[emit_label]} + 11'd1;
+    wire [18:0] emit_aspect_lhs = {4'd0,emit_bbox_w,4'd0};
+    wire [18:0] emit_aspect_rhs = {8'd0,emit_bbox_h} * {11'd0,cfg_aspect_x16};
+    wire [2:0] emit_candidate_reason = {
+        (cfg_aspect_x16 != 0) && (emit_aspect_lhs > emit_aspect_rhs),
+        (cfg_max_w != 0) && (cfg_max_h != 0) && (emit_bbox_w > cfg_max_w) && (emit_bbox_h > cfg_max_h),
+        (cfg_max_area != 0) && (area_acc[emit_label] > cfg_max_area)
+    };
+
     always @(posedge clk) begin
       if (!resetn) begin
         state<=S_IDLE; busy<=0; done<=0; overflow<=0; result_valid<=0;
@@ -110,6 +127,7 @@ module rle_region_features #(
         finish_pending<=0;
         result_area<=0; result_sum_x<=0; result_sum_y<=0;
         result_x0<=0; result_y0<=0; result_x1<=0; result_y1<=0; result_frame_id<=0;
+        candidate_flag<=0; candidate_reason<=0;
       end else begin
         done<=0;
         case (state)
@@ -228,6 +246,8 @@ module rle_region_features #(
               result_x0<=bbox_x0[emit_index[LABEL_W-1:0]]; result_y0<=bbox_y0[emit_index[LABEL_W-1:0]];
               result_x1<=bbox_x1[emit_index[LABEL_W-1:0]]; result_y1<=bbox_y1[emit_index[LABEL_W-1:0]];
               result_frame_id<=frame_id_reg; component_count<=component_count+1'b1;
+              candidate_reason<=emit_candidate_reason;
+              candidate_flag<=|emit_candidate_reason;
             end else emit_index<=emit_index+1'b1;
           end
           S_DONE: begin

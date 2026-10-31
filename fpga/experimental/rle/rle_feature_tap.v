@@ -45,6 +45,8 @@ module rle_feature_tap #(
     wire [31:0] core_area, core_sum_x, core_sum_y, core_result_frame_id;
     wire [9:0] core_x0, core_y0, core_x1, core_y1;
     wire core_done, core_overflow, core_busy;
+    wire core_candidate_flag;
+    wire [2:0] core_candidate_reason;
     wire [9:0] core_record_count;
     rle_region_features feature_core (
         .clk(tap_clk), .resetn(core_resetn), .start(core_start), .frame_id(frame_id),
@@ -54,7 +56,9 @@ module rle_feature_tap #(
         .result_area(core_area), .result_sum_x(core_sum_x), .result_sum_y(core_sum_y),
         .result_x0(core_x0), .result_y0(core_y0), .result_x1(core_x1), .result_y1(core_y1),
         .result_frame_id(core_result_frame_id), .done(core_done), .overflow(core_overflow),
-        .record_count(core_record_count), .busy(core_busy)
+        .record_count(core_record_count), .busy(core_busy),
+        .candidate_flag(core_candidate_flag), .candidate_reason(core_candidate_reason),
+        .cfg_max_area(24'd0), .cfg_max_w(16'd0), .cfg_max_h(16'd0), .cfg_aspect_x16(8'd0)
     );
 
     // Single-port 4096x32 result RAM. CPU synchronous reads pause the writer.
