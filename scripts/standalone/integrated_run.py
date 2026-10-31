@@ -24,6 +24,7 @@ from .camera import LatestCamera
 from .compositor import DashboardComposer
 from .controls import ButtonDecoder, ControlState
 from .count_controls import advance_count, make_runtime_counter
+from .crossing_snapshots import CrossingSnapshots
 from .driver_owner import DriverOwner
 from .evidence import write_evidence,fail_hold,TraceBuffer
 from .g1_run import setup_hardware, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
@@ -210,6 +211,10 @@ def main(argv=None):
     parser.add_argument('--native-lib',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--startup-record',type=Path,help='one initialization record; no periodic counter persistence')
+    parser.add_argument('--crossing-snapshots',choices=('on','off'),default='on',
+        help='save bounded asynchronous crossing diagnostics beside the session report')
+    parser.add_argument('--snapshot-max-events',type=int,default=1000)
+    parser.add_argument('--snapshot-max-mib',type=int,default=512)
     parser.add_argument('--source',choices=('replay','camera'),default='replay')
     parser.add_argument('--camera',default='/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0')
     parser.add_argument('--display',choices=('on','off'),default='on')
@@ -226,6 +231,8 @@ def main(argv=None):
     parser.add_argument('--inherited-lock-fds',nargs=2,type=int,metavar=('DESKTOP_FD','STANDALONE_FD'),
         help=argparse.SUPPRESS)
     args=parser.parse_args(argv)
+    if args.snapshot_max_events < 1 or args.snapshot_max_mib < 1:
+        parser.error('snapshot storage limits must be positive')
     if not args.execute or not 1<=args.duration<=7200 or not 1<=args.frames<=200000 or (args.continuous and args.source!='camera'):
         parser.error('requires execute, duration 1..7200 and frames 1..200000')
     if args.inject_drawing_start_failure and args.display!='on':
@@ -298,6 +305,7 @@ def main(argv=None):
         recoveries=deque(maxlen=2048),button_raw_sample_count=0,
         button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
         before_memory=_memory(),scope='G3 candidate; G4 physical disconnection/cold-start not asserted')
+    captures=None
     button_raw_lock=threading.Lock()
     def report_snapshot():
         with button_raw_lock:
@@ -308,6 +316,7 @@ def main(argv=None):
             result['button_raw_transitions']=transitions
             result['button_raw_transition_total']=transition_total
             result['button_raw_transition_truncated']=transition_total-len(transitions)
+        result['crossing_snapshots']=captures.status() if captures is not None else {'enabled':False}
         return result
     report['cpu_scope']='system/core normalized 0..100%; process 100% equals one core'
     report['camera_configuration']=dict(by_id=args.camera,requested_format='MJPG',
@@ -347,7 +356,7 @@ def main(argv=None):
     drawing_errors=ctx.Queue(maxsize=1);drawing_counts=ctx.RawArray('Q',2)
     session=uuid.UUID(report['session_id'])
     previous_cpu=_parse_proc_stat(Path('/proc/stat').read_text())
-    stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms')}
+    stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','snapshot_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms')}
     try:
         dma=owner.retain(MMIO(0x40400000,0x1000))
         for offset in (4,0x34):
@@ -366,6 +375,11 @@ def main(argv=None):
         report['counting_configuration']=dict(axis=counter.count_axis,line_x=counter.line_x,
             line_y=counter.line_y,direction=counter.direction,motion='left_to_right')
         report['source_identity']=source_identity(Path(__file__).resolve().parents[2])
+        if args.crossing_snapshots=='on':
+            captures=CrossingSnapshots(args.output.with_suffix('.crossings'),
+                identity={name:report[name] for name in ('boot_id','session_id','bit_sha256',
+                    'hwh_sha256','manifest_sha256','native_sha256','source_identity','camera_configuration')},
+                max_events=args.snapshot_max_events,max_bytes=args.snapshot_max_mib*1024**2)
         trace=TraceBuffer();report['frame_trace']=trace.frames
         if args.startup_record:
             try:
@@ -453,7 +467,8 @@ def main(argv=None):
                     display_fps=((current_submitted-last_performance_submitted)/(now-last_performance)
                                  if last_performance and video_pump else None)
                     processing_ms=(float(np.mean(list(stages['transfer_ms'])[-30:])+
-                                         np.mean(list(stages['count_ms'])[-30:]))
+                                         np.mean(list(stages['count_ms'])[-30:])+
+                                         np.mean(list(stages['snapshot_ms'])[-30:]))
                                    if stages['transfer_ms'] and stages['count_ms'] else None)
                     cache.record('performance',dict(processing_fps=fps,display_fps=display_fps,
                         processing_ms=processing_ms,processed=index,**last_rle_stats),2,time.monotonic())
@@ -511,8 +526,15 @@ def main(argv=None):
             transfer_end=time.monotonic()
             result=advance_count(counter,controls,packet,boundary,capture_monotonic_ns=capture_ns)
             count_end=time.monotonic()
+            if captures is not None:
+                captures.observe(gray,packet,result,counter,trajectory_epoch=trajectory_epoch,
+                    capture_monotonic_ns=capture_ns,camera_sequence=camera_index if camera else index,
+                    paused=controls.paused,commands=boundary,
+                    timings={'transfer_ms':(transfer_end-frame_start)*1000,'count_ms':(count_end-transfer_end)*1000})
+            snapshot_end=time.monotonic()
             stages['transfer_ms'].append((transfer_end-frame_start)*1000)
             stages['count_ms'].append((count_end-transfer_end)*1000)
+            stages['snapshot_ms'].append((snapshot_end-count_end)*1000)
             if boundary:report['events'].append(dict(frame=index,commands=boundary,count=counter.total_count))
             if result is not None:
                 trace.add(index,result,trajectory_epoch)
@@ -524,7 +546,7 @@ def main(argv=None):
                         direction=counter.direction)
                     metadata['status_lines']=['本次会话累计 {}'.format(counter.total_count),
                         '暂停计数' if controls.paused else '运行中',
-                        '重启清零 / 不写盘']
+                        '重启清零 / '+('过线诊断留图' if captures is not None else '诊断留图关闭')]
                     if metadata['annotations_truncated']:metadata['status_lines'].append('标注仅显示前128项 / 计数未截断')
                     telemetry=cache.snapshot(time.monotonic())
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,controls.page,telemetry)
@@ -558,7 +580,7 @@ def main(argv=None):
                         if inputs.publish(gray,binary,session,index,metadata):published+=1
                         else:dropped+=1
                     else:dropped+=1
-                    stages['publish_ms'].append((time.monotonic()-count_end)*1000)
+                    stages['publish_ms'].append((time.monotonic()-snapshot_end)*1000)
             elif inputs is not None and last_gray is not None:
                 fault=dict(last_metadata);fault['status_lines']=['RLE帧无效 / 本帧拒计','累计 {}'.format(counter.total_count)]
                 fault['dashboard']=dict(fault.get('dashboard',{}),state='INVALID FRAME')
@@ -580,6 +602,7 @@ def main(argv=None):
                     monitor=monitor,count=counter.total_count,invalid=counter.invalid_frames,memory=_memory(),
                     cpu=_cpu_usage_percent(previous_cpu,cpu),vdma_status=vdma_status,
                     video_state=video_pump.state if video_pump else 'OFF',telemetry=cache.snapshot(time.monotonic()),
+                    crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
                     counters=owner.call(snapshot_counters,control)))
                 previous_cpu=cpu;last_sample=sample_time
         report['duration_s']=time.monotonic()-started
@@ -615,6 +638,7 @@ def main(argv=None):
         report['pipeline_after']=owner.call(read_pipeline,control)
         owner.close()
         if not display_held:video_owner.close()
+        if captures is not None:report['snapshot_writer_drained']=captures.close()
         report.update(state='COUNT_STOPPED_DISPLAY_FAIL_HOLD' if display_held else 'STOPPED',processed=index,submitted=submitted,published=published,
             dropped_preview=dropped,total_count=counter.total_count,invalid_frames=counter.invalid_frames,
             camera_released=True,buffers_released=not display_held,rle_buffers_released=True,after_memory=_memory(),
@@ -623,6 +647,7 @@ def main(argv=None):
                              for name,values in stages.items()}
         if video_pump is not None and not video_pump.is_alive:report['timings_ms'].update(video_pump.timing_percentiles_ms())
     except BaseException as error:
+        if captures is not None:report['snapshot_writer_drained']=captures.close()
         if stop_drawing is not None:stop_drawing.set()
         if video_pump is not None:video_pump.request_stop()
         if process is not None:process.join(timeout=15)
