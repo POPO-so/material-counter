@@ -135,3 +135,27 @@ def test_v4l2_commands_use_a_finite_timeout(monkeypatch):
     monkeypatch.setattr("scripts.standalone.exposure.subprocess.run", run)
     V4L2CtlBackend(timeout=.5)._run("--list-ctrls-menus")
     assert captured["timeout"] == .5
+
+
+def test_ignored_exposure_write_is_reported_as_readback_failure():
+    class IgnoringBackend(Backend):
+        def set(self,value):
+            pass
+    backend=IgnoringBackend(Info(minimum=50,maximum=10000,step=1,current=50))
+    with pytest.raises(RuntimeError,match='readback'):
+        ExposureController(backend).exposure_up()
+
+
+def test_real_v4l2_listing_includes_hex_control_ids(monkeypatch):
+    listing=("  auto_exposure 0x009a0901 (menu) : min=0 max=3 default=3 value=1 (Manual Mode)\n"
+             "\t\t1: Manual Mode\n\t\t3: Aperture Priority Mode\n"
+             "  exposure_time_absolute 0x009a0902 (int) : min=50 max=10000 step=1 default=166 value=50\n")
+    class Result:
+        def __init__(self,stdout):self.stdout=stdout
+    def run(args,**kwargs):
+        if '--list-ctrls-menus' in args:return Result(listing)
+        return Result('exposure_time_absolute: 50\n')
+    monkeypatch.setattr('scripts.standalone.exposure.subprocess.run',run)
+    status=ExposureController(V4L2CtlBackend()).status()
+    assert status['minimum_ms']==5 and status['maximum_ms']==1000
+    assert status['current_ms']==5

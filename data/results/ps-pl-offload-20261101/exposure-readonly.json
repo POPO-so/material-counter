@@ -1,0 +1,9 @@
+{
+  "schema": "material-counter.exposure-readonly.v1",
+  "source_sha256": "574c359846735bd1a607408ee142ef9312aafab1098dfbc6b546c8c854686805",
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 156, in <module>\n  File \"<string>\", line 123, in status\n  File \"<string>\", line 52, in query\n  File \"<string>\", line 37, in _controls\n  File \"<string>\", line 32, in _run\n  File \"/usr/lib/python3.10/subprocess.py\", line 524, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['v4l2-ctl', '-d', '/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0', '--list-ctrls-menus']' returned non-zero exit status 1.\n",
+  "parameter_writes": false,
+  "stream_opened": false
+}

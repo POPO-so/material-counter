@@ -213,6 +213,17 @@ class CrossingSnapshots:
             self._enqueue(job, reason)
         self._pending.clear()
 
+    def reset_context(self, reason='diagnostic_mode_changed'):
+        """End pending context and isolate future observations from prior frames."""
+        if self._stop.is_set():
+            return
+        self._flush(reason)
+        self._history.clear()
+        self._previous.clear()
+        self._touched.clear()
+        self._last_rejected_ns = None
+        self._epoch = None
+
     def close(self, timeout=2):
         if not self._stop.is_set():
             self._flush('stopped')

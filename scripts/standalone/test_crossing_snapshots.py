@@ -99,6 +99,52 @@ def test_pause_and_epoch_do_not_hide_triggers_or_join_context(tmp_path):
     assert saved[1]['triggers'][0]['track_key'] == '1:1'
 
 
+def test_reset_context_flushes_incomplete_diagnostic_event_and_preserves_budget(tmp_path):
+    capture = recorder(tmp_path, context_frames=3, max_bytes=10 * 1024**2)
+    tracker = counter()
+    observe(capture, tracker, 0, 315)  # trigger is waiting for diagnostic post-context
+    assert capture.status()['pending'] == 1
+    sequence = capture._sequence
+    observed = capture.status()['observed']
+    capture._touched.add('0:legacy')
+    capture._last_rejected_ns = 123
+
+    capture.reset_context()
+
+    assert capture.status()['pending'] == 0
+    assert not capture._history and not capture._previous and not capture._touched
+    assert capture._last_rejected_ns is None and capture._epoch is None
+    assert capture._sequence == sequence
+    assert capture.status()['observed'] == observed
+    assert capture.status()['max_bytes'] == 10 * 1024**2
+    assert capture.close(timeout=10)
+    saved = records(tmp_path)
+    assert len(saved) == 1
+    assert saved[0]['context_complete'] is False
+    assert saved[0]['context_end_reason'] == 'diagnostic_mode_changed'
+    assert [frame['frame_id'] for frame in saved[0]['frames']] == [0]
+
+
+def test_reset_context_drops_old_track_position_before_diagnostic_resume(tmp_path):
+    capture = recorder(tmp_path)
+    tracker = counter()
+    observe(capture, tracker, 0, 280)
+    assert capture.status()['triggered'] == 0
+
+    capture.reset_context()
+    observe(capture, tracker, 1, 335)  # tracker spans the gap; capture context must not
+    assert len(capture._history) == 1
+    assert [frame['metadata']['frame_id'] for frame in capture._history] == [1]
+    kinds = {trigger['kind'] for job in capture._pending for trigger in job['triggers']}
+    assert 'centroid_crossing' not in kinds
+    assert all(box['centroid_x'] != 280 for box in capture._previous.values())
+    assert capture.close(timeout=10)
+    saved = records(tmp_path)
+    assert all('centroid_crossing' not in {item['kind'] for item in event['triggers']}
+               for event in saved)
+    assert all(frame['frame_id'] != 0 for event in saved for frame in event['frames'])
+
+
 def test_rejected_component_near_line_is_captured(tmp_path):
     capture = recorder(tmp_path)
     tracker = counter()

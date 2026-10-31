@@ -39,7 +39,7 @@ class V4L2CtlBackend:
     def _control(self, name):
         lines = self._controls().splitlines()
         for index, line in enumerate(lines):
-            if re.search(r"\b" + re.escape(name) + r"\s*\(", line):
+            if re.search(r"\b" + re.escape(name) + r"\s+(?:0x[0-9a-fA-F]+\s+)?\(", line):
                 body = line
                 cursor = index + 1
                 while cursor < len(lines) and lines[cursor].startswith("\t"):
@@ -52,20 +52,20 @@ class V4L2CtlBackend:
         text = self._controls()
         lines = text.splitlines()
         exp_name = next((name for name in ("exposure_time_absolute", "exposure_absolute")
-                         if any(re.search(r"\b" + re.escape(name) + r"\s*\(", line)
+                         if any(re.search(r"\b" + re.escape(name) + r"\s+(?:0x[0-9a-fA-F]+\s+)?\(", line)
                                 for line in lines)), None)
         auto_name = next((name for name in ("auto_exposure", "exposure_auto")
-                          if any(re.search(r"\b" + re.escape(name) + r"\s*\(", line)
+                          if any(re.search(r"\b" + re.escape(name) + r"\s+(?:0x[0-9a-fA-F]+\s+)?\(", line)
                                  for line in lines)), None)
         exp_line = next((line for line in lines if exp_name and
-                         re.search(r"\b" + re.escape(exp_name) + r"\s*\(", line)), None)
+                         re.search(r"\b" + re.escape(exp_name) + r"\s+(?:0x[0-9a-fA-F]+\s+)?\(", line)), None)
         if exp_line is None:
             raise RuntimeError("V4L2 exposure control unavailable")
         vals = dict((k, int(v)) for k, v in self._FIELDS.findall(exp_line))
         if not all(k in vals for k in ("min", "max", "step")) or vals["step"] <= 0:
             raise RuntimeError("invalid V4L2 exposure range")
         auto_line = next((line for line in lines if auto_name and
-                          re.search(r"\b" + re.escape(auto_name) + r"\s*\(", line)), "")
+                          re.search(r"\b" + re.escape(auto_name) + r"\s+(?:0x[0-9a-fA-F]+\s+)?\(", line)), "")
         menu_text = auto_line
         index = lines.index(auto_line) + 1 if auto_line else len(lines)
         while index < len(lines) and lines[index].startswith("\t"):
@@ -142,6 +142,8 @@ class ExposureController:
         actual = self.backend.get()
         if actual < info.minimum or actual > info.maximum:
             raise RuntimeError("V4L2 returned exposure outside queried range")
+        if actual != target:
+            raise RuntimeError(f"V4L2 exposure readback mismatch: requested {target}, actual {actual}")
         return actual * info.unit_us / 1000
 
     def exposure_up(self):
