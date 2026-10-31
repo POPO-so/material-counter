@@ -1,0 +1,107 @@
+{
+  "status": "PASS",
+  "source_sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911",
+  "evidence": [
+    {
+      "path": "C:\\Users\\14173\\Documents\\material-counter\\.runtime\\worktrees\\jpeg-probe-20261101\\fpga\\experimental\\jpeg_integration\\rle_region_features.v",
+      "sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\region-20261101-062341-927\\input\\rle_region_features.v",
+      "sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\memory_boundary\\input\\rle_region_features.v",
+      "sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\region-20261101-062341-927\\region_inputs.sha256",
+      "sha256": "429e6c33eb21c29b3e26d082fc68195123653213848225a56a00ae39da88e15c"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\region-20261101-062341-927\\input\\region_reference.v",
+      "sha256": "f1fe8cbe47f661227b91af24b89dc7a2ab21cc8469a2ad917aedf9cc7e9f4495"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\baseline_c5a8680\\input\\rle_region_features.v",
+      "sha256": "3a895a6d3e16f6e80c94042adce53dd7160b4cb1940b6aa971261542e81026ed"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\baseline_c5a8680\\input\\tb_rle_region_features.sv",
+      "sha256": "c29d163efbbf2b060521bb754691144c0fd004c9db84f4bfdc6a602fcd498c51"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\baseline_c5a8680\\region_baseline_sim.log",
+      "sha256": "b551d86fa1672b623a72cba30013bcdce86265be3a7e745947249124157c48e3"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\region-20261101-062341-927\\sim\\region_cases.log",
+      "sha256": "776e19d09af40d593502b1443f304c81f2d1d13ffddb875ced1eb66d9472db65"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\region-20261101-062341-927\\sim\\region_diff.log",
+      "sha256": "7ae4398d184f075fe922a06e7dfa06b0d686190a864ec178b8563079373bcafa"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\region-20261101-062341-927\\sim\\region_limits.log",
+      "sha256": "3d7c5c1931b7fa989e39c3b5d68c77ded98bd9e7b3288914cfaeebbeb2987ae3"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\memory_boundary\\region_ooc.log",
+      "sha256": "0338c16687d1d5a590a6c18804aaeca646c98aa0dafcd287c60af3483b3e151c"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\memory_boundary\\region_gate.log",
+      "sha256": "805a39a02afc6835b65e314f494f1c2be4456052a9a10c4842c315c647cc782c"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\memory_boundary\\region_util.rpt",
+      "sha256": "f2ec1a81d2c1c94314bd9851131561dc0ae2eb1aa5c964e69334077143f60249"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\memory_boundary\\region_timing.rpt",
+      "sha256": "dbb91dd81fb7931a41dc431dff18ca8ba12984676b25ee897a43d8e3a8840174"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\memory_boundary\\region_memory_gate.rpt",
+      "sha256": "057a66cd89b09fd74f297231876dda81731a6335b1096629b460dd461c139929"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\memory_boundary\\region_synth.dcp",
+      "sha256": "bcb267bed9e57ca31ad3222dd7d36fbf05eb0a6f2943d614b8ca81f64624c14d"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-regions-20261101\\region_baseline_util.rpt",
+      "sha256": "da5d6286b33e62eb619dddf77672ec009bdb0c686c3932ebd275f3342b539c04"
+    }
+  ],
+  "baseline_commit": "c5a86807c93e6ed572e2f75e13a6f9c7f1320321",
+  "baseline_source_sha256": "3a895a6d3e16f6e80c94042adce53dd7160b4cb1940b6aa971261542e81026ed",
+  "baseline_12cases": "PASS",
+  "optimized_12cases": "PASS",
+  "reference_diff": "PASS",
+  "limits": "PASS",
+  "memory_gate": {
+    "stats_bram36": 4,
+    "row_bram36": 1,
+    "stats_lutram": 0
+  },
+  "resources": {
+    "lut": 1244,
+    "ff": 514,
+    "bram36": 5,
+    "dsp": 3,
+    "lut_as_memory": 384
+  },
+  "original_comparison": {
+    "lut": 16497,
+    "ff": 19397,
+    "bram36": 0
+  },
+  "tool": "Vivado/XSim 2026.1",
+  "part": "xc7z020clg400-1",
+  "clock_period_ns": 20,
+  "timing_scope": "out_of_context_synthesis_only",
+  "routed": false,
+  "source_frozen": true
+}

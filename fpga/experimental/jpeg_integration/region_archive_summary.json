@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "source_path_from_repo": "fpga/experimental/jpeg_integration/rle_region_features.v",
+  "source_sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911",
+  "absolute_evidence_manifest": "region_results.json",
+  "absolute_evidence_manifest_sha256": "4125872f9bb098afc3c5c7dba6c8ec8c77e6cb3bd1f52337557e51579752dafc",
+  "artifact_paths_relative_to": "C:/w/mc-jpeg-regions-20261101",
+  "artifacts": {
+    "baseline_source": "baseline_c5a8680/input/rle_region_features.v",
+    "baseline_12cases": "baseline_c5a8680/region_baseline_sim.log",
+    "optimized_12cases": "region-20261101-062341-927/sim/region_cases.log",
+    "reference_diff": "region-20261101-062341-927/sim/region_diff.log",
+    "limits": "region-20261101-062341-927/sim/region_limits.log",
+    "sim_input_hashes": "region-20261101-062341-927/region_inputs.sha256",
+    "synthesis_source": "memory_boundary/input/rle_region_features.v",
+    "synthesis_log": "memory_boundary/region_ooc.log",
+    "utilization": "memory_boundary/region_util.rpt",
+    "memory_gate": "memory_boundary/region_memory_gate.rpt",
+    "memory_gate_log": "memory_boundary/region_gate.log",
+    "checkpoint": "memory_boundary/region_synth.dcp",
+    "ooc_timing": "memory_boundary/region_timing.rpt",
+    "original_resource_reference": "region_baseline_util.rpt",
+    "baseline_with_presynthesis_20ns_clock": "baseline_c5a8680/region_util.rpt"
+  },
+  "behavioral_cases": {
+    "baseline": 12,
+    "optimized_existing": 12,
+    "differential_frames": 5,
+    "differential_records": 7,
+    "limits": 4,
+    "total_including_baseline": 33,
+    "optimized_only": 21
+  },
+  "resources": {"lut": 1244, "ff": 514, "bram36": 5, "dsp": 3},
+  "memory_gate": {"stats_bram36": 4, "row_bram36": 1, "stats_lutram": 0},
+  "original_resource_reference": {"lut": 16497, "ff": 19397, "bram36": 0, "dsp": 2},
+  "baseline_with_presynthesis_20ns_clock": {"lut": 16464, "ff": 19393, "bram36": 0, "dsp": 2},
+  "clock_period_ns": 20,
+  "timing_scope": "out_of_context_synthesis_only",
+  "routed": false,
+  "source_frozen": true
+}
