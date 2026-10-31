@@ -400,9 +400,9 @@ def test_cached_glyphs_preserve_mixed_font_pixels_and_wrapping():
 
 def _dashboard_composer():
     api = _api()
-    latin = Path("C:/Windows/Fonts/consola.ttf")
+    latin = Path("C:/Windows/Fonts/arial.ttf")
     if not FONT.is_file() or not latin.is_file():
-        pytest.skip("local CJK and Consolas fonts are required")
+        pytest.skip("local CJK and Latin fonts are required")
     return api.DashboardComposer(FONT, latin_font_path=latin)
 
 
@@ -532,3 +532,60 @@ def test_dashboard_text_cache_has_a_fixed_memory_bound():
     for index in range(300):
         c._text(draw, (0, 0), f"标签{index}", 18, 170)
     assert len(c._text_cache) <= 128
+
+
+def test_dashboard_resource_rows_change_pixels_and_preserve_markers():
+    c = _dashboard_composer()
+    gray = np.full((400, 640), 96, dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    session = uuid.uuid4()
+    first = dict(cpu_percent=20, cpu0_percent=12, cpu1_percent=28,
+                 memory_percent=42, static_lut_percent=23,
+                 static_ff_percent=15.2, static_bram_percent=3.2,
+                 static_dsp_percent=4.1)
+    second = dict(first, cpu_percent=65, static_bram_percent=8.4)
+
+    image = c.render(gray, binary, session, 71, dashboard=first).copy()
+    live_before = image[562:638, 24:1256].copy()
+    static_before = image[640:717, 24:1256].copy()
+    changed = c.render(gray, binary, session, 72, dashboard=second)
+
+    assert not np.array_equal(live_before, changed[562:638, 24:1256])
+    assert not np.array_equal(static_before, changed[640:717, 24:1256])
+    assert ("latin", "LIVE", 18) in c._text_cache
+    assert ("latin", "STATIC", 18) in c._text_cache
+    assert ("mixed", "PS CPU", 18) in c._text_cache
+    assert ("mixed", "LUT · ST", 18) in c._text_cache
+    assert _decode_marker(changed[0, 640:864]) == (session, 72)
+    assert _decode_marker(changed[719, 640:864]) == (session, 72)
+    assert np.all(changed[717:719, :] == 14)
+
+
+def test_dashboard_unavailable_percentages_show_dashes_and_empty_rings():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    image = c.render(gray, gray, uuid.uuid4(), 1, dashboard={
+        "cpu_percent": None, "cpu0_percent": float("nan"),
+        "cpu1_percent": -1, "memory_percent": "stale",
+        "static_lut_percent": None, "static_ff_percent": None,
+        "static_bram_percent": None, "static_dsp_percent": None,
+    })
+
+    assert ("latin", "--", 18) in c._text_cache
+    # The unavailable row starts at x=24 and leaves a gray, hollow ring at
+    # the first metric's fixed center rather than drawing a zero-value wedge.
+    assert image[599, 140] == 40
+    assert image[599, 140 - 18] == 76
+
+
+def test_dashboard_viewport_is_640_by_400_without_resizing_distortion():
+    c = _dashboard_composer()
+    gray = np.full((400, 640), 103, dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    image = c.render(gray, binary, uuid.uuid4(), 1)
+
+    assert c.VIEW == (320, 146, 640, 400)
+    assert image.shape == (720, 1280)
+    assert image[200, 420] == 103
+    assert image[300, 800] == 103
+    assert image[545, 959] == 103

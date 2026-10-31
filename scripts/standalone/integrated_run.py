@@ -5,6 +5,7 @@ import argparse
 from collections import deque
 import hashlib
 import json
+import math
 import multiprocessing as mp
 import os
 from pathlib import Path
@@ -65,7 +66,7 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
 
 
-def dashboard_values(count, paused, page, telemetry):
+def dashboard_values(count, paused, page, telemetry, manifest=None):
     """Use measured telemetry only; unavailable or stale readings stay blank."""
     performance=telemetry.get('performance',{})
     resources=telemetry.get('resources',{})
@@ -80,9 +81,29 @@ def dashboard_values(count, paused, page, telemetry):
             memory_percent=100*(total-available)/total
     except (KeyError,ValueError,TypeError,AttributeError):
         pass
+    cpu=resource.get('cpu',{})
+    constants={'lut':53200,'ff':106400,'bram_tiles':140,'dsp':220}
+    resource_manifest=(manifest.get('resources',{})
+                       if isinstance(manifest,dict) else {})
+    if not isinstance(resource_manifest,dict):
+        resource_manifest={}
+    static_percent={}
+    for key,total in constants.items():
+        used=resource_manifest.get(key)
+        try:
+            if (isinstance(used,bool) or not isinstance(used,(int,float))
+                    or not math.isfinite(used) or used<0):
+                static_percent[key]=None
+            else:
+                static_percent[key]=round(100*used/total,1)
+        except (TypeError,ValueError,OverflowError):
+            static_percent[key]=None
     return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
         display_fps=perf.get('display_fps'),processing_ms=perf.get('processing_ms'),
-        cpu_percent=resource.get('cpu',{}).get('system'),memory_percent=memory_percent)
+        cpu_percent=cpu.get('system'),cpu0_percent=cpu.get('cpu0'),cpu1_percent=cpu.get('cpu1'),
+        memory_percent=memory_percent,
+        static_lut_percent=static_percent['lut'],static_ff_percent=static_percent['ff'],
+        static_bram_percent=static_percent['bram_tiles'],static_dsp_percent=static_percent['dsp'])
 
 
 def start_drawing_child(
@@ -573,7 +594,8 @@ def main(argv=None):
                         '重启清零 / '+('过线诊断留图' if captures is not None else '诊断留图关闭')]
                     if metadata['annotations_truncated']:metadata['status_lines'].append('标注仅显示前128项 / 计数未截断')
                     telemetry=cache.snapshot(time.monotonic())
-                    metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,controls.page,telemetry)
+                    metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,
+                        controls.page,telemetry,manifest)
                     performance=telemetry.get('performance')
                     if performance:
                         metadata['status_lines'].append('处理 {:.1f} FPS{}'.format(performance['value']['processing_fps'],' / 过期' if performance['stale'] else ''))
