@@ -8,6 +8,7 @@ import pytest
 
 from scripts.standalone.shared_frames import FREE, SharedFrames
 from scripts.standalone.driver_owner import DriverOwner
+from scripts.standalone.video_telemetry import TelemetryWindow
 
 
 try:
@@ -57,10 +58,12 @@ def frames():
         value.close()
 
 
-def _publish(frames, identity, pixels, *, scale_ns=2_000_000, draw_ns=3_000_000):
+def _publish(frames, identity, pixels, *, scale_ns=2_000_000, draw_ns=3_000_000,
+             capture_time_ns=0):
     slot, target = frames.claim_write()
     target[:] = pixels
-    frames.publish(slot, identity, 1, scale_ns=scale_ns, draw_ns=draw_ns)
+    frames.publish(slot, identity, 1, scale_ns=scale_ns, draw_ns=draw_ns,
+                   capture_time_ns=capture_time_ns)
 
 
 def _pump_type():
@@ -69,7 +72,7 @@ def _pump_type():
     return VideoPump
 
 
-def test_copies_only_matching_session_and_transfers_frame_once(frames):
+def test_success_records_submit_latency_and_no_failure_or_skip(frames):
     pump_type = _pump_type()
     identity = uuid.uuid4()
     hdmi = FakeHDMI((8, 12))
@@ -82,6 +85,9 @@ def test_copies_only_matching_session_and_transfers_frame_once(frames):
         while pump.submitted == 0 and time.monotonic() < deadline:
             time.sleep(0.001)
         assert pump.submitted == 1
+        assert pump.submit_failures == 0
+        assert pump.skipped == 0
+        assert list(pump.submit_latency_ms)
         assert len(hdmi.created) == len(hdmi.submitted) == 1
         assert hdmi.submitted[0] is hdmi.created[0]
         assert np.all(hdmi.submitted[0] == 117)
@@ -126,7 +132,7 @@ def test_request_stop_does_not_wait_for_blocked_writeframe(frames):
     assert frames.statuses() == (FREE, FREE, FREE)
 
 
-def test_submit_timeout_enters_display_fail_hold_and_retains_frame(frames):
+def test_submit_timeout_counts_failure_not_skip(frames):
     pump_type = _pump_type()
     identity = uuid.uuid4()
     started = threading.Event()
@@ -150,12 +156,14 @@ def test_submit_timeout_enters_display_fail_hold_and_retains_frame(frames):
         assert len(owner.retained) == 1
         assert owner.retained[0] is hdmi.created[0]
         assert pump.submitted == 0
+        assert pump.submit_failures == 1
+        assert pump.skipped == 0
         assert frames.statuses() == (FREE, FREE, FREE)
     finally:
         never_release.set()
 
 
-def test_mismatched_session_is_released_without_hardware_access(frames):
+def test_mismatched_session_counts_skip_not_submit_failure(frames):
     pump_type = _pump_type()
     identity = uuid.uuid4()
     _publish(frames, uuid.uuid4(), 9)
@@ -166,10 +174,36 @@ def test_mismatched_session_is_released_without_hardware_access(frames):
         assert pump.join(1)
         assert pump.state == DISPLAY_FAIL_HOLD
         assert "session" in pump.error.lower()
+        assert pump.skipped == 1
+        assert pump.submit_failures == 0
         assert owner.calls == []
         assert frames.statuses() == (FREE, FREE, FREE)
     finally:
         pump.request_stop()
+
+
+def test_success_records_capture_to_submit_telemetry(frames):
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    hdmi = FakeHDMI((8, 12))
+    owner = FakeOwner()
+    telemetry = TelemetryWindow(window_s=5)
+    capture_time_ns = time.monotonic_ns()
+    _publish(frames, identity, 71, capture_time_ns=capture_time_ns)
+    pump = pump_type(frames, type("HW", (), {"hdmi": hdmi})(), owner, identity,
+                     telemetry=telemetry)
+    try:
+        deadline = time.monotonic() + 1
+        while pump.submitted == 0 and time.monotonic() < deadline:
+            time.sleep(0.001)
+        assert pump.submitted == 1
+        sample = telemetry.sample(time.monotonic_ns())
+        assert sample["e2e_ms"]["count"] >= 1
+        assert sample["submit_ms"]["count"] >= 1
+        assert sample["frame_count"] >= 1
+    finally:
+        pump.request_stop()
+        assert pump.join(1)
 
 
 def test_idle_stop_leaves_no_reading_lease(frames):

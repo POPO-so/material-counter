@@ -7,6 +7,8 @@ import time
 
 import numpy as np
 
+from scripts.standalone.video_telemetry import FrameTelemetry
+
 
 RUNNING = "RUNNING"
 STOPPED = "STOPPED"
@@ -23,7 +25,8 @@ class VideoPump:
     DEFAULT_SUBMIT_TIMEOUT = 1.0
     TIMING_WINDOW = 20_000
 
-    def __init__(self, outputs, hw, owner, session_uuid, submit_timeout=1.0):
+    def __init__(self, outputs, hw, owner, session_uuid, submit_timeout=1.0,
+                 *, telemetry=None):
         if not isinstance(submit_timeout, (int, float)) or submit_timeout <= 0:
             raise ValueError("submit_timeout must be positive")
         self.outputs = outputs
@@ -31,9 +34,13 @@ class VideoPump:
         self.owner = owner
         self.session_uuid = session_uuid
         self.submit_timeout = float(submit_timeout)
+        self.telemetry = telemetry
         self.state = RUNNING
         self.error = None
         self.submitted = 0
+        self.skipped = 0
+        self.submit_failures = 0
+        self.submit_latency_ms = deque(maxlen=self.TIMING_WINDOW)
         self.timings_ms = {
             name: deque(maxlen=self.TIMING_WINDOW)
             for name in ("copy_submit_ms", "scale_ms", "draw_ms")
@@ -82,28 +89,47 @@ class VideoPump:
 
                 frame = None
                 failed = False
+                session_mismatch = False
                 try:
                     if lease.session_uuid != self.session_uuid:
+                        session_mismatch = True
                         raise RuntimeError(
                             "shared frame session UUID does not match video pump"
                         )
                     frame = self.owner.call(self.hw.hdmi.newframe)
-                    copy_started = time.monotonic()
+                    copy_started_ns = time.monotonic_ns()
                     np.copyto(frame, lease.array)
                     self.owner.call(
                         self.hw.hdmi.writeframe,
                         frame,
                         timeout=self.submit_timeout,
                     )
+                    submit_done_ns = time.monotonic_ns()
                     # A successful call transfers the CMA frame to the HDMI driver.
                     frame = None
                     self.submitted += 1
                     self.timings_ms["copy_submit_ms"].append(
-                        1000 * (time.monotonic() - copy_started)
+                        (submit_done_ns - copy_started_ns) / 1_000_000
+                    )
+                    self.submit_latency_ms.append(
+                        (submit_done_ns - copy_started_ns) / 1_000_000
                     )
                     self.timings_ms["scale_ms"].append(lease.scale_ns / 1_000_000)
                     self.timings_ms["draw_ms"].append(lease.draw_ns / 1_000_000)
+                    if self.telemetry is not None:
+                        self.telemetry.record_frame(
+                            FrameTelemetry(
+                                frame_id=lease.frame_id,
+                                capture_ns=lease.capture_time_ns,
+                                compose_done_ns=lease.published_ns,
+                                submit_done_ns=submit_done_ns,
+                            )
+                        )
                 except BaseException as exc:
+                    if session_mismatch:
+                        self.skipped += 1
+                    else:
+                        self.submit_failures += 1
                     if frame is not None:
                         try:
                             self.owner.retain(frame)
