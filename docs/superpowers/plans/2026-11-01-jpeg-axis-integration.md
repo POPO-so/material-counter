@@ -19,7 +19,7 @@
 
 ## 接口与错误边界
 
-- 输入 API：`jpeg_axis_gray(in, out, jpeg_size, frame_id, status)`；in/out 均 `hls::stream<ap_axiu<32,0,0,0>>`，标量经 AXI4-Lite；不得出现 `m_axi` 端口或完整帧片上数组。
+- 输入 API：`jpeg_axis_gray(in, out, jpeg_size, frame_id, status)`（公共头 `fpga/experimental/jpeg_axis/jpeg_axis_gray.h`）；in/out 均 `hls::stream<ap_axiu<32,0,0,0>>`，标量经 AXI4-Lite；不得出现 `m_axi` 端口或完整帧片上数组。
 - 输入接受连续低位有效 TKEEP；帧字节数、TLAST、SOI/EOI、头部结构、640×400/422/3分量必须校验。长度上限512000 B，头部上限4096 B，超界报告错误。
 - 输出复用 Gray8 packet：头部 magic `0x47525938`、`(400<<16)|640`、256000、frame_id；尾部 `0x454e4438`、frame_id、像素字节和(mod2^32)、`0xc0dec018`。TKEEP=15，TLAST仅最后一字。
 - status 非0帧不得进入计数或成为有效显示帧。已识别输入错误必须 drain 当前 packet，并验证后继好帧；坏熵流/缺失生产者可能触发外部 watchdog，未覆盖前不得声称任意错误自动恢复。
@@ -47,4 +47,8 @@
 
 ## 当前进度与下一步
 
-2026-11-01：三个实施任务并行启动。Manager等待公共API和初次红/绿证据，随后检查数据流、错误帧显示提交与HLS资源；此记录不表示实现已通过。
+2026-11-01：计划/索引/项目树已本地提交 `dd39c66`。公共 `.h`、Apache vendor子集和来源清单已准备；测试入口的红证据为 `C:/w/mc-jpeg-axis-hls-20261101/logs/initial-red-link-fail-20261101T054010.log`（缺少 jpeg_axis_gray 实现的 link fail），Manager已验收并授权继续实现。工具安装内 `utils/x_hls_utils.h` 仅作外部依赖，不随Apache源码提交。
+
+联合构建的固定21文件快照由 `fpga/experimental/jpeg_integration/prepare_snapshot.py` 成功准备到本worktree的 `.runtime/jpeg-joint-snapshot-20261101`，来源 `c5a8680`；不读取参考worktree的未提交修改。`C:/w` 新建快照目录遇ACL拒绝，改用工作区内忽略目录，不影响源快照。只有快照准备完成，尚未联合构建。
+
+三个实施任务继续执行，当前未完成绿验证。JPEG实现 Worker `01a193e3-532e-7d42-bcc2-7133f0107f08`；区域BRAM Worker `01a193e4-9b10-7c63-b7f7-cfe554cde962`；TB/HLS Worker `01a193e4-d87c-78c1-b417-706f418d6294`。Manager下一步复核第一次csim输出、header/熵流负例及BRAM映射，然后安排联合BD接入。新stream错误帧必须经PS确认JPEG status及RLE/FRG有效后才能提交mask_accept；此记录不表示实现或RTL/板端验收通过。
