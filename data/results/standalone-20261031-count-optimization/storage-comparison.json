@@ -1,0 +1,21 @@
+{
+  "scope": "Local fixed-input synchronous writer comparison, 9 saved field windows; not board throughput or FPS.",
+  "results": [
+    {
+      "mode": "full",
+      "groups": 9,
+      "referenced_frames": 45,
+      "unique_frames": 13,
+      "elapsed_s": 0.7384272000053898,
+      "bytes_written": 9319267
+    },
+    {
+      "mode": "compact",
+      "groups": 9,
+      "referenced_frames": 45,
+      "unique_frames": 13,
+      "elapsed_s": 0.17429059999994934,
+      "bytes_written": 1389732
+    }
+  ]
+}

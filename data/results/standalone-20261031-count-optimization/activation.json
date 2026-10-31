@@ -1,0 +1,16 @@
+{
+  "status": "START_REQUESTED",
+  "root": "/opt/material-counter/releases/standalone-20261031-v7-count-5272587",
+  "index_sha256": "ca9348788e98efe187752a29dcbe3ddc0970efa8ff85a1f8e43bbee9142ae58a",
+  "source_commit": "527258736b9b29bb37a118fd3023cc2436394a5d",
+  "boot_id": "f1462f32-61d2-44c7-9b42-d46d7d4d64c6",
+  "integrity": {
+    "status": "PASS",
+    "files_checked": 61,
+    "hardware_actions": 0,
+    "scope": "integrity_only_no_gate"
+  },
+  "backup": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/pre-count-5272587.env",
+  "overlay_reload": false,
+  "unit_enabled": "disabled"
+}

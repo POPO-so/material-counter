@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "scope": "Saved-mask/association CPU checks only, no camera, PL registers, DMA or video.",
+  "association": [
+    {
+      "window": "2310-2317",
+      "old_added": 0,
+      "new_added": 1
+    },
+    {
+      "window": "2325-2331",
+      "old_added": 0,
+      "new_added": 1
+    },
+    {
+      "window": "2380-2387",
+      "old_added": 0,
+      "new_added": 1
+    },
+    {
+      "window": "2645-2649",
+      "old_added": 1,
+      "new_added": 2
+    },
+    {
+      "window": "2485-2489",
+      "old_added": 1,
+      "new_added": 1
+    }
+  ],
+  "split_sequences": [
+    {
+      "sequence": "touching_side_front",
+      "count": 2,
+      "unique_counted_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "sequence": "touching_two_front",
+      "count": 2,
+      "unique_counted_ids": [
+        2,
+        1
+      ]
+    }
+  ],
+  "single_negative_crops": 22,
+  "snapshot_status": {
+    "observed": 6,
+    "triggered": 2,
+    "saved": 2,
+    "bytes_written": 51916,
+    "dropped_queue": 0,
+    "dropped_storage": 0,
+    "write_errors": 0,
+    "capture_errors": 0,
+    "dropped_disabled": 0,
+    "last_error": null,
+    "enabled": true,
+    "accepting": false,
+    "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/v7-cpu-compact-5171154196793",
+    "pending": 0,
+    "queue_depth": 0,
+    "writer_alive": false,
+    "max_events": 1000,
+    "max_bytes": 536870912,
+    "storage_mode": "compact",
+    "min_free_bytes": 0,
+    "context_frames": 2
+  },
+  "render": {
+    "frames": 5,
+    "output_dir": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/v7-cpu-compact-5171154196793/rendered"
+  },
+  "identity_commit": "527258736b9b29bb37a118fd3023cc2436394a5d"
+}

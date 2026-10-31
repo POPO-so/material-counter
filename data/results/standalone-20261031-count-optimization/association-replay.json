@@ -1,0 +1,104 @@
+{
+  "scope": "Association only; initial current tracks retained, unknown historical observation times and velocities not invented; excludes stale initial tracks in timestamp mode.",
+  "settings": {
+    "predictive_association": true,
+    "motion_timebase_s": 0.1,
+    "max_step": 200,
+    "max_lateral_step": 12,
+    "strict_lateral_gate": true,
+    "max_association_interval_s": 0.5,
+    "guarded_merge": true,
+    "single_intact_area": 380,
+    "max_split_area": 1200,
+    "min_split_child_area": 80
+  },
+  "results": [
+    {
+      "window": "2310-2317",
+      "legacy_added": 0,
+      "candidate_added": 1,
+      "initial_stale_tracks_excluded": [],
+      "candidate_events": [
+        {
+          "track_id": 122,
+          "frame_id": 2312,
+          "centroid_x": 377.43046357615896,
+          "centroid_y": 205.32781456953643,
+          "inferred_gap": false
+        }
+      ]
+    },
+    {
+      "window": "2325-2331",
+      "legacy_added": 0,
+      "candidate_added": 1,
+      "initial_stale_tracks_excluded": [
+        129,
+        130
+      ],
+      "candidate_events": [
+        {
+          "track_id": 131,
+          "frame_id": 2327,
+          "centroid_x": 328.2140350877193,
+          "centroid_y": 254.94736842105263,
+          "inferred_gap": false
+        }
+      ]
+    },
+    {
+      "window": "2380-2387",
+      "legacy_added": 0,
+      "candidate_added": 1,
+      "initial_stale_tracks_excluded": [
+        137
+      ],
+      "candidate_events": [
+        {
+          "track_id": 138,
+          "frame_id": 2382,
+          "centroid_x": 335.95862068965516,
+          "centroid_y": 179.42758620689656,
+          "inferred_gap": false
+        }
+      ]
+    },
+    {
+      "window": "2645-2649",
+      "legacy_added": 1,
+      "candidate_added": 2,
+      "initial_stale_tracks_excluded": [],
+      "candidate_events": [
+        {
+          "track_id": 206,
+          "frame_id": 2648,
+          "centroid_x": 362.412,
+          "centroid_y": 204.272,
+          "inferred_gap": false
+        },
+        {
+          "track_id": 205,
+          "frame_id": 2649,
+          "centroid_x": 343.6923076923077,
+          "centroid_y": 201.25384615384615,
+          "inferred_gap": false
+        }
+      ]
+    },
+    {
+      "window": "2485-2489",
+      "legacy_added": 1,
+      "candidate_added": 1,
+      "initial_stale_tracks_excluded": [],
+      "candidate_events": [
+        {
+          "track_id": 154,
+          "frame_id": 2488,
+          "centroid_x": 348.75056689342404,
+          "centroid_y": 236.10204081632654,
+          "inferred_gap": false
+        }
+      ]
+    }
+  ]
+}

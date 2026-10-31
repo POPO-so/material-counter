@@ -1,0 +1,9 @@
+{
+  "local": "data\\recorded\\count-optimization-20261031\\event-000020-e0-f1219",
+  "frames": 5,
+  "max_detections": 14,
+  "artifacts_verified": 10,
+  "hardlinks_verified": true,
+  "source": "LIVE_CAMERA_V7",
+  "event": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-30c27c09-d91e-40de-a121-a45684ad2351.crossings/event-000020-e0-f1219/event.json"
+}

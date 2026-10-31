@@ -1,0 +1,42 @@
+{
+  "status": "SAFE_TO_SWITCH",
+  "state": "STOPPED",
+  "total_count": 43,
+  "processed": 36241,
+  "dma_after": {
+    "0x0": 65539,
+    "0x4": 4098,
+    "0x30": 65539,
+    "0x34": 4098
+  },
+  "vdma_after": {
+    "0x0": 69632,
+    "0x4": 69633
+  },
+  "camera_released": true,
+  "buffers_released": true,
+  "locks_free": true,
+  "crossing_snapshots": {
+    "observed": 36241,
+    "triggered": 190,
+    "saved": 113,
+    "bytes_written": 105421345,
+    "dropped_queue": 77,
+    "dropped_storage": 0,
+    "write_errors": 0,
+    "capture_errors": 0,
+    "dropped_disabled": 0,
+    "last_error": "snapshot queue full",
+    "enabled": true,
+    "accepting": false,
+    "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-c1e82607-8fc1-4210-8649-57aa35c274af.crossings",
+    "pending": 0,
+    "queue_depth": 0,
+    "writer_alive": false,
+    "max_events": 1000,
+    "max_bytes": 536870912,
+    "min_free_bytes": 268435456,
+    "context_frames": 2
+  },
+  "snapshot_writer_drained": true
+}

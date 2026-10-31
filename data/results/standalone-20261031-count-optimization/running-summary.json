@@ -1,0 +1,1015 @@
+{
+  "snapshot": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-30c27c09-d91e-40de-a121-a45684ad2351.snapshot-0.json",
+  "pid": 9860,
+  "session": "7de02772-5999-4a2d-97f6-c1b4bdc3c4c8",
+  "state": "RUNNING",
+  "processed": 876,
+  "submitted": 712,
+  "duration_s": 77.31108627200047,
+  "total_count": 16,
+  "invalid_frames": 0,
+  "recoveries": [],
+  "counting_profile": "field-v1",
+  "crossing_snapshots": {
+    "observed": 876,
+    "triggered": 19,
+    "saved": 19,
+    "bytes_written": 4125573,
+    "dropped_queue": 0,
+    "dropped_storage": 0,
+    "write_errors": 0,
+    "capture_errors": 0,
+    "dropped_disabled": 0,
+    "last_error": null,
+    "enabled": true,
+    "accepting": true,
+    "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-30c27c09-d91e-40de-a121-a45684ad2351.crossings",
+    "pending": 0,
+    "queue_depth": 0,
+    "writer_alive": true,
+    "max_events": 1000,
+    "max_bytes": 536870912,
+    "storage_mode": "compact",
+    "min_free_bytes": 268435456,
+    "context_frames": 2
+  },
+  "report_exports": {
+    "submitted": 0,
+    "saved": 0,
+    "dropped": 0,
+    "errors": 0,
+    "last_error": null,
+    "queue_depth": 0,
+    "writer_alive": true
+  },
+  "loaded_sources_verified": 32,
+  "package_integrity": {
+    "status": "PASS",
+    "files_checked": 61,
+    "hardware_actions": 0,
+    "scope": "integrity_only_no_gate"
+  },
+  "last_samples": [
+    {
+      "monotonic": 5386.094054184,
+      "processed": 826,
+      "submitted": 663,
+      "monitor": {
+        "unique": 52470,
+        "scans": 262257,
+        "repeat": 205882,
+        "invalid": 3905,
+        "partial": 3,
+        "frame": 824,
+        "session": 167317374043140836363721850896529999048,
+        "gray_error": false,
+        "marker_pixel_error": false,
+        "pair_mismatch": false,
+        "top_invalid": false,
+        "bottom_invalid": false,
+        "top_marker": "4d437de0277259994a2d97f6c1b4bdc3c4c80000000000000338bde8",
+        "bottom_marker": "4d437de0277259994a2d97f6c1b4bdc3c4c80000000000000338bde8",
+        "sequence": 2126,
+        "capture_started": 5386.101955673,
+        "sampled_monotonic": 5386.102835981
+      },
+      "count": 11,
+      "invalid": 0,
+      "memory": {
+        "MemTotal": "         503464 kB",
+        "MemAvailable": "     280448 kB",
+        "CmaTotal": "         131072 kB",
+        "CmaFree": "            8268 kB"
+      },
+      "cpu": {
+        "cpu0": 93.57798165137615,
+        "cpu1": 95.9090909090909
+      },
+      "vdma_status": 69632,
+      "video_state": "RUNNING",
+      "telemetry": {
+        "resources": {
+          "value": {
+            "memory": {
+              "MemTotal": "         503464 kB",
+              "MemAvailable": "     279640 kB",
+              "CmaTotal": "         131072 kB",
+              "CmaFree": "            8248 kB"
+            },
+            "cpu": {
+              "cpu0": 93.71069182389937,
+              "cpu1": 92.20779220779221,
+              "system": 92.95924201584579
+            },
+            "processes": {
+              "count_capture_video": {
+                "pid": 9860,
+                "cpu_percent": 116.30461765147065,
+                "rss_kib": 161752
+              },
+              "drawing": {
+                "pid": 9991,
+                "cpu_percent": 52.753880816124216,
+                "rss_kib": 101256
+              }
+            },
+            "sd_free_bytes": 5465673728
+          },
+          "sampled_monotonic": 5383.521549954,
+          "period_s": 3.0,
+          "age_s": 2.590677787000459,
+          "stale": false
+        },
+        "xadc": {
+          "value": {
+            "channels": [
+              {
+                "device": "xadc",
+                "channel": "in_temp0",
+                "label": "unknown",
+                "raw": 2667,
+                "scale": 123.040771484,
+                "offset": -2219.0,
+                "value": 55122.265624832,
+                "unit": "m\u00b0C",
+                "value_si": 55.122265624831996,
+                "sampled_monotonic": 5381.947484676
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage0_vccint",
+                "label": "vccint",
+                "raw": 1394,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1020.99609375,
+                "unit": "mV",
+                "value_si": 1.02099609375,
+                "sampled_monotonic": 5381.955389169
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage1_vccaux",
+                "label": "vccaux",
+                "raw": 2460,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1801.7578125,
+                "unit": "mV",
+                "value_si": 1.8017578125,
+                "sampled_monotonic": 5381.958311728
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage2_vccbram",
+                "label": "vccbram",
+                "raw": 1396,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1022.4609375,
+                "unit": "mV",
+                "value_si": 1.0224609375,
+                "sampled_monotonic": 5381.962181728
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage3_vccpint",
+                "label": "vccpint",
+                "raw": 1392,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1019.53125,
+                "unit": "mV",
+                "value_si": 1.01953125,
+                "sampled_monotonic": 5381.967738608
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage4_vccpaux",
+                "label": "vccpaux",
+                "raw": 2462,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1803.22265625,
+                "unit": "mV",
+                "value_si": 1.80322265625,
+                "sampled_monotonic": 5381.972594368
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage5_vccoddr",
+                "label": "vccoddr",
+                "raw": 2038,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1492.67578125,
+                "unit": "mV",
+                "value_si": 1.49267578125,
+                "sampled_monotonic": 5381.977198098
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage6_vrefp",
+                "label": "vrefp",
+                "raw": 0,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 0.0,
+                "unit": "mV",
+                "value_si": 0.0,
+                "sampled_monotonic": 5381.981537027
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage7_vrefn",
+                "label": "vrefn",
+                "raw": 0,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 0.0,
+                "unit": "mV",
+                "value_si": 0.0,
+                "sampled_monotonic": 5381.988200393
+              }
+            ],
+            "errors": []
+          },
+          "sampled_monotonic": 5381.988289212,
+          "period_s": 5.0,
+          "age_s": 4.123938529000043,
+          "stale": false
+        },
+        "performance": {
+          "value": {
+            "processing_fps": 12.993562527852976,
+            "display_fps": 12.493810122935555,
+            "processing_ms": 61.78925323344326,
+            "processed": 807,
+            "runs": 0,
+            "rx_bytes": 2208
+          },
+          "sampled_monotonic": 5383.927902741,
+          "period_s": 2.0,
+          "age_s": 2.1843250000001717,
+          "stale": false
+        }
+      },
+      "crossing_snapshots": {
+        "observed": 826,
+        "triggered": 14,
+        "saved": 10,
+        "bytes_written": 2683818,
+        "dropped_queue": 0,
+        "dropped_storage": 0,
+        "write_errors": 0,
+        "capture_errors": 0,
+        "dropped_disabled": 0,
+        "last_error": null,
+        "enabled": true,
+        "accepting": true,
+        "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-30c27c09-d91e-40de-a121-a45684ad2351.crossings",
+        "pending": 2,
+        "queue_depth": 1,
+        "writer_alive": true,
+        "max_events": 1000,
+        "max_bytes": 536870912,
+        "storage_mode": "compact",
+        "min_free_bytes": 268435456,
+        "context_frames": 2
+      },
+      "counters": {
+        "sequence": 2134,
+        "clock_hz": 50000000,
+        "counters": {
+          "total_cycles": 257790893203,
+          "active_cycles": 16579717866,
+          "input_beats": 3587200344,
+          "output_beats": 31299055,
+          "input_stall_cycles": 10760311360,
+          "output_stall_cycles": 0
+        }
+      }
+    },
+    {
+      "monotonic": 5388.115001972,
+      "processed": 835,
+      "submitted": 672,
+      "monitor": {
+        "unique": 52479,
+        "scans": 262378,
+        "repeat": 205994,
+        "invalid": 3905,
+        "partial": 3,
+        "frame": 833,
+        "session": 167317374043140836363721850896529999048,
+        "gray_error": false,
+        "marker_pixel_error": false,
+        "pair_mismatch": false,
+        "top_invalid": false,
+        "bottom_invalid": false,
+        "top_marker": "4d437de0277259994a2d97f6c1b4bdc3c4c800000000000003415256",
+        "bottom_marker": "4d437de0277259994a2d97f6c1b4bdc3c4c800000000000003415256",
+        "sequence": 2127,
+        "capture_started": 5388.117158944,
+        "sampled_monotonic": 5388.118132279
+      },
+      "count": 16,
+      "invalid": 0,
+      "memory": {
+        "MemTotal": "         503464 kB",
+        "MemAvailable": "     271220 kB",
+        "CmaTotal": "         131072 kB",
+        "CmaFree": "           12052 kB"
+      },
+      "cpu": {
+        "cpu0": 100.0,
+        "cpu1": 100.0
+      },
+      "vdma_status": 69632,
+      "video_state": "RUNNING",
+      "telemetry": {
+        "resources": {
+          "value": {
+            "memory": {
+              "MemTotal": "         503464 kB",
+              "MemAvailable": "     275428 kB",
+              "CmaTotal": "         131072 kB",
+              "CmaFree": "            7288 kB"
+            },
+            "cpu": {
+              "cpu0": 98.24561403508773,
+              "cpu1": 100.0,
+              "system": 99.12280701754386
+            },
+            "processes": {
+              "count_capture_video": {
+                "pid": 9860,
+                "cpu_percent": 110.80891621981479,
+                "rss_kib": 160460
+              },
+              "drawing": {
+                "pid": 9991,
+                "cpu_percent": 56.2165696325359,
+                "rss_kib": 101640
+              }
+            },
+            "sd_free_bytes": 5465673728
+          },
+          "sampled_monotonic": 5386.694308011,
+          "period_s": 3.0,
+          "age_s": 1.4819142129999818,
+          "stale": false
+        },
+        "xadc": {
+          "value": {
+            "channels": [
+              {
+                "device": "xadc",
+                "channel": "in_temp0",
+                "label": "unknown",
+                "raw": 2665,
+                "scale": 123.040771484,
+                "offset": -2219.0,
+                "value": 54876.184081864005,
+                "unit": "m\u00b0C",
+                "value_si": 54.876184081864004,
+                "sampled_monotonic": 5386.986803272
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage0_vccint",
+                "label": "vccint",
+                "raw": 1394,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1020.99609375,
+                "unit": "mV",
+                "value_si": 1.02099609375,
+                "sampled_monotonic": 5386.989756176
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage1_vccaux",
+                "label": "vccaux",
+                "raw": 2462,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1803.22265625,
+                "unit": "mV",
+                "value_si": 1.80322265625,
+                "sampled_monotonic": 5386.996886933
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage2_vccbram",
+                "label": "vccbram",
+                "raw": 1397,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1023.193359375,
+                "unit": "mV",
+                "value_si": 1.023193359375,
+                "sampled_monotonic": 5387.02514689
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage3_vccpint",
+                "label": "vccpint",
+                "raw": 1394,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1020.99609375,
+                "unit": "mV",
+                "value_si": 1.02099609375,
+                "sampled_monotonic": 5387.032084262
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage4_vccpaux",
+                "label": "vccpaux",
+                "raw": 2464,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1804.6875,
+                "unit": "mV",
+                "value_si": 1.8046875,
+                "sampled_monotonic": 5387.052493106
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage5_vccoddr",
+                "label": "vccoddr",
+                "raw": 2034,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1489.74609375,
+                "unit": "mV",
+                "value_si": 1.48974609375,
+                "sampled_monotonic": 5387.073506484
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage6_vrefp",
+                "label": "vrefp",
+                "raw": 0,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 0.0,
+                "unit": "mV",
+                "value_si": 0.0,
+                "sampled_monotonic": 5387.092670644
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage7_vrefn",
+                "label": "vrefn",
+                "raw": 0,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 0.0,
+                "unit": "mV",
+                "value_si": 0.0,
+                "sampled_monotonic": 5387.110821905
+              }
+            ],
+            "errors": []
+          },
+          "sampled_monotonic": 5387.110902718,
+          "period_s": 5.0,
+          "age_s": 1.0653195060003782,
+          "stale": false
+        },
+        "performance": {
+          "value": {
+            "processing_fps": 8.652811033298258,
+            "display_fps": 8.19739992628256,
+            "processing_ms": 81.09222793327717,
+            "processed": 826,
+            "runs": 337,
+            "rx_bytes": 3556
+          },
+          "sampled_monotonic": 5386.122094362,
+          "period_s": 2.0,
+          "age_s": 2.054127862000314,
+          "stale": false
+        }
+      },
+      "crossing_snapshots": {
+        "observed": 835,
+        "triggered": 19,
+        "saved": 12,
+        "bytes_written": 3243807,
+        "dropped_queue": 0,
+        "dropped_storage": 0,
+        "write_errors": 0,
+        "capture_errors": 0,
+        "dropped_disabled": 0,
+        "last_error": null,
+        "enabled": true,
+        "accepting": true,
+        "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-30c27c09-d91e-40de-a121-a45684ad2351.crossings",
+        "pending": 0,
+        "queue_depth": 6,
+        "writer_alive": true,
+        "max_events": 1000,
+        "max_bytes": 536870912,
+        "storage_mode": "compact",
+        "min_free_bytes": 268435456,
+        "context_frames": 2
+      },
+      "counters": {
+        "sequence": 2135,
+        "clock_hz": 50000000,
+        "counters": {
+          "total_cycles": 257893824969,
+          "active_cycles": 16583346807,
+          "input_beats": 3587776416,
+          "output_beats": 31305139,
+          "input_stall_cycles": 10762039369,
+          "output_stall_cycles": 0
+        }
+      }
+    },
+    {
+      "monotonic": 5390.167867156,
+      "processed": 850,
+      "submitted": 687,
+      "monitor": {
+        "unique": 52494,
+        "scans": 262501,
+        "repeat": 206102,
+        "invalid": 3905,
+        "partial": 3,
+        "frame": 848,
+        "session": 167317374043140836363721850896529999048,
+        "gray_error": false,
+        "marker_pixel_error": false,
+        "pair_mismatch": false,
+        "top_invalid": false,
+        "bottom_invalid": false,
+        "top_marker": "4d437de0277259994a2d97f6c1b4bdc3c4c800000000000003505046",
+        "bottom_marker": "4d437de0277259994a2d97f6c1b4bdc3c4c800000000000003505046",
+        "sequence": 2128,
+        "capture_started": 5390.169928812,
+        "sampled_monotonic": 5390.171881667
+      },
+      "count": 16,
+      "invalid": 0,
+      "memory": {
+        "MemTotal": "         503464 kB",
+        "MemAvailable": "     279448 kB",
+        "CmaTotal": "         131072 kB",
+        "CmaFree": "           12732 kB"
+      },
+      "cpu": {
+        "cpu0": 100.0,
+        "cpu1": 100.0
+      },
+      "vdma_status": 69632,
+      "video_state": "RUNNING",
+      "telemetry": {
+        "resources": {
+          "value": {
+            "memory": {
+              "MemTotal": "         503464 kB",
+              "MemAvailable": "     280192 kB",
+              "CmaTotal": "         131072 kB",
+              "CmaFree": "           12732 kB"
+            },
+            "cpu": {
+              "cpu0": 95.67901234567901,
+              "cpu1": 97.43589743589743,
+              "system": 96.55745489078822
+            },
+            "processes": {
+              "count_capture_video": {
+                "pid": 9860,
+                "cpu_percent": 99.01930612548615,
+                "rss_kib": 162124
+              },
+              "drawing": {
+                "pid": 9991,
+                "cpu_percent": 39.220963275673896,
+                "rss_kib": 101260
+              }
+            },
+            "sd_free_bytes": 5464535040
+          },
+          "sampled_monotonic": 5389.742361255,
+          "period_s": 3.0,
+          "age_s": 0.453727482999966,
+          "stale": false
+        },
+        "xadc": {
+          "value": {
+            "channels": [
+              {
+                "device": "xadc",
+                "channel": "in_temp0",
+                "label": "unknown",
+                "raw": 2665,
+                "scale": 123.040771484,
+                "offset": -2219.0,
+                "value": 54876.184081864005,
+                "unit": "m\u00b0C",
+                "value_si": 54.876184081864004,
+                "sampled_monotonic": 5386.986803272
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage0_vccint",
+                "label": "vccint",
+                "raw": 1394,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1020.99609375,
+                "unit": "mV",
+                "value_si": 1.02099609375,
+                "sampled_monotonic": 5386.989756176
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage1_vccaux",
+                "label": "vccaux",
+                "raw": 2462,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1803.22265625,
+                "unit": "mV",
+                "value_si": 1.80322265625,
+                "sampled_monotonic": 5386.996886933
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage2_vccbram",
+                "label": "vccbram",
+                "raw": 1397,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1023.193359375,
+                "unit": "mV",
+                "value_si": 1.023193359375,
+                "sampled_monotonic": 5387.02514689
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage3_vccpint",
+                "label": "vccpint",
+                "raw": 1394,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1020.99609375,
+                "unit": "mV",
+                "value_si": 1.02099609375,
+                "sampled_monotonic": 5387.032084262
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage4_vccpaux",
+                "label": "vccpaux",
+                "raw": 2464,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1804.6875,
+                "unit": "mV",
+                "value_si": 1.8046875,
+                "sampled_monotonic": 5387.052493106
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage5_vccoddr",
+                "label": "vccoddr",
+                "raw": 2034,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1489.74609375,
+                "unit": "mV",
+                "value_si": 1.48974609375,
+                "sampled_monotonic": 5387.073506484
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage6_vrefp",
+                "label": "vrefp",
+                "raw": 0,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 0.0,
+                "unit": "mV",
+                "value_si": 0.0,
+                "sampled_monotonic": 5387.092670644
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage7_vrefn",
+                "label": "vrefn",
+                "raw": 0,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 0.0,
+                "unit": "mV",
+                "value_si": 0.0,
+                "sampled_monotonic": 5387.110821905
+              }
+            ],
+            "errors": []
+          },
+          "sampled_monotonic": 5387.110902718,
+          "period_s": 5.0,
+          "age_s": 3.0851860200000374,
+          "stale": false
+        },
+        "performance": {
+          "value": {
+            "processing_fps": 4.366517592010215,
+            "display_fps": 4.366517592010215,
+            "processing_ms": 110.29165999995408,
+            "processed": 835,
+            "runs": 0,
+            "rx_bytes": 2208
+          },
+          "sampled_monotonic": 5388.22847279,
+          "period_s": 2.0,
+          "age_s": 1.9676159480004571,
+          "stale": false
+        }
+      },
+      "crossing_snapshots": {
+        "observed": 850,
+        "triggered": 19,
+        "saved": 17,
+        "bytes_written": 3856610,
+        "dropped_queue": 0,
+        "dropped_storage": 0,
+        "write_errors": 0,
+        "capture_errors": 0,
+        "dropped_disabled": 0,
+        "last_error": null,
+        "enabled": true,
+        "accepting": true,
+        "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-30c27c09-d91e-40de-a121-a45684ad2351.crossings",
+        "pending": 0,
+        "queue_depth": 1,
+        "writer_alive": true,
+        "max_events": 1000,
+        "max_bytes": 536870912,
+        "storage_mode": "compact",
+        "min_free_bytes": 268435456,
+        "context_frames": 2
+      },
+      "counters": {
+        "sequence": 2136,
+        "clock_hz": 50000000,
+        "counters": {
+          "total_cycles": 257995646491,
+          "active_cycles": 16587562143,
+          "input_beats": 3588736536,
+          "output_beats": 31313419,
+          "input_stall_cycles": 10764919384,
+          "output_stall_cycles": 0
+        }
+      }
+    },
+    {
+      "monotonic": 5392.184394864,
+      "processed": 864,
+      "submitted": 701,
+      "monitor": {
+        "unique": 52508,
+        "scans": 262623,
+        "repeat": 206210,
+        "invalid": 3905,
+        "partial": 3,
+        "frame": 862,
+        "session": 167317374043140836363721850896529999048,
+        "gray_error": false,
+        "marker_pixel_error": false,
+        "pair_mismatch": false,
+        "top_invalid": false,
+        "bottom_invalid": false,
+        "top_marker": "4d437de0277259994a2d97f6c1b4bdc3c4c8000000000000035eb188",
+        "bottom_marker": "4d437de0277259994a2d97f6c1b4bdc3c4c8000000000000035eb188",
+        "sequence": 2129,
+        "capture_started": 5392.192683227,
+        "sampled_monotonic": 5392.19394967
+      },
+      "count": 16,
+      "invalid": 0,
+      "memory": {
+        "MemTotal": "         503464 kB",
+        "MemAvailable": "     264452 kB",
+        "CmaTotal": "         131072 kB",
+        "CmaFree": "           11312 kB"
+      },
+      "cpu": {
+        "cpu0": 100.0,
+        "cpu1": 100.0
+      },
+      "vdma_status": 69632,
+      "video_state": "RUNNING",
+      "telemetry": {
+        "resources": {
+          "value": {
+            "memory": {
+              "MemTotal": "         503464 kB",
+              "MemAvailable": "     280192 kB",
+              "CmaTotal": "         131072 kB",
+              "CmaFree": "           12732 kB"
+            },
+            "cpu": {
+              "cpu0": 95.67901234567901,
+              "cpu1": 97.43589743589743,
+              "system": 96.55745489078822
+            },
+            "processes": {
+              "count_capture_video": {
+                "pid": 9860,
+                "cpu_percent": 99.01930612548615,
+                "rss_kib": 162124
+              },
+              "drawing": {
+                "pid": 9991,
+                "cpu_percent": 39.220963275673896,
+                "rss_kib": 101260
+              }
+            },
+            "sd_free_bytes": 5464535040
+          },
+          "sampled_monotonic": 5389.742361255,
+          "period_s": 3.0,
+          "age_s": 2.458078710999871,
+          "stale": false
+        },
+        "xadc": {
+          "value": {
+            "channels": [
+              {
+                "device": "xadc",
+                "channel": "in_temp0",
+                "label": "unknown",
+                "raw": 2666,
+                "scale": 123.040771484,
+                "offset": -2219.0,
+                "value": 54999.224853348,
+                "unit": "m\u00b0C",
+                "value_si": 54.999224853348004,
+                "sampled_monotonic": 5391.979774274
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage0_vccint",
+                "label": "vccint",
+                "raw": 1395,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1021.728515625,
+                "unit": "mV",
+                "value_si": 1.021728515625,
+                "sampled_monotonic": 5391.99166924
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage1_vccaux",
+                "label": "vccaux",
+                "raw": 2460,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1801.7578125,
+                "unit": "mV",
+                "value_si": 1.8017578125,
+                "sampled_monotonic": 5391.999825197
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage2_vccbram",
+                "label": "vccbram",
+                "raw": 1396,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1022.4609375,
+                "unit": "mV",
+                "value_si": 1.0224609375,
+                "sampled_monotonic": 5392.018668618
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage3_vccpint",
+                "label": "vccpint",
+                "raw": 1392,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1019.53125,
+                "unit": "mV",
+                "value_si": 1.01953125,
+                "sampled_monotonic": 5392.02767959
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage4_vccpaux",
+                "label": "vccpaux",
+                "raw": 2463,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1803.955078125,
+                "unit": "mV",
+                "value_si": 1.803955078125,
+                "sampled_monotonic": 5392.048320286
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage5_vccoddr",
+                "label": "vccoddr",
+                "raw": 2035,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 1490.478515625,
+                "unit": "mV",
+                "value_si": 1.490478515625,
+                "sampled_monotonic": 5392.06356791
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage6_vrefp",
+                "label": "vrefp",
+                "raw": 0,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 0.0,
+                "unit": "mV",
+                "value_si": 0.0,
+                "sampled_monotonic": 5392.067543147
+              },
+              {
+                "device": "xadc",
+                "channel": "in_voltage7_vrefn",
+                "label": "vrefn",
+                "raw": 0,
+                "scale": 0.732421875,
+                "offset": 0.0,
+                "value": 0.0,
+                "unit": "mV",
+                "value_si": 0.0,
+                "sampled_monotonic": 5392.076351289
+              }
+            ],
+            "errors": []
+          },
+          "sampled_monotonic": 5392.077205566,
+          "period_s": 5.0,
+          "age_s": 0.12323440000000119,
+          "stale": false
+        },
+        "performance": {
+          "value": {
+            "processing_fps": 7.375186463337702,
+            "display_fps": 7.375186463337702,
+            "processing_ms": 125.66256286666734,
+            "processed": 850,
+            "runs": 0,
+            "rx_bytes": 2208
+          },
+          "sampled_monotonic": 5390.216692541,
+          "period_s": 2.0,
+          "age_s": 1.9837474249998195,
+          "stale": false
+        }
+      },
+      "crossing_snapshots": {
+        "observed": 864,
+        "triggered": 19,
+        "saved": 19,
+        "bytes_written": 4125573,
+        "dropped_queue": 0,
+        "dropped_storage": 0,
+        "write_errors": 0,
+        "capture_errors": 0,
+        "dropped_disabled": 0,
+        "last_error": null,
+        "enabled": true,
+        "accepting": true,
+        "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-30c27c09-d91e-40de-a121-a45684ad2351.crossings",
+        "pending": 0,
+        "queue_depth": 0,
+        "writer_alive": true,
+        "max_events": 1000,
+        "max_bytes": 536870912,
+        "storage_mode": "compact",
+        "min_free_bytes": 268435456,
+        "context_frames": 2
+      },
+      "counters": {
+        "sequence": 2137,
+        "clock_hz": 50000000,
+        "counters": {
+          "total_cycles": 258095273106,
+          "active_cycles": 16591691440,
+          "input_beats": 3589632648,
+          "output_beats": 31321147,
+          "input_stall_cycles": 10767607398,
+          "output_stall_cycles": 0
+        }
+      }
+    }
+  ],
+  "service": "MainPID=9860\nActiveState=active\nUnitFileState=disabled\n"
+}

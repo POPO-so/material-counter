@@ -1,0 +1,8 @@
+{
+  "action": "normal_stop_requested",
+  "pid": 5020,
+  "output": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-c1e82607-8fc1-4210-8649-57aa35c274af.json",
+  "boot": "f1462f32-61d2-44c7-9b42-d46d7d4d64c6",
+  "force_kill": false,
+  "reload_overlay": false
+}

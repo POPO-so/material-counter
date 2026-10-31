@@ -1,0 +1,6 @@
+{
+  "command": ".venv/Scripts/python.exe -B -m pytest -p no:cacheprovider --basetemp .runtime/count-optimization-final scripts/standalone scripts/rle scripts/wo0016/test_stream_counter.py scripts/wo0016/test_time_motion.py scripts/wo0016/test_guarded_multiline_counter.py scripts/wo0016/test_split_touching_optimizations.py scripts/wo0016/test_split_connectivity.py scripts/wo0016/test_predictive_association.py -q",
+  "passed": 481,
+  "duration_s": 18.67,
+  "scope": "Local software regression, not physical truth or G3/G4 acceptance"
+}

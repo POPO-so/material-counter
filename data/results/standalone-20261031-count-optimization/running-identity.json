@@ -1,0 +1,19 @@
+{
+  "service": "MainPID=9860\nActiveState=active\nSubState=running\nUnitFileState=disabled\n",
+  "pid": 9860,
+  "output": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-30c27c09-d91e-40de-a121-a45684ad2351.json",
+  "startup_exists": true,
+  "report_exists": false,
+  "startup": {
+    "schema": "material-counter.session-start.v1",
+    "boot_id": "f1462f32-61d2-44c7-9b42-d46d7d4d64c6",
+    "session_id": "7de02772-5999-4a2d-97f6-c1b4bdc3c4c8",
+    "main_pid": 9860,
+    "manifest_sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966",
+    "bit_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+    "total_count": 0,
+    "state": "COUNT_INITIALIZED_WAITING_FIRST_FRAME",
+    "monotonic": 5316.18167235
+  },
+  "snapshot_requested": true
+}
