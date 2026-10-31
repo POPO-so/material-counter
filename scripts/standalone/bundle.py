@@ -20,6 +20,92 @@ required_addresses = {
     "hdmi_out_pixel_unpack": 0x43C70000,
 }
 
+OFFLOAD_CAPABILITIES = {
+    "abi": 1,
+    "preview": {
+        "signature": "PBO1",
+        "base": 0x43C50000,
+        "source_geometry": [640, 400],
+        "viewport": [384, 146, 512, 320],
+    },
+    "input": {"signature": "RAW1", "mode": "raw"},
+    "buttons": {"interrupt": True, "intc_index": 3},
+}
+
+
+def _hwh_instance(root, name):
+    matches = [module for module in root.findall(".//MODULE")
+               if module.get("INSTANCE") == name]
+    if len(matches) != 1:
+        raise ValueError(f"offload HWH must contain exactly one {name} module")
+    return matches[0]
+
+
+def _hwh_parameter(module, name):
+    matches = [item for item in module.findall(".//PARAMETER")
+               if item.get("NAME") == name]
+    if len(matches) != 1:
+        raise ValueError(f"offload HWH parameter is missing or ambiguous: {name}")
+    return matches[0].get("VALUE")
+
+
+def verify_offload_capabilities(manifest, hwh):
+    """Check the declared offload contract against the exported HWH.
+
+    PBO1 and RAW1 signatures are manifest declarations only. The actual
+    register signatures are checked by the runtime before DMA is used.
+    """
+    try:
+        actual_contract = json.dumps(manifest["offload"], sort_keys=True,
+                                     separators=(",", ":"), allow_nan=False)
+        expected_contract = json.dumps(OFFLOAD_CAPABILITIES, sort_keys=True,
+                                       separators=(",", ":"), allow_nan=False)
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        raise ValueError("offload manifest capabilities do not match the fixed contract") from exc
+    if actual_contract != expected_contract:
+        raise ValueError("offload manifest capabilities do not match the fixed contract")
+    try:
+        root = ET.parse(hwh).getroot()
+    except (OSError, ET.ParseError) as exc:
+        raise ValueError("offload HWH is missing or invalid") from exc
+
+    ranges = []
+    for item in root.findall(".//MEMRANGE"):
+        try:
+            address = int(item.get("BASEVALUE"), 0)
+        except (TypeError, ValueError):
+            continue
+        ranges.append((item.get("INSTANCE", ""), address))
+    for instance_token, address, label in (
+        ("binary_overlay", 0x43C50000, "PBO1"),
+        ("image_pipeline", 0x43C20000, "RAW1"),
+    ):
+        matches = [instance for instance, base in ranges
+                   if base == address and instance_token in instance]
+        if len(matches) != 1:
+            raise ValueError(f"offload {label} HWH memory range mismatch")
+
+    gpio = _hwh_instance(root, "btns_gpio")
+    if _hwh_parameter(gpio, "C_INTERRUPT_PRESENT") not in ("1", "0x1", "true", "True"):
+        raise ValueError("offload GPIO interrupt is not enabled in HWH")
+    intc = _hwh_instance(root, "video_interrupts")
+    if _hwh_parameter(intc, "NUM_PORTS") != "4":
+        raise ValueError("offload interrupt controller must expose four ports")
+
+    irq_ports = [port for port in gpio.findall(".//PORT")
+                 if port.get("NAME") == "ip2intc_irpt"]
+    connections = [connection for port in irq_ports
+                   for connection in port.findall(".//CONNECTION")]
+    if len(irq_ports) != 1 or not any(
+        item.get("INSTANCE") == "video_interrupts" and item.get("PORT") == "In3"
+        for item in connections
+    ):
+        raise ValueError("offload GPIO IRQ connection to video_interrupts/In3 is unverified")
+    return {
+        "gpio_irq_connection_verified": True,
+        "register_signatures": "runtime_only",
+    }
+
 
 def sha256(path):
     h = hashlib.sha256()
@@ -70,6 +156,8 @@ def verify_bundle(manifest_path, expected_sha256):
                 "C_M_AXIS_MM2S_TDATA_WIDTH": "32", "C_M_AXI_MM2S_DATA_WIDTH": "32"}
     if any(parameters.get(k) != v for k, v in expected.items()):
         raise ValueError("HWH VDMA parameters mismatch")
+    if "offload" in value:
+        verify_offload_capabilities(value, files["hwh"])
     return files
 
 
