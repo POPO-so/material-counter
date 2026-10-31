@@ -13,8 +13,10 @@ class Edge:
     def __init__(self):
         self.waiters = []
         self.bits = 0
+        self.wait_calls = 0
 
     async def wait_for_interrupt_async(self):
+        self.wait_calls += 1
         future = asyncio.get_running_loop().create_future()
         self.waiters.append(future)
         future.add_done_callback(lambda done: self.waiters.remove(done)
@@ -80,3 +82,47 @@ def test_interrupt_capability_probe_requires_async_wait_method():
     assert interrupt_available is not None
     assert interrupt_available(Edge())
     assert not interrupt_available(object())
+
+
+def test_initial_gpio_state_is_sampled_and_irq_wait_survives_timer_deadline():
+    async def scenario():
+        source = Edge()
+        source.bits = 1
+        events = []
+        runner = ButtonEventRunner(source, source.read_bits, events.extend)
+        task = asyncio.create_task(runner.run())
+        await asyncio.sleep(.06)
+        assert events == ["clear"]
+        assert source.wait_calls == 1
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+
+    asyncio.run(scenario())
+
+
+def test_irq_wait_failure_is_propagated_once_without_retry_loop():
+    class BrokenInterrupt:
+        interrupt_present = True
+
+        def __init__(self):
+            self.calls = 0
+
+        async def wait_for_interrupt_async(self):
+            self.calls += 1
+            raise OSError("interrupt fd failed")
+
+    async def scenario():
+        interrupt = BrokenInterrupt()
+        runner = ButtonEventRunner(interrupt, lambda: 0, lambda _: None)
+        try:
+            await asyncio.wait_for(runner.run(), timeout=.1)
+        except OSError as exc:
+            assert "interrupt fd failed" in str(exc)
+        else:
+            raise AssertionError("IRQ waiter error was swallowed")
+        assert interrupt.calls == 1
+
+    asyncio.run(scenario())

@@ -1,5 +1,6 @@
 """V4L2 exposure control with queried range and verified readback."""
 from dataclasses import dataclass
+import math
 import re
 import subprocess
 
@@ -18,15 +19,19 @@ class V4L2CtlBackend:
     """Small v4l2-ctl adapter for the standard V4L2 exposure controls."""
     _FIELDS = re.compile(r"\b(min|max|step|value)=(-?\d+)")
 
-    def __init__(self, device="/dev/video0", command="v4l2-ctl"):
+    def __init__(self, device="/dev/video0", command="v4l2-ctl", timeout=1.0):
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise ValueError("v4l2-ctl timeout must be finite and positive")
         self.device, self.command = device, command
+        self.timeout = timeout
         self._manual_supported = False
         self._auto_name = None
         self._exposure_name = None
 
     def _run(self, *args):
         return subprocess.run([self.command, "-d", self.device, *args],
-                              check=True, capture_output=True, text=True).stdout
+                              check=True, capture_output=True, text=True,
+                              timeout=self.timeout).stdout
 
     def _controls(self):
         return self._run("--list-ctrls-menus")
