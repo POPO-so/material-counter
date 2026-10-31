@@ -2,7 +2,11 @@
 
 本文记录当前可核对的独立显示/G2 制品、离线依赖和安全边界。它不是安装器或回退脚本；下文标为“未实现”的步骤不能当作现成命令执行。
 
-## 2026-10-31 G4 部署后状态补记
+## 2026-10-31 G4 第二版部署状态（当前）
+
+板端 `current` 已指向 `/opt/material-counter/releases/standalone-20261031-g4-offline-package-candidate-v2`；环境文件 SHA-256 为 `ee1c2afa04d5447bebf5e742aa834499b2d95bf7de2bdeb46c298e32e3db2c96`，unit SHA-256 为 `30c22b6c869e95f13ed9692e15e854e3a4f67b0189217aa90d5f3604b2cb587a`。v2 索引 SHA-256 `c4c73cbb7c8df5ff2adb0f9df8be52ff1919faf38516747b039ee6b7910f2e31`，运行模块来源提交 `6cab07f244b8a0d0fb35d6eb4a2f9a293b4ee5ed`，`board-runtime.json` schema v2 锁定预装 PYNQ `_video` 扩展摘要。安装位置 [56 文件完整性核对](../../data/results/standalone-20261031-g4-offline-package-candidate-v2/installed-integrity-20261031.json) PASS；[配置切换后快照](../../data/results/standalone-20261031-g4-offline-package-candidate-v2/deployment-after-20261031.json)记录 service loaded/enabled/inactive/dead。该快照的 `purpose` 字段沿用采集器的部署前模板文字；实际采集内容是 v2 切换后的只读观察。板卡时钟未校准，快照中的 2025-05-07 不能当作真实日期。硬件安全终态仍为 unproven，G4 未启动，软件测试、仿真与现场验收未执行，G3/G4 未放行。完整离线依赖重建闭包未证明；最终测试由用户执行，五次冷启动、连续 ≥60 分钟运行及故障恢复测试已豁免。
+
+## 2026-10-31 G4 首版部署后状态补记（历史）
 
 部署基线记录的 boot ID 为 `8b380359-59a7-46f8-8f5a-f172fd1398dd`。状态从部署前 `not-found/inactive/dead`（enabled `not-found`）变为部署后 `loaded/enabled/inactive/dead`。部署后 unit `/etc/systemd/system/material-counter-integrated.service` 的 SHA-256 为 `30c22b6c869e95f13ed9692e15e854e3a4f67b0189217aa90d5f3604b2cb587a`；environment `/etc/material-counter/package.env` 的 SHA-256 为 `659364dc817a2d6edcda3e86af12e5de04b8e3835ad6de52f7d910a6e1cf9587`；`/opt/material-counter/current` 指向 `/opt/material-counter/releases/standalone-20261030-g4-offline-package-candidate`，该 release 的索引 SHA-256 为 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088`。候选包 37 个运行模块来源提交为 `544a6d44af74708ae17ab88af6419093a45859cb`。已安装 release 的 56 文件完整性 `PASS` 有持久原始证据 [release-package-integrity.json](../../data/results/standalone-20261031-g4-deployment-preparation/release-package-integrity.json)，仅核对包文件，不是软件或整机测试。
 
@@ -47,7 +51,7 @@
 python -m scripts.standalone.delivery --root <assembled-package> --build-index
 ```
 
-旧索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 和 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 均为历史完整性结果。当前 37 个运行模块取自提交 `544a6d44af74708ae17ab88af6419093a45859cb`；本地 `delivery.py --build-index` 已以退出码 0 完成，索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件；当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与 `package.env.candidate` 一致。此结果仅证明本地文件完整性并完成候选包准备，不代表离线依赖闭包、目标板运行、service 安装或 G4 通过。候选状态见 [G4 包候选记录](../../data/results/standalone-20261030-g4-offline-package-candidate/README.md)。
+首版包准备时的旧索引 SHA-256 `3addc403eacdb17caf7fb699a712dbbb90b047ec1f7049c47df2b84bf1eccc2a` 和 `63216dc2014621bc5f03e5201fcdc87dd33e4b620fe420317d660d266f09d56d` 均为历史完整性结果。该首版的 37 个运行模块取自提交 `544a6d44af74708ae17ab88af6419093a45859cb`；本地 `delivery.py --build-index` 已以退出码 0 完成，索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件；首版索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与 `package.env.candidate` 一致。此结果仅证明本地文件完整性并完成候选包准备，不代表离线依赖闭包、目标板运行、service 安装或 G4 通过。候选状态见 [G4 包候选记录](../../data/results/standalone-20261030-g4-offline-package-candidate/README.md)。
 
 本地源码来源核对工具 `scripts/delivery/verify_standalone_source.py` 已加入代码，但尚未执行。总体核验阶段可从仓库根目录运行：
 
@@ -60,7 +64,7 @@ python -B -m scripts.delivery.verify_standalone_source --package-root data/resul
 部署后仍需由用户最终测试或补充材料确认：
 
 - [ ] 候选目录已组装入口、37 个应用模块、匹配 BIT/HWH/manifest/native、7 个锁定 PYNQ 源和 2 个字体；板端已有运行环境的版本见包候选记录。第三方 Python 包没有封装或重装，仍须确认目标部署仅依赖现有板端环境，或另行准备可追溯的离线依赖集。
-- [x] 本地运行 `delivery.py --build-index`（退出码 0），更新 `deployment-index.json` 和外置 `package.env.candidate` 摘要；索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件，当前索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与环境文件一致。此项只关闭候选包文件完整性/准备子项，不代表离线依赖闭包或板端验收。
+- [x] 本地运行 `delivery.py --build-index`（退出码 0），更新 `deployment-index.json` 和外置 `package.env.candidate` 摘要；索引覆盖 55 个包文件，内建 `verify_package` 核对 56 个文件，首版索引 SHA-256 `96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088` 与环境文件一致。此项只关闭候选包文件完整性/准备子项，不代表离线依赖闭包或板端验收。
 - [x] `boot-config.json` 已在候选包中定义 `continuous` 模式、固定 by-id 相机和 7200 秒参数；外置候选环境文件已绑定当前索引。包、环境文件、unit 与 `current` 已安装，service 已启用；实际启动行为仍未验收。
 - [ ] 确认目标板离线依赖齐备及 ABI/哈希匹配；不得以启动时联网补包或现场编译替代。
 - [x] 板端 release、unit/env 与 `current` 已安装，G4 service 已启用；包文件完整性原始输出见部署准备记录。
@@ -87,7 +91,7 @@ G4 部署/恢复边界另见[审阅草稿](../../data/results/standalone-2026103
 
 部署前[实测基线](../../data/results/standalone-20261031-g4-deployment-preparation/baseline-before-install.json)显示 G4 service 为 `not-found/inactive/dead`，unit、env、`current` 三个目标路径均缺失；因此首次安装的**配置**恢复目标是移除这三个新配置并使 G4 service 不再启用。它不等于恢复或重载旧 BIT，也不操作 G1/G2 的旧包。
 
-执行恢复前，唯一 owner 必须先结束业务，并在同一轮确认 G4 service inactive、没有残留子进程，且 DMA idle、VDMA halted、错误状态和相机/缓冲释放均已核对。若任一状态未知或处于 `FAIL_HOLD`，不得以 `systemctl stop`、kill 或重启代替安全收尾。随后先复核 unit/env 哈希分别仍为 `30c22b6c869e95f13ed9692e15e854e3a4f67b0189217aa90d5f3604b2cb587a`、`659364dc817a2d6edcda3e86af12e5de04b8e3835ad6de52f7d910a6e1cf9587`，`current` 仍是指向 `/opt/material-counter/releases/standalone-20261030-g4-offline-package-candidate` 的符号链接，且 service 没有被其他部署接管。只有这些前提都满足，才能按部署前基线禁用 G4、移除这三个首次安装的配置、执行 `daemon-reload`，最后复核服务与路径均回到基线的缺失状态。保留版本 release、上传包和基线证据供调查；本轮没有执行该恢复。
+执行恢复前，唯一 owner 必须先结束业务，并在同一轮确认 G4 service inactive、没有残留子进程，且 DMA idle、VDMA halted、错误状态和相机/缓冲释放均已核对。若任一状态未知或处于 `FAIL_HOLD`，不得以 `systemctl stop`、kill 或重启代替安全收尾。随后先复核 unit/env 哈希分别仍为 `30c22b6c869e95f13ed9692e15e854e3a4f67b0189217aa90d5f3604b2cb587a`、`ee1c2afa04d5447bebf5e742aa834499b2d95bf7de2bdeb46c298e32e3db2c96`，`current` 仍是指向 `/opt/material-counter/releases/standalone-20261031-g4-offline-package-candidate-v2` 的符号链接，且 service 没有被其他部署接管。只有这些前提都满足，才能按部署前基线禁用 G4、移除这三个首次安装的配置、执行 `daemon-reload`，最后复核服务与路径均回到基线的缺失状态。保留版本 release、上传包和基线证据供调查；本轮没有执行该恢复。
 
 ## G4 整机自启动尚缺的验收证据
 
@@ -111,7 +115,7 @@ G1 systemd 单元中的现存启动命令（仅说明代码配置，不代表 G4
 
 ## 用户最终测试交接
 
-- 当前只读观察到板端 G4 unit/env/`current` 已安装，service 为 `loaded/enabled/inactive`；桌面 `board_entry.py` PID 4225 当时正在运行。PID 会变化，这只是观察快照；板卡时钟未校准，日志时间戳不可信。G3/G4 尚未放行。
+- 当前只读观察到板端 G4 v2 unit/env/`current` 已安装，service 为 `loaded/enabled/inactive/dead`；桌面 `board_entry.py` PID 4225 是历史观察，切换后进程快照未见相关业务进程。PID 会变化，这只是观察快照；板卡时钟未校准，日志时间戳不可信。G3/G4 尚未放行。
 - 完成桌面测试后，通过现有程序正常退出。由用户在同一轮确认唯一硬件 owner 已释放，DMA idle、VDMA halted、无错误，且相机与缓冲资源均已释放；如任一项未知，不进入下一步。
 - 随后由用户自行安排一次真正脱机开机，观察 HDMI 显示及真实物料计数。不要在当前长时间运行的 boot 手动启动 G4；首次配置要求 boot uptime 不超过 300 秒，手动 start 不能替代脱机开机观察。
 - 记录人工真值、显示数、该次 boot ID、G4 service 状态，以及对应 boot 的 `/var/lib/material-counter` 报告与 journal。可用以下只读命令留存状态；其中日志时间戳不能作为可信时钟：

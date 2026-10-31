@@ -22,19 +22,19 @@
     },
     {
       "name": "Current G4 deployment index",
-      "path": "data/results/standalone-20261030-g4-offline-package-candidate/package/deployment-index.json",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/package/deployment-index.json",
       "status": "present",
-      "sha256": "96b4661b8e00f27de35be53236d108717aec80b23d9ff26ee63265e77afa3088"
+      "sha256": "c4c73cbb7c8df5ff2adb0f9df8be52ff1919faf38516747b039ee6b7910f2e31"
     },
     {
       "name": "Current G4 source correspondence report",
-      "path": "data/results/standalone-20261030-g4-offline-package-candidate/source-correspondence-current-20261031.json",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/source-correspondence-20261031.json",
       "status": "present",
-      "sha256": "6f19f33a9727e034f047fa8cc0f4d1473ab7f640d73118ed2e128fa708ab7bd6"
+      "sha256": "0a6fff9406e589576cff965d847106ad41ca4c0a920e7d7336d8c8dde80b68f2"
     },
     {
       "name": "Installed release package integrity report",
-      "path": "data/results/standalone-20261031-g4-deployment-preparation/release-package-integrity.json",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/installed-integrity-20261031.json",
       "status": "present",
       "sha256": "8f472f9bde8763999999d0d49eebcc9efb2eb5c71d914c265cc410457d3c2289"
     },
@@ -43,6 +43,12 @@
       "path": "data/results/standalone-20261031-g4-deployment-preparation/offline-runtime-snapshot.json",
       "status": "present",
       "sha256": "891b81b08102761cfafbdd4889c9d3aebff7f5c174cf2d6f662629b7db721d4e"
+    },
+    {
+      "status": "present",
+      "path": "data/results/standalone-20261031-g4-offline-package-candidate-v2/deployment-after-20261031.json",
+      "name": "G4 v2 board deployment observation",
+      "sha256": "8108f31e6082008b4c0ed6a10469a57aa23bd9af70fefa139b4574f053db6162"
     }
   ],
   "missing": []
