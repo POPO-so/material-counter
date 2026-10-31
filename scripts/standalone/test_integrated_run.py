@@ -8,6 +8,8 @@ import pytest
 
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
 from scripts.standalone.integrated_run import (
+    _refresh_dashboard_telemetry,
+    _with_publish_boundary,
     dashboard_values,
     drawing_process,
     rasterize_into,
@@ -15,6 +17,7 @@ from scripts.standalone.integrated_run import (
     start_drawing_child,
     source_identity,
 )
+from scripts.standalone.video_telemetry import FrameTelemetry
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
 from scripts.wo0016.stream_counter import MaskCounter
@@ -42,9 +45,41 @@ def test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown():
     assert values['detail_page']==2 and values['state']=='PAUSED'
     for key,item in value.items():
         assert values[key]==item
-    assert dashboard_values(9,False,0,{
+    stale_values=dashboard_values(9,False,0,{
         'video_telemetry':{'value':value,'stale':True}
-    })['camera_fps'] is None
+    })
+    for key in ('camera_fps','effective_input_fps','e2e_ms','drop_total',
+                'processing_fps','regions_ms','track_ms','pl'):
+        assert stale_values[key] is None
+    assert stale_values['page_lines'] in (None,())
+    assert stale_values['resolution_chain']=="640x400 -> 800x640 -> 1280x720"
+
+
+def test_publish_failure_does_not_set_publish_boundary():
+    frame=FrameTelemetry(frame_id=1,capture_ns=10,consume_ns=20,
+        transfer_done_ns=30,regions_done_ns=40,track_done_ns=50)
+
+    result=_with_publish_boundary(frame,False,60)
+
+    assert result is frame
+    assert result.publish_ns is None
+
+
+def test_two_second_snapshot_is_reused_without_per_frame_cache_snapshot():
+    class FakeCache:
+        def __init__(self):
+            self.calls=[]
+
+        def snapshot(self,sampled_at):
+            self.calls.append(sampled_at)
+            return {'video_telemetry':{'value':{},'stale':False}}
+
+    cache=FakeCache()
+    latest=_refresh_dashboard_telemetry(cache,2.0)
+    for frame in range(5):
+        dashboard_values(frame,False,0,latest)
+
+    assert cache.calls==[2.0]
 
 
 def test_telemetry_does_not_change_result_metadata_or_count():

@@ -96,6 +96,18 @@ def dashboard_values(count, paused, page, telemetry):
         cpu_percent=resource.get('cpu',{}).get('system'),memory_percent=memory_percent)
 
 
+def _with_publish_boundary(frame, published, published_ns):
+    """Add a publish timestamp only when the input frame was actually published."""
+    if frame is None or not published:
+        return frame
+    return replace(frame,publish_ns=published_ns)
+
+
+def _refresh_dashboard_telemetry(cache, sampled_at):
+    """Build the dashboard cache snapshot at the low frequency sampling point."""
+    return cache.snapshot(sampled_at)
+
+
 def start_drawing_child(
     ctx, inputs, outputs, errors, counters, font, latin_font, failure_mode=None
 ):
@@ -443,6 +455,7 @@ def main(argv=None):
         started=last_sample=time.monotonic();index=submitted=published=dropped=0
         camera_index=-1;next_camera_retry=0;injection_done=False;next_drawing_retry=0
         cache=TelemetryCache();last_resource=last_xadc=last_performance=0
+        latest_dashboard_telemetry={}
         last_performance_index=last_performance_submitted=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
         trajectory_epoch=0;camera_in_error=False
         previous_process={}
@@ -564,6 +577,8 @@ def main(argv=None):
             count_done_ns=time.monotonic_ns()
             if frame_telemetry is not None:
                 track_ms=float(result.roi_subtimings_ms.get('track_ms',0.0)) if result is not None else 0.0
+                # regions_done is estimated as track_done - track_ms, not directly measured;
+                # a true independent boundary requires future instrumentation.
                 regions_done_ns=max(transfer_done_ns,count_done_ns-int(track_ms*1e6))
                 frame_telemetry=FrameTelemetry(frame_id=index,capture_ns=frame_telemetry.capture_ns,
                     consume_ns=frame_telemetry.consume_ns,transfer_done_ns=transfer_done_ns,
@@ -599,7 +614,7 @@ def main(argv=None):
                         '暂停计数' if controls.paused else '运行中',
                         '重启清零 / '+('过线诊断留图' if captures is not None else '诊断留图关闭')]
                     if metadata['annotations_truncated']:metadata['status_lines'].append('标注仅显示前128项 / 计数未截断')
-                    telemetry=cache.snapshot(time.monotonic())
+                    telemetry=latest_dashboard_telemetry
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,controls.page,telemetry)
                     performance=telemetry.get('performance')
                     if performance:
@@ -628,12 +643,14 @@ def main(argv=None):
                         if performance:metadata['status_lines'].append('RLE {} runs / DMA {} B'.format(performance['value']['runs'],performance['value']['rx_bytes']))
                     last_gray=gray;last_metadata=metadata;last_valid_id=index
                     if process is not None and process.is_alive():
-                        if inputs.publish(gray,binary,session,index,metadata,
-                                          capture_time_ns=frame_telemetry.capture_ns if frame_telemetry else 0):
+                        did_publish=inputs.publish(gray,binary,session,index,metadata,
+                            capture_time_ns=frame_telemetry.capture_ns if frame_telemetry else 0)
+                        if did_publish:
                             published+=1
+                            if frame_telemetry is not None:
+                                frame_telemetry=_with_publish_boundary(
+                                    frame_telemetry,True,time.monotonic_ns())
                         else:dropped+=1
-                        if frame_telemetry is not None:
-                            frame_telemetry=replace(frame_telemetry,publish_ns=time.monotonic_ns())
                     else:dropped+=1
                     stages['publish_ms'].append((time.monotonic()-snapshot_end)*1000)
             elif inputs is not None and last_gray is not None:
@@ -671,7 +688,8 @@ def main(argv=None):
                 video_sample.setdefault('page_lines',())
                 video_sample['pl']=pl_counters_snapshot(counters_sample)
                 cache.record('video_telemetry',video_sample,2.0,time.monotonic())
-                cache_values=cache.snapshot(time.monotonic())
+                cache_values=_refresh_dashboard_telemetry(cache,time.monotonic())
+                latest_dashboard_telemetry=cache_values
                 monitor=owner.call(snapshot,hw.monitor)
                 vdma_status=owner.call(hw.vdma.read,4)
                 if vdma_status&0x770:
