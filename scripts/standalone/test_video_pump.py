@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import threading
 import time
+from types import SimpleNamespace
 import uuid
 
 import numpy as np
@@ -12,8 +13,10 @@ from scripts.standalone.video_telemetry import TelemetryWindow
 
 
 try:
+    from scripts.standalone import video_pump as video_pump_module
     from scripts.standalone.video_pump import DISPLAY_FAIL_HOLD, RUNNING, STOPPED, VideoPump
 except ModuleNotFoundError:
+    video_pump_module = None
     VideoPump = None
     DISPLAY_FAIL_HOLD = "DISPLAY_FAIL_HOLD"
     RUNNING = "RUNNING"
@@ -182,15 +185,46 @@ def test_mismatched_session_counts_skip_not_submit_failure(frames):
         pump.request_stop()
 
 
-def test_success_records_capture_to_submit_telemetry(frames):
+def test_success_records_capture_to_submit_telemetry(frames, monkeypatch):
+    class RecordingTelemetry(TelemetryWindow):
+        def __init__(self):
+            super().__init__(window_s=5)
+            self.recorded = []
+
+        def record_frame(self, frame):
+            self.recorded.append(frame)
+            super().record_frame(frame)
+
     pump_type = _pump_type()
     identity = uuid.uuid4()
     hdmi = FakeHDMI((8, 12))
     owner = FakeOwner()
-    telemetry = TelemetryWindow(window_s=5)
+    telemetry = RecordingTelemetry()
     capture_time_ns = time.monotonic_ns()
     _publish(frames, identity, 71, capture_time_ns=capture_time_ns)
-    pump = pump_type(frames, type("HW", (), {"hdmi": hdmi})(), owner, identity,
+    lease = frames.acquire_latest()
+    expected_published_ns = lease.published_ns
+
+    timestamp = iter(range(expected_published_ns + 1, expected_published_ns + 100))
+    monkeypatch.setattr(
+        video_pump_module,
+        "time",
+        SimpleNamespace(monotonic=time.monotonic, monotonic_ns=lambda: next(timestamp)),
+    )
+
+    class LeaseOutput:
+        def __init__(self, held_lease):
+            self.held_lease = held_lease
+
+        def acquire_latest(self):
+            held_lease, self.held_lease = self.held_lease, None
+            return held_lease
+
+        def release_read(self, slot):
+            frames.release_read(slot)
+
+    outputs = LeaseOutput(lease)
+    pump = pump_type(outputs, type("HW", (), {"hdmi": hdmi})(), owner, identity,
                      telemetry=telemetry)
     try:
         deadline = time.monotonic() + 1
@@ -198,6 +232,11 @@ def test_success_records_capture_to_submit_telemetry(frames):
             time.sleep(0.001)
         assert pump.submitted == 1
         sample = telemetry.sample(time.monotonic_ns())
+        assert len(telemetry.recorded) == 1
+        recorded = telemetry.recorded[0]
+        assert recorded.capture_ns == capture_time_ns
+        assert recorded.compose_done_ns == expected_published_ns
+        assert recorded.submit_done_ns > recorded.compose_done_ns
         assert sample["e2e_ms"]["count"] >= 1
         assert sample["submit_ms"]["count"] >= 1
         assert sample["frame_count"] >= 1
