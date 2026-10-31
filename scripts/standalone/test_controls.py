@@ -48,6 +48,13 @@ def test_mode_page_and_pause_are_applied_at_the_explicit_frame_boundary():
     assert s.clear_requests == 1 and s.paused
 
 
+def test_page_cycles_through_three_pages():
+    s = ControlState()
+    for expected in (1, 2, 0):
+        s.apply(("page",))
+        assert s.page == expected
+
+
 def test_invalid_clock_and_gpio_values_are_rejected():
     d = decoder()
     with pytest.raises(ValueError):

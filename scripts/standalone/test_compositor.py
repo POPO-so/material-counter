@@ -406,13 +406,96 @@ def _dashboard_composer():
     return api.DashboardComposer(FONT, latin_font_path=latin)
 
 
+def _collect_dashboard_text(monkeypatch, api):
+    texts = []
+    for name in ("_text", "_whole_latin_text"):
+        original = getattr(api.DashboardComposer, name)
+
+        def collect(composer, draw, xy, text, *args, _original=original, **kwargs):
+            texts.append(str(text))
+            return _original(composer, draw, xy, text, *args, **kwargs)
+
+        monkeypatch.setattr(api.DashboardComposer, name, collect)
+    return texts
+
+
+def test_dashboard_top_cards_use_link_metrics(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    texts = _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+
+    canvas = c.render(gray, gray, session, 1, dashboard={
+        "count": 12, "camera_fps": 29.5, "e2e_ms": {"mean": 41.2},
+        "drop_total": 7, "detail_page": 0,
+    })
+
+    assert canvas.shape == (720, 1280)
+    assert _decode_marker(canvas[0, 640:864]) == (session, 1)
+    assert "显示 FPS" not in texts
+    assert "处理延迟 / RLE + 计数" not in texts
+    assert "相机帧率" in texts
+    assert "端到端延迟" in texts
+
+
+def test_dashboard_unknown_metrics_render_placeholder(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    texts = _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+
+    c.render(gray, gray, uuid.uuid4(), 1, dashboard={
+        "count": 1, "camera_fps": None, "e2e_ms": None, "drop_total": None,
+    })
+
+    assert "--" in texts
+
+
+@pytest.mark.parametrize(("page", "page_lines", "expected"), [
+    (1, ("第一页详情",), "第一页详情"),
+    (2, ("第二页详情",), "第二页详情"),
+    (3, ("第三页详情",), "第三页详情"),
+])
+def test_dashboard_three_pages_show_distinct_lines(monkeypatch, page, page_lines, expected):
+    api = _api()
+    c = _dashboard_composer()
+    texts = _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+
+    c.render(gray, gray, uuid.uuid4(), page,
+             dashboard={"detail_page": page, "page_lines": page_lines})
+
+    assert any(expected in text for text in texts)
+
+
+def test_dashboard_left_summary_shows_pl_ps_throughput(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    texts = _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+
+    c.render(gray, gray, uuid.uuid4(), 1, dashboard={
+        "pl": {"aggregate": {"active_cycles": 123, "total_cycles": 456}},
+        "regions_ms": {"mean": 2.3}, "track_ms": {"mean": 1.4},
+        "processing_fps": 28.2, "display_fps": 27.9,
+    })
+
+    joined = " ".join(texts)
+    assert "PL" in joined
+    assert "PS" in joined
+    assert "处理" in joined
+
+
 def test_dashboard_text_cache_avoids_static_label_rasterization_on_value_updates(monkeypatch):
     api = _api()
     c = _dashboard_composer()
     gray = np.zeros((400, 640), dtype=np.uint8)
     session = uuid.uuid4()
     c.render(gray, gray, session, 1, boxes=((10, 10, 20, 20),),
-             dashboard={"count": 3, "display_fps": 30, "processing_ms": 4.2},
+             dashboard={"count": 3, "camera_fps": 29.5, "e2e_ms": {"mean": 4.2},
+                        "drop_total": 0, "processing_fps": 28.0,
+                        "display_fps": 30},
              status_lines=())
 
     calls = []
@@ -431,10 +514,14 @@ def test_dashboard_text_cache_avoids_static_label_rasterization_on_value_updates
         monkeypatch.setattr(font, "getlength", track_length)
 
     c.render(gray, gray, session, 2, boxes=((10, 10, 20, 20),),
-             dashboard={"count": 4, "display_fps": 31, "processing_ms": 4.2},
+             dashboard={"count": 4, "camera_fps": 29.5, "e2e_ms": {"mean": 4.2},
+                        "drop_total": 0, "processing_fps": 28.0,
+                        "display_fps": 30},
              status_lines=())
     c.render(gray, gray, session, 3, boxes=((10, 10, 20, 20), (30, 30, 40, 40)),
-             dashboard={"count": 4, "display_fps": 31, "processing_ms": 4.2},
+             dashboard={"count": 4, "camera_fps": 29.5, "e2e_ms": {"mean": 4.2},
+                        "drop_total": 0, "processing_fps": 28.0,
+                        "display_fps": 30},
              status_lines=())
 
     assert not set("本次累计计数").intersection(calls)

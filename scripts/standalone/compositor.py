@@ -387,16 +387,60 @@ class DashboardComposer:
         draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
 
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
+        e2e = dashboard.get("e2e_ms")
+        if isinstance(e2e, dict):
+            e2e = e2e.get("mean")
         values = (
             self._number(dashboard.get("count"), 0),
-            self._number(dashboard.get("display_fps")),
-            self._number(dashboard.get("processing_ms"), 1, " ms"),
+            self._number(dashboard.get("camera_fps"), 1, " FPS"),
+            self._number(e2e, 1, " ms"),
+            self._number(dashboard.get("drop_total"), 0),
             self._number(dashboard.get("cpu_percent"), 0, "%"),
             self._number(dashboard.get("memory_percent"), 0, "%"),
         )
         state = str(dashboard.get("state", "RUNNING"))
-        detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
-        key = (values, state, binary_background, target_count, detail)
+        raw_page_lines = dashboard.get("page_lines", ())
+        if isinstance(raw_page_lines, str):
+            page_lines = (raw_page_lines,)
+        elif isinstance(raw_page_lines, (tuple, list)):
+            page_lines = tuple(str(line) for line in raw_page_lines if isinstance(line, str))
+        else:
+            page_lines = ()
+        detail_page = dashboard.get("detail_page")
+        detail = page_lines[:3] if detail_page else ()
+
+        chain = dashboard.get("resolution_chain")
+        if isinstance(chain, (tuple, list)) and chain:
+            input_resolution = str(chain[0])
+        elif isinstance(chain, str) and chain:
+            input_resolution = chain.split("->", 1)[0].strip()
+        else:
+            input_resolution = "640x400"
+        pl = dashboard.get("pl")
+        aggregate = pl.get("aggregate") if isinstance(pl, dict) else None
+        if isinstance(aggregate, dict):
+            active = aggregate.get("active_cycles")
+            total = aggregate.get("total_cycles")
+            active_text = self._number(active, 0)
+            total_text = self._number(total, 0)
+            pl_text = (f"PL {active_text}/{total_text} cyc"
+                       if active_text != "--" and total_text != "--" else "PL --")
+        else:
+            pl_text = "PL --"
+
+        regions = dashboard.get("regions_ms")
+        regions_mean = regions.get("mean") if isinstance(regions, dict) else None
+        track = dashboard.get("track_ms")
+        track_mean = track.get("mean") if isinstance(track, dict) else None
+        summary = (
+            f"输入 {input_resolution}", "预览 800x640", "输出 1280x720",
+            pl_text,
+            f"PS RLE {self._number(regions_mean)} / TRK {self._number(track_mean)} ms",
+            f"处理 {self._number(dashboard.get('processing_fps'))} / 显示 "
+            f"{self._number(dashboard.get('display_fps'))} FPS",
+        )
+        key = (values, state, binary_background, target_count, detail_page,
+               page_lines, summary)
         if key == self._key:
             return
         image = Image.new("L", (WIDTH, HEIGHT), 14)
@@ -404,20 +448,23 @@ class DashboardComposer:
         self._whole_latin_text(draw, (24, 12), "NUT VISION COUNTER", 28, 242)
         draw.ellipse((1060, 25, 1070, 35), fill=224)
         self._whole_latin_text(draw, (1082, 19), state[:15], 18, 208)
-        for x, label, value in zip((24, 440, 856),
-                                   ("本次累计计数", "显示 FPS", "处理延迟 / RLE + 计数"),
-                                   values[:3]):
-            draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
+        for x, label, value in zip((24, 340, 656, 972),
+                                   ("本次累计计数", "相机帧率", "端到端延迟", "实时丢帧"),
+                                   values[:4]):
+            draw.rounded_rectangle((x, 58, x + 300, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
             self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
         draw.rounded_rectangle((24, 136, 1256, 632), radius=10, fill=25, outline=58)
         self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
-        self._whole_latin_text(draw, (42, 194), "640 x 400", 18, 158)
-        self._text(draw, (42, 222), "二值预览" if binary_background else "实时灰度画面", 20, 212)
+        for y, text in zip((194, 222, 250), summary[:3]):
+            self._text(draw, (42, y), text, 18, 158)
         draw.line((44, 284, 100, 284), fill=240, width=2)
         self._text(draw, (42, 298), "实际计数线", 18, 175)
         self._text(draw, (42, 328), "从左向右计数", 18, 212)
-        for y, text in zip((448, 480, 512, 544),
+        for y, text in zip((356, 384, 412), summary[3:]):
+            self._text(draw, (42, y), text, 18, 170)
+        self._text(draw, (42, 434), "二值预览" if binary_background else "实时灰度画面", 18, 212)
+        for y, text in zip((466, 498, 530, 562),
                            ("BTN0  暂停 / 恢复", "BTN1  长按 2 秒清零",
                             "BTN2  灰度 / 二值", "BTN3  详细状态")):
             self._text(draw, (42, y), text, 18, 144)
@@ -428,10 +475,11 @@ class DashboardComposer:
         for i, text in enumerate(detail):
             # Keep diagnostic text inside the narrow gutter.
             for row in range(0, min(len(text), 30), 10):
-                self._text(draw, (1044, 344 + i * 78 + row // 10 * 24), text[row:row + 10], 18, 170)
+                self._text(draw, (1044, 344 + i * 78 + row // 10 * 24),
+                           text[row:row + 10], 18, 170)
         for x, width, label, text, field in (
-                (24, 600, "PS CPU 使用率", values[3], "cpu_percent"),
-                (640, 616, "DDR 内存占用", values[4], "memory_percent")):
+                (24, 600, "PS CPU 使用率", values[4], "cpu_percent"),
+                (640, 616, "DDR 内存占用", values[5], "memory_percent")):
             draw.rounded_rectangle((x, 646, x + width, 704), radius=9, fill=40)
             self._text(draw, (x + 16, 650), label, 18, 178)
             self._whole_latin_text(draw, (x + width - 74, 674), text, 18, 238)
