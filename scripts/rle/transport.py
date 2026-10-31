@@ -1,4 +1,4 @@
-"""Fail-closed, single-frame simple-mode DMA transport for RLE_PACKET_V1."""
+"""Fail-closed single-frame DMA transport for packet or RAW1 Gray8 input."""
 from __future__ import annotations
 
 import numbers
@@ -16,6 +16,8 @@ from .protocol import (
 
 
 RLE_SIGNATURE = 0x31454C52
+RAW1_SIGNATURE = 0x52415731
+RAW_TX_BYTES = WIDTH * HEIGHT
 GEOMETRY = (HEIGHT << 16) | WIDTH
 DMA_MM2S_STATUS = 0x04
 DMA_MM2S_ADDRESS = 0x18
@@ -88,7 +90,8 @@ class RleDmaTransport:
 
     def __init__(self, send_channel: Any, recv_channel: Any,
                  dma_regs: Any, control: Any, tx_buffer: Any,
-                 rx_buffer: Any, timeout_s: float = 5.0):
+                 rx_buffer: Any, timeout_s: float = 5.0,
+                 input_mode: str = "packet"):
         if (isinstance(timeout_s, bool) or not isinstance(timeout_s, numbers.Real)
                 or not math.isfinite(timeout_s) or timeout_s <= 0):
             raise ValueError("timeout_s must be a positive number")
@@ -99,6 +102,9 @@ class RleDmaTransport:
         self.tx_buffer = tx_buffer
         self.rx_buffer = rx_buffer
         self.timeout_s = float(timeout_s)
+        if input_mode not in ("packet", "raw"):
+            raise ValueError("input_mode must be 'packet' or 'raw'")
+        self.input_mode = input_mode
         self.dma_may_be_active = False
         self._closed = False
         self._completed_frames = 0
@@ -112,7 +118,9 @@ class RleDmaTransport:
             raise RuntimeError("DMA ownership is uncertain; automatic retry is forbidden")
 
     def _preflight_buffers(self) -> None:
-        tx_start, tx_end = _buffer_address(self.tx_buffer, TX_BYTES, 8, "TX")
+        tx_bytes = RAW_TX_BYTES if self.input_mode == "raw" else TX_BYTES
+        alignment = 4 if self.input_mode == "raw" else 8
+        tx_start, tx_end = _buffer_address(self.tx_buffer, tx_bytes, alignment, "TX")
         rx_start, rx_end = _buffer_address(self.rx_buffer, RX_CAPACITY, 4, "RX")
         if tx_start < rx_end and rx_start < tx_end:
             raise ValueError("TX and RX DMA spans overlap")
@@ -133,6 +141,8 @@ class RleDmaTransport:
         raise RuntimeError(f"{name} DMA is active before transfer: 0x{status:08x}")
 
     def _preflight_hardware(self) -> None:
+        if self.input_mode == "raw" and int(self.control.read(0x70)) != RAW1_SIGNATURE:
+            raise RuntimeError("raw Gray8 input requires RAW1 hardware capability")
         signature = int(self.control.read(0x04))
         geometry = int(self.control.read(0x2C))
         max_runs = int(self.control.read(0x30))
@@ -208,7 +218,15 @@ class RleDmaTransport:
         # Validate addresses and the exact hardware identity before touching DMA.
         self._preflight_buffers()
         self._preflight_hardware()
-        encode_gray_into(gray, self.tx_buffer, frame_id=frame_id)
+        if self.input_mode == "raw":
+            image = np.asarray(gray)
+            if image.dtype != np.uint8 or image.shape != (HEIGHT, WIDTH):
+                raise ValueError(f"raw Gray8 input must be uint8 with shape {(HEIGHT, WIDTH)}")
+            tx_view = np.frombuffer(memoryview(self.tx_buffer).cast("B")[:RAW_TX_BYTES],
+                                    dtype=np.uint8).reshape(HEIGHT, WIDTH)
+            np.copyto(tx_view, image)
+        else:
+            encode_gray_into(gray, self.tx_buffer, frame_id=frame_id)
         sync_to = getattr(self.tx_buffer, "sync_to_device", None)
         if callable(sync_to):
             sync_to()
@@ -220,12 +238,17 @@ class RleDmaTransport:
 
         self._configure(frame_id, params_version, roi, roi_start, roi_end,
                         threshold, intensity_offset, morph_mode)
+        if self.input_mode == "raw":
+            self.control.write(0x74, 1)
+            if int(self.control.read(0x74)) != 1:
+                raise RuntimeError("raw Gray8 input mode readback mismatch")
         # Set before the first channel start. Any exception afterwards keeps both
         # buffers held until an operator can establish that DMA ownership ended.
         self.dma_may_be_active = True
         self.recv_channel.transfer(self.rx_buffer, nbytes=RX_CAPACITY)
         self.control.write(0x00, 1)
-        self.send_channel.transfer(self.tx_buffer, nbytes=TX_BYTES)
+        self.send_channel.transfer(self.tx_buffer,
+                                   nbytes=RAW_TX_BYTES if self.input_mode == "raw" else TX_BYTES)
 
         dma_actual, hw_actual, state = self._wait_complete()
         if self.send_channel is not None:
