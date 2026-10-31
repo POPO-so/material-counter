@@ -322,5 +322,3 @@ def test_actual_drawing_child_preserves_frame_identity_and_renders_count_line(ax
         if lease is not None:outputs.release_read(lease.slot)
         inputs.close();outputs.close()
     assert child.exitcode==0 and counts[0]==1
-
-
