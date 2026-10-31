@@ -546,12 +546,12 @@ def test_dashboard_resource_rows_change_pixels_and_preserve_markers():
     second = dict(first, cpu_percent=65, static_bram_percent=8.4)
 
     image = c.render(gray, binary, session, 71, dashboard=first).copy()
-    live_before = image[562:638, 24:1256].copy()
-    static_before = image[640:717, 24:1256].copy()
+    live_before = image[480:553, 24:1256].copy()
+    static_before = image[558:631, 24:1256].copy()
     changed = c.render(gray, binary, session, 72, dashboard=second)
 
-    assert not np.array_equal(live_before, changed[562:638, 24:1256])
-    assert not np.array_equal(static_before, changed[640:717, 24:1256])
+    assert not np.array_equal(live_before, changed[480:553, 24:1256])
+    assert not np.array_equal(static_before, changed[558:631, 24:1256])
     assert ("latin", "LIVE", 18) in c._text_cache
     assert ("latin", "STATIC", 18) in c._text_cache
     assert ("mixed", "PS CPU", 18) in c._text_cache
@@ -578,14 +578,68 @@ def test_dashboard_unavailable_percentages_show_dashes_and_empty_rings():
     assert image[599, 140 - 18] == 76
 
 
-def test_dashboard_viewport_is_640_by_400_without_resizing_distortion():
+def test_dashboard_viewport_is_binary_512_by_320_four_fifths_scale():
     c = _dashboard_composer()
     gray = np.full((400, 640), 103, dtype=np.uint8)
     binary = np.zeros_like(gray)
     image = c.render(gray, binary, uuid.uuid4(), 1)
 
-    assert c.VIEW == (320, 146, 640, 400)
+    assert c.VIEW == (384, 146, 512, 320)
     assert image.shape == (720, 1280)
-    assert image[200, 420] == 103
-    assert image[300, 800] == 103
-    assert image[545, 959] == 103
+    assert image[200, 420] == 0
+    assert image[300, 800] == 0
+    assert image[450, 895] == 0
+
+
+def test_dashboard_mode_exposure_and_pl_status_change_without_hiding_rate_panels():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    common = dict(count=8, display_fps=15, processing_ms=30,
+                  cpu_percent=24, cpu0_percent=20, cpu1_percent=28,
+                  memory_percent=40, static_lut_percent=12,
+                  static_ff_percent=14, static_bram_percent=3,
+                  static_dsp_percent=4)
+    normal = c.render(gray, gray, session, 1, dashboard=dict(
+        common, mode="NORMAL", exposure_text="曝光 5..1000 / 5 ms / 1 ms",
+        pl_text="PL 12% / IN 1.2 MB/s" )).copy()
+    diagnostic = c.render(gray, gray, session, 2, dashboard=dict(
+        common, mode="DIAGNOSTIC", exposure_text="曝光 5..1000 / 6 ms / 1 ms",
+        pl_text="PL 14% / IN 1.4 MB/s" )).copy()
+
+    assert not np.array_equal(normal[320:410, 34:370], diagnostic[320:410, 34:370])
+    assert np.array_equal(normal[480:709, 24:1256], diagnostic[480:709, 24:1256])
+
+
+def test_dashboard_binary_view_uses_four_fifths_nearest_golden():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    binary = np.indices((400, 640)).sum(axis=0).astype(np.uint8) % 2 * 255
+    image = c.render(gray, binary, uuid.uuid4(), 1, binary_background=True,
+                     dashboard={"count": 1})
+    x, y, width, height = c.VIEW
+    expected = binary[np.arange(height) * 400 // height][:, np.arange(width) * 640 // width]
+    assert c.VIEW == (384, 146, 512, 320)
+    visible = np.ones((height, width), dtype=bool)
+    visible[:, 248:265] = False
+    visible[:40, 260:] = False
+    assert np.array_equal(image[y:y + height, x:x + width][visible], expected[visible])
+
+
+def test_dashboard_pl_preview_skips_pixels_and_duplicate_count_line():
+    c = _dashboard_composer()
+    black = np.zeros((400, 640), dtype=np.uint8)
+    image = c.render(black, black, uuid.uuid4(), 1, boxes=((20, 20, 100, 100),),
+                     binary_background=True, pl_preview=True, dashboard={"count": 2})
+    x, y, width, height = c.VIEW
+    assert np.all(image[y:y + height, x:x + width] == 0)
+
+
+def test_dashboard_rle_row_shows_activity_throughput_and_stalls():
+    c = _dashboard_composer()
+    black = np.zeros((400, 640), dtype=np.uint8)
+    image = c.render(black, black, uuid.uuid4(), 1, dashboard={
+        "rle_activity_pct": 22, "input_mb_s": 12.3, "output_mb_s": 0.7,
+        "input_stall_pct": 1.5, "output_stall_pct": 2.5,
+        "rle_fresh": True})
+    assert np.any(image[636:708, 24:1256] != 14)
