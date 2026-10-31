@@ -2,7 +2,19 @@
 
 from collections import deque
 from dataclasses import dataclass
-from math import fsum, isfinite
+from math import isfinite
+
+
+_MAX_U64 = 2**64 - 1
+
+
+def _validate_u64(value, name):
+    """Validate an unsigned 64-bit integer without accepting bool."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{name} must be an integer")
+    if not 0 <= value <= _MAX_U64:
+        raise ValueError(f"{name} must be between 0 and 2**64 - 1")
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,6 +32,8 @@ class FrameTelemetry:
     def __post_init__(self):
         if isinstance(self.frame_id, bool) or not isinstance(self.frame_id, int):
             raise TypeError("frame_id must be an integer")
+
+        previous = None
         for name in (
             "capture_ns",
             "consume_ns",
@@ -33,26 +47,32 @@ class FrameTelemetry:
             value = getattr(self, name)
             if value is None:
                 continue
-            if isinstance(value, bool) or not isinstance(value, int):
-                raise TypeError(f"{name} must be an integer or None")
-            if value < 0:
-                raise ValueError(f"{name} must be non-negative")
+            value = _validate_u64(value, name)
+            if previous is not None and value < previous:
+                raise ValueError("provided timestamps must not go backwards")
+            previous = value
 
 
 def percentile(values, percent):
     """Return a percentile using NumPy's default linear interpolation rule."""
+    if isinstance(percent, bool) or not isinstance(percent, (int, float)):
+        raise TypeError("percent must be a number")
+    if not 0 <= percent <= 100:
+        raise ValueError("percent must be between 0 and 100")
+
     ordered = sorted(values)
     if not ordered:
         return None
-    if not 0 <= percent <= 100:
-        raise ValueError("percent must be between 0 and 100")
     if len(ordered) == 1:
         return ordered[0]
+
     rank = (len(ordered) - 1) * percent / 100
     lower = int(rank)
     upper = min(lower + 1, len(ordered) - 1)
     fraction = rank - lower
-    return fsum((ordered[lower] * (1 - fraction), ordered[upper] * fraction))
+    # This is the same linear-interpolation form used by NumPy's
+    # ``method='linear'`` percentile implementation.
+    return ordered[lower] + (ordered[upper] - ordered[lower]) * fraction
 
 
 def _summary(values):
@@ -104,25 +124,65 @@ class TelemetryWindow:
         self.window_s = float(window_s)
         self.max_samples = max_samples
         self._frames = deque(maxlen=max_samples)
-        self._camera = deque(maxlen=max_samples)
-        self._pump = deque(maxlen=max_samples)
-        self._camera_totals = None
-        self._pump_totals = None
+        self._camera_previous = None
+        self._camera_fps = None
+        self._camera_fps_ns = None
+        self._pump_previous = None
+        self._display_fps = None
+        self._display_fps_ns = None
+        self._consumed_previous = None
+        self._effective_input_fps = None
+        self._effective_input_fps_ns = None
 
     def record_frame(self, frame):
+        """Record one frame on the low-overhead path.
+
+        This method intentionally performs only a deque append; it does not
+        build dictionaries, validate timestamps, or perform sampling work.
+        """
         self._frames.append(frame)
 
     def record_camera(
         self, captured_total, overwrite_drops, sequence_errors, now_ns
     ) -> dict | None:
-        self._validate_counters((captured_total, overwrite_drops, sequence_errors), now_ns)
-        previous = self._camera_totals
-        self._camera_totals = (captured_total, overwrite_drops, sequence_errors, now_ns)
-        self._camera.append((now_ns, captured_total))
+        """Sample cumulative camera counters at low frequency.
+
+        Only the previous counters and timestamp are retained.  This method is
+        not intended for the per-frame hot path.
+        """
+        self._validate_counter_values(
+            (captured_total, overwrite_drops, sequence_errors), now_ns
+        )
+        previous = self._camera_previous
+        self._camera_previous = (
+            captured_total,
+            overwrite_drops,
+            sequence_errors,
+            now_ns,
+        )
         if previous is None:
             return None
+
+        if now_ns <= previous[3] or any(
+            current < old
+            for current, old in zip(
+                self._camera_previous[:3], previous[:3]
+            )
+        ):
+            self._camera_fps = None
+            self._camera_fps_ns = None
+            return {
+                "camera_fps": None,
+                "camera_overwrite_drops": None,
+                "camera_sequence_errors": None,
+            }
+
         elapsed_ns = now_ns - previous[3]
-        fps = (captured_total - previous[0]) * 1_000_000_000 / elapsed_ns if elapsed_ns > 0 else 0.0
+        fps = (
+            (captured_total - previous[0]) * 1_000_000_000 / elapsed_ns
+        )
+        self._camera_fps = fps
+        self._camera_fps_ns = now_ns
         return {
             "camera_fps": fps,
             "camera_overwrite_drops": overwrite_drops - previous[1],
@@ -132,66 +192,135 @@ class TelemetryWindow:
     def record_pump(
         self, submitted, skipped, submit_failures, now_ns
     ) -> dict | None:
-        self._validate_counters((submitted, skipped, submit_failures), now_ns)
-        previous = self._pump_totals
-        self._pump_totals = (submitted, skipped, submit_failures, now_ns)
-        self._pump.append((now_ns, submitted))
+        """Sample cumulative pump counters at low frequency.
+
+        Only the previous counters and timestamp are retained.  This method is
+        not intended for the per-frame hot path.
+        """
+        self._validate_counter_values((submitted, skipped, submit_failures), now_ns)
+        previous = self._pump_previous
+        self._pump_previous = (submitted, skipped, submit_failures, now_ns)
         if previous is None:
             return None
+
+        if now_ns <= previous[3] or any(
+            current < old
+            for current, old in zip(self._pump_previous[:3], previous[:3])
+        ):
+            self._display_fps = None
+            self._display_fps_ns = None
+            return {
+                "display_fps": None,
+                "pump_skips": None,
+                "pump_submit_failures": None,
+            }
+
         elapsed_ns = now_ns - previous[3]
-        fps = (submitted - previous[0]) * 1_000_000_000 / elapsed_ns if elapsed_ns > 0 else 0.0
+        fps = (submitted - previous[0]) * 1_000_000_000 / elapsed_ns
+        self._display_fps = fps
+        self._display_fps_ns = now_ns
         return {
             "display_fps": fps,
             "pump_skips": skipped - previous[1],
             "pump_submit_failures": submit_failures - previous[2],
         }
 
+    def record_consumed(self, consumed_total, now_ns) -> dict | None:
+        """Sample the cumulative consumed-frame count at low frequency."""
+        _validate_u64(consumed_total, "consumed_total")
+        _validate_u64(now_ns, "now_ns")
+        previous = self._consumed_previous
+        self._consumed_previous = (consumed_total, now_ns)
+        if previous is None:
+            return None
+
+        if now_ns <= previous[1] or consumed_total < previous[0]:
+            self._effective_input_fps = None
+            self._effective_input_fps_ns = None
+            return {"effective_input_fps": None}
+
+        elapsed_ns = now_ns - previous[1]
+        fps = (consumed_total - previous[0]) * 1_000_000_000 / elapsed_ns
+        self._effective_input_fps = fps
+        self._effective_input_fps_ns = now_ns
+        return {"effective_input_fps": fps}
+
     @staticmethod
-    def _validate_counters(values, now_ns):
-        if any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in values):
-            raise ValueError("counter totals must be non-negative integers")
-        if isinstance(now_ns, bool) or not isinstance(now_ns, int) or now_ns < 0:
-            raise ValueError("now_ns must be a non-negative integer")
+    def _validate_counter_values(values, now_ns):
+        for value in values:
+            _validate_u64(value, "counter total")
+        _validate_u64(now_ns, "now_ns")
+
+    @staticmethod
+    def _valid_timestamp(value):
+        return (
+            not isinstance(value, bool)
+            and isinstance(value, int)
+            and 0 <= value <= _MAX_U64
+        )
+
+    @classmethod
+    def _duration_ms(cls, frame, start_name, end_name):
+        start = getattr(frame, start_name, None)
+        end = getattr(frame, end_name, None)
+        if not cls._valid_timestamp(start) or not cls._valid_timestamp(end):
+            return None
+        if end < start:
+            return None
+        return (end - start) / 1_000_000
 
     def sample(self, now_ns):
-        if isinstance(now_ns, bool) or not isinstance(now_ns, int) or now_ns < 0:
-            raise ValueError("now_ns must be a non-negative integer")
+        _validate_u64(now_ns, "now_ns")
         cutoff_ns = now_ns - self.window_s * 1_000_000_000
-        frames = [frame for frame in self._frames if frame.capture_ns >= cutoff_ns]
+        frames = []
+        for frame in self._frames:
+            capture_ns = getattr(frame, "capture_ns", None)
+            if self._valid_timestamp(capture_ns) and capture_ns >= cutoff_ns:
+                frames.append(frame)
+
         metric_values = {name: [] for name in self._METRIC_STAGES}
         for frame in frames:
             for metric, (start_name, end_name) in self._METRIC_STAGES.items():
-                start = getattr(frame, start_name)
-                end = getattr(frame, end_name)
-                if start is not None and end is not None:
-                    metric_values[metric].append((end - start) / 1_000_000)
+                duration_ms = self._duration_ms(frame, start_name, end_name)
+                if duration_ms is not None:
+                    metric_values[metric].append(duration_ms)
         metrics = {name: _summary(values) for name, values in metric_values.items()}
         result = {
             "frame_count": len(frames),
             "metrics": metrics,
-            "camera_fps": self._fps(self._camera, cutoff_ns),
-            "display_fps": self._fps(self._pump, cutoff_ns),
+            "camera_fps": (
+                self._camera_fps
+                if self._camera_fps_ns is not None
+                and self._camera_fps_ns >= cutoff_ns
+                else None
+            ),
+            "display_fps": (
+                self._display_fps
+                if self._display_fps_ns is not None
+                and self._display_fps_ns >= cutoff_ns
+                else None
+            ),
+            "effective_input_fps": (
+                self._effective_input_fps
+                if self._effective_input_fps_ns is not None
+                and self._effective_input_fps_ns >= cutoff_ns
+                else None
+            ),
         }
         result.update(metrics)
         return result
 
-    @staticmethod
-    def _fps(samples, cutoff_ns):
-        in_window = [sample for sample in samples if sample[0] >= cutoff_ns]
-        if len(in_window) < 2:
-            return None
-        elapsed_ns = in_window[-1][0] - in_window[0][0]
-        if elapsed_ns <= 0:
-            return None
-        delta = in_window[-1][1] - in_window[0][1]
-        return delta * 1_000_000_000 / elapsed_ns
-
     def reset(self):
         self._frames.clear()
-        self._camera.clear()
-        self._pump.clear()
-        self._camera_totals = None
-        self._pump_totals = None
+        self._camera_previous = None
+        self._camera_fps = None
+        self._camera_fps_ns = None
+        self._pump_previous = None
+        self._display_fps = None
+        self._display_fps_ns = None
+        self._consumed_previous = None
+        self._effective_input_fps = None
+        self._effective_input_fps_ns = None
 
 
 def pl_counters_snapshot(raw):
