@@ -184,7 +184,7 @@ def test_preview_and_input_backend_cli_defaults_and_candidate_values():
                 "--boot-id", str(uuid.uuid4()), "--native-lib", "lib",
                 "--output", "out"]
     defaults = parser.parse_args(required)
-    assert (defaults.preview_backend, defaults.input_mode) == ("software", "packet")
+    assert (defaults.preview_backend, defaults.input_mode) == ("pl", "packet")
     candidate = parser.parse_args(required + ["--preview-backend", "pl", "--input-mode", "raw"])
     assert (candidate.preview_backend, candidate.input_mode) == ("pl", "raw")
 

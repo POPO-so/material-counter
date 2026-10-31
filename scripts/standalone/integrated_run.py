@@ -406,7 +406,7 @@ def build_argument_parser():
     parser.add_argument('--camera',default='/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0')
     parser.add_argument('--button-input',choices=('irq','polling','off'),default='irq',
         help='IRQ is required by new candidates; polling is an explicit legacy-board fallback')
-    parser.add_argument('--preview-backend',choices=('software','pl'),default='software')
+    parser.add_argument('--preview-backend',choices=('software','pl'),default='pl')
     parser.add_argument('--input-mode',choices=('packet','raw'),default='packet')
     parser.add_argument('--display',choices=('on','off'),default='on')
     parser.add_argument('--duration',type=float,default=90)
