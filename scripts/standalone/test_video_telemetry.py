@@ -1,3 +1,4 @@
+from collections import deque
 from dataclasses import FrozenInstanceError
 from inspect import signature
 from types import SimpleNamespace
@@ -190,6 +191,32 @@ def test_record_consumed_returns_effective_fps_and_handles_unknowns():
     assert rollback.record_consumed(9, 1_000_000_000) == {"effective_input_fps": None}
 
 
+def test_sample_marks_cached_rates_unknown_when_now_moves_backwards():
+    window = TelemetryWindow()
+    assert window.record_camera(10, 2, 1, 0) is None
+    assert window.record_pump(20, 3, 1, 0) is None
+    assert window.record_consumed(30, 0) is None
+
+    assert window.record_camera(20, 4, 2, 1_000_000_000) == {
+        "camera_fps": 10.0,
+        "camera_overwrite_drops": 2,
+        "camera_sequence_errors": 1,
+    }
+    assert window.record_pump(30, 5, 2, 1_000_000_000) == {
+        "display_fps": 10.0,
+        "pump_skips": 2,
+        "pump_submit_failures": 1,
+    }
+    assert window.record_consumed(40, 1_000_000_000) == {
+        "effective_input_fps": 10.0,
+    }
+
+    result = window.sample(now_ns=500_000_000)
+    assert result["camera_fps"] is None
+    assert result["display_fps"] is None
+    assert result["effective_input_fps"] is None
+
+
 def test_ps_total_spans_transfer_to_track():
     window = TelemetryWindow()
     window.record_frame(
@@ -246,13 +273,40 @@ def test_missing_stage_timestamps_do_not_add_samples():
     assert all(summary["mean"] is None for summary in summaries.values())
 
 
-def test_push_and_camera_state_stays_fixed_size():
+def test_counter_sampling_state_has_no_growing_history():
     window = TelemetryWindow(max_samples=3)
+    baseline_sizes = None
+
     for index in range(100):
+        window.record_frame(FrameTelemetry(index, index * 1_000_000_000))
         window.record_camera(index, index, index, index)
         window.record_pump(index, index, index, index)
-    assert not hasattr(window, "_camera")
-    assert not hasattr(window, "_pump")
+        window.record_consumed(index, index)
+
+        state_sizes = {}
+        for name, value in vars(window).items():
+            if name == "_frames":
+                continue
+            try:
+                size = len(value)
+            except TypeError:
+                continue
+            assert not isinstance(value, (list, deque, dict, set)), (
+                f"counter state {name!r} retained a growing history: {value!r}"
+            )
+            assert size <= 4, f"counter state {name!r} has more than one fixed sample"
+            state_sizes[name] = size
+
+        if baseline_sizes is None:
+            baseline_sizes = state_sizes
+        else:
+            assert state_sizes == baseline_sizes, (
+                "counter sampling structures changed size across calls"
+            )
+
+    assert len(window._frames) == 3
+    for forbidden_name in ("_camera", "_pump", "_consumed"):
+        assert forbidden_name not in vars(window)
 
 
 def test_reset_clears_frames_and_counter_baselines():

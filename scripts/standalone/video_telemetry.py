@@ -259,6 +259,12 @@ class TelemetryWindow:
             and 0 <= value <= _MAX_U64
         )
 
+    @staticmethod
+    def _fresh_rate(rate, sampled_ns, now_ns, cutoff_ns):
+        if sampled_ns is None or not cutoff_ns <= sampled_ns <= now_ns:
+            return None
+        return rate
+
     @classmethod
     def _duration_ms(cls, frame, start_name, end_name):
         start = getattr(frame, start_name, None)
@@ -288,23 +294,17 @@ class TelemetryWindow:
         result = {
             "frame_count": len(frames),
             "metrics": metrics,
-            "camera_fps": (
-                self._camera_fps
-                if self._camera_fps_ns is not None
-                and self._camera_fps_ns >= cutoff_ns
-                else None
+            "camera_fps": self._fresh_rate(
+                self._camera_fps, self._camera_fps_ns, now_ns, cutoff_ns
             ),
-            "display_fps": (
-                self._display_fps
-                if self._display_fps_ns is not None
-                and self._display_fps_ns >= cutoff_ns
-                else None
+            "display_fps": self._fresh_rate(
+                self._display_fps, self._display_fps_ns, now_ns, cutoff_ns
             ),
-            "effective_input_fps": (
-                self._effective_input_fps
-                if self._effective_input_fps_ns is not None
-                and self._effective_input_fps_ns >= cutoff_ns
-                else None
+            "effective_input_fps": self._fresh_rate(
+                self._effective_input_fps,
+                self._effective_input_fps_ns,
+                now_ns,
+                cutoff_ns,
             ),
         }
         result.update(metrics)
