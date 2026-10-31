@@ -15,6 +15,7 @@ from scripts.standalone.integrated_run import (
     start_drawing_child,
     source_identity,
     dashboard_values,
+    runtime_diagnostic_snapshot,
 )
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
@@ -53,6 +54,44 @@ def test_dashboard_values_include_mode_exposure_pl_rates_and_thread_summary():
     assert values["exposure_range_text"] == "\u8303\u56f4 5\u20131000 ms / \u00b11 ms"
     assert "RLE active (incl wait) 32%" in values["pl_text"] and "12.5" in values["pl_text"]
     assert "MainThr" in values["thread_text"] and "tick/s" in values["thread_text"]
+
+
+def test_runtime_diagnostic_snapshot_limits_threads_and_records_pool_occupancy():
+    runtime = {"interval_s": 3.0, "threads": {
+        "1": {"name": "cpu", "utime_ticks_delta": 2, "stime_ticks_delta": 1,
+              "schedstat_run_ns_delta": 1_200_000_000,
+              "schedstat_wait_ns_delta": 300_000_000},
+        "2": {"name": "io", "utime_ticks_delta": 0, "stime_ticks_delta": 1,
+              "schedstat_run_ns_delta": 500_000_000,
+              "schedstat_wait_ns_delta": 900_000_000},
+        "3": {"name": "other", "utime_ticks_delta": 20, "stime_ticks_delta": 0,
+              "schedstat_run_ns_delta": 2_000_000_000,
+              "schedstat_wait_ns_delta": 0},
+    }}
+    snapshot = runtime_diagnostic_snapshot(runtime,
+        {"ready": 2, "capacity": 3}, {"ready": 1, "capacity": 3}, 100)
+
+    assert [thread["tid"] for thread in snapshot["threads"]] == ["3", "1"]
+    assert snapshot["threads"][0]["cpu_time_ms"] == 200.0
+    assert snapshot["threads"][0]["run_time_ms"] == 2000.0
+    assert snapshot["threads"][0]["wait_time_ms"] == 0.0
+    assert snapshot["input_pool"] == {"ready": 2, "capacity": 3}
+    assert snapshot["output_pool"] == {"ready": 1, "capacity": 3}
+
+
+def test_dashboard_values_show_thread_run_wait_and_preview_pool_occupancy():
+    values = dashboard_values(2, False, False, {}, {}, runtime_diagnostics={
+        "threads": [{"name": "capture", "cpu_time_ms": 12.5,
+                     "run_time_ms": 20.0, "wait_time_ms": 4.0}],
+        "input_pool": {"ready": 2, "capacity": 3},
+        "output_pool": {"ready": 1, "capacity": 3},
+    })
+
+    assert "capt" in values["thread_text"]
+    assert "CPU12" in values["thread_text"]
+    assert "R20" in values["thread_text"]
+    assert "W4ms" in values["thread_text"]
+    assert values["queue_text"] == "IN 2/3  OUT 1/3"
 
 
 def test_dashboard_exposure_error_keeps_last_known_range_and_bounds_error_text():

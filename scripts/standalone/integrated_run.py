@@ -74,7 +74,7 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
 
 def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='normal',
                      exposure=None, exposure_error=None, pl_rates=None, runtime=None,
-                     button_status='IRQ READY'):
+                     runtime_diagnostics=None, button_status='IRQ READY'):
     """Use measured telemetry only; unavailable or stale readings stay blank."""
     performance=telemetry.get('performance',{})
     resources=telemetry.get('resources',{})
@@ -137,11 +137,26 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
     thread_text=('threads '+', '.join('{} {:.1f}tick/s'.format(name[:7],ticks/interval)
                                    for ticks,name in sorted(thread_entries,reverse=True)[:2])
                  if thread_entries else 'threads unavailable')
+    queue_text='preview pools unavailable'
+    if isinstance(runtime_diagnostics,dict):
+        diagnostic_threads=runtime_diagnostics.get('threads',[])
+        if diagnostic_threads:
+            thread_text=' | '.join('{} CPU{:.0f} R{:.0f} W{:.0f}ms'.format(
+                str(entry.get('name') or entry.get('tid','?'))[:4],
+                entry['cpu_time_ms'],entry['run_time_ms'],entry['wait_time_ms'])
+                for entry in diagnostic_threads[:2])
+        input_pool=runtime_diagnostics.get('input_pool')
+        output_pool=runtime_diagnostics.get('output_pool')
+        if isinstance(input_pool,dict) and isinstance(output_pool,dict):
+            queue_text='IN {}/{}  OUT {}/{}'.format(input_pool.get('ready','--'),
+                input_pool.get('capacity','--'),output_pool.get('ready','--'),
+                output_pool.get('capacity','--'))
     rates=rates or {}
     return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
         mode='DIAGNOSTIC' if mode=='diagnostic' else 'NORMAL',exposure_text=exposure_text,
         exposure_range_text=exposure_range_text,
-        pl_text=pl_text,thread_text=thread_text,button_status=button_status,
+        pl_text=pl_text,thread_text=thread_text,queue_text=queue_text,
+        button_status=button_status,
         rle_fresh=bool(rates),rle_activity_pct=rates.get('rle_activity_pct'),
         input_mb_s=rates.get('input_mb_s'),output_mb_s=rates.get('output_mb_s'),
         input_stall_pct=rates.get('input_stall_pct'),output_stall_pct=rates.get('output_stall_pct'),
@@ -151,6 +166,51 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
         memory_percent=memory_percent,
         static_lut_percent=static_percent['lut'],static_ff_percent=static_percent['ff'],
         static_bram_percent=static_percent['bram_tiles'],static_dsp_percent=static_percent['dsp'])
+
+
+def runtime_diagnostic_snapshot(runtime, input_pool, output_pool, tick_hz):
+    """Keep a bounded, display-ready sample of scheduler and preview-pool state."""
+    threads=[]
+    if isinstance(runtime,dict):
+        interval=runtime.get('interval_s')
+        source=runtime.get('threads',{})
+        if isinstance(interval,(int,float)) and interval>0 and isinstance(source,dict):
+            for tid,entry in source.items():
+                if not isinstance(entry,dict):
+                    continue
+                user=entry.get('utime_ticks_delta')
+                system=entry.get('stime_ticks_delta')
+                run_ns=entry.get('schedstat_run_ns_delta')
+                wait_ns=entry.get('schedstat_wait_ns_delta')
+                if (type(user) is not int or user < 0 or type(system) is not int
+                        or system < 0 or type(tick_hz) is not int or tick_hz <= 0):
+                    continue
+                cpu_ms=(user+system)*1000.0/tick_hz
+                if not all(isinstance(value,(int,float)) and value>=0 for value in
+                           (cpu_ms,run_ns,wait_ns)):
+                    continue
+                threads.append(dict(tid=str(tid),name=str(entry.get('name') or tid),
+                    cpu_time_ms=cpu_ms,run_time_ms=run_ns/1_000_000,
+                    wait_time_ms=wait_ns/1_000_000))
+    threads.sort(key=lambda entry:(entry['cpu_time_ms'],entry['run_time_ms']),reverse=True)
+    return dict(interval_s=(runtime or {}).get('interval_s') if isinstance(runtime,dict) else None,
+        threads=threads[:2], input_pool=_pool_occupancy(input_pool),
+        output_pool=_pool_occupancy(output_pool))
+
+
+def _pool_occupancy(pool):
+    if not isinstance(pool,dict):
+        return None
+    return {key:pool.get(key) for key in ('ready','capacity')}
+
+
+def _read_pool_stats(pool):
+    if pool is None:
+        return None
+    try:
+        return pool.stats_snapshot()
+    except Exception:
+        return None
 
 
 def record_diagnostic_frame(policy, trace, captures, frame_id, result, counter,
@@ -501,7 +561,7 @@ def main(argv=None):
         material_accuracy='NOT_MEASURED',samples=deque(maxlen=1800),events=deque(maxlen=2048),
         preview_submitted_fps=None,
         preview_fps_scope='accepted_for_display_not_scanout',
-        recoveries=deque(maxlen=2048),button_raw_sample_count=0,
+        recoveries=deque(maxlen=2048),runtime_samples=deque(maxlen=1800),button_raw_sample_count=0,
         button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
         before_memory=_memory(),scope='G3 candidate; G4 physical disconnection/cold-start not asserted')
     captures=exporter=None
@@ -672,7 +732,7 @@ def main(argv=None):
         previous_process={}
         last_rle_stats={'runs':0,'rx_bytes':0}
         runtime_sampler=RuntimeSampler(pid=os.getpid(),interval_s=3.0)
-        next_runtime_sample=started+3.0;runtime_sample=None
+        next_runtime_sample=started+3.0;runtime_sample=None;runtime_diagnostics=None
         previous_pl_counters=report['counters_before'];previous_pl_at=started
         pl_rates=counter_rates(previous_pl_counters,previous_pl_counters,1.0)
         tick_hz=os.sysconf('SC_CLK_TCK');page_size=os.sysconf('SC_PAGE_SIZE')
@@ -876,7 +936,8 @@ def main(argv=None):
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,
                     controls.page,telemetry,manifest,mode=diagnostic_policy.mode,
                     exposure=exposure_status,exposure_error=exposure_error,
-                    pl_rates=pl_rates,runtime=runtime_sample,button_status=button_status)
+                    pl_rates=pl_rates,runtime=runtime_sample,
+                    runtime_diagnostics=runtime_diagnostics,button_status=button_status)
                     metadata['dashboard']['binary_fps']=binary_fps
                     metadata['dashboard']['preview_submitted_fps']=binary_fps
                     metadata['dashboard']['preview_status']='PL READY' if pl_preview is not None else '软件二值预览'
@@ -884,7 +945,7 @@ def main(argv=None):
                         metadata['status_lines'].append('PL overlay boxes truncated to 16')
                         metadata['pl_overlay_boxes_truncated']=len(result.detections)-16
                     metadata['dashboard']['exposure_latency_text']=(
-                        'exposure call {:.0f} ms (slow)'.format(exposure_control_ms)
+                        'EXP {:.0f}ms'.format(exposure_control_ms)
                         if exposure_control_ms>100 else '')
                     performance=telemetry.get('performance')
                     if performance:
@@ -939,6 +1000,10 @@ def main(argv=None):
             sample_now=time.monotonic()
             if sample_now>=next_runtime_sample:
                 runtime_sample=runtime_sampler.sample()
+                runtime_diagnostics=runtime_diagnostic_snapshot(runtime_sample,
+                    _read_pool_stats(inputs),_read_pool_stats(outputs),tick_hz)
+                report['runtime_samples'].append(dict(monotonic=sample_now,
+                    **runtime_diagnostics))
                 current_pl_counters=owner.call(snapshot_counters,control)
                 pl_rates=counter_rates(previous_pl_counters,current_pl_counters,
                                        sample_now-previous_pl_at)

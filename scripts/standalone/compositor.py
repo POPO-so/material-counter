@@ -431,6 +431,7 @@ class DashboardComposer:
         exposure_text = str(dashboard.get("exposure_text", "曝光不可用"))
         pl_text = str(dashboard.get("pl_text", "PL rates unavailable"))
         thread_text = str(dashboard.get("thread_text", "线程概要暂不可用"))
+        queue_text = str(dashboard.get("queue_text", "帧池 --"))
         button_status = str(dashboard.get("button_status", "IRQ READY"))
         exposure_range_text = str(dashboard.get("exposure_range_text", "范围 --"))
         preview_status = str(dashboard.get("preview_status", "预览 READY"))
@@ -440,7 +441,7 @@ class DashboardComposer:
             "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps"))
         detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
         key = (values, pie_key, state, binary_background, target_count, detail,
-               mode, exposure_text, exposure_range_text, pl_text, thread_text,
+               mode, exposure_text, exposure_range_text, pl_text, thread_text, queue_text,
                button_status, preview_status, exposure_latency_text, rle_key)
         if key == self._key:
             return
@@ -474,8 +475,10 @@ class DashboardComposer:
         self._text(draw, (934, 310), button_status, 18, 170)
         self._text(draw, (934, 340), str(dashboard.get("preview_status", "预览 READY")), 18, 170)
         self._text(draw, (934, 370), thread_text, 18, 170)
+        queue_line = queue_text
         if exposure_latency_text:
-            self._text(draw, (934, 400), exposure_latency_text, 18, 190)
+            queue_line += " / " + exposure_latency_text
+        self._text(draw, (934, 400), queue_line, 18, 190)
         for i, text in enumerate(detail[:2]):
             for row in range(0, min(len(text), 20), 10):
                 self._text(draw, (934, 428 + i * 34 + row // 10 * 18), text[row:row + 10], 18, 170)
