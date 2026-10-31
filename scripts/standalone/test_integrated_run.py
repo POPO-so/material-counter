@@ -224,8 +224,86 @@ def test_preview_and_input_backend_cli_defaults_and_candidate_values():
                 "--output", "out"]
     defaults = parser.parse_args(required)
     assert (defaults.preview_backend, defaults.input_mode) == ("pl", "packet")
+    assert defaults.region_backend == "native"
     candidate = parser.parse_args(required + ["--preview-backend", "pl", "--input-mode", "raw"])
     assert (candidate.preview_backend, candidate.input_mode) == ("pl", "raw")
+
+
+def test_pl_region_backend_requires_pl_preview_and_verified_capabilities(monkeypatch):
+    parser=integrated_run.build_argument_parser()
+    required=["--manifest","m","--manifest-sha256","a"*64,"--boot-id",str(uuid.uuid4()),
+              "--native-lib","lib","--output","out"]
+    args=parser.parse_args(required+["--region-backend","pl","--preview-backend","software"])
+    with pytest.raises(ValueError,match="requires --preview-backend pl"):
+        integrated_run.validate_region_backend(args,{},"candidate.hwh")
+    args.preview_backend="pl"
+    monkeypatch.setattr(integrated_run,"verify_offload_capabilities",
+                        lambda *_: (_ for _ in ()).throw(ValueError("PBO1 FRG1 capability mismatch")))
+    with pytest.raises(ValueError,match="PBO1 FRG1 capability mismatch"):
+        integrated_run.validate_region_backend(args,{},"candidate.hwh")
+
+
+def test_region_reader_reuses_owner_mmio_window_and_checks_frge_capability():
+    factory=getattr(integrated_run,"create_region_feature_reader",None)
+    assert callable(factory)
+    class MMIO:
+        def __init__(self,length): self.length=length; self.values={0x200:0x46524731,0x218:512}; self.reads=[]
+        def read(self,offset): self.reads.append(offset); return self.values[offset]
+    mmio=MMIO(0x10000)
+    owner=type("Owner",(),{"call":lambda self,fn,*args:fn(*args)})()
+    reader=factory("pl",mmio,owner=owner,mmio_length=mmio.length)
+    assert reader is not None and mmio.length>=0x5000
+    assert mmio.reads==[0x200,0x218]
+    with pytest.raises(ValueError,match="mapping"):
+        factory("pl",mmio,owner=owner,mmio_length=0x1000)
+    assert factory("native",mmio,owner=owner,mmio_length=0x1000) is None
+
+
+def test_region_feature_reader_validates_frame_and_not_ready_falls_back():
+    from scripts.rle.features import PlRegionFeatures
+    from scripts.standalone.count_controls import advance_count,make_runtime_counter
+    from scripts.standalone.controls import ControlState
+    class MMIO:
+        def __init__(self):
+            self.values={0x200:0x46524731,0x218:512,0x204:1,0x208:99,
+                         0x20c:0,0x210:0,0x214:0}
+        def read(self,offset): return self.values[offset]
+    class Owner:
+        def call(self,fn,*args): return fn(*args)
+    mmio=MMIO()
+    reader=integrated_run.create_region_feature_reader('pl',mmio,owner=Owner(),mmio_length=0x10000)
+    frame=decode_packet(encode_mask(np.zeros((400,640),np.uint8),frame_id=1))
+    counter=make_runtime_counter(None)
+    features=reader.read(frame)
+    result=advance_count(counter,ControlState(),frame,capture_monotonic_ns=1,region_features=features)
+    assert reader.last_reason=='frame_mismatch' and counter.last_backend=='native'
+    assert reader.last_read_ms>=0 and result is not None
+    mmio.values[0x208]=1;mmio.values[0x204]=0
+    frame=decode_packet(encode_mask(np.zeros((400,640),np.uint8),frame_id=2))
+    features=reader.read(frame)
+    advance_count(counter,ControlState(),frame,capture_monotonic_ns=2,region_features=features)
+    assert reader.last_reason=='not_done' and counter.last_backend=='native'
+
+
+def test_region_frame_summary_records_reader_and_actual_counter_backend():
+    summarize=getattr(integrated_run,'region_feature_frame_summary',None)
+    assert callable(summarize)
+    counter=type('Counter',(),{'last_backend':'native'})()
+    summary=summarize('accepted',object(),counter)
+    assert summary=={'feature_status':'accepted','feature_backend_used':'native'}
+    summary=summarize('accepted',None,type('Counter',(),{'last_backend':'pl_features'})())
+    assert summary=={'feature_status':'accepted','feature_backend_used':'not_counted'}
+
+
+def test_frge_constructor_rejects_signature_or_capacity_mismatch():
+    from scripts.rle.features import PlRegionFeatures
+    class MMIO:
+        def __init__(self,signature,capacity):self.values={0x200:signature,0x218:capacity}
+        def read(self,offset):return self.values[offset]
+    with pytest.raises(ValueError,match='signature'):
+        PlRegionFeatures(MMIO(0,512))
+    with pytest.raises(ValueError,match='capacity'):
+        PlRegionFeatures(MMIO(0x46524731,511))
 
 
 def test_preview_frame_selection_keeps_binary_for_software_and_black_placeholders_for_pl():

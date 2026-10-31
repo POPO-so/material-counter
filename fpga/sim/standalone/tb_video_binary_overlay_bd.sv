@@ -5,6 +5,9 @@ module tb_video_binary_overlay_bd;
   always #7 pclk=~pclk;
   reg resetn=0,presetn=0;
   reg vsync=0;
+  reg tap_valid=0,tap_sof=0,tap_eol=0;
+  reg [7:0] tap_data=0;
+  reg [31:0] tap_frame_id=0;
   reg [31:0] awaddr=0,wdata=0,araddr=0;
   reg awvalid=0,wvalid=0,arvalid=0,bready=0,rready=0;
   reg [3:0] wstrb=4'hf;
@@ -20,7 +23,7 @@ module tb_video_binary_overlay_bd;
     .s_axi_wdata(wdata),.s_axi_wstrb(wstrb),.s_axi_wvalid(wvalid),.s_axi_wready(wready),
     .s_axi_bresp(bresp),.s_axi_bvalid(bvalid),.s_axi_bready(bready),.s_axi_araddr(araddr),.s_axi_arvalid(arvalid),
     .s_axi_arready(arready),.s_axi_rdata(rdata),.s_axi_rresp(rresp),.s_axi_rvalid(rvalid),.s_axi_rready(rready),
-    .mask_clk(clk),.mask_resetn(resetn),.tap_valid(1'b0),.tap_sof(1'b0),.tap_eol(1'b0),.tap_data(8'b0),.tap_frame_id(32'b0),
+    .mask_clk(clk),.mask_resetn(resetn),.tap_valid(tap_valid),.tap_sof(tap_sof),.tap_eol(tap_eol),.tap_data(tap_data),.tap_frame_id(tap_frame_id),
     .pixel_clk(pclk),.pixel_resetn(presetn),.vid_data24(24'h123456),.vid_active(1'b0),.vid_vsync(vsync),.vid_hsync(1'b0),
     .out_data24(out_data24),.out_active(out_active),.out_vsync(out_vsync),.out_hsync(out_hsync),
     .capture_count(capture_count),.drop_count(drop_count),.reject_count(reject_count),.capture_busy(capture_busy),
@@ -32,6 +35,10 @@ module tb_video_binary_overlay_bd;
       @(negedge clk);arvalid=0;
       wait(rvalid);
       if(rdata!==expected||rresp!==response)$fatal(1,"read %08x got %08x/%b expected %08x/%b",addr,rdata,rresp,expected,response);
+      repeat(3) begin
+        @(negedge clk);
+        if(!rvalid || rdata!==expected || rresp!==response) $fatal(1,"read response unstable under backpressure");
+      end
       @(negedge clk);rready=1;
       @(negedge clk);rready=0;
     end
@@ -47,6 +54,7 @@ module tb_video_binary_overlay_bd;
       @(negedge clk);bready=0;
     end
   endtask
+  integer x,y;
   initial begin
     repeat(4)@(negedge clk);resetn=1;presetn=1;
     read_reg(0,32'h50424f31,0);
@@ -66,7 +74,33 @@ module tb_video_binary_overlay_bd;
     repeat(10)@(posedge clk);
     read_reg(8,32'h1,0);
     read_reg(32'h80,0,2);
-    $display("BINARY_OVERLAY_BD_PASS AXIL_reads_writes=12 local_and_absolute=PASS");$finish;
+    read_reg(32'h200,32'h46524731,0);
+    read_reg(32'h43c50218,512,0);
+    write_reg(32'h200,0,4'hf,2,0);
+    // Full geometry: three connected foreground pixels at (10,0)..(12,0).
+    for(y=0;y<400;y=y+1) for(x=0;x<640;x=x+1) begin
+      @(negedge clk);
+      tap_valid=1;tap_sof=(x==0&&y==0);tap_eol=(x==639);
+      tap_frame_id=77;tap_data=(y==0&&x>=10&&x<=12)?1:0;
+    end
+    @(negedge clk);tap_valid=0;tap_sof=0;tap_eol=0;
+    wait(dut.feature_done);
+    read_reg(32'h204,1,0);
+    read_reg(32'h208,77,0);
+    read_reg(32'h20c,1,0);
+    read_reg(32'h210,3,0);
+    read_reg(32'h1000,3,0);
+    read_reg(32'h43c51004,33,0);
+    read_reg(32'h1008,0,0);
+    read_reg(32'h100c,32'h000c000a,0);
+    read_reg(32'h1010,0,0);
+    read_reg(32'h1014,77,0);
+    read_reg(32'h1018,0,0);
+    read_reg(32'h101c,0,0);
+    read_reg(32'h5000,0,2);
+    read_reg(32'h1001,0,2);
+    read_reg(32'h43c61000,0,2);
+    $display("BINARY_OVERLAY_BD_PASS AXIL_features=PASS full_frame=PASS backpressure=PASS");$finish;
   end
-  initial begin #200000;$fatal(1,"watchdog");end
+  initial begin #20000000;$fatal(1,"watchdog");end
 endmodule

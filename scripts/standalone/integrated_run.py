@@ -26,6 +26,7 @@ from .camera import LatestCamera
 from .compositor import DashboardComposer
 from .controls import ButtonDecoder, ControlState
 from .count_controls import advance_count, make_runtime_counter
+from scripts.rle.features import PlRegionFeatures
 from .crossing_snapshots import CrossingSnapshots
 from .async_evidence import EvidenceExporter
 from .driver_owner import DriverOwner
@@ -271,8 +272,51 @@ def button_gpio_irq_configured(overlay, channel):
 def verify_selected_offload_bundle(args, manifest, hwh):
     """Reject selected IRQ/PBO/RAW modes before touching the overlay."""
     if (args.button_input == 'irq' or args.preview_backend == 'pl'
+            or getattr(args,'region_backend','native') == 'pl'
             or args.input_mode == 'raw'):
         return verify_offload_capabilities(manifest, hwh)
+    return None
+
+
+class OwnerRegionFeatureReader:
+    """Serialize FRG1 reads on the existing RLE driver owner."""
+    def __init__(self, reader, owner):
+        self.reader,self.owner=reader,owner
+        self.last_read_ms=0.0
+        self.last_reason='not_read'
+
+    def read(self, frame):
+        before=dict(self.reader.reason_counts)
+        def operation():
+            started=time.perf_counter()
+            features=self.reader.read(frame)
+            elapsed=(time.perf_counter()-started)*1000
+            reasons=[key for key,value in self.reader.reason_counts.items()
+                     if value>before.get(key,0)]
+            return features,elapsed,(reasons[-1] if reasons else 'accepted')
+        features,self.last_read_ms,self.last_reason=self.owner.call(operation)
+        return features
+
+
+def create_region_feature_reader(backend, mmio, *, owner, mmio_length):
+    if backend=='native':
+        return None
+    if backend!='pl':raise ValueError('unknown region backend')
+    if mmio is None or mmio_length<0x5000:
+        raise ValueError('PBO1 mapping must cover FRG1 record window (at least 0x5000 bytes)')
+    return owner.call(lambda:OwnerRegionFeatureReader(PlRegionFeatures(mmio),owner))
+
+
+def region_feature_frame_summary(feature_status, result, counter):
+    return {'feature_status':feature_status,
+            'feature_backend_used':counter.last_backend if result is not None else 'not_counted'}
+
+
+def validate_region_backend(args, manifest, hwh):
+    if args.region_backend=='pl':
+        if args.preview_backend!='pl':
+            raise ValueError('PL region backend requires --preview-backend pl')
+        return verify_offload_capabilities(manifest,hwh)
     return None
 
 
@@ -467,6 +511,7 @@ def build_argument_parser():
     parser.add_argument('--button-input',choices=('irq','polling','off'),default='irq',
         help='IRQ is required by new candidates; polling is an explicit legacy-board fallback')
     parser.add_argument('--preview-backend',choices=('software','pl'),default='pl')
+    parser.add_argument('--region-backend',choices=('native','pl'),default='native')
     parser.add_argument('--input-mode',choices=('packet','raw'),default='packet')
     parser.add_argument('--display',choices=('on','off'),default='on')
     parser.add_argument('--duration',type=float,default=90)
@@ -493,11 +538,14 @@ def main(argv=None):
         parser.error('requires execute, duration 1..7200 and frames 1..200000')
     if args.inject_drawing_start_failure and args.display!='on':
         parser.error('drawing process failure injection requires display on')
+    if args.region_backend=='pl' and args.preview_backend!='pl':
+        parser.error('--region-backend pl requires --preview-backend pl')
     if args.output.exists() or not args.native_lib.is_file():parser.error('new output and prebuilt library required')
     if args.startup_record and args.startup_record.exists():parser.error('startup record already exists')
     files=verify_bundle(args.manifest,args.manifest_sha256)
     manifest=json.loads(args.manifest.read_text())
     verify_selected_offload_bundle(args,manifest,files['hwh'])
+    validate_region_backend(args,manifest,files['hwh'])
     if manifest.get('rle_monitor')!={'abi':1,'clock_hz':50_000_000}:raise ValueError('requires reviewed monitor ABI 1')
     verify_runtime(manifest['runtime'],args.font,args.latin_font)
     commands=json.loads(args.commands.read_text()) if args.commands else {}
@@ -644,10 +692,17 @@ def main(argv=None):
         rx=owner.retain(allocate(shape=(RX_CAPACITY,),dtype='u1'))
         transport=RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,hw.overlay.axi_dma_0.recvchannel,
             dma,control,tx,rx,input_mode=args.input_mode)
-        pl_preview=None
+        report['region_backend']=args.region_backend
+        region_reader=None
+        pl_preview=None;pbo_mmio=None
         if args.preview_backend=='pl':
-            pl_preview=owner.call(lambda:PlPreview(MMIO(0x43c50000,0x1000)))
-            owner.retain(pl_preview.mmio)
+            def create_pl_preview():
+                nonlocal pbo_mmio
+                pbo_mmio=owner.retain(MMIO(0x43c50000,0x10000))
+                return PlPreview(pbo_mmio)
+            pl_preview=owner.call(create_pl_preview)
+        region_reader=create_region_feature_reader(args.region_backend,pbo_mmio,owner=owner,
+            mmio_length=0x10000 if pbo_mmio is not None else 0)
         if pipeline['state']['done_seen']:transport._completed_frames=1
         # Validate register signatures and stopped DMA channels before HDMI
         # configure/start; the first transfer must not be the first capability check.
@@ -851,8 +906,13 @@ def main(argv=None):
             rx_total_bytes+=packet.actual_bytes
             last_rle_stats={'runs':packet.run_count,'rx_bytes':packet.actual_bytes}
             transfer_end=time.monotonic()
-            result=advance_count(counter,controls,packet,boundary,capture_monotonic_ns=capture_ns)
+            region_features=region_reader.read(packet) if region_reader is not None and packet.valid else None
+            result=advance_count(counter,controls,packet,boundary,capture_monotonic_ns=capture_ns,
+                region_features=region_features)
             count_end=time.monotonic()
+            if args.region_backend=='pl' and packet.valid:
+                last_rle_stats.update(feature_read_ms=region_reader.last_read_ms,
+                    **region_feature_frame_summary(region_reader.last_reason,result,counter))
             exposure_control_ms=0.0
             if pl_preview is not None and packet.valid:
                 def submit_pl_preview():
@@ -916,6 +976,10 @@ def main(argv=None):
                     count_ms=(count_end-transfer_end)*1000,
                     exposure_control_ms=exposure_control_ms,
                     snapshot_ms=(snapshot_end-count_end)*1000,
+                    **({'feature_read_ms':last_rle_stats.get('feature_read_ms'),
+                        'feature_status':last_rle_stats.get('feature_status'),
+                        'feature_backend_used':last_rle_stats.get('feature_backend_used')}
+                       if region_reader is not None else {}),
                     **(result.roi_subtimings_ms if result is not None else {})))
             if boundary:report['events'].append(dict(frame=index,commands=boundary,count=counter.total_count))
             if result is not None:

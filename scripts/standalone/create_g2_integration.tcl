@@ -69,6 +69,8 @@ set g2_rtl_sources {
 }
 set g2_offload_candidate [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
 if {$g2_offload_candidate} {
+    lappend g2_rtl_sources fpga/experimental/rle/rle_region_features.v
+    lappend g2_rtl_sources fpga/experimental/rle/rle_feature_tap.v
     lappend g2_rtl_sources fpga/experimental/standalone/video_binary_overlay.v
     lappend g2_rtl_sources fpga/experimental/standalone/video_binary_overlay_bd.v
 }

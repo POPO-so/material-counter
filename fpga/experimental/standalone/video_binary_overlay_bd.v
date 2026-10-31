@@ -53,7 +53,10 @@ module video_binary_overlay_bd (
   end endgenerate
   assign s_axi_awready=!aw_full && !s_axi_bvalid;
   assign s_axi_wready=!w_full && !s_axi_bvalid;
-  assign s_axi_arready=!s_axi_rvalid;
+  reg [1:0] feature_read_wait;
+  reg [11:0] feature_read_address;
+  reg feature_read_enable;
+  assign s_axi_arready=!s_axi_rvalid && feature_read_wait==0;
   wire write_fire=aw_full && w_full && !s_axi_bvalid;
   wire [31:0] wa=wr_addr;
   wire [31:0] wd=wr_data;
@@ -61,6 +64,19 @@ module video_binary_overlay_bd (
   wire display_valid_core;
   wire [31:0] displayed_id_core;
   reg mask_accept;
+  wire [31:0] feature_word, feature_frame_id, feature_total_fg, feature_dropped;
+  wire feature_done, feature_overflow, feature_busy;
+  wire [9:0] feature_count;
+  // The AXI and accepted-pixel clocks are the same FCLK0 domain.
+  rle_feature_tap features (
+    .tap_clk(mask_clk),.resetn(mask_resetn),
+    .tap_valid(tap_valid),.tap_sof(tap_sof),.tap_eol(tap_eol),
+    .tap_bit(tap_data[0]),.tap_frame_id(tap_frame_id),
+    .record_word_address(feature_read_address),.read_enable(feature_read_enable),
+    .record_word_data(feature_word),.frame_id(feature_frame_id),
+    .done(feature_done),.overflow(feature_overflow),.busy(feature_busy),
+    .record_count(feature_count),.total_fg(feature_total_fg),.dropped_frames(feature_dropped)
+  );
 
   video_binary_overlay #(.WIDTH(640),.HEIGHT(400),.VIEW_X(384),.VIEW_Y(146),.VIEW_WIDTH(512),.VIEW_HEIGHT(320),.MAX_BOXES(16)) core (
     .mask_clk(mask_clk),.mask_resetn(mask_resetn),
@@ -97,9 +113,18 @@ module video_binary_overlay_bd (
       16'h0034: read_value=cfg_frame_id;
       16'h0038: read_value={27'b0,cfg_count};
       16'h003c: read_value={22'b0,cfg_line_x};
+      16'h0200: read_value=32'h46524731;
+      16'h0204: read_value={29'b0,feature_busy,feature_overflow,feature_done};
+      16'h0208: read_value=feature_frame_id;
+      16'h020c: read_value={22'b0,feature_count};
+      16'h0210: read_value=feature_total_fg;
+      16'h0214: read_value=feature_dropped;
+      16'h0218: read_value=32'd512;
       default: begin
         if(s_axi_araddr[15:0]>=16'h0100 && s_axi_araddr[15:0]<16'h0180)
           read_value=cfg_box_words[(s_axi_araddr[15:0]-16'h0100)>>2];
+        else if(s_axi_araddr[15:0]>=16'h1000 && s_axi_araddr[15:0]<16'h5000)
+          read_value=0; // RAM response is delayed until its synchronous read completes.
         else read_error=1;
       end
     endcase
@@ -108,10 +133,12 @@ module video_binary_overlay_bd (
     if(!s_axi_aresetn) begin
       wr_addr<=0;wr_data<=0;wr_strb<=0;aw_full<=0;w_full<=0;
       s_axi_bresp<=OKAY;s_axi_bvalid<=0;s_axi_rdata<=0;s_axi_rresp<=OKAY;s_axi_rvalid<=0;
+      feature_read_wait<=0;feature_read_address<=0;feature_read_enable<=0;
       accepted_id<=0;cfg_enable<=0;cfg_frame_id<=0;cfg_count<=0;cfg_line_x<=640;cfg_commit<=0;mask_accept<=0;
       for(ri=0;ri<32;ri=ri+1) cfg_box_words[ri]<=0;
     end else begin
       cfg_commit<=0;mask_accept<=0;
+      feature_read_enable<=0;
       if(s_axi_awvalid&&s_axi_awready) begin wr_addr<=s_axi_awaddr;aw_full<=1;end
       if(s_axi_wvalid&&s_axi_wready) begin wr_data<=s_axi_wdata;wr_strb<=s_axi_wstrb;w_full<=1;end
       if(s_axi_bvalid&&s_axi_bready) s_axi_bvalid<=0;
@@ -136,7 +163,18 @@ module video_binary_overlay_bd (
       end
       if(s_axi_rvalid&&s_axi_rready) s_axi_rvalid<=0;
       if(s_axi_arvalid&&s_axi_arready) begin
-        s_axi_rvalid<=1;s_axi_rdata<=read_value;s_axi_rresp<=read_error?SLVERR:OKAY;
+        if(!read_error && s_axi_araddr[15:0]>=16'h1000 && s_axi_araddr[15:0]<16'h5000) begin
+          feature_read_address<=(s_axi_araddr[15:0]-16'h1000)>>2;
+          feature_read_enable<=1;feature_read_wait<=2;
+        end else begin
+          s_axi_rvalid<=1;s_axi_rdata<=read_value;s_axi_rresp<=read_error?SLVERR:OKAY;
+        end
+      end
+      if(feature_read_wait!=0) begin
+        feature_read_wait<=feature_read_wait-1'b1;
+        if(feature_read_wait==1) begin
+          s_axi_rvalid<=1;s_axi_rdata<=feature_word;s_axi_rresp<=OKAY;
+        end
       end
     end
   end
