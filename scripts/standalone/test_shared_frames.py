@@ -21,7 +21,7 @@ def _spawn_publish(frames, result_queue, session_id, frame_id, fill):
         return
     index, pixels = slot
     pixels[:] = fill
-    frames.publish(index, session_id, frame_id)
+    frames.publish(index, session_id, frame_id, capture_time_ns=123456789)
     result_queue.put(index)
     frames.close()
 
@@ -85,6 +85,7 @@ def test_spawn_process_writes_and_parent_reads_shared_pixels(frames):
     lease = frames.acquire_latest()
     assert lease is not None
     assert (lease.session_uuid, lease.frame_id) == (session_id, 41)
+    assert lease.capture_time_ns == 123456789
     assert lease.array.shape == (8, 12)
     assert lease.array.dtype == np.uint8
     assert np.all(lease.array == 173)
@@ -100,6 +101,32 @@ def test_full_slots_drop_publish_without_backpressure(frames):
         frames.publish(slot, uuid.uuid4(), slot)
     assert frames.claim_write() is None
     assert list(frames.statuses()) == [READY, READY, READY]
+
+
+def test_publish_carries_capture_time(frames):
+    slot, _pixels = frames.claim_write()
+    try:
+        frames.publish(slot, uuid.UUID(int=9), 81, capture_time_ns=1234)
+        lease = frames.acquire_latest()
+        assert lease.capture_time_ns == 1234
+        frames.release_read(lease.slot)
+    finally:
+        if frames.statuses()[slot] == WRITING:
+            frames.abort_write(slot)
+        elif frames.statuses()[slot] == READING:
+            frames.release_read(slot)
+
+
+@pytest.mark.parametrize('capture_time_ns', [-1, True, 1 << 64])
+def test_publish_rejects_invalid_capture_time_without_losing_write_lease(frames, capture_time_ns):
+    slot, _pixels = frames.claim_write()
+    try:
+        with pytest.raises(ValueError):
+            frames.publish(slot, uuid.UUID(int=9), 82, capture_time_ns=capture_time_ns)
+        assert frames.statuses()[slot] == WRITING
+    finally:
+        if frames.statuses()[slot] == WRITING:
+            frames.abort_write(slot)
 
 
 def test_publish_carries_producer_stage_times_and_monotonic_publish_time(frames):

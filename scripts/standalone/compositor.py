@@ -408,10 +408,14 @@ class DashboardComposer:
                                226 if valid else 142)
 
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
+        e2e = dashboard.get("e2e_ms")
+        if isinstance(e2e, dict):
+            e2e = e2e.get("mean")
         values = (
             self._number(dashboard.get("count"), 0),
-            self._number(dashboard.get("display_fps")),
-            self._number(dashboard.get("processing_ms"), 1, " ms"),
+            self._number(dashboard.get("camera_fps"), 1, " FPS"),
+            self._number(e2e, 1, " ms"),
+            self._number(dashboard.get("drop_total"), 0),
             self._number(dashboard.get("cpu_percent"), 0, "%"),
             self._number(dashboard.get("memory_percent"), 0, "%"),
         )
@@ -426,8 +430,48 @@ class DashboardComposer:
             for value in live_pies + static_pies
         )
         state = str(dashboard.get("state", "RUNNING"))
-        detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
-        key = (values, pie_key, state, binary_background, target_count, detail)
+        raw_page_lines = dashboard.get("page_lines", ())
+        if isinstance(raw_page_lines, str):
+            page_lines = (raw_page_lines,)
+        elif isinstance(raw_page_lines, (tuple, list)):
+            page_lines = tuple(str(line) for line in raw_page_lines if isinstance(line, str))
+        else:
+            page_lines = ()
+        detail_page = dashboard.get("detail_page")
+        detail = page_lines[:3] if detail_page else ()
+
+        chain = dashboard.get("resolution_chain")
+        if isinstance(chain, (tuple, list)) and chain:
+            input_resolution = str(chain[0])
+        elif isinstance(chain, str) and chain:
+            input_resolution = chain.split("->", 1)[0].strip()
+        else:
+            input_resolution = "640x400"
+        pl = dashboard.get("pl")
+        aggregate = pl.get("aggregate") if isinstance(pl, dict) else None
+        if isinstance(aggregate, dict):
+            active = aggregate.get("active_cycles")
+            total = aggregate.get("total_cycles")
+            active_text = self._number(active, 0)
+            total_text = self._number(total, 0)
+            pl_text = (f"PL {active_text}/{total_text} cyc"
+                       if active_text != "--" and total_text != "--" else "PL --")
+        else:
+            pl_text = "PL --"
+
+        regions = dashboard.get("regions_ms")
+        regions_mean = regions.get("mean") if isinstance(regions, dict) else None
+        track = dashboard.get("track_ms")
+        track_mean = track.get("mean") if isinstance(track, dict) else None
+        summary = (
+            f"输入 {input_resolution}", "预览 640x400", "输出 1280x720",
+            pl_text,
+            f"PS RLE {self._number(regions_mean)} / TRK {self._number(track_mean)} ms",
+            f"处理 {self._number(dashboard.get('processing_fps'))} / 显示 "
+            f"{self._number(dashboard.get('display_fps'))} FPS",
+        )
+        key = (values, pie_key, state, binary_background, target_count,
+               detail_page, page_lines, summary)
         if key == self._key:
             return
         image = Image.new("L", (WIDTH, HEIGHT), 14)
@@ -435,20 +479,22 @@ class DashboardComposer:
         self._whole_latin_text(draw, (24, 12), "NUT VISION COUNTER", 28, 242)
         draw.ellipse((1060, 25, 1070, 35), fill=224)
         self._whole_latin_text(draw, (1082, 19), state[:15], 18, 208)
-        for x, label, value in zip((24, 440, 856),
-                                   ("本次累计计数", "显示 FPS", "处理延迟 / RLE + 计数"),
-                                   values[:3]):
-            draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
+        for x, label, value in zip((24, 340, 656, 972),
+                                   ("本次累计计数", "相机帧率", "端到端延迟", "实时丢帧"),
+                                   values[:4]):
+            draw.rounded_rectangle((x, 58, x + 300, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
             self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
         draw.rounded_rectangle((24, 136, 1256, 556), radius=10, fill=25, outline=58)
         self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
-        self._whole_latin_text(draw, (42, 194), "640 x 400", 18, 158)
-        self._text(draw, (42, 222), "二值预览" if binary_background else "实时灰度画面", 20, 212)
-        draw.line((44, 284, 100, 284), fill=240, width=2)
+        for y, text in zip((194, 222, 250), summary[:3]):
+            self._text(draw, (42, y), text, 18, 158)
+        self._text(draw, (42, 274), "模式 二值" if binary_background else "模式 灰度", 18, 170)
         self._text(draw, (42, 298), "实际计数线", 18, 175)
         self._text(draw, (42, 328), "从左向右计数", 18, 212)
-        for y, text in zip((414, 446, 478, 510),
+        for y, text in zip((356, 382, 408), summary[3:]):
+            self._text(draw, (42, y), text, 18, 170)
+        for y, text in zip((432, 460, 488, 516),
                            ("BTN0  暂停 / 恢复", "BTN1  长按 2 秒清零",
                             "BTN2  灰度 / 二值", "BTN3  详细状态")):
             self._text(draw, (42, y), text, 18, 144)
@@ -456,10 +502,27 @@ class DashboardComposer:
         self._whole_latin_text(draw, (984, 190), str(target_count), 34, 242)
         self._text(draw, (984, 248), "跟踪 ID / 检测框", 18, 170)
         self._text(draw, (984, 279), "计数真值待人工核对", 18, 144)
-        for i, text in enumerate(detail):
-            # Keep diagnostic text inside the narrow gutter.
-            for row in range(0, min(len(text), 30), 10):
-                self._text(draw, (984, 344 + i * 70 + row // 10 * 24), text[row:row + 10], 18, 170)
+        def _wrap_gutter(text, max_width=196):
+            rows, current = [], ''
+            for character in str(text):
+                font = self._latin[18] if ord(character) < 256 else self._fonts[18]
+                trial = current + character
+                if current and font.getlength(trial) > max_width:
+                    rows.append(current)
+                    current = character
+                else:
+                    current = trial
+            if current:
+                rows.append(current)
+            return rows
+        row_y = 344
+        for line in detail:
+            for row_text in _wrap_gutter(line):
+                if row_y + 26 > 626:
+                    break
+                self._text(draw, (984, row_y), row_text, 18, 170)
+                row_y += 26
+            row_y += 10
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (562, 637, 599, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
                 (640, 716, 677, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
@@ -531,3 +594,4 @@ class DashboardComposer:
         self.last_timings_ms = {"scale_ms": scale_ms,
                                 "draw_ms": draw_ms + (perf_counter_ns() - started) / 1_000_000}
         return target
+

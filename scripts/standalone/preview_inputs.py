@@ -16,7 +16,7 @@ class PreviewLease:
     """A preview slot held in READING state until :meth:`release` is called."""
 
     __slots__ = ("_frame_lease", "_released", "gray", "binary", "session_uuid",
-                 "frame_id", "metadata")
+                 "frame_id", "capture_time_ns", "metadata")
 
     def __init__(self, frame_lease, gray, binary, metadata):
         self._frame_lease = frame_lease
@@ -25,6 +25,7 @@ class PreviewLease:
         self.binary = binary
         self.session_uuid = frame_lease.session_uuid
         self.frame_id = frame_lease.frame_id
+        self.capture_time_ns = frame_lease.capture_time_ns
         self.metadata = metadata
 
 
@@ -48,7 +49,8 @@ class PreviewInputs:
             raise
         return cls(frames, metadata_bytes, metadata_lengths)
 
-    def publish(self, gray, binary, session_uuid, frame_id, metadata):
+    def publish(self, gray, binary, session_uuid, frame_id, metadata, *,
+                capture_time_ns=0):
         """Publish a pair of uint8 planes without blocking when no slot is free."""
         _validate_plane(gray, "gray")
         _validate_plane(binary, "binary")
@@ -72,7 +74,8 @@ class PreviewInputs:
             start = slot * METADATA_CAPACITY
             self._metadata_bytes[start:start + len(encoded)] = encoded
             self._metadata_lengths[slot] = len(encoded)
-            self._frames.publish(slot, session_uuid, frame_id)
+            self._frames.publish(slot, session_uuid, frame_id,
+                                 capture_time_ns=capture_time_ns)
             return True
         except BaseException:
             try:

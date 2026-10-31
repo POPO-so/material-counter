@@ -8,13 +8,19 @@ import pytest
 
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
 from scripts.standalone.integrated_run import (
+    _live_drop_total,
+    telemetry_page_lines,
+    _refresh_dashboard_telemetry,
+    _sample_camera_telemetry,
+    _with_publish_boundary,
+    dashboard_values,
     drawing_process,
     rasterize_into,
     result_metadata,
     start_drawing_child,
     source_identity,
-    dashboard_values,
 )
+from scripts.standalone.video_telemetry import FrameTelemetry,TelemetryWindow
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
 from scripts.wo0016.stream_counter import MaskCounter
@@ -47,6 +53,119 @@ def test_dashboard_values_keep_stale_and_missing_readings_unavailable():
     assert values['static_ff_percent'] is None
     assert values['static_bram_percent'] is None
     assert values['static_dsp_percent'] is None
+def test_dashboard_unknown_metrics_stay_unknown():
+    values=dashboard_values(9,False,0,{})
+
+    assert values['count']==9
+    assert values['camera_fps'] is None
+    assert values['e2e_ms'] is None
+    assert values['drop_total'] is None
+    assert values['resolution_chain']=="640x400 -> 640x400 -> 1280x720"
+
+
+def test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown():
+    value=dict(camera_fps=29.5,effective_input_fps=24.1,
+        e2e_ms={'mean':12.3},drop_total=7,
+        resolution_chain="640x400 -> 640x400 -> 1280x720",
+        processing_fps=23.7,regions_ms={'mean':2.1},track_ms={'mean':1.2},
+        pl={'clock_hz':50_000_000},link_summary='link ok',page_lines=('PL 50 MHz',))
+    telemetry={'video_telemetry':{'value':value,'stale':False}}
+
+    values=dashboard_values(9,True,2,telemetry)
+    assert values['detail_page']==2 and values['state']=='PAUSED'
+    for key,item in value.items():
+        if key=='page_lines':
+            continue
+        assert values[key]==item
+    assert values['page_lines'] and values['page_lines'][0]=='PS 与丢帧'
+    stale_values=dashboard_values(9,False,0,{
+        'video_telemetry':{'value':value,'stale':True}
+    })
+    for key in ('camera_fps','effective_input_fps','e2e_ms','drop_total',
+                'processing_fps','regions_ms','track_ms','pl'):
+        assert stale_values[key] is None
+    assert stale_values['page_lines'] in (None,())
+    assert stale_values['resolution_chain']=="640x400 -> 640x400 -> 1280x720"
+
+
+def test_publish_failure_does_not_set_publish_boundary():
+    frame=FrameTelemetry(frame_id=1,capture_ns=10,consume_ns=20,
+        transfer_done_ns=30,regions_done_ns=40,track_done_ns=50)
+
+    result=_with_publish_boundary(frame,False,60)
+
+    assert result is frame
+    assert result.publish_ns is None
+
+
+def test_camera_absent_keeps_fps_unknown_not_zero():
+    window=TelemetryWindow()
+    for sample_time_ns in (1_000_000_000,2_000_000_000):
+        camera_stats,camera_sample=_sample_camera_telemetry(
+            None,window,sample_time_ns)
+        assert camera_stats is None
+        video_sample=window.sample(sample_time_ns)
+        video_sample.update(camera=camera_sample)
+        video_sample['camera_fps']=camera_sample['camera_fps']
+        values=dashboard_values(0,False,0,{
+            'video_telemetry':{'value':video_sample,'stale':False}
+        })
+        assert values['camera_fps'] is None
+
+
+def test_telemetry_page_lines_cover_pl_and_ps_pages():
+    video={'pl':{'aggregate':{'total_cycles':16000,'active_cycles':12300,'input_beats':800,'output_beats':400}},
+        'regions_ms':{'mean':2.1},'track_ms':{'mean':1.2},
+        'camera':{'camera_overwrite_drops':3},
+        'pump':{'pump_submit_failures':1,'pump_skips':2}}
+    pl=telemetry_page_lines(1,video)
+    assert pl[0]=='PL 阶段与周期'
+    assert any('12300' in line for line in pl)
+    assert any('800' in line and '400' in line for line in pl)
+    ps=telemetry_page_lines(2,video)
+    assert ps[0]=='PS 与丢帧'
+    assert any('2.1' in line and '1.2' in line for line in ps)
+    assert telemetry_page_lines(0,video)==()
+    unknown=telemetry_page_lines(1,{})
+    assert any('--' in line for line in unknown)
+
+def test_live_drop_total_is_unknown_until_all_sources_measured():
+    assert _live_drop_total(None, {'pump_skips': 2, 'pump_submit_failures': 1}) is None
+    assert _live_drop_total({'camera_overwrite_drops': 3}, None) is None
+    assert _live_drop_total({'camera_overwrite_drops': 3},
+                            {'pump_skips': 2, 'pump_submit_failures': 1},
+                            {'preview_publish_drops': 1, 'drawing_output_drops': 0}) == 7
+    assert _live_drop_total({'camera_overwrite_drops': 0},
+                            {'pump_skips': 0, 'pump_submit_failures': 0},
+                            {'preview_publish_drops': 0, 'drawing_output_drops': 0}) == 0
+
+def test_two_second_snapshot_is_reused_without_per_frame_cache_snapshot():
+    class FakeCache:
+        def __init__(self):
+            self.calls=[]
+
+        def snapshot(self,sampled_at):
+            self.calls.append(sampled_at)
+            return {'video_telemetry':{'value':{},'stale':False}}
+
+    cache=FakeCache()
+    latest=_refresh_dashboard_telemetry(cache,2.0)
+    for frame in range(5):
+        dashboard_values(frame,False,0,latest)
+
+    assert cache.calls==[2.0]
+
+
+def test_telemetry_does_not_change_result_metadata_or_count():
+    mask=np.zeros((400,640),np.uint8);mask[100:110,200:220]=255
+    result=MaskCounter(width=640,height=400,roi_mode='full',min_area=10).update(0,mask)
+    common=dict(paused=False,binary_background=False,page=0)
+    empty=result_metadata(result,**common,telemetry={})
+    filled=result_metadata(result,**common,telemetry={
+        'camera_fps':29.5,'e2e_ms':{'mean':12.3},'drop_total':7,
+    })
+
+    assert (empty['count'],empty['boxes'],empty['tracks'])==(filled['count'],filled['boxes'],filled['tracks'])
 
 
 def test_source_identity_covers_loaded_counting_and_motion_code():

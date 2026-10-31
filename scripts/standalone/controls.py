@@ -53,7 +53,7 @@ class ControlState:
             elif command == "background":
                 self.binary_background = not self.binary_background
             elif command == "page":
-                self.page = 1 - self.page
+                self.page = (self.page + 1) % 3
             elif command == "clear":
                 self.clear_requests += 1
             else:

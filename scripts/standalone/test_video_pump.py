@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import threading
 import time
+from types import SimpleNamespace
 import uuid
 
 import numpy as np
@@ -8,11 +9,14 @@ import pytest
 
 from scripts.standalone.shared_frames import FREE, SharedFrames
 from scripts.standalone.driver_owner import DriverOwner
+from scripts.standalone.video_telemetry import TelemetryWindow
 
 
 try:
+    from scripts.standalone import video_pump as video_pump_module
     from scripts.standalone.video_pump import DISPLAY_FAIL_HOLD, RUNNING, STOPPED, VideoPump
 except ModuleNotFoundError:
+    video_pump_module = None
     VideoPump = None
     DISPLAY_FAIL_HOLD = "DISPLAY_FAIL_HOLD"
     RUNNING = "RUNNING"
@@ -57,10 +61,12 @@ def frames():
         value.close()
 
 
-def _publish(frames, identity, pixels, *, scale_ns=2_000_000, draw_ns=3_000_000):
+def _publish(frames, identity, pixels, *, scale_ns=2_000_000, draw_ns=3_000_000,
+             capture_time_ns=0):
     slot, target = frames.claim_write()
     target[:] = pixels
-    frames.publish(slot, identity, 1, scale_ns=scale_ns, draw_ns=draw_ns)
+    frames.publish(slot, identity, 1, scale_ns=scale_ns, draw_ns=draw_ns,
+                   capture_time_ns=capture_time_ns)
 
 
 def _pump_type():
@@ -69,7 +75,7 @@ def _pump_type():
     return VideoPump
 
 
-def test_copies_only_matching_session_and_transfers_frame_once(frames):
+def test_success_records_submit_latency_and_no_failure_or_skip(frames):
     pump_type = _pump_type()
     identity = uuid.uuid4()
     hdmi = FakeHDMI((8, 12))
@@ -82,6 +88,9 @@ def test_copies_only_matching_session_and_transfers_frame_once(frames):
         while pump.submitted == 0 and time.monotonic() < deadline:
             time.sleep(0.001)
         assert pump.submitted == 1
+        assert pump.submit_failures == 0
+        assert pump.skipped == 0
+        assert list(pump.submit_latency_ms)
         assert len(hdmi.created) == len(hdmi.submitted) == 1
         assert hdmi.submitted[0] is hdmi.created[0]
         assert np.all(hdmi.submitted[0] == 117)
@@ -126,7 +135,7 @@ def test_request_stop_does_not_wait_for_blocked_writeframe(frames):
     assert frames.statuses() == (FREE, FREE, FREE)
 
 
-def test_submit_timeout_enters_display_fail_hold_and_retains_frame(frames):
+def test_submit_timeout_counts_failure_not_skip(frames):
     pump_type = _pump_type()
     identity = uuid.uuid4()
     started = threading.Event()
@@ -150,12 +159,14 @@ def test_submit_timeout_enters_display_fail_hold_and_retains_frame(frames):
         assert len(owner.retained) == 1
         assert owner.retained[0] is hdmi.created[0]
         assert pump.submitted == 0
+        assert pump.submit_failures == 1
+        assert pump.skipped == 0
         assert frames.statuses() == (FREE, FREE, FREE)
     finally:
         never_release.set()
 
 
-def test_mismatched_session_is_released_without_hardware_access(frames):
+def test_mismatched_session_counts_skip_not_submit_failure(frames):
     pump_type = _pump_type()
     identity = uuid.uuid4()
     _publish(frames, uuid.uuid4(), 9)
@@ -166,10 +177,142 @@ def test_mismatched_session_is_released_without_hardware_access(frames):
         assert pump.join(1)
         assert pump.state == DISPLAY_FAIL_HOLD
         assert "session" in pump.error.lower()
+        assert pump.skipped == 1
+        assert pump.submit_failures == 0
         assert owner.calls == []
         assert frames.statuses() == (FREE, FREE, FREE)
     finally:
         pump.request_stop()
+
+
+def test_success_records_capture_to_submit_telemetry(frames, monkeypatch):
+    class RecordingTelemetry(TelemetryWindow):
+        def __init__(self):
+            super().__init__(window_s=5)
+            self.recorded = []
+
+        def record_frame(self, frame):
+            self.recorded.append(frame)
+            super().record_frame(frame)
+
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    hdmi = FakeHDMI((8, 12))
+    owner = FakeOwner()
+    telemetry = RecordingTelemetry()
+    capture_time_ns = time.monotonic_ns()
+    _publish(frames, identity, 71, capture_time_ns=capture_time_ns)
+    lease = frames.acquire_latest()
+    expected_published_ns = lease.published_ns
+
+    timestamp = iter(range(expected_published_ns + 1, expected_published_ns + 100))
+    monkeypatch.setattr(
+        video_pump_module,
+        "time",
+        SimpleNamespace(monotonic=time.monotonic, monotonic_ns=lambda: next(timestamp)),
+    )
+
+    class LeaseOutput:
+        def __init__(self, held_lease):
+            self.held_lease = held_lease
+
+        def acquire_latest(self):
+            held_lease, self.held_lease = self.held_lease, None
+            return held_lease
+
+        def release_read(self, slot):
+            frames.release_read(slot)
+
+    outputs = LeaseOutput(lease)
+    pump = pump_type(outputs, type("HW", (), {"hdmi": hdmi})(), owner, identity,
+                     telemetry=telemetry)
+    try:
+        deadline = time.monotonic() + 1
+        while pump.submitted == 0 and time.monotonic() < deadline:
+            time.sleep(0.001)
+        assert pump.submitted == 1
+        sample = telemetry.sample(time.monotonic_ns())
+        assert len(telemetry.recorded) == 1
+        recorded = telemetry.recorded[0]
+        assert recorded.capture_ns == capture_time_ns
+        assert recorded.compose_done_ns == expected_published_ns
+        assert recorded.submit_done_ns > recorded.compose_done_ns
+        assert sample["e2e_ms"]["count"] >= 1
+        assert sample["submit_ms"]["count"] >= 1
+        assert sample["frame_count"] >= 1
+    finally:
+        pump.request_stop()
+        assert pump.join(1)
+
+
+def test_zero_capture_time_does_not_record_e2e_sample(frames):
+    class RecordingTelemetry(TelemetryWindow):
+        def __init__(self):
+            super().__init__(window_s=5)
+            self.record_calls = 0
+
+        def record_frame(self, frame):
+            self.record_calls += 1
+            super().record_frame(frame)
+
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    telemetry = RecordingTelemetry()
+    _publish(frames, identity, 29, capture_time_ns=0)
+    pump = pump_type(
+        frames, type("HW", (), {"hdmi": FakeHDMI((8, 12))})(), FakeOwner(),
+        identity, telemetry=telemetry,
+    )
+    try:
+        deadline = time.monotonic() + 1
+        while pump.submitted == 0 and time.monotonic() < deadline:
+            time.sleep(0.001)
+        sample = telemetry.sample(time.monotonic_ns())
+        assert pump.submitted == 1
+        assert telemetry.record_calls == 0
+        assert sample["e2e_ms"]["count"] == 0
+        assert sample["frame_count"] == 0
+    finally:
+        pump.request_stop()
+        assert pump.join(1)
+
+
+def test_telemetry_failure_does_not_fail_display_submission(frames):
+    class BrokenTelemetry:
+        def record_frame(self, frame):
+            raise RuntimeError("telemetry unavailable")
+
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    _publish(frames, identity, 91, capture_time_ns=time.monotonic_ns())
+    pump = pump_type(
+        frames, type("HW", (), {"hdmi": FakeHDMI((8, 12))})(), FakeOwner(),
+        identity, telemetry=BrokenTelemetry(),
+    )
+    try:
+        deadline = time.monotonic() + 1
+        while pump.submitted == 0 and time.monotonic() < deadline:
+            time.sleep(0.001)
+        assert pump.submitted == 1
+        assert pump.submit_failures == 0
+        assert pump.state != DISPLAY_FAIL_HOLD
+    finally:
+        pump.request_stop()
+        assert pump.join(1)
+
+
+def test_acquire_error_does_not_count_submit_failure():
+    class BrokenOutputs:
+        def acquire_latest(self):
+            raise OSError("output pool unavailable")
+
+    pump = _pump_type()(
+        BrokenOutputs(), type("HW", (), {"hdmi": FakeHDMI((8, 12))})(),
+        FakeOwner(), uuid.uuid4(),
+    )
+    assert pump.join(1)
+    assert pump.state == DISPLAY_FAIL_HOLD
+    assert pump.submit_failures == 0
 
 
 def test_idle_stop_leaves_no_reading_lease(frames):
