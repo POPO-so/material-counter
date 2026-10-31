@@ -472,11 +472,28 @@ class DashboardComposer:
         self._whole_latin_text(draw, (1044, 190), str(target_count), 34, 242)
         self._text(draw, (1044, 248), "跟踪 ID / 检测框", 18, 170)
         self._text(draw, (1044, 279), "计数真值待人工核对", 18, 144)
-        for i, text in enumerate(detail):
-            # Keep diagnostic text inside the narrow gutter.
-            for row in range(0, min(len(text), 30), 10):
-                self._text(draw, (1044, 344 + i * 78 + row // 10 * 24),
-                           text[row:row + 10], 18, 170)
+
+        def _wrap_gutter(text, max_width=196):
+            rows, current = [], ''
+            for character in str(text):
+                font = self._latin[18] if ord(character) < 256 else self._fonts[18]
+                trial = current + character
+                if current and font.getlength(trial) > max_width:
+                    rows.append(current)
+                    current = character
+                else:
+                    current = trial
+            if current:
+                rows.append(current)
+            return rows
+        row_y = 344
+        for line in detail:
+            for row_text in _wrap_gutter(line):
+                if row_y + 26 > 626:
+                    break
+                self._text(draw, (1044, row_y), row_text, 18, 170)
+                row_y += 26
+            row_y += 10
         for x, width, label, text, field in (
                 (24, 600, "PS CPU 使用率", values[4], "cpu_percent"),
                 (640, 616, "DDR 内存占用", values[5], "memory_percent")):
