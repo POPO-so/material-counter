@@ -21,12 +21,13 @@ import numpy as np
 
 from .bundle import verify_bundle, verify_runtime, sha256
 from .camera import LatestCamera
-from .compositor import GrayComposer
+from .compositor import DashboardComposer
 from .controls import ButtonDecoder, ControlState
 from .count_controls import advance_count, make_runtime_counter
 from .driver_owner import DriverOwner
 from .evidence import write_evidence,fail_hold,TraceBuffer
 from .g1_run import setup_hardware, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
+from .hp2 import sync_hp1_readwrite32
 from .g2_readback import read_pipeline, snapshot_counters
 from .pressure import make_input, counter_delta, validate_transfer_totals
 from .preview_inputs import PreviewInputs
@@ -51,13 +52,35 @@ def rasterize_into(packet, output):
     return output
 
 
-def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=0):
+def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=0,
+                    count_axis='x',line_position=320,direction=1):
     return dict(count=result.total_count, paused=paused,
         binary_background=binary_background,page=page,
+        count_line=dict(axis=count_axis,position=line_position,direction=direction),
         annotations_truncated=len(result.detections)>128 or len(result.tracks)>128,
         boxes=[[d.x_min,d.y_min,d.x_max,d.y_max] for d in result.detections[:128]],
         tracks=[['{}:{}'.format(trajectory_epoch,t['track_id']),int(t['detection']['centroid_x']),
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
+
+
+def dashboard_values(count, paused, page, telemetry):
+    """Use measured telemetry only; unavailable or stale readings stay blank."""
+    performance=telemetry.get('performance',{})
+    resources=telemetry.get('resources',{})
+    perf=performance.get('value',{}) if not performance.get('stale',True) else {}
+    resource=resources.get('value',{}) if not resources.get('stale',True) else {}
+    memory=resource.get('memory',{})
+    memory_percent=None
+    try:
+        total=int(memory['MemTotal'].split()[0])
+        available=int(memory['MemAvailable'].split()[0])
+        if total>0 and 0<=available<=total:
+            memory_percent=100*(total-available)/total
+    except (KeyError,ValueError,TypeError,AttributeError):
+        pass
+    return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
+        display_fps=perf.get('display_fps'),processing_ms=perf.get('processing_ms'),
+        cpu_percent=resource.get('cpu',{}).get('system'),memory_percent=memory_percent)
 
 
 def start_drawing_child(
@@ -142,7 +165,7 @@ def source_identity(project_root):
 def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
     """Own ordinary RAM only; a drawing failure cannot free CMA or reload PL."""
     cv2.setNumThreads(2)
-    composer=GrayComposer(font,latin_font_path=latin_font,gray_interpolation=cv2.INTER_AREA)
+    composer=DashboardComposer(font,latin_font_path=latin_font,gray_interpolation=cv2.INTER_AREA)
     try:
         while not stop.is_set():
             lease=inputs.acquire_latest()
@@ -156,9 +179,13 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
                 slot,pixels=claimed
                 meta=lease.metadata
                 lines=meta.get('status_lines',())
+                count_line=meta.get('count_line',dict(axis='x',position=320,direction=1))
                 composer.render(lease.gray,lease.binary,lease.session_uuid,lease.frame_id,
                     boxes=meta['boxes'],tracks=meta['tracks'],status_lines=lines,
-                    binary_background=meta['binary_background'],output=pixels,line_y=200)
+                    binary_background=meta['binary_background'],output=pixels,
+                    line_x=count_line['position'] if count_line['axis']=='x' else 320,
+                    line_y=count_line['position'] if count_line['axis']=='y' else None,
+                    dashboard=meta.get('dashboard'))
                 timings=composer.last_timings_ms
                 outputs.publish(slot,lease.session_uuid,lease.frame_id,
                     scale_ns=int(timings['scale_ms']*1e6),draw_ns=int(timings['draw_ms']*1e6))
@@ -285,7 +312,7 @@ def main(argv=None):
     report['cpu_scope']='system/core normalized 0..100%; process 100% equals one core'
     report['camera_configuration']=dict(by_id=args.camera,requested_format='MJPG',
         validated_decoded_shape=[400,640],decode='IMREAD_GRAYSCALE',negotiated_fps='NOT_QUERIED')
-    controls=ControlState();decoder=ButtonDecoder();events=queue.Queue(maxsize=64)
+    controls=ControlState(binary_background=False);decoder=ButtonDecoder();events=queue.Queue(maxsize=64)
     previous_raw_button_bits=None
     hw=transport=camera=process=inputs=outputs=display_frame=video_pump=None
     display_held=False
@@ -326,6 +353,7 @@ def main(argv=None):
         for offset in (4,0x34):
             state=owner.call(dma.read,offset)
             if state&0x770 or not state&3:raise RuntimeError('RLE DMA not safely stopped')
+        report['hp1_readwrite32']=owner.call(sync_hp1_readwrite32, files['hwh'], MMIO)
         hw=video_owner.call(setup_hardware,files,video_owner,timeout=60)
         report['clocks_mhz']=hw.clocks
         control=owner.retain(MMIO(0x43c20000,0x1000))
@@ -335,6 +363,8 @@ def main(argv=None):
         transport=RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,hw.overlay.axi_dma_0.recvchannel,dma,control,tx,rx)
         if pipeline['state']['done_seen']:transport._completed_frames=1
         counter=make_runtime_counter(args.native_lib)
+        report['counting_configuration']=dict(axis=counter.count_axis,line_x=counter.line_x,
+            line_y=counter.line_y,direction=counter.direction,motion='left_to_right')
         report['source_identity']=source_identity(Path(__file__).resolve().parents[2])
         trace=TraceBuffer();report['frame_trace']=trace.frames
         if args.startup_record:
@@ -374,7 +404,7 @@ def main(argv=None):
         started=last_sample=time.monotonic();index=submitted=published=dropped=0
         camera_index=-1;next_camera_retry=0;injection_done=False;next_drawing_retry=0
         cache=TelemetryCache();last_resource=last_xadc=last_performance=0
-        last_performance_index=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
+        last_performance_index=last_performance_submitted=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
         trajectory_epoch=0;camera_in_error=False
         previous_process={}
         last_rle_stats={'runs':0,'rx_bytes':0}
@@ -419,8 +449,15 @@ def main(argv=None):
                     last_xadc=now
                 if now-last_performance>=2:
                     fps=(index-last_performance_index)/(now-last_performance) if last_performance else 0
-                    cache.record('performance',dict(processing_fps=fps,processed=index,**last_rle_stats),2,time.monotonic())
-                    last_performance=now;last_performance_index=index
+                    current_submitted=video_pump.submitted if video_pump else 0
+                    display_fps=((current_submitted-last_performance_submitted)/(now-last_performance)
+                                 if last_performance and video_pump else None)
+                    processing_ms=(float(np.mean(list(stages['transfer_ms'])[-30:])+
+                                         np.mean(list(stages['count_ms'])[-30:]))
+                                   if stages['transfer_ms'] and stages['count_ms'] else None)
+                    cache.record('performance',dict(processing_fps=fps,display_fps=display_fps,
+                        processing_ms=processing_ms,processed=index,**last_rle_stats),2,time.monotonic())
+                    last_performance=now;last_performance_index=index;last_performance_submitted=current_submitted
             if args.display=='on' and (process is None or not process.is_alive()) and now>=next_drawing_retry:
                 if process is not None:
                     process.join(timeout=0)
@@ -451,6 +488,7 @@ def main(argv=None):
                     report['recoveries'].append(dict(kind='camera',frame=index,error=repr(error),monotonic=now))
                     if inputs is not None and last_gray is not None:
                         fault=dict(last_metadata);fault['status_lines']=['相机断连 / 停止新增计数','每5秒重试 / 恢复新轨迹','累计 {}'.format(counter.total_count)]
+                        fault['dashboard']=dict(fault.get('dashboard',{}),state='CAMERA LOST')
                         inputs.publish(last_gray,binary,session,last_valid_id,fault)
                     camera_in_error=True
                     continue
@@ -480,12 +518,16 @@ def main(argv=None):
                 trace.add(index,result,trajectory_epoch)
                 if args.display=='on':
                     rasterize_into(packet,binary)
-                    metadata=result_metadata(result,paused=controls.paused,binary_background=controls.binary_background,page=controls.page,trajectory_epoch=trajectory_epoch)
+                    metadata=result_metadata(result,paused=controls.paused,binary_background=controls.binary_background,
+                        page=controls.page,trajectory_epoch=trajectory_epoch,count_axis=counter.count_axis,
+                        line_position=counter.line_x if counter.count_axis=='x' else counter.line_y,
+                        direction=counter.direction)
                     metadata['status_lines']=['本次会话累计 {}'.format(counter.total_count),
                         '暂停计数' if controls.paused else '运行中',
                         '重启清零 / 不写盘']
                     if metadata['annotations_truncated']:metadata['status_lines'].append('标注仅显示前128项 / 计数未截断')
                     telemetry=cache.snapshot(time.monotonic())
+                    metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,controls.page,telemetry)
                     performance=telemetry.get('performance')
                     if performance:
                         metadata['status_lines'].append('处理 {:.1f} FPS{}'.format(performance['value']['processing_fps'],' / 过期' if performance['stale'] else ''))
@@ -519,6 +561,7 @@ def main(argv=None):
                     stages['publish_ms'].append((time.monotonic()-count_end)*1000)
             elif inputs is not None and last_gray is not None:
                 fault=dict(last_metadata);fault['status_lines']=['RLE帧无效 / 本帧拒计','累计 {}'.format(counter.total_count)]
+                fault['dashboard']=dict(fault.get('dashboard',{}),state='INVALID FRAME')
                 if process is not None and process.is_alive():
                     inputs.publish(last_gray,binary,session,last_valid_id,fault)
             index+=1

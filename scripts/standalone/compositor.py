@@ -300,3 +300,164 @@ class GrayComposer:
                 if output is not reusable_canvas:
                     self._canvas_panel_stale = True
                 self.canvas = reusable_canvas
+
+
+class DashboardComposer:
+    """Gray8 operator dashboard with an undistorted 640x400 camera viewport.
+
+    The diagnostic composer above remains available to the G1/G2 tools. Both
+    layouts retain the same top/bottom session markers for the PL observer.
+    """
+
+    VIEW = (256, 144, 768, 480)
+
+    def __init__(self, font_path, *, latin_font_path=None,
+                 gray_interpolation=cv2.INTER_AREA):
+        if gray_interpolation not in (cv2.INTER_AREA, cv2.INTER_LINEAR):
+            raise ValueError("gray_interpolation must be INTER_AREA or INTER_LINEAR")
+        self.gray_interpolation = gray_interpolation
+        self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
+        self._work = np.empty((480, 768), dtype=np.uint8)
+        self._fonts = {size: ImageFont.truetype(str(font_path), size)
+                       for size in (18, 20, 24, 34)}
+        self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
+                       for size in (18, 20, 24, 28, 34)}
+        self._key = None
+        self._chrome = np.zeros_like(self.canvas)
+        self.last_timings_ms = {"scale_ms": 0.0, "draw_ms": 0.0}
+
+    @staticmethod
+    def _number(value, digits=1, suffix=""):
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(value) or value < 0):
+            return "--"
+        return f"{value:,.{digits}f}{suffix}"
+
+    def _text(self, draw, xy, text, size, fill):
+        # The packaged CJK fallback font does not contain Latin glyphs.
+        x, y = xy
+        for character in text:
+            font = self._latin[size] if ord(character) < 256 else self._fonts[size]
+            draw.text((x, y + size), character, font=font, fill=fill, anchor="ls")
+            x += font.getlength(character)
+
+    def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
+        values = (
+            self._number(dashboard.get("count"), 0),
+            self._number(dashboard.get("display_fps")),
+            self._number(dashboard.get("processing_ms"), 1, " ms"),
+            self._number(dashboard.get("cpu_percent"), 0, "%"),
+            self._number(dashboard.get("memory_percent"), 0, "%"),
+        )
+        state = str(dashboard.get("state", "RUNNING"))
+        detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
+        key = (values, state, binary_background, target_count, detail)
+        if key == self._key:
+            return
+        image = Image.new("L", (WIDTH, HEIGHT), 14)
+        draw = ImageDraw.Draw(image)
+        draw.text((24, 12), "NUT VISION COUNTER", font=self._latin[28], fill=242)
+        draw.ellipse((1060, 25, 1070, 35), fill=224)
+        draw.text((1082, 19), state[:15], font=self._latin[18], fill=208)
+        for x, label, value in zip((24, 440, 856),
+                                   ("本次累计计数", "显示 FPS", "处理延迟 / RLE + 计数"),
+                                   values[:3]):
+            draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
+            self._text(draw, (x + 16, 62), label, 18, 170)
+            draw.text((x + 16, 84), value, font=self._latin[34], fill=248)
+        draw.rounded_rectangle((24, 136, 1256, 632), radius=10, fill=25, outline=58)
+        draw.text((42, 157), "CAM 01", font=self._latin[24], fill=232)
+        draw.text((42, 194), "640 x 400", font=self._latin[18], fill=158)
+        self._text(draw, (42, 222), "二值预览" if binary_background else "实时灰度画面", 20, 212)
+        draw.line((44, 284, 100, 284), fill=240, width=2)
+        self._text(draw, (42, 298), "实际计数线", 18, 175)
+        self._text(draw, (42, 328), "从左向右计数", 18, 212)
+        for y, text in zip((448, 480, 512, 544),
+                           ("BTN0  暂停 / 恢复", "BTN1  长按 2 秒清零",
+                            "BTN2  灰度 / 二值", "BTN3  详细状态")):
+            self._text(draw, (42, y), text, 18, 144)
+        self._text(draw, (1044, 158), "检测目标", 20, 170)
+        draw.text((1044, 190), str(target_count), font=self._latin[34], fill=242)
+        self._text(draw, (1044, 248), "跟踪 ID / 检测框", 18, 170)
+        self._text(draw, (1044, 279), "计数真值待人工核对", 18, 144)
+        for i, text in enumerate(detail):
+            # Keep diagnostic text inside the narrow gutter.
+            for row in range(0, min(len(text), 30), 10):
+                self._text(draw, (1044, 344 + i * 78 + row // 10 * 24), text[row:row + 10], 18, 170)
+        for x, width, label, text, field in (
+                (24, 600, "PS CPU 使用率", values[3], "cpu_percent"),
+                (640, 616, "DDR 内存占用", values[4], "memory_percent")):
+            draw.rounded_rectangle((x, 646, x + width, 704), radius=9, fill=40)
+            self._text(draw, (x + 16, 650), label, 18, 178)
+            draw.text((x + width - 74, 674), text, font=self._latin[18], fill=238)
+            left, right = x + 16, x + width - 92
+            draw.rounded_rectangle((left, 682, right, 689), radius=3, fill=82)
+            percent = dashboard.get(field)
+            if (isinstance(percent, (int, float)) and not isinstance(percent, bool)
+                    and math.isfinite(percent) and percent > 0):
+                end = left + round((right - left) * min(100, percent) / 100)
+                if end > left:
+                    draw.rounded_rectangle((left, 682, end, 689), radius=3, fill=218)
+        self._chrome[:] = np.asarray(image)
+        self._key = key
+
+    def render(self, gray, binary, session_id, frame_id, boxes=(), tracks=(),
+               line_x=320, status_lines=(), *, binary_background=False, output=None,
+               line_y=None, dashboard=None):
+        GrayComposer._validate_image(gray, "gray")
+        GrayComposer._validate_image(binary, "binary")
+        if not isinstance(binary_background, bool):
+            raise TypeError("binary_background must be bool")
+        if binary_background and not np.all((binary == 0) | (binary == 255)):
+            raise ValueError("binary input may contain only 0 and 255")
+        target = self.canvas if output is None else output
+        if (not isinstance(target, np.ndarray) or target.shape != (HEIGHT, WIDTH)
+                or target.dtype != np.uint8 or not target.flags.c_contiguous
+                or not target.flags.writeable):
+            raise TypeError("output must be a writable C-contiguous (720,1280) uint8 array")
+        boxes, tracks, line_x, lines = GrayComposer._validate_annotations(
+            self, boxes, tracks, line_x, status_lines)
+        if line_y is not None:
+            line_y = _integer(line_y, "line_y")
+        marker = encode_marker(session_id, frame_id)
+        started = perf_counter_ns()
+        self._redraw_chrome(dict(dashboard or {}), binary_background, len(boxes), lines)
+        np.copyto(target, self._chrome)
+        draw_ms = (perf_counter_ns() - started) / 1_000_000
+        started = perf_counter_ns()
+        cv2.resize(binary if binary_background else gray, (768, 480), dst=self._work,
+                   interpolation=cv2.INTER_NEAREST if binary_background else self.gray_interpolation)
+        x0, y0, width, height = self.VIEW
+        image = target[y0:y0 + height, x0:x0 + width]
+        np.copyto(image, self._work)
+        scale_ms = (perf_counter_ns() - started) / 1_000_000
+        started = perf_counter_ns()
+        sx = lambda x: min(width - 1, max(0, math.floor(x * width / SOURCE_WIDTH + 0.5)))
+        sy = lambda y: min(height - 1, max(0, math.floor(y * height / SOURCE_HEIGHT + 0.5)))
+        horizontal = line_y is not None
+        fixed = sy(line_y) if horizontal else sx(line_x)
+        extent = width if horizontal else height
+        for start in range(0, extent, 24):
+            end = min(extent - 1, start + 13)
+            a, b = ((start, fixed), (end, fixed)) if horizontal else ((fixed, start), (fixed, end))
+            cv2.line(image, a, b, 0, 5, cv2.LINE_8)
+            cv2.line(image, a, b, 248, 2, cv2.LINE_8)
+        label_at = (12, max(22, fixed - 12)) if horizontal else (min(width - 140, fixed + 12), 24)
+        cv2.putText(image, "COUNT LINE", label_at, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 0, 4, cv2.LINE_8)
+        cv2.putText(image, "COUNT LINE", label_at, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 248, 1, cv2.LINE_8)
+        for x1, y1, x2, y2 in boxes:
+            a, b = (sx(x1), sy(y1)), (sx(x2), sy(y2))
+            cv2.rectangle(image, a, b, 0, 5, cv2.LINE_8)
+            cv2.rectangle(image, a, b, 245, 2, cv2.LINE_8)
+        for track_id, x, y in tracks:
+            origin = (min(width - 100, sx(x)), max(21, sy(y) - 10))
+            cv2.putText(image, "ID " + track_id, origin, cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6, 0, 4, cv2.LINE_8)
+            cv2.putText(image, "ID " + track_id, origin, cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6, 248, 1, cv2.LINE_8)
+        bits = np.unpackbits(np.frombuffer(marker, dtype=np.uint8), bitorder="big") * np.uint8(255)
+        target[0, MARKER_X:MARKER_X + MARKER_WIDTH] = bits
+        target[HEIGHT - 1, MARKER_X:MARKER_X + MARKER_WIDTH] = bits
+        self.last_timings_ms = {"scale_ms": scale_ms,
+                                "draw_ms": draw_ms + (perf_counter_ns() - started) / 1_000_000}
+        return target
