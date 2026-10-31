@@ -1,0 +1,30 @@
+{
+  "schema": "material-counter.board-capabilities.v1",
+  "provenance": "2026-11-01 Luna explorer read-only board observation, summarized by Manager; not a raw command transcript",
+  "host": "192.168.2.99",
+  "boot_id": "45f33db7-db63-4fa8-82ed-7f458cd3b13b",
+  "release": "/opt/material-counter/releases/standalone-20261031-v9-dashboard-c76b10c",
+  "service": {"active_state": "active", "sub_state": "running", "main_pid": 971, "user": "root"},
+  "buttons": {
+    "gpio_base": "0x41200000", "width": 4, "interrupt_present": false,
+    "intc_base": "0x40000000", "intc_inputs": 3,
+    "linux_irq": 49, "gic_hwirq": 61,
+    "uio": "uio1", "uio_name": "fabric", "button_irq_connected": false
+  },
+  "camera": {
+    "device": "/dev/video0", "v4l2_ctl_available": true,
+    "auto_control": "auto_exposure", "auto_current": 1, "auto_current_label": "Manual Mode",
+    "exposure_control": "exposure_time_absolute", "minimum": 50, "maximum": 10000,
+    "step": 1, "current": 50, "unit_us": 100,
+    "minimum_ms": 5, "maximum_ms": 1000, "current_ms": 5,
+    "v4l2_reported_fps": 60,
+    "note": "G_PARM report is not measured application or display FPS; camera parameters were not changed"
+  },
+  "sampling": {
+    "interval_s": 3, "fabric_irq_delta": 0, "eth0_irq_delta": 1, "usb_irq_delta": 501,
+    "eth0_rx_bytes_delta": 346, "eth0_rx_packets_delta": 1,
+    "service_threads_cpu_ticks_approx": 550, "system_two_core_ticks_approx": 644,
+    "note": "Brief observation includes SSH sampling overhead, cannot attribute algorithm-stage CPU time"
+  },
+  "operations": {"service_stopped": false, "stream_opened": false, "camera_parameters_changed": false, "hardware_registers_written": false}
+}

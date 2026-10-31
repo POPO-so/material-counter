@@ -70,3 +70,26 @@ def test_sampler_marks_missing_schedstat_unknown(tmp_path):
     sampler.sample()
     result = sampler.sample()
     assert result["threads"]["55"]["schedstat_run_ns_delta"] is None
+
+
+def test_impossible_pl_activity_is_unknown_instead_of_above_100_percent():
+    before={"sequence":1,"counters":dict(total_cycles=100,active_cycles=0,
+        input_beats=0,output_beats=0,input_stall_cycles=0,output_stall_cycles=0)}
+    after={"sequence":2,"counters":dict(total_cycles=101,active_cycles=5,
+        input_beats=0,output_beats=0,input_stall_cycles=0,output_stall_cycles=0)}
+    assert counter_rates(before,after,1)["fresh"] is False
+
+
+def test_runtime_sampler_records_network_deltas_with_missing_files_unknown(tmp_path):
+    proc=tmp_path/'proc';(proc/'net').mkdir(parents=True)
+    (proc/'stat').write_text('cpu 1 0 0 1\n')
+    def network(rx,tx):
+        (proc/'net/dev').write_text('Inter-| Receive | Transmit\n eth0: '+
+            ' '.join(map(str,[rx,2,0,0,0,0,0,0,tx,3,0,0,0,0,0,0]))+'\n')
+    network(100,200);times=iter([0,3,6]);sampler=RuntimeSampler(proc_root=proc,pid='self',clock=lambda:next(times))
+    assert sampler.sample() is None
+    network(150,260);sample=sampler.sample()
+    assert sample['network']['eth0']['rx_bytes']==50
+    assert sample['network']['eth0']['tx_bytes']==60
+    (proc/'net/dev').unlink()
+    assert sampler.sample()['network'] is None
