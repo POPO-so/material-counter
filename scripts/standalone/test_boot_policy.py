@@ -157,6 +157,7 @@ def test_build_argv_builds_dynamic_paths_and_continuous_mode(tmp_path):
         "--native-lib", str(tmp_path / "native" / "rle_components_v2.so"),
         "--output", str(tmp_path / "out dir"), "--source", "camera", "--display", "on",
         "--duration", "75", "--frames", "200000", "--camera", config["camera"],
+        "--button-input", "irq", "--preview-backend", "pl", "--input-mode", "raw",
         "--font", str(tmp_path / "fonts" / "DroidSansFallbackFull.ttf"),
         "--latin-font", str(tmp_path / "fonts" / "DejaVuSans.ttf"), "--continuous",
     ]
@@ -214,6 +215,9 @@ def test_build_argv_normalizes_boot_uuid_and_acceptance_has_no_continuous_flag(t
 
     assert argv[argv.index("--boot-id") + 1] == str(boot)
     assert "--continuous" not in argv
+    assert argv[argv.index("--button-input") + 1] == "irq"
+    assert argv[argv.index("--preview-backend") + 1] == "pl"
+    assert argv[argv.index("--input-mode") + 1] == "raw"
 
 
 @pytest.mark.parametrize("download_error", [None, RuntimeError("download failed")])

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 from collections import deque
 import hashlib
 import json
@@ -38,8 +39,13 @@ from .video_pump import VideoPump, DISPLAY_FAIL_HOLD
 from .telemetry_cache import TelemetryCache,parse_process_stat
 from .probe import _collect_iio
 from .shared_frames import SharedFrames, WRITING, READING
+from .button_events import ButtonEventRunner, interrupt_available
+from .diagnostic_mode import DiagnosticPolicy
+from .exposure import ExposureController, V4L2CtlBackend
+from .runtime_metrics import RuntimeSampler, counter_rates
+from .pl_preview import PlPreview
 from scripts.rle.protocol import TX_BYTES, RX_CAPACITY
-from scripts.rle.transport import RleDmaTransport
+from scripts.rle.transport import RAW_TX_BYTES, RleDmaTransport
 from scripts.wo0015.board_preflight import audit_process_ownership, inspect_pynq_global_state
 
 
@@ -66,7 +72,9 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
 
 
-def dashboard_values(count, paused, page, telemetry, manifest=None):
+def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='normal',
+                     exposure=None, exposure_error=None, pl_rates=None, runtime=None,
+                     button_status='IRQ READY'):
     """Use measured telemetry only; unavailable or stale readings stay blank."""
     performance=telemetry.get('performance',{})
     resources=telemetry.get('resources',{})
@@ -98,12 +106,139 @@ def dashboard_values(count, paused, page, telemetry, manifest=None):
                 static_percent[key]=round(100*used/total,1)
         except (TypeError,ValueError,OverflowError):
             static_percent[key]=None
+    exposure=exposure if isinstance(exposure,dict) else {}
+    if exposure_error:
+        exposure_text='\u66dd\u5149\u5931\u8d25: '+str(exposure_error)[:8]
+        if all(key in exposure for key in ('minimum_ms','maximum_ms')):
+            exposure_range_text='\u8303\u56f4(\u4e0a\u6b21) {:.0f}\u2013{:.0f} ms / \u00b11 ms'.format(
+                exposure['minimum_ms'],exposure['maximum_ms'])
+        else:
+            exposure_range_text='\u8303\u56f4 --'
+    elif all(key in exposure for key in ('minimum_ms','maximum_ms','current_ms')):
+        exposure_text='\u66dd\u5149 {:.1f} ms'.format(exposure['current_ms'])
+        exposure_range_text='\u8303\u56f4 {:.0f}\u2013{:.0f} ms / \u00b11 ms'.format(
+            exposure['minimum_ms'],exposure['maximum_ms'])
+    else:
+        exposure_text='\u66dd\u5149 unavailable'
+        exposure_range_text='\u8303\u56f4 --'
+    rates=pl_rates if isinstance(pl_rates,dict) and pl_rates.get('fresh') else None
+    pl_text=('RLE active (incl wait) {:.0f}% / IN {:.1f} / OUT {:.1f} MB/s'.format(
+        rates['rle_activity_pct'],rates['input_mb_s'],rates['output_mb_s'])
+        if rates and rates.get('rle_activity_pct') is not None else
+        'RLE activity / throughput unavailable')
+    threads=(runtime or {}).get('threads',{}) if isinstance(runtime,dict) else {}
+    thread_entries=[]
+    for tid,entry in threads.items():
+        if not isinstance(entry,dict):continue
+        ticks=sum(value for value in (entry.get('utime_ticks_delta'),
+                    entry.get('stime_ticks_delta')) if isinstance(value,int))
+        thread_entries.append((ticks,str(entry.get('name') or tid)))
+    interval=(runtime or {}).get('interval_s',3.0) if isinstance(runtime,dict) else 3.0
+    thread_text=('threads '+', '.join('{} {:.1f}tick/s'.format(name[:7],ticks/interval)
+                                   for ticks,name in sorted(thread_entries,reverse=True)[:2])
+                 if thread_entries else 'threads unavailable')
+    rates=rates or {}
     return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
-        display_fps=perf.get('display_fps'),processing_ms=perf.get('processing_ms'),
+        mode='DIAGNOSTIC' if mode=='diagnostic' else 'NORMAL',exposure_text=exposure_text,
+        exposure_range_text=exposure_range_text,
+        pl_text=pl_text,thread_text=thread_text,button_status=button_status,
+        rle_fresh=bool(rates),rle_activity_pct=rates.get('rle_activity_pct'),
+        input_mb_s=rates.get('input_mb_s'),output_mb_s=rates.get('output_mb_s'),
+        input_stall_pct=rates.get('input_stall_pct'),output_stall_pct=rates.get('output_stall_pct'),
+        display_fps=perf.get('display_fps'),processing_fps=perf.get('processing_fps'),
+        processing_ms=perf.get('processing_ms'),
         cpu_percent=cpu.get('system'),cpu0_percent=cpu.get('cpu0'),cpu1_percent=cpu.get('cpu1'),
         memory_percent=memory_percent,
         static_lut_percent=static_percent['lut'],static_ff_percent=static_percent['ff'],
         static_bram_percent=static_percent['bram_tiles'],static_dsp_percent=static_percent['dsp'])
+
+
+def record_diagnostic_frame(policy, trace, captures, frame_id, result, counter,
+                            gray, packet, *, trajectory_epoch=0, **metadata):
+    trace.add(frame_id,result,trajectory_epoch,enabled=policy.trace_enabled)
+    if policy.trace_enabled and captures is not None:
+        captures.observe(gray,packet,result,counter,trajectory_epoch=trajectory_epoch,**metadata)
+
+
+def prepare_preview_binary(packet, output, binary_background=True):
+    if binary_background:
+        rasterize_into(packet,output)
+    return output
+
+
+def prepare_preview_frame(gray, binary, *, backend, black_frame=None):
+    if backend == 'software':
+        return gray, binary
+    if backend != 'pl':
+        raise ValueError('unknown preview backend')
+    if black_frame is None:
+        black_frame = np.zeros((400, 640), dtype=np.uint8)
+    return black_frame, black_frame
+
+
+class PreviewPublishGate:
+    """Limit PL panel frames to 2 Hz unless a visible state changes."""
+    def __init__(self, interval_s=.5):
+        self.interval_s=interval_s
+        self.last_at=None
+        self.last_key=None
+
+    def should_publish(self, now, key, *, force=False):
+        if force:
+            self.last_at,self.last_key=now,key
+            return True
+        if key==self.last_key or (self.last_at is not None and now-self.last_at<self.interval_s):
+            return False
+        self.last_at,self.last_key=now,key
+        return True
+
+
+def button_gpio_irq_configured(overlay, channel):
+    """Require the HWH-declared GPIO IRQ capability and PYNQ async channel API."""
+    try:
+        parameters=overlay.ip_dict['btns_gpio']['parameters']
+        present=str(parameters['C_INTERRUPT_PRESENT']).strip().lower() in ('1','0x1','true')
+    except (AttributeError,KeyError,TypeError):
+        return False
+    return present and interrupt_available(channel)
+
+
+class ButtonInputWorker:
+    """Use the overlay owner's loop for IRQ waits or its explicit polling hook."""
+    def __init__(self, owner, mode, channel, read_bits, on_commands, on_error):
+        if mode not in ('irq','polling','off'):
+            raise ValueError('unknown button input mode')
+        self.owner=owner
+        self.mode,self.channel=mode,channel
+        self.read_bits,self.on_commands,self.on_error=read_bits,on_commands,on_error
+        self.decoder=ButtonDecoder()
+        self._task=None
+        self._active=False
+
+    def start(self):
+        if self.mode=='off':return
+        if self.mode=='irq' and not interrupt_available(self.channel):
+            raise RuntimeError('GPIO interrupt unavailable; select --button-input polling only for legacy hardware')
+        self._active=True
+        if self.mode=='irq':
+            self._task=self.owner.call(lambda:self.owner.start_background(
+                lambda: ButtonEventRunner(self.channel,self.read_bits,self._emit,
+                    decoder=self.decoder).run(),on_error=self.on_error))
+
+    def stop(self,timeout=2):
+        self._active=False
+        if self._task is not None and not self._task.done():
+            self.owner.call(lambda:self.owner.cancel_background(self._task,timeout=timeout),
+                            timeout=timeout+1)
+        self._task=None
+
+    def _emit(self, commands):
+        for command in commands:self.on_commands(command)
+
+    def poll(self):
+        if self._active and self.mode=='polling':
+            commands=self.decoder.update(self.read_bits(),time.monotonic())
+            if commands:self._emit(commands)
 
 
 def start_drawing_child(
@@ -191,9 +326,9 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
     composer=DashboardComposer(font,latin_font_path=latin_font,gray_interpolation=cv2.INTER_AREA)
     try:
         while not stop.is_set():
-            lease=inputs.acquire_latest()
+            lease=inputs.wait_for_frame(timeout=None,stop=stop)
             if lease is None:
-                stop.wait(.001);continue
+                continue
             slot=None
             try:
                 claimed=outputs.claim_write()
@@ -208,7 +343,7 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
                     binary_background=meta['binary_background'],output=pixels,
                     line_x=count_line['position'] if count_line['axis']=='x' else 320,
                     line_y=count_line['position'] if count_line['axis']=='y' else None,
-                    dashboard=meta.get('dashboard'))
+                    dashboard=meta.get('dashboard'),pl_preview=meta.get('pl_preview',False))
                 timings=composer.last_timings_ms
                 outputs.publish(slot,lease.session_uuid,lease.frame_id,
                     scale_ns=int(timings['scale_ms']*1e6),draw_ns=int(timings['draw_ms']*1e6))
@@ -224,7 +359,7 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
         inputs.close();outputs.close()
 
 
-def main(argv=None):
+def build_argument_parser():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--execute',action='store_true')
     parser.add_argument('--manifest',type=Path,required=True)
@@ -243,6 +378,10 @@ def main(argv=None):
         help='field-v1 enables time-based ordered association and calibrated local splitting')
     parser.add_argument('--source',choices=('replay','camera'),default='replay')
     parser.add_argument('--camera',default='/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0')
+    parser.add_argument('--button-input',choices=('irq','polling','off'),default='irq',
+        help='IRQ is required by new candidates; polling is an explicit legacy-board fallback')
+    parser.add_argument('--preview-backend',choices=('software','pl'),default='software')
+    parser.add_argument('--input-mode',choices=('packet','raw'),default='packet')
     parser.add_argument('--display',choices=('on','off'),default='on')
     parser.add_argument('--duration',type=float,default=90)
     parser.add_argument('--frames',type=int,default=1200)
@@ -256,6 +395,11 @@ def main(argv=None):
     parser.add_argument('--latin-font',default='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
     parser.add_argument('--inherited-lock-fds',nargs=2,type=int,metavar=('DESKTOP_FD','STANDALONE_FD'),
         help=argparse.SUPPRESS)
+    return parser
+
+
+def main(argv=None):
+    parser=build_argument_parser()
     args=parser.parse_args(argv)
     if args.snapshot_max_events < 1 or args.snapshot_max_mib < 1:
         parser.error('snapshot storage limits must be positive')
@@ -346,9 +490,12 @@ def main(argv=None):
         result['report_exports']=exporter.status() if exporter is not None else {'enabled':False}
         return result
     report['cpu_scope']='system/core normalized 0..100%; process 100% equals one core'
+    report['preview_backend']=args.preview_backend;report['input_mode']=args.input_mode
     report['camera_configuration']=dict(by_id=args.camera,requested_format='MJPG',
         validated_decoded_shape=[400,640],decode='IMREAD_GRAYSCALE',negotiated_fps='NOT_QUERIED')
-    controls=ControlState(binary_background=False);decoder=ButtonDecoder();events=queue.Queue(maxsize=64)
+    controls=ControlState(binary_background=True);events=queue.Queue(maxsize=64)
+    button_errors=queue.Queue(maxsize=1);button_worker=None
+    button_status={'irq':'IRQ READY','polling':'LEGACY POLLING','off':'BUTTONS OFF'}[args.button_input]
     previous_raw_button_bits=None
     hw=transport=camera=process=inputs=outputs=display_frame=video_pump=None
     display_held=False
@@ -361,29 +508,36 @@ def main(argv=None):
         nonlocal export_requested
         export_requested=True
     if hasattr(signal,'SIGUSR1'):signal.signal(signal.SIGUSR1,request_export)
-    def poll():
+    def read_button_bits():
         nonlocal previous_raw_button_bits
-        if hw is not None:
-            bits=int(hw.buttons.read())&15
-            sampled_at=time.monotonic()
-            with button_raw_lock:
-                report['button_raw_sample_count']+=1
-                if previous_raw_button_bits is None or bits!=previous_raw_button_bits:
-                    report['button_raw_transition_total']+=1
-                    report['button_raw_transitions'].append(dict(monotonic=sampled_at,bits=bits))
-                    report['button_raw_transition_truncated']=report['button_raw_transition_total']-len(report['button_raw_transitions'])
-                    previous_raw_button_bits=bits
-            for command in decoder.update(bits,sampled_at):
-                events.put_nowait(command)
+        bits=int(hw.buttons.read())&15
+        sampled_at=time.monotonic()
+        with button_raw_lock:
+            report['button_raw_sample_count']+=1
+            if previous_raw_button_bits is None or bits!=previous_raw_button_bits:
+                report['button_raw_transition_total']+=1
+                report['button_raw_transitions'].append(dict(monotonic=sampled_at,bits=bits))
+                report['button_raw_transition_truncated']=report['button_raw_transition_total']-len(report['button_raw_transitions'])
+                previous_raw_button_bits=bits
+        return bits
+    def enqueue_button_command(command):
+        try:events.put_nowait(command)
+        except queue.Full:
+            report['recoveries'].append(dict(kind='button_event_queue_full',command=command,
+                monotonic=time.monotonic()))
+    def report_button_error(error):
+        try:button_errors.put_nowait(error)
+        except queue.Full:pass
     # One manager controls the overlay lifetime. Separate driver domains prevent
     # a blocked display call from taking the RLE counting domain with it.
-    video_owner=DriverOwner()
-    owner=DriverOwner(poll=poll)
+    video_owner=DriverOwner(poll=lambda:button_worker.poll()
+                            if button_worker is not None else None)
+    owner=DriverOwner()
     ctx=mp.get_context('spawn')
     drawing_errors=ctx.Queue(maxsize=1);drawing_counts=ctx.RawArray('Q',2)
     session=uuid.UUID(report['session_id'])
     previous_cpu=_parse_proc_stat(Path('/proc/stat').read_text())
-    stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','snapshot_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms')}
+    stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','exposure_control_ms','snapshot_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms')}
     try:
         dma=owner.retain(MMIO(0x40400000,0x1000))
         for offset in (4,0x34):
@@ -392,11 +546,26 @@ def main(argv=None):
         report['hp1_readwrite32']=owner.call(sync_hp1_readwrite32, files['hwh'], MMIO)
         hw=video_owner.call(setup_hardware,files,video_owner,timeout=60)
         report['clocks_mhz']=hw.clocks
+        if args.button_input=='irq':
+            if not button_gpio_irq_configured(hw.overlay,hw.buttons):
+                raise RuntimeError('GPIO IRQ unavailable in btns_gpio HWH; use --button-input polling only for legacy hardware')
+            button_worker=ButtonInputWorker(video_owner,'irq',hw.buttons,read_button_bits,
+                enqueue_button_command,report_button_error)
+            button_worker.start()
+        elif args.button_input=='polling':
+            button_worker=ButtonInputWorker(video_owner,'polling',hw.buttons,read_button_bits,
+                enqueue_button_command,report_button_error)
+            button_worker.start()
         control=owner.retain(MMIO(0x43c20000,0x1000))
         pipeline=owner.call(read_pipeline,control)
-        tx=owner.retain(allocate(shape=(TX_BYTES,),dtype='u1'))
+        tx=owner.retain(allocate(shape=(RAW_TX_BYTES if args.input_mode=='raw' else TX_BYTES,),dtype='u1'))
         rx=owner.retain(allocate(shape=(RX_CAPACITY,),dtype='u1'))
-        transport=RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,hw.overlay.axi_dma_0.recvchannel,dma,control,tx,rx)
+        transport=RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,hw.overlay.axi_dma_0.recvchannel,
+            dma,control,tx,rx,input_mode=args.input_mode)
+        pl_preview=None
+        if args.preview_backend=='pl':
+            pl_preview=owner.call(lambda:PlPreview(MMIO(0x43c50000,0x1000)))
+            owner.retain(pl_preview.mmio)
         if pipeline['state']['done_seen']:transport._completed_frames=1
         counter=make_runtime_counter(args.native_lib,profile=args.counting_profile)
         exporter=EvidenceExporter()
@@ -404,8 +573,11 @@ def main(argv=None):
         report['counting_configuration']=dict(axis=counter.count_axis,line_x=counter.line_x,
             line_y=counter.line_y,direction=counter.direction,motion='left_to_right')
         report['source_identity']=source_identity(Path(__file__).resolve().parents[2])
-        if args.crossing_snapshots=='on':
-            captures=CrossingSnapshots(args.output.with_suffix('.crossings'),
+        diagnostic_policy=DiagnosticPolicy('normal')
+        report['diagnostic_mode']='normal';report['diagnostic_transitions']=deque(maxlen=128)
+        diagnostic_error=None
+        def create_crossing_snapshots():
+            return CrossingSnapshots(args.output.with_suffix('.crossings'),
                 identity={name:report[name] for name in ('boot_id','session_id','bit_sha256',
                     'hwh_sha256','manifest_sha256','native_sha256','source_identity','camera_configuration')},
                 max_events=args.snapshot_max_events,max_bytes=args.snapshot_max_mib*1024**2,
@@ -443,18 +615,43 @@ def main(argv=None):
                     next_drawing_retry=failed_at+5
             video_pump=VideoPump(outputs,hw,video_owner,session)
         else:video_owner.call(hw.hdmi.close,timeout=3)
-        if args.source=='camera':camera=LatestCamera(args.camera)
+        exposure_controller=None;exposure_status=None;exposure_error=None
+        if args.source=='camera':
+            camera=LatestCamera(args.camera)
+            try:
+                exposure_controller=ExposureController(V4L2CtlBackend(args.camera))
+                exposure_status=exposure_controller.status()
+            except Exception as error:
+                exposure_error=str(error)
+                report['recoveries'].append(dict(kind='exposure_query',error=repr(error),
+                    monotonic=time.monotonic()))
         report['counters_before']=owner.call(snapshot_counters,control)
         started=last_sample=time.monotonic();index=submitted=published=dropped=0
         camera_index=-1;next_camera_retry=0;injection_done=False;next_drawing_retry=0
         cache=TelemetryCache();last_resource=last_xadc=last_performance=0
         last_performance_index=last_performance_submitted=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
+        black_frame=np.zeros((400,640),dtype=np.uint8)
+        panel_gate=PreviewPublishGate(.5);last_pl_accepts=0;binary_fps=None
+        last_binary_published=0
+        binary_fps_window_at=started
         trajectory_epoch=0;camera_in_error=False
         previous_process={}
         last_rle_stats={'runs':0,'rx_bytes':0}
+        runtime_sampler=RuntimeSampler(pid=os.getpid(),interval_s=3.0)
+        next_runtime_sample=started+3.0;runtime_sample=None
+        previous_pl_counters=report['counters_before'];previous_pl_at=started
+        pl_rates=counter_rates(previous_pl_counters,previous_pl_counters,1.0)
         tick_hz=os.sysconf('SC_CLK_TCK');page_size=os.sysconf('SC_PAGE_SIZE')
         while running and (args.continuous or (time.monotonic()-started<args.duration and index<args.frames)):
             now=time.monotonic()
+            try:
+                button_error=button_errors.get_nowait()
+            except queue.Empty:
+                button_error=None
+            if button_error is not None:
+                button_status='IRQ ERROR' if args.button_input=='irq' else 'BUTTON INPUT ERROR'
+                report['recoveries'].append(dict(kind='button_input',error=repr(button_error),
+                    monotonic=now,mode=args.button_input))
             if export_requested:
                 report.update(state='RUNNING',processed=index,submitted=video_pump.submitted if video_pump else 0,
                     duration_s=now-started,total_count=counter.total_count,invalid_frames=counter.invalid_frames,
@@ -562,8 +759,51 @@ def main(argv=None):
             transfer_end=time.monotonic()
             result=advance_count(counter,controls,packet,boundary,capture_monotonic_ns=capture_ns)
             count_end=time.monotonic()
-            if captures is not None:
-                captures.observe(gray,packet,result,counter,trajectory_epoch=trajectory_epoch,
+            exposure_control_ms=0.0
+            if pl_preview is not None and packet.valid:
+                def submit_pl_preview():
+                    try:
+                        return (pl_preview.submit(packet,result,line_x=counter.line_x,enabled=True),None)
+                    except Exception as error:
+                        return (False,repr(error))
+                accepted,preview_error=owner.call(submit_pl_preview,timeout=2)
+                if accepted:last_pl_accepts+=1
+                if preview_error is not None:
+                    report['recoveries'].append(dict(kind='pl_preview_submit',frame=index,
+                        error=preview_error,monotonic=time.monotonic()))
+            for command in boundary:
+                if command not in ('exposure_up','exposure_down'):continue
+                exposure_started=time.monotonic()
+                try:
+                    if exposure_controller is None:
+                        raise RuntimeError('camera exposure control unavailable for this source')
+                    if command=='exposure_up':exposure_controller.exposure_up()
+                    else:exposure_controller.exposure_down()
+                    exposure_status=exposure_controller.status();exposure_error=None
+                except Exception as error:
+                    exposure_error=str(error)
+                    report['recoveries'].append(dict(kind='exposure_adjust',command=command,
+                        error=repr(error),frame=index,monotonic=time.monotonic()))
+                finally:
+                    exposure_control_ms=(time.monotonic()-exposure_started)*1000
+                    stages['exposure_control_ms'].append(exposure_control_ms)
+                    if exposure_control_ms>100:
+                        report['recoveries'].append(dict(kind='exposure_control_slow',command=command,
+                            elapsed_ms=exposure_control_ms,frame=index,monotonic=time.monotonic()))
+            mode='diagnostic' if controls.diagnostic else 'normal'
+            transition=diagnostic_policy.set_mode(mode,frame_id=index,timestamp_ns=capture_ns)
+            if transition is not None:
+                report['diagnostic_transitions'].append(transition)
+                report['diagnostic_mode']=mode
+            if diagnostic_policy.trace_enabled and captures is None and args.crossing_snapshots=='on':
+                try:captures=create_crossing_snapshots();diagnostic_error=None
+                except Exception as error:
+                    diagnostic_error=str(error)
+                    report['recoveries'].append(dict(kind='diagnostic_writer',error=repr(error),
+                        frame=index,monotonic=time.monotonic()))
+            if result is not None:
+                record_diagnostic_frame(diagnostic_policy,trace,captures,index,result,counter,
+                    gray,packet,trajectory_epoch=trajectory_epoch,
                     capture_monotonic_ns=capture_ns,camera_sequence=camera_index if camera else index,
                     paused=controls.paused,commands=boundary,
                     timings={'transfer_ms':(transfer_end-frame_start)*1000,'count_ms':(count_end-transfer_end)*1000})
@@ -576,26 +816,40 @@ def main(argv=None):
             last_rle_stats.update(frame_id=packet.frame_id,
                 camera_sequence=camera_index if camera else index,
                 detection_count=len(result.detections) if result is not None else None,
+                exposure_control_ms=exposure_control_ms,
                 last_frame_timings_ms=dict(transfer_ms=(transfer_end-frame_start)*1000,
                     count_ms=(count_end-transfer_end)*1000,
+                    exposure_control_ms=exposure_control_ms,
                     snapshot_ms=(snapshot_end-count_end)*1000,
                     **(result.roi_subtimings_ms if result is not None else {})))
             if boundary:report['events'].append(dict(frame=index,commands=boundary,count=counter.total_count))
             if result is not None:
-                trace.add(index,result,trajectory_epoch)
                 if args.display=='on':
-                    rasterize_into(packet,binary)
-                    metadata=result_metadata(result,paused=controls.paused,binary_background=controls.binary_background,
+                    if pl_preview is None:prepare_preview_binary(packet,binary,True)
+                    metadata=result_metadata(result,paused=controls.paused,binary_background=True,
                         page=controls.page,trajectory_epoch=trajectory_epoch,count_axis=counter.count_axis,
                         line_position=counter.line_x if counter.count_axis=='x' else counter.line_y,
                         direction=counter.direction)
+                    metadata['pl_preview']=pl_preview is not None
+                    metadata['preview_backend']=args.preview_backend
                     metadata['status_lines']=['本次会话累计 {}'.format(counter.total_count),
                         '暂停计数' if controls.paused else '运行中',
-                        '重启清零 / '+('过线诊断留图' if captures is not None else '诊断留图关闭')]
+                        '诊断快照 '+('启用' if diagnostic_policy.trace_enabled and captures is not None else
+                            '不可用' if diagnostic_error else '关闭')]
                     if metadata['annotations_truncated']:metadata['status_lines'].append('标注仅显示前128项 / 计数未截断')
                     telemetry=cache.snapshot(time.monotonic())
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,
-                        controls.page,telemetry,manifest)
+                    controls.page,telemetry,manifest,mode=diagnostic_policy.mode,
+                    exposure=exposure_status,exposure_error=exposure_error,
+                    pl_rates=pl_rates,runtime=runtime_sample,button_status=button_status)
+                    metadata['dashboard']['binary_fps']=binary_fps
+                    metadata['dashboard']['preview_status']='PL READY' if pl_preview is not None else '软件二值预览'
+                    if pl_preview is not None and len(result.detections)>16:
+                        metadata['status_lines'].append('PL overlay boxes truncated to 16')
+                        metadata['pl_overlay_boxes_truncated']=len(result.detections)-16
+                    metadata['dashboard']['exposure_latency_text']=(
+                        'exposure call {:.0f} ms (slow)'.format(exposure_control_ms)
+                        if exposure_control_ms>100 else '')
                     performance=telemetry.get('performance')
                     if performance:
                         metadata['status_lines'].append('处理 {:.1f} FPS{}'.format(performance['value']['processing_fps'],' / 过期' if performance['stale'] else ''))
@@ -623,21 +877,46 @@ def main(argv=None):
                         if performance:metadata['status_lines'].append('RLE {} runs / DMA {} B'.format(performance['value']['runs'],performance['value']['rx_bytes']))
                     last_gray=gray;last_metadata=metadata;last_valid_id=index
                     if process is not None and process.is_alive():
-                        if inputs.publish(gray,binary,session,index,metadata):published+=1
-                        else:dropped+=1
+                        selected_gray,selected_binary=prepare_preview_frame(gray,binary,
+                            backend=args.preview_backend,black_frame=black_frame)
+                        panel_key=(counter.total_count,controls.page,controls.diagnostic,
+                            exposure_status,exposure_error,pl_rates,runtime_sample,button_status)
+                        if pl_preview is None or panel_gate.should_publish(time.monotonic(),panel_key):
+                            if inputs.publish(selected_gray,selected_binary,session,index,metadata):
+                                published+=1
+                                if pl_preview is None:last_binary_published+=1
+                            else:dropped+=1
                     else:dropped+=1
                     stages['publish_ms'].append((time.monotonic()-snapshot_end)*1000)
             elif inputs is not None and last_gray is not None:
                 fault=dict(last_metadata);fault['status_lines']=['RLE帧无效 / 本帧拒计','累计 {}'.format(counter.total_count)]
-                fault['dashboard']=dict(fault.get('dashboard',{}),state='INVALID FRAME')
+                fault['dashboard']=dict(fault.get('dashboard',{}),state='INVALID FRAME',preview_status='INVALID FRAME')
                 if process is not None and process.is_alive():
-                    inputs.publish(last_gray,binary,session,last_valid_id,fault)
+                    selected_gray,selected_binary=prepare_preview_frame(last_gray,binary,
+                        backend=args.preview_backend,black_frame=black_frame)
+                    inputs.publish(selected_gray,selected_binary,session,last_valid_id,fault)
             index+=1
             if args.display=='on':
                 submitted=video_pump.submitted
                 if process is not None and args.inject_drawing_exit is not None and index>=args.inject_drawing_exit and not injection_done:
                     stop_drawing.set();injection_done=True
-            if time.monotonic()-last_sample>=2:
+            sample_now=time.monotonic()
+            if sample_now>=next_runtime_sample:
+                runtime_sample=runtime_sampler.sample()
+                current_pl_counters=owner.call(snapshot_counters,control)
+                pl_rates=counter_rates(previous_pl_counters,current_pl_counters,
+                                       sample_now-previous_pl_at)
+                previous_pl_counters=current_pl_counters;previous_pl_at=sample_now
+                next_runtime_sample=sample_now+3.0
+                if pl_preview is not None:
+                    elapsed=sample_now-binary_fps_window_at
+                    binary_fps=last_pl_accepts/elapsed if elapsed>0 else None
+                    last_pl_accepts=0;binary_fps_window_at=sample_now
+                else:
+                    elapsed=sample_now-binary_fps_window_at
+                    binary_fps=(last_binary_published/elapsed if elapsed>0 else None)
+                    last_binary_published=0;binary_fps_window_at=sample_now
+            if sample_now-last_sample>=2:
                 sample_time=time.monotonic();cpu=_parse_proc_stat(Path('/proc/stat').read_text())
                 monitor=owner.call(snapshot,hw.monitor)
                 vdma_status=owner.call(hw.vdma.read,4)
@@ -649,11 +928,13 @@ def main(argv=None):
                     cpu=_cpu_usage_percent(previous_cpu,cpu),vdma_status=vdma_status,
                     video_state=video_pump.state if video_pump else 'OFF',telemetry=cache.snapshot(time.monotonic()),
                     crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
-                    counters=owner.call(snapshot_counters,control)))
+                    counters=owner.call(snapshot_counters,control),
+                    network=(runtime_sample or {}).get('network')))
                 previous_cpu=cpu;last_sample=sample_time
         report['duration_s']=time.monotonic()-started
         report.update(trace_sha256=trace.digest(),trace_frames=trace.frames_seen,
                       trace_annotations_truncated=trace.annotations_truncated)
+        if button_worker is not None:button_worker.stop()
         if camera is not None:camera.close();camera=None
         if process is not None:
             stop_drawing.set();process.join(timeout=15)
@@ -694,6 +975,11 @@ def main(argv=None):
                              for name,values in stages.items()}
         if video_pump is not None and not video_pump.is_alive:report['timings_ms'].update(video_pump.timing_percentiles_ms())
     except BaseException as error:
+        if button_worker is not None:
+            try:button_worker.stop()
+            except BaseException as stop_error:
+                report['recoveries'].append(dict(kind='button_worker_stop',error=repr(stop_error),
+                    monotonic=time.monotonic()))
         if captures is not None:report['snapshot_writer_drained']=captures.close()
         if exporter is not None:report['report_writer_drained']=exporter.close()
         if stop_drawing is not None:stop_drawing.set()

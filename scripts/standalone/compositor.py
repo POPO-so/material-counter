@@ -309,7 +309,7 @@ class DashboardComposer:
     layouts retain the same top/bottom session markers for the PL observer.
     """
 
-    VIEW = (320, 146, 640, 400)
+    VIEW = (384, 146, 512, 320)
 
     def __init__(self, font_path, *, latin_font_path=None,
                  gray_interpolation=cv2.INTER_AREA):
@@ -317,7 +317,7 @@ class DashboardComposer:
             raise ValueError("gray_interpolation must be INTER_AREA or INTER_LINEAR")
         self.gray_interpolation = gray_interpolation
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
-        self._work = np.empty((400, 640), dtype=np.uint8)
+        self._work = np.empty((320, 512), dtype=np.uint8)
         self._fonts = {size: ImageFont.truetype(str(font_path), size)
                        for size in (18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
@@ -410,8 +410,9 @@ class DashboardComposer:
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
         values = (
             self._number(dashboard.get("count"), 0),
-            self._number(dashboard.get("display_fps")),
-            self._number(dashboard.get("processing_ms"), 1, " ms"),
+            self._number(dashboard.get("binary_fps", dashboard.get("display_fps"))),
+            "{} / {}".format(self._number(dashboard.get("processing_fps")),
+                             self._number(dashboard.get("processing_ms"), 1, "ms")),
             self._number(dashboard.get("cpu_percent"), 0, "%"),
             self._number(dashboard.get("memory_percent"), 0, "%"),
         )
@@ -426,8 +427,21 @@ class DashboardComposer:
             for value in live_pies + static_pies
         )
         state = str(dashboard.get("state", "RUNNING"))
+        mode = str(dashboard.get("mode", "NORMAL"))
+        exposure_text = str(dashboard.get("exposure_text", "曝光不可用"))
+        pl_text = str(dashboard.get("pl_text", "PL rates unavailable"))
+        thread_text = str(dashboard.get("thread_text", "线程概要暂不可用"))
+        button_status = str(dashboard.get("button_status", "IRQ READY"))
+        exposure_range_text = str(dashboard.get("exposure_range_text", "范围 --"))
+        preview_status = str(dashboard.get("preview_status", "预览 READY"))
+        exposure_latency_text = str(dashboard.get("exposure_latency_text", ""))
+        rle_key = tuple(dashboard.get(name) for name in (
+            "rle_fresh", "rle_activity_pct", "input_mb_s", "output_mb_s",
+            "input_stall_pct", "output_stall_pct", "binary_fps"))
         detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
-        key = (values, pie_key, state, binary_background, target_count, detail)
+        key = (values, pie_key, state, binary_background, target_count, detail,
+               mode, exposure_text, exposure_range_text, pl_text, thread_text,
+               button_status, preview_status, exposure_latency_text, rle_key)
         if key == self._key:
             return
         image = Image.new("L", (WIDTH, HEIGHT), 14)
@@ -436,49 +450,67 @@ class DashboardComposer:
         draw.ellipse((1060, 25, 1070, 35), fill=224)
         self._whole_latin_text(draw, (1082, 19), state[:15], 18, 208)
         for x, label, value in zip((24, 440, 856),
-                                   ("本次累计计数", "显示 FPS", "处理延迟 / RLE + 计数"),
+                                   ("本次累计计数", "二值更新 FPS", "处理 FPS / 延迟 ms"),
                                    values[:3]):
             draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
             self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
-        draw.rounded_rectangle((24, 136, 1256, 556), radius=10, fill=25, outline=58)
+        draw.rounded_rectangle((24, 136, 1256, 474), radius=10, fill=25, outline=58)
         self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
         self._whole_latin_text(draw, (42, 194), "640 x 400", 18, 158)
-        self._text(draw, (42, 222), "二值预览" if binary_background else "实时灰度画面", 20, 212)
-        draw.line((44, 284, 100, 284), fill=240, width=2)
-        self._text(draw, (42, 298), "实际计数线", 18, 175)
-        self._text(draw, (42, 328), "从左向右计数", 18, 212)
-        for y, text in zip((414, 446, 478, 510),
-                           ("BTN0  暂停 / 恢复", "BTN1  长按 2 秒清零",
-                            "BTN2  灰度 / 二值", "BTN3  详细状态")):
-            self._text(draw, (42, y), text, 18, 144)
-        self._text(draw, (984, 158), "检测目标", 20, 170)
-        self._whole_latin_text(draw, (984, 190), str(target_count), 34, 242)
-        self._text(draw, (984, 248), "跟踪 ID / 检测框", 18, 170)
-        self._text(draw, (984, 279), "计数真值待人工核对", 18, 144)
-        for i, text in enumerate(detail):
-            # Keep diagnostic text inside the narrow gutter.
-            for row in range(0, min(len(text), 30), 10):
-                self._text(draw, (984, 344 + i * 70 + row // 10 * 24), text[row:row + 10], 18, 170)
+        self._text(draw, (42, 222), "二值预览", 20, 212)
+        self._text(draw, (42, 272), "计数线 640x400", 18, 175)
+        self._text(draw, (42, 298), "方向 左→右", 18, 212)
+        self._text(draw, (42, 330), "模式 "+mode, 18, 208)
+        self._text(draw, (42, 356), exposure_text, 18, 190)
+        self._text(draw, (42, 382), str(dashboard.get("exposure_range_text", "范围 --")), 18, 190)
+        self._text(draw, (42, 410), "BTN0 clear / BTN1 mode", 18, 144)
+        self._text(draw, (42, 432), "BTN2 short +1ms", 18, 144)
+        self._text(draw, (42, 454), "long -1ms / BTN3 idle", 18, 144)
+        self._text(draw, (934, 158), "检测目标", 20, 170)
+        self._whole_latin_text(draw, (934, 190), str(target_count), 34, 242)
+        self._text(draw, (934, 248), "跟踪 ID / 检测框", 18, 170)
+        self._text(draw, (934, 279), "计数真值待人工核对", 18, 144)
+        self._text(draw, (934, 310), button_status, 18, 170)
+        self._text(draw, (934, 340), str(dashboard.get("preview_status", "预览 READY")), 18, 170)
+        self._text(draw, (934, 370), thread_text, 18, 170)
+        if exposure_latency_text:
+            self._text(draw, (934, 400), exposure_latency_text, 18, 190)
+        for i, text in enumerate(detail[:2]):
+            for row in range(0, min(len(text), 20), 10):
+                self._text(draw, (934, 428 + i * 34 + row // 10 * 18), text[row:row + 10], 18, 170)
         for top, bottom, center_y, title, labels, percentages, is_static in (
-                (562, 637, 599, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
-                (640, 716, 677, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
+                (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
+                (558, 630, 594, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
             draw.rounded_rectangle((24, top, 1256, bottom), radius=9, fill=40)
             self._whole_latin_text(draw, (36, center_y - 12), title, 18, 232)
             for index, (label, percent) in enumerate(zip(labels, percentages)):
                 self._resource_pie(draw, 116 + index * 280, center_y, label,
                                    percent, static=is_static)
+        top,bottom,center_y=636,708,672
+        draw.rounded_rectangle((24,top,1256,bottom),radius=9,fill=40)
+        self._whole_latin_text(draw,(36,center_y-12),"RLE",18,232)
+        rle_values=(dashboard.get("rle_activity_pct"),dashboard.get("input_mb_s"),
+                    dashboard.get("output_mb_s"),dashboard.get("input_stall_pct"),
+                    dashboard.get("output_stall_pct"))
+        rle_labels=("活动(含等待)","IN MB/s","OUT MB/s","IN 阻塞","OUT 阻塞")
+        fresh=bool(dashboard.get("rle_fresh"))
+        for index,(label,value) in enumerate(zip(rle_labels,rle_values)):
+            x=184+index*210
+            self._text(draw,(x,center_y-23),label,18,170)
+            shown=self._number(value,1,"%" if index in (0,3,4) else "") if fresh else "--"
+            self._whole_latin_text(draw,(x,center_y),shown,24,226 if fresh else 142)
         self._chrome[:] = np.asarray(image)
         self._key = key
 
     def render(self, gray, binary, session_id, frame_id, boxes=(), tracks=(),
                line_x=320, status_lines=(), *, binary_background=False, output=None,
-               line_y=None, dashboard=None):
+               line_y=None, dashboard=None, pl_preview=False):
         GrayComposer._validate_image(gray, "gray")
         GrayComposer._validate_image(binary, "binary")
         if not isinstance(binary_background, bool):
             raise TypeError("binary_background must be bool")
-        if binary_background and not np.all((binary == 0) | (binary == 255)):
+        if not np.all((binary == 0) | (binary == 255)):
             raise ValueError("binary input may contain only 0 and 255")
         target = self.canvas if output is None else output
         if (not isinstance(target, np.ndarray) or target.shape != (HEIGHT, WIDTH)
@@ -495,36 +527,40 @@ class DashboardComposer:
         np.copyto(target, self._chrome)
         draw_ms = (perf_counter_ns() - started) / 1_000_000
         started = perf_counter_ns()
-        cv2.resize(binary if binary_background else gray, (640, 400), dst=self._work,
-                   interpolation=cv2.INTER_NEAREST if binary_background else self.gray_interpolation)
         x0, y0, width, height = self.VIEW
         image = target[y0:y0 + height, x0:x0 + width]
-        np.copyto(image, self._work)
+        if pl_preview:
+            image.fill(0)
+        else:
+            cv2.resize(binary, (width, height), dst=self._work,
+                       interpolation=cv2.INTER_NEAREST)
+            np.copyto(image, self._work)
         scale_ms = (perf_counter_ns() - started) / 1_000_000
         started = perf_counter_ns()
-        sx = lambda x: min(width - 1, max(0, math.floor(x * width / SOURCE_WIDTH + 0.5)))
-        sy = lambda y: min(height - 1, max(0, math.floor(y * height / SOURCE_HEIGHT + 0.5)))
-        horizontal = line_y is not None
-        fixed = sy(line_y) if horizontal else sx(line_x)
-        extent = width if horizontal else height
-        for start in range(0, extent, 24):
-            end = min(extent - 1, start + 13)
-            a, b = ((start, fixed), (end, fixed)) if horizontal else ((fixed, start), (fixed, end))
-            cv2.line(image, a, b, 0, 5, cv2.LINE_8)
-            cv2.line(image, a, b, 248, 2, cv2.LINE_8)
-        label_at = (12, max(22, fixed - 12)) if horizontal else (min(width - 140, fixed + 12), 24)
-        cv2.putText(image, "COUNT LINE", label_at, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 0, 4, cv2.LINE_8)
-        cv2.putText(image, "COUNT LINE", label_at, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 248, 1, cv2.LINE_8)
-        for x1, y1, x2, y2 in boxes:
-            a, b = (sx(x1), sy(y1)), (sx(x2), sy(y2))
-            cv2.rectangle(image, a, b, 0, 5, cv2.LINE_8)
-            cv2.rectangle(image, a, b, 245, 2, cv2.LINE_8)
-        for track_id, x, y in tracks:
-            origin = (min(width - 100, sx(x)), max(21, sy(y) - 10))
-            cv2.putText(image, "ID " + track_id, origin, cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6, 0, 4, cv2.LINE_8)
-            cv2.putText(image, "ID " + track_id, origin, cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6, 248, 1, cv2.LINE_8)
+        if not pl_preview:
+            sx = lambda x: min(width - 1, max(0, math.floor(x * width / SOURCE_WIDTH + 0.5)))
+            sy = lambda y: min(height - 1, max(0, math.floor(y * height / SOURCE_HEIGHT + 0.5)))
+            horizontal = line_y is not None
+            fixed = sy(line_y) if horizontal else sx(line_x)
+            extent = width if horizontal else height
+            for start in range(0, extent, 24):
+                end = min(extent - 1, start + 13)
+                a, b = ((start, fixed), (end, fixed)) if horizontal else ((fixed, start), (fixed, end))
+                cv2.line(image, a, b, 0, 5, cv2.LINE_8)
+                cv2.line(image, a, b, 248, 2, cv2.LINE_8)
+            label_at = (12, max(22, fixed - 12)) if horizontal else (min(width - 140, fixed + 12), 24)
+            cv2.putText(image, "COUNT LINE", label_at, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 0, 4, cv2.LINE_8)
+            cv2.putText(image, "COUNT LINE", label_at, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 248, 1, cv2.LINE_8)
+            for x1, y1, x2, y2 in boxes:
+                a, b = (sx(x1), sy(y1)), (sx(x2), sy(y2))
+                cv2.rectangle(image, a, b, 0, 5, cv2.LINE_8)
+                cv2.rectangle(image, a, b, 245, 2, cv2.LINE_8)
+            for track_id, x, y in tracks:
+                origin = (min(width - 100, sx(x)), max(21, sy(y) - 10))
+                cv2.putText(image, "ID " + track_id, origin, cv2.FONT_HERSHEY_SIMPLEX,
+                            0.6, 0, 4, cv2.LINE_8)
+                cv2.putText(image, "ID " + track_id, origin, cv2.FONT_HERSHEY_SIMPLEX,
+                            0.6, 248, 1, cv2.LINE_8)
         bits = np.unpackbits(np.frombuffer(marker, dtype=np.uint8), bitorder="big") * np.uint8(255)
         target[0, MARKER_X:MARKER_X + MARKER_WIDTH] = bits
         target[HEIGHT - 1, MARKER_X:MARKER_X + MARKER_WIDTH] = bits

@@ -127,3 +127,119 @@ def test_poll_callback_runs_between_jobs_and_errors_are_visible():
     owner = _owner(poll=seen.set)
     assert seen.wait(0.3)
     owner.close()
+
+
+def test_background_task_and_sync_jobs_share_owner_loop_without_nested_loop():
+    owner = _owner()
+    progressed = threading.Event()
+    loop_ids = []
+
+    async def background():
+        import asyncio
+        loop_ids.append(id(asyncio.get_running_loop()))
+        progressed.set()
+        await asyncio.Event().wait()
+
+    task = owner.call(owner.start_background, lambda: background())
+    assert progressed.wait(1)
+
+    async def driver_style_sync_call():
+        import asyncio
+        loop_ids.append(id(asyncio.get_running_loop()))
+
+    def synchronous_driver_call():
+        import asyncio
+        loop_ids.append(id(asyncio.get_event_loop()))
+        asyncio.get_event_loop().run_until_complete(driver_style_sync_call())
+        return "sync-call-completed"
+
+    assert owner.call(synchronous_driver_call) == "sync-call-completed"
+    assert owner.call(lambda: id(__import__("asyncio").get_event_loop())) == loop_ids[0]
+    assert loop_ids[1] == loop_ids[0]
+    owner.call(owner.cancel_background, task)
+    owner.close()
+
+
+def test_idle_background_progress_and_job_wakeup_do_not_use_poll_interval():
+    owner = _owner()
+    progressed = threading.Event()
+
+    async def background():
+        import asyncio
+        while True:
+            progressed.set()
+            await asyncio.sleep(0.002)
+
+    task = owner.call(owner.start_background, lambda: background())
+    assert progressed.wait(1)
+    start = threading.Event()
+    real_get = owner._jobs.get
+
+    def forbid_blocking_get(*, block=True, timeout=None):
+        assert block is False
+        return real_get(block=False)
+
+    owner._jobs.get = forbid_blocking_get
+    assert owner.call(start.set) is None
+    assert start.is_set()
+    owner.call(owner.cancel_background, task)
+    owner.close()
+
+
+def test_background_exception_is_reported_without_stopping_sync_driver_jobs():
+    owner = _owner()
+
+    async def broken():
+        raise RuntimeError("button IRQ callback failed")
+
+    task = owner.call(owner.start_background, lambda: broken())
+    owner.call(lambda: None)
+    failure = owner.failure_errors.get(timeout=1)
+    assert "button IRQ callback failed" in str(failure)
+    assert task.done()
+    assert owner.call(lambda: "counter still advances") == "counter still advances"
+    owner.close()
+
+
+def test_background_callback_exception_is_reported():
+    owner = _owner()
+    callback_errors = []
+
+    async def broken():
+        raise RuntimeError("IRQ task failed")
+
+    def bad_callback(error):
+        callback_errors.append(error)
+        raise ValueError("report callback failed")
+
+    task = owner.call(lambda: owner.start_background(lambda: broken(), on_error=bad_callback))
+    owner.call(lambda: None)
+    assert task.done()
+    assert isinstance(owner.failure_errors.get(timeout=1), RuntimeError)
+    assert isinstance(owner.failure_errors.get(timeout=1), ValueError)
+    assert callback_errors
+    assert task not in owner._background
+    owner.close()
+
+
+def test_cancel_background_timeout_enters_fail_hold_and_retains_resource():
+    owner = _owner()
+    gate = threading.Event()
+    resource = object()
+    owner.retain(resource)
+
+    async def cancellation_blocked():
+        import asyncio
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            while not gate.is_set():
+                await asyncio.sleep(.001)
+
+    task = owner.call(owner.start_background, lambda: cancellation_blocked())
+    owner.call(lambda: None)
+    with pytest.raises(FailHold):
+        owner.call(lambda: owner.cancel_background(task, timeout=.02), timeout=.2)
+    assert owner.state == "FAIL_HOLD"
+    assert owner.retained == (resource,)
+    gate.set()
