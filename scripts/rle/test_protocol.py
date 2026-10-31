@@ -259,3 +259,30 @@ def test_rle_input_error_frame_can_report_partial_accepted_pixels():
     assert frame.accepted_pixels == 200
     with pytest.raises(ValueError, match="input-error"):
         reconstruct(frame)
+
+
+
+@pytest.mark.parametrize("layout", ["contiguous", "strided", "reversed"])
+def test_gray_checksum_matches_integer_oracle_at_maximum_intensity(layout):
+    storage = np.full((HEIGHT, WIDTH*2), 255, dtype=np.uint8)
+    gray = storage[:, ::2] if layout == "strided" else storage[:, :WIDTH].copy()
+    if layout == "reversed":
+        gray = gray[::-1, ::-1]
+    packet = encode_gray(gray, frame_id=0xffffffff)
+    assert packet[16:-16] == gray.tobytes()
+    assert struct.unpack_from('<4I', packet, len(packet)-16)[2] == HEIGHT*WIDTH*255
+
+
+def test_rle_checksum_preserves_modulo_wrap_and_rejects_corruption():
+    mask = np.full((HEIGHT, WIDTH), 255, dtype=np.uint8)
+    packet = encode_mask(mask, frame_id=0xffffffff, params_version=0xffffffff,
+                         timestamp=0xffffffffffffffff)
+    checksum_index = len(packet)//4-8
+    integer_sum = sum(_word(packet, i) for i in range(checksum_index-8))
+    assert integer_sum > 0xffffffff
+    assert _word(packet, checksum_index) == integer_sum & 0xffffffff
+    assert decode_packet(packet).total_fg == HEIGHT*WIDTH
+    broken = bytearray(packet)
+    broken[checksum_index*4] ^= 1
+    with pytest.raises(ValueError, match='checksum'):
+        decode_packet(broken)

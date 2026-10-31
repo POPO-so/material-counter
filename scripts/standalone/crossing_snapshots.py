@@ -5,7 +5,9 @@ This module owns ordinary RAM and files only; it never changes counting state.
 from __future__ import annotations
 
 from collections import deque
+from copy import deepcopy
 from dataclasses import asdict, fields
+from functools import lru_cache
 import hashlib
 import inspect
 import io
@@ -21,13 +23,32 @@ import cv2
 import numpy as np
 
 
-def _parameters(counter):
+@lru_cache(maxsize=16)
+def _parameter_names(counter_type):
     names = set()
-    for cls in type(counter).__mro__:
+    for cls in counter_type.__mro__:
         names.update(inspect.signature(cls.__init__).parameters)
-    return {name: getattr(counter, name) for name in sorted(names)
-            if hasattr(counter, name) and
-            isinstance(getattr(counter, name), (str, int, float, bool, type(None)))}
+    return tuple(sorted(names))
+
+
+def _parameters(counter):
+    values = {}
+    for name in _parameter_names(type(counter)):
+        if hasattr(counter, name):
+            value = getattr(counter, name)
+            if isinstance(value, (str, int, float, bool, type(None))):
+                values[name] = value
+    return values
+
+
+def _detection_metadata(detection, converted):
+    key = id(detection)
+    cached = converted.get(key)
+    if cached is not None and cached[0] is detection:
+        return deepcopy(cached[1])
+    value = asdict(detection)
+    converted[key] = (detection, value)
+    return value
 
 
 class CrossingSnapshots:
@@ -134,7 +155,8 @@ class CrossingSnapshots:
             triggers.extend(dict(kind=kind, track_key='{}:{}'.format(epoch, event.track_id),
                                  event=asdict(event)) for event in events)
         rejected = getattr(counter, 'rejected_detections', ())
-        near_rejected = [asdict(d) for d in rejected
+        detection_metadata = {}
+        near_rejected = [_detection_metadata(d, detection_metadata) for d in rejected
                          if getattr(d, axis+'_min') <= line <= getattr(d, axis+'_max')]
         if near_rejected and (self._last_rejected_ns is None or capture_ns-self._last_rejected_ns >= 1_000_000_000):
             triggers.append(dict(kind='rejected_at_line', detections=near_rejected))
@@ -147,9 +169,9 @@ class CrossingSnapshots:
             count_line=dict(axis=axis, position=line, direction=counter.direction),
             packet={f.name: getattr(packet, f.name) for f in fields(packet)
                     if f.name not in ('runs', 'row_projection', 'column_projection')},
-            detections=[asdict(d) for d in result.detections],
-            raw_detections=[asdict(d) for d in result.raw_detections],
-            rejected_detections=[asdict(d) for d in rejected],
+            detections=[_detection_metadata(d, detection_metadata) for d in result.detections],
+            raw_detections=[_detection_metadata(d, detection_metadata) for d in result.raw_detections],
+            rejected_detections=[_detection_metadata(d, detection_metadata) for d in rejected],
             tracks=result.tracks, associations=list(getattr(counter, 'last_associations', ())),
             events=[asdict(e) for e in result.events],
             suppressed_events=[asdict(e) for e in result.suppressed_events],

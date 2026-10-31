@@ -62,23 +62,22 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
            for index in range(len(seeds))):
         return labels
 
-    labels.fill(-1)
+    # Reverse seed priorities so one grayscale dilation propagates the lowest
+    # index on a tied wave, exactly like argmax of the old per-seed claims.
+    wave_labels = np.zeros(pixels.shape, dtype=np.uint8)
     for index, seed in enumerate(seeds):
-        labels[seed] = index
+        wave_labels[seed] = len(seeds) - index
     kernel = np.ones((3, 3), dtype=np.uint8)
-    while np.any(pixels & (labels < 0)):
-        unassigned = pixels & (labels < 0)
-        claims = []
-        for index in range(len(seeds)):
-            region = (labels == index).astype(np.uint8)
-            adjacent = cv2.dilate(region, kernel) != 0
-            claims.append(adjacent & unassigned)
-        claim_stack = np.stack(claims, axis=0)
-        claimed = np.any(claim_stack, axis=0)
+    remaining = int(len(xs)) - len(seeds)
+    while remaining:
+        adjacent = cv2.dilate(wave_labels, kernel)
+        claimed = pixels & (wave_labels == 0) & (adjacent != 0)
         if not np.any(claimed):
             return None
-        owners = np.argmax(claim_stack, axis=0)
-        labels[claimed] = owners[claimed]
+        wave_labels[claimed] = adjacent[claimed]
+        remaining -= int(np.count_nonzero(claimed))
+    labels = (len(seeds) - wave_labels.astype(np.int8))
+    labels[~pixels] = -1
     return labels
 
 
@@ -138,7 +137,21 @@ def _split_by_projection_neck(pixels: np.ndarray,
         cumulative = np.cumsum(projection)
         prefix_maximum = np.maximum.accumulate(projection)
         suffix_maximum = np.maximum.accumulate(projection[::-1])[::-1]
-        for cut in range(3, length - 3):
+        # Count all strip starts once per axis instead of allocating a new
+        # concatenated strip for every possible neck.
+        starts = pixels.copy()
+        if axis == 0:
+            starts[1:, :] &= ~pixels[:-1, :]
+        else:
+            starts[:, 1:] &= ~pixels[:, :-1]
+        strip_runs = np.count_nonzero(starts, axis=axis)
+        cuts = np.arange(3, length - 3)
+        left_areas = cumulative[cuts - 1]
+        necks = np.minimum(projection[cuts - 1], projection[cuts])
+        peaks = np.minimum(prefix_maximum[cuts - 1], suffix_maximum[cuts])
+        eligible = ((left_areas >= min_child_area) & (area-left_areas >= min_child_area)
+                    & (necks > 0) & (necks <= .65 * peaks))
+        for cut in cuts[eligible].tolist():
             left_area = int(cumulative[cut - 1])
             right_area = area - left_area
             if min(left_area, right_area) < min_child_area:
@@ -148,8 +161,8 @@ def _split_by_projection_neck(pixels: np.ndarray,
             right_peak = int(suffix_maximum[cut])
             if not 0 < neck <= 0.65 * min(left_peak, right_peak):
                 continue
-            strip = pixels[:, cut - 1 if projection[cut - 1] < projection[cut] else cut] if axis == 0 else pixels[cut - 1 if projection[cut - 1] < projection[cut] else cut, :]
-            runs = np.count_nonzero(strip & ~np.r_[False, strip[:-1]])
+            strip_index = cut - 1 if projection[cut - 1] < projection[cut] else cut
+            runs = strip_runs[strip_index]
             # A round hollow nut can have two runs through its central hole.
             # Two touching round nuts form an elongated, balanced pair instead.
             elongated_pair = (max(pixels.shape) >= 1.65 * min(pixels.shape)

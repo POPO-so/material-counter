@@ -550,6 +550,15 @@ def main(argv=None):
             stages['transfer_ms'].append((transfer_end-frame_start)*1000)
             stages['count_ms'].append((count_end-transfer_end)*1000)
             stages['snapshot_ms'].append((snapshot_end-count_end)*1000)
+            # These are the last completed frame's measurements, not window
+            # averages; retain its identity so dense-frame stalls are visible.
+            last_rle_stats.update(frame_id=packet.frame_id,
+                camera_sequence=camera_index if camera else index,
+                detection_count=len(result.detections) if result is not None else None,
+                last_frame_timings_ms=dict(transfer_ms=(transfer_end-frame_start)*1000,
+                    count_ms=(count_end-transfer_end)*1000,
+                    snapshot_ms=(snapshot_end-count_end)*1000,
+                    **(result.roi_subtimings_ms if result is not None else {})))
             if boundary:report['events'].append(dict(frame=index,commands=boundary,count=counter.total_count))
             if result is not None:
                 trace.add(index,result,trajectory_epoch)
