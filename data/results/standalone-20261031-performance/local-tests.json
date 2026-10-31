@@ -1,0 +1,6 @@
+{
+  "command": ".venv/Scripts/python.exe -B -m pytest -p no:cacheprovider --basetemp .runtime/performance-delivery-final scripts/standalone scripts/rle scripts/wo0016/test_stream_counter.py scripts/wo0016/test_guarded_multiline_counter.py scripts/wo0016/test_predictive_association.py scripts/wo0016/test_split_connectivity.py scripts/wo0016/test_split_touching_optimizations.py -q",
+  "exitcode": 0,
+  "stdout": "........................................................................ [ 14%]\r\n........................................................................ [ 29%]\r\n........................................................................ [ 44%]\r\n........................................................................ [ 59%]\r\n........................................................................ [ 73%]\r\n........................................................................ [ 88%]\r\n........................................................                 [100%]\r\n488 passed in 18.21s",
+  "elapsed_seconds": 18.736762
+}

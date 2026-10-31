@@ -1,0 +1,33 @@
+{"state": "STOPPED", "processed": 180, "submitted": 61, "duration_s": 19.193429023000135, "total_count": 0}
+         1659532 function calls (1567304 primitive calls) in 47.212 seconds
+
+   Ordered by: cumulative time
+   List reduced from 5752 to 24 due to restriction <24>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.261    0.261   47.266   47.266 /opt/material-counter/releases/standalone-20261031-v7-count-5272587/scripts/standalone/integrated_run.py:206(main)
+     1238   15.156    0.012   15.156    0.012 {method 'acquire' of '_thread.lock' objects}
+    881/8    0.062    0.000   14.582    1.823 <frozen importlib._bootstrap>:1022(_find_and_load)
+    881/8    0.051    0.000   14.579    1.822 <frozen importlib._bootstrap>:987(_find_and_load_unlocked)
+    852/8    0.054    0.000   14.566    1.821 <frozen importlib._bootstrap>:664(_load_unlocked)
+    818/8    0.030    0.000   14.562    1.820 <frozen importlib._bootstrap_external>:877(exec_module)
+  1026/10    0.018    0.000   14.544    1.454 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+    952/8    0.242    0.000   14.496    1.812 {built-in method builtins.exec}
+      253    0.033    0.000   13.987    0.055 /usr/lib/python3.10/threading.py:288(wait)
+        1    0.001    0.001   13.793   13.793 /usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/__init__.py:1(<module>)
+      224    0.031    0.000   13.128    0.059 /opt/material-counter/releases/standalone-20261031-v7-count-5272587/scripts/standalone/driver_owner.py:137(call)
+      230    0.010    0.000   12.885    0.056 /usr/lib/python3.10/threading.py:582(wait)
+    166/7    0.007    0.000   12.851    1.836 {built-in method builtins.__import__}
+   777/24    0.022    0.000   12.843    0.535 <frozen importlib._bootstrap>:1053(_handle_fromlist)
+        1    0.000    0.000   12.659   12.659 /usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/__init__.py:1(<module>)
+        1    0.001    0.001   11.979   11.979 /usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/embedded_device.py:1(<module>)
+        1    0.000    0.000    6.988    6.988 /usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/metadata/runtime_metadata_parser.py:1(<module>)
+        1    0.000    0.000    6.903    6.903 /usr/local/share/pynq-venv/lib/python3.10/site-packages/pynqutils/__init__.py:1(<module>)
+        1    0.000    0.000    6.619    6.619 /usr/local/share/pynq-venv/lib/python3.10/site-packages/pynqutils/build_utils/__init__.py:1(<module>)
+      180    0.022    0.000    6.364    0.035 /opt/material-counter/releases/standalone-20261031-v7-count-5272587/scripts/standalone/crossing_snapshots.py:84(observe)
+      180    0.137    0.001    6.340    0.035 /opt/material-counter/releases/standalone-20261031-v7-count-5272587/scripts/standalone/crossing_snapshots.py:95(_observe)
+      180    0.074    0.000    5.194    0.029 /opt/material-counter/releases/standalone-20261031-v7-count-5272587/scripts/standalone/crossing_snapshots.py:24(_parameters)
+      578    0.016    0.000    4.588    0.008 /usr/lib/python3.10/inspect.py:3245(signature)
+      578    0.013    0.000    4.572    0.008 /usr/lib/python3.10/inspect.py:2991(from_callable)
+
+

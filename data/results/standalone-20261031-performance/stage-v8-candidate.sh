@@ -1,0 +1,2 @@
+set -euo pipefail
+/usr/local/share/pynq-venv/bin/python3 -B /tmp/stage_v8_candidate.py --base-package /opt/material-counter/releases/standalone-20261031-v7-count-5272587 --destination /opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595 --source-archive /tmp/v8-source-modules-e2fb595.tar.gz --source-map /tmp/v8-source-module-correspondence.json --report /tmp/perf-v8-package-integrity.json

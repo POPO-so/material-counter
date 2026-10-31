@@ -1,3 +1,15 @@
+## 2026-10-31 板端吞吐优化（源码与本轮实测已完成）
+
+源码固定于 `e2fb5952bfc4f36c3eacd53a8bdb6bdeec6c4fe2`，独立 worktree 分支 `perf/board-performance-20261031`。运行链优化和诊断元数据开销修复完成，指定本地回归 488 项通过；CPU 同输入回放与微基准保留在证据目录。
+
+- [x] v7 旧包与 v8 新包各完成 600 帧现场相机运行。v7 total_count=4；v8 收到 600×2,208 bytes、全零 runs、total_count=0。现场场景不同，不作严格同输入 FPS 因果比较。
+- [x] v8 新包固定 index `e127d991371f5077bd270b2ed037508d2e76c5dfdd9c9573940fdfb2a4d1707e`；43 个模块包字节匹配，服务切换后 current 指向 v8，service active/running、PID 18172、自启动仍 disabled。
+- [x] 运行态快照显示 RUNNING、processed=16461、invalid=0、recoveries=[]、field-v1；32 个实际加载 Python 源哈希与 index 对应项逐项一致，诊断触发/错误/丢弃为 0。
+- [x] 保存原始报告、启动/admission/activation 记录和 FPS 汇总；后半程窗口按固定 processed≥300 帧边界保留全部 fresh 样本（包括显示 0 FPS），末三窗口降至处理 15.00、13.52、12.65 FPS。
+- [ ] 有物料真值准确率及密集持续吞吐验收仍未完成。600 帧 v8 是空场景，不能证明识别准确率；运行核验未隔离诊断、SSH等开销，不作严格性能 A/B；低窗口原因未单独定量确认。
+
+证据目录：`data/results/standalone-20261031-performance/`，现场原始记录：`data/recorded/performance-20261031/`。本轮不修改下一代架构计划。
+
 ## 2026-10-31 下一代架构实施计划（新分支）
 
 依据两份架构评审文档，在 `nextgen-architecture` 分支（基线 `c248244`）按计划逐步推进，范围、验收与委派规则见 [架构评审实施计划](文档/架构评审实施计划_20261031.md)。本节计划不冻结 Route/接口；现场漏计优化 v7 计划保留在下文。

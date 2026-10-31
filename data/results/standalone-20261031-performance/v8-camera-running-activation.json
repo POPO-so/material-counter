@@ -1,0 +1,38 @@
+{
+  "schema": "material-counter.release-activation.v1",
+  "status": "SWITCHED_NOT_STARTED",
+  "activated_at_unix_ns": 1746705637558592598,
+  "boot_id": "f1462f32-61d2-44c7-9b42-d46d7d4d64c6",
+  "old_root": "/opt/material-counter/releases/standalone-20261031-v7-count-5272587",
+  "old_index_sha256": "ca9348788e98efe187752a29dcbe3ddc0970efa8ff85a1f8e43bbee9142ae58a",
+  "new_root": "/opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595",
+  "new_index_sha256": "e127d991371f5077bd270b2ed037508d2e76c5dfdd9c9573940fdfb2a4d1707e",
+  "backup_env": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/pre-perf-e2fb595.env",
+  "service": {
+    "MainPID": "0",
+    "ActiveState": "inactive"
+  },
+  "camera_run": {
+    "state": "STOPPED",
+    "processed": 600,
+    "invalid_frames": 0,
+    "camera_released": true,
+    "buffers_released": true,
+    "rle_buffers_released": true
+  },
+  "package_verification": {
+    "status": "PASS",
+    "files_checked": 62,
+    "hardware_actions": 0,
+    "scope": "integrity_only_no_gate"
+  },
+  "dma_vdma": {
+    "mm2s_status": 4098,
+    "s2mm_status": 4098,
+    "vdma_control": 69632,
+    "vdma_status": 69633,
+    "error_mask": 1904
+  },
+  "service_started": false,
+  "overlay_downloaded": false
+}

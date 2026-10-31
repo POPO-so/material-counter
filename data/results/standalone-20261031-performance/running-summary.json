@@ -1,0 +1,100 @@
+{
+  "schema": "material-counter.performance-running-summary.v1",
+  "source_snapshot": "v8-camera-running-snapshot.json",
+  "snapshot_sha256": "8d2e0c8f8134d3f8eef783fc140ff7c6b249f8ad4086b641dc2840756e3aad1e",
+  "boot_id": "f1462f32-61d2-44c7-9b42-d46d7d4d64c6",
+  "session_id": "a569712f-abe6-41fd-b01a-536c0e1c1a42",
+  "main_pid": 18172,
+  "state": "RUNNING",
+  "processed": 16461,
+  "submitted": 15428,
+  "duration_s": 909.8372497090004,
+  "total_count": 0,
+  "invalid_frames": 0,
+  "recoveries": [],
+  "counting_profile": "field-v1",
+  "crossing_snapshots": {
+    "observed": 16461,
+    "triggered": 0,
+    "saved": 0,
+    "bytes_written": 0,
+    "dropped_queue": 0,
+    "dropped_storage": 0,
+    "write_errors": 0,
+    "capture_errors": 0,
+    "dropped_disabled": 0,
+    "last_error": null,
+    "enabled": true,
+    "accepting": true,
+    "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-58b40f62-53b6-4e3b-b6c7-95650eee986e.crossings",
+    "pending": 0,
+    "queue_depth": 0,
+    "writer_alive": true,
+    "max_events": 1000,
+    "max_bytes": 536870912,
+    "storage_mode": "compact",
+    "min_free_bytes": 268435456,
+    "context_frames": 2
+  },
+  "source_identity": {
+    "digest": "eee8f52c0ad380777d24234d33a85d3c758d5aaed3f969fc6fa470c8e207e676",
+    "loaded_files": 32,
+    "declared_index_modules": 43,
+    "all_loaded_paths_declared": true,
+    "all_loaded_hashes_match": true,
+    "mismatches": {}
+  },
+  "fps_windows": {
+    "processed_ge_100": {
+      "fixed_frame_floor": 100,
+      "fresh_samples": 446,
+      "processing_fps": {
+        "min": 11.712311305548726,
+        "median": 18.319834266660727,
+        "max": 22.21423009074763
+      },
+      "display_fps": {
+        "min": 0.0,
+        "median": 17.415613624188794,
+        "max": 19.499076250759114,
+        "zero_samples": 5
+      }
+    },
+    "processed_ge_300": {
+      "fixed_frame_floor": 300,
+      "fresh_samples": 441,
+      "processing_fps": {
+        "min": 11.712311305548726,
+        "median": 18.317418257684906,
+        "max": 19.957670917577417
+      },
+      "display_fps": {
+        "min": 9.72826246322912,
+        "median": 17.425752588605782,
+        "max": 19.499076250759114,
+        "zero_samples": 0
+      }
+    },
+    "last_three_fresh_samples": [
+      {
+        "processed": 16395,
+        "processing_fps": 14.999651663096683,
+        "display_fps": 14.499663274326794,
+        "stale": false
+      },
+      {
+        "processed": 16421,
+        "processing_fps": 13.52037804826823,
+        "display_fps": 11.588895469944196,
+        "stale": false
+      },
+      {
+        "processed": 16446,
+        "processing_fps": 12.646741202197855,
+        "display_fps": 9.72826246322912,
+        "stale": false
+      }
+    ]
+  },
+  "interpretation": "Service snapshot includes ongoing export/hash diagnostic overhead and is not a strict performance A/B. The >=300 window retains display_fps=0 samples. Empty scene; no material ground-truth accuracy claim."
+}

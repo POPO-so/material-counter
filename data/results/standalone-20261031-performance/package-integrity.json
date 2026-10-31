@@ -1,0 +1,470 @@
+{
+  "schema": "material-counter.v8-package-integrity.v1",
+  "status": "PASS_CANDIDATE_NOT_ACTIVATED",
+  "source_commit": "e2fb5952bfc4f36c3eacd53a8bdb6bdeec6c4fe2",
+  "source_branch": "perf/board-performance-20261031",
+  "destination": "/opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595",
+  "old_package": {
+    "root": "/opt/material-counter/releases/standalone-20261031-v7-count-5272587",
+    "index_sha256": "ca9348788e98efe187752a29dcbe3ddc0970efa8ff85a1f8e43bbee9142ae58a",
+    "integrity": {
+      "files_checked": 61,
+      "hardware_actions": 0,
+      "scope": "integrity_only_no_gate",
+      "status": "PASS"
+    }
+  },
+  "new_package": {
+    "index_sha256": "e127d991371f5077bd270b2ed037508d2e76c5dfdd9c9573940fdfb2a4d1707e",
+    "integrity": {
+      "files_checked": 62,
+      "hardware_actions": 0,
+      "scope": "integrity_only_no_gate",
+      "status": "PASS"
+    },
+    "file_count": 62
+  },
+  "source_bundle_sha256": "cf2df52fa2edc7cd80af4f8623896dda2007d5f89faf6bcaf3a91315c2e11531",
+  "modules": [
+    {
+      "path": "scripts/gray8/packet_codec.py",
+      "git_blob": "9d5e286c678b9a3077ea1fb53bc47134f2fbbe9e",
+      "bytes": 3791,
+      "sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+      "crlf_count": 0,
+      "lf_count": 95,
+      "package_sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/rle/__init__.py",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crlf_count": 0,
+      "lf_count": 0,
+      "package_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/rle/artifacts.py",
+      "git_blob": "54e2d932f4478bb7bae3d826ddd03a44395b77f4",
+      "bytes": 11772,
+      "sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+      "crlf_count": 0,
+      "lf_count": 255,
+      "package_sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/rle/components.py",
+      "git_blob": "2199b1646225413034bae8f07572a0e782f7e051",
+      "bytes": 6607,
+      "sha256": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856",
+      "crlf_count": 0,
+      "lf_count": 166,
+      "package_sha256": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/rle/counter.py",
+      "git_blob": "616e7d0856f7b6db520b7603d172f49c1340ce63",
+      "bytes": 5706,
+      "sha256": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+      "crlf_count": 0,
+      "lf_count": 100,
+      "package_sha256": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/rle/protocol.py",
+      "git_blob": "97724c5250bd4816fa3c90d0084caf397f85a9a9",
+      "bytes": 16756,
+      "sha256": "5e8f8a9ccd7aa82d598d55471254d384555b67fd3d46652deaf6be47649db5b8",
+      "crlf_count": 0,
+      "lf_count": 376,
+      "package_sha256": "5e8f8a9ccd7aa82d598d55471254d384555b67fd3d46652deaf6be47649db5b8",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/rle/run_counter.py",
+      "git_blob": "9546c0c3a46cefaaf6a9bb47f4b25151825fc9ea",
+      "bytes": 14080,
+      "sha256": "64a4736306d6d98a56dfc0707de72576fbefe388534ae1d72b5b274b3f4986a3",
+      "crlf_count": 0,
+      "lf_count": 249,
+      "package_sha256": "64a4736306d6d98a56dfc0707de72576fbefe388534ae1d72b5b274b3f4986a3",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/rle/transport.py",
+      "git_blob": "8d35799b7cc229cffd345d7a31d9624cbc418e42",
+      "bytes": 12863,
+      "sha256": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+      "crlf_count": 0,
+      "lf_count": 281,
+      "package_sha256": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/__init__.py",
+      "git_blob": "ec8c6b11dcab71d8773b269c6e2c616d26e73faa",
+      "bytes": 54,
+      "sha256": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731",
+      "crlf_count": 0,
+      "lf_count": 1,
+      "package_sha256": "3fdac5c19213fad774ad8daea515fa38b32877587397be9d2194979ef021e731",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/async_evidence.py",
+      "git_blob": "9c9fe252e877ffa98ded0e9a5e8a8371c75d1997",
+      "bytes": 1939,
+      "sha256": "866457dd1440aba5891f3766f243f16ed31410b783de8dd0e118c84f7e3d82b1",
+      "crlf_count": 0,
+      "lf_count": 52,
+      "package_sha256": "866457dd1440aba5891f3766f243f16ed31410b783de8dd0e118c84f7e3d82b1",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/boot_integrated.py",
+      "git_blob": "bb666eee4f872293b76bea65e1a7b085f85e2cc5",
+      "bytes": 5681,
+      "sha256": "85f377aafcdf26b57ffe6af9c3c936a308cdbd4fb4dea4328e71dfa170eec45f",
+      "crlf_count": 0,
+      "lf_count": 109,
+      "package_sha256": "85f377aafcdf26b57ffe6af9c3c936a308cdbd4fb4dea4328e71dfa170eec45f",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/boot_policy.py",
+      "git_blob": "2715e034932b7a5d13730d2001b16b5784fce745",
+      "bytes": 5837,
+      "sha256": "bc9fee57006eb7121e151e8631b96f40cadb825c247811c41a1113daaeb78308",
+      "crlf_count": 0,
+      "lf_count": 162,
+      "package_sha256": "bc9fee57006eb7121e151e8631b96f40cadb825c247811c41a1113daaeb78308",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/bundle.py",
+      "git_blob": "5fc55750198cba6f057507dd84fb3a0977a0c368",
+      "bytes": 4059,
+      "sha256": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3",
+      "crlf_count": 0,
+      "lf_count": 94,
+      "package_sha256": "98548b05251fae12f5f3470e231d70d109d0f7bd963569b308c2b702161d32a3",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/camera.py",
+      "git_blob": "7139ddec0c73cbf88ee618a2bce86e6423a47f65",
+      "bytes": 2054,
+      "sha256": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2",
+      "crlf_count": 0,
+      "lf_count": 54,
+      "package_sha256": "1b8c0736da9938c9ad884562fd8052164a19523244bc36b9c97ee98c310a09a2",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/compositor.py",
+      "git_blob": "a46ce224a707cca1a2f816d53277f6e6726f0b01",
+      "bytes": 25028,
+      "sha256": "0cf0a1d22413cc7766d35c3f18e70064715c57a06044e2d8559b27226c6aa053",
+      "crlf_count": 0,
+      "lf_count": 508,
+      "package_sha256": "0cf0a1d22413cc7766d35c3f18e70064715c57a06044e2d8559b27226c6aa053",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/controls.py",
+      "git_blob": "187b42c6b4d475f3cffad8f0ad849e3cf66c29a4",
+      "bytes": 2295,
+      "sha256": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f",
+      "crlf_count": 0,
+      "lf_count": 60,
+      "package_sha256": "db9e61728ca34226f71cabb06d55f7cb1aab0a479717feec1920c249680f612f",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/count_controls.py",
+      "git_blob": "5cf175d18dd3c3cc7abb7ca7e767a28b57e15321",
+      "bytes": 1676,
+      "sha256": "c7a4cd2cb76a72137ed0b0ee0de856ea664995a1115bc6427c637dcfacc73233",
+      "crlf_count": 0,
+      "lf_count": 37,
+      "package_sha256": "c7a4cd2cb76a72137ed0b0ee0de856ea664995a1115bc6427c637dcfacc73233",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/crossing_replay.py",
+      "git_blob": "28ce90213e30e6926da2bab0a829c8aee4f1d14b",
+      "bytes": 4075,
+      "sha256": "c429ae6607c4a2a34db1bb8781c4afb73ea4d7971eb52267377b5cb54e43889c",
+      "crlf_count": 0,
+      "lf_count": 80,
+      "package_sha256": "c429ae6607c4a2a34db1bb8781c4afb73ea4d7971eb52267377b5cb54e43889c",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/crossing_snapshots.py",
+      "git_blob": "60265cfa13327c0d6af062220410868f262dae00",
+      "bytes": 21523,
+      "sha256": "6d21dd2b14eabb531b221ebefcb70e4cd72504c32719744c6eef9e7402cfec83",
+      "crlf_count": 0,
+      "lf_count": 425,
+      "package_sha256": "6d21dd2b14eabb531b221ebefcb70e4cd72504c32719744c6eef9e7402cfec83",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/delivery.py",
+      "git_blob": "b3b21239ffb41a29967e7e5dfbfe66f2bd3f9af9",
+      "bytes": 15059,
+      "sha256": "139ecb53b4bd9e389b3f678c3a0236371411ad1fbb5e4147d27dd72f0823ebc3",
+      "crlf_count": 0,
+      "lf_count": 350,
+      "package_sha256": "139ecb53b4bd9e389b3f678c3a0236371411ad1fbb5e4147d27dd72f0823ebc3",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/driver_owner.py",
+      "git_blob": "0705d7428adb360e033be4ac4f1f98e08db7bebd",
+      "bytes": 6173,
+      "sha256": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4",
+      "crlf_count": 0,
+      "lf_count": 165,
+      "package_sha256": "0455c3928eaca17066df4c1f1d208a1f506c7bccb30e5e7390b85f30eac890d4",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/evidence.py",
+      "git_blob": "f7eabd9806e439f07558d2cd5ce18c34219613c7",
+      "bytes": 2906,
+      "sha256": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e",
+      "crlf_count": 0,
+      "lf_count": 73,
+      "package_sha256": "0109817ba78d51b54a70ef040c3ba3b10de6a3b065075b496b49950997d5ba2e",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/g1_run.py",
+      "git_blob": "81132b5382da452b90434e107e522d81fb6f6588",
+      "bytes": 33746,
+      "sha256": "8e6098c63bdc926f5ee078054c685a5460d9026fe484fdfda482a7c2ca064cea",
+      "crlf_count": 0,
+      "lf_count": 692,
+      "package_sha256": "8e6098c63bdc926f5ee078054c685a5460d9026fe484fdfda482a7c2ca064cea",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/g2_readback.py",
+      "git_blob": "270b1d9ec7accedc66f1f2c3b47af1b1d805a453",
+      "bytes": 2974,
+      "sha256": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566",
+      "crlf_count": 0,
+      "lf_count": 113,
+      "package_sha256": "e13f3182f0de95120928b77cfe3d90852af8a5844ba886e2d01784ad6a01e566",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/hp2.py",
+      "git_blob": "3f7adca6fb70b0aa7e8be84f155bbf5db11706d9",
+      "bytes": 8120,
+      "sha256": "e676a0566ab2bdfc3c2846b1ba9af5afa06ed7fc4e515423e0d12a9f44246366",
+      "crlf_count": 0,
+      "lf_count": 209,
+      "package_sha256": "e676a0566ab2bdfc3c2846b1ba9af5afa06ed7fc4e515423e0d12a9f44246366",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/integrated_run.py",
+      "git_blob": "e2fde56e226c9e76354631c7ed0aa392de06ce07",
+      "bytes": 43879,
+      "sha256": "e47938841f8f09f075580aa4c7c1d5d7250344b318b378e4889529db16744221",
+      "crlf_count": 0,
+      "lf_count": 691,
+      "package_sha256": "e47938841f8f09f075580aa4c7c1d5d7250344b318b378e4889529db16744221",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/performance_replay.py",
+      "git_blob": "a9ef5b405160b14864d1410397aca4db07ed6ea9",
+      "bytes": 8607,
+      "sha256": "75a2562738d0fdd43e7cf8907d444ed76b703dc2861107e9c28e66035c933727",
+      "crlf_count": 0,
+      "lf_count": 182,
+      "package_sha256": "75a2562738d0fdd43e7cf8907d444ed76b703dc2861107e9c28e66035c933727",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/pressure.py",
+      "git_blob": "e17252c8b1c5a7e303f24b9cd7c83b6b4d3d7687",
+      "bytes": 6487,
+      "sha256": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696",
+      "crlf_count": 0,
+      "lf_count": 156,
+      "package_sha256": "c255961832eaeedcea352fac7738e503a083e3269be677c31b4abe139d8b6696",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/preview_inputs.py",
+      "git_blob": "94367aed79ad06c6d7887fe5fff9d24e46522820",
+      "bytes": 4874,
+      "sha256": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f",
+      "crlf_count": 0,
+      "lf_count": 129,
+      "package_sha256": "0d8818476251b2635e61929a0a944cd24163d92c9dc4386d7aaad48e30f1793f",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/probe.py",
+      "git_blob": "77eda898e5e072721a5db9fa695573a556f4a829",
+      "bytes": 23165,
+      "sha256": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52",
+      "crlf_count": 0,
+      "lf_count": 556,
+      "package_sha256": "871ba99fa0a8bb30fc079043271c3cf34243911eb0cf5a85db3b1d05697bbc52",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/render_crossing_snapshot.py",
+      "git_blob": "3596888e650d21f3459977f6cf6017c9c6041cd2",
+      "bytes": 4734,
+      "sha256": "215eeefe907663d819c0474d680385f9572ddada9f5f961b241e4b50baabbd2d",
+      "crlf_count": 0,
+      "lf_count": 89,
+      "package_sha256": "215eeefe907663d819c0474d680385f9572ddada9f5f961b241e4b50baabbd2d",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/runtime_environment.py",
+      "git_blob": "668e53134549e215ec5d4878d1caec5a0355dc90",
+      "bytes": 11881,
+      "sha256": "109dc0da68c34d4ff276846bcc4499d415591f728f9abaab2396dca04e4028f8",
+      "crlf_count": 0,
+      "lf_count": 304,
+      "package_sha256": "109dc0da68c34d4ff276846bcc4499d415591f728f9abaab2396dca04e4028f8",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/shared_frames.py",
+      "git_blob": "ae78732b58e128b921212a62f24afb920eb479c9",
+      "bytes": 13134,
+      "sha256": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c",
+      "crlf_count": 0,
+      "lf_count": 340,
+      "package_sha256": "0b08f1915a812c1657bcd248988acfd9a1e1bf60e77e75fee7f26b1bf738516c",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/telemetry_cache.py",
+      "git_blob": "605a4ffd2fc9cf300ccc224937160fc21e6b49c4",
+      "bytes": 3133,
+      "sha256": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a",
+      "crlf_count": 0,
+      "lf_count": 78,
+      "package_sha256": "3003f8a8d2da42913ac99db6796e49d625236995f658c27c23791e664d0b7d2a",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/verify_sources.py",
+      "git_blob": "32355284ddfa3bda227737adb251ac34b051d66e",
+      "bytes": 7614,
+      "sha256": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929",
+      "crlf_count": 0,
+      "lf_count": 191,
+      "package_sha256": "c7664f44dff181af2a493e7c866bde0f79f9ac887ef06a789fc88a72b8a18929",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/standalone/video_pump.py",
+      "git_blob": "2fe5ba06cf4a8d9b3ce2299ed10737c4435f9ded",
+      "bytes": 4795,
+      "sha256": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c",
+      "crlf_count": 0,
+      "lf_count": 132,
+      "package_sha256": "ee5b87f90ad378e6385d97b7f70cf4f3dfee75d65eac54cd2c9c6de1ee12ab4c",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/wo0015/board_once.py",
+      "git_blob": "af95e2fdbefa2b7d8f39292288b9249b96153436",
+      "bytes": 93137,
+      "sha256": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9",
+      "crlf_count": 0,
+      "lf_count": 1938,
+      "package_sha256": "fe9a0adc4db945a61002efea73293424acac13a2f89fb995c3eca94cf13010f9",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/wo0015/board_preflight.py",
+      "git_blob": "e8bd3aebf59ece15baaa0e6806b11ef269930281",
+      "bytes": 51712,
+      "sha256": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+      "crlf_count": 0,
+      "lf_count": 1087,
+      "package_sha256": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/wo0016/binary_stats.py",
+      "git_blob": "fb7b59b0be95a910890fdaa86ba2d26beb29f8af",
+      "bytes": 778,
+      "sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+      "crlf_count": 0,
+      "lf_count": 21,
+      "package_sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/wo0016/motion_association.py",
+      "git_blob": "d1c2fd9ce6fa2367400768d3969eda93e3148351",
+      "bytes": 2699,
+      "sha256": "cdf79701c377b936696264a5f2bf5955cb01fcc4f47063a8058cce11a05240d6",
+      "crlf_count": 0,
+      "lf_count": 59,
+      "package_sha256": "cdf79701c377b936696264a5f2bf5955cb01fcc4f47063a8058cce11a05240d6",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/wo0016/packet_encoder.py",
+      "git_blob": "c1902c105894bf4128b3dec678449ec159764677",
+      "bytes": 630,
+      "sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+      "crlf_count": 0,
+      "lf_count": 19,
+      "package_sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/wo0016/split_touching.py",
+      "git_blob": "cdf4e670b43dbaa4547fb3e260a9bde6ec47652a",
+      "bytes": 14593,
+      "sha256": "5a6e697de1fc3145b3a421faa2e9aeb0fb04f4a8b6dfee2a4d446fefa52eceaa",
+      "crlf_count": 0,
+      "lf_count": 304,
+      "package_sha256": "5a6e697de1fc3145b3a421faa2e9aeb0fb04f4a8b6dfee2a4d446fefa52eceaa",
+      "byte_match": true
+    },
+    {
+      "path": "scripts/wo0016/stream_counter.py",
+      "git_blob": "cab48dfb920d66ac8ad269b69d5eeeecfcfbddf2",
+      "bytes": 75782,
+      "sha256": "6fa83ac8904eb0f1a3e3c0c00c30b29a15f0ae7883dc0c126f1d5a94d5093ad1",
+      "crlf_count": 0,
+      "lf_count": 1528,
+      "package_sha256": "6fa83ac8904eb0f1a3e3c0c00c30b29a15f0ae7883dc0c126f1d5a94d5093ad1",
+      "byte_match": true
+    }
+  ],
+  "non_source_files_identical": true,
+  "env_candidate": {
+    "path": "/opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595.package.env.candidate",
+    "sha256": "85289d8cb049c88cf123195c45e66ec6e8a058edd73e0b956deb856f12fa8d7c",
+    "package_root": "/opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595",
+    "package_index_sha256": "e127d991371f5077bd270b2ed037508d2e76c5dfdd9c9573940fdfb2a4d1707e",
+    "created": true
+  },
+  "hardware_actions": 0,
+  "activated": false
+}

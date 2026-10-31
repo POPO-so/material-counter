@@ -1,0 +1,23 @@
+{
+  "schema": "material-counter.cpu-copy-newline-normalization.v1",
+  "source_commit": "e2fb5952bfc4f36c3eacd53a8bdb6bdeec6c4fe2",
+  "files": [
+    {
+      "path": "scripts/rle/protocol.py",
+      "cpu_copy_sha256": "f4912bfdc699feffdba9349b69cea1a452a48ea9e61c97a7b16a67c347a15029",
+      "git_blob_sha256": "5e8f8a9ccd7aa82d598d55471254d384555b67fd3d46652deaf6be47649db5b8",
+      "crlf_count": 376,
+      "lf_count_including_crlf": 376,
+      "normalization_matches": true
+    },
+    {
+      "path": "scripts/standalone/crossing_snapshots.py",
+      "cpu_copy_sha256": "1de6c146b30558b5613c9fc8413b2af822999d328d2f3171da6f5185be2542b7",
+      "git_blob_sha256": "6d21dd2b14eabb531b221ebefcb70e4cd72504c32719744c6eef9e7402cfec83",
+      "crlf_count": 425,
+      "lf_count_including_crlf": 425,
+      "normalization_matches": true
+    }
+  ],
+  "all_normalization_matches": true
+}

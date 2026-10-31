@@ -1,0 +1,64 @@
+{
+  "schema": "material-counter.v8-candidate-summary.v1",
+  "status": "PASS_CANDIDATE_NOT_ACTIVATED",
+  "activated": false,
+  "package_root": "/opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595",
+  "deployment_index_sha256": "e127d991371f5077bd270b2ed037508d2e76c5dfdd9c9573940fdfb2a4d1707e",
+  "source": {
+    "commit": "e2fb5952bfc4f36c3eacd53a8bdb6bdeec6c4fe2",
+    "branch": "perf/board-performance-20261031",
+    "module_count": 43,
+    "all_modules_byte_match": true
+  },
+  "verification": {
+    "new_package_status": "PASS",
+    "new_package_files_checked": 62,
+    "old_package_index_sha256": "ca9348788e98efe187752a29dcbe3ddc0970efa8ff85a1f8e43bbee9142ae58a",
+    "old_package_status": "PASS",
+    "old_package_files_checked": 61,
+    "non_source_files_identical": true
+  },
+  "environment_candidate": {
+    "path": "/opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595.package.env.candidate",
+    "sha256": "85289d8cb049c88cf123195c45e66ec6e8a058edd73e0b956deb856f12fa8d7c",
+    "package_root": "/opt/material-counter/releases/standalone-20261031-v8-perf-e2fb595",
+    "package_index_sha256": "e127d991371f5077bd270b2ed037508d2e76c5dfdd9c9573940fdfb2a4d1707e",
+    "created": true
+  },
+  "v8_hardware_600_frame_run": {
+    "status": "STOPPED",
+    "processed": 600,
+    "invalid_frames": 0,
+    "recoveries": [],
+    "camera_released": true,
+    "buffers_released": true,
+    "dma_status": "0x1002",
+    "vdma_status": "0x11001",
+    "received_bytes": 1324800,
+    "expected_bytes": 1324800,
+    "rle_runs": "zero in all 600 frames",
+    "fps_median_window_frames_300_plus": {
+      "processing": 18.36594,
+      "display": 17.28186
+    }
+  },
+  "integrity_report": "package-integrity.json",
+  "module_correspondence": "v8-source-module-correspondence.json",
+  "activation_script": "activate_v8.py",
+  "activation_script_status": "GENERATED_NOT_EXECUTED",
+  "old_v7_600_frame_run": {
+    "processed": 600,
+    "total_count": 4,
+    "rle_run_observations": [
+      0,
+      12,
+      34,
+      75
+    ],
+    "fps_median_window_frames_300_plus": {
+      "processing": 12.90276,
+      "display": 12.51154
+    },
+    "comparison_note": "mixed field workload, not a strict empty-input match; do not infer a precise causal gain"
+  }
+}
