@@ -23,10 +23,11 @@ class FrameLease:
     """A zero-copy view of a frame held in READING state until released."""
 
     __slots__ = ("slot", "session_uuid", "frame_id", "sequence", "array",
-                 "scale_ns", "draw_ns", "compose_ns", "published_ns")
+                 "scale_ns", "draw_ns", "compose_ns", "capture_time_ns",
+                 "published_ns")
 
     def __init__(self, slot, session_uuid, frame_id, sequence, array,
-                 scale_ns, draw_ns, compose_ns, published_ns):
+                 scale_ns, draw_ns, compose_ns, capture_time_ns, published_ns):
         self.slot = slot
         self.session_uuid = session_uuid
         self.frame_id = frame_id
@@ -35,6 +36,7 @@ class FrameLease:
         self.scale_ns = scale_ns
         self.draw_ns = draw_ns
         self.compose_ns = compose_ns
+        self.capture_time_ns = capture_time_ns
         self.published_ns = published_ns
 
 
@@ -43,7 +45,7 @@ class SharedFrames:
 
     def __init__(self, name, shape, lock, statuses, session_ids, frame_ids, sequences,
                  next_sequence, owner_closed, owner_pid, scale_times, draw_times,
-                 compose_times, published_times):
+                 compose_times, capture_times, published_times):
         self.name = name
         self.shape = tuple(shape)
         self._lock = lock
@@ -57,6 +59,7 @@ class SharedFrames:
         self._scale_times = scale_times
         self._draw_times = draw_times
         self._compose_times = compose_times
+        self._capture_times = capture_times
         self._published_times = published_times
         self._shm = shared_memory.SharedMemory(name=name, create=False)
         self._closed = False
@@ -79,6 +82,7 @@ class SharedFrames:
                 ctx.Value("Q", 0, lock=False),
                 ctx.Value("b", 0, lock=False),
                 os.getpid(),
+                ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
@@ -111,6 +115,7 @@ class SharedFrames:
             "scale_times": self._scale_times,
             "draw_times": self._draw_times,
             "compose_times": self._compose_times,
+            "capture_times": self._capture_times,
             "published_times": self._published_times,
         }
 
@@ -120,7 +125,7 @@ class SharedFrames:
             state["session_ids"], state["frame_ids"], state["sequences"],
             state["next_sequence"], state["owner_closed"], state["owner_pid"],
             state["scale_times"], state["draw_times"], state["compose_times"],
-            state["published_times"],
+            state["capture_times"], state["published_times"],
         )
 
     def claim_write(self):
@@ -138,7 +143,8 @@ class SharedFrames:
         finally:
             self._lock.release()
 
-    def publish(self, slot, session_uuid, frame_id, *, scale_ns=0, draw_ns=0, compose_ns=0):
+    def publish(self, slot, session_uuid, frame_id, *, scale_ns=0, draw_ns=0,
+                compose_ns=0, capture_time_ns=0):
         """Publish a WRITING slot as READY with validated identity and a monotonic sequence."""
         self._ensure_open()
         slot = _validate_slot(slot)
@@ -147,6 +153,7 @@ class SharedFrames:
         scale_ns = _validate_stage_ns(scale_ns, "scale_ns")
         draw_ns = _validate_stage_ns(draw_ns, "draw_ns")
         compose_ns = _validate_stage_ns(compose_ns, "compose_ns")
+        capture_time_ns = _validate_uint64(capture_time_ns, "capture_time_ns")
         with self._locked():
             self._require_shared_open()
             self._require_status(slot, WRITING, "publish")
@@ -161,6 +168,7 @@ class SharedFrames:
             self._scale_times[slot] = scale_ns
             self._draw_times[slot] = draw_ns
             self._compose_times[slot] = compose_ns
+            self._capture_times[slot] = capture_time_ns
             self._published_times[slot] = time.monotonic_ns()
             self._statuses[slot] = READY
             return sequence
@@ -198,6 +206,7 @@ class SharedFrames:
                 self._scale_times[slot],
                 self._draw_times[slot],
                 self._compose_times[slot],
+                self._capture_times[slot],
                 self._published_times[slot],
             )
 

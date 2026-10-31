@@ -102,6 +102,32 @@ def test_full_slots_drop_publish_without_backpressure(frames):
     assert list(frames.statuses()) == [READY, READY, READY]
 
 
+def test_publish_carries_capture_time(frames):
+    slot, _pixels = frames.claim_write()
+    try:
+        frames.publish(slot, uuid.UUID(int=9), 81, capture_time_ns=1234)
+        lease = frames.acquire_latest()
+        assert lease.capture_time_ns == 1234
+        frames.release_read(lease.slot)
+    finally:
+        if frames.statuses()[slot] == WRITING:
+            frames.abort_write(slot)
+        elif frames.statuses()[slot] == READING:
+            frames.release_read(slot)
+
+
+@pytest.mark.parametrize('capture_time_ns', [-1, True, 1 << 64])
+def test_publish_rejects_invalid_capture_time_without_losing_write_lease(frames, capture_time_ns):
+    slot, _pixels = frames.claim_write()
+    try:
+        with pytest.raises(ValueError):
+            frames.publish(slot, uuid.UUID(int=9), 82, capture_time_ns=capture_time_ns)
+        assert frames.statuses()[slot] == WRITING
+    finally:
+        if frames.statuses()[slot] == WRITING:
+            frames.abort_write(slot)
+
+
 def test_publish_carries_producer_stage_times_and_monotonic_publish_time(frames):
     slot, pixels = frames.claim_write()
     pixels.fill(5)

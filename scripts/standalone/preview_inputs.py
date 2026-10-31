@@ -48,7 +48,8 @@ class PreviewInputs:
             raise
         return cls(frames, metadata_bytes, metadata_lengths)
 
-    def publish(self, gray, binary, session_uuid, frame_id, metadata):
+    def publish(self, gray, binary, session_uuid, frame_id, metadata, *,
+                capture_time_ns=0):
         """Publish a pair of uint8 planes without blocking when no slot is free."""
         _validate_plane(gray, "gray")
         _validate_plane(binary, "binary")
@@ -72,7 +73,8 @@ class PreviewInputs:
             start = slot * METADATA_CAPACITY
             self._metadata_bytes[start:start + len(encoded)] = encoded
             self._metadata_lengths[slot] = len(encoded)
-            self._frames.publish(slot, session_uuid, frame_id)
+            self._frames.publish(slot, session_uuid, frame_id,
+                                 capture_time_ns=capture_time_ns)
             return True
         except BaseException:
             try:

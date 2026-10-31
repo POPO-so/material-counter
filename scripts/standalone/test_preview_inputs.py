@@ -48,6 +48,19 @@ def test_round_trip_preserves_identity_metadata_and_planes():
         inputs.close()
 
 
+def test_preview_round_trip_preserves_capture_time():
+    inputs = PreviewInputs.create(mp.get_context("spawn"))
+    gray, binary = _images(21)
+    try:
+        assert inputs.publish(gray, binary, str(uuid.uuid4()), 73, {},
+                              capture_time_ns=12345)
+        lease = inputs.acquire_latest()
+        assert lease._frame_lease.capture_time_ns == 12345
+        inputs.release(lease)
+    finally:
+        inputs.close()
+
+
 def test_full_reading_slots_drop_without_overwriting_leased_frame():
     inputs = PreviewInputs.create(mp.get_context("spawn"))
     session_id = str(uuid.uuid4())
