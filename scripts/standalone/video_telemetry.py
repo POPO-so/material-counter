@@ -83,7 +83,7 @@ class TelemetryWindow:
     _METRIC_STAGES = {
         "camera_wait_ms": ("capture_ns", "consume_ns"),
         "queue_transfer_ms": ("consume_ns", "transfer_done_ns"),
-        "ps_total_ms": ("consume_ns", "regions_done_ns"),
+        "ps_total_ms": ("transfer_done_ns", "track_done_ns"),
         "regions_ms": ("transfer_done_ns", "regions_done_ns"),
         "track_ms": ("regions_done_ns", "track_done_ns"),
         "publish_ms": ("track_done_ns", "publish_ns"),
@@ -106,27 +106,52 @@ class TelemetryWindow:
         self._frames = deque(maxlen=max_samples)
         self._camera = deque(maxlen=max_samples)
         self._pump = deque(maxlen=max_samples)
-        self._camera_total = None
-        self._pump_total = None
+        self._camera_totals = None
+        self._pump_totals = None
 
     def record_frame(self, frame):
         self._frames.append(frame)
 
-    def record_camera(self, total, now_ns):
-        return self._record_counter(self._camera, "_camera_total", total, now_ns)
+    def record_camera(
+        self, captured_total, overwrite_drops, sequence_errors, now_ns
+    ) -> dict | None:
+        self._validate_counters((captured_total, overwrite_drops, sequence_errors), now_ns)
+        previous = self._camera_totals
+        self._camera_totals = (captured_total, overwrite_drops, sequence_errors, now_ns)
+        self._camera.append((now_ns, captured_total))
+        if previous is None:
+            return None
+        elapsed_ns = now_ns - previous[3]
+        fps = (captured_total - previous[0]) * 1_000_000_000 / elapsed_ns if elapsed_ns > 0 else 0.0
+        return {
+            "camera_fps": fps,
+            "camera_overwrite_drops": overwrite_drops - previous[1],
+            "camera_sequence_errors": sequence_errors - previous[2],
+        }
 
-    def record_pump(self, total, now_ns):
-        return self._record_counter(self._pump, "_pump_total", total, now_ns)
+    def record_pump(
+        self, submitted, skipped, submit_failures, now_ns
+    ) -> dict | None:
+        self._validate_counters((submitted, skipped, submit_failures), now_ns)
+        previous = self._pump_totals
+        self._pump_totals = (submitted, skipped, submit_failures, now_ns)
+        self._pump.append((now_ns, submitted))
+        if previous is None:
+            return None
+        elapsed_ns = now_ns - previous[3]
+        fps = (submitted - previous[0]) * 1_000_000_000 / elapsed_ns if elapsed_ns > 0 else 0.0
+        return {
+            "display_fps": fps,
+            "pump_skips": skipped - previous[1],
+            "pump_submit_failures": submit_failures - previous[2],
+        }
 
-    def _record_counter(self, samples, total_attr, total, now_ns):
-        if isinstance(total, bool) or not isinstance(total, int) or total < 0:
-            raise ValueError("counter total must be a non-negative integer")
+    @staticmethod
+    def _validate_counters(values, now_ns):
+        if any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in values):
+            raise ValueError("counter totals must be non-negative integers")
         if isinstance(now_ns, bool) or not isinstance(now_ns, int) or now_ns < 0:
             raise ValueError("now_ns must be a non-negative integer")
-        previous = getattr(self, total_attr)
-        setattr(self, total_attr, total)
-        samples.append((now_ns, total))
-        return None if previous is None else total - previous
 
     def sample(self, now_ns):
         if isinstance(now_ns, bool) or not isinstance(now_ns, int) or now_ns < 0:
@@ -159,22 +184,32 @@ class TelemetryWindow:
         if elapsed_ns <= 0:
             return None
         delta = in_window[-1][1] - in_window[0][1]
-        return (delta * 1_000_000_000) // elapsed_ns
+        return delta * 1_000_000_000 / elapsed_ns
 
     def reset(self):
         self._frames.clear()
         self._camera.clear()
         self._pump.clear()
-        self._camera_total = None
-        self._pump_total = None
+        self._camera_totals = None
+        self._pump_totals = None
 
 
 def pl_counters_snapshot(raw):
     """Wrap opaque PL counters without implying per-module attribution."""
-    base = {
-        "schema": "material-counter.pl-counters.v1",
-        "modules": [],
-    }
+    base = {"schema": "material-counter.pl-counters.v1", "modules": []}
     if raw is None:
-        return {**base, "status": "unknown"}
-    return {**base, "status": "aggregate-only", "aggregate": raw}
+        return {
+            **base,
+            "clock_hz": None,
+            "aggregate": None,
+            "coverage": "unknown",
+        }
+    result = {
+        **base,
+        "clock_hz": raw.get("clock_hz"),
+        "aggregate": raw["counters"],
+        "coverage": "aggregate-only",
+    }
+    if "sequence" in raw:
+        result["sequence"] = raw["sequence"]
+    return result
