@@ -1,0 +1,1 @@
+{"scope": "board_cpu_only_no_camera_no_dma", "candidate_sha256": "0cf0a1d22413cc7766d35c3f18e70064715c57a06044e2d8559b27226c6aa053", "frames": 15, "pixel_mismatches": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "timings_ms": {"baseline": {"p50": 325.85741200000484, "p95": 331.7044469999928}, "candidate": {"p50": 64.11755700003141, "p95": 64.75792949996162}}}

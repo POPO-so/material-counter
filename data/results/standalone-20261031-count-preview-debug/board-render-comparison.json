@@ -1,0 +1,1 @@
+{"scope": "board_cpu_only_no_camera_no_dma", "frames": 15, "pixel_mismatches": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "timings_ms": {"baseline": {"p50": 325.49600900006226, "p95": 327.3137965500439}, "candidate": {"p50": 85.93426149997185, "p95": 86.85348894998128}}}
