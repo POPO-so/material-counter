@@ -14,12 +14,13 @@ def interrupt_available(interrupt):
 
 class ButtonEventRunner:
     def __init__(self, interrupt, read_bits, on_commands,
-                 *, decoder=None, clock=time.monotonic):
+                 *, decoder=None, clock=time.monotonic, sleep=asyncio.sleep):
         self.interrupt = interrupt
         self.read_bits = read_bits
         self.on_commands = on_commands
         self.decoder = decoder or ButtonDecoder()
         self.clock = clock
+        self.sleep = sleep
 
     async def run(self):
         wait = getattr(self.interrupt, "wait_for_interrupt_async", None)
@@ -35,7 +36,7 @@ class ButtonEventRunner:
                 deadline = self.decoder.next_deadline
                 if deadline is not None and timer_task is None:
                     timer_task = asyncio.create_task(
-                        asyncio.sleep(max(0, deadline - self.clock())))
+                        self.sleep(max(0, deadline - self.clock())))
                 elif deadline is None and timer_task is not None:
                     timer_task.cancel()
                     await asyncio.gather(timer_task, return_exceptions=True)

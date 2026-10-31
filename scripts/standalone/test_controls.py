@@ -38,6 +38,14 @@ def test_btn2_short_and_long_press_have_distinct_single_events():
     assert d.update(0, .531) == ("exposure_up",)
 
 
+def test_btn3_has_no_command():
+    d = ButtonDecoder()
+    assert d.update(8, 0) == ()
+    assert d.advance(.03) == ()
+    assert d.update(0, .1) == ()
+    assert d.advance(.13) == ()
+
+
 def test_deadline_drives_debounce_and_simultaneous_new_buttons():
     d = ButtonDecoder()
     assert d.update(3, 1) == ()

@@ -34,14 +34,33 @@ class Edge:
         self.waiters.clear()
 
 
+class ManualTimer:
+    def __init__(self):
+        self.now = 0.0
+        self.waiters = []
+
+    async def sleep(self, delay):
+        future = asyncio.get_running_loop().create_future()
+        self.waiters.append((self.now + delay, future))
+        await future
+
+    def advance(self, amount):
+        self.now += amount
+        for deadline, future in self.waiters:
+            if deadline <= self.now and not future.done():
+                future.set_result(None)
+
+
 def test_event_runner_uses_deadline_wait_and_stops_on_cancel():
     assert ButtonEventRunner is not None, "button event runner is not implemented"
     async def scenario():
         source = Edge()
+        timer = ManualTimer()
         events = []
         runner = ButtonEventRunner(source,
                                    source.read_bits, events.extend,
-                                   decoder=ButtonDecoder())
+                                   decoder=ButtonDecoder(),
+                                   clock=lambda: timer.now, sleep=timer.sleep)
         task = asyncio.create_task(runner.run())
         for _ in range(5):
             await asyncio.sleep(0)
@@ -50,7 +69,9 @@ def test_event_runner_uses_deadline_wait_and_stops_on_cancel():
         for _ in range(5):
             await asyncio.sleep(0)
         assert len(source.waiters) == 1
-        await asyncio.sleep(.08)
+        timer.advance(.03)
+        for _ in range(5):
+            await asyncio.sleep(0)
         assert events == ["clear"]
         task.cancel()
         try:
@@ -88,12 +109,32 @@ def test_initial_gpio_state_is_sampled_and_irq_wait_survives_timer_deadline():
     async def scenario():
         source = Edge()
         source.bits = 1
+        timer = ManualTimer()
         events = []
-        runner = ButtonEventRunner(source, source.read_bits, events.extend)
+        reads = []
+
+        def read_bits():
+            reads.append(source.read_bits())
+            return reads[-1]
+
+        commands_seen = asyncio.Event()
+
+        def on_commands(commands):
+            events.extend(commands)
+            commands_seen.set()
+
+        runner = ButtonEventRunner(source, read_bits, on_commands,
+                                   clock=lambda: timer.now, sleep=timer.sleep)
         task = asyncio.create_task(runner.run())
-        await asyncio.sleep(.06)
+        for _ in range(5):
+            await asyncio.sleep(0)
+        assert len(source.waiters) == 1
+        timer.advance(.03)
+        await commands_seen.wait()
         assert events == ["clear"]
         assert source.wait_calls == 1
+        assert len(source.waiters) == 1
+        assert reads == [1], "timer deadline must not read GPIO"
         task.cancel()
         try:
             await task
