@@ -27,6 +27,10 @@ def test_percentile_uses_linear_interpolation():
     assert percentile((0, 10, 20, 30), 95) == 28.5
 
 
+def test_percentile_preserves_small_interpolated_values():
+    assert percentile((0.0, 1e-13), 50) == pytest.approx(5e-14, rel=1e-12, abs=0.0)
+
+
 def test_window_keeps_only_max_samples_frames():
     window = TelemetryWindow(max_samples=3)
     for frame_id in range(4):

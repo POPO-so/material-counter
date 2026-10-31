@@ -48,11 +48,11 @@ def percentile(values, percent):
         raise ValueError("percent must be between 0 and 100")
     if len(ordered) == 1:
         return ordered[0]
-    rank = (len(ordered) - 1) * (percent / 100)
+    rank = (len(ordered) - 1) * percent / 100
     lower = int(rank)
     upper = min(lower + 1, len(ordered) - 1)
     fraction = rank - lower
-    return round(fsum((ordered[lower] * (1 - fraction), ordered[upper] * fraction)), 12)
+    return fsum((ordered[lower] * (1 - fraction), ordered[upper] * fraction))
 
 
 def _summary(values):
