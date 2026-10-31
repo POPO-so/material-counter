@@ -43,7 +43,8 @@ class SharedFrames:
 
     def __init__(self, name, shape, lock, statuses, session_ids, frame_ids, sequences,
                  next_sequence, owner_closed, owner_pid, scale_times, draw_times,
-                 compose_times, published_times):
+                 compose_times, published_times, dropped_ready=None,
+                 dropped_claims=None, condition=None):
         self.name = name
         self.shape = tuple(shape)
         self._lock = lock
@@ -58,6 +59,9 @@ class SharedFrames:
         self._draw_times = draw_times
         self._compose_times = compose_times
         self._published_times = published_times
+        self._condition = condition
+        self._dropped_ready = dropped_ready
+        self._dropped_claims = dropped_claims
         self._shm = shared_memory.SharedMemory(name=name, create=False)
         self._closed = False
 
@@ -83,6 +87,9 @@ class SharedFrames:
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
+                ctx.Value("Q", 0, lock=False),
+                ctx.Value("Q", 0, lock=False),
+                ctx.Condition(),
             )
             shm.close()
             return instance
@@ -112,6 +119,9 @@ class SharedFrames:
             "draw_times": self._draw_times,
             "compose_times": self._compose_times,
             "published_times": self._published_times,
+            "condition": self._condition,
+            "dropped_ready": self._dropped_ready,
+            "dropped_claims": self._dropped_claims,
         }
 
     def __setstate__(self, state):
@@ -120,7 +130,8 @@ class SharedFrames:
             state["session_ids"], state["frame_ids"], state["sequences"],
             state["next_sequence"], state["owner_closed"], state["owner_pid"],
             state["scale_times"], state["draw_times"], state["compose_times"],
-            state["published_times"],
+            state["published_times"], state.get("dropped_ready"),
+            state.get("dropped_claims"), state.get("condition"),
         )
 
     def claim_write(self):
@@ -134,6 +145,7 @@ class SharedFrames:
                 if self._statuses[slot] == FREE:
                     self._statuses[slot] = WRITING
                     return slot, self._array(slot)
+            self._dropped_claims.value += 1
             return None
         finally:
             self._lock.release()
@@ -163,7 +175,33 @@ class SharedFrames:
             self._compose_times[slot] = compose_ns
             self._published_times[slot] = time.monotonic_ns()
             self._statuses[slot] = READY
-            return sequence
+        with self._condition:
+            self._condition.notify_all()
+        return sequence
+
+    def wait_for_frame(self, timeout=None, stop=None):
+        """Wait for a published frame, stop request, or timeout; return a lease or None."""
+        self._ensure_open()
+        deadline = None if timeout is None else time.monotonic() + max(0.0, float(timeout))
+        while True:
+            if stop is not None and stop.is_set():
+                return None
+            try:
+                lease = self.acquire_latest()
+            except RuntimeError:
+                if self._owner_closed.value:
+                    return None
+                raise
+            if lease is not None:
+                return lease
+            if deadline is not None and time.monotonic() >= deadline:
+                return None
+            remaining = 0.05 if deadline is None else min(0.05, max(0.0, deadline - time.monotonic()))
+            with self._condition:
+                with self._lock:
+                    if self._owner_closed.value or any(state == READY for state in self._statuses):
+                        continue
+                self._condition.wait(remaining)
 
     def abort_write(self, slot):
         """Return a WRITING slot to FREE."""
@@ -186,6 +224,7 @@ class SharedFrames:
             for old_slot in ready:
                 if old_slot != slot:
                     self._statuses[old_slot] = FREE
+                    self._dropped_ready.value += 1
             self._statuses[slot] = READING
             start = slot * 16
             identity = uuid.UUID(bytes=bytes(self._session_ids[start:start + 16]))
@@ -200,6 +239,17 @@ class SharedFrames:
                 self._compose_times[slot],
                 self._published_times[slot],
             )
+
+    def stats_snapshot(self):
+        """Return bounded pool occupancy and cumulative frame-drop counters."""
+        self._ensure_open()
+        with self._locked():
+            self._require_shared_open()
+            states = tuple(self._statuses[index] for index in range(SLOT_COUNT))
+            return {"capacity": SLOT_COUNT, "ready": states.count(READY),
+                    "writing": states.count(WRITING), "reading": states.count(READING),
+                    "dropped_ready_frames": int(self._dropped_ready.value),
+                    "write_claim_drops": int(self._dropped_claims.value)}
 
     def release_read(self, slot):
         """Return a READING slot to FREE; duplicate or invalid release is rejected."""
@@ -263,6 +313,8 @@ class SharedFrames:
                         self._statuses[slot] = FREE
                 self._owner_closed.value = 1
                 self._shm.unlink()
+            with self._condition:
+                self._condition.notify_all()
         self._shm.close()
         self._closed = True
 

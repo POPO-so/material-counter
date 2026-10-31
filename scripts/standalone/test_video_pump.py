@@ -181,3 +181,23 @@ def test_idle_stop_leaves_no_reading_lease(frames):
     pump.request_stop()
     assert pump.join(1)
     assert frames.statuses() == (FREE, FREE, FREE)
+
+
+def test_video_pump_waits_without_millisecond_polling(frames, monkeypatch):
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    calls = []
+    original = frames.wait_for_frame
+    def observed(*args, **kwargs):
+        calls.append(True)
+        return original(*args, **kwargs)
+    monkeypatch.setattr(frames, "wait_for_frame", observed)
+    pump = pump_type(frames, type("HW", (), {"hdmi": FakeHDMI((8, 12))})(), FakeOwner(), identity)
+    try:
+        deadline = time.monotonic() + 1
+        while not calls and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert calls
+    finally:
+        pump.request_stop()
+        assert pump.join(1)

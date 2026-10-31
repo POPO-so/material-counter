@@ -100,6 +100,22 @@ def test_full_slots_drop_publish_without_backpressure(frames):
         frames.publish(slot, uuid.uuid4(), slot)
     assert frames.claim_write() is None
     assert list(frames.statuses()) == [READY, READY, READY]
+    assert frames.stats_snapshot()["ready"] == 3
+    assert frames.claim_write() is None
+    assert frames.stats_snapshot()["write_claim_drops"] == 3
+
+
+def test_latest_reader_records_dropped_older_ready_frames(frames):
+    for frame_id in (10, 11, 12):
+        slot, pixels = frames.claim_write()
+        pixels.fill(frame_id)
+        frames.publish(slot, uuid.uuid4(), frame_id)
+    lease = frames.acquire_latest()
+    assert lease.frame_id == 12
+    stats = frames.stats_snapshot()
+    assert stats["ready"] == 0 and stats["reading"] == 1
+    assert stats["dropped_ready_frames"] == 2
+    frames.release_read(lease.slot)
 
 
 def test_publish_carries_producer_stage_times_and_monotonic_publish_time(frames):
@@ -294,6 +310,53 @@ def test_owner_close_prevents_a_spawned_process_from_claiming_after_unlink(frame
     process.join(10)
     assert process.exitcode == 0
     assert result.get(timeout=2) == "rejected"
+
+
+def _spawn_wait_frame(frames, stop, result, attached=None):
+    if attached is not None:
+        attached.set()
+    lease = frames.wait_for_frame(timeout=5, stop=stop)
+    result.put(None if lease is None else lease.frame_id)
+    if lease is not None:
+        frames.release_read(lease.slot)
+    frames.close()
+
+
+def test_wait_for_frame_wakes_spawned_consumer_and_has_no_lost_publish(frames):
+    ctx = mp.get_context("spawn")
+    stop, attached, result = ctx.Event(), ctx.Event(), ctx.Queue()
+    process = ctx.Process(target=_spawn_wait_frame, args=(frames, stop, result, attached))
+    process.start()
+    assert attached.wait(3)
+    time.sleep(0.05)
+    slot, pixels = frames.claim_write()
+    pixels.fill(7)
+    frames.publish(slot, uuid.uuid4(), 91)
+    process.join(5)
+    assert process.exitcode == 0
+    assert result.get(timeout=1) == 91
+
+
+def test_wait_for_frame_stop_and_timeout_are_bounded(frames):
+    stop = mp.get_context("spawn").Event()
+    started = time.monotonic()
+    assert frames.wait_for_frame(timeout=0.08, stop=stop) is None
+    assert time.monotonic() - started < 0.5
+    stop.set()
+    assert frames.wait_for_frame(timeout=2, stop=stop) is None
+
+
+def test_owner_close_wakes_a_waiting_spawned_consumer(frames):
+    ctx = mp.get_context("spawn")
+    stop, attached, result = ctx.Event(), ctx.Event(), ctx.Queue()
+    process = ctx.Process(target=_spawn_wait_frame, args=(frames, stop, result, attached))
+    process.start()
+    assert attached.wait(3)
+    time.sleep(0.05)
+    frames.close()
+    process.join(3)
+    assert process.exitcode == 0
+    assert result.get(timeout=1) is None
 
 
 

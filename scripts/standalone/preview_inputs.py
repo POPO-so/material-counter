@@ -107,6 +107,24 @@ class PreviewInputs:
             self._frames.release_read(slot)
             raise
 
+    def wait_for_frame(self, timeout=None, stop=None):
+        """Wait for a preview publication and return a decoded PreviewLease."""
+        frame_lease = self._frames.wait_for_frame(timeout=timeout, stop=stop)
+        if frame_lease is None:
+            return None
+        slot = frame_lease.slot
+        try:
+            length = self._metadata_lengths[slot]
+            if not 0 <= length <= METADATA_CAPACITY:
+                raise ValueError("invalid shared metadata length")
+            start = slot * METADATA_CAPACITY
+            metadata = json.loads(bytes(self._metadata_bytes[start:start + length]).decode("utf-8"))
+            return PreviewLease(frame_lease, frame_lease.array[:FRAME_SHAPE[0], :],
+                                frame_lease.array[FRAME_SHAPE[0]:, :], metadata)
+        except BaseException:
+            self._frames.release_read(slot)
+            raise
+
     def release(self, lease):
         """Release a preview lease and make its slot available to producers."""
         if not isinstance(lease, PreviewLease) or lease._released:
@@ -117,6 +135,10 @@ class PreviewInputs:
     def statuses(self):
         """Return the underlying three-slot status snapshot for shutdown checks."""
         return self._frames.statuses()
+
+    def stats_snapshot(self):
+        """Return shared preview queue length and cumulative drops."""
+        return self._frames.stats_snapshot()
 
     def close(self):
         """Detach this process; the SharedFrames creator also unlinks the pool."""

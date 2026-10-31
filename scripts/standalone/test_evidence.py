@@ -57,3 +57,28 @@ def test_trace_annotation_limits_never_change_counter_results():
     trace.add(0,result)
     assert len(trace.frames[0]['detections'])==1 and len(result.detections)==2
     assert trace.frames[0]['detections_total']==2 and trace.annotations_truncated
+
+
+def test_disabled_trace_does_not_hash_or_retain_frame_details():
+    from scripts.wo0016.stream_counter import MaskCounter, Detection
+    result = MaskCounter(width=640,height=400,roi_mode='full',min_area=1).update_detections(
+        0,[Detection(10,19,20,29,100,14.5,24.5)])
+    trace = TraceBuffer()
+    trace.add(0, result, enabled=False)
+    assert trace.frames_seen == 0
+    assert not trace.frames
+    assert trace.digest() is None
+
+
+def test_trace_mode_switch_records_boundary_and_only_diagnostic_adds_frames():
+    from scripts.wo0016.stream_counter import MaskCounter, Detection
+    from scripts.standalone.diagnostic_mode import DiagnosticPolicy
+    result = MaskCounter(width=640,height=400,roi_mode='full',min_area=1).update_detections(
+        0,[Detection(10,19,20,29,100,14.5,24.5)])
+    policy = DiagnosticPolicy()
+    trace = TraceBuffer()
+    trace.add(0, result, enabled=policy.trace_enabled)
+    policy.set_mode('diagnostic')
+    trace.add(1, result, enabled=policy.trace_enabled)
+    assert trace.frames_seen == 1 and trace.frames[-1]['frame'] == 1
+    assert policy.transitions[0]['frame_id'] is None

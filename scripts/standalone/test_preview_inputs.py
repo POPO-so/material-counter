@@ -126,3 +126,21 @@ def test_spawn_consumer_reads_shared_ram_and_releases_before_owner_close():
             child.join()
         inputs.close()
         result_queue.close()
+
+
+def test_wait_for_frame_delivers_published_preview_without_polling():
+    inputs = PreviewInputs.create(mp.get_context("spawn"))
+    gray, binary = _images(33)
+    try:
+        result = []
+        import threading
+        waiter = threading.Thread(target=lambda: result.append(inputs.wait_for_frame(timeout=1)))
+        waiter.start()
+        assert inputs.publish(gray, binary, str(uuid.uuid4()), 99, {"ok": True})
+        waiter.join(1)
+        assert not waiter.is_alive()
+        lease = result[0]
+        assert lease.frame_id == 99 and lease.metadata == {"ok": True}
+        inputs.release(lease)
+    finally:
+        inputs.close()
