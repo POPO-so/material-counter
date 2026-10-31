@@ -13,10 +13,40 @@ from scripts.standalone.integrated_run import (
     result_metadata,
     start_drawing_child,
     source_identity,
+    dashboard_values,
 )
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
 from scripts.wo0016.stream_counter import MaskCounter
+
+
+def test_dashboard_values_include_live_core_and_static_manifest_percentages():
+    telemetry={
+        'performance':{'stale':False,'value':{'display_fps':18.5,'processing_ms':41.2}},
+        'resources':{'stale':False,'value':{
+            'cpu':{'system':31.0,'cpu0':28.0,'cpu1':34.0},
+            'memory':{'MemTotal':'1000 kB','MemAvailable':'538 kB'}}}}
+    manifest={'resources':{'lut':12221,'ff':16174,'bram_tiles':4.5,'dsp':9}}
+
+    values=dashboard_values(12,False,False,telemetry,manifest)
+
+    assert (values['cpu_percent'],values['cpu0_percent'],values['cpu1_percent'])==(31.0,28.0,34.0)
+    assert values['memory_percent']==46.2
+    assert (values['static_lut_percent'],values['static_ff_percent'],
+            values['static_bram_percent'],values['static_dsp_percent'])==(23.0,15.2,3.2,4.1)
+
+
+def test_dashboard_values_keep_stale_and_missing_readings_unavailable():
+    values=dashboard_values(0,False,False,{'resources':{'stale':True}},
+                            {'resources':{'lut':12221}})
+
+    assert values['cpu_percent'] is None
+    assert values['cpu0_percent'] is None and values['cpu1_percent'] is None
+    assert values['memory_percent'] is None
+    assert values['static_lut_percent']==23.0
+    assert values['static_ff_percent'] is None
+    assert values['static_bram_percent'] is None
+    assert values['static_dsp_percent'] is None
 
 
 def test_source_identity_covers_loaded_counting_and_motion_code():
@@ -190,13 +220,13 @@ def test_actual_drawing_child_preserves_frame_identity_and_renders_count_line(ax
         marker=np.packbits((lease.array[0,640:864]==255).astype(np.uint8)).tobytes()
         assert uuid.UUID(bytes=marker[2:18])==session
         assert int.from_bytes(marker[18:26],'big')==77
-        # Dashboard viewport is (256,144,768,480); both axes retain source coordinates.
+        # Dashboard viewport is (320,146,640,400); source coordinates stay 1:1.
         if axis=='x':
-            assert lease.array[154,640]==248
-            assert lease.array[164,640]==0
+            assert lease.array[156,640]==248
+            assert lease.array[166,640]==0
         else:
-            assert lease.array[384,266]==248
-            assert lease.array[384,276]==0
+            assert lease.array[346,330]==248
+            assert lease.array[346,340]==0
         outputs.release_read(lease.slot);lease=None
     finally:
         stop.set();child.join(timeout=10)

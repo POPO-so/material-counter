@@ -309,7 +309,7 @@ class DashboardComposer:
     layouts retain the same top/bottom session markers for the PL observer.
     """
 
-    VIEW = (256, 144, 768, 480)
+    VIEW = (320, 146, 640, 400)
 
     def __init__(self, font_path, *, latin_font_path=None,
                  gray_interpolation=cv2.INTER_AREA):
@@ -317,7 +317,7 @@ class DashboardComposer:
             raise ValueError("gray_interpolation must be INTER_AREA or INTER_LINEAR")
         self.gray_interpolation = gray_interpolation
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
-        self._work = np.empty((480, 768), dtype=np.uint8)
+        self._work = np.empty((400, 640), dtype=np.uint8)
         self._fonts = {size: ImageFont.truetype(str(font_path), size)
                        for size in (18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
@@ -386,6 +386,27 @@ class DashboardComposer:
         offset_x, offset_y, mask = cached
         draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
 
+    def _resource_pie(self, draw, x, center_y, label, value, *, static=False):
+        """Draw a compact gray8 donut; invalid readings remain an empty ring."""
+        center_x = x + 24
+        radius = 22
+        bounds = (center_x - radius, center_y - radius,
+                  center_x + radius, center_y + radius)
+        draw.ellipse(bounds, fill=76)
+        valid = (isinstance(value, (int, float)) and not isinstance(value, bool)
+                 and math.isfinite(value) and value >= 0)
+        if valid and value > 0:
+            sweep = 360.0 * min(100.0, value) / 100.0
+            draw.pieslice(bounds, start=-90, end=-90 + sweep, fill=218)
+        inner = radius - 8
+        draw.ellipse((center_x - inner, center_y - inner,
+                      center_x + inner, center_y + inner), fill=40)
+        suffix = " · ST" if static else ""
+        self._text(draw, (x + 55, center_y - 18), label + suffix, 18, 202)
+        value_text = self._number(value, 1, "%")
+        self._whole_latin_text(draw, (x + 55, center_y + 2), value_text, 18,
+                               226 if valid else 142)
+
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
         values = (
             self._number(dashboard.get("count"), 0),
@@ -394,9 +415,19 @@ class DashboardComposer:
             self._number(dashboard.get("cpu_percent"), 0, "%"),
             self._number(dashboard.get("memory_percent"), 0, "%"),
         )
+        live_pies = tuple(dashboard.get(name) for name in (
+            "cpu_percent", "cpu0_percent", "cpu1_percent", "memory_percent"))
+        static_pies = tuple(dashboard.get(name) for name in (
+            "static_lut_percent", "static_ff_percent",
+            "static_bram_percent", "static_dsp_percent"))
+        pie_key = tuple(
+            value if (isinstance(value, (int, float)) and not isinstance(value, bool)
+                      and math.isfinite(value) and value >= 0) else None
+            for value in live_pies + static_pies
+        )
         state = str(dashboard.get("state", "RUNNING"))
         detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
-        key = (values, state, binary_background, target_count, detail)
+        key = (values, pie_key, state, binary_background, target_count, detail)
         if key == self._key:
             return
         image = Image.new("L", (WIDTH, HEIGHT), 14)
@@ -410,39 +441,33 @@ class DashboardComposer:
             draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
             self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
-        draw.rounded_rectangle((24, 136, 1256, 632), radius=10, fill=25, outline=58)
+        draw.rounded_rectangle((24, 136, 1256, 556), radius=10, fill=25, outline=58)
         self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
         self._whole_latin_text(draw, (42, 194), "640 x 400", 18, 158)
         self._text(draw, (42, 222), "二值预览" if binary_background else "实时灰度画面", 20, 212)
         draw.line((44, 284, 100, 284), fill=240, width=2)
         self._text(draw, (42, 298), "实际计数线", 18, 175)
         self._text(draw, (42, 328), "从左向右计数", 18, 212)
-        for y, text in zip((448, 480, 512, 544),
+        for y, text in zip((414, 446, 478, 510),
                            ("BTN0  暂停 / 恢复", "BTN1  长按 2 秒清零",
                             "BTN2  灰度 / 二值", "BTN3  详细状态")):
             self._text(draw, (42, y), text, 18, 144)
-        self._text(draw, (1044, 158), "检测目标", 20, 170)
-        self._whole_latin_text(draw, (1044, 190), str(target_count), 34, 242)
-        self._text(draw, (1044, 248), "跟踪 ID / 检测框", 18, 170)
-        self._text(draw, (1044, 279), "计数真值待人工核对", 18, 144)
+        self._text(draw, (984, 158), "检测目标", 20, 170)
+        self._whole_latin_text(draw, (984, 190), str(target_count), 34, 242)
+        self._text(draw, (984, 248), "跟踪 ID / 检测框", 18, 170)
+        self._text(draw, (984, 279), "计数真值待人工核对", 18, 144)
         for i, text in enumerate(detail):
             # Keep diagnostic text inside the narrow gutter.
             for row in range(0, min(len(text), 30), 10):
-                self._text(draw, (1044, 344 + i * 78 + row // 10 * 24), text[row:row + 10], 18, 170)
-        for x, width, label, text, field in (
-                (24, 600, "PS CPU 使用率", values[3], "cpu_percent"),
-                (640, 616, "DDR 内存占用", values[4], "memory_percent")):
-            draw.rounded_rectangle((x, 646, x + width, 704), radius=9, fill=40)
-            self._text(draw, (x + 16, 650), label, 18, 178)
-            self._whole_latin_text(draw, (x + width - 74, 674), text, 18, 238)
-            left, right = x + 16, x + width - 92
-            draw.rounded_rectangle((left, 682, right, 689), radius=3, fill=82)
-            percent = dashboard.get(field)
-            if (isinstance(percent, (int, float)) and not isinstance(percent, bool)
-                    and math.isfinite(percent) and percent > 0):
-                end = left + round((right - left) * min(100, percent) / 100)
-                if end > left:
-                    draw.rounded_rectangle((left, 682, end, 689), radius=3, fill=218)
+                self._text(draw, (984, 344 + i * 70 + row // 10 * 24), text[row:row + 10], 18, 170)
+        for top, bottom, center_y, title, labels, percentages, is_static in (
+                (562, 637, 599, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
+                (640, 716, 677, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
+            draw.rounded_rectangle((24, top, 1256, bottom), radius=9, fill=40)
+            self._whole_latin_text(draw, (36, center_y - 12), title, 18, 232)
+            for index, (label, percent) in enumerate(zip(labels, percentages)):
+                self._resource_pie(draw, 116 + index * 280, center_y, label,
+                                   percent, static=is_static)
         self._chrome[:] = np.asarray(image)
         self._key = key
 
@@ -470,7 +495,7 @@ class DashboardComposer:
         np.copyto(target, self._chrome)
         draw_ms = (perf_counter_ns() - started) / 1_000_000
         started = perf_counter_ns()
-        cv2.resize(binary if binary_background else gray, (768, 480), dst=self._work,
+        cv2.resize(binary if binary_background else gray, (640, 400), dst=self._work,
                    interpolation=cv2.INTER_NEAREST if binary_background else self.gray_interpolation)
         x0, y0, width, height = self.VIEW
         image = target[y0:y0 + height, x0:x0 + width]
