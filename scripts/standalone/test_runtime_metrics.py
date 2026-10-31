@@ -1,6 +1,6 @@
 import json
 
-from scripts.standalone.runtime_metrics import counter_rates, RuntimeSampler
+from scripts.standalone.runtime_metrics import counter_rates, RuntimeSampler, cpu_source_breakdown
 
 
 def test_counter_rates_validate_window_and_calculate_six_metrics():
@@ -93,3 +93,43 @@ def test_runtime_sampler_records_network_deltas_with_missing_files_unknown(tmp_p
     assert sample['network']['eth0']['tx_bytes']==60
     (proc/'net/dev').unlink()
     assert sampler.sample()['network'] is None
+
+
+def test_cpu_source_breakdown_groups_named_threads_and_preserves_proc_deltas():
+    sample = {
+        "interval_s": 2,
+        "threads": {
+            "1": {"name": "gray8-camera", "utime_ticks_delta": 10, "stime_ticks_delta": 0},
+            "2": {"name": "drawing", "utime_ticks_delta": 5, "stime_ticks_delta": 5},
+            "3": {"name": "video-pump", "utime_ticks_delta": 2, "stime_ticks_delta": 0},
+            "4": {"name": "driver-owner", "utime_ticks_delta": 1, "stime_ticks_delta": 1},
+            "5": {"name": "crossing-snapshot", "utime_ticks_delta": 1, "stime_ticks_delta": 0},
+            "6": {"name": "mystery", "utime_ticks_delta": 1, "stime_ticks_delta": 0},
+        },
+        "network": {"eth0": {"rx_bytes": 12, "tx_bytes": 8, "rx_packets": 2, "tx_packets": 1}},
+        "interrupts": {"7: eth": 3}, "softirqs": {"NET_RX": 4},
+    }
+
+    result = cpu_source_breakdown(sample, hertz=100, cpu_count=2)
+
+    assert result["camera"] == 2.5
+    assert result["drawing"] == 2.5
+    assert result["preview_pump"] == 0.5
+    assert result["hardware_owner"] == 0.5
+    assert result["snapshots"] == 0.25
+    assert result["other"] == 0.25
+    assert result["process_total"] == 6.5
+    assert result["network"] == sample["network"]
+    assert result["interrupts"] == {"interrupts": sample["interrupts"], "softirqs": sample["softirqs"]}
+
+
+def test_cpu_source_breakdown_keeps_missing_and_rolled_back_values_unknown():
+    assert cpu_source_breakdown(None) is None
+    assert cpu_source_breakdown({"interval_s": 1, "threads": {}})["process_total"] is None
+    sample = {"interval_s": 1, "threads": {
+        "1": {"name": "gray8-camera", "utime_ticks_delta": None, "stime_ticks_delta": 0}}}
+    result = cpu_source_breakdown(sample, hertz=100, cpu_count=2)
+    assert result["camera"] is None
+    assert result["drawing"] is None
+    assert result["network"] is None
+    assert result["interrupts"] is None

@@ -432,13 +432,16 @@ class DashboardComposer:
         pl_text = str(dashboard.get("pl_text", "PL rates unavailable"))
         thread_text = str(dashboard.get("thread_text", "线程概要暂不可用"))
         queue_text = str(dashboard.get("queue_text", "帧池 --"))
+        cpu_source_text = str(dashboard.get("cpu_source_text", "CPU 来源 unknown"))
+        queue_summary_text = str(dashboard.get("queue_summary_text", "队列 unknown"))
         button_status = str(dashboard.get("button_status", "IRQ READY"))
         exposure_range_text = str(dashboard.get("exposure_range_text", "范围 --"))
         preview_status = str(dashboard.get("preview_status", "预览 READY"))
         exposure_latency_text = str(dashboard.get("exposure_latency_text", ""))
         rle_key = tuple(dashboard.get(name) for name in (
             "rle_fresh", "rle_activity_pct", "input_mb_s", "output_mb_s",
-            "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps"))
+            "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps",
+            "cpu_source_text", "queue_summary_text", "cpu_sources", "queues"))
         detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
         key = (values, pie_key, state, binary_background, target_count, detail,
                mode, exposure_text, exposure_range_text, pl_text, thread_text, queue_text,
@@ -480,9 +483,13 @@ class DashboardComposer:
         if exposure_latency_text:
             queue_line += " / " + exposure_latency_text
         self._text(draw, (934, 400), queue_line, 18, 190)
-        for i, text in enumerate(detail[:2]):
-            for row in range(0, min(len(text), 20), 10):
-                self._text(draw, (934, 428 + i * 34 + row // 10 * 18), text[row:row + 10], 18, 170)
+        if detail:
+            for i, text in enumerate(detail[:2]):
+                for row in range(0, min(len(text), 20), 10):
+                    self._text(draw, (934, 428 + i * 34 + row // 10 * 18), text[row:row + 10], 18, 170)
+        else:
+            self._text(draw, (936, 420), cpu_source_text[:30], 12, 190)
+            self._text(draw, (936, 440), queue_summary_text[:30], 12, 190)
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
                 (558, 630, 594, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):

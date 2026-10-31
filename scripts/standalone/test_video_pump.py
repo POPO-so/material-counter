@@ -150,6 +150,7 @@ def test_submit_timeout_enters_display_fail_hold_and_retains_frame(frames):
         assert len(owner.retained) == 1
         assert owner.retained[0] is hdmi.created[0]
         assert pump.submitted == 0
+        assert pump.failures == 1
         assert frames.statuses() == (FREE, FREE, FREE)
     finally:
         never_release.set()
@@ -166,6 +167,7 @@ def test_mismatched_session_is_released_without_hardware_access(frames):
         assert pump.join(1)
         assert pump.state == DISPLAY_FAIL_HOLD
         assert "session" in pump.error.lower()
+        assert pump.failures == 1
         assert owner.calls == []
         assert frames.statuses() == (FREE, FREE, FREE)
     finally:

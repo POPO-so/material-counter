@@ -10,6 +10,68 @@ import time
 COUNTERS = ("total_cycles", "active_cycles", "input_beats", "output_beats",
             "input_stall_cycles", "output_stall_cycles")
 U64_MAX = (1 << 64) - 1
+CPU_SOURCES = ("camera", "drawing", "preview_pump", "hardware_owner", "snapshots", "other")
+
+
+def cpu_source_breakdown(sample, *, hertz=100, cpu_count=None):
+    """Return per-thread-name CPU attribution and comparable proc counter deltas.
+
+    Percentages use total system capacity across all CPUs. Invalid or incomplete
+    input is represented by ``None`` and this diagnostic helper never raises.
+    """
+    empty = {name: None for name in CPU_SOURCES}
+    empty.update(process_total=None, network=None, interrupts=None)
+    try:
+        if not isinstance(sample, dict):
+            return None
+        interval = sample.get("interval_s")
+        count = os.cpu_count() if cpu_count is None else cpu_count
+        if (isinstance(interval, bool) or not isinstance(interval, (int, float))
+                or not math.isfinite(interval) or interval <= 0
+                or type(hertz) not in (int, float) or not math.isfinite(hertz) or hertz <= 0
+                or type(count) is not int or count <= 0):
+            return empty
+        threads = sample.get("threads")
+        if not isinstance(threads, dict) or not threads:
+            return empty
+        denominator = interval * hertz * count
+        totals = {name: 0 for name in CPU_SOURCES}
+        complete = True
+        for entry in threads.values():
+            if not isinstance(entry, dict):
+                complete = False
+                continue
+            name = str(entry.get("name") or "").lower()
+            if "gray8-camera" in name or "camera" in name:
+                source = "camera"
+            elif "drawing" in name:
+                source = "drawing"
+            elif "video-pump" in name or "pump" in name:
+                source = "preview_pump"
+            elif "video-hardware-owner" in name or "driver-owner" in name or "button" in name:
+                source = "hardware_owner"
+            elif "crossing-snapshot" in name or "report-export" in name:
+                source = "snapshots"
+            else:
+                source = "other"
+            user, system = entry.get("utime_ticks_delta"), entry.get("stime_ticks_delta")
+            if (type(user) is not int or user < 0 or type(system) is not int or system < 0):
+                complete = False
+                continue
+            totals[source] += user + system
+        if complete:
+            for source, ticks in totals.items():
+                empty[source] = ticks / denominator * 100.0
+            empty["process_total"] = sum(totals.values()) / denominator * 100.0
+        network = sample.get("network")
+        if isinstance(network, dict):
+            empty["network"] = network
+        interrupts, softirqs = sample.get("interrupts"), sample.get("softirqs")
+        if isinstance(interrupts, dict) and isinstance(softirqs, dict):
+            empty["interrupts"] = {"interrupts": interrupts, "softirqs": softirqs}
+        return empty
+    except Exception:
+        return empty
 
 
 def counter_rates(before, after, dt_s, *, min_interval_s=0.1, max_interval_s=10.0):

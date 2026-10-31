@@ -34,6 +34,7 @@ class VideoPump:
         self.state = RUNNING
         self.error = None
         self.submitted = 0
+        self.failures = 0
         self.timings_ms = {
             name: deque(maxlen=self.TIMING_WINDOW)
             for name in ("copy_submit_ms", "scale_ms", "draw_ms")
@@ -128,4 +129,5 @@ class VideoPump:
 
     def _fail(self, exc):
         self.error = str(exc)
+        self.failures += 1
         self.state = DISPLAY_FAIL_HOLD

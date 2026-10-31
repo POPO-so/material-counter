@@ -16,6 +16,8 @@ from scripts.standalone.integrated_run import (
     source_identity,
     dashboard_values,
     runtime_diagnostic_snapshot,
+    QueueDepthWindow,
+    queue_diagnostic_snapshot,
 )
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
@@ -92,6 +94,42 @@ def test_dashboard_values_show_thread_run_wait_and_preview_pool_occupancy():
     assert "run20ms" in values["thread_text"]
     assert "wait4ms" in values["thread_text"]
     assert values["queue_text"] == "IN 2/3  OUT 1/3"
+
+
+def test_queue_depth_window_tracks_bounded_maximum_and_unknown_empty_state():
+    window = QueueDepthWindow()
+    assert window.snapshot(3) == {"window_max": None, "current": None, "capacity": 3}
+    window.observe(0)
+    window.observe(2)
+    assert window.snapshot(3) == {"window_max": 2, "current": 2, "capacity": 3}
+    assert window.snapshot(3) == {"window_max": None, "current": 2, "capacity": 3}
+    window.observe(None)
+    assert window.snapshot(3)["current"] is None
+
+
+def test_queue_diagnostic_snapshot_preserves_unknown_and_reports_four_paths():
+    snapshot = queue_diagnostic_snapshot(None, None)
+    assert snapshot["camera_to_processing"] == {
+        "depth": None, "dropped_old_frames": None, "recent_frame_overwritten": None}
+    assert snapshot["main_to_preview"] is None
+    assert snapshot["preview_to_drawing"]["ready"] is None
+    assert snapshot["preview_to_drawing"]["dropped_frames"] is None
+    assert snapshot["drawing_to_hdmi"]["ready"] is None
+    assert snapshot["drawing_to_hdmi"]["submit_failures"] is None
+
+
+def test_dashboard_values_expose_cpu_and_queue_summaries_in_json_ready_fields():
+    values = dashboard_values(0, False, False, {}, {}, runtime_diagnostics={
+        "cpu_sources": {"camera": 2.0, "drawing": 1.0},
+        "queues": {"camera_to_processing": {"dropped_old_frames": 3,
+            "recent_frame_overwritten": True},
+            "preview_to_drawing": {"ready": 1, "dropped_frames": 4},
+            "drawing_to_hdmi": {"ready": 2, "submit_failures": 0}},
+    })
+    assert "camera 2.0%" in values["cpu_source_text"]
+    assert "相机丢3" in values["queue_summary_text"]
+    assert values["cpu_sources"]["camera"] == 2.0
+    assert values["queues"]["drawing_to_hdmi"]["ready"] == 2
 
 
 def test_dashboard_exposure_error_keeps_last_known_range_and_bounds_error_text():

@@ -491,6 +491,28 @@ def test_dashboard_thread_summary_fits_right_panel_with_top_two_metrics(monkeypa
                for text, size in drawn if size == 12)
 
 
+def test_dashboard_draws_cpu_source_and_queue_summaries_and_refreshes_on_change(monkeypatch):
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    drawn = []
+    original = c._text
+
+    def capture_text(draw, xy, text, size, fill):
+        if xy in ((936, 420), (936, 440)):
+            drawn.append((xy, text, size))
+        return original(draw, xy, text, size, fill)
+
+    monkeypatch.setattr(c, "_text", capture_text)
+    base = {"cpu_source_text": "CPU 来源 camera 2%", "queue_summary_text": "队列 相机丢1 覆盖True"}
+    c.render(gray, gray, uuid.uuid4(), 1, dashboard=base)
+    assert ((936, 420), "CPU 来源 camera 2%", 12) in drawn
+    assert ((936, 440), "队列 相机丢1 覆盖True", 12) in drawn
+    first_count = len(drawn)
+    c.render(gray, gray, uuid.uuid4(), 2,
+             dashboard={**base, "cpu_source_text": "CPU 来源 camera 3%"})
+    assert len(drawn) == first_count + 2
+
+
 def test_dashboard_chrome_warmed_latin_strings_skip_all_text_rasterization(monkeypatch):
     api = _api()
     c = _dashboard_composer()

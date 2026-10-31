@@ -43,7 +43,7 @@ from .shared_frames import SharedFrames, WRITING, READING
 from .button_events import ButtonEventRunner, interrupt_available
 from .diagnostic_mode import DiagnosticPolicy
 from .exposure import ExposureController, V4L2CtlBackend
-from .runtime_metrics import RuntimeSampler, counter_rates
+from .runtime_metrics import RuntimeSampler, counter_rates, cpu_source_breakdown
 from .pl_preview import PlPreview
 from scripts.rle.protocol import TX_BYTES, RX_CAPACITY
 from scripts.rle.transport import RAW_TX_BYTES, RleDmaTransport
@@ -152,11 +152,37 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
             queue_text='IN {}/{}  OUT {}/{}'.format(input_pool.get('ready','--'),
                 input_pool.get('capacity','--'),output_pool.get('ready','--'),
                 output_pool.get('capacity','--'))
+    cpu_sources=(runtime_diagnostics or {}).get('cpu_sources') if isinstance(runtime_diagnostics,dict) else None
+    if isinstance(cpu_sources,dict):
+        ranked=[(name,cpu_sources.get(name)) for name in
+                ('camera','drawing','preview_pump','hardware_owner','snapshots','other')]
+        ranked=[(name,value) for name,value in ranked
+                if isinstance(value,(int,float)) and math.isfinite(value) and value>=0]
+        cpu_source_text=('CPU 来源 '+', '.join('{} {:.1f}%'.format(name,value)
+            for name,value in sorted(ranked,key=lambda item:item[1],reverse=True)[:3])
+            if ranked else 'CPU 来源 unknown')
+    else:
+        cpu_source_text='CPU 来源 unknown'
+    queues=(runtime_diagnostics or {}).get('queues') if isinstance(runtime_diagnostics,dict) else None
+    queue_summary_text='队列 unknown'
+    if isinstance(queues,dict):
+        camera_queue=queues.get('camera_to_processing') or {}
+        draw_queue=queues.get('preview_to_drawing') or {}
+        hdmi_queue=queues.get('drawing_to_hdmi') or {}
+        queue_summary_text='队列 相机丢{} 覆盖{} 绘制{}/{} HDMI{}/{}'.format(
+            camera_queue.get('dropped_old_frames') if camera_queue.get('dropped_old_frames') is not None else '?',
+            camera_queue.get('recent_frame_overwritten') if camera_queue.get('recent_frame_overwritten') is not None else '?',
+            draw_queue.get('ready') if draw_queue.get('ready') is not None else '?',
+            draw_queue.get('dropped_frames') if draw_queue.get('dropped_frames') is not None else '?',
+            hdmi_queue.get('ready') if hdmi_queue.get('ready') is not None else '?',
+            hdmi_queue.get('submit_failures') if hdmi_queue.get('submit_failures') is not None else '?')
     rates=rates or {}
     return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
         mode='DIAGNOSTIC' if mode=='diagnostic' else 'NORMAL',exposure_text=exposure_text,
         exposure_range_text=exposure_range_text,
         pl_text=pl_text,thread_text=thread_text,queue_text=queue_text,
+        cpu_source_text=cpu_source_text,queue_summary_text=queue_summary_text,
+        cpu_sources=cpu_sources,queues=queues,
         button_status=button_status,
         rle_fresh=bool(rates),rle_activity_pct=rates.get('rle_activity_pct'),
         input_mb_s=rates.get('input_mb_s'),output_mb_s=rates.get('output_mb_s'),
@@ -196,7 +222,46 @@ def runtime_diagnostic_snapshot(runtime, input_pool, output_pool, tick_hz):
     threads.sort(key=lambda entry:(entry['cpu_time_ms'],entry['run_time_ms']),reverse=True)
     return dict(interval_s=(runtime or {}).get('interval_s') if isinstance(runtime,dict) else None,
         threads=threads[:2], input_pool=_pool_occupancy(input_pool),
-        output_pool=_pool_occupancy(output_pool))
+        output_pool=_pool_occupancy(output_pool),
+        cpu_sources=cpu_source_breakdown(runtime, hertz=tick_hz))
+
+
+class QueueDepthWindow:
+    """Bounded queue depth observations for one low-rate reporting window."""
+    def __init__(self):
+        self.current = None
+        self.maximum = None
+
+    def observe(self, depth):
+        if type(depth) is not int or depth < 0:
+            self.current = None
+            return
+        self.current = depth
+        self.maximum = depth if self.maximum is None else max(self.maximum, depth)
+
+    def snapshot(self, capacity=None):
+        result = dict(window_max=self.maximum, current=self.current, capacity=capacity)
+        self.maximum = None
+        return result
+
+
+def queue_diagnostic_snapshot(input_pool, output_pool, camera_dropped=None,
+                              camera_overwritten=None, submit_failures=None,
+                              camera_depth=None):
+    """Return queue/drop observations without inventing unavailable counters."""
+    input_occupancy = _pool_occupancy(input_pool)
+    output_occupancy = _pool_occupancy(output_pool)
+    return {
+        'camera_to_processing': dict(depth=camera_depth, dropped_old_frames=camera_dropped,
+                                     recent_frame_overwritten=camera_overwritten),
+        'main_to_preview': input_occupancy,
+        'preview_to_drawing': dict(ready=input_occupancy.get('ready') if input_occupancy else None,
+            capacity=input_occupancy.get('capacity') if input_occupancy else None,
+            dropped_frames=input_pool.get('dropped_ready_frames') if isinstance(input_pool,dict) else None),
+        'drawing_to_hdmi': dict(ready=output_occupancy.get('ready') if output_occupancy else None,
+            capacity=output_occupancy.get('capacity') if output_occupancy else None,
+            submit_failures=submit_failures),
+    }
 
 
 def _pool_occupancy(pool):
@@ -744,10 +809,11 @@ def main(argv=None):
         binary=np.empty((400,640),np.uint8)
         next_drawing_retry=0
         drawing_start_injection_done=False
+        drawing_runtime_sampler=None
         if args.display=='on':
             inputs=PreviewInputs.create(ctx);outputs=SharedFrames.create(ctx)
             def start_drawing(frame):
-                nonlocal process,stop_drawing,next_drawing_retry,drawing_start_injection_done
+                nonlocal process,stop_drawing,next_drawing_retry,drawing_start_injection_done,drawing_runtime_sampler
                 failure_mode=None
                 if args.inject_drawing_start_failure and not drawing_start_injection_done:
                     failure_mode=args.inject_drawing_start_failure
@@ -756,6 +822,10 @@ def main(argv=None):
                     drawing_errors,drawing_counts,args.font,args.latin_font,
                     failure_mode=failure_mode)
                 report['drawing_pid']=process.pid if process is not None else None
+                drawing_runtime_sampler=None
+                if process is not None:
+                    drawing_runtime_sampler=RuntimeSampler(pid=process.pid,interval_s=3.0)
+                    drawing_runtime_sampler.sample()
                 if error is not None:
                     failed_at=time.monotonic()
                     report['recoveries'].append(dict(kind='drawing_start_failed',frame=frame,
@@ -788,6 +858,11 @@ def main(argv=None):
         last_rle_stats={'runs':0,'rx_bytes':0}
         runtime_sampler=RuntimeSampler(pid=os.getpid(),interval_s=3.0)
         next_runtime_sample=started+3.0;runtime_sample=None;runtime_diagnostics=None
+        camera_dropped_old_frames=0;camera_recent_overwritten=None
+        queue_windows={name:QueueDepthWindow() for name in
+                       ('camera','preview','preview_drawing','drawing_hdmi')}
+        next_queue_observation=started
+        queue_input_stats=queue_output_stats=None;camera_queue_depth=None
         previous_pl_counters=report['counters_before'];previous_pl_at=started
         pl_rates=counter_rates(previous_pl_counters,previous_pl_counters,1.0)
         tick_hz=os.sysconf('SC_CLK_TCK');page_size=os.sysconf('SC_PAGE_SIZE')
@@ -879,7 +954,11 @@ def main(argv=None):
                     # V4L2 camera startup and its two discarded warm-up frames
                     # can exceed the steady-state fresh-frame timeout.
                     camera_timeout=15.0 if camera_index<0 else .25
+                    previous_camera_index=camera_index
                     camera_index,gray,captured=camera.read(after=camera_index,timeout=camera_timeout)
+                    skipped=max(0,camera_index-previous_camera_index-1)
+                    camera_dropped_old_frames+=skipped
+                    camera_recent_overwritten=bool(skipped)
                 except (RuntimeError,TimeoutError) as error:
                     camera.close();camera=None;next_camera_retry=time.monotonic()+5
                     report['recoveries'].append(dict(kind='camera',frame=index,error=repr(error),monotonic=now))
@@ -1062,10 +1141,73 @@ def main(argv=None):
                 if process is not None and args.inject_drawing_exit is not None and index>=args.inject_drawing_exit and not injection_done:
                     stop_drawing.set();injection_done=True
             sample_now=time.monotonic()
+            if sample_now>=next_queue_observation:
+                queue_input_stats=_read_pool_stats(inputs)
+                queue_output_stats=_read_pool_stats(outputs)
+                if isinstance(queue_input_stats,dict):
+                    queue_windows['preview'].observe(queue_input_stats.get('ready'))
+                    queue_windows['preview_drawing'].observe(queue_input_stats.get('ready'))
+                else:
+                    queue_windows['preview'].observe(None)
+                    queue_windows['preview_drawing'].observe(None)
+                if isinstance(queue_output_stats,dict):
+                    queue_windows['drawing_hdmi'].observe(queue_output_stats.get('ready'))
+                else:
+                    queue_windows['drawing_hdmi'].observe(None)
+                if camera is not None:
+                    try:
+                        camera.read(after=camera_index,timeout=0)
+                        camera_queue_depth=1
+                    except TimeoutError:
+                        camera_queue_depth=0
+                    except RuntimeError:
+                        camera_queue_depth=None
+                    queue_windows['camera'].observe(camera_queue_depth)
+                else:
+                    camera_queue_depth=None
+                    queue_windows['camera'].observe(None)
+                next_queue_observation=sample_now+0.1
             if sample_now>=next_runtime_sample:
                 runtime_sample=runtime_sampler.sample()
+                drawing_sample=(drawing_runtime_sampler.sample()
+                    if drawing_runtime_sampler is not None and process is not None
+                    and process.is_alive() else None)
+                if runtime_sample is not None and isinstance(drawing_sample,dict):
+                    runtime_sample=dict(runtime_sample)
+                    runtime_sample['threads']=dict(runtime_sample.get('threads',{}))
+                    runtime_sample['threads'].update({
+                        'drawing:'+tid:dict(entry,name='drawing '+str(entry.get('name') or tid))
+                        for tid,entry in drawing_sample.get('threads',{}).items()})
                 runtime_diagnostics=runtime_diagnostic_snapshot(runtime_sample,
-                    _read_pool_stats(inputs),_read_pool_stats(outputs),tick_hz)
+                    queue_input_stats,queue_output_stats,tick_hz)
+                if (args.display=='on' and runtime_diagnostics.get('cpu_sources')
+                        and not isinstance(drawing_sample,dict)):
+                    runtime_diagnostics['cpu_sources']['drawing']=None
+                    runtime_diagnostics['cpu_sources']['process_total']=None
+                camera_window=queue_windows['camera'].snapshot(1)
+                preview_window=queue_windows['preview'].snapshot(
+                    queue_input_stats.get('capacity') if isinstance(queue_input_stats,dict) else None)
+                preview_window['ready']=(queue_input_stats.get('ready')
+                    if isinstance(queue_input_stats,dict) else None)
+                drawing_window=queue_windows['preview_drawing'].snapshot(
+                    queue_input_stats.get('capacity') if isinstance(queue_input_stats,dict) else None)
+                hdmi_window=queue_windows['drawing_hdmi'].snapshot(
+                    queue_output_stats.get('capacity') if isinstance(queue_output_stats,dict) else None)
+                camera_window.update(dropped_old_frames=camera_dropped_old_frames,
+                    recent_frame_overwritten=camera_recent_overwritten)
+                queues=queue_diagnostic_snapshot(queue_input_stats,queue_output_stats,
+                    camera_dropped_old_frames if args.source=='camera' else None,
+                    camera_recent_overwritten if args.source=='camera' else None,
+                    getattr(video_pump,'failures',None) if video_pump is not None else None,
+                    camera_window if args.source=='camera' else None)
+                queues['camera_to_processing'].update(camera_window)
+                queues['main_to_preview']=preview_window
+                queues['preview_to_drawing'].update(window_max=drawing_window['window_max'],
+                    current=drawing_window['current'])
+                queues['drawing_to_hdmi'].update(
+                    current=hdmi_window['current'],ready=hdmi_window['current'],
+                    window_max=hdmi_window['window_max'])
+                runtime_diagnostics['queues']=queues
                 report['runtime_samples'].append(dict(monotonic=sample_now,
                     **runtime_diagnostics))
                 current_pl_counters=owner.call(snapshot_counters,control)
