@@ -21,7 +21,7 @@ def _spawn_publish(frames, result_queue, session_id, frame_id, fill):
         return
     index, pixels = slot
     pixels[:] = fill
-    frames.publish(index, session_id, frame_id)
+    frames.publish(index, session_id, frame_id, capture_time_ns=123456789)
     result_queue.put(index)
     frames.close()
 
@@ -85,6 +85,7 @@ def test_spawn_process_writes_and_parent_reads_shared_pixels(frames):
     lease = frames.acquire_latest()
     assert lease is not None
     assert (lease.session_uuid, lease.frame_id) == (session_id, 41)
+    assert lease.capture_time_ns == 123456789
     assert lease.array.shape == (8, 12)
     assert lease.array.dtype == np.uint8
     assert np.all(lease.array == 173)

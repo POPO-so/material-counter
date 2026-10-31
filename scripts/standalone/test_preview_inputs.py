@@ -55,7 +55,7 @@ def test_preview_round_trip_preserves_capture_time():
         assert inputs.publish(gray, binary, str(uuid.uuid4()), 73, {},
                               capture_time_ns=12345)
         lease = inputs.acquire_latest()
-        assert lease._frame_lease.capture_time_ns == 12345
+        assert lease.capture_time_ns == 12345
         inputs.release(lease)
     finally:
         inputs.close()
@@ -97,6 +97,19 @@ def test_publish_exception_aborts_the_claimed_slot():
     try:
         with pytest.raises(ValueError):
             inputs.publish(gray, binary, "not-a-uuid", 1, {})
+        assert inputs.statuses() == (FREE, FREE, FREE)
+        assert WRITING not in inputs.statuses()
+    finally:
+        inputs.close()
+
+
+def test_invalid_capture_time_aborts_the_claimed_slot():
+    inputs = PreviewInputs.create(mp.get_context("spawn"))
+    gray, binary = _images(1)
+    try:
+        with pytest.raises(ValueError):
+            inputs.publish(gray, binary, str(uuid.uuid4()), 1, {},
+                           capture_time_ns=-1)
         assert inputs.statuses() == (FREE, FREE, FREE)
         assert WRITING not in inputs.statuses()
     finally:

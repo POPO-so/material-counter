@@ -16,7 +16,7 @@ class PreviewLease:
     """A preview slot held in READING state until :meth:`release` is called."""
 
     __slots__ = ("_frame_lease", "_released", "gray", "binary", "session_uuid",
-                 "frame_id", "metadata")
+                 "frame_id", "capture_time_ns", "metadata")
 
     def __init__(self, frame_lease, gray, binary, metadata):
         self._frame_lease = frame_lease
@@ -25,6 +25,7 @@ class PreviewLease:
         self.binary = binary
         self.session_uuid = frame_lease.session_uuid
         self.frame_id = frame_lease.frame_id
+        self.capture_time_ns = frame_lease.capture_time_ns
         self.metadata = metadata
 
 
