@@ -217,6 +217,31 @@ def test_sample_marks_cached_rates_unknown_when_now_moves_backwards():
     assert result["effective_input_fps"] is None
 
 
+def test_sample_excludes_future_frames_when_now_moves_backwards():
+    window = TelemetryWindow()
+    window.record_frame(
+        FrameTelemetry(
+            frame_id=1,
+            capture_ns=2_000_000_000,
+            consume_ns=2_100_000_000,
+            submit_done_ns=2_200_000_000,
+        )
+    )
+    assert window.record_camera(10, 2, 1, 0) is None
+    assert window.record_camera(20, 4, 2, 3_000_000_000) == {
+        "camera_fps": 10 / 3,
+        "camera_overwrite_drops": 2,
+        "camera_sequence_errors": 1,
+    }
+
+    result = window.sample(now_ns=1_000_000_000)
+    assert result["frame_count"] == 0
+    assert result["e2e_ms"]["count"] == 0
+    assert result["e2e_ms"]["mean"] is None
+    assert result["camera_fps"] is None
+    assert all(summary["count"] == 0 for summary in result["metrics"].values())
+
+
 def test_ps_total_spans_transfer_to_track():
     window = TelemetryWindow()
     window.record_frame(

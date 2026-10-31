@@ -281,7 +281,10 @@ class TelemetryWindow:
         frames = []
         for frame in self._frames:
             capture_ns = getattr(frame, "capture_ns", None)
-            if self._valid_timestamp(capture_ns) and capture_ns >= cutoff_ns:
+            if (
+                self._valid_timestamp(capture_ns)
+                and cutoff_ns <= capture_ns <= now_ns
+            ):
                 frames.append(frame)
 
         metric_values = {name: [] for name in self._METRIC_STAGES}
