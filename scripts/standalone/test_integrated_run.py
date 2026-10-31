@@ -33,13 +33,13 @@ def test_dashboard_unknown_metrics_stay_unknown():
     assert values['camera_fps'] is None
     assert values['e2e_ms'] is None
     assert values['drop_total'] is None
-    assert values['resolution_chain']=="640x400 -> 800x640 -> 1280x720"
+    assert values['resolution_chain']=="640x400 -> 640x400 -> 1280x720"
 
 
 def test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown():
     value=dict(camera_fps=29.5,effective_input_fps=24.1,
         e2e_ms={'mean':12.3},drop_total=7,
-        resolution_chain="640x400 -> 800x640 -> 1280x720",
+        resolution_chain="640x400 -> 640x400 -> 1280x720",
         processing_fps=23.7,regions_ms={'mean':2.1},track_ms={'mean':1.2},
         pl={'clock_hz':50_000_000},link_summary='link ok',page_lines=('PL 50 MHz',))
     telemetry={'video_telemetry':{'value':value,'stale':False}}
@@ -58,7 +58,7 @@ def test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown():
                 'processing_fps','regions_ms','track_ms','pl'):
         assert stale_values[key] is None
     assert stale_values['page_lines'] in (None,())
-    assert stale_values['resolution_chain']=="640x400 -> 800x640 -> 1280x720"
+    assert stale_values['resolution_chain']=="640x400 -> 640x400 -> 1280x720"
 
 
 def test_publish_failure_does_not_set_publish_boundary():
@@ -106,9 +106,11 @@ def test_live_drop_total_is_unknown_until_all_sources_measured():
     assert _live_drop_total(None, {'pump_skips': 2, 'pump_submit_failures': 1}) is None
     assert _live_drop_total({'camera_overwrite_drops': 3}, None) is None
     assert _live_drop_total({'camera_overwrite_drops': 3},
-                            {'pump_skips': 2, 'pump_submit_failures': 1}) == 6
+                            {'pump_skips': 2, 'pump_submit_failures': 1},
+                            {'preview_publish_drops': 1, 'drawing_output_drops': 0}) == 7
     assert _live_drop_total({'camera_overwrite_drops': 0},
-                            {'pump_skips': 0, 'pump_submit_failures': 0}) == 0
+                            {'pump_skips': 0, 'pump_submit_failures': 0},
+                            {'preview_publish_drops': 0, 'drawing_output_drops': 0}) == 0
 
 def test_two_second_snapshot_is_reused_without_per_frame_cache_snapshot():
     class FakeCache:

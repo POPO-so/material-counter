@@ -1,6 +1,7 @@
 """Low overhead, bounded telemetry for the standalone video pipeline."""
 
 from collections import deque
+import threading
 from dataclasses import dataclass
 from math import isfinite
 
@@ -123,11 +124,13 @@ class TelemetryWindow:
             raise ValueError("max_samples must be positive")
         self.window_s = float(window_s)
         self.max_samples = max_samples
+        self._lock = threading.Lock()
         self._frames = deque(maxlen=max_samples)
         self._camera_previous = None
         self._camera_fps = None
         self._camera_fps_ns = None
         self._pump_previous = None
+        self._extra_previous = None
         self._display_fps = None
         self._display_fps_ns = None
         self._consumed_previous = None
@@ -140,7 +143,8 @@ class TelemetryWindow:
         This method intentionally performs only a deque append; it does not
         build dictionaries, validate timestamps, or perform sampling work.
         """
-        self._frames.append(frame)
+        with self._lock:
+            self._frames.append(frame)
 
     def record_camera(
         self, captured_total, overwrite_drops, sequence_errors, now_ns
@@ -275,11 +279,28 @@ class TelemetryWindow:
             return None
         return (end - start) / 1_000_000
 
+    def record_extra_drops(self, preview_total, drawing_total, now_ns):
+        """Track preview-publish and drawing-output drops at low frequency."""
+        self._validate_counter_values((preview_total, drawing_total), now_ns)
+        previous = self._extra_previous
+        self._extra_previous = (preview_total, drawing_total, now_ns)
+        if previous is None:
+            return None
+        if now_ns <= previous[2] or preview_total < previous[0] or drawing_total < previous[1]:
+            return {"preview_publish_drops": None, "drawing_output_drops": None}
+        return {
+            "preview_publish_drops": preview_total - previous[0],
+            "drawing_output_drops": drawing_total - previous[1],
+        }
+
+
     def sample(self, now_ns):
         _validate_u64(now_ns, "now_ns")
         cutoff_ns = now_ns - self.window_s * 1_000_000_000
         frames = []
-        for frame in self._frames:
+        with self._lock:
+            snapshot = tuple(self._frames)
+        for frame in snapshot:
             capture_ns = getattr(frame, "capture_ns", None)
             if (
                 self._valid_timestamp(capture_ns)
@@ -314,11 +335,13 @@ class TelemetryWindow:
         return result
 
     def reset(self):
-        self._frames.clear()
+        with self._lock:
+            self._frames.clear()
         self._camera_previous = None
         self._camera_fps = None
         self._camera_fps_ns = None
         self._pump_previous = None
+        self._extra_previous = None
         self._display_fps = None
         self._display_fps_ns = None
         self._consumed_previous = None

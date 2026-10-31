@@ -51,6 +51,42 @@ def test_percentile_validates_percent_before_empty_input():
         percentile((1,), 101)
 
 
+def test_sample_is_safe_while_another_thread_records_frames():
+    import threading
+    window = TelemetryWindow(window_s=10.0, max_samples=64)
+    stop = threading.Event()
+
+    def producer():
+        index = 0
+        while not stop.is_set():
+            window.record_frame(FrameTelemetry(frame_id=index,
+                capture_ns=index * 1_000_000, submit_done_ns=index * 1_000_000 + 5))
+            index += 1
+
+    thread = threading.Thread(target=producer, daemon=True)
+    thread.start()
+    try:
+        for _ in range(300):
+            result = window.sample(now_ns=10_000_000_000)
+            assert "metrics" in result
+    finally:
+        stop.set()
+        thread.join(2)
+    assert not thread.is_alive()
+
+
+def test_extra_drops_report_window_increments_and_unknown_on_rollback():
+    window = TelemetryWindow()
+    assert window.record_extra_drops(0, 0, 0) is None
+    assert window.record_extra_drops(2, 1, 1_000_000_000) == {
+        "preview_publish_drops": 2,
+        "drawing_output_drops": 1,
+    }
+    assert window.record_extra_drops(1, 1, 2_000_000_000) == {
+        "preview_publish_drops": None,
+        "drawing_output_drops": None,
+    }
+
 def test_window_keeps_only_max_samples_frames():
     window = TelemetryWindow(max_samples=3)
     for frame_id in range(4):

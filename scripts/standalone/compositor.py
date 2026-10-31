@@ -433,7 +433,7 @@ class DashboardComposer:
         track = dashboard.get("track_ms")
         track_mean = track.get("mean") if isinstance(track, dict) else None
         summary = (
-            f"输入 {input_resolution}", "预览 800x640", "输出 1280x720",
+            f"输入 {input_resolution}", "预览 640x400", "输出 1280x720",
             pl_text,
             f"PS RLE {self._number(regions_mean)} / TRK {self._number(track_mean)} ms",
             f"处理 {self._number(dashboard.get('processing_fps'))} / 显示 "
@@ -571,3 +571,4 @@ class DashboardComposer:
         self.last_timings_ms = {"scale_ms": scale_ms,
                                 "draw_ms": draw_ms + (perf_counter_ns() - started) / 1_000_000}
         return target
+

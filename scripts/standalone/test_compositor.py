@@ -619,3 +619,4 @@ def test_dashboard_text_cache_has_a_fixed_memory_bound():
     for index in range(300):
         c._text(draw, (0, 0), f"标签{index}", 18, 170)
     assert len(c._text_cache) <= 128
+

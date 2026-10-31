@@ -128,7 +128,7 @@ def dashboard_values(count, paused, page, telemetry):
         camera_fps=video.get('camera_fps'),
         effective_input_fps=video.get('effective_input_fps'),
         e2e_ms=video.get('e2e_ms'),drop_total=video.get('drop_total'),
-        resolution_chain=video.get('resolution_chain','640x400 -> 800x640 -> 1280x720'),
+        resolution_chain=video.get('resolution_chain','640x400 -> 640x400 -> 1280x720'),
         link_summary=video.get('link_summary'),page_lines=telemetry_page_lines(page,video) if page else (),
         processing_fps=video.get('processing_fps'),regions_ms=video.get('regions_ms'),
         track_ms=video.get('track_ms'),pl=video.get('pl'),
@@ -147,7 +147,7 @@ def _refresh_dashboard_telemetry(cache, sampled_at):
     return cache.snapshot(sampled_at)
 
 
-def _live_drop_total(camera_sample, pump_sample):
+def _live_drop_total(camera_sample, pump_sample, extra_sample=None):
     """Window-increment drop total; unknown when any source is not yet measured."""
     camera_drops=(camera_sample.get('camera_overwrite_drops')
         if camera_sample is not None else None)
@@ -155,7 +155,12 @@ def _live_drop_total(camera_sample, pump_sample):
         if pump_sample is not None else None)
     if camera_drops is None or pump_drops is None:
         return None
-    return camera_drops+pump_drops
+    extra=extra_sample or {}
+    preview=extra.get('preview_publish_drops')
+    drawing=extra.get('drawing_output_drops')
+    if preview is None or drawing is None:
+        return None
+    return camera_drops+pump_drops+preview+drawing
 
 
 def _sample_camera_telemetry(camera, telemetry_window, sample_time_ns):
@@ -741,8 +746,11 @@ def main(argv=None):
                 video_sample.update(camera=camera_sample,pump=pump_sample,consumed=consumed_sample)
                 video_sample['camera_fps']=(camera_sample.get('camera_fps')
                     if camera_sample is not None else None)
-                video_sample['drop_total']=_live_drop_total(camera_sample,pump_sample)
-                video_sample.setdefault('resolution_chain','640x400 -> 800x640 -> 1280x720')
+                extra_sample=telemetry_window.record_extra_drops(
+                    dropped,int(drawing_counts[1]),sample_time_ns)
+                video_sample.update(extra=extra_sample)
+                video_sample['drop_total']=_live_drop_total(camera_sample,pump_sample,extra_sample)
+                video_sample.setdefault('resolution_chain','640x400 -> 640x400 -> 1280x720')
                 video_sample.setdefault('link_summary',None)
                 video_sample.setdefault('page_lines',())
                 video_sample['pl']=pl_counters_snapshot(counters_sample)
