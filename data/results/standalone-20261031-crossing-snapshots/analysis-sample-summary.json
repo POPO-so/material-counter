@@ -1,0 +1,24 @@
+{
+  "complete_groups": 59,
+  "unique_frames": 164,
+  "trigger_counts": {
+    "centroid_crossing": 14,
+    "counted": 14,
+    "box_at_line": 14,
+    "new_track_after_line": 68
+  },
+  "paused_frames": 0,
+  "command_frames": [],
+  "params": {
+    "threshold": [
+      128
+    ],
+    "intensity_offset": [
+      0
+    ],
+    "morph_mode": [
+      0
+    ]
+  },
+  "note": "Sparse diagnostic windows, not a complete video or independent material truth. Trigger counts are not nut counts."
+}

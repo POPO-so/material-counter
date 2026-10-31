@@ -1,0 +1,18 @@
+{
+  "pid": 5020,
+  "output": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-c1e82607-8fc1-4210-8649-57aa35c274af.json",
+  "startup_exists": true,
+  "report_exists": false,
+  "startup": {
+    "schema": "material-counter.session-start.v1",
+    "boot_id": "f1462f32-61d2-44c7-9b42-d46d7d4d64c6",
+    "session_id": "9615976e-c741-4ac6-9b95-48e8370a8f6b",
+    "main_pid": 5020,
+    "manifest_sha256": "2872e1598b3c3ab7ccb5d383f5cee6a8822dbd91eb0f198098eca067489a2966",
+    "bit_sha256": "79609f9a60c3e727b5f2f54a8d639a464a098715fb5eb28d294646a9735948e0",
+    "total_count": 0,
+    "state": "COUNT_INITIALIZED_WAITING_FIRST_FRAME",
+    "monotonic": 2232.075906201
+  },
+  "snapshot_requested": true
+}

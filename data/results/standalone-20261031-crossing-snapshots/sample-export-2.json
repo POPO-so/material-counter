@@ -1,0 +1,300 @@
+{
+  "archive": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/crossing-export-2773102187431.tar",
+  "bytes": 16158720,
+  "sha256": "bdfe24d0139b6a2ae414506703fb888f1b1a663e926540f3c7a33b5cfd312c9f",
+  "events": 17,
+  "records": [
+    {
+      "directory": "event-000048-e0-f2467",
+      "frame": 2467,
+      "triggers": [
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:149"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:149",
+          "event": {
+            "track_id": 149,
+            "frame_id": 2467,
+            "centroid_x": 342.28776978417267,
+            "centroid_y": 194.1115107913669,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000049-e0-f2468",
+      "frame": 2468,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:150"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000051-e0-f2487",
+      "frame": 2487,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:154"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000056-e0-f2511",
+      "frame": 2511,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:164"
+        },
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:164"
+        },
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:165"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:164",
+          "event": {
+            "track_id": 164,
+            "frame_id": 2511,
+            "centroid_x": 327.43589743589746,
+            "centroid_y": 197.18589743589743,
+            "inferred_gap": false
+          }
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:165",
+          "event": {
+            "track_id": 165,
+            "frame_id": 2511,
+            "centroid_x": 339.84265734265733,
+            "centroid_y": 245.96503496503496,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000058-e0-f2533",
+      "frame": 2533,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:169"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000063-e0-f2540",
+      "frame": 2540,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:172"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:173"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000071-e0-f2574",
+      "frame": 2574,
+      "triggers": [
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:187"
+        },
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:188"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:187",
+          "event": {
+            "track_id": 187,
+            "frame_id": 2574,
+            "centroid_x": 333.7522935779817,
+            "centroid_y": 220.6697247706422,
+            "inferred_gap": false
+          }
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:188",
+          "event": {
+            "track_id": 188,
+            "frame_id": 2574,
+            "centroid_x": 335.67241379310343,
+            "centroid_y": 174.25,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000074-e0-f2607",
+      "frame": 2607,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:197"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:197"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000077-e0-f2611",
+      "frame": 2611,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:201"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000079-e0-f2647",
+      "frame": 2647,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:208"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000084-e0-f2680",
+      "frame": 2680,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:215"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000085-e0-f2681",
+      "frame": 2681,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:217"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000091-e0-f2723",
+      "frame": 2723,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:231"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000097-e0-f2769",
+      "frame": 2769,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:242"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000098-e0-f2771",
+      "frame": 2771,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:245"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000104-e0-f2800",
+      "frame": 2800,
+      "triggers": [
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:258"
+        },
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:259"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:258",
+          "event": {
+            "track_id": 258,
+            "frame_id": 2800,
+            "centroid_x": 339.2391304347826,
+            "centroid_y": 252.481884057971,
+            "inferred_gap": false
+          }
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:259",
+          "event": {
+            "track_id": 259,
+            "frame_id": 2800,
+            "centroid_x": 346.2881355932203,
+            "centroid_y": 206.66101694915255,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000106-e0-f2806",
+      "frame": 2806,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:262"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:263"
+        }
+      ],
+      "frames": 5
+    }
+  ]
+}

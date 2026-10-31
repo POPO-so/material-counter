@@ -1,0 +1,41 @@
+[
+  {
+    "frame": 2487,
+    "components_min_area_48": [
+      {
+        "x": 282,
+        "y": 224,
+        "width": 43,
+        "height": 21,
+        "area": 445
+      }
+    ],
+    "interior_hole_areas": [
+      82
+    ],
+    "detected_boxes": 1,
+    "raw_boxes": 1,
+    "guarded_merge": false,
+    "max_split_area": 260
+  },
+  {
+    "frame": 2606,
+    "components_min_area_48": [
+      {
+        "x": 229,
+        "y": 200,
+        "width": 46,
+        "height": 22,
+        "area": 597
+      }
+    ],
+    "interior_hole_areas": [
+      85,
+      89
+    ],
+    "detected_boxes": 1,
+    "raw_boxes": 1,
+    "guarded_merge": false,
+    "max_split_area": 260
+  }
+]

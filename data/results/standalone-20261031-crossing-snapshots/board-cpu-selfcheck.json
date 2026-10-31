@@ -1,0 +1,33 @@
+{
+  "scope": "CPU_SYNTHETIC_NO_CAMERA_NO_DMA",
+  "status": "PASS",
+  "total_count": 1,
+  "snapshot_status": {
+    "observed": 5,
+    "triggered": 1,
+    "saved": 1,
+    "bytes_written": 69846,
+    "dropped_queue": 0,
+    "dropped_storage": 0,
+    "write_errors": 0,
+    "capture_errors": 0,
+    "dropped_disabled": 0,
+    "last_error": null,
+    "enabled": true,
+    "accepting": false,
+    "root": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/crossing-synthetic-selfcheck-7facb3b",
+    "pending": 0,
+    "queue_depth": 0,
+    "writer_alive": false,
+    "max_events": 1000,
+    "max_bytes": 536870912,
+    "min_free_bytes": 0,
+    "context_frames": 2
+  },
+  "trigger_types": [
+    "box_at_line",
+    "centroid_crossing",
+    "counted"
+  ],
+  "artifact_sha256_checked": 20
+}

@@ -1,0 +1,8 @@
+{
+  "boot_id": "f1462f32-61d2-44c7-9b42-d46d7d4d64c6",
+  "old_pid": 2747,
+  "old_output": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/session-a42dbb3e-5f7d-4764-8471-1adbe33cf643.json",
+  "old_root": "/opt/material-counter/releases/standalone-20261031-v5-preview-1b525c8",
+  "action": "normal_systemctl_stop_requested",
+  "kill_or_reload": false
+}

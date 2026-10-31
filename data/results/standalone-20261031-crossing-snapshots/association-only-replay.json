@@ -1,0 +1,134 @@
+{
+  "scope": "Saved detections and first-frame track state; only tracker association is replayed, no image algorithm or board change. Not a full video replay or accuracy measurement.",
+  "results": [
+    {
+      "case": "single_2310",
+      "first_frame": 2310,
+      "last_frame": 2317,
+      "max_step": 48,
+      "added_count": 0,
+      "events": [],
+      "baseline_events_match": true
+    },
+    {
+      "case": "single_2310",
+      "first_frame": 2310,
+      "last_frame": 2317,
+      "max_step": 120,
+      "added_count": 1,
+      "events": [
+        {
+          "frame": 2312,
+          "track": 122
+        }
+      ],
+      "baseline_events_match": null
+    },
+    {
+      "case": "single_2325",
+      "first_frame": 2325,
+      "last_frame": 2331,
+      "max_step": 48,
+      "added_count": 0,
+      "events": [],
+      "baseline_events_match": true
+    },
+    {
+      "case": "single_2325",
+      "first_frame": 2325,
+      "last_frame": 2331,
+      "max_step": 120,
+      "added_count": 1,
+      "events": [
+        {
+          "frame": 2327,
+          "track": 131
+        }
+      ],
+      "baseline_events_match": null
+    },
+    {
+      "case": "single_2380",
+      "first_frame": 2380,
+      "last_frame": 2387,
+      "max_step": 48,
+      "added_count": 0,
+      "events": [],
+      "baseline_events_match": true
+    },
+    {
+      "case": "single_2380",
+      "first_frame": 2380,
+      "last_frame": 2387,
+      "max_step": 120,
+      "added_count": 1,
+      "events": [
+        {
+          "frame": 2382,
+          "track": 138
+        }
+      ],
+      "baseline_events_match": null
+    },
+    {
+      "case": "merged_2485",
+      "first_frame": 2485,
+      "last_frame": 2489,
+      "max_step": 48,
+      "added_count": 1,
+      "events": [
+        {
+          "frame": 2488,
+          "track": 154
+        }
+      ],
+      "baseline_events_match": true
+    },
+    {
+      "case": "merged_2485",
+      "first_frame": 2485,
+      "last_frame": 2489,
+      "max_step": 120,
+      "added_count": 1,
+      "events": [
+        {
+          "frame": 2488,
+          "track": 154
+        }
+      ],
+      "baseline_events_match": null
+    },
+    {
+      "case": "two_same_row_2645",
+      "first_frame": 2645,
+      "last_frame": 2649,
+      "max_step": 48,
+      "added_count": 1,
+      "events": [
+        {
+          "frame": 2648,
+          "track": 208
+        }
+      ],
+      "baseline_events_match": true
+    },
+    {
+      "case": "two_same_row_2645",
+      "first_frame": 2645,
+      "last_frame": 2649,
+      "max_step": 120,
+      "added_count": 2,
+      "events": [
+        {
+          "frame": 2648,
+          "track": 206
+        },
+        {
+          "frame": 2649,
+          "track": 205
+        }
+      ],
+      "baseline_events_match": null
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "status": "START_REQUESTED",
+  "root": "/opt/material-counter/releases/standalone-20261031-v6-crossing-7facb3b",
+  "index_sha256": "e04569785eab2a5f80717ee4e729ed95a0138089b374fcc380acf198b9483515",
+  "boot_id": "f1462f32-61d2-44c7-9b42-d46d7d4d64c6",
+  "integrity": {
+    "status": "PASS",
+    "files_checked": 57,
+    "hardware_actions": 0,
+    "scope": "integrity_only_no_gate"
+  },
+  "old_env_backup": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/pre-crossing-7facb3b.env",
+  "automatic_enable_state": "disabled"
+}

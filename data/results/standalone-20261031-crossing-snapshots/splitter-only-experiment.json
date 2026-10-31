@@ -1,0 +1,24 @@
+[
+  {
+    "frame": 2487,
+    "scope": "Direct existing splitter on saved component; runtime guard and area cap bypassed for this offline experiment only.",
+    "children": 2,
+    "areas": [
+      157,
+      288
+    ],
+    "all_children_connected": true,
+    "complete_nonoverlapping_coverage": true
+  },
+  {
+    "frame": 2606,
+    "scope": "Direct existing splitter on saved component; runtime guard and area cap bypassed for this offline experiment only.",
+    "children": 2,
+    "areas": [
+      305,
+      292
+    ],
+    "all_children_connected": true,
+    "complete_nonoverlapping_coverage": true
+  }
+]

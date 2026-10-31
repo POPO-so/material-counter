@@ -1,0 +1,667 @@
+{
+  "archive": "/var/lib/material-counter/f1462f32-61d2-44c7-9b42-d46d7d4d64c6/crossing-export-2489159926045.tar",
+  "bytes": 41246720,
+  "sha256": "39855feacee4c84ccd9bb566630c84845b3804cef30790d60b3f1bdee8a7ce8f",
+  "events": 42,
+  "records": [
+    {
+      "directory": "event-000001-e0-f569",
+      "frame": 569,
+      "triggers": [
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:10"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:10",
+          "event": {
+            "track_id": 10,
+            "frame_id": 569,
+            "centroid_x": 334.7331081081081,
+            "centroid_y": 255.52027027027026,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000002-e0-f570",
+      "frame": 570,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:9"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000003-e0-f571",
+      "frame": 571,
+      "triggers": [
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:9"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:9",
+          "event": {
+            "track_id": 9,
+            "frame_id": 571,
+            "centroid_x": 360.93127147766324,
+            "centroid_y": 183.96219931271477,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000004-e0-f572",
+      "frame": 572,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:22"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:23"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:24"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:25"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000005-e0-f573",
+      "frame": 573,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:30"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:31"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:32"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:33"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000006-e0-f574",
+      "frame": 574,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:29"
+        },
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:29"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:38"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:39"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:40"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:29",
+          "event": {
+            "track_id": 29,
+            "frame_id": 574,
+            "centroid_x": 326.5198555956679,
+            "centroid_y": 208.33574007220216,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000007-e0-f575",
+      "frame": 575,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:44"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:45"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:46"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:47"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:48"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:49"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000008-e0-f576",
+      "frame": 576,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:53"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:54"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000009-e0-f577",
+      "frame": 577,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:56"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:57"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:58"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000014-e0-f856",
+      "frame": 856,
+      "triggers": [
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:67"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:67",
+          "event": {
+            "track_id": 67,
+            "frame_id": 856,
+            "centroid_x": 340.1512605042017,
+            "centroid_y": 119.90756302521008,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000015-e0-f857",
+      "frame": 857,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:77"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000016-e0-f858",
+      "frame": 858,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:80"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000017-e0-f860",
+      "frame": 860,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:79"
+        },
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:79"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:82"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:83"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:79",
+          "event": {
+            "track_id": 79,
+            "frame_id": 860,
+            "centroid_x": 330.75778546712803,
+            "centroid_y": 221.4948096885813,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000018-e0-f861",
+      "frame": 861,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:76"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:84"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000019-e0-f862",
+      "frame": 862,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:85"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:86"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000020-e0-f863",
+      "frame": 863,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:87"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000021-e0-f865",
+      "frame": 865,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:88"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000022-e0-f913",
+      "frame": 913,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:94"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000023-e0-f914",
+      "frame": 914,
+      "triggers": [
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:94"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:94",
+          "event": {
+            "track_id": 94,
+            "frame_id": 914,
+            "centroid_x": 350.3884615384615,
+            "centroid_y": 183.27692307692308,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000024-e0-f916",
+      "frame": 916,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:95"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:95"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:96"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:97"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000026-e0-f918",
+      "frame": 918,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:100"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000027-e0-f1458",
+      "frame": 1458,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:108"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:109"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000028-e0-f1459",
+      "frame": 1459,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:110"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:111"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000029-e0-f1474",
+      "frame": 1474,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:113"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000030-e0-f1475",
+      "frame": 1475,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:114"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000031-e0-f1485",
+      "frame": 1485,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:118"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000032-e0-f1486",
+      "frame": 1486,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:119"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000033-e0-f1487",
+      "frame": 1487,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:120"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000034-e0-f2312",
+      "frame": 2312,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:124"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000035-e0-f2314",
+      "frame": 2314,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:125"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000036-e0-f2315",
+      "frame": 2315,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:126"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000037-e0-f2316",
+      "frame": 2316,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:127"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:128"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000038-e0-f2327",
+      "frame": 2327,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:133"
+        },
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:133"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000039-e0-f2328",
+      "frame": 2328,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:134"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000040-e0-f2329",
+      "frame": 2329,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:135"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000041-e0-f2382",
+      "frame": 2382,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:140"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000042-e0-f2383",
+      "frame": 2383,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:141"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000043-e0-f2384",
+      "frame": 2384,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:142"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000044-e0-f2385",
+      "frame": 2385,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:143"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000045-e0-f2444",
+      "frame": 2444,
+      "triggers": [
+        {
+          "kind": "centroid_crossing",
+          "track_key": "0:146"
+        },
+        {
+          "kind": "counted",
+          "track_key": "0:146",
+          "event": {
+            "track_id": 146,
+            "frame_id": 2444,
+            "centroid_x": 334.89273356401384,
+            "centroid_y": 222.72318339100346,
+            "inferred_gap": false
+          }
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000046-e0-f2452",
+      "frame": 2452,
+      "triggers": [
+        {
+          "kind": "new_track_after_line",
+          "track_key": "0:147"
+        }
+      ],
+      "frames": 5
+    },
+    {
+      "directory": "event-000047-e0-f2466",
+      "frame": 2466,
+      "triggers": [
+        {
+          "kind": "box_at_line",
+          "track_key": "0:149"
+        }
+      ],
+      "frames": 5
+    }
+  ]
+}
