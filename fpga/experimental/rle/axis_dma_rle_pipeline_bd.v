@@ -69,12 +69,14 @@ module axis_dma_rle_pipeline_bd #(
     (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TVALID" *)
     output wire m_axis_tvalid,
     (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TREADY" *)
-    input wire m_axis_tready
+    input wire m_axis_tready,
+    output wire preview_valid, output wire preview_sof, output wire preview_eol,
+    output wire [7:0] preview_bit, output wire [31:0] preview_frame_id
 );
     reg [31:0] frame_id,params_version,roi_start,roi_end,threshold,offset,morph;
     reg [31:0] awaddr_hold,wdata_hold;
     reg [3:0] wstrb_hold;
-    reg aw_pending,w_pending,start_pulse,done_seen,input_window;
+    reg aw_pending,w_pending,start_pulse,done_seen,input_window,input_mode;
     reg [63:0] clock_ticks;
     // Candidate monitor ABI: cumulative modulo-2^64 counters in the RLE aclk
     // domain. Only aresetn clears them; per-frame start does not. AXI-Lite
@@ -95,24 +97,38 @@ module axis_dma_rle_pipeline_bd #(
     wire busy,done;wire [31:0] actual_bytes;
     wire pipeline_reset=aresetn&&!start_pulse;
     wire [7:0] gray;wire gray_sof,gray_eol,gray_valid,gray_ready,adapter_ready;
+    wire [7:0] raw_gray;wire raw_sof,raw_eol,raw_valid,raw_ready,raw_adapter_ready;
     wire packet_done,packet_error;wire [3:0] packet_code;wire [31:0] input_frame_id;
+    wire raw_done,raw_error;wire [3:0] raw_code;wire [31:0] raw_frame_id;
+    wire selected_packet_done=input_mode?raw_done:packet_done;
+    wire selected_packet_error=input_mode?raw_error:packet_error;
+    wire [3:0] selected_packet_code=input_mode?raw_code:packet_code;
+    wire [31:0] selected_frame_id=input_mode?raw_frame_id:input_frame_id;
+    wire [7:0] source_gray=input_mode?raw_gray:gray;
+    wire source_sof=input_mode?raw_sof:gray_sof;
+    wire source_eol=input_mode?raw_eol:gray_eol;
+    wire source_valid=input_mode?raw_valid:gray_valid;
     reg input_error_latched,good_packet_seen;
-    wire frame_mismatch=packet_done && input_frame_id!=frame_id;
-    wire error_event=packet_error||frame_mismatch;
+    wire frame_mismatch=selected_packet_done && selected_frame_id!=frame_id;
+    wire error_event=selected_packet_error||frame_mismatch;
     reg [31:0] x,y;
     wire in_roi=x>=roi_start[15:0]&&x<roi_end[15:0]&&y>=roi_start[31:16]&&y<roi_end[31:16];
-    wire signed [32:0] shifted=$signed({1'b0,24'b0,gray})+$signed({offset[31],offset});
+    wire signed [32:0] shifted=$signed({1'b0,24'b0,source_gray})+$signed({offset[31],offset});
     wire [7:0] mapped=(shifted<0)?8'd0:((shifted>255)?8'd255:shifted[7:0]);
     wire [7:0] binary=(in_roi&&mapped>=threshold[7:0])?8'hff:8'h00;
     wire [7:0] erode_data,dilate_data;wire erode_sof,erode_eol,erode_valid,erode_ready;
     wire dilate_sof,dilate_eol,dilate_valid,dilate_ready;
     wire encoder_ready;
     wire [7:0] selected_data=(morph==1)?erode_data:((morph==2)?dilate_data:binary);
-    wire selected_sof=(morph==1)?erode_sof:((morph==2)?dilate_sof:gray_sof);
-    wire selected_eol=(morph==1)?erode_eol:((morph==2)?dilate_eol:gray_eol);
-    wire selected_valid=(morph==1)?erode_valid:((morph==2)?dilate_valid:gray_valid);
+    wire selected_sof=(morph==1)?erode_sof:((morph==2)?dilate_sof:source_sof);
+    wire selected_eol=(morph==1)?erode_eol:((morph==2)?dilate_eol:source_eol);
+    wire selected_valid=(morph==1)?erode_valid:((morph==2)?dilate_valid:source_valid);
     assign gray_ready=(morph==1)?erode_ready:((morph==2)?dilate_ready:encoder_ready);
-    assign s_axis_tready=adapter_ready&&input_window;
+    assign raw_ready=(morph==1)?erode_ready:((morph==2)?dilate_ready:encoder_ready);
+    assign s_axis_tready=(input_mode?raw_adapter_ready:adapter_ready)&&input_window;
+    assign preview_valid=selected_valid&&encoder_ready;
+    assign preview_sof=selected_sof;assign preview_eol=selected_eol;
+    assign preview_bit=selected_data;assign preview_frame_id=frame_id;
     assign s_axi_awready=aresetn&&!aw_pending&&!s_axi_bvalid;
     assign s_axi_wready=aresetn&&!w_pending&&!s_axi_bvalid;
     assign s_axi_arready=aresetn&&!s_axi_rvalid;
@@ -121,14 +137,20 @@ module axis_dma_rle_pipeline_bd #(
       .s_tlast(s_axis_tlast),.s_tvalid(s_axis_tvalid&&input_window),.s_tready(adapter_ready),
       .m_tdata(gray),.m_tuser(gray_sof),.m_tlast(gray_eol),.m_tvalid(gray_valid),.m_tready(gray_ready),
       .packet_done(packet_done),.packet_error(packet_error),.error_code(packet_code),.frame_id(input_frame_id));
+    axis_raw_gray_adapter #(.WIDTH(WIDTH),.HEIGHT(HEIGHT)) raw_adapter(
+      .aclk(aclk),.aresetn(pipeline_reset),.s_tdata(s_axis_tdata),.s_tkeep(s_axis_tkeep),
+      .s_tlast(s_axis_tlast),.s_tvalid(s_axis_tvalid&&input_window),.s_tready(raw_adapter_ready),
+      .m_tdata(raw_gray),.m_tuser(raw_sof),.m_tlast(raw_eol),.m_tvalid(raw_valid),.m_tready(raw_ready),
+      .cfg_frame_id(frame_id),.packet_done(raw_done),.packet_error(raw_error),
+      .error_code(raw_code),.frame_id(raw_frame_id));
     axis_morphology3x3 #(.FRAME_WIDTH(WIDTH),.FRAME_HEIGHT(HEIGHT),.MODE(1)) erode(
-      .aclk(aclk),.aresetn(pipeline_reset&&!input_error_latched),.s_tdata(binary),.s_tuser(gray_sof),
-      .s_tlast(gray_eol),.s_tvalid(gray_valid&&morph==1),.s_tready(erode_ready),
+      .aclk(aclk),.aresetn(pipeline_reset&&!input_error_latched),.s_tdata(binary),.s_tuser(source_sof),
+      .s_tlast(source_eol),.s_tvalid(source_valid&&morph==1),.s_tready(erode_ready),
       .m_tdata(erode_data),.m_tuser(erode_sof),.m_tlast(erode_eol),.m_tvalid(erode_valid),
       .m_tready(encoder_ready&&morph==1));
     axis_morphology3x3 #(.FRAME_WIDTH(WIDTH),.FRAME_HEIGHT(HEIGHT),.MODE(2)) dilate(
-      .aclk(aclk),.aresetn(pipeline_reset&&!input_error_latched),.s_tdata(binary),.s_tuser(gray_sof),
-      .s_tlast(gray_eol),.s_tvalid(gray_valid&&morph==2),.s_tready(dilate_ready),
+      .aclk(aclk),.aresetn(pipeline_reset&&!input_error_latched),.s_tdata(binary),.s_tuser(source_sof),
+      .s_tlast(source_eol),.s_tvalid(source_valid&&morph==2),.s_tready(dilate_ready),
       .m_tdata(dilate_data),.m_tuser(dilate_sof),.m_tlast(dilate_eol),.m_tvalid(dilate_valid),
       .m_tready(encoder_ready&&morph==2));
     axis_rle_encoder #(.WIDTH(WIDTH),.HEIGHT(HEIGHT),.MAX_RUNS(MAX_RUNS)) encoder(
@@ -139,13 +161,13 @@ module axis_dma_rle_pipeline_bd #(
       .cfg_threshold(threshold[7:0]),.cfg_offset(offset),.cfg_morph(morph[1:0]),
       .s_tdata(selected_data),.s_tuser(selected_sof),.s_tlast(selected_eol),
       .s_tvalid(selected_valid),.s_tready(encoder_ready),
-      .packet_done(packet_done&&!frame_mismatch),.packet_error(error_event),
-      .input_error_code(frame_mismatch?4'd7:packet_code),
+      .packet_done(selected_packet_done&&!frame_mismatch),.packet_error(error_event),
+      .input_error_code(frame_mismatch?4'd7:selected_packet_code),
       .m_tdata(m_axis_tdata),.m_tkeep(m_axis_tkeep),.m_tlast(m_axis_tlast),
       .m_tvalid(m_axis_tvalid),.m_tready(m_axis_tready),.busy(busy),.done(done),.actual_bytes(actual_bytes));
     always @(posedge aclk) begin
       if(!aresetn) begin
-        frame_id<=0;params_version<=0;roi_start<=0;roi_end<=(HEIGHT<<16)|WIDTH;
+        frame_id<=0;params_version<=0;roi_start<=0;roi_end<=(HEIGHT<<16)|WIDTH;input_mode<=0;
         threshold<=128;offset<=0;morph<=0;clock_ticks<=0;x<=0;y<=0;
         aw_pending<=0;w_pending<=0;start_pulse<=0;done_seen<=0;input_window<=0;
         awaddr_hold<=0;wdata_hold<=0;wstrb_hold<=0;
@@ -165,9 +187,9 @@ module axis_dma_rle_pipeline_bd #(
         // The parser drains rejected packets through DMA TLAST. Closing on an
         // early checksum/header error would strand MM2S with unread tail beats.
         if(s_axis_tvalid&&s_axis_tready&&s_axis_tlast)input_window<=0;
-        if(packet_done&&!frame_mismatch)good_packet_seen<=1;
+        if(selected_packet_done&&!frame_mismatch)good_packet_seen<=1;
         if(error_event)input_error_latched<=1;
-        if(gray_valid&&gray_ready)begin
+        if(source_valid&&(input_mode?raw_ready:gray_ready))begin
           if(x==WIDTH-1)begin x<=0;y<=y+1;end else x<=x+1;
         end
         if(commit)begin
@@ -183,6 +205,9 @@ module axis_dma_rle_pipeline_bd #(
             end
           end
           else if(busy||start_pulse||input_window)s_axi_bresp<=2;
+          else if(wa[7:0]==8'h74) begin
+            if(wd>1)s_axi_bresp<=2;else input_mode<=wd[0];
+          end
           else case(wa[7:0])
             8'h00: if(wd!=1||roi_start[15:0]>=roi_end[15:0]||roi_start[31:16]>=roi_end[31:16]||
                       roi_end[15:0]>WIDTH||roi_end[31:16]>HEIGHT||threshold>255||
@@ -219,7 +244,9 @@ module axis_dma_rle_pipeline_bd #(
             8'h28:s_axi_rdata<=morph;
             8'h2c:s_axi_rdata<=(HEIGHT<<16)|WIDTH;
             8'h30:s_axi_rdata<=MAX_RUNS;
-            8'h38:s_axi_rdata<={28'd0,packet_code};
+            8'h38:s_axi_rdata<={28'd0,selected_packet_code};
+            8'h70:s_axi_rdata<=32'h52415731;
+            8'h74:s_axi_rdata<={31'd0,input_mode};
             8'h3c:s_axi_rdata<=snapshot_seq;
             8'h40:s_axi_rdata<=snap_ticks[31:0];
             8'h44:s_axi_rdata<=snap_ticks[63:32];

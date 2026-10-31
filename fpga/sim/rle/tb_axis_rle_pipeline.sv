@@ -44,6 +44,18 @@ module tb_axis_rle_pipeline;
       observed=rd;@(negedge clk);
     end
   endtask
+  task write_reg_expect_error;
+    input [31:0] addr,data;
+    begin
+      @(negedge clk);awaddr=addr;wd=data;awv=1;wv=1;
+      fork
+        begin do @(posedge clk);while(!awr);@(negedge clk);awv=0;end
+        begin do @(posedge clk);while(!wr);@(negedge clk);wv=0;end
+      join
+      wait(bv);if(bp!=2)$fatal(1,"AXI write unexpectedly accepted %h",addr);
+      @(negedge clk);
+    end
+  endtask
   always @(negedge clk) mr=(cycles%11<8);
   always @(posedge clk)if(rst)begin
     cycles=cycles+1;if(cycles>2000000)$fatal(1,"pipeline watchdog");
@@ -77,11 +89,17 @@ module tb_axis_rle_pipeline;
     repeat(5)@(negedge clk);rst=1;
     // 0x00 is write-only; probing it must not be mistaken for a valid read.
     read_reg(0,2);
+    read_reg('h70,0);if(observed!=32'h52415731)$fatal(1,"RAW1 capability signature");
+    read_reg('h74,0);if(observed!=0)$fatal(1,"packet input mode default");
+    write_reg_expect_error('h70,32'h52415731);
+    write_reg('h74,1);read_reg('h74,0);if(observed!=1)$fatal(1,"raw mode idle write");
+    write_reg('h74,0);read_reg('h74,0);if(observed!=0)$fatal(1,"packet mode restore");
     write_reg('h3c,1);read_reg('h3c,0);
     if(observed!=1)$fatal(1,"snapshot sequence after reset");
     write_reg('h10,17);write_reg('h14,3);
     write_reg('h18,(roi_top<<16)|roi_left);write_reg('h1c,(roi_bottom<<16)|roi_right);
     write_reg('h20,128);write_reg('h24,offset);write_reg('h28,morph);write_reg(0,1);
+    write_reg_expect_error('h74,1);
     // Monitoring snapshots remain legal while a frame is active.
     write_reg('h3c,1);read_reg('h3c,0);
     if(observed!=2)$fatal(1,"snapshot while busy");
