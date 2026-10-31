@@ -128,6 +128,26 @@ def test_button_input_cli_defaults_to_irq_and_supports_explicit_compatibility_mo
         assert parser.parse_args(required + ["--button-input", mode]).button_input == mode
 
 
+def test_video_owner_has_periodic_poll_only_for_explicit_polling_mode():
+    make_poll = integrated_run.button_input_poll_callback
+    worker = type("Worker", (), {"poll": lambda self: None})()
+
+    getter = lambda: worker
+    assert make_poll("irq", getter) is None
+    assert make_poll("off", getter) is None
+    callback = make_poll("polling", getter)
+    assert callable(callback)
+    callback()
+
+    from scripts.standalone.driver_owner import DriverOwner
+    owner = DriverOwner(poll=make_poll("irq", getter))
+    try:
+        assert owner._poll is None
+        assert owner._background == set()
+    finally:
+        owner.close()
+
+
 def test_preview_and_input_backend_cli_defaults_and_candidate_values():
     parser = integrated_run.build_argument_parser()
     required = ["--manifest", "m", "--manifest-sha256", "a" * 64,
