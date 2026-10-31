@@ -8,6 +8,7 @@ import pytest
 
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
 from scripts.standalone.integrated_run import (
+    _live_drop_total,
     _refresh_dashboard_telemetry,
     _sample_camera_telemetry,
     _with_publish_boundary,
@@ -80,6 +81,14 @@ def test_camera_absent_keeps_fps_unknown_not_zero():
         })
         assert values['camera_fps'] is None
 
+
+def test_live_drop_total_is_unknown_until_all_sources_measured():
+    assert _live_drop_total(None, {'pump_skips': 2, 'pump_submit_failures': 1}) is None
+    assert _live_drop_total({'camera_overwrite_drops': 3}, None) is None
+    assert _live_drop_total({'camera_overwrite_drops': 3},
+                            {'pump_skips': 2, 'pump_submit_failures': 1}) == 6
+    assert _live_drop_total({'camera_overwrite_drops': 0},
+                            {'pump_skips': 0, 'pump_submit_failures': 0}) == 0
 
 def test_two_second_snapshot_is_reused_without_per_frame_cache_snapshot():
     class FakeCache:
@@ -294,3 +303,4 @@ def test_actual_drawing_child_preserves_frame_identity_and_renders_count_line(ax
         if lease is not None:outputs.release_read(lease.slot)
         inputs.close();outputs.close()
     assert child.exitcode==0 and counts[0]==1
+

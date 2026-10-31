@@ -108,6 +108,17 @@ def _refresh_dashboard_telemetry(cache, sampled_at):
     return cache.snapshot(sampled_at)
 
 
+def _live_drop_total(camera_sample, pump_sample):
+    """Window-increment drop total; unknown when any source is not yet measured."""
+    camera_drops=(camera_sample.get('camera_overwrite_drops')
+        if camera_sample is not None else None)
+    pump_drops=(pump_sample.get('pump_skips',0)+pump_sample.get('pump_submit_failures',0)
+        if pump_sample is not None else None)
+    if camera_drops is None or pump_drops is None:
+        return None
+    return camera_drops+pump_drops
+
+
 def _sample_camera_telemetry(camera, telemetry_window, sample_time_ns):
     """Sample camera counters, preserving unknown rates when no camera exists."""
     if camera is None:
@@ -691,8 +702,7 @@ def main(argv=None):
                 video_sample.update(camera=camera_sample,pump=pump_sample,consumed=consumed_sample)
                 video_sample['camera_fps']=(camera_sample.get('camera_fps')
                     if camera_sample is not None else None)
-                video_sample['drop_total']=((camera_stats['overwrite_drops'] if camera_stats else 0)+
-                    (video_pump.skipped+video_pump.submit_failures if video_pump else 0))
+                video_sample['drop_total']=_live_drop_total(camera_sample,pump_sample)
                 video_sample.setdefault('resolution_chain','640x400 -> 800x640 -> 1280x720')
                 video_sample.setdefault('link_summary',None)
                 video_sample.setdefault('page_lines',())
