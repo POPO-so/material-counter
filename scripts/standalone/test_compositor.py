@@ -441,6 +441,23 @@ def test_dashboard_text_cache_avoids_static_label_rasterization_on_value_updates
     assert metric_calls == []
 
 
+def test_dashboard_labels_preview_rate_as_submission_rate(monkeypatch):
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    labels = []
+    original = c._text
+    def capture_text(draw, xy, text, size, fill):
+        labels.append(text)
+        return original(draw, xy, text, size, fill)
+    monkeypatch.setattr(c, "_text", capture_text)
+
+    c.render(gray, gray, uuid.uuid4(), 1,
+             dashboard={"preview_submitted_fps": 23.5},
+             binary_background=True)
+
+    assert "二值提交 FPS" in labels
+
+
 def test_dashboard_chrome_warmed_latin_strings_skip_all_text_rasterization(monkeypatch):
     api = _api()
     c = _dashboard_composer()

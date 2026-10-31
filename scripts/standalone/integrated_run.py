@@ -21,7 +21,7 @@ import uuid
 import cv2
 import numpy as np
 
-from .bundle import verify_bundle, verify_runtime, sha256
+from .bundle import verify_bundle, verify_runtime, verify_offload_capabilities, sha256
 from .camera import LatestCamera
 from .compositor import DashboardComposer
 from .controls import ButtonDecoder, ControlState
@@ -30,7 +30,7 @@ from .crossing_snapshots import CrossingSnapshots
 from .async_evidence import EvidenceExporter
 from .driver_owner import DriverOwner
 from .evidence import write_evidence,fail_hold,TraceBuffer
-from .g1_run import setup_hardware, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
+from .g1_run import setup_hardware, start_display_output, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
 from .hp2 import sync_hp1_readwrite32
 from .g2_readback import read_pipeline, snapshot_counters
 from .pressure import make_input, counter_delta, validate_transfer_totals
@@ -160,6 +160,11 @@ def record_diagnostic_frame(policy, trace, captures, frame_id, result, counter,
         captures.observe(gray,packet,result,counter,trajectory_epoch=trajectory_epoch,**metadata)
 
 
+def reset_capture_context_on_transition(captures, transition):
+    if captures is not None and transition is not None:
+        captures.reset_context('diagnostic_mode_changed')
+
+
 def prepare_preview_binary(packet, output, binary_background=True):
     if binary_background:
         rasterize_into(packet,output)
@@ -201,6 +206,14 @@ def button_gpio_irq_configured(overlay, channel):
     except (AttributeError,KeyError,TypeError):
         return False
     return present and interrupt_available(channel)
+
+
+def verify_selected_offload_bundle(args, manifest, hwh):
+    """Reject selected IRQ/PBO/RAW modes before touching the overlay."""
+    if (args.button_input == 'irq' or args.preview_backend == 'pl'
+            or args.input_mode == 'raw'):
+        return verify_offload_capabilities(manifest, hwh)
+    return None
 
 
 def button_input_poll_callback(mode, worker_getter):
@@ -424,6 +437,7 @@ def main(argv=None):
     if args.startup_record and args.startup_record.exists():parser.error('startup record already exists')
     files=verify_bundle(args.manifest,args.manifest_sha256)
     manifest=json.loads(args.manifest.read_text())
+    verify_selected_offload_bundle(args,manifest,files['hwh'])
     if manifest.get('rle_monitor')!={'abi':1,'clock_hz':50_000_000}:raise ValueError('requires reviewed monitor ABI 1')
     verify_runtime(manifest['runtime'],args.font,args.latin_font)
     commands=json.loads(args.commands.read_text()) if args.commands else {}
@@ -485,6 +499,8 @@ def main(argv=None):
             'button_raw_transitions':2048},
         session_id=str(uuid.uuid4()),ownership=audit_process_ownership(),state='STARTING',
         material_accuracy='NOT_MEASURED',samples=deque(maxlen=1800),events=deque(maxlen=2048),
+        preview_submitted_fps=None,
+        preview_fps_scope='accepted_for_display_not_scanout',
         recoveries=deque(maxlen=2048),button_raw_sample_count=0,
         button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
         before_memory=_memory(),scope='G3 candidate; G4 physical disconnection/cold-start not asserted')
@@ -557,18 +573,11 @@ def main(argv=None):
             state=owner.call(dma.read,offset)
             if state&0x770 or not state&3:raise RuntimeError('RLE DMA not safely stopped')
         report['hp1_readwrite32']=owner.call(sync_hp1_readwrite32, files['hwh'], MMIO)
-        hw=video_owner.call(setup_hardware,files,video_owner,timeout=60)
+        hw=video_owner.call(lambda:setup_hardware(files,video_owner,start_display=False),timeout=60)
         report['clocks_mhz']=hw.clocks
         if args.button_input=='irq':
             if not button_gpio_irq_configured(hw.overlay,hw.buttons):
                 raise RuntimeError('GPIO IRQ unavailable in btns_gpio HWH; use --button-input polling only for legacy hardware')
-            button_worker=ButtonInputWorker(video_owner,'irq',hw.buttons,read_button_bits,
-                enqueue_button_command,report_button_error)
-            button_worker.start()
-        elif args.button_input=='polling':
-            button_worker=ButtonInputWorker(video_owner,'polling',hw.buttons,read_button_bits,
-                enqueue_button_command,report_button_error)
-            button_worker.start()
         control=owner.retain(MMIO(0x43c20000,0x1000))
         pipeline=owner.call(read_pipeline,control)
         tx=owner.retain(allocate(shape=(RAW_TX_BYTES if args.input_mode=='raw' else TX_BYTES,),dtype='u1'))
@@ -580,6 +589,18 @@ def main(argv=None):
             pl_preview=owner.call(lambda:PlPreview(MMIO(0x43c50000,0x1000)))
             owner.retain(pl_preview.mmio)
         if pipeline['state']['done_seen']:transport._completed_frames=1
+        # Validate register signatures and stopped DMA channels before HDMI
+        # configure/start; the first transfer must not be the first capability check.
+        owner.call(transport._preflight_hardware)
+        if args.button_input=='irq':
+            button_worker=ButtonInputWorker(video_owner,'irq',hw.buttons,read_button_bits,
+                enqueue_button_command,report_button_error)
+            button_worker.start()
+        elif args.button_input=='polling':
+            button_worker=ButtonInputWorker(video_owner,'polling',hw.buttons,read_button_bits,
+                enqueue_button_command,report_button_error)
+            button_worker.start()
+        video_owner.call(start_display_output,hw.hdmi,timeout=60)
         counter=make_runtime_counter(args.native_lib,profile=args.counting_profile)
         exporter=EvidenceExporter()
         report['counting_profile']=args.counting_profile
@@ -808,6 +829,7 @@ def main(argv=None):
             if transition is not None:
                 report['diagnostic_transitions'].append(transition)
                 report['diagnostic_mode']=mode
+                reset_capture_context_on_transition(captures,transition)
             if diagnostic_policy.trace_enabled and captures is None and args.crossing_snapshots=='on':
                 try:captures=create_crossing_snapshots();diagnostic_error=None
                 except Exception as error:
@@ -856,6 +878,7 @@ def main(argv=None):
                     exposure=exposure_status,exposure_error=exposure_error,
                     pl_rates=pl_rates,runtime=runtime_sample,button_status=button_status)
                     metadata['dashboard']['binary_fps']=binary_fps
+                    metadata['dashboard']['preview_submitted_fps']=binary_fps
                     metadata['dashboard']['preview_status']='PL READY' if pl_preview is not None else '软件二值预览'
                     if pl_preview is not None and len(result.detections)>16:
                         metadata['status_lines'].append('PL overlay boxes truncated to 16')
@@ -929,6 +952,8 @@ def main(argv=None):
                     elapsed=sample_now-binary_fps_window_at
                     binary_fps=(last_binary_published/elapsed if elapsed>0 else None)
                     last_binary_published=0;binary_fps_window_at=sample_now
+                report['preview_submitted_fps']=binary_fps
+                report['binary_fps']=binary_fps  # compatibility; scope is explicit above
             if sample_now-last_sample>=2:
                 sample_time=time.monotonic();cpu=_parse_proc_stat(Path('/proc/stat').read_text())
                 monitor=owner.call(snapshot,hw.monitor)
@@ -937,6 +962,8 @@ def main(argv=None):
                     display_held=True
                     if video_pump is not None:video_pump.request_stop()
                 report['samples'].append(dict(monotonic=sample_time,processed=index,submitted=submitted,
+                    preview_submitted_fps=report.get('preview_submitted_fps'),
+                    preview_fps_scope=report['preview_fps_scope'],
                     monitor=monitor,count=counter.total_count,invalid=counter.invalid_frames,memory=_memory(),
                     cpu=_cpu_usage_percent(previous_cpu,cpu),vdma_status=vdma_status,
                     video_state=video_pump.state if video_pump else 'OFF',telemetry=cache.snapshot(time.monotonic()),

@@ -128,6 +128,36 @@ def test_button_input_cli_defaults_to_irq_and_supports_explicit_compatibility_mo
         assert parser.parse_args(required + ["--button-input", mode]).button_input == mode
 
 
+def test_candidate_bundle_capabilities_are_required_for_selected_irq_pl_or_raw(monkeypatch):
+    verify = integrated_run.verify_selected_offload_bundle
+    calls = []
+    monkeypatch.setattr(integrated_run, "verify_offload_capabilities",
+                        lambda manifest, hwh: calls.append((manifest, hwh)) or {"ok": True})
+    def args(button="polling", preview="software", input_mode="packet"):
+        return type("Args", (), {"button_input": button, "preview_backend": preview,
+                                  "input_mode": input_mode})()
+
+    for selected in (args(button="irq"), args(preview="pl"), args(input_mode="raw")):
+        assert verify(selected, {"offload": True}, "candidate.hwh") == {"ok": True}
+    assert len(calls) == 3
+    assert verify(args(), {}, "legacy.hwh") is None
+    assert len(calls) == 3
+
+
+def test_mode_transition_resets_existing_capture_context_only():
+    reset = getattr(integrated_run, "reset_capture_context_on_transition", None)
+    assert callable(reset)
+    class Captures:
+        def __init__(self): self.reasons = []
+        def reset_context(self, reason): self.reasons.append(reason)
+    captures = Captures()
+    reset(captures, None)
+    assert captures.reasons == []
+    reset(captures, {"from": "diagnostic", "to": "normal"})
+    reset(None, {"from": "normal", "to": "diagnostic"})
+    assert captures.reasons == ["diagnostic_mode_changed"]
+
+
 def test_video_owner_has_periodic_poll_only_for_explicit_polling_mode():
     make_poll = integrated_run.button_input_poll_callback
     worker = type("Worker", (), {"poll": lambda self: None})()

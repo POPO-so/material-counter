@@ -410,7 +410,7 @@ class DashboardComposer:
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
         values = (
             self._number(dashboard.get("count"), 0),
-            self._number(dashboard.get("binary_fps", dashboard.get("display_fps"))),
+            self._number(dashboard.get("preview_submitted_fps", dashboard.get("binary_fps"))),
             "{} / {}".format(self._number(dashboard.get("processing_fps")),
                              self._number(dashboard.get("processing_ms"), 1, "ms")),
             self._number(dashboard.get("cpu_percent"), 0, "%"),
@@ -437,7 +437,7 @@ class DashboardComposer:
         exposure_latency_text = str(dashboard.get("exposure_latency_text", ""))
         rle_key = tuple(dashboard.get(name) for name in (
             "rle_fresh", "rle_activity_pct", "input_mb_s", "output_mb_s",
-            "input_stall_pct", "output_stall_pct", "binary_fps"))
+            "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps"))
         detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
         key = (values, pie_key, state, binary_background, target_count, detail,
                mode, exposure_text, exposure_range_text, pl_text, thread_text,
@@ -450,7 +450,7 @@ class DashboardComposer:
         draw.ellipse((1060, 25, 1070, 35), fill=224)
         self._whole_latin_text(draw, (1082, 19), state[:15], 18, 208)
         for x, label, value in zip((24, 440, 856),
-                                   ("本次累计计数", "二值更新 FPS", "处理 FPS / 延迟 ms"),
+                                   ("本次累计计数", "二值提交 FPS", "处理 FPS / 延迟 ms"),
                                    values[:3]):
             draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
