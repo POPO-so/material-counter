@@ -299,3 +299,74 @@ def test_rle_projection_deltas_handle_runs_touching_both_column_edges():
     assert int(frame.column_projection[WIDTH - 1]) == 1
     assert int(frame.column_projection[5]) == 2
     assert int(frame.column_projection.sum()) == frame.total_fg
+
+
+def _alternating_runs_mask(row_count, extra_runs):
+    mask = np.zeros((HEIGHT, WIDTH), np.uint8)
+    mask[:row_count, ::2] = 255
+    if extra_runs:
+        mask[row_count, :extra_runs * 2:2] = 255
+    return mask
+
+
+def test_packet_at_the_maximum_run_capacity_round_trips_exactly():
+    mask = _alternating_runs_mask(51, 64)
+    packet = encode_mask(mask)
+
+    assert _word(packet, len(packet) // 4 - 16 + 4) == MAX_RUNS
+    assert _word(packet, len(packet) // 4 - 16 + 6) == 0
+    assert len(packet) <= RX_CAPACITY
+
+    frame = decode_packet(packet)
+
+    assert frame.valid
+    assert frame.run_count == MAX_RUNS
+    assert frame.total_run_count == MAX_RUNS
+    assert np.array_equal(reconstruct(frame), mask)
+    assert int(frame.column_projection.sum()) == frame.total_fg
+    assert int(frame.row_projection.sum()) == frame.total_fg
+
+
+def test_packet_one_run_over_capacity_is_reported_as_overflow():
+    mask = _alternating_runs_mask(51, 65)
+    frame = decode_packet(encode_mask(mask))
+
+    assert not frame.valid
+    assert frame.status == 1
+    assert frame.run_count == MAX_RUNS
+    assert frame.total_run_count == MAX_RUNS + 1
+    with pytest.raises(ValueError, match="overflow"):
+        reconstruct(frame)
+
+
+def test_empty_packet_projection_types_and_totals_are_unchanged():
+    frame = decode_packet(encode_mask(np.zeros((HEIGHT, WIDTH), np.uint8)))
+
+    assert frame.valid
+    assert frame.run_count == 0
+    assert frame.total_fg == 0
+    assert frame.runs.dtype == np.uint32
+    assert frame.row_projection.dtype == np.uint16
+    assert frame.column_projection.dtype == np.uint16
+    assert not frame.row_projection.any()
+    assert not frame.column_projection.any()
+
+
+def test_decoded_column_projection_matches_an_explicit_delta_reference():
+    rng = np.random.default_rng(77)
+    mask = np.zeros((HEIGHT, WIDTH), np.uint8)
+    for _ in range(200):
+        row = int(rng.integers(0, HEIGHT))
+        start = int(rng.integers(0, WIDTH - 1))
+        mask[row, start:start + int(rng.integers(1, 30))] = 255
+    frame = decode_packet(encode_mask(mask))
+    assert frame.valid
+
+    starts = ((frame.runs >> 10) & 0x3FF).astype(np.intp)
+    ends = (frame.runs & 0x3FF).astype(np.intp)
+    deltas = np.zeros(WIDTH + 1, dtype=np.int64)
+    np.add.at(deltas, starts, 1)
+    np.add.at(deltas, ends + 1, -1)
+    reference = np.cumsum(deltas[:WIDTH])
+
+    assert np.array_equal(frame.column_projection.astype(np.int64), reference)

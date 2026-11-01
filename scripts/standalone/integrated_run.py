@@ -174,6 +174,24 @@ def summarize_transfer_timing(parts):
                    if first in value and second in value]
         if durations:
             stats[f'{first}_to_{second}']=pcts(durations)
+    # Additive sub-stage names; emitted only for samples that carry the finer
+    # marks, so payloads from the older instrumentation keep their exact schema.
+    split=[value for value in parts if 'preflighted' in value and 'dma_done' in value]
+    if split:
+        for name,first,second in (
+                ('preflight_ms','enter','preflighted'),
+                ('encode_ms','preflighted','packed'),
+                ('sync_to_device_ms','packed','encoded'),
+                ('configure_ms','encoded','configured'),
+                ('dma_start_ms','configured','started'),
+                ('dma_wait_ms','started','waited'),
+                ('dma_reap_ms','waited','dma_done'),
+                ('sync_from_device_ms','dma_done','synced'),
+                ('decode_ms','synced','decoded')):
+            durations=[(value[second]-value[first])*1000.0 for value in split
+                       if first in value and second in value]
+            if durations:
+                stats[name]=pcts(durations)
     return stats
 
 

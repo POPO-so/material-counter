@@ -231,7 +231,9 @@ class RleDmaTransport:
         # Validate addresses and the exact hardware identity before touching DMA.
         self._preflight_buffers()
         self._preflight_hardware()
+        self._mark(timing, "preflighted")
         encode_gray_into(gray, self.tx_buffer, frame_id=frame_id)
+        self._mark(timing, "packed")
         sync_to = getattr(self.tx_buffer, "sync_to_device", None)
         if callable(sync_to):
             sync_to()
@@ -258,6 +260,7 @@ class RleDmaTransport:
         if self.send_channel is not None:
             self.send_channel.wait()
         self.recv_channel.wait()
+        self._mark(timing, "dma_done")
         # Both channels and PL have completed. Later format/identity errors do
         # not imply the hardware still owns CMA storage.
         self.dma_may_be_active = False

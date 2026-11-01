@@ -56,3 +56,34 @@ def test_summary_of_empty_parts_is_well_formed():
     for key in ("poll_count", "poll_max_gap_ms", "poll_total_ms"):
         assert stats[key] == {"p50": None, "p95": None, "p99": None}
     assert "enter_to_encoded" not in stats
+
+def _part_with_substages(offset):
+    part = _part(offset, 4)
+    part.update({
+        "preflighted": 1.005 + offset,
+        "packed": 1.007 + offset,
+        "dma_done": 1.045 + offset,
+    })
+    return part
+
+
+def test_summary_adds_substage_keys_when_the_marks_are_present():
+    stats = summarize_transfer_timing([_part_with_substages(0.0), _part_with_substages(1.0)])
+    expected = ("preflight_ms", "encode_ms", "sync_to_device_ms", "configure_ms",
+                "dma_start_ms", "dma_wait_ms", "dma_reap_ms",
+                "sync_from_device_ms", "decode_ms")
+    for name in expected:
+        assert name in stats
+        assert set(stats[name]) == {"p50", "p95", "p99"}
+    for first, second in (("enter", "encoded"), ("encoded", "configured"),
+                          ("configured", "started"), ("started", "waited"),
+                          ("waited", "synced"), ("synced", "decoded")):
+        assert "{}_to_{}".format(first, second) in stats
+    assert abs(stats["encode_ms"]["p50"] - 2.0) < 1.5
+    assert abs(stats["sync_to_device_ms"]["p50"] - 3.0) < 1.5
+
+
+def test_summary_omits_substage_keys_for_samples_without_the_marks():
+    stats = summarize_transfer_timing([_part(0.0, 3)])
+    for name in ("preflight_ms", "encode_ms", "sync_to_device_ms", "decode_ms"):
+        assert name not in stats

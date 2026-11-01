@@ -250,8 +250,8 @@ def test_transfer_timing_records_monotonic_stages_and_polls():
     transport = make_transport(rig)
     timing = {}
     transport.transfer(np.zeros((HEIGHT, WIDTH), dtype=np.uint8), 31, timing=timing)
-    order = ["enter", "encoded", "configured", "started",
-             "waited", "synced", "decoded"]
+    order = ["enter", "preflighted", "packed", "encoded", "configured", "started",
+             "waited", "dma_done", "synced", "decoded"]
     assert all(name in timing for name in order)
     assert all(timing[a] <= timing[b] for a, b in zip(order, order[1:]))
     assert timing["poll_count"] >= 1
