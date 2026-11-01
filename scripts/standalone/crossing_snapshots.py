@@ -55,6 +55,7 @@ class CrossingSnapshots:
         self._epoch = None
         self._last_rejected_ns = None
         self._sequence = 0
+        self._parameter_cache = None
         self._queue = queue.Queue(maxsize=queue_size)
         self._stop = threading.Event()
         self._disabled = threading.Event()
@@ -100,6 +101,7 @@ class CrossingSnapshots:
             self._previous.clear()
             self._touched.clear()
             self._last_rejected_ns = None
+            self._parameter_cache = None
             self._epoch = epoch
         if result is None or not packet.valid:
             # Never label a rejected RLE packet as an ordinary binary frame.
@@ -139,11 +141,14 @@ class CrossingSnapshots:
         if near_rejected and (self._last_rejected_ns is None or capture_ns-self._last_rejected_ns >= 1_000_000_000):
             triggers.append(dict(kind='rejected_at_line', detections=near_rejected))
             self._last_rejected_ns = capture_ns
+        if (self._parameter_cache is None
+                or self._parameter_cache[0] is not counter):
+            self._parameter_cache = (counter, _parameters(counter))
         metadata = dict(frame_id=result.frame_id, trajectory_epoch=epoch,
             capture_monotonic_ns=capture_ns, camera_sequence=sequence,
             observed_wall_time_ns=time.time_ns(), wall_clock_trusted=False,
             paused=paused, commands=list(commands), total_count=result.total_count,
-            tracker_parameters=_parameters(counter),
+            tracker_parameters=self._parameter_cache[1],
             count_line=dict(axis=axis, position=line, direction=counter.direction),
             packet={f.name: getattr(packet, f.name) for f in fields(packet)
                     if f.name not in ('runs', 'row_projection', 'column_projection')},

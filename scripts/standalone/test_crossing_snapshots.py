@@ -262,3 +262,23 @@ def test_compact_partial_write_failure_counts_actual_partial_bytes(tmp_path, mon
     assert status['bytes_written']>0
     partials=list((tmp_path/'captures').rglob('*.partial'))
     assert partials and sum(p.stat().st_size for p in partials)==status['bytes_written']
+
+
+def test_tracker_parameters_are_cached_per_trajectory_epoch(tmp_path, monkeypatch):
+    import scripts.standalone.crossing_snapshots as module
+    calls = []
+    original = module._parameters
+    def counted(tracker):
+        calls.append(1)
+        return original(tracker)
+    monkeypatch.setattr(module, "_parameters", counted)
+    capture = recorder(tmp_path)
+    tracker = counter()
+    for number, x in enumerate((100, 110, 120)):
+        observe(capture, tracker, number, x, epoch=0)
+    assert calls == [1]
+    observe(capture, tracker, 3, 130, epoch=1)
+    assert calls == [1, 1]
+    observe(capture, counter(line_y=150), 4, 140, epoch=1)
+    assert calls == [1, 1, 1]
+    assert capture.close(timeout=10)

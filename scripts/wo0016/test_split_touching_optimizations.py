@@ -145,3 +145,29 @@ def test_projection_neck_matches_legacy_for_random_and_recorded_masks():
         expected = _legacy_split_by_projection_neck(pixels, min_child_area=12)
         actual = split_touching._split_by_projection_neck(pixels, min_child_area=12)
         _assert_same_partition(actual, expected, pixels)
+
+
+def test_split_preconditions_are_necessary_for_both_segmentation_paths():
+    # The fast path may skip the full split only when neither the hole nor the
+    # neck path can accept a cut; these implications must hold for every mask.
+    masks = _random_masks() + _recorded_component_masks()
+    for pixels in masks:
+        holes = split_touching.count_enclosed_holes(
+            pixels, min_hole_area=30, hole_area_cap=16
+        )
+        if holes not in (2, 3):
+            assert split_touching._split_by_enclosed_holes(
+                pixels, 12, 30) is None
+        if not split_touching.has_projection_neck(pixels, min_child_area=12):
+            assert split_touching._split_by_projection_neck(pixels, 12) is None
+
+
+def test_slice_run_counts_match_the_per_cut_reference():
+    masks = _random_masks() + _recorded_component_masks()
+    for pixels in masks:
+        for axis in (0, 1):
+            counts = split_touching._slice_run_counts(pixels, axis)
+            for index in range(len(counts)):
+                strip = (pixels[:, index] if axis == 0 else pixels[index, :])
+                expected = np.count_nonzero(strip & ~np.r_[False, strip[:-1]])
+                assert int(counts[index]) == int(expected)
