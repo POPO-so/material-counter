@@ -29,6 +29,7 @@ class FrameTelemetry:
     publish_ns: int | None = None
     compose_done_ns: int | None = None
     submit_done_ns: int | None = None
+    compose_work_ns: int | None = None
 
     def __post_init__(self):
         if isinstance(self.frame_id, bool) or not isinstance(self.frame_id, int):
@@ -52,6 +53,8 @@ class FrameTelemetry:
             if previous is not None and value < previous:
                 raise ValueError("provided timestamps must not go backwards")
             previous = value
+        if self.compose_work_ns is not None:
+            _validate_u64(self.compose_work_ns, "compose_work_ns")
 
 
 def percentile(values, percent):
@@ -309,11 +312,16 @@ class TelemetryWindow:
                 frames.append(frame)
 
         metric_values = {name: [] for name in self._METRIC_STAGES}
+        metric_values["compose_work_ms"] = []
         for frame in frames:
             for metric, (start_name, end_name) in self._METRIC_STAGES.items():
                 duration_ms = self._duration_ms(frame, start_name, end_name)
                 if duration_ms is not None:
                     metric_values[metric].append(duration_ms)
+            work_ns = getattr(frame, "compose_work_ns", None)
+            if (not isinstance(work_ns, bool) and isinstance(work_ns, int)
+                    and 0 <= work_ns <= _MAX_U64):
+                metric_values["compose_work_ms"].append(work_ns / 1_000_000)
         metrics = {name: _summary(values) for name, values in metric_values.items()}
         result = {
             "frame_count": len(frames),

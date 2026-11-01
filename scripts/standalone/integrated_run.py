@@ -257,6 +257,10 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
         static_bram_percent=static_percent['bram_tiles'],static_dsp_percent=static_percent['dsp'],
         camera_fps=video.get('camera_fps'),
         effective_input_fps=video.get('effective_input_fps'),
+        compositor_input_fps=video.get('compositor_input_fps'),
+        drawing_output_fps=video.get('drawing_output_fps'),
+        pl_preview_accept_fps=video.get('pl_preview_accept_fps'),
+        compose_work_ms=video.get('compose_work_ms'),
         e2e_ms=video.get('e2e_ms'),drop_total=video.get('drop_total'),
         resolution_chain=video.get('resolution_chain','640x400 -> 640x400 -> 1280x720'),
         link_summary=video.get('link_summary'),page_lines=telemetry_page_lines(page,video) if page else (),
@@ -269,6 +273,17 @@ def _with_publish_boundary(frame, published, published_ns):
     if frame is None or not published:
         return frame
     return replace(frame,publish_ns=published_ns)
+
+
+def _counter_fps(current, previous, now_ns, previous_ns):
+    """Calculate a low-frequency rate, returning unknown on invalid deltas."""
+    if (isinstance(current, bool) or not isinstance(current, int) or current < 0
+            or isinstance(previous, bool) or not isinstance(previous, int) or previous < 0
+            or isinstance(now_ns, bool) or not isinstance(now_ns, int)
+            or isinstance(previous_ns, bool) or not isinstance(previous_ns, int)
+            or now_ns <= previous_ns or current < previous):
+        return None
+    return (current - previous) * 1_000_000_000 / (now_ns - previous_ns)
 
 
 def _refresh_dashboard_telemetry(cache, sampled_at):
@@ -814,6 +829,7 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
                 outputs.publish(slot,lease.session_uuid,lease.frame_id,
                     scale_ns=int(timings['scale_ms']*1e6),draw_ns=int(timings['draw_ms']*1e6),
                     capture_time_ns=lease.capture_time_ns,
+                    source_publish_ns=lease.published_ns,
                     compose_ns=int((time.perf_counter_ns()-render_started_ns)))
                 slot=None;counters[0]+=1
             finally:
@@ -1139,12 +1155,13 @@ def main(argv=None):
                     monotonic=time.monotonic()))
         report['counters_before']=owner.call(snapshot_counters,control)
         started=last_sample=time.monotonic();index=submitted=published=dropped=0
+        compositor_input_published=0
         camera_index=-1;next_camera_retry=0;injection_done=False;next_drawing_retry=0
         cache=TelemetryCache();last_resource=last_xadc=last_performance=0
         latest_dashboard_telemetry={}
         last_performance_index=last_performance_submitted=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
         black_frame=np.zeros((400,640),dtype=np.uint8)
-        panel_gate=PreviewPublishGate(.5);last_pl_accepts=0;binary_fps=None
+        panel_gate=PreviewPublishGate(.5);last_pl_accepts=0;pl_accept_total=0;binary_fps=None
         last_binary_published=0
         binary_fps_window_at=started
         trajectory_epoch=0;camera_in_error=False
@@ -1159,6 +1176,7 @@ def main(argv=None):
         next_queue_observation=started
         queue_input_stats=queue_output_stats=None;camera_queue_depth=None
         previous_pl_counters=report['counters_before'];previous_pl_at=started
+        pipeline_rate_previous=(0,0,0,time.monotonic_ns())
         pl_rates=counter_rates(previous_pl_counters,previous_pl_counters,1.0)
         tick_hz=os.sysconf('SC_CLK_TCK');page_size=os.sysconf('SC_PAGE_SIZE')
         while running and (args.continuous or (time.monotonic()-started<args.duration and index<args.frames)):
@@ -1264,7 +1282,8 @@ def main(argv=None):
                     if inputs is not None and last_gray is not None:
                         fault=dict(last_metadata);fault['status_lines']=['相机断连 / 停止新增计数','每5秒重试 / 恢复新轨迹','累计 {}'.format(counter.total_count)]
                         fault['dashboard']=dict(fault.get('dashboard',{}),state='CAMERA LOST')
-                        inputs.publish(last_gray,binary,session,last_valid_id,fault)
+                        if inputs.publish(last_gray,binary,session,last_valid_id,fault):
+                            compositor_input_published+=1
                     camera_in_error=True
                     continue
                 if camera_in_error:
@@ -1317,7 +1336,9 @@ def main(argv=None):
                     except Exception as error:
                         return (False,repr(error))
                 accepted,preview_error=owner.call(submit_pl_preview,timeout=2)
-                if accepted:last_pl_accepts+=1
+                if accepted:
+                    last_pl_accepts+=1
+                    pl_accept_total+=1
                 if preview_error is not None:
                     report['recoveries'].append(dict(kind='pl_preview_submit',frame=index,
                         error=preview_error,monotonic=time.monotonic()))
@@ -1444,6 +1465,7 @@ def main(argv=None):
                                     if frame_telemetry is not None else 0))
                             if did_publish:
                                 published+=1
+                                compositor_input_published+=1
                                 if pl_preview is None:last_binary_published+=1
                                 if frame_telemetry is not None:
                                     frame_telemetry=_with_publish_boundary(
@@ -1458,7 +1480,8 @@ def main(argv=None):
                 if process is not None and process.is_alive():
                     selected_gray,selected_binary=prepare_preview_frame(last_gray,binary,
                         backend=args.preview_backend,black_frame=black_frame)
-                    inputs.publish(selected_gray,selected_binary,session,last_valid_id,fault)
+                    if inputs.publish(selected_gray,selected_binary,session,last_valid_id,fault):
+                        compositor_input_published+=1
             if frame_telemetry is not None:
                 telemetry_window.record_frame(frame_telemetry)
             index+=1
@@ -1569,6 +1592,18 @@ def main(argv=None):
             if sample_now-last_sample>=2:
                 sample_time=time.monotonic();cpu=_parse_proc_stat(Path('/proc/stat').read_text())
                 sample_time_ns=time.monotonic_ns()
+                current_pipeline_counts=(compositor_input_published,
+                    int(drawing_counts[0]),pl_accept_total)
+                previous_input,previous_drawing,previous_pl,previous_pipeline_ns=pipeline_rate_previous
+                compositor_input_fps=_counter_fps(
+                    current_pipeline_counts[0],previous_input,sample_time_ns,previous_pipeline_ns)
+                drawing_output_fps=_counter_fps(
+                    current_pipeline_counts[1],previous_drawing,sample_time_ns,previous_pipeline_ns)
+                pl_preview_accept_fps=(
+                    _counter_fps(current_pipeline_counts[2],previous_pl,
+                                 sample_time_ns,previous_pipeline_ns)
+                    if pl_preview is not None else None)
+                pipeline_rate_previous=(*current_pipeline_counts,sample_time_ns)
                 camera_stats,camera_sample=_sample_camera_telemetry(
                     camera,telemetry_window,sample_time_ns)
                 consumed_sample=telemetry_window.record_consumed(index,sample_time_ns)
@@ -1579,6 +1614,9 @@ def main(argv=None):
                 counters_sample=owner.call(snapshot_counters,control)
                 video_sample=telemetry_window.sample(sample_time_ns)
                 video_sample.update(camera=camera_sample,pump=pump_sample,consumed=consumed_sample)
+                video_sample.update(compositor_input_fps=compositor_input_fps,
+                    drawing_output_fps=drawing_output_fps,
+                    pl_preview_accept_fps=pl_preview_accept_fps)
                 video_sample['camera_fps']=(camera_sample.get('camera_fps')
                     if camera_sample is not None else None)
                 extra_sample=telemetry_window.record_extra_drops(

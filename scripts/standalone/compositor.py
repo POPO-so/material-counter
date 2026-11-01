@@ -517,6 +517,13 @@ class DashboardComposer:
             f"有效输入 {effective_input_fps} / 二值提交 {submitted_fps}",
             f"处理延迟 {processing_ms}",
         )
+        if dashboard.get("detail_page"):
+            summary = (
+                "合成器输入 {}".format(self._number(dashboard.get("compositor_input_fps"), 1, " FPS")),
+                "绘图输出 {}".format(self._number(dashboard.get("drawing_output_fps"), 1, " FPS")),
+                "PL 接受 {}".format(self._number(dashboard.get("pl_preview_accept_fps"), 1, " FPS")),
+                "HDMI writeframe 提交 {}".format(self._number(dashboard.get("display_fps"), 1, " FPS")),
+            ) + summary
         rle_key = tuple(dashboard.get(name) for name in (
             "rle_fresh", "rle_activity_pct", "input_mb_s", "output_mb_s",
             "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps"))

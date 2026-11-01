@@ -120,9 +120,10 @@ class VideoPump:
                                 FrameTelemetry(
                                     frame_id=lease.frame_id,
                                     capture_ns=lease.capture_time_ns,
-                                    # Published time is the available post-render boundary.
+                                    publish_ns=lease.source_publish_ns or None,
                                     compose_done_ns=lease.published_ns,
                                     submit_done_ns=submit_done_ns,
+                                    compose_work_ns=lease.compose_ns,
                                 )
                             )
                         except BaseException:

@@ -24,10 +24,11 @@ class FrameLease:
 
     __slots__ = ("slot", "session_uuid", "frame_id", "sequence", "array",
                  "scale_ns", "draw_ns", "compose_ns", "capture_time_ns",
-                 "published_ns")
+                 "published_ns", "source_publish_ns")
 
     def __init__(self, slot, session_uuid, frame_id, sequence, array,
-                 scale_ns, draw_ns, compose_ns, capture_time_ns, published_ns):
+                 scale_ns, draw_ns, compose_ns, capture_time_ns, published_ns,
+                 source_publish_ns=0):
         self.slot = slot
         self.session_uuid = session_uuid
         self.frame_id = frame_id
@@ -38,6 +39,7 @@ class FrameLease:
         self.compose_ns = compose_ns
         self.capture_time_ns = capture_time_ns
         self.published_ns = published_ns
+        self.source_publish_ns = source_publish_ns
 
 
 class SharedFrames:
@@ -45,8 +47,8 @@ class SharedFrames:
 
     def __init__(self, name, shape, lock, statuses, session_ids, frame_ids, sequences,
                  next_sequence, owner_closed, owner_pid, scale_times, draw_times,
-                 compose_times, capture_times, published_times, dropped_ready=None,
-                 dropped_claims=None, condition=None):
+                 compose_times, capture_times, published_times, source_publish_times=None,
+                 dropped_ready=None, dropped_claims=None, condition=None):
         self.name = name
         self.shape = tuple(shape)
         self._lock = lock
@@ -62,6 +64,7 @@ class SharedFrames:
         self._compose_times = compose_times
         self._capture_times = capture_times
         self._published_times = published_times
+        self._source_publish_times = source_publish_times
         self._condition = condition
         self._dropped_ready = dropped_ready
         self._dropped_claims = dropped_claims
@@ -86,6 +89,7 @@ class SharedFrames:
                 ctx.Value("Q", 0, lock=False),
                 ctx.Value("b", 0, lock=False),
                 os.getpid(),
+                ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
                 ctx.Array("Q", [0] * SLOT_COUNT, lock=False),
@@ -124,6 +128,7 @@ class SharedFrames:
             "compose_times": self._compose_times,
             "capture_times": self._capture_times,
             "published_times": self._published_times,
+            "source_publish_times": self._source_publish_times,
             "condition": self._condition,
             "dropped_ready": self._dropped_ready,
             "dropped_claims": self._dropped_claims,
@@ -136,6 +141,7 @@ class SharedFrames:
             state["next_sequence"], state["owner_closed"], state["owner_pid"],
             state["scale_times"], state["draw_times"], state["compose_times"],
             state["capture_times"], state["published_times"],
+            state.get("source_publish_times"),
             state.get("dropped_ready"),
             state.get("dropped_claims"), state.get("condition"),
         )
@@ -157,7 +163,7 @@ class SharedFrames:
             self._lock.release()
 
     def publish(self, slot, session_uuid, frame_id, *, scale_ns=0, draw_ns=0,
-                compose_ns=0, capture_time_ns=0):
+                compose_ns=0, capture_time_ns=0, source_publish_ns=0):
         """Publish a WRITING slot as READY with validated identity and a monotonic sequence."""
         self._ensure_open()
         slot = _validate_slot(slot)
@@ -167,6 +173,7 @@ class SharedFrames:
         draw_ns = _validate_stage_ns(draw_ns, "draw_ns")
         compose_ns = _validate_stage_ns(compose_ns, "compose_ns")
         capture_time_ns = _validate_uint64(capture_time_ns, "capture_time_ns")
+        source_publish_ns = _validate_uint64(source_publish_ns, "source_publish_ns")
         with self._locked():
             self._require_shared_open()
             self._require_status(slot, WRITING, "publish")
@@ -183,6 +190,7 @@ class SharedFrames:
             self._compose_times[slot] = compose_ns
             self._capture_times[slot] = capture_time_ns
             self._published_times[slot] = time.monotonic_ns()
+            self._source_publish_times[slot] = source_publish_ns
             self._statuses[slot] = READY
         with self._condition:
             self._condition.notify_all()
@@ -248,6 +256,7 @@ class SharedFrames:
                 self._compose_times[slot],
                 self._capture_times[slot],
                 self._published_times[slot],
+                self._source_publish_times[slot],
             )
 
     def stats_snapshot(self):
