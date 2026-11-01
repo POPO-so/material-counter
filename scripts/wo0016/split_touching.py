@@ -82,10 +82,9 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
     return labels
 
 
-def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_area: int = 30,
-                             min_hole_distance: float = 10, hole_area_cap: int = 16
-                             ) -> tuple[np.ndarray, ...] | None:
-    """Assign a joined cluster to two or three independently visible nut holes."""
+def _enclosed_holes(pixels: np.ndarray, min_hole_area: int,
+                    hole_area_cap: int) -> tuple[list[int], np.ndarray, int]:
+    """Return the interior background components the splitter accepts as holes."""
     height, width = pixels.shape
     area = int(np.count_nonzero(pixels))
     count, _, stats, centers = cv2.connectedComponentsWithStats(
@@ -98,6 +97,24 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
              and stats[index, cv2.CC_STAT_TOP] > 0
              and stats[index, cv2.CC_STAT_LEFT] + stats[index, cv2.CC_STAT_WIDTH] < width
              and stats[index, cv2.CC_STAT_TOP] + stats[index, cv2.CC_STAT_HEIGHT] < height]
+    return holes, centers, area
+
+
+def count_enclosed_holes(pixels: np.ndarray, *, min_hole_area: int = 30,
+                         hole_area_cap: int = 16) -> int:
+    """Count holes eligible for a touching split without running the split."""
+    mask = np.asarray(pixels) != 0
+    if mask.ndim != 2 or not mask.size:
+        return 0
+    holes, _, _ = _enclosed_holes(mask, int(min_hole_area), int(hole_area_cap))
+    return len(holes)
+
+
+def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_area: int = 30,
+                             min_hole_distance: float = 10, hole_area_cap: int = 16
+                             ) -> tuple[np.ndarray, ...] | None:
+    """Assign a joined cluster to two or three independently visible nut holes."""
+    holes, centers, area = _enclosed_holes(pixels, min_hole_area, hole_area_cap)
     if len(holes) not in (2, 3):
         return None
     hole_centers = centers[holes]
@@ -125,9 +142,20 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
     return tuple(children)
 
 
-def _split_by_projection_neck(pixels: np.ndarray,
-                              min_child_area: int) -> tuple[np.ndarray, np.ndarray] | None:
-    """Return a connected two-way cut only when a narrow projected neck exists."""
+def _slice_run_counts(pixels: np.ndarray, axis: int) -> np.ndarray:
+    """Count foreground runs in every row (axis 1) or column (axis 0)."""
+    if axis == 0:
+        first = pixels[0, :]
+        transitions = pixels[1:, :] & ~pixels[:-1, :]
+        return first.astype(np.int32) + transitions.sum(axis=0, dtype=np.int32)
+    first = pixels[:, 0]
+    transitions = pixels[:, 1:] & ~pixels[:, :-1]
+    return first.astype(np.int32) + transitions.sum(axis=1, dtype=np.int32)
+
+
+def _projection_neck_candidates(pixels: np.ndarray,
+                                min_child_area: int) -> list[tuple[tuple[float, int], int, int]]:
+    """Return every cut that satisfies the projection-neck conditions."""
     area = int(np.count_nonzero(pixels))
     candidates = []
     for axis in (0, 1):
@@ -135,29 +163,46 @@ def _split_by_projection_neck(pixels: np.ndarray,
         length = len(projection)
         if length < 7:
             continue
+        cuts = np.arange(3, length - 3)
+        if not len(cuts):
+            continue
         cumulative = np.cumsum(projection)
         prefix_maximum = np.maximum.accumulate(projection)
         suffix_maximum = np.maximum.accumulate(projection[::-1])[::-1]
-        for cut in range(3, length - 3):
-            left_area = int(cumulative[cut - 1])
-            right_area = area - left_area
-            if min(left_area, right_area) < min_child_area:
-                continue
-            neck = min(projection[cut - 1], projection[cut])
-            left_peak = int(prefix_maximum[cut - 1])
-            right_peak = int(suffix_maximum[cut])
-            if not 0 < neck <= 0.65 * min(left_peak, right_peak):
-                continue
-            strip = pixels[:, cut - 1 if projection[cut - 1] < projection[cut] else cut] if axis == 0 else pixels[cut - 1 if projection[cut - 1] < projection[cut] else cut, :]
-            runs = np.count_nonzero(strip & ~np.r_[False, strip[:-1]])
-            # A round hollow nut can have two runs through its central hole.
-            # Two touching round nuts form an elongated, balanced pair instead.
-            elongated_pair = (max(pixels.shape) >= 1.65 * min(pixels.shape)
-                              and 0.25 <= left_area / area <= 0.75)
-            if runs != 1 and not elongated_pair:
-                continue
-            score = (neck / min(left_peak, right_peak), -min(left_area, right_area))
-            candidates.append((score, axis, cut))
+        left_area = cumulative[cuts - 1]
+        right_area = area - left_area
+        smaller_area = np.minimum(left_area, right_area)
+        neck = np.minimum(projection[cuts - 1], projection[cuts])
+        peak = np.minimum(prefix_maximum[cuts - 1], suffix_maximum[cuts])
+        passing = (smaller_area >= min_child_area) & (neck > 0) & (neck <= 0.65 * peak)
+        if not np.any(passing):
+            continue
+        slice_runs = _slice_run_counts(pixels, axis)
+        strip_index = np.where(projection[cuts - 1] < projection[cuts], cuts - 1, cuts)
+        runs = slice_runs[strip_index]
+        # A round hollow nut can have two runs through its central hole.
+        # Two touching round nuts form an elongated, balanced pair instead.
+        ratio = left_area / area
+        elongated = ((max(pixels.shape) >= 1.65 * min(pixels.shape))
+                     & (0.25 <= ratio) & (ratio <= 0.75))
+        for index in np.flatnonzero(passing & ((runs == 1) | elongated)):
+            candidates.append(((float(neck[index]) / float(peak[index]),
+                                -int(smaller_area[index])), axis, int(cuts[index])))
+    return candidates
+
+
+def has_projection_neck(pixels: np.ndarray, *, min_child_area: int) -> bool:
+    """Return whether the splitter would find any projection-neck cut."""
+    mask = np.asarray(pixels) != 0
+    if mask.ndim != 2 or not mask.size:
+        return False
+    return bool(_projection_neck_candidates(mask, int(min_child_area)))
+
+
+def _split_by_projection_neck(pixels: np.ndarray,
+                              min_child_area: int) -> tuple[np.ndarray, np.ndarray] | None:
+    """Return a connected two-way cut only when a narrow projected neck exists."""
+    candidates = _projection_neck_candidates(pixels, min_child_area)
     if not candidates:
         return None
     _, axis, cut = min(candidates)
@@ -249,14 +294,16 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
 def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
                              min_hole_area: int = 30,
                              recursive_item_area: int | None = None,
-                             min_hole_distance: float = 10, hole_area_cap: int = 16
+                             min_hole_distance: float = 10, hole_area_cap: int = 16,
+                             assume_connected: bool = False
                              ) -> tuple[np.ndarray, ...]:
     """Split two or three touching nuts when holes or a narrow neck are visible.
 
     Two-hole partitions may contain an oversized joined child; that child is
     retried so a three-item silhouette with one obscured hole can still split.
     Ambiguous silhouettes stay intact, and accepted masks preserve the input
-    union without overlap.
+    union without overlap. ``assume_connected`` lets a caller that obtained the
+    mask from a connected-component pass skip the repeated connectivity check.
     """
     if isinstance(min_child_area, bool) or not isinstance(min_child_area, (int, np.integer)) or min_child_area < 1:
         raise ValueError("min_child_area must be a positive integer")
@@ -274,12 +321,14 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
     if (isinstance(hole_area_cap, bool) or not isinstance(hole_area_cap, (int, np.integer))
             or hole_area_cap < 1):
         raise ValueError("hole_area_cap must be a positive integer")
+    if not isinstance(assume_connected, bool):
+        raise ValueError("assume_connected must be a bool")
     pixels = np.asarray(component) != 0
     if pixels.ndim != 2:
         raise ValueError("component must be a 2D mask")
     if int(np.count_nonzero(pixels)) < 2 * min_child_area:
         return (pixels,)
-    if not is_single_connected_component(pixels):
+    if not assume_connected and not is_single_connected_component(pixels):
         return (pixels,)
     pieces = _split_recursive(
         pixels, int(min_child_area), int(min_hole_area),

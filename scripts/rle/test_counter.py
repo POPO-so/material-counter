@@ -1,4 +1,5 @@
 from pathlib import Path
+import cv2
 import sys
 import numpy as np
 import pytest
@@ -69,3 +70,41 @@ def test_complex_candidate_uses_only_local_mask(library,monkeypatch):
                        max_area=1000,max_merge_area=500)
     result=counter.update_rle(frame(mask))
     assert shapes==[(10,20)] and len(result.detections)==1
+
+
+def _ring_mask(centers, outer=24, inner=8):
+    mask = np.zeros((400, 640), np.uint8)
+    for cx, cy in centers:
+        cv2.circle(mask, (cx, cy), outer // 2, 255, -1)
+        cv2.circle(mask, (cx, cy), inner // 2, 0, -1)
+    return mask
+
+
+def _counting_calls(monkeypatch):
+    import scripts.rle.counter as module
+    calls = []
+    original = module.split_touching_component
+    def wrapped(*args, **kwargs):
+        calls.append(1)
+        return original(*args, **kwargs)
+    monkeypatch.setattr(module, "split_touching_component", wrapped)
+    return calls
+
+
+def test_intact_single_ring_above_split_area_skips_full_split(library, monkeypatch):
+    from scripts.standalone.count_controls import make_runtime_counter
+    calls = _counting_calls(monkeypatch)
+    counter = make_runtime_counter(library, profile="field-v1")
+    result = counter.update_rle(frame(_ring_mask([(100, 200)])), capture_monotonic_ns=1)
+    assert np.count_nonzero(_ring_mask([(100, 200)])) > 380
+    assert len(result.detections) == 1
+    assert calls == []
+
+
+def test_touching_pair_still_runs_full_split(library, monkeypatch):
+    from scripts.standalone.count_controls import make_runtime_counter
+    calls = _counting_calls(monkeypatch)
+    counter = make_runtime_counter(library, profile="field-v1")
+    result = counter.update_rle(frame(_ring_mask([(100, 200), (121, 201)])), capture_monotonic_ns=1)
+    assert len(result.detections) == 2
+    assert calls == [1]

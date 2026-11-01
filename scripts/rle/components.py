@@ -140,8 +140,13 @@ def analyze_runs(runs: Any, *, library: Any = None, min_area: int = 1) -> RleAna
     return RleAnalysis(components, labels)
 
 
-def local_mask(runs: Any, labels: Any, component_index: int) -> np.ndarray:
-    """Rebuild a single component's bbox as a Binary8 mask for split handling."""
+def local_mask(runs: Any, labels: Any, component_index: int,
+               bounds: tuple[int, int, int, int] | None = None) -> np.ndarray:
+    """Rebuild a single component's bbox as a Binary8 mask for split handling.
+
+    ``bounds`` may pass the x_min/y_min/x_max/y_max already computed by the
+    native component pass, avoiding four extra scans of the run subset.
+    """
     run_array = _runs_array(runs)
     label_array = np.asarray(labels)
     if label_array.dtype != np.uint32 or label_array.ndim != 1 or len(label_array) != len(run_array):
@@ -152,15 +157,21 @@ def local_mask(runs: Any, labels: Any, component_index: int) -> np.ndarray:
     selected = np.flatnonzero(label_array == int(component_index))
     if not len(selected):
         raise ValueError("component_index has no runs")
-    x_min = min(int((int(run_array[i]) >> 10) & 0x3FF) for i in selected)
-    x_max = max(int(run_array[i]) & 0x3FF for i in selected)
-    y_min = min(int(run_array[i]) >> 20 for i in selected)
-    y_max = max(int(run_array[i]) >> 20 for i in selected)
+    words = run_array[selected]
+    xs_begin = (words >> 10) & 0x3FF
+    xs_end = words & 0x3FF
+    rows_all = words >> 20
+    if bounds is None:
+        x_min = int(xs_begin.min())
+        x_max = int(xs_end.max())
+        y_min = int(rows_all.min())
+        y_max = int(rows_all.max())
+    else:
+        x_min, y_min, x_max, y_max = (int(value) for value in bounds)
     mask = np.zeros((y_max - y_min + 1, x_max - x_min + 1), dtype=np.uint8)
-    for index in selected:
-        word = int(run_array[index])
-        row = (word >> 20) - y_min
-        begin = ((word >> 10) & 0x3FF) - x_min
-        end = (word & 0x3FF) - x_min
+    rows = rows_all - y_min
+    begins = xs_begin - x_min
+    ends = xs_end - x_min
+    for row, begin, end in zip(rows.tolist(), begins.tolist(), ends.tolist()):
         mask[row, begin:end + 1] = 255
     return mask

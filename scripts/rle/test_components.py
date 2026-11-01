@@ -83,6 +83,8 @@ def assert_matches_opencv(mask, runs, library):
         expected_label = labels[first_run >> 20, (first_run >> 10) & 0x3FF]
         assert np.array_equal(restored != 0,
                               labels[y0:y1 + 1, x0:x1 + 1] == expected_label)
+        bounded = local_mask(runs, result.labels, index, bounds=(x0, y0, x1, y1))
+        assert np.array_equal(bounded, restored)
     return result
 
 

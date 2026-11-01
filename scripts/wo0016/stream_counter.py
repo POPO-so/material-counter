@@ -15,11 +15,13 @@ import cv2
 import numpy as np
 
 try:
-    from .split_touching import is_single_connected_component, split_touching_component
+    from .split_touching import (split_touching_component, count_enclosed_holes,
+                                 has_projection_neck, is_single_connected_component)
     from .binary_stats import Binary8RoiValidator
     from .motion_association import ordered_matches
 except ImportError:
-    from split_touching import is_single_connected_component, split_touching_component
+    from split_touching import (split_touching_component, count_enclosed_holes,
+                                has_projection_neck, is_single_connected_component)
     from binary_stats import Binary8RoiValidator
     from motion_association import ordered_matches
 
@@ -486,34 +488,43 @@ class MaskCounter:
                 continue
             if (self.guarded_merge and self.single_intact_area < area <= self.max_split_area):
                 cropped = labels[y:y + box_height, x:x + box_width] == label
-                pieces = split_touching_component(cropped, min_child_area=self.min_split_child_area,
-                                                  min_hole_area=self.split_min_hole_area,
-                                                  recursive_item_area=self.split_recursive_item_area,
-                                                  min_hole_distance=self.split_min_hole_distance,
-                                                  hole_area_cap=self.split_hole_area_cap)
-                piece_masks = [np.asarray(piece) != 0 for piece in pieces]
-                valid_partition = (2 <= len(piece_masks) <= 3
-                                   and all(piece.shape == cropped.shape
-                                           and is_single_connected_component(piece)
-                                           for piece in piece_masks))
-                if valid_partition:
-                    coverage = np.sum(np.stack(piece_masks), axis=0)
-                    valid_partition = (np.array_equal(coverage > 0, cropped)
-                                       and not np.any(coverage > 1))
-                if valid_partition:
-                    for piece in pieces:
-                        ys, xs = np.nonzero(piece)
-                        piece_area = len(xs)
-                        child = Detection(
-                            x_min=x + int(xs.min()), x_max=x + int(xs.max()),
-                            y_min=top + y + int(ys.min()),
-                            y_max=top + y + int(ys.max()), area=piece_area,
-                            centroid_x=x + float(np.mean(xs)),
-                            centroid_y=top + y + float(np.mean(ys)),
-                        )
-                        detections.append(child)
-                        self._split_origins[child] = int(label)
-                    continue
+                # Only run the full split when it has a hole or neck path that
+                # can accept a partition; intact single parts exit here.
+                if (count_enclosed_holes(cropped, min_hole_area=self.split_min_hole_area,
+                                         hole_area_cap=self.split_hole_area_cap) in (2, 3)
+                        or has_projection_neck(
+                            cropped, min_child_area=self.min_split_child_area)):
+                    pieces = split_touching_component(cropped, min_child_area=self.min_split_child_area,
+                                                      min_hole_area=self.split_min_hole_area,
+                                                      recursive_item_area=self.split_recursive_item_area,
+                                                      min_hole_distance=self.split_min_hole_distance,
+                                                      hole_area_cap=self.split_hole_area_cap,
+                                                      assume_connected=True)
+                    # Keep the defensive check: the counter must never
+                    # accept a disconnected or overlapping child set.
+                    partitions = [np.asarray(piece) != 0 for piece in pieces]
+                    valid_partition = (2 <= len(partitions) <= 3
+                                       and all(piece.shape == cropped.shape
+                                               and is_single_connected_component(piece)
+                                               for piece in partitions))
+                    if valid_partition:
+                        coverage = np.sum(np.stack(partitions), axis=0)
+                        valid_partition = (np.array_equal(coverage > 0, cropped)
+                                           and not np.any(coverage > 1))
+                    if valid_partition:
+                        for piece in partitions:
+                            ys, xs = np.nonzero(piece)
+                            piece_area = len(xs)
+                            child = Detection(
+                                x_min=x + int(xs.min()), x_max=x + int(xs.max()),
+                                y_min=top + y + int(ys.min()),
+                                y_max=top + y + int(ys.max()), area=piece_area,
+                                centroid_x=x + float(np.mean(xs)),
+                                centroid_y=top + y + float(np.mean(ys)),
+                            )
+                            detections.append(child)
+                            self._split_origins[child] = int(label)
+                        continue
             detections.append(detection)
         self._set_rejected_components(rejected, rejected_contours)
         detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
@@ -541,6 +552,11 @@ class MaskCounter:
                                d.centroid_x, d.centroid_y),
             )
             count = len(ordered)
+            # A merge needs both members below single_intact_area, so when the
+            # two smallest areas already exceed max_merge_area no pair can
+            # merge. Inputs are already centroid-sorted.
+            if count < 2 or ordered[0].area + ordered[1].area > self.max_merge_area:
+                return detections
             parent = list(range(count))
             group_area = [d.area for d in ordered]
             group_bbox = [
