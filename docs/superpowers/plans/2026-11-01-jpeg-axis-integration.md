@@ -34,9 +34,12 @@
 - [x] T3 冻结版真实frame1/98与vendorY逐像素相同；120帧与OpenCV最大差1、阈值128翻转0，`d695-snapshot-batch120-20261101`为FLOW_PASS。样本在该阈值下均无前景，不构成物料准确率证据。熵流截断独立Csim确认错误status、无效checksum及后继好帧，仍不保证任意坏熵流恢复。硬件背压不能由C仿真代替。
 - [x] T4 实现 `fpga/experimental/jpeg_integration/rle_region_features.v` 的BRAM版本；512/320容量及端口语义不减。33个行为用例通过，冻结源码SHA `19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911`；统计表4 BRAM36、行表1 BRAM36，OOC为1244 LUT/514 FF/3 DSP。本地提交`f953885`，不是联合route证据。
 - [x] T5 JPEG HLS CSim、CSynth、RTL co-sim：receipt `hls-green-recovery-d695-20261101T140606.json` 绑定源码 SHA `d695aac9…2108f7d` 与导出 component SHA `0bdfce50…7246725d5`；三项检查均 PASS。端口映射含 AXIS、AXI-Lite 与控制口，无 m_axi；官方正常帧及 entropy-cut→good2 随机背压 RTL co-sim PASS，错误恢复两 transaction 共 314358 cycles、稳定性错误 0。120 帧 CSim 对 OpenCV maxdiff 1、阈值128翻转0。结论仅限独立 JPEG HLS/RTL；不表示联合 BD、全系统 route 或板端验收。详见 `data/results/jpeg-evidence-audit-20261101-151459/README.md`。
-- [ ] T6 联合候选构建：从offload固定快照读取模块，以优化区域核心替代原核心，在 MM2S 和 image_pipeline 之间接JPEG IP，补AXI-Lite控制、时钟/复位、DMA长度位宽。不合并其他分支、不覆盖其工作文件。
-- [ ] T7 XSim接口链路验收及联合综合/布局布线；报告资源、各时钟WNS/TNS/WHS/THS、DRC/CDC和BIT状态。route未完成不得标记ready_for_board。
-- [ ] T8 更新本计划、PROJECT_INDEX、文档/项目树及实验使用说明；只提交本任务文件，本地Commit；保留分支/worktree，不push/merge/部署。
+- [x] T6 联合候选构建：从offload固定快照读取模块，以优化区域核心替代原核心，在 MM2S 和 image_pipeline 之间接JPEG IP，补AXI-Lite控制、时钟/复位、DMA长度位宽。不合并其他分支、不覆盖其工作文件。j9 recovery3：Vivado batch exit 0；BD validation、JPEG架构/地址读回、保留接口/时钟/地址比对、save/readback、live source association均PASS；`joint-connected.tcldict`为`CONNECTED_NOT_BUILT`。T6不代表联合综合、route、BIT或板端通过；XPR仓库迁移路径修复只作用于隔离构建副本，原始失败收据保留。收据：`.runtime/j9/evidence/connect_recovery3/`，摘要`t6-finalization.json`。
+- [x] T7a 真实 `jpeg_axis_gray` RTL→image_pipeline→RLE/FRG→二值预览/帧身份 XSim；候选相机 JPEG 单帧 PASS，receipt `fad0dba6…daf4bf2`。这是 RTL/数字仿真证据，不代表联合系统实现或实体 HDMI。
+- [ ] T7b 联合综合、CDC/约束审查及布局布线；报告资源、各时钟WNS/TNS/WHS/THS、DRC/CDC和 BIT 状态。route 未完成不得标记 ready_for_board。
+- [x] T8 新增隔离的 PS MJPEG→JPEG DMA 实验运行模块：摄像头原始 MJPEG 字节直接进入 512000 B 对齐 CMA 缓冲，通过 MM2S 和 JPEG AXI-Lite 控制交给 PL；等待 `status_ap_vld`/status、RLE 与 FRG 同帧有效后才允许 `mask_accept`。不修改现有服务入口；离线 mock 覆盖长度/对齐/缓存同步/最终 TKEEP 对应长度/错误状态/超时/帧号和禁止坏帧接受。管理端复验 transport 与联合读回门禁共 50 项通过、25 个子用例通过；真实候选 BIT、USB 摄像头和 HDMI 板端运行仍单独验收。
+- [ ] T9 按本次用户授权进行一次性候选板端部署与相机验证：仅在T6/T7及部署前置门禁通过后使用独立实验路径，不替换正式release/current、不注册或启用常驻服务；记录候选BIT/HWH/manifest哈希、boot ID、DMA/VDMA与camera owner状态，并以新摄像头单帧验证解码/RLE/FRG身份及PL二值HDMI显示。部署后按检查结果恢复测试前相机格式并安全释放资源。
+- [ ] T10 更新本计划、PROJECT_INDEX、文档/项目树及实验使用说明；只提交本任务文件，本地Commit；保留分支/worktree，不push/merge。
 
 ## 验证命令与产物归属
 
@@ -74,3 +77,29 @@
 2026-11-01 15:15 JPEG 证据复核：Manager验收 T5。正常帧与 entropy-cut→good2 recovery 官方 RTL co-sim 都 PASS；D695 C++/0bdf component 绑定有效，CSim/CSynth/Cosim receipt 引用文件 SHA 全匹配。单核实际 HLS IP OOC 为 17,358 LUT/13,758 FF/28 BRAM36 等效/34 DSP，尚未布局布线。区域 BRAM 19439 SHA 与当前文件一致，5 BRAM36 映射及区域回归 PASS（OOC）。packet XSim 对固定 c5a8680 joint-candidate snapshot 5/5 PASS；pipeline SHA 7cfbdde5…d50f261 与 `C:/w/m/snapshot` 及 `.runtime/jpeg-joint-snapshot-20261101` 一致，候选不使用 worktree 根旧 2adde 文件；测试未包含 JPEG decoder RTL。video continuity XSim 对同一固定 snapshot 的五帧数字视频 PASS，不是物理 HDMI/板端证据。灰度预览已移出需求；PL累计 glyph 未实现，但不在本轮资源接入验收范围。T6 joint BD 与 T7 联合实现/route/板端仍 pending。
 
 2026-11-01 本轮连接门禁修复：仅对 image_pipeline 的 refresh_region、Tcl code=0 且明确负 WARNING 计数差新增独立日志区间审查，原 FAIL receipt 保留；overlay refresh 不继承此例外。Manager复验15项测试及1项subtest通过，既有JPEG探针6项通过，固定21文件快照dry-run通过；`C:/w/m` 源码和green gates核对通过，两份region替换哈希均为19439。新clone尚未启动connect/synth；另一G2 Vivado正在运行、物理内存低于1 GiB，本轮不并发启动构建。恢复命令、资源快照及未验收项见 [修复交付记录](../../../data/results/jpeg-axis-integration-followup-20261101-151831/README.md)。后续仍为live BD readback→联合综合→Manager审查CDC/约束→route；没有BIT或上板结果。
+
+2026-11-01 恢复推进：用户明确要求继续关闭主要缺口，将原先“不改运行服务”扩大为仅新增隔离 PS 实验运行模块；既有 `run_counter.py` 和正式服务不重构。联合综合仍以可用物理内存≥3 GiB 且无竞争 Vivado 构建为启动门槛。staged HLS component 和生成 Linux driver 给出 AXI-Lite 寄存器映射；板端真实 HWH/BD 仍须在 T6 live readback 中复核。
+
+2026-11-01 T8 完成管理端复验：`scripts/rle/test_jpeg_transport.py` 与 `fpga/experimental/jpeg_integration/test_joint_readback_offline.py` 合并运行，50 passed、25 subtests passed；`git diff --check` 退出码 0；重建短别名后 staged manifest 源码哈希与 HLS/region 前置门禁均输出 PASS。T8 已完成 fake-MMIO/DMA 控制逻辑；live BD、联合 XSim/实现和 HDMI 板端没有因此验收。
+
+2026-11-01 一次性摄像头模式探测：板端UVC枚举识别为`DECXIN CAMERA`，`/dev/video0`支持MJPG 640×400（枚举帧间隔0.005/0.008/0.017/0.033/0.050/0.100秒），另支持YUYV 640×400；视频节点当时无打开进程。实际JPEG帧头/SOF采样和DRI未取得。一次性`v4l2-ctl`设置640×400 MJPG并尝试单帧流期间SSH中断；用户手动重启后boot ID变更，后续只读节点查询恢复成功。中断可能与另一板端部署会话有关，未归因于相机或采集命令。测试前读得设备模式为1280×800 MJPG；640×400临时模式是否保留、`/tmp/decxin-oneframe-bF4f9c`是否由EXIT trap清除，待板端可稳定访问时复核。曝光及其他UVC控件未修改。
+
+2026-11-01 部署范围更新：用户明确要求按项目部署规则部署当前JPEG实验候选，并限定为本次测试。该指令替代早先T9的“不得部署”边界；新增T9一次性部署，仍须先通过T6/T7及板端安全准入，不能用旧生产BIT/standalone包冒充JPEG候选。当前仓库根`AGENTS.md`没有安装/切换步骤，`scripts/standalone/DEPLOYMENT.md`仅覆盖standalone/G4包流程，不能直接作为JPEG部署脚本。当前 `.runtime/j1`、JPEG结果目录未发现联合 `.bit/.hwh`，所以尚无可部署JPEG制品。
+
+2026-11-01 T6 资源决策：用户明确要求“直接开始T6 用虚拟内存”。这一指令仅覆盖T6连接/读回阶段的既有3072 MiB可用物理内存门槛；启动前实测可用虚拟内存12430 MiB，pagefile分配34816 MiB/当前使用5202 MiB，无其他Vivado进程，且新staging源码哈希与green gates通过。按此证据启动一次T6 batch连接/读回；此决策不自动放宽T7综合或布局布线的资源门槛。主要代价是分页增多导致构建缓慢或桌面响应下降。
+
+2026-11-01 T6 recovery3验收：复用现有j9工程，没有重新导出JPEG IP或创建新快照。修复构建副本XPR中三条已迁移外部IP仓库绝对路径、移除重复JPEG仓库项后，重跑一次连接/读回成功；原始T6失败收据保持未改。启动前物理可用内存1.819 GiB、虚拟可用14.079 GiB；T6使用虚拟内存继续。T7整机综合门槛仍为可用物理内存至少3 GiB且无竞争Vivado，当前尚未满足；不得把T6授权延伸成T7资源门槛豁免。
+
+2026-11-01 T7 packet边界XSim复跑未验收：固定21文件源快照入口已确认，xvlog通过，xelab在生成xsim_2.c对象时以[XSIM 43-3409]失败，没有功能PASS标记；错误日志位于.runtime/j9/xsim-packet/20261101-222726-959409/sim/。该测试仍明确不含JPEG解码RTL。运行时可用虚拟内存14146 MiB，xelab自动启用18个子编译；同一脚本旧候选有独立5/5 PASS证据，但不能代替本次失败重跑。依据AMD [UG900](https://docs.amd.com/r/en-US/ug900-vivado-logic-simulation/Vivado-Simulator-Elaboration-Options)，xelab -mt可限制子编译并行度；在检测到另一个Vivado Tcl进程运行且物理可用内存581 MiB时，未并发启动减线程复测。T7仍pending，当前没有RTL行为失败结论。
+
+2026-11-01 T7真实JPEG RTL→pipeline验证准备：新增 `tb_jpeg_pipeline.sv` 与 `tb_jpeg_pipeline_run.py`，将真实 `jpeg_axis_gray` RTL、冻结的640×400 pipeline、优化region及二值预览/overlay身份检查串联；runner现由独立raster oracle生成RLE/FRG期望向量，并检查全部JPEG→Gray8→RLE/FRG/预览结果。输入预检通过：HLS component SHA `0bdfce50…7246725d5`、146文件集及历史相机帧/Csim golden哈希匹配；Python AST、参数对齐、oracle向量生成和`git diff --check`通过。首轮batch在RTL编译前因Vivado Tcl `set_property`参数写法失败；已改为`set_property -dict`，但尚未复跑。当前外部G2 Vivado PID 57024及其synth子任务仍在运行，故未启动第二个Vivado/XSim。
+
+2026-11-01 本轮板端只读核验：当前boot ID `6ca5a640-c3f0-4fd8-b3cf-883066534609`，DECXIN `/dev/video0`为640×400 MJPG@60；板端OpenCV 4.5.4。`/dev/video0`由手动启动的`integrated_run.py` PID 7592占用，运行standalone v12、`--input-mode raw`、`--preview-backend pl`，systemd服务inactive；未停止进程、未改相机设置。仓库原有120帧实采记录经V4L2/MJPG/CONVERT_RGB=0取得13420字节JPEG，SOI/EOI/SOF/熵流解析通过，并有HLS Csim golden。该证据没有发现PS采集器把解码像素误作JPEG的故障；真实PL串流仍待新候选部署后验收。此前SSH断开是否与别的板端会话相关仍未知。
+
+2026-11-01 证据交叉核验：旧 `data/results/jpeg-axis-integration-20261101-143535/joint_connect.stdout.log` 是早期失败；当前 T6 状态以 `.runtime/j9/evidence/connect_recovery3/t6-finalization.json` 为准，其 `status=PASS`、Vivado exit 0，并列出 IP repository、BD validation、architecture readback、save BD、live sources 和 preserved readback 收据。重新计算 manifest、`joint-connected.tcldict`、最终 XPR/BD SHA 均匹配 finalization，architecture readback 为 `status OK`。它的 `board_ready=false` 仅表示尚未综合/部署；不在本轮重跑 T6。
+
+同一真实相机 JPEG 仍存在于板端 `/home/xilinx/jpeg-probe-20261101/camera-120-frames/frame_000001.jpg`，现场 `sha256sum` 与本机 fixture 一致（13,420 bytes，SHA `34e34e90690fb1b50262d2d585406cb23f34ecdae5ac4e6d6ae1408efdf5fd0`）。因此候选 bit/HWH 可用时，可在不抢占当前摄像头的前提下先将此压缩样本经 PS DMA送入 PL；实时摄像头占用与独立实时采集仍是另一项现场状态。`scripts/rle/jpeg_transport.py` 当前只有传输类和 V4L2 生成器，仓库没有板端调用入口；一次性板测入口、frame-monitor/HDMI 结果核验仍待补齐。
+
+2026-11-02 继续推进 T7：未重跑T6。AMD Vivado MCP client info为ROSS 2026.10.1、活动会话为空；按项目已记录的托管启动故障使用 Vivado 2026.1 batch。第一次真实pipeline runner在`create_project`阶段因`tclapp::load_apps`退出，未进入xvlog/xelab。短路径`S:`下的独立工程创建探针（工作目录在C盘项目根，日志/Journal用绝对S盘路径）通过。runner已修正以保留SUBST别名、将日志/Journal改绝对路径，并从项目根启动；输入、HLS component及流水线哈希预检和Python AST通过。最后一次失败运行仍使用旧工作目录/相对日志命令，故这些修正尚无完整T7绿验证。另一独立G2恢复综合 Vivado PID 52500仍活动；最新快照可用物理内存约1.05 GiB，不并发启动下一次Vivado。后续先等待该构建终止，再用当前runner复跑T7；本条不将启动失败归因到JPEG RTL。
+
+2026-11-02 T7真实 JPEG RTL→冻结图像流水线 XSim PASS：运行 `.runtime/j9/t7/jpeg-pipeline-20261102-012710-5ed6cb34`；receipt 与 SHA sidecar一致，SHA-256 `fad0dba6d25417f12a259b063cc1922cc8df23ed6865b9dff9d9ff629daf4bf2`，testbench/runner SHA 与当前分支文件匹配。`JPEG_PIPELINE_PASS frame_id=1 jpeg_bytes=13420 gray_beats=64008 preview_pixels=256000 rle_words=552 frg_records=0 displayed_id=1`。所有冻结 HLS/pipeline/region/输入清单 SHA 与 receipt 一致；该结论限于 XSim。联合 synth 已对 T6 固定快照启动，目前运行到 JPEG OOC；route 尚未启动，须在审阅 synth 资源/时序/CDC/DRC/约束报告并满足 route 前置门禁后再开始。
