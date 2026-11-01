@@ -316,3 +316,45 @@ def test_load_boot_config_rejects_non_object(tmp_path):
 def test_boot_integrated_uses_the_validated_loader():
     from scripts.standalone import boot_integrated, boot_policy
     assert boot_integrated.load_boot_config is boot_policy.load_boot_config
+
+
+def test_build_argv_default_does_not_pass_diag_snapshot(tmp_path):
+    argv = build_argv(tmp_path, _boot_config(), str(uuid.uuid4()), "out", "f" * 64, "python")
+    assert "--diag-snapshot" not in argv
+
+
+def test_build_argv_true_appends_diag_snapshot_exactly_once(tmp_path):
+    argv = build_argv(tmp_path, _boot_config(diag_snapshot=True),
+                      str(uuid.uuid4()), "out", "f" * 64, "python")
+    assert argv.count("--diag-snapshot") == 1
+    assert argv[-1] == "--diag-snapshot"
+
+
+def test_build_argv_false_keeps_the_original_argv_for_diag_snapshot(tmp_path):
+    boot = str(uuid.uuid4())
+    base = build_argv(tmp_path, _boot_config(), boot, "out", "f" * 64, "python")
+    off = build_argv(tmp_path, _boot_config(diag_snapshot=False),
+                     boot, "out", "f" * 64, "python")
+    assert off == base
+
+
+@pytest.mark.parametrize("value", ["true", 1, 0, None, [], {}])
+def test_build_argv_rejects_non_bool_diag_snapshot(value, tmp_path):
+    with pytest.raises(TypeError, match="diag_snapshot"):
+        build_argv(tmp_path, _boot_config(diag_snapshot=value),
+                   str(uuid.uuid4()), "out", "f" * 64, "python")
+
+
+def test_build_argv_combines_transfer_timing_and_diag_snapshot(tmp_path):
+    argv = build_argv(tmp_path, _boot_config(transfer_timing=True, diag_snapshot=True),
+                      str(uuid.uuid4()), "out", "f" * 64, "python")
+    assert argv[-2:] == ["--transfer-timing", "--diag-snapshot"]
+
+
+def test_load_boot_config_accepts_diag_snapshot_bool(tmp_path):
+    path = tmp_path / "boot-config.json"
+    path.write_text(json.dumps(_boot_config(transfer_timing=True, diag_snapshot=True)),
+                    encoding="utf-8")
+    config = load_boot_config(path)
+    assert config["diag_snapshot"] is True
+    assert config["transfer_timing"] is True

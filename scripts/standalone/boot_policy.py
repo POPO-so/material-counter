@@ -122,7 +122,7 @@ def build_argv(root, config, boot_id, output, manifest_sha256, python_executable
     if not isinstance(config, dict):
         raise TypeError("config must be a dict")
     required_keys = {"schema", "mode", "camera", "duration_s"}
-    allowed_keys = required_keys | {"transfer_timing"}
+    allowed_keys = required_keys | {"transfer_timing", "diag_snapshot"}
     unknown = set(config) - allowed_keys
     missing = required_keys - set(config)
     if unknown:
@@ -131,6 +131,8 @@ def build_argv(root, config, boot_id, output, manifest_sha256, python_executable
         raise ValueError("missing boot config fields: {}".format(sorted(missing)))
     if "transfer_timing" in config and type(config["transfer_timing"]) is not bool:
         raise TypeError("transfer_timing must be a boolean")
+    if "diag_snapshot" in config and type(config["diag_snapshot"]) is not bool:
+        raise TypeError("diag_snapshot must be a boolean")
     if config["schema"] != _CONFIG_SCHEMA:
         raise ValueError("unsupported config schema")
     if config["mode"] not in ("continuous", "acceptance"):
@@ -192,4 +194,6 @@ def build_argv(root, config, boot_id, output, manifest_sha256, python_executable
         argv.append("--continuous")
     if config.get("transfer_timing", False):
         argv.append("--transfer-timing")
+    if config.get("diag_snapshot", False):
+        argv.append("--diag-snapshot")
     return argv
