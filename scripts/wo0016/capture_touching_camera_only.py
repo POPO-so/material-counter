@@ -28,6 +28,9 @@ MIN_FORMAL_FRAMES = 600
 MAX_NPZ_FRAMES = 300
 MAX_COMPACT_FRAMES = 1800
 MAX_MEMMAP_FRAMES = 3600
+RAM_MAX_FRAMES = 300
+RAM_RUNTIME_OVERHEAD_BYTES = 128 * 1024 * 1024
+RAM_SAFETY_MARGIN = 1.25
 DISK_RESERVE_BYTES = 256 * 1024 * 1024
 MEMORY_HEADROOM = 1.5
 MEMORY_OVERHEAD_BYTES = 64 * 1024 * 1024
@@ -101,6 +104,8 @@ def _read_meminfo(path="/proc/meminfo"):
 
 
 def _expected_bytes(frames, compact, output_format):
+    if output_format == "ram":
+        return frames * (400 * 640 + 8 + 8 + 4 + 20)
     per_frame = 320 * 240 + 8 + 8 + 4
     if not compact:
         per_frame += 400 * 640
@@ -120,16 +125,24 @@ def _precheck(output_dir, *, frames, compact, formal, output_format,
         raise PrecheckError("baseline_frames must be smaller than frames")
     if tail_frames and tail_frames >= frames:
         raise PrecheckError("tail_frames must be smaller than frames")
-    if output_format not in ("npz", "memmap"):
-        raise PrecheckError("format must be npz or memmap")
+    if output_format not in ("npz", "memmap", "ram"):
+        raise PrecheckError("format must be npz, memmap or ram")
     if formal and compact:
         raise PrecheckError("formal material capture must keep 640x400 source frames")
-    if output_format == "npz":
+    if output_format == "ram":
+        if compact:
+            raise PrecheckError("ram capture always keeps 640x400 source frames")
+        if formal:
+            raise PrecheckError("formal capture needs at least 600 frames; "
+                                "ram v1 caps at 300")
+        limit = RAM_MAX_FRAMES
+    elif output_format == "npz":
         limit = MAX_COMPACT_FRAMES if compact else MAX_NPZ_FRAMES
     else:
         limit = MAX_MEMMAP_FRAMES
     if frames > limit:
-        raise PrecheckError(f"frames {frames} exceeds {output_format} limit {limit}")
+        raise PrecheckError(f"frames {frames} exceeds {output_format} limit {limit}; "
+                            "the window is not silently truncated")
     if formal and frames < MIN_FORMAL_FRAMES:
         raise PrecheckError(f"formal capture needs at least {MIN_FORMAL_FRAMES} frames")
     if output_dir.exists():
@@ -141,13 +154,18 @@ def _precheck(output_dir, *, frames, compact, formal, output_format,
     if free < required:
         raise PrecheckError(f"insufficient disk: free {free} < required {required}")
     available_kib = _read_meminfo(meminfo_path)
-    estimate = (expected + MEMORY_OVERHEAD_BYTES if output_format == "npz"
-                else MEMORY_MEMMAP_OVERHEAD_BYTES)
+    if output_format == "ram":
+        estimate = int((expected + RAM_RUNTIME_OVERHEAD_BYTES) * RAM_SAFETY_MARGIN)
+        headroom = 1.0
+    else:
+        estimate = (expected + MEMORY_OVERHEAD_BYTES if output_format == "npz"
+                    else MEMORY_MEMMAP_OVERHEAD_BYTES)
+        headroom = MEMORY_HEADROOM
     if available_kib is not None:
-        if available_kib * 1024 < estimate * MEMORY_HEADROOM:
+        if available_kib * 1024 < estimate * headroom:
             raise PrecheckError(
                 f"insufficient memory: MemAvailable {available_kib} KiB < "
-                f"{int(estimate * MEMORY_HEADROOM / 1024)} KiB")
+                f"{int(estimate * headroom / 1024)} KiB")
     return {"expected_bytes": expected, "free_bytes": free,
             "required_bytes": required, "mem_available_kib": available_kib,
             "memory_estimate_bytes": estimate}
@@ -159,33 +177,41 @@ def _gap_anomalies(monotonic_ns, diag, captured):
     The frame timestamp is taken after resize and before the data writes, so a
     gap spans the post-timestamp work of the earlier frame plus the
     read/decode/resize of the later frame. Anything left over is unexplained.
+    ``ram`` mode has no resize; its RAM copy is the write stage.
     """
     if diag is None or captured < 2:
         return []
     diffs = np.diff(np.asarray(monotonic_ns, dtype=np.int64)) / 1e6
     if not len(diffs):
         return []
+    write_name = "source_write_ms" if "source_write_ms" in diag else "ram_write_ms"
+
+    def stage(name, index):
+        array = diag.get(name)
+        return float(array[index]) if array is not None else 0.0
+
     threshold = max(GAP_FLOOR_MS, 2.0 * float(np.median(diffs)))
     records = []
     for index in np.flatnonzero(diffs > threshold)[:MAX_ANOMALIES]:
         index = int(index)
-        pre_prev = float(diag["read_ms"][index] + diag["decode_ms"][index]
-                         + diag["resize_ms"][index])
-        pre_next = float(diag["read_ms"][index + 1] + diag["decode_ms"][index + 1]
-                         + diag["resize_ms"][index + 1])
-        post_prev = float(diag["frame_total_ms"][index]) - pre_prev
+        pre_prev = (stage("read_ms", index) + stage("decode_ms", index)
+                    + stage("resize_ms", index))
+        pre_next = (stage("read_ms", index + 1) + stage("decode_ms", index + 1)
+                    + stage("resize_ms", index + 1))
+        post_prev = stage("frame_total_ms", index) - pre_prev
         records.append({
             "after_frame": index, "before_frame": index + 1,
             "gap_ms": round(float(diffs[index]), 3),
-            "read_ms_prev": round(float(diag["read_ms"][index]), 3),
-            "decode_ms_prev": round(float(diag["decode_ms"][index]), 3),
-            "resize_ms_prev": round(float(diag["resize_ms"][index]), 3),
-            "source_write_ms_prev": round(float(diag["source_write_ms"][index]), 3),
-            "preview_write_ms_prev": round(float(diag["preview_write_ms"][index]), 3),
-            "frame_total_ms_prev": round(float(diag["frame_total_ms"][index]), 3),
-            "read_ms_next": round(float(diag["read_ms"][index + 1]), 3),
-            "decode_ms_next": round(float(diag["decode_ms"][index + 1]), 3),
-            "resize_ms_next": round(float(diag["resize_ms"][index + 1]), 3),
+            "write_stage": write_name,
+            "read_ms_prev": round(stage("read_ms", index), 3),
+            "decode_ms_prev": round(stage("decode_ms", index), 3),
+            "resize_ms_prev": round(stage("resize_ms", index), 3),
+            "source_write_ms_prev": round(stage(write_name, index), 3),
+            "preview_write_ms_prev": round(stage("preview_write_ms", index), 3),
+            "frame_total_ms_prev": round(stage("frame_total_ms", index), 3),
+            "read_ms_next": round(stage("read_ms", index + 1), 3),
+            "decode_ms_next": round(stage("decode_ms", index + 1), 3),
+            "resize_ms_next": round(stage("resize_ms", index + 1), 3),
             "unexplained_ms": round(float(diffs[index]) - post_prev - pre_next, 3),
         })
     return records
@@ -318,9 +344,13 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
     started_ns = None
     diag = None
     if diagnostics:
-        diag = {name: np.empty(frames, dtype=np.float32) for name in
-                ("read_ms", "decode_ms", "resize_ms", "source_write_ms",
-                 "preview_write_ms", "frame_total_ms")}
+        names = (("read_ms", "decode_ms", "ram_write_ms", "frame_total_ms")
+                 if output_format == "ram" else
+                 ("read_ms", "decode_ms", "resize_ms", "source_write_ms",
+                  "preview_write_ms", "frame_total_ms"))
+        diag = {name: np.empty(frames, dtype=np.float32) for name in names}
+    last_timestamp_perf = None
+    tail_post_ms = None
 
     try:
         camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
@@ -336,6 +366,12 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
         if output_format == "npz":
             source = None if compact else np.empty((frames, 400, 640), dtype=np.uint8)
             resized = np.empty((frames, 240, 320), dtype=np.uint8)
+            monotonic = np.empty(frames, dtype=np.int64)
+            wall = np.empty(frames, dtype=np.int64)
+            read_ms = np.empty(frames, dtype=np.float32)
+        elif output_format == "ram":
+            source = np.empty((frames, 400, 640), dtype=np.uint8)
+            resized = None
             monotonic = np.empty(frames, dtype=np.int64)
             wall = np.empty(frames, dtype=np.int64)
             read_ms = np.empty(frames, dtype=np.float32)
@@ -394,13 +430,25 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
             decoded_at = time.perf_counter_ns()
             gray = _decode_gray(raw)
             prepared_at = time.perf_counter_ns()
-            small = cv2.resize(gray, (320, 240), interpolation=cv2.INTER_NEAREST)
-            resized_at = time.perf_counter_ns()
+            if output_format == "ram":
+                resized_at = prepared_at
+            else:
+                small = cv2.resize(gray, (320, 240), interpolation=cv2.INTER_NEAREST)
+                resized_at = time.perf_counter_ns()
             read_ms_value = (prepared_at - read_started) / 1e6
+            timestamp_perf = time.perf_counter_ns()
             timestamp = _monotonic_ns()
+            last_timestamp_perf = timestamp_perf
             wall_timestamp = _wall_ns()
             write_started = time.perf_counter_ns()
-            if output_format == "npz":
+            if output_format == "ram":
+                source[index] = gray
+                source_written = time.perf_counter_ns()
+                preview_written = source_written
+                monotonic[index] = timestamp
+                wall[index] = wall_timestamp
+                read_ms[index] = read_ms_value
+            elif output_format == "npz":
                 if source is not None:
                     source[index] = gray
                 source_written = time.perf_counter_ns()
@@ -429,9 +477,12 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                 frame_finished = time.perf_counter_ns()
                 diag["read_ms"][index] = (decoded_at - read_started) / 1e6
                 diag["decode_ms"][index] = (prepared_at - decoded_at) / 1e6
-                diag["resize_ms"][index] = (resized_at - prepared_at) / 1e6
-                diag["source_write_ms"][index] = (source_written - write_started) / 1e6
-                diag["preview_write_ms"][index] = (preview_written - source_written) / 1e6
+                if output_format == "ram":
+                    diag["ram_write_ms"][index] = (source_written - write_started) / 1e6
+                else:
+                    diag["resize_ms"][index] = (resized_at - prepared_at) / 1e6
+                    diag["source_write_ms"][index] = (source_written - write_started) / 1e6
+                    diag["preview_write_ms"][index] = (preview_written - source_written) / 1e6
                 diag["frame_total_ms"][index] = (frame_finished - frame_started) / 1e6
         elapsed_s = (_monotonic_ns() - started_ns) / 1e9 if started_ns else 0.0
     except BaseException as error:
@@ -439,6 +490,8 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
         if elapsed_s == 0.0 and started_ns:
             elapsed_s = (_monotonic_ns() - started_ns) / 1e9
     finally:
+        tail_post_ms = ((time.perf_counter_ns() - last_timestamp_perf) / 1e6
+                        if last_timestamp_perf is not None else None)
         camera.release()
         STOP_REQUESTED["flag"] = False
 
@@ -466,6 +519,33 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                     "read_ms": read_ms[:captured]}
         if source is not None:
             contents["source_gray640x400"] = source[:captured]
+        started = time.perf_counter_ns()
+        try:
+            with temp.open("wb") as stream:
+                _save_npz(stream, **contents)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temp, archive_path)
+        except BaseException as error:
+            finishing["save_ms"] = round((time.perf_counter_ns() - started) / 1e6, 3)
+            failure_reason = failure_reason or f"save_failed:{error!r}"
+            if status == "COMPLETE":
+                status = "INCOMPLETE"
+        else:
+            finishing["save_ms"] = round((time.perf_counter_ns() - started) / 1e6, 3)
+            started = time.perf_counter_ns()
+            data_files.append({"name": archive_name,
+                               "bytes": archive_path.stat().st_size,
+                               "sha256": _sha256(archive_path)})
+            finishing["hash_ms"] = round((time.perf_counter_ns() - started) / 1e6, 3)
+    elif output_format == "ram" and captured:
+        archive_name = "camera_ram_capture.npz"
+        archive_path = output_dir / archive_name
+        temp = output_dir / (archive_name + ".tmp")
+        contents = {"source_gray640x400": source[:captured],
+                    "monotonic_ns": monotonic[:captured],
+                    "wall_ns": wall[:captured],
+                    "read_ms": read_ms[:captured]}
         started = time.perf_counter_ns()
         try:
             with temp.open("wb") as stream:
@@ -517,7 +597,7 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
             if status == "COMPLETE":
                 status = "INCOMPLETE"
 
-    if output_format == "npz":
+    if output_format in ("npz", "ram"):
         captured_monotonic = (monotonic[:captured] if monotonic is not None
                               else np.empty(0, dtype=np.int64))
     elif captured:
@@ -558,6 +638,10 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                         "anomalies": anomalies,
                         "anomaly_limit": MAX_ANOMALIES},
         "finishing": finishing,
+        "ram_only": output_format == "ram",
+        "preview_saved": output_format != "ram",
+        "tail_post_ms": (round(tail_post_ms, 3) if tail_post_ms is not None else None),
+        "ram_limit_frames": RAM_MAX_FRAMES if output_format == "ram" else None,
     }
     manifest_started = time.perf_counter_ns()
     try:
@@ -603,7 +687,7 @@ def main() -> int:
     parser.add_argument("--start-delay-s", type=float, default=8.0)
     parser.add_argument("--compact", action="store_true")
     parser.add_argument("--formal", action="store_true")
-    parser.add_argument("--format", choices=("npz", "memmap"), default=None)
+    parser.add_argument("--format", choices=("npz", "memmap", "ram"), default=None)
     parser.add_argument("--diagnostics", action="store_true",
                         help="record per-stage timings and gap attribution")
     parser.add_argument("--wait-for-object-s", type=float, default=0.0,
