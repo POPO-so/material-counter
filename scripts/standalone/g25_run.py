@@ -26,6 +26,7 @@ from scripts.rle.run_counter import golden_mask
 from scripts.rle.transport import RleDmaTransport
 from scripts.rle.counter import RleCounter
 from scripts.wo0015.board_preflight import audit_process_ownership, inspect_pynq_global_state
+from .vdma_diag import MM2S_ERROR_MASK
 
 
 def main(argv=None):
@@ -188,7 +189,7 @@ def main(argv=None):
         if args.display != 'off':
             owner.call(hw.hdmi.close, timeout=3)
         report['vdma_after'] = {hex(i): owner.call(hw.vdma.read,i) for i in (0,4)}
-        if not report['vdma_after']['0x4'] & 1 or report['vdma_after']['0x4'] & 0x770:
+        if not report['vdma_after']['0x4'] & 1 or report['vdma_after']['0x4'] & MM2S_ERROR_MASK:
             raise RuntimeError('VDMA did not safely halt')
         report['pipeline_after'] = owner.call(read_pipeline, control)
         owner.close()

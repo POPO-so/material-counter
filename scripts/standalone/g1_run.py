@@ -28,6 +28,7 @@ from .hp2 import sync_hp2_read32
 from .controls import ButtonDecoder, ControlState
 from .driver_owner import DriverOwner, FailHold
 from .shared_frames import READING, WRITING, SharedFrames
+from .vdma_diag import MM2S_ERROR_MASK
 
 
 RLE_BIT_SHA256 = "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
@@ -521,7 +522,7 @@ def main(argv=None):
                     raise RuntimeError("output identity belongs to another session")
                 current["effective_fps"] = rate
                 current["vdma_status"] = owner.call(hw.vdma.read, 4)
-                if current["vdma_status"] & 0x770:
+                if current["vdma_status"] & MM2S_ERROR_MASK:
                     raise RuntimeError("VDMA reports a transport error")
                 report["samples"].append(current)
                 source_label = ("真实摄像头 / 模拟框线（无 RLE 计数）" if args.source == "camera"

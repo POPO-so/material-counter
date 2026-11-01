@@ -47,6 +47,11 @@ DEFAULT_GAP_S = 0.05
 _ERROR_FIELDS = ((4, "vdma_int_err"), (5, "vdma_slv_err"),
                  (6, "vdma_dec_err"), (7, "sof_early_err"))
 
+# MM2S_VDMASR error bits: VDMAIntErr(4), VDMASlvErr(5), VDMADecErr(6),
+# SOFEarlyErr(7). Bits 8-10 belong to the AXI DMA register layout and are
+# not implemented here, so the AXI DMA mask 0x770 must not be reused.
+MM2S_ERROR_MASK = sum(1 << bit for bit, _ in _ERROR_FIELDS)
+
 
 def _read_sample(read32):
     values = {}

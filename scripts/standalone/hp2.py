@@ -8,6 +8,8 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from .vdma_diag import MM2S_ERROR_MASK
+
 
 _SLCR_BASE = 0xF8000000
 _SLCR_FPGA_RST_CTRL = 0x240
@@ -91,8 +93,10 @@ def sync_hp2_read32(hwh_path, mmio_factory=None):
         raise RuntimeError("refusing AFI2 access while VDMA control bit 0 is set")
     if not status & 1:
         raise RuntimeError("refusing AFI2 access until VDMA status bit 0 indicates halted")
-    if status & 0x770:
-        raise RuntimeError(f"refusing AFI2 access with VDMA fault bits set: 0x{status & 0x770:03x}")
+    if status & MM2S_ERROR_MASK:
+        raise RuntimeError(
+            f"refusing AFI2 access with VDMA fault bits set: 0x{status & MM2S_ERROR_MASK:03x}"
+        )
 
     afi2 = mmio_factory(_AFI2_BASE, _PAGE_SIZE)
     before = _read_u32(afi2, 0, "AFI2_RDCHAN_CTRL")

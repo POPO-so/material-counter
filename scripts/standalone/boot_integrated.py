@@ -15,6 +15,7 @@ from .bundle import verify_bundle,verify_runtime,sha256
 from .delivery import verify_package
 from .evidence import write_evidence
 from .runtime_environment import verify_runtime_environment
+from .vdma_diag import MM2S_ERROR_MASK
 
 
 class BoardBackend:
@@ -52,11 +53,12 @@ class BoardBackend:
             raise RuntimeError('boot clocks do not match the admitted G2 build')
         pipeline=read_pipeline(MMIO(0x43c20000,0x1000))
         counters=snapshot_counters(MMIO(0x43c20000,0x1000))
-        for base,offsets in ((0x40400000,(4,0x34)),(0x43000000,(4,))):
+        for base,offsets,error_mask in ((0x40400000,(4,0x34),0x770),
+                                        (0x43000000,(4,),MM2S_ERROR_MASK)):
             mmio=MMIO(base,0x1000)
             for offset in offsets:
                 value=mmio.read(offset)
-                if value&0x770 or not value&3:raise RuntimeError('boot DMA is not idle/halted')
+                if value&error_mask or not value&3:raise RuntimeError('boot DMA is not idle/halted')
         return dict(global_state=state,clocks_mhz=clocks,pipeline=pipeline,counters=counters)
 
 

@@ -30,6 +30,7 @@ from .driver_owner import DriverOwner
 from .display_health import DisplayHealthMonitor
 from .diag_snapshot import DiagnosticSnapshotWriter,compact_diagnostic_snapshot
 from .evidence import write_evidence,fail_hold,TraceBuffer
+from .vdma_diag import MM2S_ERROR_MASK
 from .g1_run import setup_hardware, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
 from .hp2 import sync_hp1_readwrite32
 from .g2_readback import read_pipeline, snapshot_counters
@@ -768,7 +769,7 @@ def main(argv=None):
                 sample_time=time.monotonic();cpu=_parse_proc_stat(Path('/proc/stat').read_text())
                 monitor=owner.call(snapshot,hw.monitor)
                 vdma_status=owner.call(hw.vdma.read,4)
-                if vdma_status&0x770:
+                if vdma_status&MM2S_ERROR_MASK:
                     display_held=True
                     if video_pump is not None:video_pump.request_stop()
                 sample_telemetry=cache.snapshot(time.monotonic())

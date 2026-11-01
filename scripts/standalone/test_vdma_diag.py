@@ -1,5 +1,6 @@
 from scripts.standalone.vdma_diag import (
-    MAX_READS_PER_SAMPLE, SAFE_REGISTERS, SCHEMA, capture_vdma_snapshot,
+    MAX_READS_PER_SAMPLE, MM2S_ERROR_MASK, SAFE_REGISTERS, SCHEMA,
+    capture_vdma_snapshot,
 )
 
 
@@ -114,3 +115,11 @@ def test_single_sample_is_bounded_and_has_no_movement_claim():
     assert snapshot["reads"] == MAX_READS_PER_SAMPLE
     assert len(snapshot["samples"]) == 1
     assert "rd_frm_store_moved" not in snapshot["decoded"]
+
+
+def test_mm2s_error_mask_matches_the_vdma_status_layout():
+    # VDMAIntErr(4), VDMASlvErr(5), VDMADecErr(6), SOFEarlyErr(7).
+    assert MM2S_ERROR_MASK == 0xF0
+    assert MM2S_ERROR_MASK & (1 << 7)
+    # The AXI DMA-only SG error bits are not part of MM2S_VDMASR.
+    assert MM2S_ERROR_MASK & 0x700 == 0
