@@ -31,16 +31,19 @@ class ButtonEventRunner:
             self.on_commands(initial)
         edge_task = asyncio.create_task(wait())
         timer_task = None
+        timer_deadline = None
         try:
             while True:
                 deadline = self.decoder.next_deadline
-                if deadline is not None and timer_task is None:
-                    timer_task = asyncio.create_task(
-                        self.sleep(max(0, deadline - self.clock())))
-                elif deadline is None and timer_task is not None:
-                    timer_task.cancel()
-                    await asyncio.gather(timer_task, return_exceptions=True)
-                    timer_task = None
+                if deadline != timer_deadline:
+                    if timer_task is not None:
+                        timer_task.cancel()
+                        await asyncio.gather(timer_task, return_exceptions=True)
+                        timer_task = None
+                    timer_deadline = deadline
+                    if deadline is not None:
+                        timer_task = asyncio.create_task(
+                            self.sleep(max(0, deadline - self.clock())))
 
                 waiting = {edge_task}
                 if timer_task is not None:
@@ -49,6 +52,7 @@ class ButtonEventRunner:
                 timer_fired = timer_task is not None and timer_task in done
                 if timer_fired:
                     timer_task = None
+                    timer_deadline = None
 
                 # Read the result explicitly. IRQ failures must stop this owner
                 # instead of being swallowed and retried in a hot loop.

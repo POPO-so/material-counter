@@ -50,6 +50,16 @@ class ManualTimer:
             if deadline <= self.now and not future.done():
                 future.set_result(None)
 
+    @property
+    def active_deadlines(self):
+        return sorted(round(deadline, 8) for deadline, future in self.waiters
+                      if not future.done())
+
+
+async def settle():
+    for _ in range(20):
+        await asyncio.sleep(0)
+
 
 def test_event_runner_uses_deadline_wait_and_stops_on_cancel():
     assert ButtonEventRunner is not None, "button event runner is not implemented"
@@ -165,5 +175,70 @@ def test_irq_wait_failure_is_propagated_once_without_retry_loop():
         else:
             raise AssertionError("IRQ waiter error was swallowed")
         assert interrupt.calls == 1
+
+    asyncio.run(scenario())
+
+
+def test_changed_deadlines_rearm_timer_without_replacing_irq_waiter():
+    async def scenario():
+        source = Edge()
+        timer = ManualTimer()
+        events = []
+        runner = ButtonEventRunner(source, source.read_bits, events.extend,
+                                   clock=lambda: timer.now, sleep=timer.sleep)
+        task = asyncio.create_task(runner.run())
+        await settle()
+        assert len(source.waiters) == 1
+
+        # Stabilize BTN2 and establish its 0.8 s hold deadline at t=0.83.
+        source.fire(4)
+        await settle()
+        timer.advance(.03)
+        await settle()
+        assert timer.active_deadlines == [.83]
+        assert source.wait_calls == 2
+
+        # BTN0's 30 ms debounce deadline is earlier than BTN2's hold timer.
+        timer.now = .10
+        source.fire(5)
+        await settle()
+        assert timer.active_deadlines == [.13]
+        assert len(source.waiters) == 1
+
+        # A bounce moves the next deadline later, then another press moves it
+        # earlier again. The IRQ waiter remains pending throughout.
+        timer.now = .11
+        source.fire(4)
+        await settle()
+        assert timer.active_deadlines == [.83]
+        timer.now = .12
+        source.fire(5)
+        await settle()
+        assert timer.active_deadlines == [.15]
+        assert source.wait_calls == 5
+        assert len(source.waiters) == 1
+
+        # BTN0 clears on debounce well before BTN2's long press.
+        timer.advance(.03)
+        await settle()
+        assert events == ["clear"]
+        assert timer.active_deadlines == [.83]
+
+        # The held BTN2 emits its long action once, then has no live timer.
+        timer.advance(.68)
+        await settle()
+        assert events == ["clear", "exposure_down"]
+        assert timer.active_deadlines == []
+        timer.advance(1)
+        await settle()
+        assert events == ["clear", "exposure_down"]
+
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+        assert source.waiters == []
+        assert timer.active_deadlines == []
 
     asyncio.run(scenario())
