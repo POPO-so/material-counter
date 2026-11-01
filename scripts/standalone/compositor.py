@@ -537,7 +537,7 @@ class DashboardComposer:
             f"PS RLE {self._number(regions_mean)} / TRK {self._number(track_mean)} ms",
             f"处理 {self._number(dashboard.get('processing_fps'))} / 显示 "
             f"{self._number(dashboard.get('display_fps'))} FPS",
-            f"有效输入 {effective_input_fps} / 二值提交 {submitted_fps}",
+            f"有效输入 {effective_input_fps}",
             f"处理延迟 {processing_ms}",
         )
         rle_key = tuple(dashboard.get(name) for name in (
