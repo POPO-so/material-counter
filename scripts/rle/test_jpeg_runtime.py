@@ -1,11 +1,21 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+import sys
 
+import cv2
+import numpy as np
 import pytest
 
 from scripts.rle.jpeg_runtime import process_jpeg_frame, read_frg_detections
 from scripts.wo0016.stream_counter import Detection
+
+
+@pytest.fixture(scope="module")
+def library(tmp_path_factory):
+    from scripts.rle.components import build_native
+    return build_native(tmp_path_factory.mktemp("jpeg-counter")
+                        / ("rle.dll" if sys.platform == "win32" else "rle.so"))
 
 
 class FeatureControl:
@@ -72,9 +82,10 @@ def test_process_frame_tracks_pl_features_then_commits_matching_hdmi_result():
     class Tracker:
         line_x = 321
 
-        def update_detections(self, frame_id, detections, *, capture_monotonic_ns):
-            sequence.append(("track", frame_id, detections, capture_monotonic_ns))
-            return SimpleNamespace(total_count=8, detections=tuple(detections))
+        def update_rle(self, frame, *, capture_monotonic_ns):
+            sequence.append(("track", frame.frame_id, capture_monotonic_ns))
+            return SimpleNamespace(total_count=8,
+                detections=(Detection(10, 19, 20, 29, 100, 14.5, 24.5),))
 
     result = process_jpeg_frame(
         Transport(), Tracker(), b"\xff\xd8jpeg\xff\xd9", 27,
@@ -85,3 +96,38 @@ def test_process_frame_tracks_pl_features_then_commits_matching_hdmi_result():
     assert sequence[0] == ("transfer", 27, False)
     assert sequence[1][0:2] == ("track", 27)
     assert sequence[2] == ("publish", 27, [(10, 20, 19, 29)], 321)
+
+
+def _ring_mask(centers, outer=24, inner=8):
+    mask = np.zeros((400, 640), np.uint8)
+    for cx, cy in centers:
+        cv2.circle(mask, (cx, cy), outer // 2, 255, -1)
+        cv2.circle(mask, (cx, cy), inner // 2, 0, -1)
+    return mask
+
+
+def test_process_frame_splits_touching_pair_via_run_based_counter(library):
+    from scripts.standalone.count_controls import make_runtime_counter
+    from scripts.rle.protocol import encode_mask, decode_packet
+
+    mask = _ring_mask([(100, 200), (121, 201)])
+    frame = decode_packet(encode_mask(mask, frame_id=0))
+    control = FeatureControl(frame_id=0, state=1)  # FRG empty and valid
+
+    class Transport:
+        preview_control = control
+        last_boxes = None
+
+        def transfer(self, jpeg, frame_id, **kwargs):
+            return frame
+
+        def publish_overlay(self, frame_id, boxes, *, line_x):
+            self.last_boxes = boxes
+
+    transport = Transport()
+    tracker = make_runtime_counter(library, profile="field-v1")
+    result = process_jpeg_frame(transport, tracker, b"\xff\xd8j\xff\xd9", 0,
+    capture_monotonic_ns=1)
+
+    assert len(result.detections) == 2
+    assert len(transport.last_boxes) == 2

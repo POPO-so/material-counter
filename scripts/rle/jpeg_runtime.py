@@ -65,13 +65,17 @@ def read_frg_detections(control: Any, frame_id: int) -> list[Detection]:
 
 def process_jpeg_frame(transport: Any, tracker: Any, jpeg: Any, frame_id: int,
                        *, capture_monotonic_ns: int | None = None):
-    """Decode one compressed frame in PL, track its PL features, then publish."""
+    """Decode one compressed frame in PL, validate FRG identity, then count via RLE split."""
     frame = transport.transfer(jpeg, frame_id, auto_accept=False)
     if not getattr(frame, "valid", False) or getattr(frame, "status", 1) != 0:
         raise RuntimeError("refusing to count an invalid JPEG/RLE frame")
-    detections = read_frg_detections(transport.preview_control, frame_id)
-    result = tracker.update_detections(frame_id, detections,
-                                       capture_monotonic_ns=capture_monotonic_ns)
+    # FRG status/identity/geometry are still validated as a PL cross-check.
+    # Counting runs the split-capable run-based path (update_rle), so the
+    # 5feafe63 association and 3d466c6c 2-4 way split fixes stay in effect.
+    read_frg_detections(transport.preview_control, frame_id)
+    result = tracker.update_rle(frame, capture_monotonic_ns=capture_monotonic_ns)
+    if result is None:
+        raise RuntimeError("RLE frame produced no countable result")
     boxes = [(d.x_min, d.y_min, d.x_max, d.y_max) for d in result.detections[:16]]
     transport.publish_overlay(frame_id, boxes, line_x=tracker.line_x)
     return result

@@ -23,9 +23,9 @@ from scripts.rle.jpeg_runtime import process_jpeg_frame
 from scripts.rle.jpeg_transport import JPEG_MAX_BYTES, JpegRleDmaTransport, iter_raw_mjpeg
 from scripts.rle.protocol import HEIGHT, RX_CAPACITY, WIDTH
 from scripts.rle.transport import RLE_SIGNATURE
+from scripts.standalone.count_controls import make_runtime_counter
 from scripts.wo0015.board_preflight import (audit_process_ownership,
     inspect_pynq_global_state, read_boot_id)
-from scripts.rle.counter import RleCounter
 
 
 EXPECTED_PART = "xc7z020clg400-1"
@@ -118,11 +118,6 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--device", type=int, default=0)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--native-lib", type=Path)
-    parser.add_argument("--line-x", type=int, default=320)
-    parser.add_argument("--line-y", type=int, default=200)
-    parser.add_argument("--min-area", type=int, default=48)
-    parser.add_argument("--max-area", type=int, default=3600)
-    parser.add_argument("--hysteresis", type=int, default=4)
     return parser
 
 
@@ -133,10 +128,6 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("hardware access requires --execute")
     if not 1 <= args.frames <= 100000:
         parser.error("--frames must be in 1..100000")
-    if not 0 <= args.line_x < WIDTH or not 0 <= args.line_y < HEIGHT:
-        parser.error("counting line is outside the 640x400 source frame")
-    if not 1 <= args.min_area <= args.max_area <= WIDTH * HEIGHT:
-        parser.error("invalid component area bounds")
     if args.output.exists():
         raise FileExistsError(args.output)
     artifacts = verify_runtime_artifacts(args.bit, args.bit_sha256, args.hwh,
@@ -188,10 +179,9 @@ def main(argv: list[str] | None = None) -> int:
             overlay.axi_dma_0.sendchannel, overlay.axi_dma_0.recvchannel,
             MMIO(DMA_BASE, 0x10000), MMIO(RLE_BASE, 0x10000),
             MMIO(JPEG_BASE, 0x10000), preview, tx, rx)
-        tracker = RleCounter(library=args.native_lib,
-            width=WIDTH, height=HEIGHT, count_axis="x", line_x=args.line_x,
-            line_y=args.line_y, min_area=args.min_area, max_area=args.max_area,
-            hysteresis=args.hysteresis)
+        # Field-v1 counter keeps the production count line, association and
+        # 2-4 way touching split; the JPEG path counts through update_rle.
+        tracker = make_runtime_counter(args.native_lib, profile="field-v1")
         capture_source = iter_raw_mjpeg(args.device)
         start = time.perf_counter()
         previous = start
