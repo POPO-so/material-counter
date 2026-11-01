@@ -1,0 +1,27 @@
+{
+  "schema": "material-counter.operator-truth-supplement.v1",
+  "session_id": "m8-first-10-20261102",
+  "recorded_at_utc": "2026-11-01T19:30:00Z",
+  "planned_count": 10,
+  "actual_count": 7,
+  "source": "OPERATOR_REPORTED",
+  "source_detail": "Operator stated on site that 7 M8 nuts were dropped, not the planned 10.",
+  "cue_text": "现在开始投放 10 颗 M8",
+  "cue_text_mismatch": true,
+  "cue_text_note": "The desktop cue still said 10; the operator reported 7. The cue count does not describe the actual drop.",
+  "independent_ground_truth": "UNKNOWN",
+  "original_truth_template": {
+    "file": "originals/truth-template.json",
+    "sha256": "48cdc90e36c169bbaa9d613dba919fab01322ffa2ab42527126c4a34547d8388",
+    "modified": false,
+    "note": "Original board truth-template.json copied read-only; its UNKNOWN fields are not overwritten."
+  },
+  "material": "M8 nut",
+  "placement_mode": "dense touching, single group",
+  "scope": "CAMERA_ONLY_NOT_PL_BINARY8",
+  "caveats": [
+    "Operator reconciliation is a human report, not an independent frame-level annotation.",
+    "No object may be re-identified from this record; counts are the only ground truth.",
+    "This group must not be confused with the historical 10-truth / R5-count-7 experiment."
+  ]
+}

@@ -1,0 +1,398 @@
+{
+  "schema": "material-counter.offline-review-summary.v1",
+  "session": "m8-first-10-20261102",
+  "evidence": {
+    "npz_sha256": "eb237dce681ae1864bf96b969ae8b0a7295c6bbdcabda172c6ac9a0beec59fdf",
+    "manifest_sha256": "67afb18a143242e642709ade7121374f9813009c1037414478de7b18d4163ffa",
+    "controller_events_sha256": "4eb7c7781376b199bfb15929337d4c34456b0a854b63e425eddf988a598a1e2f",
+    "truth_template_sha256": "48cdc90e36c169bbaa9d613dba919fab01322ffa2ab42527126c4a34547d8388",
+    "diagnostics_sha256": "69143675d576508f8cdb1087a4d176001ec5f80304f2be63be8b88ebd0028e43"
+  },
+  "capture": {
+    "status": "COMPLETE",
+    "frames": 450,
+    "fps": 59.198,
+    "median_gap_ms": 17.934,
+    "max_gap_ms": 40.532,
+    "max_gap_frame": 385,
+    "frames_after_drop_end": 0
+  },
+  "truth": {
+    "planned": 10,
+    "actual": 7,
+    "source": "OPERATOR_REPORTED"
+  },
+  "key_frames": [
+    {
+      "frame": 0,
+      "rel_s": 0.0,
+      "det_1200": 6,
+      "det_2000": 6,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 59,
+      "rel_s": 0.989,
+      "det_1200": 7,
+      "det_2000": 7,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 120,
+      "rel_s": 2.0206,
+      "det_1200": 6,
+      "det_2000": 6,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 143,
+      "rel_s": 2.4049,
+      "det_1200": 7,
+      "det_2000": 7,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 300,
+      "rel_s": 5.0481,
+      "det_1200": 7,
+      "det_2000": 7,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 306,
+      "rel_s": 5.1473,
+      "det_1200": 7,
+      "det_2000": 7,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 309,
+      "rel_s": 5.1953,
+      "det_1200": 5,
+      "det_2000": 5,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 314,
+      "rel_s": 5.2793,
+      "det_1200": 4,
+      "det_2000": 4,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 320,
+      "rel_s": 5.3813,
+      "det_1200": 2,
+      "det_2000": 3,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 340,
+      "rel_s": 5.7173,
+      "det_1200": 5,
+      "det_2000": 5,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 355,
+      "rel_s": 5.9693,
+      "det_1200": 3,
+      "det_2000": 5,
+      "total_1200": 0,
+      "total_2000": 0,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 359,
+      "rel_s": 6.0363,
+      "det_1200": 5,
+      "det_2000": 5,
+      "total_1200": 1,
+      "total_2000": 1,
+      "events_1200": [
+        [
+          53,
+          359,
+          324.36
+        ]
+      ],
+      "events_2000": [
+        [
+          55,
+          359,
+          324.36
+        ]
+      ]
+    },
+    {
+      "frame": 365,
+      "rel_s": 6.1368,
+      "det_1200": 2,
+      "det_2000": 4,
+      "total_1200": 1,
+      "total_2000": 1,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 375,
+      "rel_s": 6.3066,
+      "det_1200": 4,
+      "det_2000": 6,
+      "total_1200": 1,
+      "total_2000": 2,
+      "events_1200": [],
+      "events_2000": [
+        [
+          79,
+          375,
+          339.19
+        ]
+      ]
+    },
+    {
+      "frame": 376,
+      "rel_s": 6.3233,
+      "det_1200": 2,
+      "det_2000": 4,
+      "total_1200": 2,
+      "total_2000": 2,
+      "events_1200": [
+        [
+          58,
+          376,
+          328.584
+        ]
+      ],
+      "events_2000": []
+    },
+    {
+      "frame": 377,
+      "rel_s": 6.3413,
+      "det_1200": 3,
+      "det_2000": 5,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": [
+        [
+          82,
+          377,
+          327.384
+        ],
+        [
+          83,
+          377,
+          329.647
+        ]
+      ]
+    },
+    {
+      "frame": 378,
+      "rel_s": 6.359,
+      "det_1200": 2,
+      "det_2000": 4,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 380,
+      "rel_s": 6.3893,
+      "det_1200": 2,
+      "det_2000": 2,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 390,
+      "rel_s": 6.575,
+      "det_1200": 8,
+      "det_2000": 10,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 400,
+      "rel_s": 6.7453,
+      "det_1200": 3,
+      "det_2000": 3,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 410,
+      "rel_s": 6.9181,
+      "det_1200": 3,
+      "det_2000": 3,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 412,
+      "rel_s": 6.9486,
+      "det_1200": 1,
+      "det_2000": 1,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 413,
+      "rel_s": 6.9655,
+      "det_1200": 1,
+      "det_2000": 1,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 418,
+      "rel_s": 7.0534,
+      "det_1200": 0,
+      "det_2000": 0,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 430,
+      "rel_s": 7.2674,
+      "det_1200": 4,
+      "det_2000": 4,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    },
+    {
+      "frame": 449,
+      "rel_s": 7.5838,
+      "det_1200": 0,
+      "det_2000": 0,
+      "total_1200": 2,
+      "total_2000": 4,
+      "events_1200": [],
+      "events_2000": []
+    }
+  ],
+  "provisional_replay": {
+    "threshold": 240,
+    "threshold_note": "lowest tested global threshold with no background component >1000 px in key frames; NOT the R5 TH100/TH128 profile",
+    "threshold_foreground_percent": {
+      "th100": 54.2,
+      "th128": 41.4,
+      "th240": "~0.2-1.2"
+    },
+    "counts": {
+      "1200": 2,
+      "2000": 4
+    },
+    "events": {
+      "1200": [
+        [
+          53,
+          359
+        ],
+        [
+          58,
+          376
+        ]
+      ],
+      "2000": [
+        [
+          55,
+          359
+        ],
+        [
+          79,
+          375
+        ],
+        [
+          82,
+          377
+        ],
+        [
+          83,
+          377
+        ]
+      ]
+    },
+    "tracks": {
+      "1200": 106,
+      "2000": 134
+    },
+    "settings_diff": {
+      "max_split_area": [
+        1200,
+        2000
+      ]
+    },
+    "same_code_sha256": {
+      "counter": "8dec44869fd99f24ffc9df8400eec1888e741173edd231184b930055e0d22485",
+      "split_touching": "b74cf67f9a15c7e9538eab2deb29a7d70baeb3cede9018e86cf4278db8c53394",
+      "native": "41a1336fd947eeeb7fce70156371c251fded8403a4356fc3c2a3c65029825b45"
+    }
+  },
+  "window_judgment": {
+    "status": "PARTIAL_ONLY",
+    "reasons": [
+      "3 of 7 nuts are already visible in frame 0; baseline is not empty",
+      "the release/drop is not captured as an entry; the remaining 4 nuts enter the frame during motion",
+      "last crossing at frame 378, material exit at frame 413, only 36 frames after exit (design tail 90)",
+      "drop_end marker observed at frame 449 (frames_after_drop_end=0)"
+    ]
+  },
+  "drop_end_delay": {
+    "cue_to_window_end_s": 4.0,
+    "window_end_to_touch_s": 1.2406,
+    "drop_start_touch_s": 1.0877,
+    "ssh_true_median_s": 0.682,
+    "ssh_sudo_true_median_s": 0.871,
+    "attribution": "inside synchronous Send-Marker (ssh+sudo+remote exec); capture-end timing is a consequence, not the cause",
+    "segment_split": "UNVERIFIED (no per-segment instrumentation); SSH+sudo measured separately"
+  }
+}
