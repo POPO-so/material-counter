@@ -95,7 +95,7 @@ function Assert-Gates {
     $checks = @(
         @{ name = 'service'; cmd = "systemctl is-active material-counter-integrated.service" },
         @{ name = 'enabled'; cmd = "systemctl is-enabled material-counter-integrated.service" },
-        @{ name = 'processes'; cmd = "pgrep -af 'integrated_run|boot_integrated|run_counter|capture_touching' || true" },
+        @{ name = 'processes'; cmd = "pgrep -af '[i]ntegrated_run|[b]oot_integrated|[r]un_counter|[c]apture_touching' || true" },
         @{ name = 'video_holders'; cmd = "sudo -n fuser -v /dev/video0 2>&1 || true" },
         @{ name = 'memavailable'; cmd = "awk '/MemAvailable/{print `$2}' /proc/meminfo" },
         @{ name = 'disk_free_kib'; cmd = "df -k /home | tail -1 | awk '{print `$4}'" },
