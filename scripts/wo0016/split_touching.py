@@ -28,6 +28,35 @@ def is_single_connected_component(mask: np.ndarray) -> bool:
     return count == 2
 
 
+def _wave_assign(pixels: np.ndarray, seeds: list[tuple[int, int]]) -> np.ndarray | None:
+    """Synchronous 8-neighbour wave; the smallest adjacent seed index wins.
+
+    Identical assignment to the previous per-seed dilation loop (one level per
+    wave, simultaneous claims, lowest label on ties). Labels are encoded as
+    ``255 - index`` so one ``cv2.dilate`` per level picks the lowest index,
+    replacing one dilate, equality mask, stack and argmax per seed per level.
+    """
+    height, width = pixels.shape
+    labels = np.full((height, width), -1, dtype=np.int16)
+    encoded = np.zeros((height, width), dtype=np.uint8)
+    for index, (seed_y, seed_x) in enumerate(seeds):
+        labels[seed_y, seed_x] = index
+        encoded[seed_y, seed_x] = 255 - index
+    assigned = labels >= 0
+    kernel = np.ones((3, 3), dtype=np.uint8)
+    for _ in range(height + width):
+        propagated = cv2.dilate(encoded, kernel)
+        newly = pixels & ~assigned & (propagated > 0)
+        if not newly.any():
+            break
+        labels[newly] = 255 - propagated[newly].astype(np.int16)
+        encoded[newly] = propagated[newly]
+        assigned |= newly
+    if np.any(pixels & ~assigned):
+        return None
+    return labels.astype(np.int8)
+
+
 def _geodesic_hole_assignments(pixels: np.ndarray,
                                hole_centers: np.ndarray) -> np.ndarray | None:
     """Assign foreground to hole seeds, validating connectivity before use.
@@ -62,24 +91,7 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
            for index in range(len(seeds))):
         return labels
 
-    labels.fill(-1)
-    for index, seed in enumerate(seeds):
-        labels[seed] = index
-    kernel = np.ones((3, 3), dtype=np.uint8)
-    while np.any(pixels & (labels < 0)):
-        unassigned = pixels & (labels < 0)
-        claims = []
-        for index in range(len(seeds)):
-            region = (labels == index).astype(np.uint8)
-            adjacent = cv2.dilate(region, kernel) != 0
-            claims.append(adjacent & unassigned)
-        claim_stack = np.stack(claims, axis=0)
-        claimed = np.any(claim_stack, axis=0)
-        if not np.any(claimed):
-            return None
-        owners = np.argmax(claim_stack, axis=0)
-        labels[claimed] = owners[claimed]
-    return labels
+    return _wave_assign(pixels, seeds)
 
 
 def _enclosed_holes(pixels: np.ndarray, min_hole_area: int,
