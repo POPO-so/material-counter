@@ -19,7 +19,7 @@ from .protocol import RleFrame
 def _validated_partitions(mask, pieces):
     """Full defensive validation for partitions not produced by the splitter."""
     partitions = [np.asarray(piece) != 0 for piece in pieces]
-    if not (2 <= len(partitions) <= 3
+    if not (2 <= len(partitions) <= 4
             and all(piece.shape == mask.shape for piece in partitions)):
         return None
     if not all(is_single_connected_component(piece) for piece in partitions):

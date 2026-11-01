@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import cv2
 import numpy as np
 import pytest
 
@@ -66,7 +67,7 @@ def test_verified_pieces_are_connected_and_cover_parent(name, mask):
     if not partition.verified:
         pytest.skip("no multi-piece partition")
     pieces = partition.pieces
-    assert 2 <= len(pieces) <= 3
+    assert 2 <= len(pieces) <= 4
     assert all(piece.shape == mask.shape and _connected(piece) for piece in pieces)
     coverage = np.sum(np.stack(pieces), axis=0)
     assert np.array_equal(coverage > 0, mask)
@@ -163,3 +164,37 @@ def test_partition_pieces_rejects_mutated_fabricated_partition():
     mutated[ys[0], xs[0]] = False
     fabricated = SplitPartition((left, mutated), mask.shape, int(mask.sum()), True)
     assert _partition_pieces(mask, int(mask.sum()), fabricated) is None
+
+
+def _four_ring_cluster():
+    mask = np.zeros((120, 120), dtype=np.uint8)
+    for cy, cx in ((40, 40), (40, 80), (80, 40), (80, 80)):
+        cv2.circle(mask, (cx, cy), 25, 255, -1)
+        cv2.circle(mask, (cx, cy), 10, 0, -1)
+    return mask != 0
+
+
+def test_four_hole_cluster_splits_into_four_connected_pieces():
+    mask = _four_ring_cluster()
+    partition = split_touching_component_verified(
+        mask, assume_connected=True, **PARAMS)
+    assert len(partition.pieces) == 4
+    assert partition.verified
+    coverage = np.sum(np.stack(partition.pieces), axis=0)
+    assert np.array_equal(coverage > 0, mask)
+    assert not np.any(coverage > 1)
+    assert all(_connected(piece) for piece in partition.pieces)
+    floor = max(PARAMS["min_child_area"], int(0.12 * int(mask.sum())))
+    assert all(int(piece.sum()) >= floor for piece in partition.pieces)
+
+
+def test_validated_partitions_accepts_four_connected_pieces():
+    mask = np.zeros((40, 40), dtype=bool)
+    mask[5:35, 5:35] = True
+    pieces = []
+    for y0, y1 in ((5, 20), (20, 35)):
+        for x0, x1 in ((5, 20), (20, 35)):
+            piece = np.zeros_like(mask)
+            piece[y0:y1, x0:x1] = True
+            pieces.append(piece)
+    assert _validated_partitions(mask, pieces) is not None

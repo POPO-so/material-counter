@@ -115,13 +115,33 @@ def _enclosed_holes(pixels: np.ndarray, min_hole_area: int,
     return holes, centers, area
 
 
+def _prune_spurious_holes(pixels: np.ndarray, holes: list[int],
+                          centers: np.ndarray) -> tuple[list[int], np.ndarray]:
+    """Drop one clearly smaller gap when five holes represent four nuts.
+
+    A four-nut cluster can expose a fifth small inter-nut gap.  Keeping four
+    comparable holes preserves the four-way path; five comparable holes are
+    left untouched and stay unsupported rather than being forced to four.
+    """
+    if len(holes) != 5:
+        return holes, centers
+    _count, _labels, stats, _cents = cv2.connectedComponentsWithStats(
+        (~pixels).astype(np.uint8), connectivity=8)
+    ordered = sorted((int(stats[hole, cv2.CC_STAT_AREA]), hole) for hole in holes)
+    if 2 * ordered[0][0] < ordered[1][0]:
+        dropped = ordered[0][1]
+        return [hole for hole in holes if hole != dropped], centers
+    return holes, centers
+
+
 def count_enclosed_holes(pixels: np.ndarray, *, min_hole_area: int = 30,
                          hole_area_cap: int = 16) -> int:
     """Count holes eligible for a touching split without running the split."""
     mask = np.asarray(pixels) != 0
     if mask.ndim != 2 or not mask.size:
         return 0
-    holes, _, _ = _enclosed_holes(mask, int(min_hole_area), int(hole_area_cap))
+    holes, centers, _ = _enclosed_holes(mask, int(min_hole_area), int(hole_area_cap))
+    holes, _ = _prune_spurious_holes(mask, holes, centers)
     return len(holes)
 
 
@@ -141,6 +161,8 @@ class SplitAnalysis:
         self.shape = pixels.shape
         self.holes, self.centers, self.area = _enclosed_holes(
             pixels, int(min_hole_area), int(hole_area_cap))
+        self.holes, self.centers = _prune_spurious_holes(
+            pixels, self.holes, self.centers)
         self.min_child_area = int(min_child_area)
         self._pixels = pixels
         self._neck = None
@@ -148,7 +170,7 @@ class SplitAnalysis:
     @property
     def has_evidence(self) -> bool:
         """Same short-circuit the counter used before: holes first, neck second."""
-        return 2 <= len(self.holes) <= 3 or bool(self.neck_candidates())
+        return 2 <= len(self.holes) <= 4 or bool(self.neck_candidates())
 
     def neck_candidates(self):
         if self._neck is None:
@@ -186,13 +208,14 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
                              min_hole_distance: float = 10, hole_area_cap: int = 16,
                              analysis: SplitAnalysis | None = None
                              ) -> tuple[np.ndarray, ...] | None:
-    """Assign a joined cluster to two or three independently visible nut holes."""
+    """Assign a joined cluster to two, three, or four independently visible nut holes."""
     analysis = _analysis_for(pixels, analysis)
     if analysis is not None:
         holes, centers, area = analysis.holes, analysis.centers, analysis.area
     else:
         holes, centers, area = _enclosed_holes(pixels, min_hole_area, hole_area_cap)
-    if len(holes) not in (2, 3):
+        holes, centers = _prune_spurious_holes(pixels, holes, centers)
+    if len(holes) not in (2, 3, 4):
         return None
     hole_centers = centers[holes]
     separation = np.linalg.norm(hole_centers[:, None] - hole_centers[None, :],
@@ -202,10 +225,11 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
     assignments = _geodesic_hole_assignments(pixels, hole_centers)
     if assignments is None:
         return None
+    relative_floor = 0.12 if len(holes) == 4 else 0.16
     children = []
     for index in range(len(holes)):
         child_y, child_x = np.nonzero(assignments == index)
-        if len(child_x) < max(min_child_area, int(0.16 * area)):
+        if len(child_x) < max(min_child_area, int(relative_floor * area)):
             return None
         child_width = int(child_x.max() - child_x.min() + 1)
         child_height = int(child_y.max() - child_y.min() + 1)
@@ -301,7 +325,7 @@ def _split_by_projection_neck(pixels: np.ndarray,
 def _valid_partition(parent: np.ndarray, pieces: tuple[np.ndarray, ...], *,
                      connectivity_checked: bool = False) -> bool:
     """Check a partition; pieces built by this module are already connected."""
-    if not 2 <= len(pieces) <= 3 or any(piece.shape != parent.shape for piece in pieces):
+    if not 2 <= len(pieces) <= 4 or any(piece.shape != parent.shape for piece in pieces):
         return False
     if not connectivity_checked and not all(is_single_connected_component(piece)
                                             for piece in pieces):
@@ -330,7 +354,7 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
     hole_pieces = _split_by_enclosed_holes(pixels, min_child_area, min_hole_area,
                                            **options)
     if hole_pieces is not None:
-        if (len(hole_pieces) == 3 or recursive_item_area is None
+        if (len(hole_pieces) >= 3 or recursive_item_area is None
                 or area < (3 if depth == 0 else 2) * recursive_item_area):
             return hole_pieces
         if len(hole_pieces) == 2:
@@ -462,7 +486,7 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
                              assume_connected: bool = False,
                              analysis: SplitAnalysis | None = None
                              ) -> tuple[np.ndarray, ...]:
-    """Split two or three touching nuts when holes or a narrow neck are visible.
+    """Split two, three, or four touching nuts when holes or a narrow neck are visible.
 
     Two-hole partitions may contain an oversized joined child; that child is
     retried so a three-item silhouette with one obscured hole can still split.

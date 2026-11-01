@@ -509,7 +509,7 @@ class MaskCounter:
                 # Only run the full split when it has a hole or neck path that
                 # can accept a partition; intact single parts exit here.
                 if (count_enclosed_holes(cropped, min_hole_area=self.split_min_hole_area,
-                                         hole_area_cap=self.split_hole_area_cap) in (2, 3)
+                                         hole_area_cap=self.split_hole_area_cap) in (2, 3, 4)
                         or has_projection_neck(
                             cropped, min_child_area=self.min_split_child_area)):
                     pieces = split_touching_component(cropped, min_child_area=self.min_split_child_area,
@@ -521,7 +521,7 @@ class MaskCounter:
                     # Keep the defensive check: the counter must never
                     # accept a disconnected or overlapping child set.
                     partitions = [np.asarray(piece) != 0 for piece in pieces]
-                    valid_partition = (2 <= len(partitions) <= 3
+                    valid_partition = (2 <= len(partitions) <= 4
                                        and all(piece.shape == cropped.shape
                                                and is_single_connected_component(piece)
                                                for piece in partitions))
