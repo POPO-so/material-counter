@@ -24,6 +24,7 @@ _SNAPSHOT_KEYS = (
     "video_pump_error", "video_pump_failed_at", "video_pump_failed_stage",
     "video_pump_last_frame_id", "pre_stop_video_state", "dma_after",
     "vdma_after", "monitor_after", "timings_ms", "after_memory",
+    "video_pump_diagnostics", "video_owner_diagnostics", "vdma_diag_mmio",
 )
 
 

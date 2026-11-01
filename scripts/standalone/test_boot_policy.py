@@ -358,3 +358,37 @@ def test_load_boot_config_accepts_diag_snapshot_bool(tmp_path):
     config = load_boot_config(path)
     assert config["diag_snapshot"] is True
     assert config["transfer_timing"] is True
+
+
+def test_build_argv_default_does_not_pass_vdma_diag_mmio(tmp_path):
+    argv = build_argv(tmp_path, _boot_config(), str(uuid.uuid4()), "out", "f" * 64, "python")
+    assert "--vdma-diag-mmio" not in argv
+
+
+def test_build_argv_true_appends_vdma_diag_mmio_exactly_once(tmp_path):
+    argv = build_argv(tmp_path, _boot_config(vdma_diag_mmio=True),
+                      str(uuid.uuid4()), "out", "f" * 64, "python")
+    assert argv.count("--vdma-diag-mmio") == 1
+    assert argv[-1] == "--vdma-diag-mmio"
+
+
+def test_build_argv_false_keeps_the_original_argv_for_vdma_diag_mmio(tmp_path):
+    boot = str(uuid.uuid4())
+    base = build_argv(tmp_path, _boot_config(), boot, "out", "f" * 64, "python")
+    off = build_argv(tmp_path, _boot_config(vdma_diag_mmio=False),
+                     boot, "out", "f" * 64, "python")
+    assert off == base
+
+
+@pytest.mark.parametrize("value", ["true", 1, 0, None, [], {}])
+def test_build_argv_rejects_non_bool_vdma_diag_mmio(value, tmp_path):
+    with pytest.raises(TypeError, match="vdma_diag_mmio"):
+        build_argv(tmp_path, _boot_config(vdma_diag_mmio=value),
+                   str(uuid.uuid4()), "out", "f" * 64, "python")
+
+
+def test_build_argv_orders_all_three_optional_switches(tmp_path):
+    argv = build_argv(tmp_path, _boot_config(transfer_timing=True, diag_snapshot=True,
+                                             vdma_diag_mmio=True),
+                      str(uuid.uuid4()), "out", "f" * 64, "python")
+    assert argv[-3:] == ["--transfer-timing", "--diag-snapshot", "--vdma-diag-mmio"]

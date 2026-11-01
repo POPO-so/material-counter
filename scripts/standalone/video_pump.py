@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 from collections import deque
+import copy
 import threading
 import time
 
 import numpy as np
+
+from .vdma_diag import capture_vdma_snapshot
 
 
 RUNNING = "RUNNING"
@@ -23,7 +26,8 @@ class VideoPump:
     DEFAULT_SUBMIT_TIMEOUT = 1.0
     TIMING_WINDOW = 20_000
 
-    def __init__(self, outputs, hw, owner, session_uuid, submit_timeout=1.0):
+    def __init__(self, outputs, hw, owner, session_uuid, submit_timeout=1.0,
+                 vdma_read32=None):
         if not isinstance(submit_timeout, (int, float)) or submit_timeout <= 0:
             raise ValueError("submit_timeout must be positive")
         self.outputs = outputs
@@ -31,10 +35,18 @@ class VideoPump:
         self.owner = owner
         self.session_uuid = session_uuid
         self.submit_timeout = float(submit_timeout)
+        # Side-effect-free VDMA read function, or None to keep failure
+        # evidence free of MMIO (the default).
+        self.vdma_read32 = vdma_read32
         self.state = RUNNING
         self.error = None
         self.failed_at = None
         self.failed_stage = None
+        self.first_failure = None
+        self.last_success = None
+        self.vdma_snapshot = None
+        self.writeframe_submitted_at = None
+        self.writeframe_returned_at = None
         self.last_frame_id = None
         self.submitted = 0
         self.timings_ms = {
@@ -106,14 +118,26 @@ class VideoPump:
                     stage = "copy"
                     np.copyto(frame, lease.array)
                     stage = "writeframe"
+                    self.writeframe_submitted_at = time.monotonic()
+                    self.writeframe_returned_at = None
                     self.owner.call(
                         self.hw.hdmi.writeframe,
                         frame,
                         timeout=self.submit_timeout,
                     )
+                    self.writeframe_returned_at = time.monotonic()
                     # A successful call transfers the CMA frame to the HDMI driver.
                     frame = None
                     self.submitted += 1
+                    self.last_success = dict(
+                        frame_id=lease.frame_id,
+                        submitted=self.submitted,
+                        submitted_at=self.writeframe_submitted_at,
+                        returned_at=self.writeframe_returned_at,
+                        writeframe_ms=1000 * (self.writeframe_returned_at -
+                                              self.writeframe_submitted_at),
+                        owner=(self._owner_diagnostics() or {}).get("last_success"),
+                    )
                     self.timings_ms["copy_submit_ms"].append(
                         1000 * (time.monotonic() - copy_started)
                     )
@@ -144,6 +168,31 @@ class VideoPump:
             if self.state != DISPLAY_FAIL_HOLD:
                 self.state = STOPPED
 
+    def diagnostics(self):
+        """Bounded failure evidence for reports; never touches hardware."""
+        return {
+            "submit_timeout": self.submit_timeout,
+            "vdma_capture_enabled": self.vdma_read32 is not None,
+            "first_failure": (copy.deepcopy(self.first_failure)
+                              if self.first_failure is not None else None),
+            "last_success": (dict(self.last_success)
+                             if self.last_success is not None else None),
+            "vdma_snapshot": (copy.deepcopy(self.vdma_snapshot)
+                              if self.vdma_snapshot is not None else None),
+            "writeframe_submitted_at": self.writeframe_submitted_at,
+            "writeframe_returned_at": self.writeframe_returned_at,
+        }
+
+    def _owner_diagnostics(self):
+        """Snapshot the driver owner's timings without assuming its type."""
+        diagnostics = getattr(self.owner, "diagnostics", None)
+        if diagnostics is None:
+            return None
+        try:
+            return diagnostics()
+        except BaseException:
+            return None
+
     def _fail(self, exc, stage=None):
         # Keep the first failure: a later release error must not hide the
         # operation that actually broke the display path.
@@ -151,4 +200,21 @@ class VideoPump:
             self.error = str(exc)
             self.failed_stage = stage
             self.failed_at = time.monotonic()
+            self.first_failure = dict(
+                stage=stage,
+                error=self.error,
+                monotonic=self.failed_at,
+                frame_id=self.last_frame_id,
+                submit_timeout=self.submit_timeout,
+                writeframe_submitted_at=self.writeframe_submitted_at,
+                writeframe_returned_at=self.writeframe_returned_at,
+                owner=self._owner_diagnostics(),
+                last_success=(dict(self.last_success)
+                              if self.last_success is not None else None),
+            )
         self.state = DISPLAY_FAIL_HOLD
+        if (stage == "writeframe" and self.vdma_read32 is not None
+                and self.vdma_snapshot is None):
+            # Failure-only, bounded, read-only capture. A blocked or failing
+            # read stays inside the snapshot and cannot replace the error above.
+            self.vdma_snapshot = capture_vdma_snapshot(self.vdma_read32)

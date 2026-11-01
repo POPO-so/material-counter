@@ -122,7 +122,7 @@ def build_argv(root, config, boot_id, output, manifest_sha256, python_executable
     if not isinstance(config, dict):
         raise TypeError("config must be a dict")
     required_keys = {"schema", "mode", "camera", "duration_s"}
-    allowed_keys = required_keys | {"transfer_timing", "diag_snapshot"}
+    allowed_keys = required_keys | {"transfer_timing", "diag_snapshot", "vdma_diag_mmio"}
     unknown = set(config) - allowed_keys
     missing = required_keys - set(config)
     if unknown:
@@ -133,6 +133,8 @@ def build_argv(root, config, boot_id, output, manifest_sha256, python_executable
         raise TypeError("transfer_timing must be a boolean")
     if "diag_snapshot" in config and type(config["diag_snapshot"]) is not bool:
         raise TypeError("diag_snapshot must be a boolean")
+    if "vdma_diag_mmio" in config and type(config["vdma_diag_mmio"]) is not bool:
+        raise TypeError("vdma_diag_mmio must be a boolean")
     if config["schema"] != _CONFIG_SCHEMA:
         raise ValueError("unsupported config schema")
     if config["mode"] not in ("continuous", "acceptance"):
@@ -196,4 +198,6 @@ def build_argv(root, config, boot_id, output, manifest_sha256, python_executable
         argv.append("--transfer-timing")
     if config.get("diag_snapshot", False):
         argv.append("--diag-snapshot")
+    if config.get("vdma_diag_mmio", False):
+        argv.append("--vdma-diag-mmio")
     return argv

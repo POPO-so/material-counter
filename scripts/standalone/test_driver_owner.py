@@ -127,3 +127,50 @@ def test_poll_callback_runs_between_jobs_and_errors_are_visible():
     owner = _owner(poll=seen.set)
     assert seen.wait(0.3)
     owner.close()
+
+
+def test_successful_job_records_enqueue_start_and_complete_times():
+    owner = _owner()
+    assert owner.call(lambda: 3) == 3
+    timing = owner.diagnostics()["last_success"]
+    assert timing["operation"].endswith("<lambda>")
+    assert timing["submitted_at"] <= timing["started_at"] <= timing["completed_at"]
+    assert owner.diagnostics()["last_failed"] is None
+    owner.close()
+
+
+def test_concurrent_caller_waits_on_the_serial_section_not_the_timeout():
+    owner = _owner()
+    release = threading.Event()
+    started = threading.Event()
+    order = []
+
+    def blocker():
+        started.set()
+        release.wait(1)
+        order.append("blocker")
+
+    def hold():
+        try:
+            owner.call(blocker, timeout=5)
+        except FailHold:
+            pass
+
+    thread = threading.Thread(target=hold, daemon=True)
+    thread.start()
+    try:
+        assert started.wait(1)
+        timer = threading.Timer(0.2, release.set)
+        timer.start()
+        try:
+            # call() serialises callers before it starts the job timeout, so a
+            # second caller waits on the lock rather than timing out unqueued.
+            assert owner.call(lambda: order.append("second"), timeout=0.05) is None
+        finally:
+            timer.cancel()
+        assert order == ["blocker", "second"]
+        assert owner.diagnostics()["state"] == "RUNNING"
+    finally:
+        release.set()
+        thread.join(2)
+    owner.close()

@@ -40,6 +40,7 @@ class DriverOwner:
         self._pending = None
         self._active_job = None
         self._last_failed = None
+        self._last_success = None
         self._diagnostics_lock = threading.Lock()
         self._jobs = queue.Queue()
         self._serial = threading.Lock()
@@ -54,6 +55,14 @@ class DriverOwner:
     def retain(self, resource):
         self._resources.append(resource)
         return resource
+
+    @staticmethod
+    def _timing(values):
+        if values is None:
+            return None
+        operation, submitted_at, started_at, completed_at = values
+        return {"operation": operation, "submitted_at": submitted_at,
+                "started_at": started_at, "completed_at": completed_at}
 
     def diagnostics(self):
         """Return a read-only snapshot of driver state and task timing."""
@@ -76,6 +85,8 @@ class DriverOwner:
                 "started_at": started_at,
                 "completed_at": completed_at,
                 "retained_count": len(self._resources),
+                "last_success": self._timing(self._last_success),
+                "last_failed": self._timing(self._last_failed),
             }
 
     @staticmethod
@@ -129,6 +140,9 @@ class DriverOwner:
                             and self._last_failed[:2] == (job.operation, job.submitted_at)):
                         self._last_failed = (job.operation, job.submitted_at,
                                              job.started_at, job.completed_at)
+                    if job.error is None and self.state == "RUNNING":
+                        self._last_success = (job.operation, job.submitted_at,
+                                              job.started_at, job.completed_at)
                 job.done.set()
             # Do not let the worker's loop variable keep a successful job's
             # arguments or result alive while waiting for the next queue item.

@@ -372,6 +372,8 @@ def main(argv=None):
         help='write a bounded periodic diagnostic snapshot (default off)')
     parser.add_argument('--diag-snapshot-interval',type=float,default=30.0,
         help='seconds between diagnostic snapshots')
+    parser.add_argument('--vdma-diag-mmio',action='store_true',
+        help='capture a bounded read-only MM2S VDMA snapshot on a writeframe failure (default off)')
     parser.add_argument('--font',default='/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf')
     parser.add_argument('--latin-font',default='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
     parser.add_argument('--inherited-lock-fds',nargs=2,type=int,metavar=('DESKTOP_FD','STANDALONE_FD'),
@@ -467,6 +469,10 @@ def main(argv=None):
             result['button_raw_transition_truncated']=transition_total-len(transitions)
         result['crossing_snapshots']=captures.status() if captures is not None else {'enabled':False}
         result['report_exports']=exporter.status() if exporter is not None else {'enabled':False}
+        result['vdma_diag_mmio']=bool(args.vdma_diag_mmio)
+        if video_pump is not None:
+            result['video_pump_diagnostics']=video_pump.diagnostics()
+            result['video_owner_diagnostics']=video_owner.diagnostics()
         return result
     report['cpu_scope']='system/core normalized 0..100%; process 100% equals one core'
     report['camera_configuration']=dict(by_id=args.camera,requested_format='MJPG',
@@ -572,7 +578,8 @@ def main(argv=None):
                         error=repr(error),injected=failure_mode is not None,
                         failure_mode=failure_mode,monotonic=failed_at))
                     next_drawing_retry=failed_at+5
-            video_pump=VideoPump(outputs,hw,video_owner,session)
+            video_pump=VideoPump(outputs,hw,video_owner,session,
+                vdma_read32=hw.vdma.read if args.vdma_diag_mmio else None)
         else:video_owner.call(hw.hdmi.close,timeout=3)
         if args.source=='camera':camera=LatestCamera(args.camera)
         report['counters_before']=owner.call(snapshot_counters,control)
