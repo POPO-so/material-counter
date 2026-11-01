@@ -9,10 +9,33 @@ _LEGACY = Path(__file__).resolve().parents[1] / "wo0016"
 if str(_LEGACY) not in sys.path:
     sys.path.insert(0, str(_LEGACY))
 from scripts.wo0016.stream_counter import MaskCounter, Detection, FrameResult
-from scripts.wo0016.split_touching import (analyze_split, split_touching_component,
+from scripts.wo0016.split_touching import (analyze_split, is_verified_partition,
+                                          split_touching_component_verified,
                                           is_single_connected_component)
 from .components import analyze_runs, local_mask
 from .protocol import RleFrame
+
+
+def _validated_partitions(mask, pieces):
+    """Full defensive validation for partitions not produced by the splitter."""
+    partitions = [np.asarray(piece) != 0 for piece in pieces]
+    if not (2 <= len(partitions) <= 3
+            and all(piece.shape == mask.shape for piece in partitions)):
+        return None
+    if not all(is_single_connected_component(piece) for piece in partitions):
+        return None
+    coverage = np.sum(np.stack(partitions), axis=0)
+    if not (np.array_equal(coverage > 0, mask) and not np.any(coverage > 1)):
+        return None
+    return partitions
+
+
+def _partition_pieces(mask, expected_area, partition):
+    """Trust a splitter-verified partition; otherwise re-run every check."""
+    if (is_verified_partition(partition) and partition.shape == mask.shape
+            and partition.area == expected_area):
+        return list(partition.pieces)
+    return _validated_partitions(mask, partition.pieces)
 
 
 class RleCounter(MaskCounter):
@@ -71,21 +94,16 @@ class RleCounter(MaskCounter):
                         min_hole_area=self.split_min_hole_area,
                         hole_area_cap=self.split_hole_area_cap)
                     if split_analysis.has_evidence:
-                        pieces = split_touching_component(mask,
+                        partition = split_touching_component_verified(mask,
                             min_child_area=self.min_split_child_area, min_hole_area=self.split_min_hole_area,
                             recursive_item_area=self.split_recursive_item_area,
                             min_hole_distance=self.split_min_hole_distance,
                             hole_area_cap=self.split_hole_area_cap,
                             assume_connected=True, analysis=split_analysis)
-                        # Keep the defensive check: the counter must never
-                        # accept a disconnected or overlapping child set.
-                        partitions = [np.asarray(piece) != 0 for piece in pieces]
-                        valid = (2 <= len(partitions) <= 3 and all(piece.shape == mask.shape
-                            and is_single_connected_component(piece) for piece in partitions))
-                        if valid:
-                            coverage = np.sum(np.stack(partitions), axis=0)
-                            valid = np.array_equal(coverage > 0, mask) and not np.any(coverage > 1)
-                        if valid:
+                        # A verified partition was fully checked by the splitter
+                        # in this call; anything else takes the defensive path.
+                        partitions = _partition_pieces(mask, component.area, partition)
+                        if partitions:
                             for piece in partitions:
                                 ys, xs = np.nonzero(piece)
                                 child = Detection(component.x_min+int(xs.min()), component.x_min+int(xs.max()),

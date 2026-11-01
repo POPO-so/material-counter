@@ -1,10 +1,13 @@
 """Conservative pixel-domain split for touching hollow nuts in Binary8."""
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import cv2
 import numpy as np
 
 _MAX_RELATIVE_HOLE_AREA_THRESHOLD = 16
+_VERIFIED_TOKEN = object()
 
 
 def _hole_area_threshold(area: int, min_hole_area: int, *,
@@ -295,10 +298,13 @@ def _split_by_projection_neck(pixels: np.ndarray,
     return first, second
 
 
-def _valid_partition(parent: np.ndarray, pieces: tuple[np.ndarray, ...]) -> bool:
+def _valid_partition(parent: np.ndarray, pieces: tuple[np.ndarray, ...], *,
+                     connectivity_checked: bool = False) -> bool:
+    """Check a partition; pieces built by this module are already connected."""
     if not 2 <= len(pieces) <= 3 or any(piece.shape != parent.shape for piece in pieces):
         return False
-    if not all(is_single_connected_component(piece) for piece in pieces):
+    if not connectivity_checked and not all(is_single_connected_component(piece)
+                                            for piece in pieces):
         return False
     coverage = np.sum(np.stack(pieces), axis=0)
     return (np.array_equal(coverage > 0, parent)
@@ -376,22 +382,36 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
     return neck_pieces
 
 
-def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
-                             min_hole_area: int = 30,
-                             recursive_item_area: int | None = None,
-                             min_hole_distance: float = 10, hole_area_cap: int = 16,
-                             assume_connected: bool = False,
-                             analysis: SplitAnalysis | None = None
-                             ) -> tuple[np.ndarray, ...]:
-    """Split two or three touching nuts when holes or a narrow neck are visible.
+@dataclass(frozen=True, eq=False)
+class SplitPartition:
+    """One splitter result together with where its validation came from."""
+    pieces: tuple[np.ndarray, ...]
+    shape: tuple[int, ...]
+    area: int
+    verified: bool
+    token: object = None
 
-    Two-hole partitions may contain an oversized joined child; that child is
-    retried so a three-item silhouette with one obscured hole can still split.
-    Ambiguous silhouettes stay intact, and accepted masks preserve the input
-    union without overlap. ``assume_connected`` lets a caller that obtained the
-    mask from a connected-component pass skip the repeated connectivity check.
-    ``analysis`` lets a caller that already ran ``analyze_split`` on this exact
-    mask reuse its holes and neck candidates instead of recomputing them.
+
+def is_verified_partition(partition: object) -> bool:
+    """True only for a multi-piece partition this module just validated."""
+    return (isinstance(partition, SplitPartition) and partition.verified
+            and partition.token is _VERIFIED_TOKEN)
+
+
+def split_touching_component_verified(component: np.ndarray, *, min_child_area: int = 12,
+                                      min_hole_area: int = 30,
+                                      recursive_item_area: int | None = None,
+                                      min_hole_distance: float = 10,
+                                      hole_area_cap: int = 16,
+                                      assume_connected: bool = False,
+                                      analysis: SplitAnalysis | None = None
+                                      ) -> SplitPartition:
+    """Split and return the partition with its validation provenance.
+
+    ``verified`` is true only when a multi-piece result passed
+    ``_valid_partition``. Every piece was connectivity-checked when it was
+    created, so the final check reuses that fact and only verifies shape,
+    coverage and the absence of overlap.
     """
     if isinstance(min_child_area, bool) or not isinstance(min_child_area, (int, np.integer)) or min_child_area < 1:
         raise ValueError("min_child_area must be a positive integer")
@@ -416,10 +436,11 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
     pixels = np.asarray(component) != 0
     if pixels.ndim != 2:
         raise ValueError("component must be a 2D mask")
-    if int(np.count_nonzero(pixels)) < 2 * min_child_area:
-        return (pixels,)
+    area = int(np.count_nonzero(pixels))
+    if area < 2 * min_child_area:
+        return SplitPartition((pixels,), pixels.shape, area, False)
     if not assume_connected and not is_single_connected_component(pixels):
-        return (pixels,)
+        return SplitPartition((pixels,), pixels.shape, area, False)
     analysis = _analysis_for(pixels, analysis)
     options = dict(recursive_item_area=(None if recursive_item_area is None
                                         else int(recursive_item_area)),
@@ -429,4 +450,33 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
         options["analysis"] = analysis
     pieces = _split_recursive(
         pixels, int(min_child_area), int(min_hole_area), **options)
-    return pieces if _valid_partition(pixels, pieces) else (pixels,)
+    if _valid_partition(pixels, pieces, connectivity_checked=True):
+        return SplitPartition(pieces, pixels.shape, area, True, _VERIFIED_TOKEN)
+    return SplitPartition((pixels,), pixels.shape, area, False)
+
+
+def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
+                             min_hole_area: int = 30,
+                             recursive_item_area: int | None = None,
+                             min_hole_distance: float = 10, hole_area_cap: int = 16,
+                             assume_connected: bool = False,
+                             analysis: SplitAnalysis | None = None
+                             ) -> tuple[np.ndarray, ...]:
+    """Split two or three touching nuts when holes or a narrow neck are visible.
+
+    Two-hole partitions may contain an oversized joined child; that child is
+    retried so a three-item silhouette with one obscured hole can still split.
+    Ambiguous silhouettes stay intact, and accepted masks preserve the input
+    union without overlap. ``assume_connected`` lets a caller that obtained the
+    mask from a connected-component pass skip the repeated connectivity check.
+    ``analysis`` lets a caller that already ran ``analyze_split`` on this exact
+    mask reuse its holes and neck candidates instead of recomputing them.
+
+    Callers that need the validation provenance of the result should use
+    ``split_touching_component_verified`` instead.
+    """
+    return split_touching_component_verified(
+        component, min_child_area=min_child_area, min_hole_area=min_hole_area,
+        recursive_item_area=recursive_item_area,
+        min_hole_distance=min_hole_distance, hole_area_cap=hole_area_cap,
+        assume_connected=assume_connected, analysis=analysis).pieces

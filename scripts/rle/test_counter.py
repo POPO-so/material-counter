@@ -65,7 +65,10 @@ def test_complex_candidate_uses_only_local_mask(library,monkeypatch):
     def local(*args,**kwargs):
         out=original(*args,**kwargs);shapes.append(out.shape);return out
     monkeypatch.setattr(module,"local_mask",local)
-    monkeypatch.setattr(module,"split_touching_component",lambda cropped,**kwargs: [cropped])
+    from scripts.wo0016.split_touching import SplitPartition
+    monkeypatch.setattr(module,"split_touching_component_verified",
+        lambda cropped,**kwargs: SplitPartition((cropped,),cropped.shape,
+                                               int(np.count_nonzero(cropped)),False))
     counter=RleCounter(library=library,guarded_merge=True,single_intact_area=100,max_split_area=500,
                        max_area=1000,max_merge_area=500)
     result=counter.update_rle(frame(mask))
@@ -83,11 +86,11 @@ def _ring_mask(centers, outer=24, inner=8):
 def _counting_calls(monkeypatch):
     import scripts.rle.counter as module
     calls = []
-    original = module.split_touching_component
+    original = module.split_touching_component_verified
     def wrapped(*args, **kwargs):
         calls.append(1)
         return original(*args, **kwargs)
-    monkeypatch.setattr(module, "split_touching_component", wrapped)
+    monkeypatch.setattr(module, "split_touching_component_verified", wrapped)
     return calls
 
 
