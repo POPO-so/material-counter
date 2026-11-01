@@ -33,11 +33,13 @@ MEMORY_HEADROOM = 1.5
 MEMORY_OVERHEAD_BYTES = 64 * 1024 * 1024
 MEMORY_MEMMAP_OVERHEAD_BYTES = 128 * 1024 * 1024
 STOP_REQUESTED = {"flag": False}
+MAX_ANOMALIES = 64
 
 _disk_usage = shutil.disk_usage
 _monotonic_ns = time.monotonic_ns
 _wall_ns = time.time_ns
 _save_npz = np.savez
+_open_memmap = np.lib.format.open_memmap
 
 
 class CaptureError(RuntimeError):
@@ -60,7 +62,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _read_mjpeg_gray(camera) -> np.ndarray:
+def _read_mjpeg_packet(camera):
     ok, packet = camera.read()
     if not ok or packet is None:
         raise CaptureError("camera read failed")
@@ -71,6 +73,10 @@ def _read_mjpeg_gray(camera) -> np.ndarray:
     raw = np.ascontiguousarray(raw).reshape(-1)
     if raw.size < 4 or tuple(raw[:2]) != (0xFF, 0xD8):
         raise CaptureError("camera packet has no JPEG SOI marker")
+    return raw
+
+
+def _decode_gray(raw):
     gray = cv2.imdecode(raw, cv2.IMREAD_GRAYSCALE)
     if gray is None or gray.dtype != np.uint8 or gray.shape != (400, 640):
         shape = None if gray is None else gray.shape
@@ -78,6 +84,10 @@ def _read_mjpeg_gray(camera) -> np.ndarray:
         raise CaptureError("MJPEG grayscale decode returned %s %s; expected Gray8 640x400"
                            % (dtype, shape))
     return gray
+
+
+def _read_mjpeg_gray(camera) -> np.ndarray:
+    return _decode_gray(_read_mjpeg_packet(camera))
 
 
 def _read_meminfo(path="/proc/meminfo"):
@@ -141,6 +151,44 @@ def _precheck(output_dir, *, frames, compact, formal, output_format,
     return {"expected_bytes": expected, "free_bytes": free,
             "required_bytes": required, "mem_available_kib": available_kib,
             "memory_estimate_bytes": estimate}
+
+
+def _gap_anomalies(monotonic_ns, diag, captured):
+    """Attribute each over-threshold gap to the measured frame stages.
+
+    The frame timestamp is taken after resize and before the data writes, so a
+    gap spans the post-timestamp work of the earlier frame plus the
+    read/decode/resize of the later frame. Anything left over is unexplained.
+    """
+    if diag is None or captured < 2:
+        return []
+    diffs = np.diff(np.asarray(monotonic_ns, dtype=np.int64)) / 1e6
+    if not len(diffs):
+        return []
+    threshold = max(GAP_FLOOR_MS, 2.0 * float(np.median(diffs)))
+    records = []
+    for index in np.flatnonzero(diffs > threshold)[:MAX_ANOMALIES]:
+        index = int(index)
+        pre_prev = float(diag["read_ms"][index] + diag["decode_ms"][index]
+                         + diag["resize_ms"][index])
+        pre_next = float(diag["read_ms"][index + 1] + diag["decode_ms"][index + 1]
+                         + diag["resize_ms"][index + 1])
+        post_prev = float(diag["frame_total_ms"][index]) - pre_prev
+        records.append({
+            "after_frame": index, "before_frame": index + 1,
+            "gap_ms": round(float(diffs[index]), 3),
+            "read_ms_prev": round(float(diag["read_ms"][index]), 3),
+            "decode_ms_prev": round(float(diag["decode_ms"][index]), 3),
+            "resize_ms_prev": round(float(diag["resize_ms"][index]), 3),
+            "source_write_ms_prev": round(float(diag["source_write_ms"][index]), 3),
+            "preview_write_ms_prev": round(float(diag["preview_write_ms"][index]), 3),
+            "frame_total_ms_prev": round(float(diag["frame_total_ms"][index]), 3),
+            "read_ms_next": round(float(diag["read_ms"][index + 1]), 3),
+            "decode_ms_next": round(float(diag["decode_ms"][index + 1]), 3),
+            "resize_ms_next": round(float(diag["resize_ms"][index + 1]), 3),
+            "unexplained_ms": round(float(diffs[index]) - post_prev - pre_next, 3),
+        })
+    return records
 
 
 def _gap_stats(monotonic_ns):
@@ -207,7 +255,7 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                     tail_frames=0, start_delay_s=8.0, compact=False,
                     wait_for_object_s=0.0, formal=False, output_format="npz",
                     camera_factory=None, meminfo_path="/proc/meminfo",
-                    camera_path="/dev/video0") -> dict:
+                    camera_path="/dev/video0", diagnostics=False) -> dict:
     if not isinstance(output_dir, Path):
         output_dir = Path(output_dir)
     if not output_dir.is_absolute():
@@ -268,6 +316,11 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
     failure_reason = None
     elapsed_s = 0.0
     started_ns = None
+    diag = None
+    if diagnostics:
+        diag = {name: np.empty(frames, dtype=np.float32) for name in
+                ("read_ms", "decode_ms", "resize_ms", "source_write_ms",
+                 "preview_write_ms", "frame_total_ms")}
 
     try:
         camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
@@ -288,17 +341,17 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
             read_ms = np.empty(frames, dtype=np.float32)
         else:
             if not compact:
-                memmap_files["source_gray640x400.npy"] = np.lib.format.open_memmap(
+                memmap_files["source_gray640x400.npy"] = _open_memmap(
                     output_dir / "source_gray640x400.npy", mode="w+",
                     dtype=np.uint8, shape=(frames, 400, 640))
-            memmap_files["input_gray320x240.npy"] = np.lib.format.open_memmap(
+            memmap_files["input_gray320x240.npy"] = _open_memmap(
                 output_dir / "input_gray320x240.npy", mode="w+",
                 dtype=np.uint8, shape=(frames, 240, 320))
-            memmap_files["monotonic_ns.npy"] = np.lib.format.open_memmap(
+            memmap_files["monotonic_ns.npy"] = _open_memmap(
                 output_dir / "monotonic_ns.npy", mode="w+", dtype=np.int64, shape=(frames,))
-            memmap_files["wall_ns.npy"] = np.lib.format.open_memmap(
+            memmap_files["wall_ns.npy"] = _open_memmap(
                 output_dir / "wall_ns.npy", mode="w+", dtype=np.int64, shape=(frames,))
-            memmap_files["read_ms.npy"] = np.lib.format.open_memmap(
+            memmap_files["read_ms.npy"] = _open_memmap(
                 output_dir / "read_ms.npy", mode="w+", dtype=np.float32, shape=(frames,))
 
         for _ in range(2):
@@ -328,6 +381,7 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
         events["recording_started_at"] = started_ns
         state("RECORDING")
         for index in range(frames):
+            frame_started = time.perf_counter_ns()
             if STOP_REQUESTED["flag"]:
                 failure_reason = "signal_stop"
                 break
@@ -336,22 +390,31 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                 failure_reason = "stopped_by_marker"
                 break
             read_started = time.perf_counter_ns()
-            gray = _read_mjpeg_gray(camera)
-            read_ms_value = (time.perf_counter_ns() - read_started) / 1e6
+            raw = _read_mjpeg_packet(camera)
+            decoded_at = time.perf_counter_ns()
+            gray = _decode_gray(raw)
+            prepared_at = time.perf_counter_ns()
             small = cv2.resize(gray, (320, 240), interpolation=cv2.INTER_NEAREST)
+            resized_at = time.perf_counter_ns()
+            read_ms_value = (prepared_at - read_started) / 1e6
             timestamp = _monotonic_ns()
             wall_timestamp = _wall_ns()
+            write_started = time.perf_counter_ns()
             if output_format == "npz":
                 if source is not None:
                     source[index] = gray
+                source_written = time.perf_counter_ns()
                 resized[index] = small
+                preview_written = time.perf_counter_ns()
                 monotonic[index] = timestamp
                 wall[index] = wall_timestamp
                 read_ms[index] = read_ms_value
             else:
                 if not compact:
                     memmap_files["source_gray640x400.npy"][index] = gray
+                source_written = time.perf_counter_ns()
                 memmap_files["input_gray320x240.npy"][index] = small
+                preview_written = time.perf_counter_ns()
                 memmap_files["monotonic_ns.npy"][index] = timestamp
                 memmap_files["wall_ns.npy"][index] = wall_timestamp
                 memmap_files["read_ms.npy"][index] = read_ms_value
@@ -362,6 +425,14 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                 events["drop_start"] = {"frame": index, "monotonic_ns": timestamp}
             if events["drop_end"] is None and _marker(events_dir, "drop_end"):
                 events["drop_end"] = {"frame": index, "monotonic_ns": timestamp}
+            if diag is not None:
+                frame_finished = time.perf_counter_ns()
+                diag["read_ms"][index] = (decoded_at - read_started) / 1e6
+                diag["decode_ms"][index] = (prepared_at - decoded_at) / 1e6
+                diag["resize_ms"][index] = (resized_at - prepared_at) / 1e6
+                diag["source_write_ms"][index] = (source_written - write_started) / 1e6
+                diag["preview_write_ms"][index] = (preview_written - source_written) / 1e6
+                diag["frame_total_ms"][index] = (frame_finished - frame_started) / 1e6
         elapsed_s = (_monotonic_ns() - started_ns) / 1e9 if started_ns else 0.0
     except BaseException as error:
         failure_reason = failure_reason or repr(error)
@@ -381,6 +452,8 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                 failure_reason = f"tail_frames_insufficient:{after}<{tail_frames}"
     status = "COMPLETE" if failure_reason is None and captured == frames else "INCOMPLETE"
 
+    finishing = {"flush_ms": None, "save_ms": None, "hash_ms": None,
+                 "manifest_ms": None}
     data_files = []
     archive_name = None
     if output_format == "npz" and captured:
@@ -393,27 +466,66 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                     "read_ms": read_ms[:captured]}
         if source is not None:
             contents["source_gray640x400"] = source[:captured]
+        started = time.perf_counter_ns()
         try:
             with temp.open("wb") as stream:
                 _save_npz(stream, **contents)
                 stream.flush()
                 os.fsync(stream.fileno())
             os.replace(temp, archive_path)
-            data_files.append({"name": archive_name,
-                               "bytes": archive_path.stat().st_size,
-                               "sha256": _sha256(archive_path)})
         except BaseException as error:
+            finishing["save_ms"] = round((time.perf_counter_ns() - started) / 1e6, 3)
             failure_reason = failure_reason or f"save_failed:{error!r}"
             if status == "COMPLETE":
                 status = "INCOMPLETE"
+        else:
+            finishing["save_ms"] = round((time.perf_counter_ns() - started) / 1e6, 3)
+            started = time.perf_counter_ns()
+            data_files.append({"name": archive_name,
+                               "bytes": archive_path.stat().st_size,
+                               "sha256": _sha256(archive_path)})
+            finishing["hash_ms"] = round((time.perf_counter_ns() - started) / 1e6, 3)
     elif output_format == "memmap" and captured:
-        for name, array in memmap_files.items():
+        started = time.perf_counter_ns()
+        for array in memmap_files.values():
             array.flush()
+        finishing["flush_ms"] = round((time.perf_counter_ns() - started) / 1e6, 3)
+        started = time.perf_counter_ns()
+        for name in memmap_files:
             path = output_dir / name
             data_files.append({"name": name, "bytes": path.stat().st_size,
                                "sha256": _sha256(path)})
+        finishing["hash_ms"] = round((time.perf_counter_ns() - started) / 1e6, 3)
 
-    gaps = _gap_stats(monotonic[:captured] if monotonic is not None else [])
+    diagnostics_name = None
+    if diag is not None and captured:
+        path = output_dir / "diagnostics.npz"
+        temp = output_dir / "diagnostics.npz.tmp"
+        try:
+            with temp.open("wb") as stream:
+                _save_npz(stream, **{name: array[:captured]
+                                     for name, array in diag.items()})
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temp, path)
+            data_files.append({"name": "diagnostics.npz",
+                               "bytes": path.stat().st_size,
+                               "sha256": _sha256(path)})
+            diagnostics_name = "diagnostics.npz"
+        except BaseException as error:
+            failure_reason = failure_reason or f"diagnostics_save_failed:{error!r}"
+            if status == "COMPLETE":
+                status = "INCOMPLETE"
+
+    if output_format == "npz":
+        captured_monotonic = (monotonic[:captured] if monotonic is not None
+                              else np.empty(0, dtype=np.int64))
+    elif captured:
+        captured_monotonic = np.asarray(memmap_files["monotonic_ns.npy"][:captured])
+    else:
+        captured_monotonic = np.empty(0, dtype=np.int64)
+    gaps = _gap_stats(captured_monotonic)
+    anomalies = _gap_anomalies(captured_monotonic, diag, captured)
     manifest = {
         "schema": SCHEMA, "session_id": session_id, "status": status,
         "scope": "CAMERA_ONLY_NOT_PL_BINARY8", "formal": formal,
@@ -441,12 +553,20 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                              "equivalent to PL measurement",
         "truth_template": "truth-template.json",
         "independent_ground_truth": "UNKNOWN",
+        "diagnostics": {"enabled": diag is not None,
+                        "file": diagnostics_name,
+                        "anomalies": anomalies,
+                        "anomaly_limit": MAX_ANOMALIES},
+        "finishing": finishing,
     }
+    manifest_started = time.perf_counter_ns()
     try:
         _write_json(output_dir / "manifest.json", manifest)
     except BaseException as error:
         print("MANIFEST_WRITE_FAILED", repr(error), flush=True)
         raise
+    finishing["manifest_ms"] = round((time.perf_counter_ns() - manifest_started) / 1e6, 3)
+    manifest["finishing"] = finishing
     state("COMPLETE" if status == "COMPLETE" else "INCOMPLETE")
     manifest["state_history"] = history
     try:
@@ -484,6 +604,8 @@ def main() -> int:
     parser.add_argument("--compact", action="store_true")
     parser.add_argument("--formal", action="store_true")
     parser.add_argument("--format", choices=("npz", "memmap"), default=None)
+    parser.add_argument("--diagnostics", action="store_true",
+                        help="record per-stage timings and gap attribution")
     parser.add_argument("--wait-for-object-s", type=float, default=0.0,
                         help="arm until 3 consecutive frames show >=100 bright left-half pixels")
     args = parser.parse_args()
@@ -497,7 +619,7 @@ def main() -> int:
             baseline_frames=args.baseline_frames, tail_frames=args.tail_frames,
             start_delay_s=args.start_delay_s, compact=args.compact,
             wait_for_object_s=args.wait_for_object_s, formal=args.formal,
-            output_format=output_format)
+            output_format=output_format, diagnostics=args.diagnostics)
     except CaptureError as error:
         print(f"CAPTURE_FAILED {error}", flush=True)
         return 1
