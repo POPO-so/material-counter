@@ -1,0 +1,11 @@
+{
+  "schema": "material-counter.exposure-readonly.v1",
+  "source_sha256": "d1fcc2835287623e3a284f8f4bb931d32269659c16ae06234b8819b78b276712",
+  "source_lf_sha256": "e22007266fc7f0fba2824c78595ba9743bf8072fd05fb1338523659f5460cf7c",
+  "returncode": 0,
+  "stdout": "{\"minimum_ms\": 5.0, \"maximum_ms\": 1000.0, \"current_ms\": 5.0, \"step_ms\": 0.1}\n",
+  "stderr": "",
+  "parameter_writes": false,
+  "stream_opened": false,
+  "user": "root"
+}

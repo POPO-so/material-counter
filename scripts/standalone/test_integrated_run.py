@@ -6,6 +6,7 @@ import time
 import numpy as np
 import pytest
 
+import scripts.standalone.integrated_run as integrated_run
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
 from scripts.standalone.integrated_run import (
     _live_drop_total,
@@ -40,6 +41,35 @@ def test_dashboard_values_include_live_core_and_static_manifest_percentages():
     assert values['memory_percent']==46.2
     assert (values['static_lut_percent'],values['static_ff_percent'],
             values['static_bram_percent'],values['static_dsp_percent'])==(23.0,15.2,3.2,4.1)
+
+
+def test_dashboard_values_include_mode_exposure_pl_rates_and_thread_summary():
+    values = dashboard_values(2, False, False, {}, {}, mode="diagnostic",
+        exposure={"minimum_ms": 5, "maximum_ms": 1000, "current_ms": 5,
+                  "step_ms": .1},
+        pl_rates={"fresh": True, "rle_activity_pct": 32.0,
+                  "input_mb_s": 12.5, "output_mb_s": 0.8,
+                  "input_stall_pct": 1.0, "output_stall_pct": 0.0},
+        runtime={"threads": {"101": {"name": "MainThread",
+                                         "utime_ticks_delta": 2,
+                                         "stime_ticks_delta": 1}}})
+
+    assert values["mode"] == "DIAGNOSTIC"
+    assert values["exposure_text"] == "\u66dd\u5149 5.0 ms"
+    assert values["exposure_range_text"] == "\u8303\u56f4 5\u20131000 ms / \u00b11 ms"
+    assert "RLE active (incl wait) 32%" in values["pl_text"] and "12.5" in values["pl_text"]
+    assert "MainThr" in values["thread_text"] and "tick/s" in values["thread_text"]
+
+
+def test_dashboard_exposure_error_keeps_last_known_range_and_bounds_error_text():
+    values = dashboard_values(0, False, False, {}, {},
+        exposure={"minimum_ms": 5, "maximum_ms": 1000, "current_ms": 6,
+                  "step_ms": 1},
+        exposure_error="manual control unavailable; driver returned a long error")
+
+    assert values["exposure_text"].startswith("\u66dd\u5149\u5931\u8d25:")
+    assert len(values["exposure_text"]) <= 16
+    assert values["exposure_range_text"] == "\u8303\u56f4(\u4e0a\u6b21) 5\u20131000 ms / \u00b11 ms"
 
 
 def test_dashboard_values_keep_stale_and_missing_readings_unavailable():
@@ -166,6 +196,180 @@ def test_telemetry_does_not_change_result_metadata_or_count():
     })
 
     assert (empty['count'],empty['boxes'],empty['tracks'])==(filled['count'],filled['boxes'],filled['tracks'])
+
+
+def test_diagnostics_are_not_observed_or_hashed_in_normal_mode():
+    policy_type = getattr(integrated_run, "DiagnosticPolicy", None)
+    recorder = getattr(integrated_run, "record_diagnostic_frame", None)
+    assert policy_type is not None and callable(recorder)
+    policy = policy_type()
+
+    class Trace:
+        def __init__(self): self.calls = []
+        def add(self, *args, **kwargs): self.calls.append((args, kwargs))
+
+    class Captures:
+        def __init__(self): self.calls = 0
+        def observe(self, *args, **kwargs): self.calls += 1
+
+    trace, captures = Trace(), Captures()
+    recorder(policy, trace, captures, 7, object(), object(), object(), object())
+    assert trace.calls[0][1]["enabled"] is False
+    assert captures.calls == 0
+    policy.set_mode("diagnostic", frame_id=8, timestamp_ns=10)
+    recorder(policy, trace, captures, 8, object(), object(), object(), object())
+    assert trace.calls[-1][1]["enabled"] is True
+    assert captures.calls == 1
+
+
+def test_preview_binary_is_only_rasterized_when_binary_background_is_visible():
+    prepare = getattr(integrated_run, "prepare_preview_binary", None)
+    assert callable(prepare)
+    mask = np.zeros((400, 640), np.uint8)
+    mask[20:30, 40:50] = 255
+    packet = decode_packet(encode_mask(mask, frame_id=9))
+    output = np.full_like(mask, 37)
+    prepare(packet, output, binary_background=False)
+    assert np.all(output == 37)
+    prepare(packet, output, binary_background=True)
+    assert np.array_equal(output, mask)
+
+
+def test_button_input_cli_defaults_to_irq_and_supports_explicit_compatibility_modes():
+    factory = getattr(integrated_run, "build_argument_parser", None)
+    assert callable(factory)
+    required = ["--manifest", "m", "--manifest-sha256", "a" * 64,
+                "--boot-id", str(uuid.uuid4()), "--native-lib", "lib",
+                "--output", "out"]
+    parser = factory()
+    assert parser.parse_args(required).button_input == "irq"
+    for mode in ("polling", "off"):
+        assert parser.parse_args(required + ["--button-input", mode]).button_input == mode
+
+
+def test_candidate_bundle_capabilities_are_required_for_selected_irq_pl_or_raw(monkeypatch):
+    verify = integrated_run.verify_selected_offload_bundle
+    calls = []
+    monkeypatch.setattr(integrated_run, "verify_offload_capabilities",
+                        lambda manifest, hwh: calls.append((manifest, hwh)) or {"ok": True})
+    def args(button="polling", preview="software", input_mode="packet"):
+        return type("Args", (), {"button_input": button, "preview_backend": preview,
+                                  "input_mode": input_mode})()
+
+    for selected in (args(button="irq"), args(preview="pl"), args(input_mode="raw")):
+        assert verify(selected, {"offload": True}, "candidate.hwh") == {"ok": True}
+    assert len(calls) == 3
+    assert verify(args(), {}, "legacy.hwh") is None
+    assert len(calls) == 3
+
+
+def test_mode_transition_resets_existing_capture_context_only():
+    reset = getattr(integrated_run, "reset_capture_context_on_transition", None)
+    assert callable(reset)
+    class Captures:
+        def __init__(self): self.reasons = []
+        def reset_context(self, reason): self.reasons.append(reason)
+    captures = Captures()
+    reset(captures, None)
+    assert captures.reasons == []
+    reset(captures, {"from": "diagnostic", "to": "normal"})
+    reset(None, {"from": "normal", "to": "diagnostic"})
+    assert captures.reasons == ["diagnostic_mode_changed"]
+
+
+def test_video_owner_has_periodic_poll_only_for_explicit_polling_mode():
+    make_poll = integrated_run.button_input_poll_callback
+    worker = type("Worker", (), {"poll": lambda self: None})()
+
+    getter = lambda: worker
+    assert make_poll("irq", getter) is None
+    assert make_poll("off", getter) is None
+    callback = make_poll("polling", getter)
+    assert callable(callback)
+    callback()
+
+    from scripts.standalone.driver_owner import DriverOwner
+    owner = DriverOwner(poll=make_poll("irq", getter))
+    try:
+        assert owner._poll is None
+        assert owner._background == set()
+    finally:
+        owner.close()
+
+
+def test_preview_and_input_backend_cli_defaults_and_candidate_values():
+    parser = integrated_run.build_argument_parser()
+    required = ["--manifest", "m", "--manifest-sha256", "a" * 64,
+                "--boot-id", str(uuid.uuid4()), "--native-lib", "lib",
+                "--output", "out"]
+    defaults = parser.parse_args(required)
+    assert (defaults.preview_backend, defaults.input_mode) == ("software", "packet")
+    candidate = parser.parse_args(required + ["--preview-backend", "pl", "--input-mode", "raw"])
+    assert (candidate.preview_backend, candidate.input_mode) == ("pl", "raw")
+
+
+def test_preview_frame_selection_keeps_binary_for_software_and_black_placeholders_for_pl():
+    select = integrated_run.prepare_preview_frame
+    gray = np.full((400, 640), 73, np.uint8)
+    binary = np.full((400, 640), 255, np.uint8)
+    selected_gray, selected_binary = select(gray, binary, backend="software")
+    assert selected_gray is gray
+    assert selected_binary is binary
+    selected_gray, selected_binary = select(gray, binary, backend="pl")
+    assert not np.any(selected_gray)
+    assert not np.any(selected_binary)
+
+
+def test_preview_panel_gate_publishes_on_change_or_at_two_hz_limit():
+    gate = integrated_run.PreviewPublishGate()
+    assert gate.should_publish(0, (3, "RUNNING"))
+    assert not gate.should_publish(.1, (3, "RUNNING"))
+    assert not gate.should_publish(.1, (4, "RUNNING"))
+    assert gate.should_publish(.5, (4, "RUNNING"))
+
+
+def test_irq_capability_requires_hwh_parameter_and_channel_wait_method():
+    check = getattr(integrated_run, "button_gpio_irq_configured", None)
+    assert callable(check)
+
+    class Channel:
+        async def wait_for_interrupt_async(self): pass
+
+    class Overlay:
+        def __init__(self, value):
+            self.ip_dict = {"btns_gpio": {"parameters": {"C_INTERRUPT_PRESENT": value}}}
+
+    assert check(Overlay("1"), Channel())
+    assert not check(Overlay("0"), Channel())
+    assert not check(Overlay("1"), object())
+
+
+def test_irq_worker_refuses_unavailable_channel_without_polling_fallback():
+    worker_type = getattr(integrated_run, "ButtonInputWorker", None)
+    assert worker_type is not None
+    from scripts.standalone.driver_owner import DriverOwner
+    owner = DriverOwner()
+    worker = worker_type(owner, "irq", object(), lambda: 0, lambda _: None, lambda _: None)
+    with pytest.raises(RuntimeError, match="interrupt unavailable"):
+        worker.start()
+    assert worker._task is None
+    owner.close()
+
+
+def test_explicit_polling_worker_emits_events_and_stops_cleanly():
+    worker_type = getattr(integrated_run, "ButtonInputWorker", None)
+    from scripts.standalone.driver_owner import DriverOwner
+    commands=[]
+    holder={}
+    owner=DriverOwner(poll=lambda:holder.get("worker") and holder["worker"].poll())
+    worker=worker_type(owner,"polling",None,lambda:1,commands.append,lambda _:None)
+    holder["worker"]=worker
+    worker.start()
+    deadline=time.monotonic()+1
+    while not commands and time.monotonic()<deadline:time.sleep(.002)
+    worker.stop()
+    owner.close()
+    assert commands==["clear"]
 
 
 def test_source_identity_covers_loaded_counting_and_motion_code():
@@ -339,13 +543,13 @@ def test_actual_drawing_child_preserves_frame_identity_and_renders_count_line(ax
         marker=np.packbits((lease.array[0,640:864]==255).astype(np.uint8)).tobytes()
         assert uuid.UUID(bytes=marker[2:18])==session
         assert int.from_bytes(marker[18:26],'big')==77
-        # Dashboard viewport is (320,146,640,400); source coordinates stay 1:1.
+        # The source count coordinate is preserved under 4/5 binary preview scaling.
         if axis=='x':
             assert lease.array[156,640]==248
             assert lease.array[166,640]==0
         else:
-            assert lease.array[346,330]==248
-            assert lease.array[346,340]==0
+            assert lease.array[306,394]==248
+            assert lease.array[306,402]==0
         outputs.release_read(lease.slot);lease=None
     finally:
         stop.set();child.join(timeout=10)

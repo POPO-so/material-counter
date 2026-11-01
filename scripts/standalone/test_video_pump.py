@@ -216,9 +216,13 @@ def test_success_records_capture_to_submit_telemetry(frames, monkeypatch):
         def __init__(self, held_lease):
             self.held_lease = held_lease
 
-        def acquire_latest(self):
+        def wait_for_frame(self, timeout=None, stop=None):
             held_lease, self.held_lease = self.held_lease, None
-            return held_lease
+            if held_lease is not None:
+                return held_lease
+            if stop is not None:
+                stop.wait(timeout)
+            return None
 
         def release_read(self, slot):
             frames.release_read(slot)
@@ -303,7 +307,7 @@ def test_telemetry_failure_does_not_fail_display_submission(frames):
 
 def test_acquire_error_does_not_count_submit_failure():
     class BrokenOutputs:
-        def acquire_latest(self):
+        def wait_for_frame(self, timeout=None, stop=None):
             raise OSError("output pool unavailable")
 
     pump = _pump_type()(
@@ -312,6 +316,7 @@ def test_acquire_error_does_not_count_submit_failure():
     )
     assert pump.join(1)
     assert pump.state == DISPLAY_FAIL_HOLD
+    assert "output pool unavailable" in pump.error
     assert pump.submit_failures == 0
 
 
@@ -324,3 +329,23 @@ def test_idle_stop_leaves_no_reading_lease(frames):
     pump.request_stop()
     assert pump.join(1)
     assert frames.statuses() == (FREE, FREE, FREE)
+
+
+def test_video_pump_waits_without_millisecond_polling(frames, monkeypatch):
+    pump_type = _pump_type()
+    identity = uuid.uuid4()
+    calls = []
+    original = frames.wait_for_frame
+    def observed(*args, **kwargs):
+        calls.append(True)
+        return original(*args, **kwargs)
+    monkeypatch.setattr(frames, "wait_for_frame", observed)
+    pump = pump_type(frames, type("HW", (), {"hdmi": FakeHDMI((8, 12))})(), FakeOwner(), identity)
+    try:
+        deadline = time.monotonic() + 1
+        while not calls and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert calls
+    finally:
+        pump.request_stop()
+        assert pump.join(1)

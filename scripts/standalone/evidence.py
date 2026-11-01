@@ -9,7 +9,7 @@ from dataclasses import asdict
 
 
 class TraceBuffer:
-    """Bound detailed diagnostics while hashing every processed frame.
+    """Bound detailed diagnostics while hashing enabled diagnostic frames.
 
     If annotations exceed the explicit cap, the digest covers the bounded view
     and total sizes and is labelled truncated; it cannot prove full equality.
@@ -23,7 +23,9 @@ class TraceBuffer:
         self.annotations_truncated=False
         self._hash=hashlib.sha256()
 
-    def add(self,frame_id,result,trajectory_epoch=0):
+    def add(self,frame_id,result,trajectory_epoch=0,*,enabled=True):
+        if not enabled:
+            return
         limit=self.max_annotations
         groups=(result.detections,result.tracks,result.events,result.suppressed_events)
         truncated=any(len(group)>limit for group in groups)
@@ -37,7 +39,7 @@ class TraceBuffer:
         self._hash.update(json.dumps(entry,sort_keys=True,separators=(',',':')).encode()+b'\n')
         self.frames.append(entry);self.frames_seen+=1
 
-    def digest(self):return self._hash.hexdigest()
+    def digest(self):return self._hash.hexdigest() if self.frames_seen else None
 
 
 def _json_default(value):

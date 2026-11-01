@@ -98,9 +98,8 @@ def _wait_for_output_identity(owner, monitor, session_value, frame_id, timeout=0
         time.sleep(0.001)
 
 
-def setup_hardware(files, owner):
+def setup_hardware(files, owner, *, start_display=True):
     from pynq import Clocks, MMIO, Overlay, PL, allocate
-    from pynq.lib.video import PIXEL_GRAY, VideoMode
 
     _probe_display_buffers(owner, allocate)
     live = PL.bitfile_name
@@ -145,11 +144,18 @@ def setup_hardware(files, owner):
     buttons = overlay.btns_gpio.channel1
     buttons.setlength(4)
     buttons.setdirection("in")
-    hdmi.configure(VideoMode(1280, 720, 8, 60), PIXEL_GRAY)
-    hdmi.start()
+    if start_display:
+        start_display_output(hdmi)
     return SimpleNamespace(overlay=overlay, hdmi=hdmi, monitor=monitor, buttons=buttons,
                            clocks=clocks, vdma=overlay.axi_vdma.mmio,
                            hp2_read32=hp2_read32)
+
+
+def start_display_output(hdmi):
+    """Start output only after the integrated candidate passes runtime gates."""
+    from pynq.lib.video import PIXEL_GRAY, VideoMode
+    hdmi.configure(VideoMode(1280, 720, 8, 60), PIXEL_GRAY)
+    hdmi.start()
 
 
 def _memory():

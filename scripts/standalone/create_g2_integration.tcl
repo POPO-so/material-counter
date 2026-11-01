@@ -62,16 +62,22 @@ g2_require_source_text $g2_gray8_tcl {
 
 set g2_rtl_sources {
     fpga/experimental/gray8/axis_dma_gray_adapter.v
+    fpga/experimental/gray8/axis_raw_gray_adapter.v
     fpga/rtl/axis_morphology3x3.v
     fpga/experimental/rle/axis_rle_encoder.v
     fpga/experimental/rle/axis_dma_rle_pipeline_bd.v
+}
+set g2_offload_candidate [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
+if {$g2_offload_candidate} {
+    lappend g2_rtl_sources fpga/experimental/standalone/video_binary_overlay.v
+    lappend g2_rtl_sources fpga/experimental/standalone/video_binary_overlay_bd.v
 }
 foreach relative $g2_rtl_sources {
     set source [file join $g2_repo $relative]
     if {![file isfile $source]} {error "G2_RTL_SOURCE_MISSING:$relative"}
 }
 
-# Check all 11 control windows as 64-KiB intervals before Vivado mutates a project.
+# Check all control windows as 64-KiB intervals before Vivado mutates a project.
 set g2_control_map {
     {VDMA 0x43000000} {dynamic-clock 0x43C10000} {VTC 0x43C30000}
     {color-convert 0x43C60000} {pixel-unpack 0x43C70000}
@@ -79,6 +85,7 @@ set g2_control_map {
     {frame-monitor 0x43C40000} {RLE-DMA 0x40400000} {RLE-pipeline 0x43C20000}
 }
 if {[llength $g2_control_map] != 11} {error "G2_CONTROL_MAP_COUNT_MISMATCH"}
+if {$g2_offload_candidate} {lappend g2_control_map {binary-overlay 0x43C50000}}
 for {set i 0} {$i < [llength $g2_control_map]} {incr i} {
     lassign [lindex $g2_control_map $i] name address
     scan $address %x start
@@ -201,16 +208,26 @@ if {$g2_dry_run} {
         if {[llength $segments] != 1} {error "G2_EXPECTED_ONE_AXI_LITE_SEGMENT:$segment:$segments"}
         assign_bd_address -offset $offset -range 0x10000 -target_address_space [get_bd_addr_spaces ps7/Data] $segments
     }
+    if {$g2_offload_candidate} {
+        set overlay_ip [file join $g2_repo fpga experimental standalone video_binary_overlay_bd.v]
+        if {![file isfile $overlay_ip]} {error "G2_OVERLAY_WRAPPER_MISSING:$overlay_ip"}
+        source [file join $g2_repo scripts standalone connect_offload.tcl]
+    }
     assign_bd_address -offset 0 -range 0x20000000 -target_address_space [get_bd_addr_spaces axi_dma_0/Data_MM2S] \
         [get_bd_addr_segs ps7/S_AXI_HP0/HP0_DDR_LOWOCM]
     assign_bd_address -offset 0 -range 0x20000000 -target_address_space [get_bd_addr_spaces axi_dma_0/Data_S2MM] \
         [get_bd_addr_segs ps7/S_AXI_HP1/HP1_DDR_LOWOCM]
 
-    if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != 11} {error "G2_CONTROL_MI_READBACK_FAILED"}
-    foreach pin {control/M09_AXI control/M10_AXI} {
+    set expected_mi [expr {$g2_offload_candidate ? 12 : 11}]
+    if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != $expected_mi} {error "G2_CONTROL_MI_READBACK_FAILED"}
+    set expected_masters {control/M09_AXI control/M10_AXI}
+    if {$g2_offload_candidate} {lappend expected_masters control/M11_AXI}
+    foreach pin $expected_masters {
         if {![llength [get_bd_intf_pins -quiet $pin]]} {error "G2_CONTROL_MI_MISSING:$pin"}
     }
-    foreach pin {control/M09_ARESETN control/M10_ARESETN} {
+    set expected_resets {control/M09_ARESETN control/M10_ARESETN}
+    if {$g2_offload_candidate} {lappend expected_resets control/M11_ARESETN}
+    foreach pin $expected_resets {
         if {![llength [get_bd_pins -quiet $pin]]} {error "G2_CONTROL_RESET_MISSING:$pin"}
     }
     foreach pin {axi_dma_0/mm2s_introut axi_dma_0/s2mm_introut} {
@@ -223,7 +240,7 @@ if {$g2_dry_run} {
     save_bd_design
     generate_target all $bd_file
     update_compile_order -fileset sources_1
-    set receipt [dict create design display bd $bd_file control_mi_count 11 \
+    set receipt [dict create design display bd $bd_file control_mi_count $expected_mi \
         preserved_mi M00-M08 rle_dma_mi M09 rle_pipeline_mi M10 \
         clocks [dict create GP0_FCLK1_MHz 100 RLE_FCLK0_MHz 50 display_stream_FCLK2_MHz 142.857] \
         hp [dict create RLE_MM2S HP0_64bit RLE_S2MM HP1_32bit HDMI_read HP2_32bit] \

@@ -1,0 +1,10 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "Q:/fpga/experimental/standalone/video_binary_overlay.v" into library work
+INFO: [VRFC 10-311] analyzing module video_binary_overlay
+INFO: [VRFC 10-311] analyzing module binary_mask_ram
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "Q:/fpga/experimental/standalone/video_binary_overlay_bd.v" into library work
+INFO: [VRFC 10-311] analyzing module video_binary_overlay_bd
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "Q:/fpga/sim/standalone/tb_video_binary_overlay.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_video_binary_overlay
+INFO: [VRFC 10-311] analyzing module tb_video_binary_overlay_scaled
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "Q:/fpga/sim/standalone/tb_video_binary_overlay_bd.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_video_binary_overlay_bd

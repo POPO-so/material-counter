@@ -1,0 +1,16 @@
+Vivado Simulator v2026.1
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: C:/AMDDesignTools/2026.1/Vivado/bin/unwrapped/win64.o/xelab.exe tb_video_binary_overlay_scaled -s tb_video_binary_overlay_scaled_sim 
+Multi-threading is on. Using 18 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module work.binary_mask_ram(DEPTH=50,AW=6)
+Compiling module work.video_binary_overlay(WIDTH=10,HE...
+Compiling module work.tb_video_binary_overlay(W=10,H=5...
+Compiling module work.tb_video_binary_overlay_scaled
+Built simulation snapshot tb_video_binary_overlay_scaled_sim

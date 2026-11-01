@@ -7,6 +7,9 @@ from scripts.rle.protocol import (
 )
 from scripts.rle.transport import RleDmaTransport
 
+RAW_TX_BYTES = WIDTH * HEIGHT
+RAW_SIGNATURE = 0x52415731
+
 
 class Buffer(bytearray):
     def __new__(cls, size, address):
@@ -32,11 +35,14 @@ class Buffer(bytearray):
 
 
 class Control:
-    def __init__(self):
+    def __init__(self, *, raw_capable=True):
         self.values = {0x04: 0x31454C52, 0x08: 0, 0x0C: 0,
                        0x10: 0, 0x14: 0, 0x18: 0, 0x1C: 0,
                        0x20: 128, 0x24: 0, 0x28: 0,
                        0x2C: (HEIGHT << 16) | WIDTH, 0x30: MAX_RUNS}
+        if raw_capable:
+            self.values[0x70] = RAW_SIGNATURE
+            self.values[0x74] = 0
         self.events = []
         self.start_rejected = False
 
@@ -84,11 +90,12 @@ class Channel:
 
 
 class FakeRig:
-    def __init__(self, *, packet=None, length=None, auto_complete=True):
+    def __init__(self, *, packet=None, length=None, auto_complete=True,
+                 input_mode="packet", raw_capable=True):
         self.events = []
-        self.control = Control()
+        self.control = Control(raw_capable=raw_capable)
         self.regs = DmaRegisters()
-        self.tx = Buffer(TX_BYTES, 0x11000000)
+        self.tx = Buffer(RAW_TX_BYTES if input_mode == "raw" else TX_BYTES, 0x11000000)
         self.rx = Buffer(RX_CAPACITY, 0x12000000)
         self.recv = Channel("recv", self.events, self.regs)
         self.send = Channel("send", self.events, self.regs)
@@ -108,9 +115,10 @@ class FakeRig:
         self.recv.transferred = actual
 
 
-def make_transport(rig, timeout_s=0.05):
+def make_transport(rig, timeout_s=0.05, input_mode="packet"):
     transport = RleDmaTransport(rig.send, rig.recv, rig.regs,
-                                rig.control, rig.tx, rig.rx, timeout_s=timeout_s)
+                                rig.control, rig.tx, rig.rx, timeout_s=timeout_s,
+                                input_mode=input_mode)
     if rig.auto_complete:
         old_start = rig.control.write
 
@@ -243,3 +251,41 @@ def test_slverr_on_start_keeps_both_buffers_held():
     with pytest.raises(RuntimeError, match="DMA-owned"):
         transport.close()
     assert rig.tx.freed == rig.rx.freed == 0
+
+
+def test_raw_mode_checks_capability_then_sends_exact_gray8_frame():
+    gray = np.arange(HEIGHT * WIDTH, dtype=np.uint32).astype(np.uint8).reshape(HEIGHT, WIDTH)
+    rig = FakeRig(input_mode="raw")
+    transport = make_transport(rig, input_mode="raw")
+    frame = transport.transfer(gray, 31)
+    assert frame.frame_id == 31
+    assert bytes(rig.tx) == gray.tobytes()
+    assert rig.tx.sync_to_count == 1
+    assert ("send", "transfer", RAW_TX_BYTES) in rig.events
+    assert rig.control.values[0x74] == 1
+
+
+def test_raw_mode_rejects_unknown_capability_before_any_dma():
+    rig = FakeRig(input_mode="raw", raw_capable=False)
+    transport = make_transport(rig, input_mode="raw")
+    with pytest.raises(RuntimeError, match="RAW1"):
+        transport.transfer(np.zeros((HEIGHT, WIDTH), dtype=np.uint8), 32)
+    assert not rig.events
+
+
+def test_raw_mode_rejects_non_gray8_payload_before_dma():
+    rig = FakeRig(input_mode="raw")
+    transport = make_transport(rig, input_mode="raw")
+    with pytest.raises(ValueError, match="shape|uint8"):
+        transport.transfer(np.zeros((HEIGHT, WIDTH - 1), dtype=np.uint8), 33)
+    assert not rig.events
+
+
+def test_raw_mode_rejects_rle_output_length_disagreement_after_dma_quiesces():
+    packet = encode_mask(np.zeros((HEIGHT, WIDTH), dtype=np.uint8), frame_id=34)
+    rig = FakeRig(packet=packet, length=len(packet) + 4, input_mode="raw")
+    transport = make_transport(rig, input_mode="raw")
+    with pytest.raises(RuntimeError, match="length"):
+        transport.transfer(np.zeros((HEIGHT, WIDTH), dtype=np.uint8), 34)
+    assert ("send", "transfer", RAW_TX_BYTES) in rig.events
+    assert not transport.dma_may_be_active
