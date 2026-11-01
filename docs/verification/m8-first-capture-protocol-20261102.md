@@ -119,3 +119,63 @@ BASELINE_COMPLETE
 - `drop_end`：首次发送成功；再次执行被 `DROP_END_ALREADY_EXISTS` 拒绝。
 
 结果：**18 项检查全部 PASS**。
+
+## 7. 协议 v3：全自动现场控制器
+
+### 7.1 现场提示可达性核查
+
+- Claude Code 执行进程 `SessionId=1`，与 `explorer` 及交互用户 `BWIN\POP` **同一桌面会话**；
+- 音频服务 `Audiosrv` 运行，存在可用声音设备；
+- 未安装 BurntToast，因此提示采用 **WPF 置顶黄色大字窗口（12 s 自动关闭）+ 系统提示音**；
+- 该提示只在**这台现场电脑**上可见/可听；若操作者不在该电脑旁，提示不可达，必须 BLOCKED。
+
+### 7.2 自动化分工
+
+| 环节 | 执行者 |
+|---|---|
+| 安全门禁（服务/进程/相机/内存/磁盘/dmesg/sudo/目录） | **控制器自动** |
+| 启动 450 帧 RAM 采集 | **控制器自动** |
+| 检测 `BASELINE_COMPLETE` → 创建 `drop_start` | **控制器自动** |
+| 等待 `DROP_START_OBSERVED` | **控制器自动** |
+| 现场提示（声音 + 置顶窗口） | **控制器自动**（本机桌面） |
+| 投料 10 颗 | **用户** |
+| `drop_end` | **控制器自动**：提示后固定窗口 4.0 s，记录 `source=ESTIMATED_FIXED_WINDOW` |
+| 结束、退出码、manifest 核验 | **控制器自动** |
+
+### 7.3 关键约束
+
+- `drop_end` 是**自动估计**，不是人工确认；真值模板仍为 UNKNOWN，控制器事件日志记录来源与窗口；
+- 若 `drop_start` 创建失败或未观察到 `DROP_START_OBSERVED`：**不发提示、不发送 drop_end**，本次无效；
+- 提示窗口/声音不可达 → 禁止发出投料指令；
+- 不重试、不启动第二组；失败保留原始数据与事件日志。
+
+### 7.4 控制器与提示脚本
+
+- `scripts/wo0016/operator_capture_controller.ps1`
+- `scripts/wo0016/show_drop_cue.ps1`
+
+运行（正式采集时）：
+
+```powershell
+pwsh -NoProfile -File scripts/wo0016/operator_capture_controller.ps1 `
+  -SessionDir /home/xilinx/captures/m8-dense-20261102-01 `
+  -CueMode Window -DropWindowSeconds 4.0
+```
+
+### 7.5 模拟测试（不接摄像头/不连板）
+
+`scripts/wo0016/simulation/simulate_controller.ps1`，19 项检查全部 PASS：
+
+- 正常：提示仅在 `DROP_START_OBSERVED` 后出现一次；`drop_start` 一次；`drop_end` 一次且来源为
+  `ESTIMATED_FIXED_WINDOW`；观察到 `DROP_END_OBSERVED`；核验通过；
+- touch 失败：无提示、无 drop_end、控制器失败退出；
+- 无确认：无提示、无 drop_end、标记未确认；
+- 重复 `BASELINE_COMPLETE`：只 touch/提示一次；
+- 采集退出码 3：控制器保留并报告。
+
+### 7.6 仍无法消除的人工因素
+
+1. **物理投料**本身；
+2. 提示必须在这台现场电脑的桌面/扬声器上被感知；
+3. `drop_end` 是时间估计而非人工确认，分析时必须标注 ESTIMATED；
+4. 人工真值 10 颗为操作者声明，工具无法核验。
