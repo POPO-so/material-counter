@@ -150,6 +150,31 @@ def build_status_lines(count, paused, page, annotations_truncated, captures_enab
     return lines
 
 
+def timing_report_flag(enabled):
+    """Report-level flag exists only when --transfer-timing is enabled."""
+    return {'transfer_timing_enabled': True} if enabled else {}
+
+
+def timing_sample_fields(enabled, last=None):
+    """Per-sample timing field exists only when --transfer-timing is enabled."""
+    return {'transfer_timing': last} if enabled else {}
+
+
+def summarize_transfer_timing(parts):
+    """Percentile summary for the opt-in transfer timing marks."""
+    def pcts(values):
+        return {f'p{p}':float(np.percentile(values,p)) if values else None for p in (50,95,99)}
+    stats={key:pcts([float(value.get(key,0.0)) for value in parts])
+           for key in ('poll_count','poll_max_gap_ms','poll_total_ms')}
+    order=['enter','encoded','configured','started','waited','synced','decoded']
+    for first,second in zip(order,order[1:]):
+        durations=[(value[second]-value[first])*1000.0 for value in parts
+                   if first in value and second in value]
+        if durations:
+            stats[f'{first}_to_{second}']=pcts(durations)
+    return stats
+
+
 def start_drawing_child(
     ctx, inputs, outputs, errors, counters, font, latin_font, failure_mode=None
 ):
@@ -377,7 +402,6 @@ def main(argv=None):
         manifest_sha256=args.manifest_sha256,native_sha256=sha256(args.native_lib),
         commands_sha256=sha256(args.commands) if args.commands else None,
         source=args.source,display=args.display,main_pid=os.getpid(),continuous=args.continuous,
-        transfer_timing_enabled=bool(args.transfer_timing),
         diagnostic_limits={'samples':1800,'events':2048,'recoveries':2048,'frame_trace':600,'annotations_per_frame':128,
             'button_raw_transitions':2048},
         session_id=str(uuid.uuid4()),ownership=audit_process_ownership(),state='STARTING',
@@ -385,6 +409,7 @@ def main(argv=None):
         recoveries=deque(maxlen=2048),button_raw_sample_count=0,
         button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
         before_memory=_memory(),scope='G3 candidate; G4 physical disconnection/cold-start not asserted')
+    if args.transfer_timing:report.update(timing_report_flag(True))
     captures=exporter=None
     button_raw_lock=threading.Lock()
     def report_snapshot():
@@ -692,7 +717,7 @@ def main(argv=None):
                     cpu=_cpu_usage_percent(previous_cpu,cpu),vdma_status=vdma_status,
                     video_state=video_pump.state if video_pump else 'OFF',telemetry=cache.snapshot(time.monotonic()),
                     crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
-                    transfer_timing=report.get('transfer_timing_last'),
+                    **timing_sample_fields(args.transfer_timing,report.get('transfer_timing_last')),
                     counters=owner.call(snapshot_counters,control)))
                 previous_cpu=cpu;last_sample=sample_time
         report['duration_s']=time.monotonic()-started
@@ -737,18 +762,7 @@ def main(argv=None):
         report['timings_ms']={name:{f'p{p}':float(np.percentile(values,p)) if values else None for p in (50,95,99)}
                              for name,values in stages.items() if name!='transfer_parts'}
         if args.transfer_timing and stages['transfer_parts']:
-            parts=list(stages['transfer_parts'])
-            def pcts(values):
-                return {f'p{p}':float(np.percentile(values,p)) if values else None for p in (50,95,99)}
-            transfer_stats={key:pcts([float(v.get(key,0.0)) for v in parts])
-                            for key in ('poll_count','poll_max_gap_ms','poll_total_ms')}
-            order=['enter','encoded','configured','started','waited','synced','decoded']
-            for first,second in zip(order,order[1:]):
-                durations=[(v[second]-v[first])*1000.0 for v in parts
-                           if first in v and second in v]
-                if durations:
-                    transfer_stats[f'{first}_to_{second}']=pcts(durations)
-            report['transfer_timing_percentiles_ms']=transfer_stats
+            report['transfer_timing_percentiles_ms']=summarize_transfer_timing(list(stages['transfer_parts']))
         if video_pump is not None and not video_pump.is_alive:report['timings_ms'].update(video_pump.timing_percentiles_ms())
     except BaseException as error:
         if captures is not None:report['snapshot_writer_drained']=captures.close()

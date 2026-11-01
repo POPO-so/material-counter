@@ -10,7 +10,7 @@ import struct
 import sys
 import uuid
 
-from .boot_policy import initialize_once,build_argv
+from .boot_policy import initialize_once,build_argv,load_boot_config
 from .bundle import verify_bundle,verify_runtime,sha256
 from .delivery import verify_package
 from .evidence import write_evidence
@@ -73,7 +73,7 @@ def main(argv=None):
     if os.environ.get('XILINX_XRT')!='/usr':raise RuntimeError('requires XILINX_XRT=/usr')
     integrity=verify_package(root,args.index_sha256)
     runtime_compatibility=verify_runtime_environment(root/'board-runtime.json')
-    config=json.loads((root/'boot-config.json').read_text())
+    config=load_boot_config(root/'boot-config.json')
     boot=str(uuid.UUID(Path('/proc/sys/kernel/random/boot_id').read_text().strip()))
     run_root=Path('/var/lib/material-counter')/boot
     run_root.mkdir(parents=True,exist_ok=True)

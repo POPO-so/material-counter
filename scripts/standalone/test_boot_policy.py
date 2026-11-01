@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.standalone.boot_policy import build_argv, initialize_once
+from scripts.standalone.boot_policy import build_argv, initialize_once, load_boot_config
 # The boot entry is Linux-only; its backend unit tests do not exercise locking.
 _needs_fcntl_stub = sys.platform == "win32" and "fcntl" not in sys.modules
 if _needs_fcntl_stub:
@@ -257,3 +257,62 @@ def test_board_backend_downloads_into_runtime_and_restores_cwd(
     assert seen_paths == [str(bit.resolve())]
     assert (runtime / "loaded.xclbin").read_bytes() == b"generated xclbin"
     assert not (release / "loaded.xclbin").exists()
+
+
+def _boot_config(**overrides):
+    config = {
+        "schema": "material-counter.integrated-boot.v1",
+        "mode": "continuous",
+        "camera": "/dev/v4l/by-id/camera0",
+        "duration_s": 60,
+    }
+    config.update(overrides)
+    return config
+
+
+def test_build_argv_default_does_not_pass_transfer_timing(tmp_path):
+    argv = build_argv(tmp_path, _boot_config(), str(uuid.uuid4()), "out", "f" * 64, "python")
+    assert "--transfer-timing" not in argv
+
+
+def test_build_argv_true_appends_transfer_timing_exactly_once(tmp_path):
+    argv = build_argv(tmp_path, _boot_config(transfer_timing=True),
+                      str(uuid.uuid4()), "out", "f" * 64, "python")
+    assert argv.count("--transfer-timing") == 1
+    assert argv[-1] == "--transfer-timing"
+
+
+def test_build_argv_false_keeps_the_original_argv(tmp_path):
+    boot = str(uuid.uuid4())
+    base = build_argv(tmp_path, _boot_config(), boot, "out", "f" * 64, "python")
+    off = build_argv(tmp_path, _boot_config(transfer_timing=False),
+                     boot, "out", "f" * 64, "python")
+    assert off == base
+
+
+@pytest.mark.parametrize("value", ["true", 1, 0, None, [], {}])
+def test_build_argv_rejects_non_bool_transfer_timing(value, tmp_path):
+    with pytest.raises(TypeError, match="transfer_timing"):
+        build_argv(tmp_path, _boot_config(transfer_timing=value),
+                   str(uuid.uuid4()), "out", "f" * 64, "python")
+
+
+def test_load_boot_config_accepts_bool_and_rejects_duplicate_keys(tmp_path):
+    path = tmp_path / "boot-config.json"
+    path.write_text(json.dumps(_boot_config(transfer_timing=True)), encoding="utf-8")
+    assert load_boot_config(path)["transfer_timing"] is True
+    path.write_text('{"schema":"a","schema":"b"}', encoding="utf-8")
+    with pytest.raises(ValueError, match="duplicate"):
+        load_boot_config(path)
+
+
+def test_load_boot_config_rejects_non_object(tmp_path):
+    path = tmp_path / "boot-config.json"
+    path.write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError, match="object"):
+        load_boot_config(path)
+
+
+def test_boot_integrated_uses_the_validated_loader():
+    from scripts.standalone import boot_integrated, boot_policy
+    assert boot_integrated.load_boot_config is boot_policy.load_boot_config

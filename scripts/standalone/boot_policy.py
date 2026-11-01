@@ -93,13 +93,44 @@ def _path_string(path):
     return str(Path(path))
 
 
+def _unique_object(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate boot config key: {}".format(key))
+        value[key] = item
+    return value
+
+
+def load_boot_config(path):
+    """Read boot-config.json, rejecting duplicate keys before any validation."""
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise ValueError("boot config cannot be read") from exc
+    try:
+        config = json.loads(text, object_pairs_hook=_unique_object)
+    except json.JSONDecodeError as exc:
+        raise ValueError("boot config is not valid JSON") from exc
+    if not isinstance(config, dict):
+        raise ValueError("boot config must be a JSON object")
+    return config
+
+
 def build_argv(root, config, boot_id, output, manifest_sha256, python_executable):
     """Validate integrated-boot configuration and return its argv vector."""
     if not isinstance(config, dict):
         raise TypeError("config must be a dict")
-    expected_keys = {"schema", "mode", "camera", "duration_s"}
-    if set(config) != expected_keys:
-        raise ValueError("config must contain exactly schema, mode, camera, and duration_s")
+    required_keys = {"schema", "mode", "camera", "duration_s"}
+    allowed_keys = required_keys | {"transfer_timing"}
+    unknown = set(config) - allowed_keys
+    missing = required_keys - set(config)
+    if unknown:
+        raise ValueError("unsupported boot config fields: {}".format(sorted(unknown)))
+    if missing:
+        raise ValueError("missing boot config fields: {}".format(sorted(missing)))
+    if "transfer_timing" in config and type(config["transfer_timing"]) is not bool:
+        raise TypeError("transfer_timing must be a boolean")
     if config["schema"] != _CONFIG_SCHEMA:
         raise ValueError("unsupported config schema")
     if config["mode"] not in ("continuous", "acceptance"):
@@ -159,4 +190,6 @@ def build_argv(root, config, boot_id, output, manifest_sha256, python_executable
     ]
     if config["mode"] == "continuous":
         argv.append("--continuous")
+    if config.get("transfer_timing", False):
+        argv.append("--transfer-timing")
     return argv
