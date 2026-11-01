@@ -604,7 +604,8 @@ def main(argv=None):
                         if performance:metadata['status_lines'].append('RLE {} runs / DMA {} B'.format(performance['value']['runs'],performance['value']['rx_bytes']))
                     last_gray=gray;last_metadata=metadata;last_valid_id=index
                     if process is not None and process.is_alive():
-                        if inputs.publish(gray,binary,session,index,metadata):published+=1
+                        if inputs.publish(gray,binary,session,index,metadata,
+                            include_binary=bool(metadata.get('binary_background'))):published+=1
                         else:dropped+=1
                     else:dropped+=1
                     stages['publish_ms'].append((time.monotonic()-snapshot_end)*1000)

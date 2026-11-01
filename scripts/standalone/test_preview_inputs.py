@@ -126,3 +126,64 @@ def test_spawn_consumer_reads_shared_ram_and_releases_before_owner_close():
             child.join()
         inputs.close()
         result_queue.close()
+
+
+def test_publish_can_skip_binary_plane_when_gray_mode():
+    inputs = PreviewInputs.create(mp.get_context("spawn"))
+    session_id = str(uuid.uuid4())
+    try:
+        gray_a, binary_a = _images(10)
+        assert inputs.publish(gray_a, binary_a, session_id, 1,
+                              {"binary_background": True})
+        lease = inputs.acquire_latest()
+        assert int(lease.binary[0, 0]) == 11
+        inputs.release(lease)
+
+        gray_b, binary_b = _images(20)
+        assert inputs.publish(gray_b, binary_b, session_id, 2,
+                              {"binary_background": False}, include_binary=False)
+        lease = inputs.acquire_latest()
+        assert int(lease.gray[0, 0]) == 20
+        # The binary plane is intentionally stale; metadata keeps it off-screen.
+        assert int(lease.binary[0, 0]) == 11
+        inputs.release(lease)
+
+        gray_c, binary_c = _images(30)
+        assert inputs.publish(gray_c, binary_c, session_id, 3,
+                              {"binary_background": True})
+        lease = inputs.acquire_latest()
+        assert int(lease.binary[0, 0]) == 31
+        inputs.release(lease)
+        assert inputs.statuses() == (FREE, FREE, FREE)
+    finally:
+        inputs.close()
+
+
+def test_publish_forces_binary_when_metadata_requests_it():
+    inputs = PreviewInputs.create(mp.get_context("spawn"))
+    session_id = str(uuid.uuid4())
+    try:
+        gray_a, binary_a = _images(40)
+        assert inputs.publish(gray_a, binary_a, session_id, 1,
+                              {"binary_background": True})
+        lease = inputs.acquire_latest()
+        inputs.release(lease)
+        gray_b, binary_b = _images(50)
+        assert inputs.publish(gray_b, binary_b, session_id, 2,
+                              {"binary_background": True}, include_binary=False)
+        lease = inputs.acquire_latest()
+        assert int(lease.binary[0, 0]) == 51
+        inputs.release(lease)
+    finally:
+        inputs.close()
+
+
+def test_publish_rejects_non_bool_include_binary_without_claiming_slot():
+    inputs = PreviewInputs.create(mp.get_context("spawn"))
+    gray, binary = _images(60)
+    try:
+        with pytest.raises(TypeError, match="include_binary"):
+            inputs.publish(gray, binary, str(uuid.uuid4()), 1, {}, include_binary=1)
+        assert inputs.statuses() == (FREE, FREE, FREE)
+    finally:
+        inputs.close()

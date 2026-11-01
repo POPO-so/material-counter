@@ -48,10 +48,18 @@ class PreviewInputs:
             raise
         return cls(frames, metadata_bytes, metadata_lengths)
 
-    def publish(self, gray, binary, session_uuid, frame_id, metadata):
-        """Publish a pair of uint8 planes without blocking when no slot is free."""
+    def publish(self, gray, binary, session_uuid, frame_id, metadata, *, include_binary=True):
+        """Publish a pair of uint8 planes without blocking when no slot is free.
+
+        ``include_binary=False`` skips the 256,000-byte binary plane copy when
+        the display is in gray mode. The stale plane is never displayed because
+        the metadata flag is what selects the plane; a frame that requests the
+        binary background always copies it regardless of the caller's flag.
+        """
         _validate_plane(gray, "gray")
         _validate_plane(binary, "binary")
+        if not isinstance(include_binary, bool):
+            raise TypeError("include_binary must be bool")
         if not isinstance(metadata, dict):
             raise ValueError("metadata must be a dict")
         try:
@@ -68,7 +76,8 @@ class PreviewInputs:
         slot, planes = claimed
         try:
             planes[:FRAME_SHAPE[0], :] = gray
-            planes[FRAME_SHAPE[0]:, :] = binary
+            if include_binary or metadata.get("binary_background", False):
+                planes[FRAME_SHAPE[0]:, :] = binary
             start = slot * METADATA_CAPACITY
             self._metadata_bytes[start:start + len(encoded)] = encoded
             self._metadata_lengths[slot] = len(encoded)
