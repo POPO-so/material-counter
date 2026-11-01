@@ -48,9 +48,34 @@ def rasterize_into(packet, output):
     if output.shape != (packet.height,packet.width) or output.dtype != np.uint8:
         raise ValueError('binary workspace must match packet geometry and uint8')
     output.fill(0)
-    for word in packet.runs:
-        value=int(word)
-        output[value >> 20, (value >> 10) & 1023:(value & 1023)+1]=255
+    runs=packet.runs
+    if len(runs)<64:
+        for word in runs:
+            value=int(word)
+            output[value >> 20, (value >> 10) & 1023:(value & 1023)+1]=255
+        return output
+    runs=np.asarray(runs)
+    if runs.dtype!=np.uint32:
+        runs=runs.astype(np.uint32)
+    # Bounded chunking: at most 512 runs x 16 px x 3 int32 temporaries (~96 KiB).
+    # The one-shot np.repeat form grows with total foreground and is not used.
+    for start in range(0,len(runs),512):
+        chunk=runs[start:start+512]
+        rows=(chunk >> 20).astype(np.int32)
+        starts=((chunk >> 10) & 1023).astype(np.int32)
+        ends=(chunk & 1023).astype(np.int32)
+        lengths=(ends-starts+1).astype(np.int32)
+        total=int(lengths.sum())
+        if total==0:
+            continue
+        offsets=np.empty_like(lengths)
+        offsets[0]=0
+        np.cumsum(lengths[:-1],out=offsets[1:])
+        row_rep=np.repeat(rows,lengths)
+        columns=(np.arange(total,dtype=np.int32)
+                 -np.repeat(offsets,lengths)
+                 +np.repeat(starts,lengths))
+        output[row_rep,columns]=255
     return output
 
 
