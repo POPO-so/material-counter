@@ -8,11 +8,11 @@
 - [x] HLS 前置构建：PYNQ v3.1 锁定源码核验通过；Vitis 2026.1 对 `color_convert` 与 `pixel_unpack` 的 CSim、csynth 和 IP 导出均通过。结果在 `.runtime/builds/sw1-video-ip-20261102`。
 - [x] G2 BD 创建：新工程读回 `btns_gpio` 宽度 6，BTN0–BTN3/SW0/SW1 位映射和 PYNQ-Z2 开关管脚与设计记录一致。
 - [x] G2 完整综合、实现与 BIT/HWH 导出：Vivado 2026.1 完成，最终 setup WNS +0.052 ns、hold WHS +0.023 ns，TNS/THS 均为 0，路由网线全部完成；HWH `C_GPIO_WIDTH=6`，BD 读回 SW0=bit4、SW1=bit5。构建和报告见 [G2 SW1 构建结果](data/results/standalone-20261102-033000-g2-integration/README.md)。
-- [ ] CDC 报告人工审查：构建门禁通过，但报告含 CDC-6 2 条、CDC-15 1,703 条警告；需确认分类及例外覆盖后才能称 CDC 审查完成。
+- [x] CDC 报告人工审查：两条 CDC-6 已分别按 BTN0–BTN3 独立控制语义和 v_tc 6.2 厂商文档/约束审查；1,703 条 CDC-15 已核对为 19 组握手式 bundled-data 通路，payload 有 datapath-only 最大延迟约束。人工处置接受当前设计，不创建 Vivado waiver，原始 Warning 保留。逐类依据、路径和复位前提见 [CDC 复核记录](data/results/standalone-20261102-033000-g2-integration/cdc-review.md) 和 [原始报告](data/results/standalone-20261102-033000-g2-integration/reports-g2-integrated/cdc.rpt)。
 - [x] 路径保护：Vitis HLS 输出目录落在 PYNQ 工作区内时，Tcl guard 实测拒绝；合法外置输出路径的完整 HLS 构建已成功。
 - [ ] 板端 PL 重载与 SW1 实物验证：用户明确暂缓。本轮没有部署或重载 bitstream，SW1 实物开关效果尚未验证。
 
-SW1 专项测试命令退出码为 0（17 项通过）。另一次相关文件组合回归为 88 passed、3 failed；失败位于未改动的遥测分页默认值、预览后端 CLI 默认值、以及 `LatestCamera.__new__` 测试夹具缺少 `_decoded` 三处，与 SW1 改动无关。完整 G2 构建由本机 Vivado 2026.1 batch 完成；Vivado MCP 控制端点未连接。BIT/HWH 为候选构建产物，尚未部署。CDC 报告复核和板端验收仍未完成，后者按用户要求暂缓。
+SW1 专项测试命令退出码为 0（17 项通过）。另一次相关文件组合回归为 88 passed、3 failed；失败位于未改动的遥测分页默认值、预览后端 CLI 默认值、以及 `LatestCamera.__new__` 测试夹具缺少 `_decoded` 三处，与 SW1 改动无关。完整 G2 构建由本机 Vivado 2026.1 batch 完成；Vivado MCP 控制端点未连接。BIT/HWH 为候选构建产物，尚未部署。CDC 人工复核已完成且原始告警保留；板端验收仍按用户要求暂缓。
 
 ## 2026-10-31 板端吞吐优化（源码与本轮实测已完成）
 

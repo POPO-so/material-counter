@@ -69,7 +69,19 @@
     "cdc3_info": 120,
     "cdc6_warning": 2,
     "cdc15_warning": 1703,
-    "review": "pending"
+    "review": "manual_review_complete_2026-11-02",
+    "review_record": "../cdc-review.md",
+    "manual_disposition": {
+      "cdc6_button_gpio": "accepted_endpoint_specific_independent_controls",
+      "cdc6_v_tc_6_2": "accepted_vendor_documented_internal_cdc",
+      "cdc15": "accepted_handshake_bundled_data_with_max_delay_datapath_only",
+      "cdc15_bus_groups": 19,
+      "cdc15_frame_monitor_bits": 965,
+      "cdc15_binary_overlay_bits": 738,
+      "reset_assumption": "common_ps_fclk_reset_source_and_coordinated_reset"
+    },
+    "vivado_waivers_applied": false,
+    "warnings_retained_in_report": true
   },
   "board_acceptance": "PENDING_USER_DEFERRED"
 }

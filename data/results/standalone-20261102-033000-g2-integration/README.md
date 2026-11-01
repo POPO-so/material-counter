@@ -30,10 +30,10 @@ Vivado 2026.1 完成 `OFFLOAD_CANDIDATE=1` 的 G2 综合、实现、路由和 BI
 - 路由 0 unrouted / partially routed nets；最终 `timing.rpt` 显示 0 setup/hold failing endpoints。
 - `drc.rpt` 无 Error；Vivado 运行汇总为 0 Critical Warnings。报告保留 DRC Warning/Advisory，详见 [`reports-g2-integrated/drc.rpt`](reports-g2-integrated/drc.rpt) 和 [`reports-g2-integrated/methodology.rpt`](reports-g2-integrated/methodology.rpt)。
 - SW1 软件门控专项测试：17 项通过（结果记录见 [PLAN.md](../../../PLAN.md)）。
+- CDC 报告包含 CDC-6 2 条、CDC-15 1,703 条 Warning。已完成人工分类与端点审查：按钮位为独立控制信号；VTC 告警属于文档化的 v_tc 6.2 内部 CDC；CDC-15 属于握手保护且有 datapath-only 最大延迟约束的 bundled-data 路径。原始告警保留，未创建 Vivado waiver。逐类依据与复位前提见 [`cdc-review.md`](cdc-review.md)；原始报告见 [`reports-g2-integrated/cdc.rpt`](reports-g2-integrated/cdc.rpt)。
 
 ## 尚未完成
 
-- CDC 报告包含 CDC-6 2 条、CDC-15 1,703 条警告。构建门禁和时序报告通过不代表这些 CDC 项已完成分类与人工审查；详见 [`reports-g2-integrated/cdc.rpt`](reports-g2-integrated/cdc.rpt)。
 - 板端 PL 重载和 SW1 实物开关验证按用户要求暂缓。当前 BIT/HWH 不应视为板端验收通过。
 
 ## 报告
