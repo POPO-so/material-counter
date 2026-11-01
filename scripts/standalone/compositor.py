@@ -559,8 +559,30 @@ class DashboardComposer:
         axis_label = "X" if axis == "x" else "Y"
         direction_label = (("左→右" if direction == 1 else "右→左") if axis == "x"
                            else ("上→下" if direction == 1 else "下→上"))
-        left_x, left_width = 42, 340
-        right_x, right_width = 874, 356
+        def card(x, y, width, height, title):
+            draw.rounded_rectangle((x, y, x + width, y + height), radius=8,
+                                   fill=43, outline=94, width=1)
+            draw.rounded_rectangle((x + 1, y + 1, x + width - 1, y + 27),
+                                   radius=7, fill=76)
+            draw.rectangle((x + 1, y + 20, x + width - 1, y + 27), fill=76)
+            draw.rectangle((x + 8, y + 7, x + 11, y + 20), fill=218)
+            self._text(draw, (x + 18, y + 5), title, 16, 248)
+
+        def aligned_row(label, value, x, y, width, *, label_width=82,
+                        size=14, value_size=None, value_fill=244):
+            self._text(draw, (x, y), label, size, 174)
+            value_x = x + label_width
+            value_width = width - label_width
+            rows = self._wrap_gutter(value, value_width, value_size or size, 1)
+            self._text(draw, (value_x, y), rows[0], value_size or size, value_fill)
+
+        def card_line(text, x, y, width, *, size=12, fill=218):
+            rows = self._wrap_gutter(text, width, size, 1)
+            self._text(draw, (x, y), rows[0], size, fill)
+
+        def strip_prefix(text, prefix):
+            value = str(text).strip()
+            return value[len(prefix):].strip(" :：") if value.startswith(prefix) else value
 
         def centered(text, x, y, width, size, fill, max_rows=1, line_height=None):
             rows = self._wrap_gutter(text, width, size, max_rows)
@@ -573,68 +595,70 @@ class DashboardComposer:
                                   y + index * line_height), line, size, fill)
             return y + len(rows) * line_height
 
-        def section_title(text, x, y, width):
-            centered(text, x, y, width, 18, 238)
+        # Left gutter: camera/count rules, exposure controls, then performance.
+        left_x, left_width = 38, 342
+        right_x, right_width = 874, 368
+        card(left_x, 145, left_width, 92, "CAM 01 · 画面与计数规则")
+        aligned_row("输入 / 预览", f"{input_resolution} / 640x400",
+                    left_x + 12, 176, left_width - 24, label_width=92, size=14)
+        aligned_row("输出 / 画面", "1280x720 / {}".format(
+            "二值" if binary_background else "灰度"),
+                    left_x + 12, 195, left_width - 24, label_width=92, size=14)
+        aligned_row("计数线", f"{axis_label}={position} · {direction_label} · {mode}",
+                    left_x + 12, 214, left_width - 24, label_width=92, size=14)
 
-        def separator(x, y, width):
-            draw.line((x, y, x + width, y), fill=100, width=1)
+        card(left_x, 244, left_width, 65, "曝光控制")
+        aligned_row("当前", strip_prefix(exposure_text, "曝光"), left_x + 12, 275,
+                    left_width - 24, label_width=64, size=14)
+        aligned_row("范围 / 步进", strip_prefix(exposure_range_text, "范围"),
+                    left_x + 12, 292, left_width - 24, label_width=82, size=14)
 
-        # Left gutter: image/count rules, exposure controls, then performance.
-        section_title("CAM 01 · 画面与计数规则", left_x, 151, left_width)
-        separator(left_x, 174, left_width)
-        centered(f"输入 {input_resolution} · 预览 640x400", left_x, 179,
-                 left_width, 16, 246, max_rows=1)
-        centered("输出 1280x720 · 模式 {}".format(
-            "二值" if binary_background else "灰度"), left_x, 199,
-            left_width, 16, 246)
-        centered("计数线 {}={} / {} · {}".format(
-            axis_label, position, direction_label, mode),
-            left_x, 219, left_width, 16, 224)
-
-        section_title("曝光", left_x, 246, left_width)
-        separator(left_x, 269, left_width)
-        centered(exposure_text, left_x, 274, left_width, 16, 232, max_rows=1)
-        centered(exposure_range_text, left_x, 294, left_width, 16, 232, max_rows=1)
-
-        section_title("性能", left_x, 320, left_width)
-        separator(left_x, 343, left_width)
-        for index, text in enumerate(summary[3:]):
-            centered(text, left_x, 347 + index * 18, left_width, 14, 226,
-                     max_rows=1)
+        card(left_x, 316, left_width, 116, "处理性能")
+        performance_rows = (
+            ("PL 周期", strip_prefix(pl_text, "PL")),
+            ("PS RLE / TRK", f"{self._number(regions_mean)} / {self._number(track_mean)} ms"),
+            ("处理 / 显示", f"{self._number(dashboard.get('processing_fps'))} / "
+                             f"{self._number(dashboard.get('display_fps'))} FPS"),
+            ("有效 / 提交", f"{effective_input_fps} / {submitted_fps}"),
+            ("处理延迟", processing_ms),
+        )
+        for index, (label, value) in enumerate(performance_rows):
+            aligned_row(label, value, left_x + 12, 346 + index * 16,
+                        left_width - 24, label_width=112, size=12,
+                        value_size=12, value_fill=238)
 
         # Right gutter: detection, preview path, and runtime state.
-        section_title("检测结果", right_x, 151, right_width)
-        separator(right_x, 174, right_width)
-        count_label = "检测目标"
-        label_width = sum((self._latin[16] if ord(ch) < 256 else self._fonts[16])
-                          .getlength(ch) for ch in count_label)
-        count_value = str(target_count)
-        count_width = self._latin[24].getlength(count_value)
-        count_start = right_x + (right_width - label_width - 10 - count_width) / 2
-        self._text(draw, (count_start, 184), count_label, 16, 216)
-        self._whole_latin_text(draw, (count_start + label_width + 10, 178),
-                               count_value, 24, 255)
-        centered("跟踪 ID / 检测框 · 计数真值待人工核对", right_x, 207,
-                 right_width, 14, 214)
+        card(right_x, 145, right_width, 76, "检测结果")
+        aligned_row("检测目标", str(target_count), right_x + 12, 177,
+                    right_width - 24, label_width=88, size=14,
+                    value_size=20, value_fill=255)
+        card_line("跟踪 ID / 检测框 · 计数真值待人工核对",
+                  right_x + 12, 201, right_width - 24, size=12, fill=218)
 
-        section_title("预览链路", right_x, 226, right_width)
-        separator(right_x, 249, right_width)
-        centered(preview_status, right_x, 253, right_width, 16, 238)
+        card(right_x, 229, right_width, 54, "预览链路")
+        card_line(preview_status, right_x + 12, 259,
+                  right_width - 24, size=14, fill=246)
 
-        section_title("运行状态", right_x, 280, right_width)
-        separator(right_x, 303, right_width)
+        card(right_x, 291, right_width, 141, "运行状态")
         control_status = " · ".join(
             text for text in (button_status, exposure_latency_text) if text)
-        centered(control_status, right_x, 307, right_width, 14, 246)
-        centered(cpu_source_text, right_x, 325, right_width, 14, 222)
-        centered(queue_summary_text, right_x, 343, right_width, 14, 222)
-        centered(thread_text, right_x, 361, right_width, 14, 222)
-        detail_y = 379
+        runtime_rows = (
+            ("按键 / SW0", control_status),
+            ("CPU 来源", strip_prefix(cpu_source_text, "CPU 来源")),
+            ("队列", strip_prefix(queue_summary_text, "队列")),
+            ("线程", strip_prefix(thread_text, "threads")),
+        )
+        for index, (label, value) in enumerate(runtime_rows):
+            aligned_row(label, value, right_x + 12, 321 + index * 16,
+                        right_width - 24, label_width=82, size=12,
+                        value_size=12, value_fill=246 if index == 0 else 226)
         for index, line in enumerate(detail[:3]):
-            centered(line, right_x, detail_y + index * 17,
-                     right_width, 14, 222)
-        separator(left_x, 440, left_width)
-        separator(right_x, 440, right_width)
+            y = 386 + index * 15
+            draw.ellipse((right_x + 12, y + 5, right_x + 16, y + 9), fill=182)
+            card_line(line, right_x + 22, y, right_width - 34,
+                      size=12, fill=206)
+        draw.line((left_x, 440, left_x + left_width, 440), fill=100, width=1)
+        draw.line((right_x, 440, right_x + right_width, 440), fill=100, width=1)
         centered("BTN0 清零 · BTN1 诊断模式 · BTN2 调曝光 · BTN3 空闲",
                  42, 442, 1190, 14, 246)
         centered("BTN2 方向由 SW0 决定：SW0 ON 增加曝光 · SW0 OFF 减少曝光",
