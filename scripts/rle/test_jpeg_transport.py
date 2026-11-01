@@ -3,8 +3,49 @@ import pytest
 
 from scripts.rle.protocol import HEIGHT, MAX_RUNS, RX_CAPACITY, WIDTH, encode_mask
 from scripts.rle.jpeg_transport import (
-    JPEG_MAX_BYTES, JpegRleDmaTransport, iter_raw_mjpeg,
+    JPEG_MAX_BYTES, JpegRleDmaTransport, iter_raw_mjpeg, preflight_jpeg_header,
 )
+
+
+def _baseline_header(*, width=WIDTH, height=HEIGHT, sof=0xC0,
+                     sampling=((2, 1), (1, 1), (1, 1)), dri=40):
+    buf = bytearray(b"\xff\xd8")
+    body = bytearray((8, (height >> 8) & 0xFF, height & 0xFF,
+                      (width >> 8) & 0xFF, width & 0xFF, len(sampling)))
+    for i, (h, v) in enumerate(sampling):
+        body += bytes((i + 1, (h << 4) | v, 0))
+    buf += bytes((0xFF, sof)) + (len(body) + 2).to_bytes(2, "big") + body
+    buf += b"\xff\xdd\x00\x04" + dri.to_bytes(2, "big")
+    buf += b"\xff\xda\x00\x08\x01\x01\x00\x00\x3f\x00"  # single SOS
+    buf += b"\xff\xd9"
+    return bytes(buf)
+
+
+def test_preflight_accepts_422_baseline_dri40():
+    info = preflight_jpeg_header(_baseline_header())
+    assert info["width"] == WIDTH and info["height"] == HEIGHT and info["precision"] == 8
+    assert info["sampling"] == [(2, 1), (1, 1), (1, 1)]
+    assert info["dri"] == 40
+
+
+def test_preflight_rejects_non_baseline_progressive():
+    with pytest.raises(ValueError, match="baseline"):
+        preflight_jpeg_header(_baseline_header(sof=0xC2))
+
+
+def test_preflight_rejects_wrong_geometry():
+    with pytest.raises(ValueError, match="640x400"):
+        preflight_jpeg_header(_baseline_header(width=320))
+
+
+def test_preflight_rejects_wrong_restart_interval():
+    with pytest.raises(ValueError, match="DRI must be 40"):
+        preflight_jpeg_header(_baseline_header(dri=10))
+
+
+def test_preflight_rejects_non_422_sampling():
+    with pytest.raises(ValueError, match="4:2:2"):
+        preflight_jpeg_header(_baseline_header(sampling=((1, 1),)))
 
 
 class Buffer(bytearray):
@@ -447,6 +488,7 @@ def test_start_timeout_holds_buffers_and_forbids_retry_or_close():
 
 def test_raw_camera_configures_mjpg_size_and_never_decodes(monkeypatch):
     import cv2
+    payload = _baseline_header()
     class Capture:
         def __init__(self, *args): self.props = {}; self.i = 0; self.released = False
         def set(self, key, val): self.props[key] = val; return True
@@ -454,13 +496,13 @@ def test_raw_camera_configures_mjpg_size_and_never_decodes(monkeypatch):
         def isOpened(self): return True
         def read(self):
             self.i += 1
-            return (True, np.frombuffer(b"\xff\xd8x\xff\xd9", np.uint8)) if self.i == 1 else (False, None)
+            return (True, np.frombuffer(payload, np.uint8)) if self.i == 1 else (False, None)
         def release(self): self.released = True
     capture = Capture()
     monkeypatch.setattr(cv2, "VideoCapture", lambda *args: capture)
     monkeypatch.setattr(cv2, "imdecode", lambda *args: pytest.fail("software JPEG decode called"))
     frames = list(iter_raw_mjpeg(0, cv2_module=cv2))
-    assert frames == [b"\xff\xd8x\xff\xd9"]
+    assert frames == [payload]
     assert capture.props[cv2.CAP_PROP_FRAME_WIDTH] == WIDTH
     assert capture.props[cv2.CAP_PROP_FRAME_HEIGHT] == HEIGHT
     assert capture.props[cv2.CAP_PROP_CONVERT_RGB] == 0

@@ -45,10 +45,48 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+_BIT_MAGIC = b"\x00\x09\x0f\xf0\x0f\xf0\x0f\xf0\x0f\xf0\x00\x00\x01"
+
+
+def _validate_bit(bit: Path) -> None:
+    """Reject non-bitstream byte files via the Xilinx .bit header magic."""
+    with bit.open("rb") as stream:
+        header = stream.read(len(_BIT_MAGIC))
+    if header != _BIT_MAGIC:
+        raise ValueError("BIT is not a Xilinx bitstream (magic header mismatch)")
+
+
+def _parse_hwh(hwh: Path) -> dict[str, Any]:
+    """Parse the handoff and return its silicon part and control base addresses."""
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.parse(hwh).getroot()
+        system = root.find("SYSTEMINFO")
+    except (OSError, ET.ParseError) as exc:
+        raise ValueError(f"HWH is not a valid Xenon handoff: {exc}") from exc
+    if root.tag != "EDKSYSTEM" or system is None:
+        raise ValueError("HWH must be an EDKSYSTEM handoff with SYSTEMINFO")
+    device = system.get("DEVICE") or ""
+    package = system.get("PACKAGE") or ""
+    speed = system.get("SPEEDGRADE") or ""
+    if not (device and package and speed):
+        raise ValueError("HWH SYSTEMINFO is missing device/package/speed fields")
+    bases = set()
+    for parameter in root.iter("PARAMETER"):
+        if parameter.get("NAME") == "C_BASEADDR":
+            value = parameter.get("VALUE") or ""
+            if not value.lower().startswith("0x"):
+                raise ValueError("HWH C_BASEADDR is not hexadecimal")
+            bases.add(int(value, 16))
+    return {"part": f"xc{device}{package}{speed}", "bases": bases}
+
+
 def verify_runtime_artifacts(bit_path: str | Path, bit_sha256: str,
                              hwh_path: str | Path, hwh_sha256: str,
                              *, status: str) -> dict[str, Any]:
-    """Admit only adjacent, nonempty, hash-matched routed artifacts."""
+    """Admit only adjacent, nonempty, hash-matched routed artifacts whose HWH
+    declares the expected silicon part and kernel topology (not merely a hash
+    match on arbitrary byte files)."""
     bit = Path(bit_path).expanduser().resolve(strict=True)
     hwh = Path(hwh_path).expanduser().resolve(strict=True)
     if not bit.is_file() or bit.suffix.lower() != ".bit" or bit.stat().st_size == 0:
@@ -65,6 +103,14 @@ def verify_runtime_artifacts(bit_path: str | Path, bit_sha256: str,
         raise ValueError("BIT bitstream SHA-256 mismatch")
     if actual_hwh != str(hwh_sha256).lower():
         raise ValueError("HWH handoff SHA-256 mismatch")
+    _validate_bit(bit)
+    hwh_info = _parse_hwh(hwh)
+    if hwh_info["part"] != EXPECTED_PART:
+        raise ValueError(f"HWH part {hwh_info['part']!r} does not match {EXPECTED_PART!r}")
+    for base, label in ((DMA_BASE, "DMA"), (RLE_BASE, "RLE"),
+                        (OVERLAY_BASE, "overlay"), (JPEG_BASE, "JPEG")):
+        if base not in hwh_info["bases"]:
+            raise ValueError(f"HWH is missing the {label} control base 0x{base:08x}")
     return {"status": status, "part": EXPECTED_PART,
             "bit_path": str(bit), "bit_sha256": actual_bit,
             "hwh_path": str(hwh), "hwh_sha256": actual_hwh,

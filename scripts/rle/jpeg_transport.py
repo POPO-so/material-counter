@@ -70,6 +70,82 @@ def _bytes_view(value: Any) -> memoryview:
         raise TypeError("JPEG frame must be contiguous bytes-like data") from exc
 
 
+def preflight_jpeg_header(payload: Any) -> dict[str, Any]:
+    """Parse a baseline JPEG header and reject shapes the PL decoder rejects.
+
+    The fixed decoder accepts only a 640x400, 8-bit baseline, 4:2:2, single-scan,
+    DRI=40 stream with a header of at most 4096 bytes. This PS preflight parses
+    those same fields for an early, board-free rejection; the PL wrapper remains
+    the authoritative validator of entropy and anything this pass cannot see.
+    """
+    view = memoryview(payload).cast("B")
+    if view.nbytes < 4 or view[:2].tobytes() != b"\xff\xd8":
+        raise ValueError("JPEG must start with SOI")
+    pos = 2
+    end = view.nbytes
+    width = height = precision = dri = None
+    sampling: list[tuple[int, int]] = []
+    sof_seen = False
+    scans = 0
+    while pos + 4 <= end:
+        if view[pos] != 0xFF:
+            raise ValueError("JPEG marker alignment lost before SOS")
+        marker = view[pos + 1]
+        if marker == 0xFF:                          # fill byte
+            pos += 1
+            continue
+        if marker in (0xD8, 0xD9):                  # SOI (repeat) / EOI
+            pos += 2
+            if marker == 0xD9:
+                break
+            continue
+        if marker == 0x01 or 0xD0 <= marker <= 0xD7:  # TEM / RSTn carry no length
+            pos += 2
+            continue
+        if pos + 4 > end:
+            raise ValueError("JPEG segment header is truncated")
+        seg_len = (view[pos + 2] << 8) | view[pos + 3]
+        if seg_len < 2 or pos + 2 + seg_len > end:
+            raise ValueError("JPEG segment length is invalid")
+        body = view[pos + 4: pos + 2 + seg_len]
+        if marker == 0xC0:                          # SOF0 baseline
+            if len(body) < 6:
+                raise ValueError("SOF0 is truncated")
+            precision = body[0]
+            height = (body[1] << 8) | body[2]
+            width = (body[3] << 8) | body[4]
+            nf = body[5]
+            if len(body) < 6 + 3 * nf:
+                raise ValueError("SOF0 component table is truncated")
+            sampling = [((body[6 + 3 * i + 1] >> 4) & 0xF, body[6 + 3 * i + 1] & 0xF)
+                        for i in range(nf)]
+            sof_seen = True
+        elif marker in (0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+            raise ValueError("JPEG must be baseline SOF0 (non-baseline SOF found)")
+        elif marker == 0xDD:                        # DRI restart interval
+            if len(body) < 2:
+                raise ValueError("DRI is truncated")
+            dri = (body[0] << 8) | body[1]
+        elif marker == 0xDA:                        # SOS: entropy data follows
+            scans += 1
+            if scans > 1:
+                raise ValueError("JPEG must be single-scan")
+            break
+        pos += 2 + seg_len
+    if not sof_seen:
+        raise ValueError("JPEG header has no baseline SOF0")
+    if precision != 8 or width != WIDTH or height != HEIGHT:
+        raise ValueError(f"JPEG must be 640x400 8-bit, got {width}x{height} precision {precision}")
+    if len(sampling) != 3 or sampling[0] != (2, 1) or any(s != (1, 1) for s in sampling[1:]):
+        raise ValueError(f"JPEG must be 4:2:2 YCbCr, got sampling {sampling}")
+    if dri != 40:
+        raise ValueError(f"JPEG DRI must be 40, got {dri}")
+    if pos > 4096:
+        raise ValueError(f"JPEG header exceeds 4096 bytes ({pos})")
+    return {"width": width, "height": height, "precision": precision,
+            "sampling": sampling, "dri": dri, "scans": scans, "header_bytes": pos}
+
+
 def iter_raw_mjpeg(device: Any = 0, *, cv2_module: Any = None) -> Iterator[bytes]:
     """Yield unchanged V4L2 MJPG payloads requested at 640x400."""
     if cv2_module is None:
@@ -110,6 +186,7 @@ def iter_raw_mjpeg(device: Any = 0, *, cv2_module: Any = None) -> Iterator[bytes
                 raise RuntimeError("V4L2 did not return a complete JPEG packet")
             if payload.nbytes > JPEG_MAX_BYTES:
                 raise RuntimeError(f"V4L2 JPEG packet exceeds {JPEG_MAX_BYTES} bytes")
+            preflight_jpeg_header(payload)
             yield payload.tobytes()
     finally:
         capture.release()
