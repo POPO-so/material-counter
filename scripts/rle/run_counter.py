@@ -80,7 +80,7 @@ def should_check_preload_dma(pynq_state, expected_bit_sha256):
     return loaded_sha256.lower() == expected_bit_sha256.lower()
 
 
-def camera_frames(device,count):
+def camera_mjpeg_frames(device,count):
     capture=cv2.VideoCapture(device,cv2.CAP_V4L2)
     try:
         if not capture.isOpened(): raise RuntimeError("camera open failed")
@@ -91,10 +91,14 @@ def camera_frames(device,count):
         for i in range(count+2):
             ok,raw=capture.read()
             if not ok: raise RuntimeError("camera read failed")
-            gray=decode_camera_frame(raw)
-            if i>=2: yield gray
+            if i>=2: yield raw
     finally:
         capture.release()
+
+
+def camera_frames(device,count):
+    for raw in camera_mjpeg_frames(device,count):
+        yield decode_camera_frame(raw)
 
 
 def main(argv=None):
