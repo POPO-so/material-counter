@@ -33,6 +33,9 @@ class VideoPump:
         self.submit_timeout = float(submit_timeout)
         self.state = RUNNING
         self.error = None
+        self.failed_at = None
+        self.failed_stage = None
+        self.last_frame_id = None
         self.submitted = 0
         self.timings_ms = {
             name: deque(maxlen=self.TIMING_WINDOW)
@@ -68,13 +71,21 @@ class VideoPump:
             for name, values in self.timings_ms.items()
         }
 
+    def status(self):
+        """Bounded evidence snapshot for reports; no hardware access."""
+        return dict(state=self.state, error=self.error, failed_at=self.failed_at,
+                    failed_stage=self.failed_stage, submitted=self.submitted,
+                    last_frame_id=self.last_frame_id, alive=self.is_alive)
+
     def _run(self):
+        stage = "acquire"
         try:
             while not self._stop.is_set():
                 try:
+                    stage = "acquire"
                     lease = self.outputs.acquire_latest()
                 except BaseException as exc:
-                    self._fail(exc)
+                    self._fail(exc, stage)
                     break
                 if lease is None:
                     self._stop.wait(0.001)
@@ -82,14 +93,19 @@ class VideoPump:
 
                 frame = None
                 failed = False
+                self.last_frame_id = lease.frame_id
                 try:
+                    stage = "session_check"
                     if lease.session_uuid != self.session_uuid:
                         raise RuntimeError(
                             "shared frame session UUID does not match video pump"
                         )
+                    stage = "newframe"
                     frame = self.owner.call(self.hw.hdmi.newframe)
                     copy_started = time.monotonic()
+                    stage = "copy"
                     np.copyto(frame, lease.array)
+                    stage = "writeframe"
                     self.owner.call(
                         self.hw.hdmi.writeframe,
                         frame,
@@ -111,22 +127,28 @@ class VideoPump:
                             exc = RuntimeError(
                                 f"{exc}; retaining uncertain CMA frame failed: {retain_exc}"
                             )
-                    self._fail(exc)
+                    self._fail(exc, stage)
                     failed = True
                 finally:
                     try:
+                        stage = "release"
                         self.outputs.release_read(lease.slot)
                     except BaseException as exc:
-                        self._fail(exc)
+                        self._fail(exc, stage)
                         failed = True
                 if failed:
                     break
         except BaseException as exc:
-            self._fail(exc)
+            self._fail(exc, stage)
         finally:
             if self.state != DISPLAY_FAIL_HOLD:
                 self.state = STOPPED
 
-    def _fail(self, exc):
-        self.error = str(exc)
+    def _fail(self, exc, stage=None):
+        # Keep the first failure: a later release error must not hide the
+        # operation that actually broke the display path.
+        if self.state != DISPLAY_FAIL_HOLD:
+            self.error = str(exc)
+            self.failed_stage = stage
+            self.failed_at = time.monotonic()
         self.state = DISPLAY_FAIL_HOLD

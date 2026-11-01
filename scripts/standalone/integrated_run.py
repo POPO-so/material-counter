@@ -175,6 +175,22 @@ def summarize_transfer_timing(parts):
     return stats
 
 
+def resolve_display_held(pre_stop_state, join_ok, post_join_state):
+    """Classify why display resources must be retained during cleanup.
+
+    The pre-existing failure is checked first: a pump that was already in
+    DISPLAY_FAIL_HOLD before the stop is the root cause, not the join timeout
+    that merely observed it.
+    """
+    if pre_stop_state == DISPLAY_FAIL_HOLD:
+        return True, 'pre_existing_display_fail_hold'
+    if not join_ok:
+        return True, 'video_pump_join_timeout'
+    if post_join_state == DISPLAY_FAIL_HOLD:
+        return True, 'video_pump_display_fail_hold'
+    return False, None
+
+
 def start_drawing_child(
     ctx, inputs, outputs, errors, counters, font, latin_font, failure_mode=None
 ):
@@ -463,6 +479,7 @@ def main(argv=None):
     session=uuid.UUID(report['session_id'])
     previous_cpu=_parse_proc_stat(Path('/proc/stat').read_text())
     stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','snapshot_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms','transfer_parts')}
+    cleanup_stage='run'
     try:
         dma=owner.retain(MMIO(0x40400000,0x1000))
         for offset in (4,0x34):
@@ -715,7 +732,9 @@ def main(argv=None):
                 report['samples'].append(dict(monotonic=sample_time,processed=index,submitted=submitted,
                     monitor=monitor,count=counter.total_count,invalid=counter.invalid_frames,memory=_memory(),
                     cpu=_cpu_usage_percent(previous_cpu,cpu),vdma_status=vdma_status,
-                    video_state=video_pump.state if video_pump else 'OFF',telemetry=cache.snapshot(time.monotonic()),
+                    video_state=video_pump.state if video_pump else 'OFF',
+                    video_pump_status=video_pump.status() if video_pump else {'state':'OFF'},
+                    telemetry=cache.snapshot(time.monotonic()),
                     crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
                     **timing_sample_fields(args.transfer_timing,report.get('transfer_timing_last')),
                     counters=owner.call(snapshot_counters,control)))
@@ -723,7 +742,12 @@ def main(argv=None):
         report['duration_s']=time.monotonic()-started
         report.update(trace_sha256=trace.digest(),trace_frames=trace.frames_seen,
                       trace_annotations_truncated=trace.annotations_truncated)
+        cleanup_stage='camera_close'
+        pre_stop_video_state=None
+        display_held_reason='vdma_error_during_loop' if display_held else None
+        hdmi_close_attempted=False
         if camera is not None:camera.close();camera=None
+        cleanup_stage='drawing_join'
         if process is not None:
             stop_drawing.set();process.join(timeout=15)
             if process.is_alive():raise TimeoutError('drawing child failed to stop')
@@ -732,9 +756,12 @@ def main(argv=None):
             for slot,state in enumerate(outputs.statuses()):
                 if state==WRITING:outputs.reclaim_writer(slot,dead_producer=True)
         if args.display=='on' and video_pump is not None:
-            video_pump.request_stop()
-            if not video_pump.join(3):display_held=True
-            if video_pump.state==DISPLAY_FAIL_HOLD:display_held=True
+            pre_stop_video_state=video_pump.state
+            cleanup_stage='video_pump_stop';video_pump.request_stop()
+            cleanup_stage='video_pump_join';join_ok=video_pump.join(3)
+            if not display_held:
+                display_held,display_held_reason=resolve_display_held(
+                    pre_stop_video_state,join_ok,video_pump.state)
             submitted=video_pump.submitted
             inputs.close()
             if not video_pump.is_alive:outputs.close()
@@ -747,18 +774,31 @@ def main(argv=None):
         if any(report['dma_after'][hex(i)]&0x770 or not report['dma_after'][hex(i)]&2 for i in (4,0x34)):
             raise RuntimeError('RLE DMA idle not proven')
         owner.call(transport.close)
-        if args.display=='on' and not display_held:video_owner.call(hw.hdmi.close,timeout=3)
+        cleanup_stage='hdmi_close'
+        if args.display=='on' and not display_held:
+            hdmi_close_attempted=True
+            video_owner.call(hw.hdmi.close,timeout=3)
+        cleanup_stage='owner_close'
         report['vdma_after']={hex(i):owner.call(hw.vdma.read,i) for i in (0,4)}
         if not report['vdma_after']['0x4']&1 and not display_held:raise RuntimeError('VDMA halt not proven')
         report['pipeline_after']=owner.call(read_pipeline,control)
         owner.close()
         if not display_held:video_owner.close()
+        cleanup_stage='evidence_write'
         if captures is not None:report['snapshot_writer_drained']=captures.close()
         if exporter is not None:report['report_writer_drained']=exporter.close()
         report.update(state='COUNT_STOPPED_DISPLAY_FAIL_HOLD' if display_held else 'STOPPED',processed=index,submitted=submitted,published=published,
             dropped_preview=dropped,total_count=counter.total_count,invalid_frames=counter.invalid_frames,
             camera_released=True,buffers_released=not display_held,rle_buffers_released=True,after_memory=_memory(),
-            drawing_published=int(drawing_counts[0]),drawing_dropped=int(drawing_counts[1]))
+            drawing_published=int(drawing_counts[0]),drawing_dropped=int(drawing_counts[1]),
+            video_pump_state=video_pump.state if video_pump else None,
+            video_pump_error=video_pump.error if video_pump else None,
+            video_pump_failed_at=video_pump.failed_at if video_pump else None,
+            video_pump_failed_stage=video_pump.failed_stage if video_pump else None,
+            video_pump_last_frame_id=video_pump.last_frame_id if video_pump else None,
+            pre_stop_video_state=pre_stop_video_state,
+            display_held=display_held,display_held_reason=display_held_reason,
+            hdmi_close_attempted=hdmi_close_attempted,cleanup_stage=cleanup_stage)
         report['timings_ms']={name:{f'p{p}':float(np.percentile(values,p)) if values else None for p in (50,95,99)}
                              for name,values in stages.items() if name!='transfer_parts'}
         if args.transfer_timing and stages['transfer_parts']:
@@ -771,7 +811,12 @@ def main(argv=None):
         if video_pump is not None:video_pump.request_stop()
         if process is not None:process.join(timeout=15)
         if display_frame is not None:owner.retain(display_frame)
-        report.update(state='FAIL_HOLD',error=repr(error),diagnostics=owner.diagnostics())
+        report.update(state='FAIL_HOLD',error=repr(error),diagnostics=owner.diagnostics(),
+            video_pump_state=video_pump.state if video_pump else None,
+            video_pump_error=video_pump.error if video_pump else None,
+            video_pump_failed_at=video_pump.failed_at if video_pump else None,
+            video_pump_failed_stage=video_pump.failed_stage if video_pump else None,
+            cleanup_stage=cleanup_stage)
         fail_hold(lambda:write_evidence(args.output,report_snapshot()),'INTEGRATED_FAIL_HOLD '+repr(error))
     write_evidence(args.output,report_snapshot())
     print(json.dumps({k:report[k] for k in ('state','processed','submitted','duration_s','total_count')}),flush=True)
