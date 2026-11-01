@@ -1,17 +1,18 @@
-## 2026-11-02 SW1 快照保存开关（软件专项测试通过，G2 完整构建进行中）
+## 2026-11-02 SW1 快照保存开关（G2 本地构建通过，板端验收暂缓）
 
-用户已指定以 SW1 bit5 控制快照，并保留 BTN1 诊断模式和 `--crossing-snapshots` CLI 门控。设计记录见 [SW1 快照控制设计](docs/superpowers/specs/2026-11-02-sw1-snapshot-control-design.md)。当前分支 `feat/材料计数SW1快照开关`，主实现提交 `a90d2c1`；后续专项测试和构建准备仍在本分支。
+用户已指定以 SW1 bit5 控制快照，并保留 BTN1 诊断模式和 `--crossing-snapshots` CLI 门控。设计记录见 [SW1 快照控制设计](docs/superpowers/specs/2026-11-02-sw1-snapshot-control-design.md)。当前分支 `feat/材料计数SW1快照开关`；实现提交 `a90d2c1`、专项测试提交 `cd4d063`、G2 构建门禁修复提交 `a4fa257`。
 
 - [x] PL 源码：G2 GPIO Channel 1 扩为六位；BTN0–BTN3 保持 bit0–3，SW0/SW1 经两级同步后占 bit4/bit5，接入 PYNQ-Z2 开关约束，并加入构建/HWH 门禁。
 - [x] PS：按 HWH 宽度设置 PYNQ channel；仅在 SW1 ON、诊断模式开启、CLI on 时采集；关闭时 flush 并重置快照上下文，报告开关状态。
 - [x] SW1 专项测试：`test_sw1_snapshot_control.py` 的 17 项均通过，覆盖 SW1 OFF、诊断模式关闭、CLI 关闭、SW1 ON，以及四位旧 HWH 的不可用门控。
 - [x] HLS 前置构建：PYNQ v3.1 锁定源码核验通过；Vitis 2026.1 对 `color_convert` 与 `pixel_unpack` 的 CSim、csynth 和 IP 导出均通过。结果在 `.runtime/builds/sw1-video-ip-20261102`。
 - [x] G2 BD 创建：新工程读回 `btns_gpio` 宽度 6，BTN0–BTN3/SW0/SW1 位映射和 PYNQ-Z2 开关管脚与设计记录一致。
-- [ ] G2 完整综合、实现与 BIT/HWH 导出：正在执行，门禁结果尚未产生。构建结果目录为 `data/results/standalone-20261102-033000-g2-integration/`。
+- [x] G2 完整综合、实现与 BIT/HWH 导出：Vivado 2026.1 完成，最终 setup WNS +0.052 ns、hold WHS +0.023 ns，TNS/THS 均为 0，路由网线全部完成；HWH `C_GPIO_WIDTH=6`，BD 读回 SW0=bit4、SW1=bit5。构建和报告见 [G2 SW1 构建结果](data/results/standalone-20261102-033000-g2-integration/README.md)。
+- [ ] CDC 报告人工审查：构建门禁通过，但报告含 CDC-6 2 条、CDC-15 1,703 条警告；需确认分类及例外覆盖后才能称 CDC 审查完成。
 - [x] 路径保护：Vitis HLS 输出目录落在 PYNQ 工作区内时，Tcl guard 实测拒绝；合法外置输出路径的完整 HLS 构建已成功。
-- [ ] 板端 PL 重载与 SW1 实物验证：尚未执行。当前 service inactive、未见项目进程，但 PYNQ MMIO 因 `pyxrt` 无法打开设备而不能提供 DMA/VDMA 同轮读回；硬件资源释放状态未证实，因此不重载 PL。
+- [ ] 板端 PL 重载与 SW1 实物验证：用户明确暂缓。本轮没有部署或重载 bitstream，SW1 实物开关效果尚未验证。
 
-SW1 专项测试命令退出码为 0。另一次相关文件组合回归为 88 passed、3 failed；失败位于未改动的遥测分页默认值、预览后端 CLI 默认值、以及 `LatestCamera.__new__` 测试夹具缺少 `_decoded` 三处，与 SW1 改动无关。完整 G2 build 由本机 Vivado 2026.1 batch 执行；Vivado MCP 控制端点未连接。板端未做任何部署或重载。
+SW1 专项测试命令退出码为 0（17 项通过）。另一次相关文件组合回归为 88 passed、3 failed；失败位于未改动的遥测分页默认值、预览后端 CLI 默认值、以及 `LatestCamera.__new__` 测试夹具缺少 `_decoded` 三处，与 SW1 改动无关。完整 G2 构建由本机 Vivado 2026.1 batch 完成；Vivado MCP 控制端点未连接。BIT/HWH 为候选构建产物，尚未部署。CDC 报告复核和板端验收仍未完成，后者按用户要求暂缓。
 
 ## 2026-10-31 板端吞吐优化（源码与本轮实测已完成）
 

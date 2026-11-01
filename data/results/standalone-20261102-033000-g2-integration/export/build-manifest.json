@@ -1,0 +1,62 @@
+{
+  "schema": "material-counter.g2-sw1-candidate.v1",
+  "source_commit": "a4fa257",
+  "scope": "SW1 snapshot gate candidate; board acceptance pending",
+  "tool": {
+    "name": "Vivado",
+    "version": "2026.1",
+    "build": "6511674",
+    "part": "xc7z020clg400-1"
+  },
+  "variant": {
+    "name": "OFFLOAD_CANDIDATE",
+    "gpio_width": 6,
+    "gpio_input_bits": {
+      "BTN0": 0,
+      "BTN1": 1,
+      "BTN2": 2,
+      "BTN3": 3,
+      "SW0": 4,
+      "SW1": 5
+    },
+    "switch_pins": {
+      "SW0": "M20",
+      "SW1": "M19"
+    }
+  },
+  "files": {
+    "g2-integrated.bit": {
+      "sha256": "3216faed178485a48a3e1cbe7919bbd63fab54ab69f8821d02217f09dfe3a7b5",
+      "bytes": 4045770
+    },
+    "g2-integrated.hwh": {
+      "sha256": "e7b5cf32dc7a119c46cbf60c87185f55531dec0ba7d10d202b82290625b7d0ed",
+      "bytes": 848136
+    },
+    "../gpio-readback.tcldict": {
+      "sha256": "633b2999c16e82d22ae2ac2b1ba7a85307f1c03cffae59507b268d2aff6ed534",
+      "bytes": 1175
+    }
+  },
+  "timing": {
+    "wns_ns": 0.052,
+    "tns_ns": 0.0,
+    "whs_ns": 0.023,
+    "ths_ns": 0.0,
+    "all_user_constraints_met": true,
+    "unrouted_nets": 0,
+    "partially_routed_nets": 0
+  },
+  "drc": {
+    "errors": 0,
+    "critical_warnings": 0,
+    "warnings_and_advisories_reviewed": false
+  },
+  "cdc": {
+    "cdc3_info": 120,
+    "cdc6_warning": 2,
+    "cdc15_warning": 1703,
+    "review": "pending"
+  },
+  "board_acceptance": "PENDING_USER_DEFERRED"
+}
