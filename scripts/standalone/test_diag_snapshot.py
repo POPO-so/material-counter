@@ -108,3 +108,14 @@ def test_snapshot_schema_differs_from_the_final_report():
     snapshot = compact_diagnostic_snapshot(_report())
     assert snapshot["schema"] != "material-counter.integrated-run.v1"
     assert snapshot["schema"] == SNAPSHOT_SCHEMA
+
+
+def test_snapshot_carries_bounded_display_diagnostics():
+    report = _report()
+    report.update(vdma_diag_mmio=True,
+                  video_pump_diagnostics={"first_failure": None},
+                  video_owner_diagnostics={"state": "FAIL_HOLD"})
+    snapshot = compact_diagnostic_snapshot(report)
+    assert snapshot["vdma_diag_mmio"] is True
+    assert snapshot["video_pump_diagnostics"] == {"first_failure": None}
+    assert snapshot["video_owner_diagnostics"] == {"state": "FAIL_HOLD"}
