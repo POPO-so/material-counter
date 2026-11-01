@@ -1,0 +1,8 @@
+PASS: Tcl 8.6.15 info complete for 5 Tcl/XDC sources.
+PASS: create_g2_integration.tcl static preflight with OFFLOAD_CANDIDATE=1 and SW0_CANDIDATE=1; GPIO input map keeps BTN0-3 at bits 0-3 and SW0 at bit 4.
+PASS: focused Python tests: 13 passed (controls, button events, dashboard layout).
+PASS: Python 3.12 py_compile for changed runtime and test modules.
+PASS: offline 1280x720 dashboard render visually checked; side text stays within panel and detection count is not covered by button status.
+PASS: dashboard overlap regression test reproduced the previous overlap before the row adjustment, then passed after the adjustment.
+NOT RUN: Vivado synthesis, implementation, routed DRC/timing/CDC, BIT/HWH export (local memory gate and Vivado helper session unavailable).
+NOT RUN: board deployment or SW0 electrical/physical test.

@@ -240,6 +240,7 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
             hdmi_queue.get('submit_failures') if hdmi_queue.get('submit_failures') is not None else '?')
     rates=rates or {}
     return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
+        page=page,
         mode='DIAGNOSTIC' if mode=='diagnostic' else 'NORMAL',exposure_text=exposure_text,
         exposure_range_text=exposure_range_text,
         pl_text=pl_text,thread_text=thread_text,queue_text=queue_text,
@@ -373,6 +374,16 @@ def button_gpio_irq_configured(overlay, channel):
     return present and interrupt_available(channel)
 
 
+def button_gpio_switch0_configured(overlay):
+    """Enable SW0 reads only when the HWH declares a fifth GPIO bit."""
+    try:
+        value=overlay.ip_dict['btns_gpio']['parameters']['C_GPIO_WIDTH']
+        width=int(value,0) if isinstance(value,str) else int(value)
+    except (AttributeError,KeyError,TypeError,ValueError):
+        return False
+    return width>=5
+
+
 def verify_selected_offload_bundle(args, manifest, hwh):
     """Reject selected IRQ/PBO/RAW modes before touching the overlay."""
     if (args.button_input == 'irq' or args.preview_backend == 'pl'
@@ -396,12 +407,14 @@ def button_input_poll_callback(mode, worker_getter):
 
 class ButtonInputWorker:
     """Use the overlay owner's loop for IRQ waits or its explicit polling hook."""
-    def __init__(self, owner, mode, channel, read_bits, on_commands, on_error):
+    def __init__(self, owner, mode, channel, read_bits, on_commands, on_error,
+                 read_switch0=None):
         if mode not in ('irq','polling','off'):
             raise ValueError('unknown button input mode')
         self.owner=owner
         self.mode,self.channel=mode,channel
         self.read_bits,self.on_commands,self.on_error=read_bits,on_commands,on_error
+        self.read_switch0=read_switch0
         self.decoder=ButtonDecoder()
         self._task=None
         self._active=False
@@ -414,7 +427,8 @@ class ButtonInputWorker:
         if self.mode=='irq':
             self._task=self.owner.call(lambda:self.owner.start_background(
                 lambda: ButtonEventRunner(self.channel,self.read_bits,self._emit,
-                    decoder=self.decoder).run(),on_error=self.on_error))
+                    decoder=self.decoder,read_switch0=self.read_switch0).run(),
+                on_error=self.on_error))
 
     def stop(self,timeout=2):
         self._active=False
@@ -428,7 +442,8 @@ class ButtonInputWorker:
 
     def poll(self):
         if self._active and self.mode=='polling':
-            commands=self.decoder.update(self.read_bits(),time.monotonic())
+            sw0_state=self.read_switch0() if self.read_switch0 is not None else None
+            commands=self.decoder.update(self.read_bits(),time.monotonic(),sw0_state)
             if commands:self._emit(commands)
 
 
@@ -683,12 +698,14 @@ def button_input_poll_callback(mode, worker_getter):
 
 class ButtonInputWorker:
     """Use the overlay owner's loop for IRQ waits or its explicit polling hook."""
-    def __init__(self, owner, mode, channel, read_bits, on_commands, on_error):
+    def __init__(self, owner, mode, channel, read_bits, on_commands, on_error,
+                 read_switch0=None):
         if mode not in ('irq','polling','off'):
             raise ValueError('unknown button input mode')
         self.owner=owner
         self.mode,self.channel=mode,channel
         self.read_bits,self.on_commands,self.on_error=read_bits,on_commands,on_error
+        self.read_switch0=read_switch0
         self.decoder=ButtonDecoder()
         self._task=None
         self._active=False
@@ -701,7 +718,8 @@ class ButtonInputWorker:
         if self.mode=='irq':
             self._task=self.owner.call(lambda:self.owner.start_background(
                 lambda: ButtonEventRunner(self.channel,self.read_bits,self._emit,
-                    decoder=self.decoder).run(),on_error=self.on_error))
+                    decoder=self.decoder,read_switch0=self.read_switch0).run(),
+                on_error=self.on_error))
 
     def stop(self,timeout=2):
         self._active=False
@@ -715,7 +733,8 @@ class ButtonInputWorker:
 
     def poll(self):
         if self._active and self.mode=='polling':
-            commands=self.decoder.update(self.read_bits(),time.monotonic())
+            sw0_state=self.read_switch0() if self.read_switch0 is not None else None
+            commands=self.decoder.update(self.read_bits(),time.monotonic(),sw0_state)
             if commands:self._emit(commands)
 
 
@@ -994,6 +1013,7 @@ def main(argv=None):
     controls=ControlState(binary_background=True);events=queue.Queue(maxsize=64)
     button_errors=queue.Queue(maxsize=1);button_worker=None
     button_status={'irq':'IRQ READY','polling':'LEGACY POLLING','off':'BUTTONS OFF'}[args.button_input]
+    switch0_connected=False;switch0_state=None;read_switch0=None
     previous_raw_button_bits=None
     hw=transport=camera=process=inputs=outputs=display_frame=video_pump=None
     display_held=False
@@ -1045,6 +1065,16 @@ def main(argv=None):
         report['hp1_readwrite32']=owner.call(sync_hp1_readwrite32, files['hwh'], MMIO)
         hw=video_owner.call(lambda:setup_hardware(files,video_owner,start_display=False),timeout=60)
         report['clocks_mhz']=hw.clocks
+        switch0_connected=button_gpio_switch0_configured(hw.overlay)
+        if switch0_connected:
+            def read_hw_switch0():
+                nonlocal switch0_state
+                try:
+                    switch0_state=bool(int(hw.buttons.read()) & 0x10)
+                except Exception:
+                    switch0_state=None
+                return switch0_state
+            read_switch0=read_hw_switch0
         if args.button_input=='irq':
             if not button_gpio_irq_configured(hw.overlay,hw.buttons):
                 raise RuntimeError('GPIO IRQ unavailable in btns_gpio HWH; use --button-input polling only for legacy hardware')
@@ -1077,11 +1107,11 @@ def main(argv=None):
         owner.call(transport._preflight_hardware)
         if args.button_input=='irq':
             button_worker=ButtonInputWorker(video_owner,'irq',hw.buttons,read_button_bits,
-                enqueue_button_command,report_button_error)
+                enqueue_button_command,report_button_error,read_switch0=read_switch0)
             button_worker.start()
         elif args.button_input=='polling':
             button_worker=ButtonInputWorker(video_owner,'polling',hw.buttons,read_button_bits,
-                enqueue_button_command,report_button_error)
+                enqueue_button_command,report_button_error,read_switch0=read_switch0)
             button_worker.start()
         video_owner.call(start_display_output,hw.hdmi,timeout=60)
         counter=make_runtime_counter(args.native_lib,profile=args.counting_profile)
@@ -1414,11 +1444,15 @@ def main(argv=None):
                             '不可用' if diagnostic_error else '关闭')]
                     if metadata['annotations_truncated']:metadata['status_lines'].append('标注仅显示前128项 / 计数未截断')
                     telemetry=latest_dashboard_telemetry
+                    switch0_status=('SW0未接入' if not switch0_connected else
+                        'SW0读取未知' if switch0_state is None else
+                        'SW0 ON' if switch0_state else 'SW0 OFF')
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,
                     controls.page,telemetry,manifest,mode=diagnostic_policy.mode,
                     exposure=exposure_status,exposure_error=exposure_error,
                     pl_rates=pl_rates,runtime=runtime_sample,
-                    runtime_diagnostics=runtime_diagnostics,button_status=button_status)
+                    runtime_diagnostics=runtime_diagnostics,
+                    button_status=button_status+' / '+switch0_status)
                     metadata['dashboard']['binary_fps']=binary_fps
                     metadata['dashboard']['preview_submitted_fps']=binary_fps
                     metadata['dashboard']['preview_status']='PL READY' if pl_preview is not None else '软件二值预览'

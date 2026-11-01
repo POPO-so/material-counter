@@ -67,12 +67,25 @@ if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "DISPLAY_SYNTH_
 open_run synth_1
 set button_meta_first [get_pins -quiet -hier -regexp {.*button_debounce.*button_meta_reg\[[0-3]\]/D}]
 if {[llength $button_meta_first] != 4} {error "OFFLOAD_BUTTON_META_FIRST_STAGE_PIN_COUNT:[llength $button_meta_first]"}
+if {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"} {
+    set switch_meta_first [get_pins -quiet -hier -regexp {.*switch0_synchronizer.*switch_meta_reg/D}]
+    if {[llength $switch_meta_first] != 1 || [llength [get_ports -quiet sw0]] != 1} {
+        error "SW0_SYNCHRONIZER_OR_PORT_MISSING_AFTER_SYNTHESIS"
+    }
+}
 close_design
 launch_runs impl_1 -to_step write_bitstream -jobs $jobs
 wait_on_run impl_1
 if {[get_property PROGRESS [get_runs impl_1]] ne "100%" ||
     ![string match {*write_bitstream Complete*} [get_property STATUS [get_runs impl_1]]]} {error "DISPLAY_IMPL_FAILED"}
 open_run impl_1
+if {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"} {
+    set sw0_port [get_ports -quiet sw0]
+    if {[llength $sw0_port] != 1 || [get_property PACKAGE_PIN $sw0_port] ne "M20" ||
+        [get_property IOSTANDARD $sw0_port] ne "LVCMOS33"} {
+        error "SW0_IMPLEMENTED_PIN_OR_IOSTANDARD_MISMATCH"
+    }
+}
 if {[llength [get_pins -quiet display_i/hdmi_out/frontend/axi_dynclk/U0/Inst_mmcme2_drp/mmcm_adv_inst/CLKOUT0]] != 1 ||
     [llength [get_pins -quiet display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk]] != 1} {error "VIDEO_CLOCK_TOPOLOGY_CHANGED"}
 if {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-3]\]/D}]] != 4} {error "BUTTON_SYNCHRONIZERS_CHANGED"}

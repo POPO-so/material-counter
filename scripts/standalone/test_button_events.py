@@ -185,32 +185,34 @@ def test_changed_deadlines_rearm_timer_without_replacing_irq_waiter():
         timer = ManualTimer()
         events = []
         runner = ButtonEventRunner(source, source.read_bits, events.extend,
+                                   read_switch0=lambda: True,
                                    clock=lambda: timer.now, sleep=timer.sleep)
         task = asyncio.create_task(runner.run())
         await settle()
         assert len(source.waiters) == 1
 
-        # Stabilize BTN2 and establish its 0.8 s hold deadline at t=0.83.
+        # Stabilize BTN2. SW0 is on, so it requests one exposure increase.
         source.fire(4)
         await settle()
         timer.advance(.03)
         await settle()
-        assert timer.active_deadlines == [.83]
+        assert events == ["exposure_up"]
+        assert timer.active_deadlines == []
         assert source.wait_calls == 2
 
-        # BTN0's 30 ms debounce deadline is earlier than BTN2's hold timer.
+        # BTN0 stays pressed while BTN1 bounces, moving the single debounce deadline.
         timer.now = .10
         source.fire(5)
         await settle()
         assert timer.active_deadlines == [.13]
         assert len(source.waiters) == 1
 
-        # A bounce moves the next deadline later, then another press moves it
-        # earlier again. The IRQ waiter remains pending throughout.
+        # BTN1 joins the candidate state and then releases; BTN0 remains pressed.
+        # Each edge must rearm the debounce deadline without replacing the IRQ waiter.
         timer.now = .11
-        source.fire(4)
+        source.fire(7)
         await settle()
-        assert timer.active_deadlines == [.83]
+        assert timer.active_deadlines == [.14]
         timer.now = .12
         source.fire(5)
         await settle()
@@ -218,20 +220,17 @@ def test_changed_deadlines_rearm_timer_without_replacing_irq_waiter():
         assert source.wait_calls == 5
         assert len(source.waiters) == 1
 
-        # BTN0 clears on debounce well before BTN2's long press.
+        # BTN0 clears when its debounced press stabilizes.
         timer.advance(.03)
         await settle()
-        assert events == ["clear"]
-        assert timer.active_deadlines == [.83]
-
-        # The held BTN2 emits its long action once, then has no live timer.
-        timer.advance(.68)
-        await settle()
-        assert events == ["clear", "exposure_down"]
+        assert events == ["exposure_up", "clear"]
         assert timer.active_deadlines == []
+
+        # Holding BTN2 does not repeat an exposure action.
         timer.advance(1)
         await settle()
-        assert events == ["clear", "exposure_down"]
+        assert events == ["exposure_up", "clear"]
+        assert timer.active_deadlines == []
 
         task.cancel()
         try:

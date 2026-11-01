@@ -19,6 +19,8 @@ if {![file isfile $project_file] || ![file isfile $bd_file] || ![file isfile $re
 if {![llength [get_projects -quiet]]} {open_project $project_file}
 open_bd_design $bd_file
 set offload_candidate [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
+set sw0_candidate [expr {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"}]
+if {$sw0_candidate && !$offload_candidate} {error "G2_SW0_CANDIDATE_REQUIRES_OFFLOAD_CANDIDATE"}
 set expected_mi [expr {$offload_candidate ? 12 : 11}]
 if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != $expected_mi} {error "G2_BUILD_CONTROL_MI_MISMATCH"}
 foreach cell {axi_dma_0 image_pipeline hp0_protocol hp1_fabric reset_rle} {
@@ -26,6 +28,11 @@ foreach cell {axi_dma_0 image_pipeline hp0_protocol hp1_fabric reset_rle} {
 }
 if {$offload_candidate && (![llength [get_bd_cells -quiet binary_overlay]] || ![llength [get_bd_intf_pins -quiet control/M11_AXI]])} {
     error "G2_BUILD_OFFLOAD_CELLS_MISSING"
+}
+if {$sw0_candidate && ([get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio]] != 5 ||
+    [llength [get_bd_ports -quiet sw0]] != 1 ||
+    [llength [get_bd_pins -quiet switch0_synchronizer/switch_sync]] != 1)} {
+    error "G2_BUILD_SW0_BD_READBACK_MISMATCH"
 }
 if {[llength [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S]]] != 1 ||
     [llength [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins image_pipeline/m_axis]]] != 1} {
@@ -39,5 +46,20 @@ source [file join $repo scripts standalone build_display.tcl]
 foreach extension {bit hwh} {
     set artifact [file join $g2_out export g2-integrated.$extension]
     if {![file isfile $artifact]} {error "G2_BUILD_ARTIFACT_MISSING:$artifact"}
+}
+if {$sw0_candidate} {
+    set hwh_file [file join $g2_out export g2-integrated.hwh]
+    set hwh_channel [open $hwh_file r]
+    set hwh_text [read $hwh_channel]
+    close $hwh_channel
+    set readback_file [file join $g2_out evidence offload-bd-readback.tcldict]
+    set readback_channel [open $readback_file r]
+    set readback_text [read $readback_channel]
+    close $readback_channel
+    if {[string first {NAME="C_GPIO_WIDTH" VALUE="5"} $hwh_text] < 0 ||
+        [string first {NAME="sw0"} $hwh_text] < 0 ||
+        [string first {SW0=4} $readback_text] < 0} {
+        error "G2_SW0_HWH_READBACK_MISMATCH"
+    }
 }
 puts "G2_BUILD_COMPLETE:BIT_HWH_PRESENT;manifest_and_board_smoke_pending"

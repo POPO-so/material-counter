@@ -68,12 +68,19 @@ set g2_rtl_sources {
     fpga/experimental/rle/axis_dma_rle_pipeline_bd.v
 }
 set g2_offload_candidate [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
+set g2_sw0_candidate [expr {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"}]
+if {$g2_sw0_candidate && !$g2_offload_candidate} {
+    error "G2_SW0_CANDIDATE_REQUIRES_OFFLOAD_CANDIDATE"
+}
 if {$g2_offload_candidate} {
     lappend g2_rtl_sources fpga/experimental/rle/rle_region_features.v
     lappend g2_rtl_sources fpga/experimental/rle/rle_feature_tap.v
     lappend g2_rtl_sources fpga/experimental/standalone/button_debounce_irq.v
     lappend g2_rtl_sources fpga/experimental/standalone/video_binary_overlay.v
     lappend g2_rtl_sources fpga/experimental/standalone/video_binary_overlay_bd.v
+}
+if {$g2_sw0_candidate} {
+    lappend g2_rtl_sources fpga/experimental/standalone/sw0_synchronizer.v
 }
 foreach relative $g2_rtl_sources {
     set source [file join $g2_repo $relative]
@@ -105,6 +112,7 @@ for {set i 0} {$i < [llength $g2_control_map]} {incr i} {
 
 puts "G2_PREFLIGHT_OUT=$g2_out"
 puts "G2_PREFLIGHT_CONTROL_MI=M00-M08 preserved; M09=RLE DMA; M10=RLE pipeline"
+puts "G2_PREFLIGHT_SW0_CANDIDATE=$g2_sw0_candidate;btns_gpio_bit4"
 puts "G2_PREFLIGHT_CLOCKS=GP0/S00 100MHz; RLE MI+HP0+HP1 FCLK0 50MHz; VDMA/HP2 FCLK2 142.857MHz"
 puts "G2_PREFLIGHT_ADDRESSES=11 non-overlapping 64KiB control windows"
 puts "G2_PREFLIGHT_G1_ENTRY=$g2_display_tcl"

@@ -20,28 +20,24 @@ def test_new_button_mapping_and_mode_control_state():
     assert s.diagnostic is False
 
 
-def test_btn2_short_and_long_press_have_distinct_single_events():
-    d = ButtonDecoder(long_press=.8)
-    assert d.update(4, 0) == ()
-    assert d.update(4, .031) == ()
-    assert d.next_deadline == pytest.approx(.831)
-    assert d.advance(.830) == ()
-    assert d.advance(.831) == ("exposure_down",)
-    assert d.advance(2) == ()
-    assert d.update(0, 2.1) == ()
-    assert d.update(0, 2.131) == ()
-
-    d = ButtonDecoder(long_press=.8)
-    d.update(4, 0)
-    d.update(4, .031)
-    assert d.update(0, .5) == ()
-    assert d.update(0, .531) == ("exposure_up",)
+def test_btn2_exposure_direction_follows_sw0():
+    d = ButtonDecoder()
+    assert d.update(4, 0, sw0_state=True) == ()
+    assert d.advance(.031, sw0_state=True) == ("exposure_up",)
+    assert d.update(0, .1, sw0_state=True) == ()
+    assert d.advance(.131, sw0_state=True) == ()
+    assert d.update(4, .2, sw0_state=False) == ()
+    assert d.advance(.231, sw0_state=False) == ("exposure_down",)
+    assert d.update(0, .3, sw0_state=None) == ()
+    assert d.advance(.331, sw0_state=None) == ()
+    assert d.update(4, .4, sw0_state=None) == ()
+    assert d.advance(.431, sw0_state=None) == ()
 
 
-def test_btn3_has_no_command():
+def test_btn3_cycles_pages():
     d = ButtonDecoder()
     assert d.update(8, 0) == ()
-    assert d.advance(.03) == ()
+    assert d.advance(.03) == ("page",)
     assert d.update(0, .1) == ()
     assert d.advance(.13) == ()
 

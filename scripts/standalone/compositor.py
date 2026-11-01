@@ -309,7 +309,7 @@ class DashboardComposer:
     layouts retain the same top/bottom session markers for the PL observer.
     """
 
-    VIEW = (384, 146, 512, 320)
+    VIEW = (398, 154, 460, 288)
 
     def __init__(self, font_path, *, latin_font_path=None,
                  gray_interpolation=cv2.INTER_AREA):
@@ -317,11 +317,11 @@ class DashboardComposer:
             raise ValueError("gray_interpolation must be INTER_AREA or INTER_LINEAR")
         self.gray_interpolation = gray_interpolation
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
-        self._work = np.empty((320, 512), dtype=np.uint8)
+        self._work = np.empty((288, 460), dtype=np.uint8)
         self._fonts = {size: ImageFont.truetype(str(font_path), size)
-                       for size in (12, 18, 20, 24, 34)}
+                       for size in (12, 14, 16, 18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
-                       for size in (12, 18, 20, 24, 28, 34)}
+                       for size in (12, 14, 16, 18, 20, 24, 28, 34)}
         self._text_cache = OrderedDict()
         self._gutter_wrap_cache = OrderedDict()
         self._key = None
@@ -408,28 +408,46 @@ class DashboardComposer:
         self._whole_latin_text(draw, (x + 55, center_y + 2), value_text, 18,
                                226 if valid else 142)
 
-    def _wrap_gutter(self, text, max_width=286):
-        key = (str(text), max_width)
+    def _wrap_gutter(self, text, max_width=286, size=18, max_rows=None):
+        key = (str(text), max_width, size, max_rows)
         rows = self._gutter_wrap_cache.get(key)
         if rows is not None:
             self._gutter_wrap_cache.move_to_end(key)
             return rows
         rows, current = [], ''
         for character in key[0]:
-            font = self._latin[18] if ord(character) < 256 else self._fonts[18]
             trial = current + character
-            if current and font.getlength(trial) > max_width:
+            trial_width = sum(
+                (self._latin[size] if ord(ch) < 256 else self._fonts[size]).getlength(ch)
+                for ch in trial)
+            if current and trial_width > max_width:
                 rows.append(current)
                 current = character
             else:
                 current = trial
         if current:
             rows.append(current)
+        if max_rows is not None and len(rows) > max_rows:
+            rows = rows[:max_rows]
+            last = rows[-1]
+            font_for = lambda value: sum(
+                (self._latin[size] if ord(ch) < 256 else self._fonts[size]).getlength(ch)
+                for ch in value)
+            while last and font_for(last + "…") > max_width:
+                last = last[:-1]
+            rows[-1] = last + "…"
         rows = tuple(rows)
         self._gutter_wrap_cache[key] = rows
         if len(self._gutter_wrap_cache) > 128:
             self._gutter_wrap_cache.popitem(last=False)
         return rows
+
+    def _draw_wrapped(self, draw, text, x, y, width, size, fill, max_rows, line_height):
+        rows = self._wrap_gutter(text, width, size, max_rows)
+        for row in rows:
+            self._text(draw, (x, y), row, size, fill)
+            y += line_height
+        return y
 
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
         e2e = dashboard.get("e2e_ms")
@@ -452,13 +470,6 @@ class DashboardComposer:
             for value in live_pies + static_pies
         )
         state = str(dashboard.get("state", "RUNNING"))
-        raw_page_lines = dashboard.get("page_lines", ())
-        if isinstance(raw_page_lines, str):
-            page_lines = (raw_page_lines,)
-        elif isinstance(raw_page_lines, (tuple, list)):
-            page_lines = tuple(str(line) for line in raw_page_lines if isinstance(line, str))
-        else:
-            page_lines = ()
         chain = dashboard.get("resolution_chain")
         if isinstance(chain, (tuple, list)) and chain:
             input_resolution = str(chain[0])
@@ -527,10 +538,13 @@ class DashboardComposer:
         rle_key = tuple(dashboard.get(name) for name in (
             "rle_fresh", "rle_activity_pct", "input_mb_s", "output_mb_s",
             "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps"))
-        detail_page = dashboard.get("detail_page")
-        detail = page_lines[:3] if detail_page else tuple(lines[:3])
+        # Count, run state, and processing FPS already have dedicated slots.
+        detail = tuple(line for line in lines
+                       if not line.startswith("本次会话累计 ")
+                       and line not in ("运行中", "暂停计数")
+                       and not (line.startswith("处理 ") and " FPS" in line))[:3]
         key = (values, pie_key, state, binary_background, target_count,
-               detail_page, page_lines, summary, detail, mode, exposure_text,
+               summary, detail, mode, exposure_text,
                exposure_range_text, feature_pl_text, thread_text, cpu_source_text,
                queue_summary_text, button_status,
                preview_status, exposure_latency_text, submitted_fps, processing_fps,
@@ -548,47 +562,114 @@ class DashboardComposer:
             draw.rounded_rectangle((x, 58, x + 300, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
             self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
-        draw.rounded_rectangle((24, 136, 1256, 474), radius=10, fill=25, outline=58)
-        self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
-        for y, text in zip((194, 222, 250), summary[:3]):
-            self._text(draw, (42, y), text, 18, 158)
+        draw.rounded_rectangle((24, 136, 1256, 474), radius=10, fill=25, outline=66)
         axis_label = "X" if axis == "x" else "Y"
         direction_label = (("左→右" if direction == 1 else "右→左") if axis == "x"
                            else ("上→下" if direction == 1 else "下→上"))
-        self._text(draw, (42, 276), "计数线 {}={} / {}".format(
-            axis_label, position, direction_label), 18, 175)
-        self._text(draw, (42, 302), "模式 {} / {}".format(
-            mode, "二值" if binary_background else "灰度"), 18, 170)
-        self._text(draw, (42, 328), exposure_text, 18, 190)
-        self._text(draw, (42, 354), exposure_range_text, 18, 190)
-        for y, text in zip((368, 389, 410, 431, 452), summary[3:]):
-            self._text(draw, (42, y), text, 18, 170)
-        self._text(draw, (934, 158), "检测目标", 20, 170)
-        self._whole_latin_text(draw, (934, 190), str(target_count), 34, 242)
-        self._text(draw, (934, 232), "跟踪 ID / 检测框", 18, 170)
-        self._text(draw, (934, 258), "计数真值待人工核对", 18, 144)
-        self._text(draw, (934, 284), button_status, 18, 170)
-        self._text(draw, (934, 310), "二值提交 FPS", 18, 170)
-        self._whole_latin_text(draw, (1092, 308), submitted_fps, 18, 226)
-        self._text(draw, (934, 336), preview_status, 18, 170)
-        self._text(draw, (934, 358), cpu_source_text[:38], 12, 190)
-        self._text(draw, (934, 376), queue_summary_text[:38], 12, 190)
-        row_y = 398
-        for row_text in self._wrap_gutter(thread_text):
-            if row_y + 20 > 474:
-                break
-            self._text(draw, (934, row_y), row_text, 18, 170)
-            row_y += 20
-        if exposure_latency_text and row_y + 20 <= 474:
-            self._text(draw, (934, row_y), exposure_latency_text, 18, 190)
-            row_y += 24
-        for line in detail:
-            for row_text in self._wrap_gutter(line):
-                if row_y + 20 > 474:
-                    break
-                self._text(draw, (934, row_y), row_text, 18, 170)
-                row_y += 20
-            row_y += 3
+        def card(x, y, width, height, title):
+            draw.rounded_rectangle((x, y, x + width, y + height), radius=8,
+                                   fill=43, outline=94, width=1)
+            draw.rounded_rectangle((x + 1, y + 1, x + width - 1, y + 27),
+                                   radius=7, fill=76)
+            draw.rectangle((x + 1, y + 20, x + width - 1, y + 27), fill=76)
+            draw.rectangle((x + 8, y + 7, x + 11, y + 20), fill=218)
+            self._text(draw, (x + 18, y + 5), title, 16, 248)
+
+        def aligned_row(label, value, x, y, width, *, label_width=82,
+                        size=14, value_size=None, value_fill=244):
+            self._text(draw, (x, y), label, size, 174)
+            value_x = x + label_width
+            value_width = width - label_width
+            rows = self._wrap_gutter(value, value_width, value_size or size, 1)
+            self._text(draw, (value_x, y), rows[0], value_size or size, value_fill)
+
+        def card_line(text, x, y, width, *, size=12, fill=218):
+            rows = self._wrap_gutter(text, width, size, 1)
+            self._text(draw, (x, y), rows[0], size, fill)
+
+        def strip_prefix(text, prefix):
+            value = str(text).strip()
+            return value[len(prefix):].strip(" :：") if value.startswith(prefix) else value
+
+        def centered(text, x, y, width, size, fill, max_rows=1, line_height=None):
+            rows = self._wrap_gutter(text, width, size, max_rows)
+            line_height = line_height or size + 1
+            for index, line in enumerate(rows):
+                line_width = sum(
+                    (self._latin[size] if ord(ch) < 256 else self._fonts[size])
+                    .getlength(ch) for ch in line)
+                self._text(draw, (x + (width - line_width) / 2,
+                                  y + index * line_height), line, size, fill)
+            return y + len(rows) * line_height
+
+        # Left gutter: camera/count rules, exposure controls, then performance.
+        left_x, left_width = 38, 342
+        right_x, right_width = 874, 368
+        card(left_x, 145, left_width, 92, "CAM 01 · 画面与计数规则")
+        aligned_row("输入 / 预览", f"{input_resolution} / 640x400",
+                    left_x + 12, 176, left_width - 24, label_width=92, size=14)
+        aligned_row("输出 / 画面", "1280x720 / {}".format(
+            "二值" if binary_background else "灰度"),
+                    left_x + 12, 195, left_width - 24, label_width=92, size=14)
+        aligned_row("计数线", f"{axis_label}={position} · {direction_label} · {mode}",
+                    left_x + 12, 214, left_width - 24, label_width=92, size=14)
+
+        card(left_x, 244, left_width, 65, "曝光控制")
+        aligned_row("当前", strip_prefix(exposure_text, "曝光"), left_x + 12, 275,
+                    left_width - 24, label_width=64, size=14)
+        aligned_row("范围 / 步进", strip_prefix(exposure_range_text, "范围"),
+                    left_x + 12, 292, left_width - 24, label_width=82, size=14)
+
+        card(left_x, 316, left_width, 116, "处理性能")
+        performance_rows = (
+            ("PL 周期", strip_prefix(pl_text, "PL")),
+            ("PS RLE / TRK", f"{self._number(regions_mean)} / {self._number(track_mean)} ms"),
+            ("处理 / 显示", f"{self._number(dashboard.get('processing_fps'))} / "
+                             f"{self._number(dashboard.get('display_fps'))} FPS"),
+            ("有效 / 提交", f"{effective_input_fps} / {submitted_fps}"),
+            ("处理延迟", processing_ms),
+        )
+        for index, (label, value) in enumerate(performance_rows):
+            aligned_row(label, value, left_x + 12, 346 + index * 16,
+                        left_width - 24, label_width=112, size=12,
+                        value_size=12, value_fill=238)
+
+        # Right gutter: detection, preview path, and runtime state.
+        card(right_x, 145, right_width, 76, "检测结果")
+        aligned_row("检测目标", str(target_count), right_x + 12, 177,
+                    right_width - 24, label_width=88, size=14,
+                    value_size=20, value_fill=255)
+        card_line("跟踪 ID / 检测框 · 计数真值待人工核对",
+                  right_x + 12, 201, right_width - 24, size=12, fill=218)
+
+        card(right_x, 229, right_width, 54, "预览链路")
+        card_line(preview_status, right_x + 12, 259,
+                  right_width - 24, size=14, fill=246)
+
+        card(right_x, 291, right_width, 141, "运行状态")
+        control_status = " · ".join(
+            text for text in (button_status, exposure_latency_text) if text)
+        runtime_rows = (
+            ("按键 / SW0", control_status),
+            ("CPU 来源", strip_prefix(cpu_source_text, "CPU 来源")),
+            ("队列", strip_prefix(queue_summary_text, "队列")),
+            ("线程", strip_prefix(thread_text, "threads")),
+        )
+        for index, (label, value) in enumerate(runtime_rows):
+            aligned_row(label, value, right_x + 12, 321 + index * 16,
+                        right_width - 24, label_width=82, size=12,
+                        value_size=12, value_fill=246 if index == 0 else 226)
+        for index, line in enumerate(detail[:3]):
+            y = 386 + index * 15
+            draw.ellipse((right_x + 12, y + 5, right_x + 16, y + 9), fill=182)
+            card_line(line, right_x + 22, y, right_width - 34,
+                      size=12, fill=206)
+        draw.line((left_x, 440, left_x + left_width, 440), fill=100, width=1)
+        draw.line((right_x, 440, right_x + right_width, 440), fill=100, width=1)
+        centered("BTN0 清零累计计数 · BTN1 切换诊断模式 · BTN2 调整曝光 · BTN3 预留",
+                 42, 442, 1190, 16, 250)
+        centered("SW0 ON + BTN2：增加曝光 · SW0 OFF + BTN2：减少曝光",
+                 42, 459, 1190, 16, 246)
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
                 (558, 630, 594, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
