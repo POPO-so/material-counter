@@ -21,6 +21,7 @@ from scripts.standalone.integrated_run import (
 )
 from scripts.standalone.preview_inputs import PreviewInputs
 from scripts.standalone.shared_frames import SharedFrames
+from scripts.standalone.camera import LatestCamera
 from scripts.wo0016.stream_counter import MaskCounter
 
 
@@ -118,18 +119,146 @@ def test_queue_diagnostic_snapshot_preserves_unknown_and_reports_four_paths():
     assert snapshot["drawing_to_hdmi"]["submit_failures"] is None
 
 
+def test_queue_diagnostic_snapshot_reads_pool_statistics_without_mutating_them():
+    inputs = {"ready": 2, "capacity": 3, "dropped_ready_frames": 4}
+    outputs = {"ready": 1, "capacity": 2, "dropped_ready_frames": 5}
+    before = dict(inputs), dict(outputs)
+
+    snapshot = queue_diagnostic_snapshot(inputs, outputs)
+
+    assert snapshot["main_to_preview"] == {"ready": 2, "capacity": 3}
+    assert (inputs, outputs) == before
+
+
+def test_camera_read_after_is_a_repeatable_peek_without_consumer_state():
+    import threading
+    camera = LatestCamera.__new__(LatestCamera)
+    camera._condition = threading.Condition()
+    camera._error = None
+    frame = object()
+    camera._latest = (7, frame, 1.0)
+    original_latest = camera._latest
+
+    first = camera.read(after=6, timeout=0)
+    second = camera.read(after=6, timeout=0)
+
+    assert first is original_latest and second is original_latest
+    assert camera._latest is original_latest
+
+
 def test_dashboard_values_expose_cpu_and_queue_summaries_in_json_ready_fields():
     values = dashboard_values(0, False, False, {}, {}, runtime_diagnostics={
-        "cpu_sources": {"camera": 2.0, "drawing": 1.0},
+        "cpu_sources": {"camera": 2.0, "drawing": 1.0,
+                        "external_ssh": 4.0, "external_other": 3.0},
         "queues": {"camera_to_processing": {"dropped_old_frames": 3,
             "recent_frame_overwritten": True},
             "preview_to_drawing": {"ready": 1, "dropped_frames": 4},
             "drawing_to_hdmi": {"ready": 2, "submit_failures": 0}},
     })
     assert "camera 2.0%" in values["cpu_source_text"]
+    assert "SSH 4.0%" in values["cpu_source_text"]
+    assert "ext 3.0%" in values["cpu_source_text"]
     assert "相机丢3" in values["queue_summary_text"]
     assert values["cpu_sources"]["camera"] == 2.0
     assert values["queues"]["drawing_to_hdmi"]["ready"] == 2
+
+
+def test_cpu_scope_distinguishes_whole_machine_sources_from_legacy_single_core_processes():
+    scope = getattr(integrated_run, "CPU_SCOPE_DESCRIPTION", "")
+    assert "cpu_sources" in scope and "all logical CPUs" in scope
+    assert "legacy process" in scope and "100% equals one core" in scope
+    assert "network counters are not CPU percentages" in scope
+
+
+def test_owner_region_feature_reader_configures_thresholds_only_when_changed_and_supported():
+    class MMIO:
+        def __init__(self, signature):
+            self.length = 0x10000
+            self.values = {0x200: signature, 0x204: 0, 0x218: 512,
+                           0x220: 0, 0x224: 0, 0x228: 0, 0x22C: 0}
+            self.writes = []
+        def read(self, offset): return self.values[offset]
+        def write(self, offset, value):
+            self.writes.append((offset, value)); self.values[offset] = value
+    class Owner:
+        def __init__(self): self.calls = 0
+        def call(self, fn, *args):
+            self.calls += 1
+            return fn(*args)
+    class Counter:
+        guarded_merge = True
+        single_intact_area = 95
+
+    owner = Owner()
+    mmio = MMIO(0x46524732)
+    reader = integrated_run.create_region_feature_reader("pl", mmio, owner=owner,
+                                                          mmio_length=mmio.length)
+    status = reader.configure_thresholds(Counter())
+    assert status == {"supported": True, "configured": True,
+                      "max_area": 95, "max_w": 0, "max_h": 0, "aspect_x16": 0}
+    assert mmio.writes == [(0x220, 95), (0x224, 0), (0x228, 0), (0x22C, 0)]
+    reader.configure_thresholds(Counter())
+    assert len(mmio.writes) == 4
+    Counter.guarded_merge = False
+    status = reader.configure_thresholds(Counter())
+    assert status["max_area"] == 0 and len(mmio.writes) == 8
+
+    legacy = MMIO(0x46524731)
+    legacy_reader = integrated_run.create_region_feature_reader(
+        "pl", legacy, owner=owner, mmio_length=legacy.length)
+    status = legacy_reader.configure_thresholds(Counter())
+    assert status["supported"] is False and status["configured"] is False
+    assert legacy.writes == []
+
+
+def test_pl_button_status_is_low_level_diagnostic_snapshot_with_owner_serialization():
+    sample = getattr(integrated_run, "sample_button_pl_status", None)
+    assert callable(sample)
+    class Owner:
+        def __init__(self): self.calls = 0
+        def call(self, fn): self.calls += 1; return fn()
+    class Status:
+        def __init__(self): self.clear = None
+        def snapshot(self, *, clear=False):
+            self.clear = clear
+            return type("Snapshot", (), {"stable": 5, "events": 3, "fault": 1})()
+    owner, status = Owner(), Status()
+
+    result = sample(owner, status)
+
+    assert result == {"available": True, "stable": 5, "events": 3, "fault": 1,
+                      "external_fault_source": "no_external_fault_source"}
+    assert status.clear is True and owner.calls == 1
+    assert sample(owner, None) == {"available": None, "stable": "unknown",
+                                   "events": "unknown", "fault": "unknown",
+                                   "external_fault_source": "no_external_fault_source"}
+
+
+def test_pl_button_status_read_failure_propagates():
+    sample = integrated_run.sample_button_pl_status
+    class Owner:
+        def call(self, fn): return fn()
+    class Status:
+        def snapshot(self, *, clear=False): raise OSError("MMIO read failed")
+    with pytest.raises(OSError, match="MMIO read failed"):
+        sample(Owner(), Status())
+
+
+def test_pl_candidate_count_is_unknown_for_missing_or_legacy_capability():
+    count = getattr(integrated_run, "region_candidate_count", None)
+    assert callable(count)
+    features = (type("Feature", (), {"candidate": 1})(),
+                type("Feature", (), {"candidate": 0})(),
+                type("Feature", (), {"candidate": None})())
+    reader = type("Reader", (), {"reader": type("Inner", (),
+        {"supports_candidates": True})()})()
+    legacy = type("Reader", (), {"reader": type("Inner", (),
+        {"supports_candidates": False})()})()
+    assert count(reader, features) == 1
+    assert count(reader, ()) == 0
+    assert count(legacy, features) is None
+    assert count(None, features) is None
+    assert count(reader, None) is None
 
 
 def test_dashboard_exposure_error_keeps_last_known_range_and_bounds_error_text():
@@ -295,6 +424,38 @@ def test_region_reader_reuses_owner_mmio_window_and_checks_frge_capability():
     with pytest.raises(ValueError,match="mapping"):
         factory("pl",mmio,owner=owner,mmio_length=0x1000)
     assert factory("native",mmio,owner=owner,mmio_length=0x1000) is None
+
+
+def test_region_backend_admission_rejects_frg1_when_frg2_is_required():
+    class MMIO:
+        def __init__(self): self.values={0x200:0x46524731,0x218:512}
+        def read(self,offset): return self.values[offset]
+    class Owner:
+        def __init__(self): self.calls=0
+        def call(self,fn,*args): self.calls+=1; return fn(*args)
+    owner=Owner()
+
+    with pytest.raises(ValueError,match="FRG2.*required"):
+        integrated_run.create_region_feature_reader(
+            "pl",MMIO(),owner=owner,mmio_length=0x10000,require_frg2=True)
+
+    assert owner.calls==1
+
+
+def test_button_status_admission_rejects_btn1_signature_mismatch():
+    factory=getattr(integrated_run,"create_button_event_status",None)
+    assert callable(factory)
+    class MMIO:
+        def read(self,offset): return 0
+    class Owner:
+        def __init__(self): self.calls=0
+        def call(self,fn,*args): self.calls+=1; return fn(*args)
+    owner=Owner()
+
+    with pytest.raises(ValueError,match="signature mismatch"):
+        factory(owner,MMIO())
+
+    assert owner.calls==1
 
 
 def test_region_feature_reader_validates_frame_and_not_ready_falls_back():

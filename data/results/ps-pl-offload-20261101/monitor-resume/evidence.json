@@ -1,0 +1,9 @@
+{
+  "scope": "offline unchanged monitor source; first failure not root-caused",
+  "rtl_sha256": "85568ff91ecc0b718ca391bc9c21533c96dbcab18c46788c9d19214acd16166e",
+  "tb_sha256": "0482792d4f0dd72f5e12ce8b0d63447d0ab9d5042a07dde10c2d65669cf543de",
+  "first_run": "Fatal: full-resolution frame was not accepted",
+  "fresh_replay": "VIDEO_MONITOR_PASS",
+  "fresh_elaboration_threads": 2,
+  "hardware_actions": 0
+}

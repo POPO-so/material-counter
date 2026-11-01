@@ -158,6 +158,8 @@ def build_argv(root, config, boot_id, output, manifest_sha256, python_executable
         "pl",
         "--input-mode",
         "raw",
+        "--region-backend",
+        "pl",
         "--font",
         str(root / "fonts" / "DroidSansFallbackFull.ttf"),
         "--latin-font",

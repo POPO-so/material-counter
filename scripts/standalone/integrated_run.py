@@ -43,11 +43,20 @@ from .shared_frames import SharedFrames, WRITING, READING
 from .button_events import ButtonEventRunner, interrupt_available
 from .diagnostic_mode import DiagnosticPolicy
 from .exposure import ExposureController, V4L2CtlBackend
-from .runtime_metrics import RuntimeSampler, counter_rates, cpu_source_breakdown
-from .pl_preview import PlPreview
+from .runtime_metrics import (RuntimeSampler, ExternalProcessSampler, counter_rates,
+                              cpu_source_breakdown)
+from .pl_preview import PlPreview, ButtonEventStatus
 from scripts.rle.protocol import TX_BYTES, RX_CAPACITY
 from scripts.rle.transport import RAW_TX_BYTES, RleDmaTransport
 from scripts.wo0015.board_preflight import audit_process_ownership, inspect_pynq_global_state
+
+
+CPU_SCOPE_DESCRIPTION = (
+    "cpu_sources percentages use whole-machine capacity across all logical CPUs (0..100%). "
+    "legacy process CPU uses one core as its 100% basis (100% equals one core). "
+    "External process attribution excludes the runner and drawing child; do not double-attribute "
+    "external processes and application threads. network counters are not CPU percentages."
+)
 
 
 def rasterize_into(packet, output):
@@ -154,8 +163,10 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
                 output_pool.get('capacity','--'))
     cpu_sources=(runtime_diagnostics or {}).get('cpu_sources') if isinstance(runtime_diagnostics,dict) else None
     if isinstance(cpu_sources,dict):
-        ranked=[(name,cpu_sources.get(name)) for name in
-                ('camera','drawing','preview_pump','hardware_owner','snapshots','other')]
+        labels=(('camera','camera'),('drawing','draw'),('preview_pump','pump'),
+                ('hardware_owner','owner'),('snapshots','snap'),('other','other'),
+                ('external_ssh','SSH'),('external_other','ext'))
+        ranked=[(label,cpu_sources.get(name)) for name,label in labels]
         ranked=[(name,value) for name,value in ranked
                 if isinstance(value,(int,float)) and math.isfinite(value) and value>=0]
         cpu_source_text=('CPU 来源 '+', '.join('{} {:.1f}%'.format(name,value)
@@ -349,6 +360,26 @@ class OwnerRegionFeatureReader:
         self.reader,self.owner=reader,owner
         self.last_read_ms=0.0
         self.last_reason='not_read'
+        self._threshold_values=None
+        self._threshold_status=dict(supported=bool(reader.supports_candidates),
+            configured=False,max_area=None,max_w=None,max_h=None,aspect_x16=None)
+
+    def configure_thresholds(self, counter):
+        if not self.reader.supports_candidates:
+            self._threshold_values=None
+            self._threshold_status=dict(supported=False,configured=False,
+                max_area=None,max_w=None,max_h=None,aspect_x16=None)
+            return dict(self._threshold_status)
+        max_area=int(counter.single_intact_area) if counter.guarded_merge else 0
+        values=(max_area,0,0,0)
+        if values!=self._threshold_values:
+            configured=self.owner.call(lambda:self.reader.configure_thresholds(
+                max_area=max_area,max_w=0,max_h=0,aspect_x16=0))
+            self._threshold_status=dict(supported=True,configured=bool(configured),
+                max_area=max_area,max_w=0,max_h=0,aspect_x16=0)
+            if configured:
+                self._threshold_values=values
+        return dict(self._threshold_status)
 
     def read(self, frame):
         before=dict(self.reader.reason_counts)
@@ -363,18 +394,44 @@ class OwnerRegionFeatureReader:
         return features
 
 
-def create_region_feature_reader(backend, mmio, *, owner, mmio_length):
+def create_region_feature_reader(backend, mmio, *, owner, mmio_length,
+                                require_frg2=False):
     if backend=='native':
         return None
     if backend!='pl':raise ValueError('unknown region backend')
+    if type(require_frg2) is not bool:
+        raise ValueError('require_frg2 must be bool')
     if mmio is None or mmio_length<0x5000:
         raise ValueError('PBO1 mapping must cover FRG1 record window (at least 0x5000 bytes)')
-    return owner.call(lambda:OwnerRegionFeatureReader(PlRegionFeatures(mmio),owner))
+    reader=owner.call(lambda:OwnerRegionFeatureReader(PlRegionFeatures(mmio),owner))
+    if require_frg2 and not reader.reader.supports_candidates:
+        raise ValueError('FRG2 feature capability required by ABI2 offload contract')
+    return reader
+
+
+def create_button_event_status(owner, mmio):
+    return owner.call(lambda:ButtonEventStatus(mmio))
 
 
 def region_feature_frame_summary(feature_status, result, counter):
     return {'feature_status':feature_status,
             'feature_backend_used':counter.last_backend if result is not None else 'not_counted'}
+
+
+def region_candidate_count(reader, features):
+    if (reader is None or not bool(getattr(reader.reader,'supports_candidates',False))
+            or features is None):
+        return None
+    return sum(getattr(feature,'candidate',None) not in (None,0) for feature in features)
+
+
+def sample_button_pl_status(owner, status_reader):
+    if status_reader is None:
+        return dict(available=None,stable='unknown',events='unknown',fault='unknown',
+            external_fault_source='no_external_fault_source')
+    snapshot=owner.call(lambda:status_reader.snapshot(clear=True))
+    return dict(available=True,stable=snapshot.stable,events=snapshot.events,
+        fault=snapshot.fault,external_fault_source='no_external_fault_source')
 
 
 def validate_region_backend(args, manifest, hwh):
@@ -691,7 +748,13 @@ def main(argv=None):
         result['crossing_snapshots']=captures.status() if captures is not None else {'enabled':False}
         result['report_exports']=exporter.status() if exporter is not None else {'enabled':False}
         return result
-    report['cpu_scope']='system/core normalized 0..100%; process 100% equals one core'
+    report['cpu_scope']=CPU_SCOPE_DESCRIPTION
+    report['button_pl_status']=dict(available=None,stable='unknown',events='unknown',
+        fault='unknown',external_fault_source='no_external_fault_source')
+    report['pl_thresholds']=dict(supported=None,configured=None,max_area=None,
+        max_w=None,max_h=None,aspect_x16=None)
+    report['pl_candidate_stats']=dict(available=None,frames_observed=0,
+        candidate_total=None,candidate_last='unknown')
     report['preview_backend']=args.preview_backend;report['input_mode']=args.input_mode
     report['camera_configuration']=dict(by_id=args.camera,requested_format='MJPG',
         validated_decoded_shape=[400,640],decode='IMREAD_GRAYSCALE',negotiated_fps='NOT_QUERIED')
@@ -759,7 +822,7 @@ def main(argv=None):
             dma,control,tx,rx,input_mode=args.input_mode)
         report['region_backend']=args.region_backend
         region_reader=None
-        pl_preview=None;pbo_mmio=None
+        pl_preview=None;pbo_mmio=None;button_event_status=None
         if args.preview_backend=='pl':
             def create_pl_preview():
                 nonlocal pbo_mmio
@@ -767,7 +830,13 @@ def main(argv=None):
                 return PlPreview(pbo_mmio)
             pl_preview=owner.call(create_pl_preview)
         region_reader=create_region_feature_reader(args.region_backend,pbo_mmio,owner=owner,
-            mmio_length=0x10000 if pbo_mmio is not None else 0)
+            mmio_length=0x10000 if pbo_mmio is not None else 0,
+            require_frg2=args.region_backend=='pl')
+        if pbo_mmio is not None:
+            button_event_status=create_button_event_status(owner,pbo_mmio)
+            report['button_pl_status']=dict(available=True,stable='unknown',
+                events='unknown',fault='unknown',
+                external_fault_source='no_external_fault_source')
         if pipeline['state']['done_seen']:transport._completed_frames=1
         # Validate register signatures and stopped DMA channels before HDMI
         # configure/start; the first transfer must not be the first capability check.
@@ -782,6 +851,12 @@ def main(argv=None):
             button_worker.start()
         video_owner.call(start_display_output,hw.hdmi,timeout=60)
         counter=make_runtime_counter(args.native_lib,profile=args.counting_profile)
+        if region_reader is not None:
+            report['pl_thresholds']=region_reader.configure_thresholds(counter)
+            candidate_available=bool(region_reader.reader.supports_candidates)
+            report['pl_candidate_stats']=dict(available=candidate_available,
+                frames_observed=0,candidate_total=0 if candidate_available else None,
+                candidate_last=None if candidate_available else 'unknown')
         exporter=EvidenceExporter()
         report['counting_profile']=args.counting_profile
         report['counting_configuration']=dict(axis=counter.count_axis,line_x=counter.line_x,
@@ -857,6 +932,7 @@ def main(argv=None):
         previous_process={}
         last_rle_stats={'runs':0,'rx_bytes':0}
         runtime_sampler=RuntimeSampler(pid=os.getpid(),interval_s=3.0)
+        external_process_sampler=ExternalProcessSampler(interval_s=3.0,max_processes=128)
         next_runtime_sample=started+3.0;runtime_sample=None;runtime_diagnostics=None
         camera_dropped_old_frames=0;camera_recent_overwritten=None
         queue_windows={name:QueueDepthWindow() for name in
@@ -970,6 +1046,8 @@ def main(argv=None):
                     continue
                 if camera_in_error:
                     old_total=counter.total_count;counter=make_runtime_counter(args.native_lib,profile=args.counting_profile);counter.total_count=old_total
+                    if region_reader is not None:
+                        report['pl_thresholds']=region_reader.configure_thresholds(counter)
                     trajectory_epoch+=1;camera_in_error=False
                     report['recoveries'].append(dict(kind='camera_resumed',frame=index,
                         trajectory_epoch=trajectory_epoch,monotonic=time.monotonic()))
@@ -986,11 +1064,19 @@ def main(argv=None):
             last_rle_stats={'runs':packet.run_count,'rx_bytes':packet.actual_bytes}
             transfer_end=time.monotonic()
             region_features=region_reader.read(packet) if region_reader is not None and packet.valid else None
+            candidate_count=region_candidate_count(region_reader,region_features)
+            if region_reader is not None and region_reader.reader.supports_candidates:
+                candidate_stats=report['pl_candidate_stats']
+                candidate_stats['candidate_last']=candidate_count
+                if candidate_count is not None:
+                    candidate_stats['frames_observed']+=1
+                    candidate_stats['candidate_total']+=candidate_count
             result=advance_count(counter,controls,packet,boundary,capture_monotonic_ns=capture_ns,
                 region_features=region_features)
             count_end=time.monotonic()
             if args.region_backend=='pl' and packet.valid:
                 last_rle_stats.update(feature_read_ms=region_reader.last_read_ms,
+                    candidate_count=candidate_count,
                     **region_feature_frame_summary(region_reader.last_reason,result,counter))
             exposure_control_ms=0.0
             if pl_preview is not None and packet.valid:
@@ -1168,16 +1254,28 @@ def main(argv=None):
                     queue_windows['camera'].observe(None)
                 next_queue_observation=sample_now+0.1
             if sample_now>=next_runtime_sample:
+                if pbo_mmio is not None:
+                    report['button_pl_status']=sample_button_pl_status(
+                        owner,button_event_status)
                 runtime_sample=runtime_sampler.sample()
                 drawing_sample=(drawing_runtime_sampler.sample()
                     if drawing_runtime_sampler is not None and process is not None
                     and process.is_alive() else None)
+                external_sample=external_process_sampler.sample(excluded_pids=(
+                    os.getpid(), process.pid if process is not None else None))
                 if runtime_sample is not None and isinstance(drawing_sample,dict):
                     runtime_sample=dict(runtime_sample)
                     runtime_sample['threads']=dict(runtime_sample.get('threads',{}))
                     runtime_sample['threads'].update({
                         'drawing:'+tid:dict(entry,name='drawing '+str(entry.get('name') or tid))
                         for tid,entry in drawing_sample.get('threads',{}).items()})
+                if isinstance(runtime_sample,dict):
+                    runtime_sample=dict(runtime_sample)
+                    if isinstance(external_sample,dict):
+                        runtime_sample.update(external_sample)
+                    else:
+                        runtime_sample.update(external_processes={},
+                                              external_processes_complete=False)
                 runtime_diagnostics=runtime_diagnostic_snapshot(runtime_sample,
                     queue_input_stats,queue_output_stats,tick_hz)
                 if (args.display=='on' and runtime_diagnostics.get('cpu_sources')
@@ -1209,6 +1307,8 @@ def main(argv=None):
                     window_max=hdmi_window['window_max'])
                 runtime_diagnostics['queues']=queues
                 report['runtime_samples'].append(dict(monotonic=sample_now,
+                    button_pl_status=dict(report['button_pl_status']),
+                    pl_candidate_stats=dict(report['pl_candidate_stats']),
                     **runtime_diagnostics))
                 current_pl_counters=owner.call(snapshot_counters,control)
                 pl_rates=counter_rates(previous_pl_counters,current_pl_counters,

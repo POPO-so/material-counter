@@ -8,6 +8,11 @@ class Mmio:
         self.registers = dict(registers)
         self.records = list(records)
         self.record_reads = 0
+        self.writes = []
+
+    def write(self, offset, value):
+        self.writes.append((offset, value))
+        self.registers[offset] = value
 
     def read(self, offset):
         if offset >= 0x1000:
@@ -17,8 +22,8 @@ class Mmio:
         return self.registers[offset]
 
 
-def mk(records=(), *, status=1, frame_id=7, count=None, total=20):
-    regs = {0x200: 0x46524731, 0x204: status, 0x208: frame_id,
+def mk(records=(), *, status=1, frame_id=7, count=None, total=20, signature=0x46524732):
+    regs = {0x200: signature, 0x204: status, 0x208: frame_id,
             0x20C: len(records) // 8 if count is None else count,
             0x210: total, 0x214: 0, 0x218: 512}
     return Mmio(regs, records)
@@ -100,3 +105,96 @@ def test_historical_dropped_count_does_not_reject_following_valid_frame():
     mmio.registers[0x204] = 1
     assert reader.read(frame) is not None
     assert reader.last_dropped == 4
+
+
+def test_frG2_candidate_reason_is_carried_and_counted():
+    mmio = mk([20, 290, 210, 0x0014000A, 0x000B000A, 7, 3, 0], total=20)
+    reader = PlRegionFeatures(mmio)
+    result = reader.read(type("Frame", (), {"valid": True, "frame_id": 7, "total_fg": 20,
+                                              "width": 640, "height": 400})())
+    assert reader.supports_candidates
+    assert result[0].candidate == 1
+    assert reader.candidate_count == 1
+
+
+def test_frG1_remains_readable_and_threshold_configuration_is_unsupported():
+    mmio = mk([20, 290, 210, 0x0014000A, 0x000B000A, 7, 0, 0], total=20,
+              signature=0x46524731)
+    reader = PlRegionFeatures(mmio)
+    assert not reader.supports_candidates
+    assert reader.configure_thresholds() is False
+    assert mmio.writes == []
+    result = reader.read(type("Frame", (), {"valid": True, "frame_id": 7, "total_fg": 20,
+                                              "width": 640, "height": 400})())
+    assert result[0].candidate is None
+
+
+def test_frG2_configure_thresholds_defaults_and_validates_before_writing():
+    mmio = mk()
+    reader = PlRegionFeatures(mmio)
+    assert reader.configure_thresholds(max_area=12, max_w=34, max_h=56, aspect_x16=16)
+    assert mmio.writes == [(0x220, 12), (0x224, 34), (0x228, 56), (0x22C, 16)]
+    with pytest.raises(ValueError):
+        reader.configure_thresholds(max_area=True)
+    assert len(mmio.writes) == 4
+
+
+@pytest.mark.parametrize("word6,word7", [(1, 0), (2, 0), (0x10, 0), (0, 1)])
+def test_frG2_candidate_encoding_is_strict(word6, word7):
+    mmio = mk([20, 290, 210, 0x0014000A, 0x000B000A, 7, word6, word7], total=20)
+    reader = PlRegionFeatures(mmio)
+    frame = type("Frame", (), {"valid": True, "frame_id": 7, "total_fg": 20,
+                                "width": 640, "height": 400})()
+    assert reader.read(frame) is None
+    assert reader.reason_counts["bad_record"] == 1
+
+
+def test_frG2_threshold_configuration_refuses_busy_before_any_write():
+    mmio = mk(status=5)
+    reader = PlRegionFeatures(mmio)
+    with pytest.raises(RuntimeError, match="busy"):
+        reader.configure_thresholds(max_area=5)
+    assert mmio.writes == []
+
+
+def test_frG2_threshold_configuration_detects_signature_change_and_unknown_signature():
+    mmio = mk()
+    reader = PlRegionFeatures(mmio)
+    mmio.registers[0x200] = 0x46524731
+    with pytest.raises(ValueError, match="changed"):
+        reader.configure_thresholds()
+    assert mmio.writes == []
+    mmio.registers[0x200] = 0x12345678
+    with pytest.raises(ValueError, match="unknown"):
+        reader.configure_thresholds()
+    assert mmio.writes == []
+
+
+def test_frG2_threshold_configuration_detects_axi_write_not_sticking():
+    class DroppedWriteMmio(Mmio):
+        def read(self, offset):
+            if offset >= 0x1000:
+                return super().read(offset)
+            return self.registers.get(offset, 0)
+
+        def write(self, offset, value):
+            self.writes.append((offset, value))
+            if offset != 0x224:
+                self.registers[offset] = value
+
+    mmio = DroppedWriteMmio({0x200: 0x46524732, 0x218: 512, 0x204: 1})
+    reader = PlRegionFeatures(mmio)
+    with pytest.raises(RuntimeError, match="readback mismatch"):
+        reader.configure_thresholds(max_area=12, max_w=34, max_h=56, aspect_x16=16)
+
+
+def test_candidate_count_is_invalidated_on_failed_read():
+    mmio = mk([20, 290, 210, 0x0014000A, 0x000B000A, 7, 3, 0], total=20)
+    reader = PlRegionFeatures(mmio)
+    frame = type("Frame", (), {"valid": True, "frame_id": 7, "total_fg": 20,
+                                "width": 640, "height": 400})()
+    assert reader.read(frame) is not None
+    assert reader.candidate_count == 1
+    frame.valid = False
+    assert reader.read(frame) is None
+    assert reader.candidate_count is None

@@ -4,6 +4,9 @@ module tb_rle_feature_tap;
     reg resetn=0;
     reg tap_valid=0, tap_sof=0, tap_eol=0, tap_bit=0;
     reg [31:0] tap_frame_id=0;
+    reg [23:0] cfg_max_area=0;
+    reg [15:0] cfg_max_w=0,cfg_max_h=0;
+    reg [7:0] cfg_aspect_x16=0;
     reg [11:0] record_word_address=0;
     reg read_enable=0;
     wire [31:0] record_word_data, frame_id, total_fg, dropped_frames;
@@ -11,7 +14,9 @@ module tb_rle_feature_tap;
     wire [9:0] record_count;
     rle_feature_tap #(.WIDTH(8),.HEIGHT(4),.FIFO_DEPTH(32)) dut (
         .tap_clk(clk),.resetn(resetn),.tap_valid(tap_valid),.tap_sof(tap_sof),.tap_eol(tap_eol),
-        .tap_bit(tap_bit),.tap_frame_id(tap_frame_id),.record_word_address(record_word_address),
+        .tap_bit(tap_bit),.tap_frame_id(tap_frame_id),.cfg_max_area(cfg_max_area),
+        .cfg_max_w(cfg_max_w),.cfg_max_h(cfg_max_h),.cfg_aspect_x16(cfg_aspect_x16),
+        .record_word_address(record_word_address),
         .read_enable(read_enable),.record_word_data(record_word_data),.frame_id(frame_id),
         .done(done),.overflow(overflow),.busy(busy),.record_count(record_count),
         .total_fg(total_fg),.dropped_frames(dropped_frames)
@@ -25,7 +30,8 @@ module tb_rle_feature_tap;
     wire [31:0] ov_ram_data;
     rle_feature_tap #(.WIDTH(16),.HEIGHT(2),.FIFO_DEPTH(2)) overrun_dut (
         .tap_clk(clk),.resetn(ov_resetn),.tap_valid(ov_valid),.tap_sof(ov_sof),.tap_eol(ov_eol),
-        .tap_bit(ov_bit),.tap_frame_id(ov_id),.record_word_address(12'd0),.read_enable(1'b0),
+        .tap_bit(ov_bit),.tap_frame_id(ov_id),.cfg_max_area(24'd0),.cfg_max_w(16'd0),
+        .cfg_max_h(16'd0),.cfg_aspect_x16(8'd0),.record_word_address(12'd0),.read_enable(1'b0),
         .record_word_data(ov_ram_data),.frame_id(ov_frame),.done(ov_done),.overflow(ov_overflow),
         .busy(ov_busy),.record_count(ov_records),.total_fg(ov_fg),.dropped_frames(ov_dropped)
     );
@@ -72,7 +78,7 @@ module tb_rle_feature_tap;
             for (j=0;j<8;j=j+1) read_word(n*8+j,rd[j]);
             if (rd[0]!==area || rd[1]!==sx || rd[2]!==sy ||
                 rd[3]!==(({6'd0,x1,6'd0,x0})) || rd[4]!==(({6'd0,y1,6'd0,y0})) ||
-                rd[5]!==id || rd[6]!==0 || rd[7]!==0)
+                rd[5]!==id || rd[7]!==0)
                 $fatal(1,"record %0d mismatch: %h %h %h %h %h %h %h %h",n,
                        rd[0],rd[1],rd[2],rd[3],rd[4],rd[5],rd[6],rd[7]);
         end
@@ -105,6 +111,14 @@ module tb_rle_feature_tap;
         start_case(32'h102);
         if(record_count!=1) $fatal(1,"single component count");
         check_record(0,4,10,6,2,1,3,2,32'h102);
+
+        // Thresholds latch at SOF; FRG2 word 6 carries reason bits and flag.
+        clear_image(); pix[0][1]=1; pix[0][2]=1; pix[0][3]=1;
+        cfg_max_area=2;
+        start_case(32'h10a);
+        read_word(6,rd[6]);
+        if(rd[6]!==32'h3) $fatal(1,"candidate reason/flag encoding mismatch: %h",rd[6]);
+        cfg_max_area=0;
 
         clear_image(); pix[0][1]=1; pix[1][2]=1; pix[2][3]=1;
         start_case(32'h103);
@@ -154,7 +168,7 @@ module tb_rle_feature_tap;
         j=0; while(!ov_done && j<1000) begin tick(); j=j+1; end
         if(!ov_done || !ov_overflow || ov_records!=0) $fatal(1,"FIFO overrun not rejected atomically");
 
-        $display("RLE_FEATURE_TAP_PASS");
+        $display("RLE_FEATURE_TAP_PASS FRG2=PASS thresholds=PASS");
         $finish;
     end
     initial begin #2000000; $fatal(1,"testbench watchdog"); end

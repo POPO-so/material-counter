@@ -158,6 +158,7 @@ def test_build_argv_builds_dynamic_paths_and_continuous_mode(tmp_path):
         "--output", str(tmp_path / "out dir"), "--source", "camera", "--display", "on",
         "--duration", "75", "--frames", "200000", "--camera", config["camera"],
         "--button-input", "irq", "--preview-backend", "pl", "--input-mode", "raw",
+        "--region-backend", "pl",
         "--font", str(tmp_path / "fonts" / "DroidSansFallbackFull.ttf"),
         "--latin-font", str(tmp_path / "fonts" / "DejaVuSans.ttf"), "--continuous",
     ]
@@ -218,6 +219,7 @@ def test_build_argv_normalizes_boot_uuid_and_acceptance_has_no_continuous_flag(t
     assert argv[argv.index("--button-input") + 1] == "irq"
     assert argv[argv.index("--preview-backend") + 1] == "pl"
     assert argv[argv.index("--input-mode") + 1] == "raw"
+    assert argv[argv.index("--region-backend") + 1] == "pl"
 
 
 @pytest.mark.parametrize("download_error", [None, RuntimeError("download failed")])

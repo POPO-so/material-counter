@@ -10,6 +10,8 @@ module rle_feature_tap #(
     input wire tap_clk, input wire resetn,
     input wire tap_valid, input wire tap_sof, input wire tap_eol,
     input wire tap_bit, input wire [31:0] tap_frame_id,
+    input wire [23:0] cfg_max_area, input wire [15:0] cfg_max_w,
+    input wire [15:0] cfg_max_h, input wire [7:0] cfg_aspect_x16,
     input wire [11:0] record_word_address, input wire read_enable,
     output reg [31:0] record_word_data,
     output reg [31:0] frame_id, output reg done, output reg overflow,
@@ -20,6 +22,9 @@ module rle_feature_tap #(
     reg [FIFO_AW-1:0] fifo_wr_ptr, fifo_rd_ptr;
     reg [FIFO_AW:0] fifo_count;
     reg [9:0] px_x, px_y, run_x0;
+    reg [23:0] frame_max_area;
+    reg [15:0] frame_max_w, frame_max_h;
+    reg [7:0] frame_aspect_x16;
     reg run_active, frame_active, input_complete;
     reg enqueue_valid;
     reg [29:0] enqueue_data;
@@ -58,7 +63,8 @@ module rle_feature_tap #(
         .result_frame_id(core_result_frame_id), .done(core_done), .overflow(core_overflow),
         .record_count(core_record_count), .busy(core_busy),
         .candidate_flag(core_candidate_flag), .candidate_reason(core_candidate_reason),
-        .cfg_max_area(24'd0), .cfg_max_w(16'd0), .cfg_max_h(16'd0), .cfg_aspect_x16(8'd0)
+        .cfg_max_area(frame_max_area), .cfg_max_w(frame_max_w),
+        .cfg_max_h(frame_max_h), .cfg_aspect_x16(frame_aspect_x16)
     );
 
     // Single-port 4096x32 result RAM. CPU synchronous reads pause the writer.
@@ -66,6 +72,8 @@ module rle_feature_tap #(
     reg record_active;
     reg [2:0] record_word_index;
     reg [31:0] rec_area, rec_sx, rec_sy, rec_frame_id;
+    reg rec_candidate_flag;
+    reg [2:0] rec_candidate_reason;
     reg [9:0] rec_x0, rec_y0, rec_x1, rec_y1;
     wire [11:0] record_write_address = {record_count[8:0],3'b000} + record_word_index;
     wire record_write_enable = resetn && !read_enable && !new_sof && record_active;
@@ -76,7 +84,8 @@ module rle_feature_tap #(
         (record_word_index==3'd2) ? rec_sy :
         (record_word_index==3'd3) ? {6'd0,rec_x1,6'd0,rec_x0} :
         (record_word_index==3'd4) ? {6'd0,rec_y1,6'd0,rec_y0} :
-        (record_word_index==3'd5) ? rec_frame_id : 32'd0;
+        (record_word_index==3'd5) ? rec_frame_id :
+        (record_word_index==3'd6) ? {28'd0,rec_candidate_reason,rec_candidate_flag} : 32'd0;
     always @(posedge tap_clk) begin
         if (!resetn) record_word_data <= 0;
         else if (read_enable) record_word_data <= record_ram[record_word_address];
@@ -115,6 +124,8 @@ module rle_feature_tap #(
             core_finish<=0; finish_sent<=0; core_done_seen<=0; core_aborted<=0;
             drop_counted<=0; record_active<=0; record_word_index<=0;
             rec_area<=0; rec_sx<=0; rec_sy<=0; rec_frame_id<=0;
+            frame_max_area<=0; frame_max_w<=0; frame_max_h<=0; frame_aspect_x16<=0;
+            rec_candidate_flag<=0; rec_candidate_reason<=0;
             rec_x0<=0; rec_y0<=0; rec_x1<=0; rec_y1<=0;
         end else begin
             enqueue_valid<=0; fifo_flush<=0; core_reset_pulse<=0;
@@ -124,6 +135,8 @@ module rle_feature_tap #(
                 // Count an unfinished previous frame and a malformed new frame independently.
                 if (busy && !done && !drop_counted) dropped_frames<=dropped_frames+1'b1;
                 frame_id<=tap_frame_id; done<=0; overflow<=0; busy<=1;
+                frame_max_area<=cfg_max_area; frame_max_w<=cfg_max_w;
+                frame_max_h<=cfg_max_h; frame_aspect_x16<=cfg_aspect_x16;
                 record_count<=0; total_fg<=tap_bit ? 32'd1 : 32'd0;
                 frame_active<=0; input_complete<=0; run_active<=0;
                 px_x<=0; px_y<=0; finish_sent<=0; core_done_seen<=0;
@@ -216,6 +229,8 @@ module rle_feature_tap #(
                         rec_area<=core_area; rec_sx<=core_sum_x; rec_sy<=core_sum_y;
                         rec_x0<=core_x0; rec_y0<=core_y0; rec_x1<=core_x1; rec_y1<=core_y1;
                         rec_frame_id<=core_result_frame_id;
+                        rec_candidate_flag<=core_candidate_flag;
+                        rec_candidate_reason<=core_candidate_reason;
                     end
                 end else if (record_active && record_write_enable) begin
                     if (record_word_index==3'd7) begin
