@@ -154,3 +154,9 @@ docs/**                                        linguist-documentation
 *.svh linguist-vendored=false linguist-detectable=true
 *.tcl linguist-vendored=false linguist-detectable=true
 *.xdc linguist-vendored=false linguist-detectable=true linguist-language=Tcl
+
+# These candidate sources and receipts are bound by raw-byte SHA-256.
+# Preserve their tested bytes, including the unmodified vendor subset.
+/fpga/experimental/jpeg_axis/** -text whitespace=cr-at-eol
+/fpga/experimental/jpeg_integration/** -text whitespace=cr-at-eol
+/scripts/experiments/jpeg_axis_verify/** -text whitespace=cr-at-eol
