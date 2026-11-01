@@ -225,3 +225,37 @@ manifest：`status=COMPLETE`，450/450 帧，`effective_fps=59.198`，`elapsed_s
   - `results/frame-audit.csv`（450 帧逐帧）
   - `results/summary.json`、`results/frames-grayscale/`、`results/*mask*.png`
   - `scripts/replay_provisional.py`（PROVISIONAL 回放脚本）
+---
+
+## 补充记录：首次投放期间 LED 补光异常（2026-11-02，OPERATOR_REPORTED）
+
+本节为事后补充，不修改上文任何原始数据、SHA、2/4 计数或既有分析结论。
+
+### 现场事实
+
+- 操作者在首次投放 7 颗 M8 之前**调高了左右两条 LED 补光灯的亮度**，投放前忘记恢复原设置。
+- 这是 **LED 补光亮度**的变化；**不是**已确认修改了摄像头曝光、增益或 Gamma。
+
+### 对既有异常的解释力
+
+- LED 补光过亮是以下现象的**潜在原因之一**：画面背景整体偏亮、局部反光、TH100/TH128 前景占比异常（本录制 54.2% / 41.4%）、离线回放被迫使用 TH240。
+- **不得认定为唯一根因**。尚未排除：场端曝光本身偏亮、拍摄时摄像头曝光/增益/Gamma 状态未知（采集工具未设置也未读回）、传感器饱和/白平衡、阈值选择等。
+- 摄像头参数仍需**独立核验**；不能因为发现 LED 设置问题就假设摄像头参数正确。当前 V4L2 读回（manual exposure=50、brightness=0、gamma=100、gain 未暴露）是运行后快照，不能证明拍摄瞬间的状态。
+
+### 计数结果的状态
+
+- TH240 下 1200=2、2000=4 的探索性回放结果**继续保留**，但必须标记为**异常光照条件下的 PROVISIONAL 探索结果**，不代表正常光照下的算法性能。
+- **暂停**依据该组数据调整 `max_split_area`、`max_missing`、拆分算法、追踪逻辑或 PL 设计。
+
+### 下一组采集前必须完成
+
+1. 优先恢复并固定左右 LED 的亮度与角度，记录恢复后的设置；
+2. 在恢复光照下验证空载灰度分布、物料成像与 TH100/TH128 前景占比；
+3. 独立设置并读回摄像头参数（auto_exposure=1、exposure_time_absolute=50、brightness=0、gamma=100；gain 该 UVC 驱动未暴露）；
+4. 空载基线门禁必须 PASS 才能 drop_start；UNVERIFIED/FAIL 一律阻断提示与投放。
+
+### 证据保护
+
+- 原始 NPZ、manifest、controller-events、truth-template 未修改，SHA 保持上表值。
+- 本补充文件：`analysis/m8-first-10-20261102/supplement-lighting-20261102.json`。
+- 本轮未操作硬件、未调整光源、未启动摄像头、未开始第二组采集。

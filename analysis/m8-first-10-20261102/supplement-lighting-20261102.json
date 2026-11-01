@@ -1,0 +1,48 @@
+{
+  "schema": "material-counter.offline-review-supplement.v1",
+  "session_id": "m8-first-10-20261102",
+  "supplement": "ABNORMAL_LED_FILL_LIGHTING_DURING_FIRST_DROP",
+  "recorded_at_utc": "2026-11-01T20:10:00Z",
+  "source": "OPERATOR_REPORTED",
+  "statement": "Before the first 7-nut M8 drop the operator raised the brightness of the left and right LED fill lights and forgot to restore the original setting. This is NOT a confirmed change to camera exposure, gain, or gamma.",
+  "evidence_level": "OPERATOR_REPORTED_NOT_INSTRUMENTED",
+  "scope": "Adds context only. Does not change the original NPZ, manifest, controller events, truth supplement, or previous analysis numbers.",
+  "relationship_to_previous_findings": {
+    "th100_foreground_fraction": 0.542,
+    "th128_foreground_fraction": 0.414,
+    "th240_used_offline": true,
+    "interpretation": "The over-bright LED fill lighting is a plausible contributor to the bright background, local glare, and the threshold anomaly that forced TH240 in the provisional replay. It is NOT established as the sole root cause.",
+    "alternatives_not_excluded": [
+      "the scene illumination was too bright for the field exposure even after LED restoration",
+      "camera exposure/gain/gamma state at capture time is unknown: the capture tool neither set nor read the controls back",
+      "sensor saturation and white-balance state",
+      "threshold choice independent of lighting"
+    ]
+  },
+  "camera_controls_status": {
+    "independent_verification_required": true,
+    "note": "Current V4L2 readback (auto_exposure=1 manual, exposure_time_absolute=50, brightness=0, gamma=100, gain not exposed) is a snapshot taken after the run and does not prove the capture-time state. Do not assume the camera parameters were correct merely because the LED setting explains part of the overexposure."
+  },
+  "counts_status": {
+    "1200": 2,
+    "2000": 4,
+    "status": "PROVISIONAL_EXPLORATORY_UNDER_ABNORMAL_LIGHTING",
+    "note": "The 1200/2000 counts remain as recorded, but they must not be read as algorithm performance under normal lighting."
+  },
+  "actions_paused": [
+    "Do not adjust max_split_area based on this group.",
+    "Do not adjust max_missing, split thresholds, splitting algorithm, tracking logic, or PL design."
+  ],
+  "next_capture_requirements": [
+    "First restore and fix the left and right LED brightness and angles; record the restored settings.",
+    "Verify the empty-baseline gray distribution and the material imaging under the restored lighting.",
+    "Separately set and read back the fixed camera controls (auto_exposure=1, exposure_time_absolute=50, brightness=0, gamma=100; gain not exposed by this UVC driver).",
+    "Require an empty-baseline gate result of PASS before drop_start; UNVERIFIED or FAIL blocks the cue."
+  ],
+  "original_evidence_sha256": {
+    "camera_ram_capture.npz": "eb237dce681ae1864bf96b969ae8b0a7295c6bbdcabda172c6ac9a0beec59fdf",
+    "manifest.json": "67afb18a143242e642709ade7121374f9813009c1037414478de7b18d4163ffa",
+    "controller-events.json": "4eb7c7781376b199bfb15929337d4c34456b0a854b63e425eddf988a598a1e2f"
+  },
+  "original_files_modified": false
+}
