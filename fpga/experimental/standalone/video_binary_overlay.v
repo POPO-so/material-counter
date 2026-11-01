@@ -120,24 +120,80 @@ module video_binary_overlay #(
 
   reg cfg_toggle, cfg_ack;
   (* ASYNC_REG="TRUE" *) reg cfg_ack_s1, cfg_ack_s2;
+  localparam integer CFG_IDLE=0, CFG_LINE=1, CFG_BOXES=2, CFG_PUBLISH=3;
+  localparam integer CFG_COORDS=MAX_BOXES*4;
+  localparam integer CFG_INDEX_W=(CFG_COORDS<2)?1:$clog2(CFG_COORDS);
+  reg [1:0] cfg_state;
+  reg [CFG_INDEX_W-1:0] cfg_box_idx;
+  reg [1:0] cfg_coord_sel;
+  reg cfg_raw_enable;
+  reg [31:0] cfg_raw_id;
+  reg [4:0] cfg_raw_count;
+  reg [MAX_BOXES*40-1:0] cfg_raw_boxes, cfg_work_boxes;
+  reg [MAX_BOXES-1:0] cfg_work_box_valid;
+  reg [9:0] cfg_raw_line, cfg_work_line;
+  reg cfg_work_line_valid;
+  integer cfgb;
+  wire [9:0] cfg_coord_value=(cfg_state==CFG_LINE)?cfg_raw_line:
+      cfg_raw_boxes[cfg_box_idx*40+cfg_coord_sel*10 +: 10];
+  wire cfg_scale_x=(cfg_state==CFG_LINE)||(cfg_coord_sel<2);
+  wire [9:0] cfg_coord_scaled=cfg_scale_x?
+      ((cfg_coord_value*VIEW_WIDTH)/WIDTH):
+      ((cfg_coord_value*VIEW_HEIGHT)/HEIGHT);
   reg cfg_mb_enable;
   reg [31:0] cfg_mb_id;
   reg [4:0] cfg_mb_count;
   reg [MAX_BOXES*40-1:0] cfg_mb_boxes;
   reg [9:0] cfg_mb_line;
-  assign cfg_ready=cfg_resetn && cfg_ack_s2==cfg_toggle;
+  reg [MAX_BOXES-1:0] cfg_mb_box_valid;
+  reg cfg_mb_line_valid;
+  assign cfg_ready=cfg_resetn && cfg_state==CFG_IDLE && cfg_ack_s2==cfg_toggle;
   always @(posedge cfg_clk) begin
     if(!cfg_resetn) begin
       cfg_toggle<=0; cfg_ack_s1<=0; cfg_ack_s2<=0;
       cfg_mb_enable<=0; cfg_mb_id<=0; cfg_mb_count<=0;
-      cfg_mb_boxes<=0; cfg_mb_line<=0;
+      cfg_mb_boxes<=0; cfg_mb_line<=0; cfg_mb_box_valid<=0; cfg_mb_line_valid<=0;
+      cfg_state<=CFG_IDLE; cfg_box_idx<=0; cfg_coord_sel<=0;
+      cfg_raw_enable<=0; cfg_raw_id<=0; cfg_raw_count<=0;
+      cfg_raw_boxes<=0; cfg_work_boxes<=0; cfg_work_box_valid<=0;
+      cfg_raw_line<=0; cfg_work_line<=0; cfg_work_line_valid<=0;
     end else begin
       cfg_ack_s1<=cfg_ack; cfg_ack_s2<=cfg_ack_s1;
-      if(cfg_commit && cfg_ready) begin
-        cfg_mb_enable<=cfg_enable; cfg_mb_id<=cfg_frame_id;
-        cfg_mb_count<=cfg_box_count; cfg_mb_boxes<=cfg_boxes;
-        cfg_mb_line<=cfg_line_x; cfg_toggle<=~cfg_toggle;
-      end
+      case(cfg_state)
+        CFG_IDLE: if(cfg_commit && cfg_ready) begin
+          cfg_raw_enable<=cfg_enable; cfg_raw_id<=cfg_frame_id;
+          cfg_raw_count<=cfg_box_count; cfg_raw_boxes<=cfg_boxes;
+          cfg_raw_line<=cfg_line_x; cfg_work_line_valid<=cfg_line_x<WIDTH;
+          for(cfgb=0;cfgb<MAX_BOXES;cfgb=cfgb+1) begin
+            cfg_work_box_valid[cfgb]<=
+              cfg_boxes[cfgb*40+0 +: 10]<=cfg_boxes[cfgb*40+10 +: 10] &&
+              cfg_boxes[cfgb*40+20 +: 10]<=cfg_boxes[cfgb*40+30 +: 10] &&
+              cfg_boxes[cfgb*40+10 +: 10]<WIDTH &&
+              cfg_boxes[cfgb*40+30 +: 10]<HEIGHT;
+          end
+          cfg_state<=CFG_LINE;
+        end
+        CFG_LINE: begin
+          cfg_work_line<=cfg_coord_scaled;
+          cfg_box_idx<=0; cfg_coord_sel<=0; cfg_state<=CFG_BOXES;
+        end
+        CFG_BOXES: begin
+          cfg_work_boxes[cfg_box_idx*40+cfg_coord_sel*10 +: 10]<=cfg_coord_scaled;
+          if(cfg_coord_sel==3) begin
+            cfg_coord_sel<=0;
+            if(cfg_box_idx==MAX_BOXES-1) cfg_state<=CFG_PUBLISH;
+            else cfg_box_idx<=cfg_box_idx+1'b1;
+          end else cfg_coord_sel<=cfg_coord_sel+1'b1;
+        end
+        CFG_PUBLISH: begin
+          cfg_mb_enable<=cfg_raw_enable; cfg_mb_id<=cfg_raw_id;
+          cfg_mb_count<=cfg_raw_count; cfg_mb_boxes<=cfg_work_boxes;
+          cfg_mb_box_valid<=cfg_work_box_valid;
+          cfg_mb_line<=cfg_work_line; cfg_mb_line_valid<=cfg_work_line_valid;
+          cfg_toggle<=~cfg_toggle; cfg_state<=CFG_IDLE;
+        end
+        default: cfg_state<=CFG_IDLE;
+      endcase
     end
   end
 
@@ -148,7 +204,9 @@ module video_binary_overlay #(
   reg [31:0] id_p;
   reg [4:0] count_p;
   reg [MAX_BOXES*40-1:0] boxes_p;
+  reg [MAX_BOXES-1:0] box_valid_p;
   reg [9:0] line_p;
+  reg line_valid_p;
   reg [11:0] x,y;
   reg active_prev,vsync_prev;
   wire frame_boundary=vid_vsync && !vsync_prev;
@@ -175,17 +233,15 @@ module video_binary_overlay #(
   integer b;
   reg [9:0] bx0,bx1,by0,by1;
   always @* begin
-    line_or_box=in_view && line_p<WIDTH && local_x==(line_p*VIEW_WIDTH)/WIDTH;
+    line_or_box=in_view && line_valid_p && local_x==line_p;
     bx0=0;bx1=0;by0=0;by1=0;
     for(b=0;b<MAX_BOXES;b=b+1) begin
       bx0=boxes_p[b*40 +: 10]; bx1=boxes_p[b*40+10 +: 10];
       by0=boxes_p[b*40+20 +: 10]; by1=boxes_p[b*40+30 +: 10];
       if(in_view && id_p==displayed_frame_id && b<count_p &&
-         bx0<=bx1 && by0<=by1 && bx1<WIDTH && by1<HEIGHT &&
-         local_x>=(bx0*VIEW_WIDTH)/WIDTH && local_x<=(bx1*VIEW_WIDTH)/WIDTH &&
-         local_y>=(by0*VIEW_HEIGHT)/HEIGHT && local_y<=(by1*VIEW_HEIGHT)/HEIGHT &&
-         (local_x==(bx0*VIEW_WIDTH)/WIDTH || local_x==(bx1*VIEW_WIDTH)/WIDTH ||
-          local_y==(by0*VIEW_HEIGHT)/HEIGHT || local_y==(by1*VIEW_HEIGHT)/HEIGHT))
+         box_valid_p[b] && bx0<=bx1 && by0<=by1 &&
+         local_x>=bx0 && local_x<=bx1 && local_y>=by0 && local_y<=by1 &&
+         (local_x==bx0 || local_x==bx1 || local_y==by0 || local_y==by1))
         line_or_box=1;
     end
   end
@@ -208,7 +264,7 @@ module video_binary_overlay #(
     if(!pixel_resetn) begin
       publish_sync1<=0;publish_sync2<=0;publish_seen<=0;
       cfg_req_s1<=0;cfg_req_s2<=0;cfg_seen<=0;cfg_ack<=0;
-      enable_p<=0;id_p<=0;count_p<=0;boxes_p<=0;line_p<=0;
+      enable_p<=0;id_p<=0;count_p<=0;boxes_p<=0;box_valid_p<=0;line_p<=0;line_valid_p<=0;
       display_bank<=0;display_valid<=0;displayed_frame_id<=0;ack_toggle<=0;
       x<=0;y<=0;active_prev<=0;vsync_prev<=0;
       bank_q<=0;use_q<=0;overlay_q<=0;base_q<=0;
@@ -226,7 +282,8 @@ module video_binary_overlay #(
         end
         if(cfg_req_s2!=cfg_seen) begin
           enable_p<=cfg_mb_enable;id_p<=cfg_mb_id;count_p<=cfg_mb_count;
-          boxes_p<=cfg_mb_boxes;line_p<=cfg_mb_line;
+          boxes_p<=cfg_mb_boxes;box_valid_p<=cfg_mb_box_valid;
+          line_p<=cfg_mb_line;line_valid_p<=cfg_mb_line_valid;
           cfg_seen<=cfg_req_s2;cfg_ack<=cfg_req_s2;
         end
       end else if(vid_active) x<=x+1'b1;

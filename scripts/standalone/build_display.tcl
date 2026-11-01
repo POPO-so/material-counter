@@ -6,6 +6,20 @@ set out [file normalize $::env(DISPLAY_OUT)]
 set tag display
 if {[info exists ::env(DISPLAY_TAG)]} {set tag $::env(DISPLAY_TAG)}
 if {![regexp {^[a-z][a-z0-9-]*$} $tag]} {error "Invalid DISPLAY_TAG"}
+set jobs 2
+if {[info exists ::env(DISPLAY_BUILD_JOBS)]} {set jobs $::env(DISPLAY_BUILD_JOBS)}
+if {![regexp {^[0-9]+$} $jobs] || ![expr {$jobs > 0}]} {
+    error "Invalid DISPLAY_BUILD_JOBS: expected a positive integer"
+}
+set jobs [expr {$jobs + 0}]
+set max_threads ""
+if {[info exists ::env(DISPLAY_MAX_THREADS)]} {
+    set max_threads $::env(DISPLAY_MAX_THREADS)
+    if {![regexp {^[0-9]+$} $max_threads] || ![expr {$max_threads > 0}]} {
+        error "Invalid DISPLAY_MAX_THREADS: expected a positive integer"
+    }
+    set max_threads [expr {$max_threads + 0}]
+}
 set reports [file join $out reports-$tag]
 set repo [file normalize [file join [file dirname [info script]] ../..]]
 set sim_log [file join $::env(MONITOR_SIM_OUT) monitor_sim.log]
@@ -37,10 +51,11 @@ if {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"} 
     set_property USED_IN_SYNTHESIS false [get_files $offload_xdc]
     set_property PROCESSING_ORDER LATE [get_files $offload_xdc]
 }
-launch_runs synth_1 -jobs 2
+if {$max_threads ne ""} {set_param general.maxThreads $max_threads}
+launch_runs synth_1 -jobs $jobs
 wait_on_run synth_1
 if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "DISPLAY_SYNTH_FAILED"}
-launch_runs impl_1 -to_step write_bitstream -jobs 2
+launch_runs impl_1 -to_step write_bitstream -jobs $jobs
 wait_on_run impl_1
 if {[get_property PROGRESS [get_runs impl_1]] ne "100%" ||
     ![string match {*write_bitstream Complete*} [get_property STATUS [get_runs impl_1]]]} {error "DISPLAY_IMPL_FAILED"}

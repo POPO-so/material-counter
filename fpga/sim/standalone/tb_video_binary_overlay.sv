@@ -42,12 +42,38 @@ module tb_video_binary_overlay #(parameter W=8,H=4,VW=W,VH=H);
   end
  endtask
  task automatic commit_config(input bit en,input integer fid,input integer linepos,input bit box);
+  reg prior_toggle;
   begin
    wait(cfg_ready);@(negedge cfg_clk);
+   prior_toggle=dut.cfg_toggle;
    cfg_enable=en;cfg_frame_id=fid;cfg_box_count=box;cfg_line_x=linepos;cfg_boxes=0;
    // low-to-high fields x0=1,x1=2,y0=2,y1=3
    cfg_boxes[0+:40]={10'd3,10'd2,10'd2,10'd1};cfg_commit=1;
    @(negedge cfg_clk);cfg_commit=0;
+   if(cfg_ready)$fatal(1,"cfg_ready asserted before mailbox acceptance");
+   repeat(2)@(posedge cfg_clk);
+   if(dut.cfg_toggle!==prior_toggle)
+    $fatal(1,"configuration mailbox published before coordinate precompute");
+   repeat(4*16+4)@(posedge cfg_clk);
+   if(dut.cfg_toggle===prior_toggle)
+    $fatal(1,"configuration mailbox did not publish after bounded precompute");
+   repeat(5)@(posedge pixel_clk);
+  end
+ endtask
+ task automatic commit_invalid_box_config(input integer fid);
+  reg prior_toggle;
+  begin
+   wait(cfg_ready);@(negedge cfg_clk);prior_toggle=dut.cfg_toggle;
+   cfg_enable=1;cfg_frame_id=fid;cfg_box_count=1;cfg_line_x=W;cfg_boxes=0;
+   cfg_boxes[0+:40]={10'(H),10'd0,10'(W),10'd0};cfg_commit=1;
+   @(negedge cfg_clk);cfg_commit=0;
+   if(cfg_ready)$fatal(1,"cfg_ready asserted before invalid-box precompute");
+   repeat(2)@(posedge cfg_clk);
+   if(dut.cfg_toggle!==prior_toggle)
+    $fatal(1,"invalid-box configuration bypassed coordinate precompute");
+   repeat(4*16+4)@(posedge cfg_clk);
+   if(dut.cfg_toggle===prior_toggle)
+    $fatal(1,"invalid-box configuration failed to publish");
    repeat(5)@(posedge pixel_clk);
   end
  endtask
@@ -105,6 +131,7 @@ module tb_video_binary_overlay #(parameter W=8,H=4,VW=W,VH=H);
   boundary();if(!display_valid||displayed_frame_id!=7)$fatal(1,"VSYNC did not switch frame");
   scan(1,4,W,0);
   commit_config(1,7,3,1);boundary();scan(1,4,3,1);
+  commit_invalid_box_config(7);boundary();scan(1,4,W,0);
   // Frame-ID mismatch must hide stale boxes, but valid mask remains visible.
   commit_config(1,99,W,1);boundary();scan(1,4,W,0);
   commit_config(0,7,W,0);boundary();scan(0,4,W,0);
