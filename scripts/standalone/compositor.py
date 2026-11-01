@@ -659,10 +659,10 @@ class DashboardComposer:
                       size=12, fill=206)
         draw.line((left_x, 440, left_x + left_width, 440), fill=100, width=1)
         draw.line((right_x, 440, right_x + right_width, 440), fill=100, width=1)
-        centered("BTN0 清零 · BTN1 诊断模式 · BTN2 调曝光 · BTN3 空闲",
-                 42, 442, 1190, 14, 246)
-        centered("BTN2 方向由 SW0 决定：SW0 ON 增加曝光 · SW0 OFF 减少曝光",
-                 42, 459, 1190, 14, 232)
+        centered("BTN0 清零累计计数 · BTN1 切换诊断模式 · BTN2 调整曝光 · BTN3 预留",
+                 42, 442, 1190, 16, 250)
+        centered("SW0 ON + BTN2：增加曝光 · SW0 OFF + BTN2：减少曝光",
+                 42, 459, 1190, 16, 246)
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
                 (558, 630, 594, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
