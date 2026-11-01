@@ -231,6 +231,10 @@ def main(argv=None):
     parser.add_argument('--inject-drawing-start-failure',choices=('create','start','after-start'),
         help='inject one drawing process creation/start error on its first launch attempt')
     parser.add_argument('--freeze-telemetry-at-frame',type=int,help='test staleness without stopping safety checks')
+    parser.add_argument('--overlay-control',action='store_true',
+        help='run the read-only B1a overlay preflight (default off)')
+    parser.add_argument('--overlay-first-write',action='store_true',
+        help='after preflight, perform the single CTRL=0 write (default off)')
     parser.add_argument('--font',default='/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf')
     parser.add_argument('--latin-font',default='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
     parser.add_argument('--inherited-lock-fds',nargs=2,type=int,metavar=('DESKTOP_FD','STANDALONE_FD'),
@@ -371,6 +375,11 @@ def main(argv=None):
         report['hp1_readwrite32']=owner.call(sync_hp1_readwrite32, files['hwh'], MMIO)
         hw=video_owner.call(setup_hardware,files,video_owner,timeout=60)
         report['clocks_mhz']=hw.clocks
+        if args.overlay_control or args.overlay_first_write:
+            from .overlay_control import OverlayControl
+            overlay_control=OverlayControl(hw.overlay,video_owner)
+            report['overlay_control']=(overlay_control.first_write()
+                if args.overlay_first_write else overlay_control.preflight())
         control=owner.retain(MMIO(0x43c20000,0x1000))
         pipeline=owner.call(read_pipeline,control)
         tx=owner.retain(allocate(shape=(TX_BYTES,),dtype='u1'))
