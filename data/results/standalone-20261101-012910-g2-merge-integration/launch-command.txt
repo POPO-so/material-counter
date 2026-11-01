@@ -1,0 +1,11 @@
+Vivado batch -mode batch -source R:\data\results\standalone-20261101-012910-g2-integration\run-g2-candidate.tcl -log R:\data\results\standalone-20261101-012910-g2-integration\vivado-batch.log -journal R:\data\results\standalone-20261101-012910-g2-integration\vivado-batch.jou
+PYNQ_SOURCE=P:\pynq-v3.1
+VIDEO_IP_BUILT=P:\standalone-ip
+G2_OUT=R:\data\results\standalone-20261101-012910-g2-integration
+G2_MONITOR_SIM_OUT=R:\data\results\standalone-20261101-012910-g2-integration\monitor-sim
+OFFLOAD_CANDIDATE=1
+DISPLAY_BUILD_JOBS=1
+DISPLAY_MAX_THREADS=1
+Vivado 2026.1
+R: maps to C:\Users\14173\Documents\material-counter\.runtime\worktrees\merge-ps-pl-offload-to-lj01-20261101
+C:\Users\14173\Documents\material-counter\.runtime\worktrees\merge-ps-pl-offload-to-lj01-20261101

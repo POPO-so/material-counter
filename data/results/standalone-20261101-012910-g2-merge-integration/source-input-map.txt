@@ -1,0 +1,1 @@
+external/PYNQ-base.xdc resolves to P:\pynq-v3.1\boards\Pynq-Z2\base\vivado\constraints\base.xdc

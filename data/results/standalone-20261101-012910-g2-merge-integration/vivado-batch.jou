@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Mon Nov  2 01:32:03 2026
+# Process ID         : 49732
+# Current directory  : R:/
+# Command line       : vivado.exe -mode batch -source R:\scripts\standalone\build_g2_integration.tcl -log R:\data\results\standalone-20261101-012910-g2-integration\vivado-batch.log -journal R:\data\results\standalone-20261101-012910-g2-integration\vivado-batch.jou
+# Log file           : R:/data/results/standalone-20261101-012910-g2-integration/vivado-batch.log
+# Journal file       : R:\data\results\standalone-20261101-012910-g2-integration\vivado-batch.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 36507 MB
+# Total Virtual      : 53365 MB
+# Available Virtual  : 13769 MB
+#-----------------------------------------------------------
+source {R:\scripts\standalone\build_g2_integration.tcl}

@@ -1,0 +1,2 @@
+42b950a0cfeea0f827e7cc70385a326aa6a5a079838d389a23ca53d3fd80ad92  export/g2-integrated.bit
+552f5ab45f971db9bb1652aaa2f33d2e1b20533b71986ec478bb6786686d6005  export/g2-integrated.hwh
