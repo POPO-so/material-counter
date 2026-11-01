@@ -619,3 +619,32 @@ def test_dashboard_invalidate_slot_forces_full_initialization():
                     binary_background=frame["binary_background"],
                     dashboard=frame["dashboard"], output=slot, slot_key=0)
     assert np.array_equal(slot, expected)
+
+
+def test_dashboard_slot_reuse_skips_unchanged_chrome_for_300_frames():
+    reference = _dashboard_composer()
+    composer = _dashboard_composer()
+    session = uuid.uuid4()
+    reference_target = np.zeros((720, 1280), dtype=np.uint8)
+    slots = [np.zeros((720, 1280), dtype=np.uint8) for _ in range(3)]
+    dashboard = {"count": 42, "display_fps": 12.4, "processing_ms": 80.0,
+                 "cpu_percent": 90, "memory_percent": 60, "state": "RUNNING",
+                 "detail_page": False}
+    boxes = ((100, 100, 140, 140),)
+    tracks = (("0:7", 120, 120),)
+    status = ("累计 42", "运行中", "重启清零 / 过线诊断留图")
+    for index in range(300):
+        gray = np.full((400, 640), index & 0xFF, dtype=np.uint8)
+        binary = np.zeros_like(gray)
+        binary[::2, ::2] = 255
+        reference.render(gray, binary, session, index + 1, boxes=boxes,
+                         tracks=tracks, line_x=320, status_lines=status,
+                         binary_background=False, dashboard=dashboard,
+                         output=reference_target)
+        slot = index % 3
+        composer.render(gray, binary, session, index + 1, boxes=boxes,
+                        tracks=tracks, line_x=320, status_lines=status,
+                        binary_background=False, dashboard=dashboard,
+                        output=slots[slot], slot_key=slot)
+        assert np.array_equal(slots[slot], reference_target), index
+    assert len(composer._slot_chrome_key) == 3
