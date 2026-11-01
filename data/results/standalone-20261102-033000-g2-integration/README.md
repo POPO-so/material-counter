@@ -19,6 +19,7 @@ Vivado 2026.1 完成 `OFFLOAD_CANDIDATE=1` 的 G2 综合、实现、路由和 BI
 - PYNQ 源码：v3.1 锁定版本 `19ed17d4fd4ea71f95a97d30f8ccd0d62b8dbaaa`，32/32 文件哈希核验通过。
 - 视频 IP：Vitis 2026.1 导出的 `color_convert`、`pixel_unpack`，前置 CSim、csynth 与 IP export 已通过。
 - 实现策略：单 implementation job、单线程；Explore placement/route 与 AggressiveExplore physical optimization。
+- 集成 HDL 输入快照保存在 [`rtl/`](rtl/)，每个文件的 SHA-256 记录在构建清单中。
 
 ## 核验结果
 
