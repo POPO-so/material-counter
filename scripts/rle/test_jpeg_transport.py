@@ -142,6 +142,35 @@ def test_accepts_raw_jpeg_with_exact_byte_length_order_and_single_mask_accept():
     assert rig.events.index(("jpeg", "write", 0, 1)) < rig.events.index(("mm2s", "transfer", 7))
 
 
+def test_deferred_mask_accept_waits_for_same_frame_count_and_boxes_commit():
+    rig = Rig(preview=(1 << 3) | 1)
+    t = transport(rig)
+    frame = t.transfer(b"\xff\xd8abc\xff\xd9", 9, auto_accept=False)
+    assert frame.frame_id == 9
+    assert not any(e[:3] == ("preview", "write", 0x24) for e in rig.events)
+
+    t.publish_overlay(9, 8, [(10, 20, 19, 29)], line_x=321)
+
+    assert ("preview", "write", 0x44, 8) in rig.events
+    assert ("preview", "write", 0x100, 10 | (19 << 16)) in rig.events
+    assert ("preview", "write", 0x104, 20 | (29 << 16)) in rig.events
+    commit = rig.events.index(("preview", "write", 0x40, 1))
+    accept = rig.events.index(("preview", "write", 0x24, 1))
+    assert commit < accept
+    assert t._pending_frame_id is None
+
+
+def test_deferred_frame_cannot_be_replaced_or_published_with_another_id():
+    rig = Rig()
+    t = transport(rig)
+    t.transfer(b"\xff\xd8abc\xff\xd9", 9, auto_accept=False)
+    with pytest.raises(RuntimeError, match="previous completed frame"):
+        t.transfer(b"\xff\xd8def\xff\xd9", 10, auto_accept=False)
+    with pytest.raises(ValueError, match="pending completed frame"):
+        t.publish_overlay(10, 1, [], line_x=320)
+    assert not any(e[:3] == ("preview", "write", 0x24) for e in rig.events)
+
+
 @pytest.mark.parametrize("state", [0x1, 0x4, 0x5])
 def test_rle_busy_or_error_preflight_does_not_write_buffer_or_start_channels(state):
     rig = Rig()
@@ -419,13 +448,14 @@ def test_start_timeout_holds_buffers_and_forbids_retry_or_close():
 def test_raw_camera_configures_mjpg_size_and_never_decodes(monkeypatch):
     import cv2
     class Capture:
-        def __init__(self, *args): self.props = {}; self.i = 0
+        def __init__(self, *args): self.props = {}; self.i = 0; self.released = False
         def set(self, key, val): self.props[key] = val; return True
+        def get(self, key): return self.props.get(key, 0)
         def isOpened(self): return True
         def read(self):
             self.i += 1
             return (True, np.frombuffer(b"\xff\xd8x\xff\xd9", np.uint8)) if self.i == 1 else (False, None)
-        def release(self): pass
+        def release(self): self.released = True
     capture = Capture()
     monkeypatch.setattr(cv2, "VideoCapture", lambda *args: capture)
     monkeypatch.setattr(cv2, "imdecode", lambda *args: pytest.fail("software JPEG decode called"))
@@ -434,3 +464,36 @@ def test_raw_camera_configures_mjpg_size_and_never_decodes(monkeypatch):
     assert capture.props[cv2.CAP_PROP_FRAME_WIDTH] == WIDTH
     assert capture.props[cv2.CAP_PROP_FRAME_HEIGHT] == HEIGHT
     assert capture.props[cv2.CAP_PROP_CONVERT_RGB] == 0
+    assert capture.released
+
+
+@pytest.mark.parametrize("jpeg", [b"decoded pixels", b"\xff\xd8missing-eoi", b"missing-soi\xff\xd9"])
+def test_raw_camera_rejects_non_jpeg_or_truncated_packet(monkeypatch, jpeg):
+    import cv2
+    class Capture:
+        def __init__(self, *args): self.props = {}
+        def set(self, key, val): self.props[key] = val; return True
+        def get(self, key): return self.props.get(key, 0)
+        def isOpened(self): return True
+        def read(self): return True, np.frombuffer(jpeg, np.uint8)
+        def release(self): pass
+    monkeypatch.setattr(cv2, "VideoCapture", lambda *args: Capture())
+
+    with pytest.raises(RuntimeError, match="complete JPEG"):
+        next(iter_raw_mjpeg(0, cv2_module=cv2))
+
+
+def test_raw_camera_rejects_negotiated_geometry_mismatch(monkeypatch):
+    import cv2
+    class Capture:
+        def __init__(self, *args): self.props = {}
+        def set(self, key, val): self.props[key] = val; return True
+        def get(self, key):
+            return 320 if key == cv2.CAP_PROP_FRAME_WIDTH else self.props.get(key, 0)
+        def isOpened(self): return True
+        def read(self): return True, np.frombuffer(b"\xff\xd8x\xff\xd9", np.uint8)
+        def release(self): pass
+    monkeypatch.setattr(cv2, "VideoCapture", lambda *args: Capture())
+
+    with pytest.raises(RuntimeError, match="expected MJPG 640x400"):
+        next(iter_raw_mjpeg(0, cv2_module=cv2))

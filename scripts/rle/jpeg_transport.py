@@ -88,13 +88,29 @@ def iter_raw_mjpeg(device: Any = 0, *, cv2_module: Any = None) -> Iterator[bytes
         for prop, value in settings:
             if not capture.set(prop, value):
                 raise RuntimeError(f"V4L2 camera rejected property {prop}")
+        actual_fourcc = int(round(capture.get(cv2_module.CAP_PROP_FOURCC)))
+        actual_format = "".join(chr((actual_fourcc >> (8 * byte)) & 0xFF)
+                                for byte in range(4))
+        actual_width = int(round(capture.get(cv2_module.CAP_PROP_FRAME_WIDTH)))
+        actual_height = int(round(capture.get(cv2_module.CAP_PROP_FRAME_HEIGHT)))
+        if (actual_format != "MJPG" or actual_width != WIDTH or actual_height != HEIGHT):
+            raise RuntimeError(
+                f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height}; "
+                f"expected MJPG {WIDTH}x{HEIGHT}"
+            )
         while True:
             ok, encoded = capture.read()
             if not ok:
                 return
             if encoded is None:
                 raise RuntimeError("V4L2 returned an empty MJPG payload")
-            yield _bytes_view(encoded).tobytes()
+            payload = _bytes_view(encoded)
+            if (payload.nbytes < 4 or payload[:2].tobytes() != b"\xff\xd8"
+                    or payload[-2:].tobytes() != b"\xff\xd9"):
+                raise RuntimeError("V4L2 did not return a complete JPEG packet")
+            if payload.nbytes > JPEG_MAX_BYTES:
+                raise RuntimeError(f"V4L2 JPEG packet exceeds {JPEG_MAX_BYTES} bytes")
+            yield payload.tobytes()
     finally:
         capture.release()
 
@@ -117,6 +133,7 @@ class JpegRleDmaTransport:
         self._closed = False
         self._completed_frames = 0
         self._last_frame_id: int | None = None
+        self._pending_frame_id: int | None = None
 
     def _preflight(self) -> None:
         tx0, tx1 = _buffer_span(self.tx_buffer, JPEG_MAX_BYTES, 8, "TX")
@@ -199,9 +216,13 @@ class JpegRleDmaTransport:
     def transfer(self, jpeg: Any, frame_id: int, *, params_version: int = 0,
                  roi: tuple[int, int, int, int] = (0, 0, WIDTH, HEIGHT),
                  threshold: int = 128, intensity_offset: int = 0,
-                 morph_mode: int = 0):
+                 morph_mode: int = 0, auto_accept: bool = True):
         if self._closed:
             raise RuntimeError("JPEG transport is closed")
+        if not isinstance(auto_accept, bool):
+            raise TypeError("auto_accept must be bool")
+        if self._pending_frame_id is not None:
+            raise RuntimeError("previous completed frame has not been published")
         if self.dma_may_be_active:
             raise RuntimeError("DMA ownership uncertain; automatic retry is forbidden")
         frame_id = _uint(frame_id, "frame_id")
@@ -280,6 +301,18 @@ class JpegRleDmaTransport:
                 frame.intensity_offset != intensity_offset or frame.morph_mode != morph_mode):
             raise ValueError("RLE packet parameters do not match request")
         self._wait_preview(frame_id, dropped_before)
+        self._pending_frame_id = frame_id
+        if auto_accept:
+            self.accept_mask(frame_id)
+        return frame
+
+    def accept_mask(self, frame_id: int) -> None:
+        """Publish the already validated mask after its matching metadata is ready."""
+        frame_id = _uint(frame_id, "frame_id")
+        if self._closed or self.dma_may_be_active:
+            raise RuntimeError("cannot publish while transport is closed or DMA ownership is active")
+        if self._pending_frame_id != frame_id:
+            raise ValueError("mask acceptance does not match the pending completed frame")
         self.preview_control.write(PREVIEW_ACCEPT_ID, frame_id)
         self.preview_control.write(PREVIEW_MASK_ACCEPT, 1)
         deadline = time.monotonic() + self.timeout_s
@@ -287,11 +320,67 @@ class JpegRleDmaTransport:
             status = int(self.preview_control.read(PREVIEW_STATUS))
             displayed_id = int(self.preview_control.read(PREVIEW_DISPLAYED_ID))
             if status & (1 << 4) and displayed_id == frame_id:
-                break
+                self._pending_frame_id = None
+                return
             if time.monotonic() >= deadline:
                 raise TimeoutError("preview mask display timed out")
             time.sleep(min(0.001, max(0.0001, self.timeout_s / 100)))
-        return frame
+
+    def publish_overlay(self, frame_id: int, total_count: int, boxes: Any, *,
+                        line_x: int, enabled: bool = True) -> None:
+        """Commit count, line and boxes for the pending frame before mask accept."""
+        frame_id = _uint(frame_id, "frame_id")
+        total_count = _uint(total_count, "total_count")
+        line_x = _uint(line_x, "line_x")
+        if line_x >= WIDTH:
+            raise ValueError("line_x is outside the source image")
+        if not isinstance(enabled, bool):
+            raise TypeError("enabled must be bool")
+        if self._closed or self.dma_may_be_active:
+            raise RuntimeError("cannot configure overlay while transport is closed or DMA ownership is active")
+        if self._pending_frame_id != frame_id:
+            raise ValueError("overlay configuration does not match the pending completed frame")
+        boxes = list(boxes)
+        if len(boxes) > 16:
+            raise ValueError("at most 16 overlay boxes are supported")
+        checked = []
+        for box in boxes:
+            if not isinstance(box, (tuple, list)) or len(box) != 4:
+                raise ValueError("each box must be (x0, y0, x1, y1)")
+            x0, y0, x1, y1 = (_uint(v, "box coordinate") for v in box)
+            if not (x0 <= x1 < WIDTH and y0 <= y1 < HEIGHT):
+                raise ValueError("overlay box is outside the source image")
+            checked.append((x0, y0, x1, y1))
+
+        deadline = time.monotonic() + self.timeout_s
+        while not (int(self.preview_control.read(PREVIEW_STATUS)) & 1):
+            if time.monotonic() >= deadline:
+                raise TimeoutError("overlay configuration mailbox did not become ready")
+            time.sleep(min(0.001, max(0.0001, self.timeout_s / 100)))
+
+        values = ((0x30, int(enabled)), (0x34, frame_id), (0x38, len(checked)),
+                  (0x3C, line_x), (0x44, total_count))
+        for offset, value in values:
+            self.preview_control.write(offset, value)
+        for offset, value in values:
+            if (int(self.preview_control.read(offset)) & 0xFFFFFFFF) != value:
+                raise RuntimeError(f"overlay configuration readback mismatch at 0x{offset:02x}")
+        for index, (x0, y0, x1, y1) in enumerate(checked):
+            x_word, y_word = x0 | (x1 << 16), y0 | (y1 << 16)
+            self.preview_control.write(0x100 + 8 * index, x_word)
+            self.preview_control.write(0x104 + 8 * index, y_word)
+            if (int(self.preview_control.read(0x100 + 8 * index)) != x_word or
+                    int(self.preview_control.read(0x104 + 8 * index)) != y_word):
+                raise RuntimeError(f"overlay box {index} readback mismatch")
+        self.preview_control.write(0x40, 1)
+
+        # cfg_ready only rises again after the complete mailbox payload has
+        # crossed into pixel_clk and has been latched at a VSYNC boundary.
+        while not (int(self.preview_control.read(PREVIEW_STATUS)) & 1):
+            if time.monotonic() >= deadline:
+                raise TimeoutError("overlay configuration commit timed out")
+            time.sleep(min(0.001, max(0.0001, self.timeout_s / 100)))
+        self.accept_mask(frame_id)
 
     def close(self) -> None:
         if self._closed: return

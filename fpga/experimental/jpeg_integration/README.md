@@ -233,3 +233,15 @@ the Vivado process `general.maxThreads` remains capped/read back at 2.
 Do not change the pinned baseline CDC constraints as part of this review;
 evaluate actual CDC reports before proposing any additional synchronizer
 exceptions.
+
+## 2026-11-02 continuation status
+
+T6 BD wiring/readback completed in isolated stage `T:/jj1102e`; receipt
+`T:/jj1102e/joint-connected.tcldict` is `CONNECTED_NOT_BUILT`, with manifest
+SHA-256 `1c5cb94478f7b3923b34ef24727e98aa68ae0440d8e18a5fe7294afa00fc5dd4`.
+The PS `run_counter.py --jpeg-pl` dispatch now reaches the experimental raw
+MJPEG runner; its targeted transport/dispatch tests passed (51 tests). A fresh
+joint synthesis was stopped after 7 of about 33 serial OOC jobs to avoid a long
+verification run. It produced no final synthesis, timing, CDC, DRC, route,
+BIT/HWH, or board evidence. The previous timing and CDC failures therefore
+remain unresolved for the current candidate.

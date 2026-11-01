@@ -1,4 +1,4 @@
-"""Explicit 640x400 Gray8 -> PL RLE -> native PS regions/counting entrypoint."""
+"""640x400 camera and Gray8 runner with default PL RLE or opt-in PL JPEG."""
 from __future__ import annotations
 import argparse
 from dataclasses import asdict
@@ -98,7 +98,16 @@ def camera_frames(device,count):
 
 
 def main(argv=None):
+    argv=list(sys.argv[1:] if argv is None else argv)
+    if '--jpeg-pl' in argv:
+        if argv.count('--jpeg-pl') != 1:
+            raise SystemExit('--jpeg-pl may only be specified once')
+        argv.remove('--jpeg-pl')
+        from scripts.experiments.run_jpeg_counter import main as jpeg_pl_main
+        return jpeg_pl_main(argv)
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--jpeg-pl',action='store_true',
+        help='use raw MJPG through the experimental PL JPEG path and its routed-artifact checks')
     parser.add_argument('--mode',choices=('offline','self-test','camera'),default='offline')
     parser.add_argument('--frames',type=int,default=12)
     parser.add_argument('--output',type=Path,required=True)
