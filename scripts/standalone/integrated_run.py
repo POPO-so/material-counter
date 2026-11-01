@@ -110,6 +110,46 @@ def dashboard_values(count, paused, page, telemetry):
         cpu_percent=resource.get('cpu',{}).get('system'),memory_percent=memory_percent)
 
 
+def build_status_lines(count, paused, page, annotations_truncated, captures_enabled,
+                       telemetry, performance, page_static):
+    """Build the preview status lines exactly as the original per-frame code did."""
+    lines=['本次会话累计 {}'.format(count),
+        '暂停计数' if paused else '运行中',
+        '重启清零 / '+('过线诊断留图' if captures_enabled else '诊断留图关闭')]
+    if annotations_truncated:lines.append('标注仅显示前128项 / 计数未截断')
+    if performance:
+        lines.append('处理 {:.1f} FPS{}'.format(performance['value']['processing_fps'],
+                                                ' / 过期' if performance['stale'] else ''))
+    stale=[name for name,sample in telemetry.items() if sample['stale']]
+    if stale:lines.append('过期: '+','.join(stale))
+    if page:
+        lines+=page_static
+        resource=telemetry.get('resources',{}).get('value',{})
+        lines.append('CMA '+str(resource.get('memory',{}).get('CmaFree','未知')))
+        cpu=resource.get('cpu',{})
+        lines.append('CPU0 {:.0f}% / CPU1 {:.0f}% / 系统 {:.0f}%'.format(
+            cpu.get('cpu0',0),cpu.get('cpu1',0),cpu.get('system',0)))
+        process_info=resource.get('processes',{})
+        text=lambda key:('{:.0f}%'.format(process_info[key]['cpu_percent'])
+                         if process_info.get(key,{}).get('cpu_percent') is not None else '未知')
+        lines.append('进程 计数 {} / 绘图 {}'.format(text('count_capture_video'),text('drawing')))
+        available=int(resource.get('memory',{}).get('MemAvailable','0 kB').split()[0])/1024
+        lines.append('内存 {:.0f} MB / SD {:.1f} GB'.format(
+            available,resource.get('sd_free_bytes',0)/(1024**3)))
+        channels=telemetry.get('xadc',{}).get('value',{}).get('channels',[])
+        temperatures=[c['value_si'] for c in channels
+                      if c['channel'].startswith('in_temp') and isinstance(c['value_si'],(int,float))]
+        if temperatures:lines.append('温度 {:.1f} °C'.format(temperatures[0]))
+        rails={c['label']:c['value_si'] for c in channels
+               if c['label'] in ('vccint','vccaux','vccbram') and isinstance(c['value_si'],(int,float))}
+        rail_text=lambda key:('{:.3f}'.format(rails[key]) if key in rails else '未知')
+        if rails:lines.append('INT {} / AUX {} / BRAM {} V'.format(
+            rail_text('vccint'),rail_text('vccaux'),rail_text('vccbram')))
+        if performance:lines.append('RLE {} runs / DMA {} B'.format(
+            performance['value']['runs'],performance['value']['rx_bytes']))
+    return lines
+
+
 def start_drawing_child(
     ctx, inputs, outputs, errors, counters, font, latin_font, failure_mode=None
 ):
@@ -458,6 +498,10 @@ def main(argv=None):
         started=last_sample=time.monotonic();index=submitted=published=dropped=0
         camera_index=-1;next_camera_retry=0;injection_done=False;next_drawing_retry=0
         cache=TelemetryCache();last_resource=last_xadc=last_performance=0
+        page_static=['640x400 / RLE 50MHz','显示 1280x720 60Hz',
+            'LUT {} / FF {}'.format(manifest.get('resources',{}).get('lut','未知'),manifest.get('resources',{}).get('ff','未知')),
+            'BRAM {} / DSP {}'.format(manifest.get('resources',{}).get('bram_tiles','未知'),manifest.get('resources',{}).get('dsp','未知'))]
+        status_cache={'key':None,'lines':()}
         last_performance_index=last_performance_submitted=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
         trajectory_epoch=0;camera_in_error=False
         previous_process={}
@@ -596,37 +640,20 @@ def main(argv=None):
                         page=controls.page,trajectory_epoch=trajectory_epoch,count_axis=counter.count_axis,
                         line_position=counter.line_x if counter.count_axis=='x' else counter.line_y,
                         direction=counter.direction)
-                    metadata['status_lines']=['本次会话累计 {}'.format(counter.total_count),
-                        '暂停计数' if controls.paused else '运行中',
-                        '重启清零 / '+('过线诊断留图' if captures is not None else '诊断留图关闭')]
-                    if metadata['annotations_truncated']:metadata['status_lines'].append('标注仅显示前128项 / 计数未截断')
                     telemetry=cache.snapshot(time.monotonic())
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,controls.page,telemetry)
                     performance=telemetry.get('performance')
-                    if performance:
-                        metadata['status_lines'].append('处理 {:.1f} FPS{}'.format(performance['value']['processing_fps'],' / 过期' if performance['stale'] else ''))
-                    stale=[name for name,sample in telemetry.items() if sample['stale']]
-                    if stale:metadata['status_lines'].append('过期: '+','.join(stale))
-                    if controls.page:
-                        metadata['status_lines']+=['640x400 / RLE 50MHz','显示 1280x720 60Hz',
-                            'LUT {} / FF {}'.format(manifest.get('resources',{}).get('lut','未知'),manifest.get('resources',{}).get('ff','未知')),
-                            'BRAM {} / DSP {}'.format(manifest.get('resources',{}).get('bram_tiles','未知'),manifest.get('resources',{}).get('dsp','未知'))]
-                        resource=telemetry.get('resources',{}).get('value',{})
-                        metadata['status_lines'].append('CMA '+str(resource.get('memory',{}).get('CmaFree','未知')))
-                        cpu=resource.get('cpu',{})
-                        metadata['status_lines'].append('CPU0 {:.0f}% / CPU1 {:.0f}% / 系统 {:.0f}%'.format(cpu.get('cpu0',0),cpu.get('cpu1',0),cpu.get('system',0)))
-                        process_info=resource.get('processes',{})
-                        text=lambda key:('{:.0f}%'.format(process_info[key]['cpu_percent']) if process_info.get(key,{}).get('cpu_percent') is not None else '未知')
-                        metadata['status_lines'].append('进程 计数 {} / 绘图 {}'.format(text('count_capture_video'),text('drawing')))
-                        available=int(resource.get('memory',{}).get('MemAvailable','0 kB').split()[0])/1024
-                        metadata['status_lines'].append('内存 {:.0f} MB / SD {:.1f} GB'.format(available,resource.get('sd_free_bytes',0)/(1024**3)))
-                        channels=telemetry.get('xadc',{}).get('value',{}).get('channels',[])
-                        temperatures=[c['value_si'] for c in channels if c['channel'].startswith('in_temp') and isinstance(c['value_si'],(int,float))]
-                        if temperatures:metadata['status_lines'].append('温度 {:.1f} °C'.format(temperatures[0]))
-                        rails={c['label']:c['value_si'] for c in channels if c['label'] in ('vccint','vccaux','vccbram') and isinstance(c['value_si'],(int,float))}
-                        rail_text=lambda key:('{:.3f}'.format(rails[key]) if key in rails else '未知')
-                        if rails:metadata['status_lines'].append('INT {} / AUX {} / BRAM {} V'.format(rail_text('vccint'),rail_text('vccaux'),rail_text('vccbram')))
-                        if performance:metadata['status_lines'].append('RLE {} runs / DMA {} B'.format(performance['value']['runs'],performance['value']['rx_bytes']))
+                    status_key=(counter.total_count,controls.paused,controls.page,
+                        metadata['annotations_truncated'],
+                        tuple((name,sample['sampled_monotonic'],sample['stale'])
+                              for name,sample in sorted(telemetry.items())))
+                    if status_key!=status_cache['key']:
+                        status_cache['key']=status_key
+                        status_cache['lines']=tuple(build_status_lines(
+                            counter.total_count,controls.paused,controls.page,
+                            metadata['annotations_truncated'],captures is not None,
+                            telemetry,performance,page_static))
+                    metadata['status_lines']=list(status_cache['lines'])
                     last_gray=gray;last_metadata=metadata;last_valid_id=index
                     if process is not None and process.is_alive():
                         if inputs.publish(gray,binary,session,index,metadata,
