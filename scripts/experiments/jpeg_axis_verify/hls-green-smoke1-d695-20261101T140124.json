@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+  "component_sha256": "0bdfce509b1f51829aa1c2b12536fba14088925f89ce8c7da2558707246725d5",
+  "component_path": "C:/w/mc-jpeg-axis-hls-20261101/hls/impl/ip/component.xml",
+  "checks": {
+    "csim": true,
+    "csynth": true,
+    "cosim": true
+  },
+  "scope": "Normal captured frame1 only; standalone JPEG AXIS HLS",
+  "entropy_cosim": "pending",
+  "cosim_latency_cycles": 157260,
+  "random_stall": true,
+  "native_trace_level": "none",
+  "waveform_stall_evidence": "same elaborated random-stall RTL/VIP snapshot diagnostic VCD replay; actual stalled cycles and zero stability errors",
+  "backpressure": {
+    "input_stalled_cycles": 139868,
+    "output_stalled_cycles": 10598,
+    "input_gap_cycles": 546,
+    "output_gap_cycles": 72240,
+    "stability_errors": 0
+  },
+  "evidence": [
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke1-20261101/d695-snapshot-smoke1-20261101.log",
+      "sha256": "8012df6c0257d6ee81bb022413411119e9be78c3cc246d99b3ed77dd1ace2430"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke1-20261101/source-snapshot.json",
+      "sha256": "4e176d507ae3bfb5c1449e71e53ca22587709cb9af2c0570647d66c3ad7a2637"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/d695-snapshot-csynth-final-20261101.log",
+      "sha256": "26816115d98f717dea3620c8f896dd97ab87e3b756f1c3e1d7dcc311c6ab10ec"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/source-snapshot.json",
+      "sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/transitive-headers.json",
+      "sha256": "21665f660aaa7b1223b55be68ef194cfeedced25119470dd1b6082ba61f8bc0a"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/reports/component.xml",
+      "sha256": "0bdfce509b1f51829aa1c2b12536fba14088925f89ce8c7da2558707246725d5"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/reports/jpeg_axis_gray_csynth.rpt",
+      "sha256": "510970ee2745c4038c721eb07b362f0134a31ca03451db241cedea4b72a4f9a1"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-randomstall-smoke1-no-viewer-20261101/d695-official-cosim-randomstall-smoke1-no-viewer-20261101.log",
+      "sha256": "ccf05efeafcb1065325761df90068f3ade3cde1f937662f4372a8c1eaeada60b"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-randomstall-smoke1-no-viewer-20261101/hls_config.cfg",
+      "sha256": "4bbd70cfe90d59d1976f63f5c01545f39a572992dc78aaad2f7519ba3116da7d"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-randomstall-smoke1-no-viewer-20261101/reports/jpeg_axis_gray_cosim.rpt",
+      "sha256": "330a6bd37afcab688a9e1c1ddce7d127d072a39a3c23904f3161d0cb0ec8a574"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-randomstall-smoke1-no-viewer-20261101/reports/jpeg_axis_gray_env.sv",
+      "sha256": "a1c1596d0f45c78a4f030f0a15b27b0194eaf0eb2b3517ba0cfa5a9de8893146"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/diagnostic-direct-xsim-vcd-smoke1-20261101/axis-analysis.json",
+      "sha256": "a6c5ad436f6cd62f6dff2dfbd1e5e0b4fc4ff6ff6a005f5f681a94b16ffbe8c4"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/diagnostic-direct-xsim-vcd-smoke1-20261101/axis-ports.vcd",
+      "sha256": "bb47f051178ce64c07920d3c0eeb5d8ee1f1af349fa68284247294c5176b0c6c"
+    }
+  ]
+}

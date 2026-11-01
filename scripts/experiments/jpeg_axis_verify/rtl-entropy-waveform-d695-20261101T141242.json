@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+  "component_sha256": "0bdfce509b1f51829aa1c2b12536fba14088925f89ce8c7da2558707246725d5",
+  "scope": "Supplementary waveform proof for official entropy-cut then good two-transaction cosim",
+  "official_recovery_receipt": {
+    "path": "hls-green-recovery-d695-20261101T140606.json",
+    "sha256": "914452f67c427fb777c02c7d915f2d63070e039da49f96f26f1fdcafd5bfa614"
+  },
+  "transactions": 2,
+  "input_beats": 5109,
+  "input_bytes": 20436,
+  "output_beats": 128016,
+  "input_stalled_cycles": 213393,
+  "output_stalled_cycles": 21013,
+  "input_gap_cycles": 835,
+  "output_gap_cycles": 144486,
+  "stability_errors": 0,
+  "reset_assertions_after_start": 0,
+  "first_input_to_last_output_cycles": [
+    157270,
+    157080
+  ],
+  "official_control_latency_cycles": [
+    157260,
+    157083
+  ],
+  "measurement_note": "VCD samples AXIS edges; HLS report measures control transactions, so these spans have different boundaries",
+  "evidence": [
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-entropycut-good2-debug-port-vcd-20261101/axis-analysis.json",
+      "sha256": "5214ccb66bb6b38f8d1401b92add6a7c0d26f99278807b0dbe8e88ee5a0b21fe"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-entropycut-good2-debug-port-vcd-20261101/axis-ports.vcd",
+      "sha256": "21aba1315c0151346ae24f637624fc0ccdbc004e0386d2b77d5402431f46527a"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-entropycut-good2-debug-port-vcd-20261101/stdout.log",
+      "sha256": "07e3a3ce3b529156e363f0f300f44e4d3bf7a182659e64edd697917f42ea32bc"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-entropycut-good2-debug-port-vcd-20261101/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-entropycut-good2-debug-port-vcd-20261101/xelab.stdout.log",
+      "sha256": "2e36f8a12ed10093ecbdaa1aa8693d5e86d962154402a97c0b20645b007d2864"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-entropycut-good2-debug-port-vcd-20261101/xelab-arguments.txt",
+      "sha256": "a63ef9fe1df26521f0087078a8ec0d083c3b8d153e1ff970f3f4bcebd6bee3ef"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-entropycut-good2-debug-port-vcd-20261101/capture_axis_ports.tcl",
+      "sha256": "5cbdab65017476946010106629bda558c653650562ad3c8670f298b78e251208"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-entropycut-good2-debug-port-vcd-20261101/replay-result.json",
+      "sha256": "851a560738a4f01cc119b2ea28b7a7dfd8c5c13d876d247d1a8e6d7b61bb6855"
+    }
+  ]
+}

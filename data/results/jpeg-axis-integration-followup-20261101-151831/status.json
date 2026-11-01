@@ -1,0 +1,15 @@
+{
+  "status": "OFFLINE_PATCH_VERIFIED_LIVE_BUILD_DEFERRED_RESOURCE_CONTENTION",
+  "report": "C:\\Users\\14173\\Documents\\material-counter\\.runtime\\worktrees\\jpeg-probe-20261101\\data\\results\\jpeg-axis-integration-followup-20261101-151831\\README.md",
+  "selective_stage_list": "C:\\Users\\14173\\Documents\\material-counter\\.runtime\\worktrees\\jpeg-probe-20261101\\data\\results\\jpeg-axis-integration-followup-20261101-151831\\selective-stage-files.txt",
+  "connection": "NOT_RUN",
+  "synthesis": "NOT_RUN",
+  "route": "NOT_RUN",
+  "manager_latest_free_physical_mib": 806,
+  "minimum_free_physical_mib": 3072,
+  "other_g2": "ACTIVE",
+  "new_clone": "C:/w/m",
+  "manifest_sha256": "88d97eb800146dcbf5e3aeb964e5893900c241771901bcc92635eeb6c98fd50a",
+  "tests": "15/15 PASS",
+  "background_waiter_running": false
+}

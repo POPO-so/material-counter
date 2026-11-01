@@ -4,6 +4,8 @@ PS 读取 MJPEG 并直接解码为 640×400 Gray8，不缩放；PL 完成 ROI、
 
 这是独立候选运行入口，不自动替换桌面 GUI 的已验软件相机入口。正式 Route／接口冻结状态不因实现改变。完整 ABI 见 [设计](../../docs/superpowers/specs/2026-10-28-rle-design.md)。
 
+联合 JPEG 硬解候选可从同一入口显式使用 `--jpeg-pl`：它将 V4L2 协商为 640×400 MJPG，校验协商回读和 JPEG 首尾标记后，把压缩字节送入 PL；默认相机模式仍沿用软件解码路径。该模式必须提供匹配的 BIT/HWH 哈希、`ROUTED_NOT_BOARD_VERIFIED` 构建状态、boot ID 和 `--execute`，见 `scripts/experiments/run_jpeg_counter.py` 的参数说明。此入口不作为板端验收证据。
+
 ## 文件
 
 - `protocol.py`：Gray8 输入包、RLE 编码黄金模型及严格校验，正常解析采用 NumPy 向量运算。

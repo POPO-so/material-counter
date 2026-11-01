@@ -1,0 +1,336 @@
+{
+  "status": "PASS",
+  "source_sha256": "3fed9133aac29f661f4befef3618a115b5bda3dc49cb157d0f46c214e24852e4",
+  "testbench_sha256": "3fed9133aac29f661f4befef3618a115b5bda3dc49cb157d0f46c214e24852e4",
+  "runner_sha256": "a96bc165449285f5234e585c2b57c5618563a8c27a0d5bb26bb9c148c293d932",
+  "region_sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911",
+  "pipeline_sha256": "7cfbdde5f0ec6fea7005e53fadcb51473fe7b9bf45d9013720c65274ed50f261",
+  "baseline_commit": "c5a86807c93e6ed572e2f75e13a6f9c7f1320321",
+  "cases": [
+    {
+      "name": "good_synthetic",
+      "frame_id": 8193,
+      "packet_frame_id": 8193,
+      "fault": "none",
+      "foreground": 30,
+      "runs": 3,
+      "frg_records": 1,
+      "rle_words": 555,
+      "roi": [
+        0,
+        0,
+        640,
+        400
+      ],
+      "gray_sha256": "90a4c2256e2ce93cd6e2ced7c3f140ea205935f3f77b6491aef306ed2cd4264e",
+      "expected_status": 0,
+      "expected_error": 0
+    },
+    {
+      "name": "bad_checksum",
+      "frame_id": 8194,
+      "packet_frame_id": 8194,
+      "fault": "checksum",
+      "foreground": 30,
+      "runs": 3,
+      "frg_records": 1,
+      "rle_words": 555,
+      "roi": [
+        0,
+        0,
+        640,
+        400
+      ],
+      "gray_sha256": "90a4c2256e2ce93cd6e2ced7c3f140ea205935f3f77b6491aef306ed2cd4264e",
+      "expected_status": 2,
+      "expected_error": 5
+    },
+    {
+      "name": "bad_frame_id",
+      "frame_id": 8195,
+      "packet_frame_id": 8196,
+      "fault": "frame_id",
+      "foreground": 30,
+      "runs": 3,
+      "frg_records": 1,
+      "rle_words": 555,
+      "roi": [
+        0,
+        0,
+        640,
+        400
+      ],
+      "gray_sha256": "90a4c2256e2ce93cd6e2ced7c3f140ea205935f3f77b6491aef306ed2cd4264e",
+      "expected_status": 2,
+      "expected_error": 7
+    },
+    {
+      "name": "good_recovery",
+      "frame_id": 8196,
+      "packet_frame_id": 8196,
+      "fault": "none",
+      "foreground": 30,
+      "runs": 3,
+      "frg_records": 1,
+      "rle_words": 555,
+      "roi": [
+        0,
+        0,
+        640,
+        400
+      ],
+      "gray_sha256": "90a4c2256e2ce93cd6e2ced7c3f140ea205935f3f77b6491aef306ed2cd4264e",
+      "expected_status": 0,
+      "expected_error": 0
+    },
+    {
+      "name": "vendor_y_real_frame",
+      "frame_id": 8197,
+      "packet_frame_id": 8197,
+      "fault": "none",
+      "foreground": 0,
+      "runs": 0,
+      "frg_records": 0,
+      "rle_words": 552,
+      "roi": [
+        240,
+        180,
+        272,
+        196
+      ],
+      "gray_sha256": "45461b3a80e010cf77537b1cc2204ff5d6bc63cc70850fbbcca6e6c549501fe3",
+      "expected_status": 0,
+      "expected_error": 0
+    }
+  ],
+  "build_dir": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425",
+  "width": 640,
+  "height": 400,
+  "invalid_gate": "observed RLE status/error == 0, pipeline input_error == 0, FRG done && !overflow && same frame_id",
+  "frg_semantics": "Speculative capture has no packet-invalid input; invalid frame records are not accepted",
+  "automatic_mask_accept": false,
+  "jpeg_rtl_decode_tested": false,
+  "vid_active": 0,
+  "display_verification_scope": "VSYNC publication/retention of displayed_id only; HDMI active-pixel continuity not tested",
+  "measured_cases": [
+    {
+      "case": 0,
+      "fid": 8193,
+      "invalid": 0,
+      "error": 0,
+      "pixels": 256000,
+      "rle_words": 555,
+      "frg_records": 1,
+      "input_stalls": 124902,
+      "output_stalls": 477,
+      "accept": 1
+    },
+    {
+      "case": 1,
+      "fid": 8194,
+      "invalid": 1,
+      "error": 5,
+      "pixels": 256000,
+      "rle_words": 555,
+      "frg_records": 1,
+      "input_stalls": 124893,
+      "output_stalls": 468,
+      "accept": 0
+    },
+    {
+      "case": 2,
+      "fid": 8195,
+      "invalid": 1,
+      "error": 7,
+      "pixels": 256000,
+      "rle_words": 555,
+      "frg_records": 1,
+      "input_stalls": 124896,
+      "output_stalls": 471,
+      "accept": 0
+    },
+    {
+      "case": 3,
+      "fid": 8196,
+      "invalid": 0,
+      "error": 0,
+      "pixels": 256000,
+      "rle_words": 555,
+      "frg_records": 1,
+      "input_stalls": 124894,
+      "output_stalls": 469,
+      "accept": 1
+    },
+    {
+      "case": 4,
+      "fid": 8197,
+      "invalid": 0,
+      "error": 0,
+      "pixels": 256000,
+      "rle_words": 552,
+      "frg_records": 0,
+      "input_stalls": 124893,
+      "output_stalls": 468,
+      "accept": 1
+    }
+  ],
+  "counts": {
+    "cases": 5,
+    "good": 3,
+    "bad_checksum": 1,
+    "bad_frame_id": 1,
+    "recovery_good": 1,
+    "explicit_mask_accept": 3,
+    "automatic_mask_accept": 0,
+    "invalid_frame_accept": 0,
+    "pixels_checked": 1280000,
+    "input_stalls": 624478,
+    "output_stalls": 2353
+  },
+  "evidence": [
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\tb_joint_packet_inputs.json",
+      "sha256": "493a9f8d1361f0ac36e6cd34e27a0ef09a42aeed86890124f5eaa07dd40e0799"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\tb_joint_packet_xsim.tcl",
+      "sha256": "0aa4ca77d08d94e21903e70cdd0cb5af2531ae3f533b88417a1f1ecaed2a9333"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\compile.log",
+      "sha256": "2555645a9ecc4c214bbbdb54ff0031ee519d0af676e672338459498fac75b3e1"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\elaborate.log",
+      "sha256": "e99dd5a20e0534e1aa078194cd3e524649c2f2d6fc34d68c1a668af181680926"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\simulate.log",
+      "sha256": "2f2ad32758db62e18251eeed3d24136a3dbb89516cc3f7b32d7ab84e755c270c"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\vivado.log",
+      "sha256": "67948ad15ac99aea6863d9103afeeaf01e307cc4e032194e41a4ad923770dce2"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case0_frg.hex",
+      "sha256": "a286985a5b54cb7ce51324ef6c50c688a049fe57bd4f781eb8bc96166c31d2c0"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case0_meta.hex",
+      "sha256": "71dcef64cc06ff6139051ffa807685a27b597711607926d80548a4606a185b20"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case0_packet.hex",
+      "sha256": "144869cb6e249c68e50c8af7de689b5b55ff3206d34df11edc730f96d4309258"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case0_rle.hex",
+      "sha256": "0c1850b90b9a84aad45feccdb3991f91c6da03393fe2cec7fc0424170e534bf3"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case1_frg.hex",
+      "sha256": "b56fb9b72d662acfbc8725cab64644a92e3c18e6856c4c071c38e22e75543cf7"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case1_meta.hex",
+      "sha256": "56d21571a0827c895380e0223b3ee0382a42cebf86c17bc401db122b744c9521"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case1_packet.hex",
+      "sha256": "ff067114fa938eda04ed9091fd3538d8f8ce1038d19ad72a2721daf6ad4343d0"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case1_rle.hex",
+      "sha256": "45cf375c71c0c9408e39710835e0b4ed433ab042a9332417978010a8deb68574"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case2_frg.hex",
+      "sha256": "45c77c7927d205feaade447f8132d94dd6b8ead39ee392bceae3a27a5b84c76b"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case2_meta.hex",
+      "sha256": "cad4ddc0a590582324027894279f38a34746e05574f2036f60ec8872629a1b40"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case2_packet.hex",
+      "sha256": "b14f0f82f8b2b479994160447e479c05ccc67a1922c8de90082556993eeda814"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case2_rle.hex",
+      "sha256": "44faa820956dcf97b95078f442ca637ef048c560f9439d83c68e7ffdaec80149"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case3_frg.hex",
+      "sha256": "486694b465743f5f9874a9aea3069fd3e40a24b00a2d639998503e6bc3670b51"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case3_meta.hex",
+      "sha256": "6a2af65b935a762a80dfd3f09dd9bd53d7fccfcc348d7967ceae03aa775bd59a"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case3_packet.hex",
+      "sha256": "b14f0f82f8b2b479994160447e479c05ccc67a1922c8de90082556993eeda814"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case3_rle.hex",
+      "sha256": "955b9f2f8121ba6af25ad9348bc5acdc4703415d6dafcdb548e90abc56424946"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case4_frg.hex",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case4_meta.hex",
+      "sha256": "18aeb1f4680d00c78a47f71fd1c3107f064afc2148683be474b02132e3ab87db"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case4_packet.hex",
+      "sha256": "00f0e56f7a4b49e9e0fd4e9ca7a4e7e632a5ca2f36c6c9742c81bdfd1e6d0239"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\vectors\\case4_rle.hex",
+      "sha256": "676fad8bad7dc69f553436ae5a7c604640497813ee155502e32d496279909b9f"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_frg_0.hex",
+      "sha256": "a286985a5b54cb7ce51324ef6c50c688a049fe57bd4f781eb8bc96166c31d2c0"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_frg_1.hex",
+      "sha256": "b56fb9b72d662acfbc8725cab64644a92e3c18e6856c4c071c38e22e75543cf7"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_frg_2.hex",
+      "sha256": "45c77c7927d205feaade447f8132d94dd6b8ead39ee392bceae3a27a5b84c76b"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_frg_3.hex",
+      "sha256": "486694b465743f5f9874a9aea3069fd3e40a24b00a2d639998503e6bc3670b51"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_frg_4.hex",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_rle_0.hex",
+      "sha256": "96572f5cc4a03e7976b1219d0c71c14e9a5cdb9d511dae5536f14678f2f6e06f"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_rle_1.hex",
+      "sha256": "639437dda4fa5730e75d2b232c8e37a0188d76a8df2833d0154a1a4db3f9bb95"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_rle_2.hex",
+      "sha256": "c63b7a5afbec25a66de8ff547d6ebd242ac77431570c351c53612ea37380605a"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_rle_3.hex",
+      "sha256": "f43e3ee52189df15e16ebfc80b5980e32a12ef5646b97d1f223e380a3951a45c"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-joint-packet-20261101\\20261101-135104-187425\\sim\\observed_rle_4.hex",
+      "sha256": "73bb7a49a660bdc92a3cd88fb2599ceb6a545be2a556b5e14baad30b8a179c8e"
+    }
+  ]
+}

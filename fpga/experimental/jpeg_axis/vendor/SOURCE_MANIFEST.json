@@ -1,0 +1,45 @@
+{
+  "vendor": "AMD/Xilinx Vitis Libraries JPEG decoder",
+  "codec_source_commit": "1204c74cf86ff1e54e0933849328cb9ef7ae7fa6",
+  "source_tree": "C:/w/mc-jpeg-libs-20261101/codec/L2/include/hw/jpegDec",
+  "generated_utc": "2026-11-01",
+  "files": [
+    {
+      "path": "jpegDec/axi_to_stream.hpp",
+      "source": "C:\\w\\mc-jpeg-libs-20261101\\codec\\L2\\include\\hw\\jpegDec\\axi_to_stream.hpp",
+      "sha256": "c06c5710d5eeab4a1fdd87ada697d2388dc6aa1ecfb8e375c62da3d7aa9293ea"
+    },
+    {
+      "path": "jpegDec/utils_XAcc_jpeg.hpp",
+      "source": "C:\\w\\mc-jpeg-libs-20261101\\codec\\L2\\include\\hw\\jpegDec\\utils_XAcc_jpeg.hpp",
+      "sha256": "4290662144ccdca58b49bab4c8677102e41851c906afba22833e485ed0d9a5a1"
+    },
+    {
+      "path": "jpegDec/XAcc_idct.hpp",
+      "source": "C:\\w\\mc-jpeg-libs-20261101\\codec\\L2\\include\\hw\\jpegDec\\XAcc_idct.hpp",
+      "sha256": "970e0478e0dc29abcd8f75a6d5470d79cc446535cef2c1aefe02747d43b7d6fb"
+    },
+    {
+      "path": "jpegDec/XAcc_jfifparser.hpp",
+      "source": "C:\\w\\mc-jpeg-libs-20261101\\codec\\L2\\include\\hw\\jpegDec\\XAcc_jfifparser.hpp",
+      "sha256": "e8fde148cd16e182f662710656a9d6b5cc4bb9980da679c81dc96495ae134b52"
+    },
+    {
+      "path": "jpegDec/XAcc_jpegdecoder.hpp",
+      "source": "C:\\w\\mc-jpeg-libs-20261101\\codec\\L2\\include\\hw\\jpegDec\\XAcc_jpegdecoder.hpp",
+      "sha256": "fa7c959c5187ecc3a20874b5354fe5ecdb06f4826ab2fa38d5f7dc53a60d107a"
+    },
+    {
+      "path": "LICENSE.txt",
+      "source": "C:\\w\\mc-jpeg-libs-20261101\\codec\\LICENSE.txt",
+      "sha256": "8c751c62e2d229b02bc217bdd31460f32f604620d927cb5d2c55b16d0746e524"
+    }
+  ],
+  "external_dependencies": [
+    {
+      "path": "C:/AMDDesignTools/2026.1/Vitis/include/utils/x_hls_utils.h",
+      "source": "Installed AMD Vitis 2026.1 include tree; not vendored",
+      "sha256": "2453a7b917a2f088b28dce44066eda126c1826e0878d968a87e1852919840fd4"
+    }
+  ]
+}

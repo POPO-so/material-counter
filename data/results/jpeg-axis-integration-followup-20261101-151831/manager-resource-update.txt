@@ -1,0 +1,1 @@
+Manager latest read-only update: FreePhysical=806 MiB; another G2 Vivado build remains active. JPEG connect and synthesis are not run. No process was started, stopped, or polled by this update. Prior timestamped environment snapshot remains unchanged.

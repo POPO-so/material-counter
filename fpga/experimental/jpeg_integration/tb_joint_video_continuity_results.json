@@ -1,0 +1,100 @@
+{
+  "status": "PASS",
+  "source_sha256": "dda0a9abfcc7668e09f10f8ab9c1656ccfc1e4fbe946f09430efcfe8c0056dd9",
+  "testbench_sha256": "dda0a9abfcc7668e09f10f8ab9c1656ccfc1e4fbe946f09430efcfe8c0056dd9",
+  "runner_sha256": "fcf7fc259ca12f152d776aec234377bec21a12a3f224d247595a34463b9e0f08",
+  "region_sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911",
+  "baseline_commit": "c5a86807c93e6ed572e2f75e13a6f9c7f1320321",
+  "build_dir": "C:\\w\\mc-jpeg-video-continuity-20261101\\20261101-135830-870420",
+  "counts": {
+    "frames": 5,
+    "timing_checks": 6187500,
+    "active_pixels": 4608000,
+    "blanking_pixels": 1579500,
+    "rgb_checks": 20,
+    "white_A": 3,
+    "white_C": 1,
+    "black": 8,
+    "background": 5,
+    "accept_pulses": 2,
+    "boundary_swaps": 2,
+    "producer_pause_cycles": 1533092,
+    "pause_frames": 2,
+    "pause_active_pixels": 1721504,
+    "invalid_retention_pixels": 2272797,
+    "mask_beats": 768000,
+    "rejects": 1
+  },
+  "timing": {
+    "active": [
+      1280,
+      720
+    ],
+    "total": [
+      1650,
+      750
+    ],
+    "horizontal_sync_back_active_front": [
+      40,
+      220,
+      1280,
+      110
+    ],
+    "vertical_sync_back_active_front": [
+      5,
+      20,
+      720,
+      5
+    ],
+    "pixel_period_ns": 13.468,
+    "mask_period_ns": 20,
+    "sampled_input_to_output_latency_pixel_clocks": 1
+  },
+  "coverage": [
+    "full active/hsync/vsync comparison on every pixel clock including blanking",
+    "five complete frames, each 720 lines of 1280 active pixels",
+    "old mask RGB and identity retained while producer stalls across frames",
+    "malformed tap frame_id rejected without mask_accept",
+    "two explicit accepts, both pixel-domain identities switch only on VSYNC rise",
+    "background, mask A white, mask C white and black RGB probes"
+  ],
+  "displayed_id_domain": "frame-boundary assertion uses pixel-domain core.displayed_frame_id; public mask-domain mirror checked after CDC ACK",
+  "protected_existing": {
+    "rle_region_features.v": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911",
+    "tb_joint_packet.sv": "3fed9133aac29f661f4befef3618a115b5bda3dc49cb157d0f46c214e24852e4",
+    "tb_joint_packet_run.py": "a96bc165449285f5234e585c2b57c5618563a8c27a0d5bb26bb9c148c293d932",
+    "tb_joint_packet_results.json": "a30dc58a4158f9aeccc9e9388a8d83a274fa1d2fe6687a4df9c5c018d4a8b7a2"
+  },
+  "physical_hdmi_tmds_tested": false,
+  "board_timing_tested": false,
+  "evidence": [
+    {
+      "path": "C:\\w\\mc-jpeg-video-continuity-20261101\\20261101-135830-870420\\tb_joint_video_continuity_inputs.json",
+      "sha256": "3a37635ca4c7ab5a1b321c16e6860aafb7849270f77085fa47676c606dbd2bfc"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-video-continuity-20261101\\20261101-135830-870420\\tb_joint_video_continuity_xsim.tcl",
+      "sha256": "6cf418f413e4ab7c9efc800817653947e8c257fcf31990c5d723dbd6cb73a2fe"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-video-continuity-20261101\\20261101-135830-870420\\sim\\compile.log",
+      "sha256": "5175e4a85b4895b08c529dbfc65f6400b467ff70890c4d359174c37d818b3a80"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-video-continuity-20261101\\20261101-135830-870420\\sim\\elaborate.log",
+      "sha256": "0cfa6fbd8f19a83636abe0148cb29f2c5f03bb360a273f6886ea587a32454c47"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-video-continuity-20261101\\20261101-135830-870420\\sim\\simulate.log",
+      "sha256": "5b866392082b5cde0fb3e7d0d847a7810737052248c29b3c7bdb79a403d13ee8"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-video-continuity-20261101\\20261101-135830-870420\\sim\\video_continuity_frames.log",
+      "sha256": "4b234ac9d56d6ae4b351c6aebd9b468da80cfb8eae0d42f5456210bd1b30f85a"
+    },
+    {
+      "path": "C:\\w\\mc-jpeg-video-continuity-20261101\\20261101-135830-870420\\sim\\vivado.log",
+      "sha256": "8d3c2f5670d1fcea751772bcad73f57538acf8e3da3d6f7725cf114defdb72de"
+    }
+  ]
+}
