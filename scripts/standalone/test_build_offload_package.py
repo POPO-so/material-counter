@@ -93,11 +93,13 @@ def package_inputs(tmp_path):
         "runtime": json.loads((baseline / "export/display-manifest.json").read_text())["runtime"],
         "files": {"bit": {"path": bit_path.name, "sha256": sha(BIT)},
                   "hwh": {"path": hwh_path.name, "sha256": sha(hwh_path.read_bytes())}},
-        "offload": {"abi": 1,
+        "offload": {"abi": 2,
                     "preview": {"signature": "PBO1", "base": 0x43C50000,
                                 "source_geometry": [640, 400], "viewport": [384, 146, 512, 320]},
                     "input": {"signature": "RAW1", "mode": "raw"},
-                    "buttons": {"interrupt": True, "intc_index": 3}},
+                    "buttons": {"interrupt": True, "intc_index": 3,
+                                "status_signature": "BTN1"},
+                    "features": {"signature": "FRG2"}},
         "rtl_sha256": "a" * 64,
     }
     write(hardware / "display-manifest.json", json.dumps(manifest).encode())

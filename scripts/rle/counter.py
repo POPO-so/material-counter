@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 import time
+import math
 import numpy as np
 
 _LEGACY = Path(__file__).resolve().parents[1] / "wo0016"
@@ -12,6 +13,7 @@ from scripts.wo0016.stream_counter import MaskCounter, Detection, FrameResult
 from scripts.wo0016.split_touching import split_touching_component, is_single_connected_component
 from .components import analyze_runs, local_mask
 from .protocol import RleFrame
+from .components import Component
 
 
 class RleCounter(MaskCounter):
@@ -27,8 +29,10 @@ class RleCounter(MaskCounter):
         self.library = library
         self.last_seen_frame_id = None
         self.invalid_frames = 0
+        self.last_backend = "native"
 
-    def update_rle(self, frame: RleFrame, *, capture_monotonic_ns=None) -> FrameResult | None:
+    def update_rle(self, frame: RleFrame, *, capture_monotonic_ns=None,
+                   region_features=None) -> FrameResult | None:
         if not isinstance(frame, RleFrame):
             raise TypeError("expected a validated RleFrame")
         if self.last_seen_frame_id is not None and frame.frame_id <= self.last_seen_frame_id:
@@ -43,13 +47,37 @@ class RleCounter(MaskCounter):
             self.invalid_frames += 1
             return None
 
+        features_valid = (isinstance(region_features, tuple)
+            and all(isinstance(c, Component) for c in region_features)
+            and all(all(isinstance(v, (int, np.integer)) and not isinstance(v, (bool, np.bool_))
+                        for v in (c.x_min, c.y_min, c.x_max, c.y_max, c.area))
+                    and all(math.isfinite(v) for v in (c.centroid_x, c.centroid_y))
+                    and c.area > 0 and 0 <= c.x_min <= c.x_max < self.width
+                    and 0 <= c.y_min <= c.y_max < self.height
+                    and c.area <= (c.x_max-c.x_min+1)*(c.y_max-c.y_min+1)
+                    and c.x_min <= c.centroid_x <= c.x_max
+                    and c.y_min <= c.centroid_y <= c.y_max for c in region_features)
+            and sum(c.area for c in region_features) == frame.total_fg)
+        guarded_candidate = (features_valid and self.guarded_merge and any(
+            self.single_intact_area < c.area <= self.max_split_area
+            and not self._component_exceeds_limits(c.area, c.x_max-c.x_min+1, c.y_max-c.y_min+1)
+            for c in region_features))
+        use_features = features_valid and not guarded_candidate
+        self.last_backend = ("pl_features" if use_features else
+                             "native" if region_features is None or guarded_candidate else "fallback")
+
         started = time.perf_counter()
         timestamp = self._motion_timestamp(capture_monotonic_ns)
         self._split_origins = {}
         detections, rejected = [], []
         if frame.total_fg >= self.min_area:
-            analysis = analyze_runs(frame.runs, library=self.library, min_area=self.min_area)
-            for index, component in enumerate(analysis.components):
+            if use_features:
+                components = region_features
+                analysis = None
+            else:
+                analysis = analyze_runs(frame.runs, library=self.library, min_area=self.min_area)
+                components = analysis.components
+            for index, component in enumerate(components):
                 if component.area < self.min_area:
                     continue
                 detection = Detection(component.x_min, component.x_max, component.y_min,
@@ -59,6 +87,8 @@ class RleCounter(MaskCounter):
                     rejected.append(detection)
                     continue
                 if self.guarded_merge and self.single_intact_area < component.area <= self.max_split_area:
+                    if analysis is None:
+                        raise AssertionError("guarded merge candidates must use native CCL")
                     mask = local_mask(frame.runs, analysis.labels, index) != 0
                     pieces = split_touching_component(mask,
                         min_child_area=self.min_split_child_area, min_hole_area=self.split_min_hole_area,
@@ -94,7 +124,8 @@ class RleCounter(MaskCounter):
             row_projection=tuple(frame.row_projection[top:bottom].tolist()),
             column_projection=tuple(frame.column_projection.tolist()),
             roi_foreground_pixels=frame.total_fg, ccl_executed=frame.total_fg>=self.min_area,
-            roi_subtimings_ms={"rle_regions_ms": region_ms, "track_ms": track_ms},
+            roi_subtimings_ms={"rle_regions_ms": region_ms, "track_ms": track_ms,
+                               "pl_features_ms": region_ms if use_features else 0.0},
             raw_detections=raw, suppressed_events=tuple(self.last_suppressed_events),
             tracks=self.tracking_snapshot(), glare_rejected_count=self.glare_rejected_count,
             glare_area_px=self.glare_area_px)

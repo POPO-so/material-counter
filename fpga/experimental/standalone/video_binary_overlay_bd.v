@@ -30,7 +30,9 @@ module video_binary_overlay_bd (
   output wire [31:0] capture_count, drop_count, reject_count,
   output wire capture_busy, pending_valid, completed_valid_status,
   output wire [31:0] captured_frame_id, mask_displayed_frame_id,
-  output wire mask_display_valid
+  output wire mask_display_valid,
+  input wire [3:0] button_state, button_events, button_fault,
+  output reg [3:0] event_clear, fault_clear
 );
   localparam [1:0] OKAY=2'b00, SLVERR=2'b10;
   reg [31:0] wr_addr;
@@ -38,6 +40,9 @@ module video_binary_overlay_bd (
   reg [3:0] wr_strb;
   reg aw_full, w_full;
   reg [31:0] accepted_id, cfg_frame_id, cfg_box_words [0:31];
+  reg [23:0] cfg_max_area;
+  reg [15:0] cfg_max_w, cfg_max_h;
+  reg [7:0] cfg_aspect_x16;
   reg cfg_enable;
   reg [4:0] cfg_count;
   reg [9:0] cfg_line_x;
@@ -53,7 +58,10 @@ module video_binary_overlay_bd (
   end endgenerate
   assign s_axi_awready=!aw_full && !s_axi_bvalid;
   assign s_axi_wready=!w_full && !s_axi_bvalid;
-  assign s_axi_arready=!s_axi_rvalid;
+  reg [1:0] feature_read_wait;
+  reg [11:0] feature_read_address;
+  reg feature_read_enable;
+  assign s_axi_arready=!s_axi_rvalid && feature_read_wait==0;
   wire write_fire=aw_full && w_full && !s_axi_bvalid;
   wire [31:0] wa=wr_addr;
   wire [31:0] wd=wr_data;
@@ -61,6 +69,20 @@ module video_binary_overlay_bd (
   wire display_valid_core;
   wire [31:0] displayed_id_core;
   reg mask_accept;
+  wire [31:0] feature_word, feature_frame_id, feature_total_fg, feature_dropped;
+  wire feature_done, feature_overflow, feature_busy;
+  wire [9:0] feature_count;
+  // The AXI and accepted-pixel clocks are the same FCLK0 domain.
+  rle_feature_tap features (
+    .cfg_max_area(cfg_max_area),.cfg_max_w(cfg_max_w),.cfg_max_h(cfg_max_h),.cfg_aspect_x16(cfg_aspect_x16),
+    .tap_clk(mask_clk),.resetn(mask_resetn),
+    .tap_valid(tap_valid),.tap_sof(tap_sof),.tap_eol(tap_eol),
+    .tap_bit(tap_data[0]),.tap_frame_id(tap_frame_id),
+    .record_word_address(feature_read_address),.read_enable(feature_read_enable),
+    .record_word_data(feature_word),.frame_id(feature_frame_id),
+    .done(feature_done),.overflow(feature_overflow),.busy(feature_busy),
+    .record_count(feature_count),.total_fg(feature_total_fg),.dropped_frames(feature_dropped)
+  );
 
   video_binary_overlay #(.WIDTH(640),.HEIGHT(400),.VIEW_X(384),.VIEW_Y(146),.VIEW_WIDTH(512),.VIEW_HEIGHT(320),.MAX_BOXES(16)) core (
     .mask_clk(mask_clk),.mask_resetn(mask_resetn),
@@ -97,9 +119,26 @@ module video_binary_overlay_bd (
       16'h0034: read_value=cfg_frame_id;
       16'h0038: read_value={27'b0,cfg_count};
       16'h003c: read_value={22'b0,cfg_line_x};
+      16'h0080: read_value=32'h42544e31;
+      16'h0084: read_value={28'd0,button_state};
+      16'h0088: read_value={28'd0,button_events};
+      16'h008c: read_value={28'd0,button_fault};
+      16'h0200: read_value=32'h46524732;
+      16'h0204: read_value={29'b0,feature_busy,feature_overflow,feature_done};
+      16'h0208: read_value=feature_frame_id;
+      16'h020c: read_value={22'b0,feature_count};
+      16'h0210: read_value=feature_total_fg;
+      16'h0214: read_value=feature_dropped;
+      16'h0218: read_value=32'd512;
+      16'h0220: read_value={8'd0,cfg_max_area};
+      16'h0224: read_value={16'd0,cfg_max_w};
+      16'h0228: read_value={16'd0,cfg_max_h};
+      16'h022c: read_value={24'd0,cfg_aspect_x16};
       default: begin
         if(s_axi_araddr[15:0]>=16'h0100 && s_axi_araddr[15:0]<16'h0180)
           read_value=cfg_box_words[(s_axi_araddr[15:0]-16'h0100)>>2];
+        else if(s_axi_araddr[15:0]>=16'h1000 && s_axi_araddr[15:0]<16'h5000)
+          read_value=0; // RAM response is delayed until its synchronous read completes.
         else read_error=1;
       end
     endcase
@@ -108,10 +147,13 @@ module video_binary_overlay_bd (
     if(!s_axi_aresetn) begin
       wr_addr<=0;wr_data<=0;wr_strb<=0;aw_full<=0;w_full<=0;
       s_axi_bresp<=OKAY;s_axi_bvalid<=0;s_axi_rdata<=0;s_axi_rresp<=OKAY;s_axi_rvalid<=0;
+      feature_read_wait<=0;feature_read_address<=0;feature_read_enable<=0;
       accepted_id<=0;cfg_enable<=0;cfg_frame_id<=0;cfg_count<=0;cfg_line_x<=640;cfg_commit<=0;mask_accept<=0;
+      cfg_max_area<=0;cfg_max_w<=0;cfg_max_h<=0;cfg_aspect_x16<=0;event_clear<=0;fault_clear<=0;
       for(ri=0;ri<32;ri=ri+1) cfg_box_words[ri]<=0;
     end else begin
-      cfg_commit<=0;mask_accept<=0;
+      cfg_commit<=0;mask_accept<=0;event_clear<=0;fault_clear<=0;
+      feature_read_enable<=0;
       if(s_axi_awvalid&&s_axi_awready) begin wr_addr<=s_axi_awaddr;aw_full<=1;end
       if(s_axi_wvalid&&s_axi_wready) begin wr_data<=s_axi_wdata;wr_strb<=s_axi_wstrb;w_full<=1;end
       if(s_axi_bvalid&&s_axi_bready) s_axi_bvalid<=0;
@@ -119,8 +161,16 @@ module video_binary_overlay_bd (
         aw_full<=0;w_full<=0;s_axi_bvalid<=1;s_axi_bresp<=OKAY;
         if(wr_strb!=4'hf || wa[1:0]!=0 || (wa[31:16]!=0 && wa[31:16]!=16'h43c5)) s_axi_bresp<=SLVERR;
         else case(wa[15:0])
-          16'h0000,16'h0004,16'h0008,16'h000c,16'h0010,16'h0014,16'h0018,16'h001c:
+          16'h0000,16'h0004,16'h0008,16'h000c,16'h0010,16'h0014,16'h0018,16'h001c,
+          16'h0080,16'h0084,16'h0200,16'h0204,16'h0208,16'h020c,
+          16'h0210,16'h0214,16'h0218:
             s_axi_bresp<=SLVERR;
+          16'h0088: if(wd[31:4]!=0) s_axi_bresp<=SLVERR; else event_clear<=wd[3:0];
+          16'h008c: if(wd[31:4]!=0) s_axi_bresp<=SLVERR; else fault_clear<=wd[3:0];
+          16'h0220: if(feature_busy || wd[31:24]!=0) s_axi_bresp<=SLVERR; else cfg_max_area<=wd[23:0];
+          16'h0224: if(feature_busy || wd[31:16]!=0) s_axi_bresp<=SLVERR; else cfg_max_w<=wd[15:0];
+          16'h0228: if(feature_busy || wd[31:16]!=0) s_axi_bresp<=SLVERR; else cfg_max_h<=wd[15:0];
+          16'h022c: if(feature_busy || wd[31:8]!=0) s_axi_bresp<=SLVERR; else cfg_aspect_x16<=wd[7:0];
           16'h0020: accepted_id<=wd;
           16'h0024: if(wd==1) mask_accept<=1; else s_axi_bresp<=SLVERR;
           16'h0030: if(wd[31:1]!=0) s_axi_bresp<=SLVERR; else cfg_enable<=wd[0];
@@ -136,7 +186,18 @@ module video_binary_overlay_bd (
       end
       if(s_axi_rvalid&&s_axi_rready) s_axi_rvalid<=0;
       if(s_axi_arvalid&&s_axi_arready) begin
-        s_axi_rvalid<=1;s_axi_rdata<=read_value;s_axi_rresp<=read_error?SLVERR:OKAY;
+        if(!read_error && s_axi_araddr[15:0]>=16'h1000 && s_axi_araddr[15:0]<16'h5000) begin
+          feature_read_address<=(s_axi_araddr[15:0]-16'h1000)>>2;
+          feature_read_enable<=1;feature_read_wait<=2;
+        end else begin
+          s_axi_rvalid<=1;s_axi_rdata<=read_value;s_axi_rresp<=read_error?SLVERR:OKAY;
+        end
+      end
+      if(feature_read_wait!=0) begin
+        feature_read_wait<=feature_read_wait-1'b1;
+        if(feature_read_wait==1) begin
+          s_axi_rvalid<=1;s_axi_rdata<=feature_word;s_axi_rresp<=OKAY;
+        end
       end
     end
   end

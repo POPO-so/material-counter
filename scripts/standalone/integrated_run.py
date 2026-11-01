@@ -27,6 +27,7 @@ from .bundle import verify_bundle, verify_runtime, verify_offload_capabilities, 
 from .compositor import DashboardComposer
 from .controls import ButtonDecoder, ControlState
 from .count_controls import advance_count, make_runtime_counter
+from scripts.rle.features import PlRegionFeatures
 from .crossing_snapshots import CrossingSnapshots
 from .async_evidence import EvidenceExporter
 from .driver_owner import DriverOwner
@@ -44,8 +45,9 @@ from .shared_frames import SharedFrames, WRITING, READING
 from .button_events import ButtonEventRunner, interrupt_available
 from .diagnostic_mode import DiagnosticPolicy
 from .exposure import ExposureController, V4L2CtlBackend
-from .runtime_metrics import RuntimeSampler, counter_rates
-from .pl_preview import PlPreview
+from .runtime_metrics import (RuntimeSampler, ExternalProcessSampler, counter_rates,
+                              cpu_source_breakdown)
+from .pl_preview import PlPreview, ButtonEventStatus
 from scripts.rle.protocol import TX_BYTES, RX_CAPACITY
 from scripts.rle.transport import RAW_TX_BYTES, RleDmaTransport
 from scripts.wo0015.board_preflight import audit_process_ownership, inspect_pynq_global_state
@@ -57,6 +59,13 @@ def read_camera_frame(camera, *, after, timeout):
         return camera.read(after=after, timeout=timeout)
     except LateDecodeTimeout as error:
         return error.frame
+
+CPU_SCOPE_DESCRIPTION = (
+    "cpu_sources percentages use whole-machine capacity across all logical CPUs (0..100%). "
+    "legacy process CPU uses one core as its 100% basis (100% equals one core). "
+    "External process attribution excludes the runner and drawing child; do not double-attribute "
+    "external processes and application threads. network counters are not CPU percentages."
+)
 
 
 def rasterize_into(packet, output):
@@ -124,7 +133,7 @@ def telemetry_page_lines(page, video):
 
 def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='normal',
                      exposure=None, exposure_error=None, pl_rates=None, runtime=None,
-                     button_status='IRQ READY'):
+                     runtime_diagnostics=None, button_status='IRQ READY'):
     """Use measured telemetry only; unavailable or stale readings stay blank."""
     performance=telemetry.get('performance',{})
     resources=telemetry.get('resources',{})
@@ -189,17 +198,58 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
     thread_text=('threads '+', '.join('{} {:.1f}tick/s'.format(name[:7],ticks/interval)
                                    for ticks,name in sorted(thread_entries,reverse=True)[:2])
                  if thread_entries else 'threads unavailable')
+    queue_text='preview pools unavailable'
+    if isinstance(runtime_diagnostics,dict):
+        diagnostic_threads=runtime_diagnostics.get('threads',[])
+        if diagnostic_threads:
+            thread_text=' | '.join('{} CPU{:.0f}ms run{:.0f}ms wait{:.0f}ms'.format(
+                str(entry.get('name') or entry.get('tid','?'))[:4],
+                entry['cpu_time_ms'],entry['run_time_ms'],entry['wait_time_ms'])
+                for entry in diagnostic_threads[:2])
+        input_pool=runtime_diagnostics.get('input_pool')
+        output_pool=runtime_diagnostics.get('output_pool')
+        if isinstance(input_pool,dict) and isinstance(output_pool,dict):
+            queue_text='IN {}/{}  OUT {}/{}'.format(input_pool.get('ready','--'),
+                input_pool.get('capacity','--'),output_pool.get('ready','--'),
+                output_pool.get('capacity','--'))
+    cpu_sources=(runtime_diagnostics or {}).get('cpu_sources') if isinstance(runtime_diagnostics,dict) else None
+    if isinstance(cpu_sources,dict):
+        labels=(('camera','camera'),('drawing','draw'),('preview_pump','pump'),
+                ('hardware_owner','owner'),('snapshots','snap'),('other','other'),
+                ('external_ssh','SSH'),('external_other','ext'))
+        ranked=[(label,cpu_sources.get(name)) for name,label in labels]
+        ranked=[(name,value) for name,value in ranked
+                if isinstance(value,(int,float)) and math.isfinite(value) and value>=0]
+        cpu_source_text=('CPU 来源 '+', '.join('{} {:.1f}%'.format(name,value)
+            for name,value in sorted(ranked,key=lambda item:item[1],reverse=True)[:3])
+            if ranked else 'CPU 来源 unknown')
+    else:
+        cpu_source_text='CPU 来源 unknown'
+    queues=(runtime_diagnostics or {}).get('queues') if isinstance(runtime_diagnostics,dict) else None
+    queue_summary_text='队列 unknown'
+    if isinstance(queues,dict):
+        camera_queue=queues.get('camera_to_processing') or {}
+        draw_queue=queues.get('preview_to_drawing') or {}
+        hdmi_queue=queues.get('drawing_to_hdmi') or {}
+        queue_summary_text='队列 相机丢{} 覆盖{} 绘制{}/{} HDMI{}/{}'.format(
+            camera_queue.get('dropped_old_frames') if camera_queue.get('dropped_old_frames') is not None else '?',
+            camera_queue.get('recent_frame_overwritten') if camera_queue.get('recent_frame_overwritten') is not None else '?',
+            draw_queue.get('ready') if draw_queue.get('ready') is not None else '?',
+            draw_queue.get('dropped_frames') if draw_queue.get('dropped_frames') is not None else '?',
+            hdmi_queue.get('ready') if hdmi_queue.get('ready') is not None else '?',
+            hdmi_queue.get('submit_failures') if hdmi_queue.get('submit_failures') is not None else '?')
     rates=rates or {}
-    result=dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=int(page),
+    return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
         mode='DIAGNOSTIC' if mode=='diagnostic' else 'NORMAL',exposure_text=exposure_text,
         exposure_range_text=exposure_range_text,
-        pl_text=pl_text,thread_text=thread_text,button_status=button_status,
+        pl_text=pl_text,thread_text=thread_text,queue_text=queue_text,
+        cpu_source_text=cpu_source_text,queue_summary_text=queue_summary_text,
+        cpu_sources=cpu_sources,queues=queues,
+        button_status=button_status,
         rle_fresh=bool(rates),rle_activity_pct=rates.get('rle_activity_pct'),
         input_mb_s=rates.get('input_mb_s'),output_mb_s=rates.get('output_mb_s'),
         input_stall_pct=rates.get('input_stall_pct'),output_stall_pct=rates.get('output_stall_pct'),
-        display_fps=perf.get('display_fps'),processing_fps=(
-            perf.get('processing_fps') if perf.get('processing_fps') is not None
-            else video.get('processing_fps')),
+        display_fps=perf.get('display_fps'),processing_fps=perf.get('processing_fps'),
         processing_ms=perf.get('processing_ms'),
         cpu_percent=cpu.get('system'),cpu0_percent=cpu.get('cpu0'),cpu1_percent=cpu.get('cpu1'),
         memory_percent=memory_percent,
@@ -212,7 +262,6 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
         link_summary=video.get('link_summary'),page_lines=telemetry_page_lines(page,video) if page else (),
         regions_ms=video.get('regions_ms'),
         track_ms=video.get('track_ms'),pl=video.get('pl'))
-    return result
 
 
 def _with_publish_boundary(frame, published, published_ns):
@@ -314,6 +363,293 @@ def verify_selected_offload_bundle(args, manifest, hwh):
     if (args.button_input == 'irq' or args.preview_backend == 'pl'
             or args.input_mode == 'raw'):
         return verify_offload_capabilities(manifest, hwh)
+    return None
+
+
+def button_input_poll_callback(mode, worker_getter):
+    """Create the 10 ms compatibility poll hook only when explicitly selected."""
+    if mode not in ('irq','polling','off'):
+        raise ValueError('unknown button input mode')
+    if mode != 'polling':
+        return None
+    def poll():
+        worker=worker_getter()
+        if worker is not None:
+            worker.poll()
+    return poll
+
+
+class ButtonInputWorker:
+    """Use the overlay owner's loop for IRQ waits or its explicit polling hook."""
+    def __init__(self, owner, mode, channel, read_bits, on_commands, on_error):
+        if mode not in ('irq','polling','off'):
+            raise ValueError('unknown button input mode')
+        self.owner=owner
+        self.mode,self.channel=mode,channel
+        self.read_bits,self.on_commands,self.on_error=read_bits,on_commands,on_error
+        self.decoder=ButtonDecoder()
+        self._task=None
+        self._active=False
+
+    def start(self):
+        if self.mode=='off':return
+        if self.mode=='irq' and not interrupt_available(self.channel):
+            raise RuntimeError('GPIO interrupt unavailable; select --button-input polling only for legacy hardware')
+        self._active=True
+        if self.mode=='irq':
+            self._task=self.owner.call(lambda:self.owner.start_background(
+                lambda: ButtonEventRunner(self.channel,self.read_bits,self._emit,
+                    decoder=self.decoder).run(),on_error=self.on_error))
+
+    def stop(self,timeout=2):
+        self._active=False
+        if self._task is not None and not self._task.done():
+            self.owner.call(lambda:self.owner.cancel_background(self._task,timeout=timeout),
+                            timeout=timeout+1)
+        self._task=None
+
+    def _emit(self, commands):
+        for command in commands:self.on_commands(command)
+
+    def poll(self):
+        if self._active and self.mode=='polling':
+            commands=self.decoder.update(self.read_bits(),time.monotonic())
+            if commands:self._emit(commands)
+
+
+def runtime_diagnostic_snapshot(runtime, input_pool, output_pool, tick_hz):
+    """Keep a bounded, display-ready sample of scheduler and preview-pool state."""
+    threads=[]
+    if isinstance(runtime,dict):
+        interval=runtime.get('interval_s')
+        source=runtime.get('threads',{})
+        if isinstance(interval,(int,float)) and interval>0 and isinstance(source,dict):
+            for tid,entry in source.items():
+                if not isinstance(entry,dict):
+                    continue
+                user=entry.get('utime_ticks_delta')
+                system=entry.get('stime_ticks_delta')
+                run_ns=entry.get('schedstat_run_ns_delta')
+                wait_ns=entry.get('schedstat_wait_ns_delta')
+                if (type(user) is not int or user < 0 or type(system) is not int
+                        or system < 0 or type(tick_hz) is not int or tick_hz <= 0):
+                    continue
+                cpu_ms=(user+system)*1000.0/tick_hz
+                if not all(isinstance(value,(int,float)) and value>=0 for value in
+                           (cpu_ms,run_ns,wait_ns)):
+                    continue
+                threads.append(dict(tid=str(tid),name=str(entry.get('name') or tid),
+                    cpu_time_ms=cpu_ms,run_time_ms=run_ns/1_000_000,
+                    wait_time_ms=wait_ns/1_000_000))
+    threads.sort(key=lambda entry:(entry['cpu_time_ms'],entry['run_time_ms']),reverse=True)
+    return dict(interval_s=(runtime or {}).get('interval_s') if isinstance(runtime,dict) else None,
+        threads=threads[:2], input_pool=_pool_occupancy(input_pool),
+        output_pool=_pool_occupancy(output_pool),
+        cpu_sources=cpu_source_breakdown(runtime, hertz=tick_hz))
+
+
+class QueueDepthWindow:
+    """Bounded queue depth observations for one low-rate reporting window."""
+    def __init__(self):
+        self.current = None
+        self.maximum = None
+
+    def observe(self, depth):
+        if type(depth) is not int or depth < 0:
+            self.current = None
+            return
+        self.current = depth
+        self.maximum = depth if self.maximum is None else max(self.maximum, depth)
+
+    def snapshot(self, capacity=None):
+        result = dict(window_max=self.maximum, current=self.current, capacity=capacity)
+        self.maximum = None
+        return result
+
+
+def queue_diagnostic_snapshot(input_pool, output_pool, camera_dropped=None,
+                              camera_overwritten=None, submit_failures=None,
+                              camera_depth=None):
+    """Return queue/drop observations without inventing unavailable counters."""
+    input_occupancy = _pool_occupancy(input_pool)
+    output_occupancy = _pool_occupancy(output_pool)
+    return {
+        'camera_to_processing': dict(depth=camera_depth, dropped_old_frames=camera_dropped,
+                                     recent_frame_overwritten=camera_overwritten),
+        'main_to_preview': input_occupancy,
+        'preview_to_drawing': dict(ready=input_occupancy.get('ready') if input_occupancy else None,
+            capacity=input_occupancy.get('capacity') if input_occupancy else None,
+            dropped_frames=input_pool.get('dropped_ready_frames') if isinstance(input_pool,dict) else None),
+        'drawing_to_hdmi': dict(ready=output_occupancy.get('ready') if output_occupancy else None,
+            capacity=output_occupancy.get('capacity') if output_occupancy else None,
+            submit_failures=submit_failures),
+    }
+
+
+def _pool_occupancy(pool):
+    if not isinstance(pool,dict):
+        return None
+    return {key:pool.get(key) for key in ('ready','capacity')}
+
+
+def _read_pool_stats(pool):
+    if pool is None:
+        return None
+    try:
+        return pool.stats_snapshot()
+    except Exception:
+        return None
+
+
+def record_diagnostic_frame(policy, trace, captures, frame_id, result, counter,
+                            gray, packet, *, trajectory_epoch=0, **metadata):
+    trace.add(frame_id,result,trajectory_epoch,enabled=policy.trace_enabled)
+    if policy.trace_enabled and captures is not None:
+        captures.observe(gray,packet,result,counter,trajectory_epoch=trajectory_epoch,**metadata)
+
+
+def reset_capture_context_on_transition(captures, transition):
+    if captures is not None and transition is not None:
+        captures.reset_context('diagnostic_mode_changed')
+
+
+def prepare_preview_binary(packet, output, binary_background=True):
+    if binary_background:
+        rasterize_into(packet,output)
+    return output
+
+
+def prepare_preview_frame(gray, binary, *, backend, black_frame=None):
+    if backend == 'software':
+        return gray, binary
+    if backend != 'pl':
+        raise ValueError('unknown preview backend')
+    if black_frame is None:
+        black_frame = np.zeros((400, 640), dtype=np.uint8)
+    return black_frame, black_frame
+
+
+class PreviewPublishGate:
+    """Limit PL panel frames to 2 Hz unless a visible state changes."""
+    def __init__(self, interval_s=.5):
+        self.interval_s=interval_s
+        self.last_at=None
+        self.last_key=None
+
+    def should_publish(self, now, key, *, force=False):
+        if force:
+            self.last_at,self.last_key=now,key
+            return True
+        if key==self.last_key or (self.last_at is not None and now-self.last_at<self.interval_s):
+            return False
+        self.last_at,self.last_key=now,key
+        return True
+
+
+def button_gpio_irq_configured(overlay, channel):
+    """Require the HWH-declared GPIO IRQ capability and PYNQ async channel API."""
+    try:
+        parameters=overlay.ip_dict['btns_gpio']['parameters']
+        present=str(parameters['C_INTERRUPT_PRESENT']).strip().lower() in ('1','0x1','true')
+    except (AttributeError,KeyError,TypeError):
+        return False
+    return present and interrupt_available(channel)
+
+
+def verify_selected_offload_bundle(args, manifest, hwh):
+    """Reject selected IRQ/PBO/RAW modes before touching the overlay."""
+    if (args.button_input == 'irq' or args.preview_backend == 'pl'
+            or getattr(args,'region_backend','native') == 'pl'
+            or args.input_mode == 'raw'):
+        return verify_offload_capabilities(manifest, hwh)
+    return None
+
+
+class OwnerRegionFeatureReader:
+    """Serialize FRG1 reads on the existing RLE driver owner."""
+    def __init__(self, reader, owner):
+        self.reader,self.owner=reader,owner
+        self.last_read_ms=0.0
+        self.last_reason='not_read'
+        self._threshold_values=None
+        self._threshold_status=dict(supported=bool(reader.supports_candidates),
+            configured=False,max_area=None,max_w=None,max_h=None,aspect_x16=None)
+
+    def configure_thresholds(self, counter):
+        if not self.reader.supports_candidates:
+            self._threshold_values=None
+            self._threshold_status=dict(supported=False,configured=False,
+                max_area=None,max_w=None,max_h=None,aspect_x16=None)
+            return dict(self._threshold_status)
+        max_area=int(counter.single_intact_area) if counter.guarded_merge else 0
+        values=(max_area,0,0,0)
+        if values!=self._threshold_values:
+            configured=self.owner.call(lambda:self.reader.configure_thresholds(
+                max_area=max_area,max_w=0,max_h=0,aspect_x16=0))
+            self._threshold_status=dict(supported=True,configured=bool(configured),
+                max_area=max_area,max_w=0,max_h=0,aspect_x16=0)
+            if configured:
+                self._threshold_values=values
+        return dict(self._threshold_status)
+
+    def read(self, frame):
+        before=dict(self.reader.reason_counts)
+        def operation():
+            started=time.perf_counter()
+            features=self.reader.read(frame)
+            elapsed=(time.perf_counter()-started)*1000
+            reasons=[key for key,value in self.reader.reason_counts.items()
+                     if value>before.get(key,0)]
+            return features,elapsed,(reasons[-1] if reasons else 'accepted')
+        features,self.last_read_ms,self.last_reason=self.owner.call(operation)
+        return features
+
+
+def create_region_feature_reader(backend, mmio, *, owner, mmio_length,
+                                require_frg2=False):
+    if backend=='native':
+        return None
+    if backend!='pl':raise ValueError('unknown region backend')
+    if type(require_frg2) is not bool:
+        raise ValueError('require_frg2 must be bool')
+    if mmio is None or mmio_length<0x5000:
+        raise ValueError('PBO1 mapping must cover FRG1 record window (at least 0x5000 bytes)')
+    reader=owner.call(lambda:OwnerRegionFeatureReader(PlRegionFeatures(mmio),owner))
+    if require_frg2 and not reader.reader.supports_candidates:
+        raise ValueError('FRG2 feature capability required by ABI2 offload contract')
+    return reader
+
+
+def create_button_event_status(owner, mmio):
+    return owner.call(lambda:ButtonEventStatus(mmio))
+
+
+def region_feature_frame_summary(feature_status, result, counter):
+    return {'feature_status':feature_status,
+            'feature_backend_used':counter.last_backend if result is not None else 'not_counted'}
+
+
+def region_candidate_count(reader, features):
+    if (reader is None or not bool(getattr(reader.reader,'supports_candidates',False))
+            or features is None):
+        return None
+    return sum(getattr(feature,'candidate',None) not in (None,0) for feature in features)
+
+
+def sample_button_pl_status(owner, status_reader):
+    if status_reader is None:
+        return dict(available=None,stable='unknown',events='unknown',fault='unknown',
+            external_fault_source='no_external_fault_source')
+    snapshot=owner.call(lambda:status_reader.snapshot(clear=True))
+    return dict(available=True,stable=snapshot.stable,events=snapshot.events,
+        fault=snapshot.fault,external_fault_source='no_external_fault_source')
+
+
+def validate_region_backend(args, manifest, hwh):
+    if args.region_backend=='pl':
+        if args.preview_backend!='pl':
+            raise ValueError('PL region backend requires --preview-backend pl')
+        return verify_offload_capabilities(manifest,hwh)
     return None
 
 
@@ -473,7 +809,7 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
                     binary_background=meta['binary_background'],output=pixels,
                     line_x=count_line['position'] if count_line['axis']=='x' else 320,
                     line_y=count_line['position'] if count_line['axis']=='y' else None,
-                    dashboard=dashboard,pl_preview=meta.get('pl_preview',False))
+                    dashboard=meta.get('dashboard'),pl_preview=meta.get('pl_preview',False))
                 timings=composer.last_timings_ms
                 outputs.publish(slot,lease.session_uuid,lease.frame_id,
                     scale_ns=int(timings['scale_ms']*1e6),draw_ns=int(timings['draw_ms']*1e6),
@@ -512,7 +848,8 @@ def build_argument_parser():
     parser.add_argument('--camera',default='/dev/v4l/by-id/usb-HSK_USB_Camera_20210616103-video-index0')
     parser.add_argument('--button-input',choices=('irq','polling','off'),default='irq',
         help='IRQ is required by new candidates; polling is an explicit legacy-board fallback')
-    parser.add_argument('--preview-backend',choices=('software','pl'),default='software')
+    parser.add_argument('--preview-backend',choices=('software','pl'),default='pl')
+    parser.add_argument('--region-backend',choices=('native','pl'),default='native')
     parser.add_argument('--input-mode',choices=('packet','raw'),default='packet')
     parser.add_argument('--display',choices=('on','off'),default='on')
     parser.add_argument('--duration',type=float,default=90)
@@ -539,11 +876,14 @@ def main(argv=None):
         parser.error('requires execute, duration 1..7200 and frames 1..200000')
     if args.inject_drawing_start_failure and args.display!='on':
         parser.error('drawing process failure injection requires display on')
+    if args.region_backend=='pl' and args.preview_backend!='pl':
+        parser.error('--region-backend pl requires --preview-backend pl')
     if args.output.exists() or not args.native_lib.is_file():parser.error('new output and prebuilt library required')
     if args.startup_record and args.startup_record.exists():parser.error('startup record already exists')
     files=verify_bundle(args.manifest,args.manifest_sha256)
     manifest=json.loads(args.manifest.read_text())
     verify_selected_offload_bundle(args,manifest,files['hwh'])
+    validate_region_backend(args,manifest,files['hwh'])
     if manifest.get('rle_monitor')!={'abi':1,'clock_hz':50_000_000}:raise ValueError('requires reviewed monitor ABI 1')
     verify_runtime(manifest['runtime'],args.font,args.latin_font)
     commands=json.loads(args.commands.read_text()) if args.commands else {}
@@ -608,7 +948,7 @@ def main(argv=None):
         material_accuracy='NOT_MEASURED',samples=deque(maxlen=1800),events=deque(maxlen=2048),
         preview_submitted_fps=None,
         preview_fps_scope='accepted_for_display_not_scanout',
-        recoveries=deque(maxlen=2048),button_raw_sample_count=0,
+        recoveries=deque(maxlen=2048),runtime_samples=deque(maxlen=1800),button_raw_sample_count=0,
         button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
         before_memory=_memory(),scope='G3 candidate; G4 physical disconnection/cold-start not asserted')
     captures=exporter=None
@@ -625,7 +965,13 @@ def main(argv=None):
         result['crossing_snapshots']=captures.status() if captures is not None else {'enabled':False}
         result['report_exports']=exporter.status() if exporter is not None else {'enabled':False}
         return result
-    report['cpu_scope']='system/core normalized 0..100%; process 100% equals one core'
+    report['cpu_scope']=CPU_SCOPE_DESCRIPTION
+    report['button_pl_status']=dict(available=None,stable='unknown',events='unknown',
+        fault='unknown',external_fault_source='no_external_fault_source')
+    report['pl_thresholds']=dict(supported=None,configured=None,max_area=None,
+        max_w=None,max_h=None,aspect_x16=None)
+    report['pl_candidate_stats']=dict(available=None,frames_observed=0,
+        candidate_total=None,candidate_last='unknown')
     report['preview_backend']=args.preview_backend;report['input_mode']=args.input_mode
     report['camera_configuration']=dict(by_id=args.camera,requested_format='MJPG',
         validated_decoded_shape=[400,640],decode='IMREAD_GRAYSCALE',negotiated_fps='NOT_QUERIED')
@@ -692,10 +1038,23 @@ def main(argv=None):
         rx=owner.retain(allocate(shape=(RX_CAPACITY,),dtype='u1'))
         transport=RleDmaTransport(hw.overlay.axi_dma_0.sendchannel,hw.overlay.axi_dma_0.recvchannel,
             dma,control,tx,rx,input_mode=args.input_mode)
-        pl_preview=None
+        report['region_backend']=args.region_backend
+        region_reader=None
+        pl_preview=None;pbo_mmio=None;button_event_status=None
         if args.preview_backend=='pl':
-            pl_preview=owner.call(lambda:PlPreview(MMIO(0x43c50000,0x1000)))
-            owner.retain(pl_preview.mmio)
+            def create_pl_preview():
+                nonlocal pbo_mmio
+                pbo_mmio=owner.retain(MMIO(0x43c50000,0x10000))
+                return PlPreview(pbo_mmio)
+            pl_preview=owner.call(create_pl_preview)
+        region_reader=create_region_feature_reader(args.region_backend,pbo_mmio,owner=owner,
+            mmio_length=0x10000 if pbo_mmio is not None else 0,
+            require_frg2=args.region_backend=='pl')
+        if pbo_mmio is not None:
+            button_event_status=create_button_event_status(owner,pbo_mmio)
+            report['button_pl_status']=dict(available=True,stable='unknown',
+                events='unknown',fault='unknown',
+                external_fault_source='no_external_fault_source')
         if pipeline['state']['done_seen']:transport._completed_frames=1
         # Validate register signatures and stopped DMA channels before HDMI
         # configure/start; the first transfer must not be the first capability check.
@@ -710,6 +1069,12 @@ def main(argv=None):
             button_worker.start()
         video_owner.call(start_display_output,hw.hdmi,timeout=60)
         counter=make_runtime_counter(args.native_lib,profile=args.counting_profile)
+        if region_reader is not None:
+            report['pl_thresholds']=region_reader.configure_thresholds(counter)
+            candidate_available=bool(region_reader.reader.supports_candidates)
+            report['pl_candidate_stats']=dict(available=candidate_available,
+                frames_observed=0,candidate_total=0 if candidate_available else None,
+                candidate_last=None if candidate_available else 'unknown')
         exporter=EvidenceExporter()
         report['counting_profile']=args.counting_profile
         report['counting_configuration']=dict(axis=counter.count_axis,line_x=counter.line_x,
@@ -737,10 +1102,11 @@ def main(argv=None):
         binary=np.empty((400,640),np.uint8)
         next_drawing_retry=0
         drawing_start_injection_done=False
+        drawing_runtime_sampler=None
         if args.display=='on':
             inputs=PreviewInputs.create(ctx);outputs=SharedFrames.create(ctx)
             def start_drawing(frame):
-                nonlocal process,stop_drawing,next_drawing_retry,drawing_start_injection_done
+                nonlocal process,stop_drawing,next_drawing_retry,drawing_start_injection_done,drawing_runtime_sampler
                 failure_mode=None
                 if args.inject_drawing_start_failure and not drawing_start_injection_done:
                     failure_mode=args.inject_drawing_start_failure
@@ -749,6 +1115,10 @@ def main(argv=None):
                     drawing_errors,drawing_counts,args.font,args.latin_font,
                     failure_mode=failure_mode)
                 report['drawing_pid']=process.pid if process is not None else None
+                drawing_runtime_sampler=None
+                if process is not None:
+                    drawing_runtime_sampler=RuntimeSampler(pid=process.pid,interval_s=3.0)
+                    drawing_runtime_sampler.sample()
                 if error is not None:
                     failed_at=time.monotonic()
                     report['recoveries'].append(dict(kind='drawing_start_failed',frame=frame,
@@ -781,7 +1151,13 @@ def main(argv=None):
         previous_process={}
         last_rle_stats={'runs':0,'rx_bytes':0}
         runtime_sampler=RuntimeSampler(pid=os.getpid(),interval_s=3.0)
-        next_runtime_sample=started+3.0;runtime_sample=None
+        external_process_sampler=ExternalProcessSampler(interval_s=3.0,max_processes=128)
+        next_runtime_sample=started+3.0;runtime_sample=None;runtime_diagnostics=None
+        camera_dropped_old_frames=0;camera_recent_overwritten=None
+        queue_windows={name:QueueDepthWindow() for name in
+                       ('camera','preview','preview_drawing','drawing_hdmi')}
+        next_queue_observation=started
+        queue_input_stats=queue_output_stats=None;camera_queue_depth=None
         previous_pl_counters=report['counters_before'];previous_pl_at=started
         pl_rates=counter_rates(previous_pl_counters,previous_pl_counters,1.0)
         tick_hz=os.sysconf('SC_CLK_TCK');page_size=os.sysconf('SC_PAGE_SIZE')
@@ -873,8 +1249,12 @@ def main(argv=None):
                     # V4L2 camera startup and its two discarded warm-up frames
                     # can exceed the steady-state fresh-frame timeout.
                     camera_timeout=15.0 if camera_index<0 else .25
+                    previous_camera_index=camera_index
                     camera_index,gray,captured=read_camera_frame(
                         camera,after=camera_index,timeout=camera_timeout)
+                    skipped=max(0,camera_index-previous_camera_index-1)
+                    camera_dropped_old_frames+=skipped
+                    camera_recent_overwritten=bool(skipped)
                     capture_ns=int(captured*1e9)
                     frame_telemetry=FrameTelemetry(frame_id=index,capture_ns=capture_ns,
                         consume_ns=time.monotonic_ns())
@@ -889,6 +1269,8 @@ def main(argv=None):
                     continue
                 if camera_in_error:
                     old_total=counter.total_count;counter=make_runtime_counter(args.native_lib,profile=args.counting_profile);counter.total_count=old_total
+                    if region_reader is not None:
+                        report['pl_thresholds']=region_reader.configure_thresholds(counter)
                     trajectory_epoch+=1;camera_in_error=False
                     report['recoveries'].append(dict(kind='camera_resumed',frame=index,
                         trajectory_epoch=trajectory_epoch,monotonic=time.monotonic()))
@@ -905,17 +1287,28 @@ def main(argv=None):
             last_rle_stats={'runs':packet.run_count,'rx_bytes':packet.actual_bytes}
             transfer_end=time.monotonic()
             transfer_done_ns=time.monotonic_ns()
-            result=advance_count(counter,controls,packet,boundary,capture_monotonic_ns=capture_ns)
+            region_features=region_reader.read(packet) if region_reader is not None and packet.valid else None
+            candidate_count=region_candidate_count(region_reader,region_features)
+            if region_reader is not None and region_reader.reader.supports_candidates:
+                candidate_stats=report['pl_candidate_stats']
+                candidate_stats['candidate_last']=candidate_count
+                if candidate_count is not None:
+                    candidate_stats['frames_observed']+=1
+                    candidate_stats['candidate_total']+=candidate_count
+            result=advance_count(counter,controls,packet,boundary,capture_monotonic_ns=capture_ns,
+                region_features=region_features)
             count_end=time.monotonic()
             count_done_ns=time.monotonic_ns()
             if frame_telemetry is not None:
                 track_ms=float(result.roi_subtimings_ms.get('track_ms',0.0)) if result is not None else 0.0
-                # regions_done is estimated as track_done - track_ms, not directly measured;
-                # a true independent boundary requires future instrumentation.
                 regions_done_ns=max(transfer_done_ns,count_done_ns-int(track_ms*1e6))
                 frame_telemetry=FrameTelemetry(frame_id=index,capture_ns=frame_telemetry.capture_ns,
                     consume_ns=frame_telemetry.consume_ns,transfer_done_ns=transfer_done_ns,
                     regions_done_ns=regions_done_ns,track_done_ns=count_done_ns)
+            if args.region_backend=='pl' and packet.valid:
+                last_rle_stats.update(feature_read_ms=region_reader.last_read_ms,
+                    candidate_count=candidate_count,
+                    **region_feature_frame_summary(region_reader.last_reason,result,counter))
             exposure_control_ms=0.0
             if pl_preview is not None and packet.valid:
                 def submit_pl_preview():
@@ -979,6 +1372,10 @@ def main(argv=None):
                     count_ms=(count_end-transfer_end)*1000,
                     exposure_control_ms=exposure_control_ms,
                     snapshot_ms=(snapshot_end-count_end)*1000,
+                    **({'feature_read_ms':last_rle_stats.get('feature_read_ms'),
+                        'feature_status':last_rle_stats.get('feature_status'),
+                        'feature_backend_used':last_rle_stats.get('feature_backend_used')}
+                       if region_reader is not None else {}),
                     **(result.roi_subtimings_ms if result is not None else {})))
             if boundary:report['events'].append(dict(frame=index,commands=boundary,count=counter.total_count))
             if result is not None:
@@ -999,7 +1396,8 @@ def main(argv=None):
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,
                     controls.page,telemetry,manifest,mode=diagnostic_policy.mode,
                     exposure=exposure_status,exposure_error=exposure_error,
-                    pl_rates=pl_rates,runtime=runtime_sample,button_status=button_status)
+                    pl_rates=pl_rates,runtime=runtime_sample,
+                    runtime_diagnostics=runtime_diagnostics,button_status=button_status)
                     metadata['dashboard']['binary_fps']=binary_fps
                     metadata['dashboard']['preview_submitted_fps']=binary_fps
                     metadata['dashboard']['preview_status']='PL READY' if pl_preview is not None else '软件二值预览'
@@ -1007,7 +1405,7 @@ def main(argv=None):
                         metadata['status_lines'].append('PL overlay boxes truncated to 16')
                         metadata['pl_overlay_boxes_truncated']=len(result.detections)-16
                     metadata['dashboard']['exposure_latency_text']=(
-                        'exposure call {:.0f} ms (slow)'.format(exposure_control_ms)
+                        'EXP {:.0f}ms'.format(exposure_control_ms)
                         if exposure_control_ms>100 else '')
                     performance=telemetry.get('performance')
                     if performance:
@@ -1069,8 +1467,90 @@ def main(argv=None):
                 if process is not None and args.inject_drawing_exit is not None and index>=args.inject_drawing_exit and not injection_done:
                     stop_drawing.set();injection_done=True
             sample_now=time.monotonic()
+            if sample_now>=next_queue_observation:
+                queue_input_stats=_read_pool_stats(inputs)
+                queue_output_stats=_read_pool_stats(outputs)
+                if isinstance(queue_input_stats,dict):
+                    queue_windows['preview'].observe(queue_input_stats.get('ready'))
+                    queue_windows['preview_drawing'].observe(queue_input_stats.get('ready'))
+                else:
+                    queue_windows['preview'].observe(None)
+                    queue_windows['preview_drawing'].observe(None)
+                if isinstance(queue_output_stats,dict):
+                    queue_windows['drawing_hdmi'].observe(queue_output_stats.get('ready'))
+                else:
+                    queue_windows['drawing_hdmi'].observe(None)
+                if camera is not None:
+                    try:
+                        camera.read(after=camera_index,timeout=0)
+                        camera_queue_depth=1
+                    except TimeoutError:
+                        camera_queue_depth=0
+                    except RuntimeError:
+                        camera_queue_depth=None
+                    queue_windows['camera'].observe(camera_queue_depth)
+                else:
+                    camera_queue_depth=None
+                    queue_windows['camera'].observe(None)
+                next_queue_observation=sample_now+0.1
             if sample_now>=next_runtime_sample:
+                if pbo_mmio is not None:
+                    report['button_pl_status']=sample_button_pl_status(
+                        owner,button_event_status)
                 runtime_sample=runtime_sampler.sample()
+                drawing_sample=(drawing_runtime_sampler.sample()
+                    if drawing_runtime_sampler is not None and process is not None
+                    and process.is_alive() else None)
+                external_sample=external_process_sampler.sample(excluded_pids=(
+                    os.getpid(), process.pid if process is not None else None))
+                if runtime_sample is not None and isinstance(drawing_sample,dict):
+                    runtime_sample=dict(runtime_sample)
+                    runtime_sample['threads']=dict(runtime_sample.get('threads',{}))
+                    runtime_sample['threads'].update({
+                        'drawing:'+tid:dict(entry,name='drawing '+str(entry.get('name') or tid))
+                        for tid,entry in drawing_sample.get('threads',{}).items()})
+                if isinstance(runtime_sample,dict):
+                    runtime_sample=dict(runtime_sample)
+                    if isinstance(external_sample,dict):
+                        runtime_sample.update(external_sample)
+                    else:
+                        runtime_sample.update(external_processes={},
+                                              external_processes_complete=False)
+                runtime_diagnostics=runtime_diagnostic_snapshot(runtime_sample,
+                    queue_input_stats,queue_output_stats,tick_hz)
+                if (args.display=='on' and runtime_diagnostics.get('cpu_sources')
+                        and not isinstance(drawing_sample,dict)):
+                    runtime_diagnostics['cpu_sources']['drawing']=None
+                    runtime_diagnostics['cpu_sources']['process_total']=None
+                camera_window=queue_windows['camera'].snapshot(1)
+                preview_window=queue_windows['preview'].snapshot(
+                    queue_input_stats.get('capacity') if isinstance(queue_input_stats,dict) else None)
+                preview_window['ready']=(queue_input_stats.get('ready')
+                    if isinstance(queue_input_stats,dict) else None)
+                drawing_window=queue_windows['preview_drawing'].snapshot(
+                    queue_input_stats.get('capacity') if isinstance(queue_input_stats,dict) else None)
+                hdmi_window=queue_windows['drawing_hdmi'].snapshot(
+                    queue_output_stats.get('capacity') if isinstance(queue_output_stats,dict) else None)
+                camera_window.update(dropped_old_frames=camera_dropped_old_frames,
+                    recent_frame_overwritten=camera_recent_overwritten)
+                queues=queue_diagnostic_snapshot(queue_input_stats,queue_output_stats,
+                    camera_dropped_old_frames if args.source=='camera' else None,
+                    camera_recent_overwritten if args.source=='camera' else None,
+                    (getattr(video_pump,'submit_failures',None) if video_pump is not None
+                     else None),
+                    camera_window if args.source=='camera' else None)
+                queues['camera_to_processing'].update(camera_window)
+                queues['main_to_preview']=preview_window
+                queues['preview_to_drawing'].update(window_max=drawing_window['window_max'],
+                    current=drawing_window['current'])
+                queues['drawing_to_hdmi'].update(
+                    current=hdmi_window['current'],ready=hdmi_window['current'],
+                    window_max=hdmi_window['window_max'])
+                runtime_diagnostics['queues']=queues
+                report['runtime_samples'].append(dict(monotonic=sample_now,
+                    button_pl_status=dict(report['button_pl_status']),
+                    pl_candidate_stats=dict(report['pl_candidate_stats']),
+                    **runtime_diagnostics))
                 current_pl_counters=owner.call(snapshot_counters,control)
                 pl_rates=counter_rates(previous_pl_counters,current_pl_counters,
                                        sample_now-previous_pl_at)
@@ -1126,7 +1606,7 @@ def main(argv=None):
                     video_telemetry=cache_values.get('video_telemetry',{}),
                     pl_counters=pl_counters_snapshot(counters_sample),
                     crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
-                    counters=counters_sample,
+                    counters=owner.call(snapshot_counters,control),
                     network=(runtime_sample or {}).get('network')))
                 previous_cpu=cpu;last_sample=sample_time
         report['duration_s']=time.monotonic()-started

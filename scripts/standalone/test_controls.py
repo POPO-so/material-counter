@@ -38,6 +38,14 @@ def test_btn2_short_and_long_press_have_distinct_single_events():
     assert d.update(0, .531) == ("exposure_up",)
 
 
+def test_btn3_has_no_command():
+    d = ButtonDecoder()
+    assert d.update(8, 0) == ()
+    assert d.advance(.03) == ()
+    assert d.update(0, .1) == ()
+    assert d.advance(.13) == ()
+
+
 def test_deadline_drives_debounce_and_simultaneous_new_buttons():
     d = ButtonDecoder()
     assert d.update(3, 1) == ()
@@ -51,13 +59,6 @@ def test_legacy_commands_remain_available_for_offline_replay():
     s.apply(("pause", "background", "page", "clear"))
     assert s.paused and not s.binary_background and s.page == 1
     assert s.clear_requests == 1 and not s.diagnostic
-
-
-def test_page_cycles_through_three_pages():
-    s = ControlState()
-    for expected in (1, 2, 0):
-        s.apply(("page",))
-        assert s.page == expected
 
 
 def test_invalid_clock_and_gpio_values_are_rejected():

@@ -1,0 +1,33 @@
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Sun Nov  1 05:30:14 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/tb_rle_region_features_sim/xsim_script.tcl
+# xsim {tb_rle_region_features_sim} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+CASE empty
+CASE single
+CASE bridge
+CASE gap
+CASE root reuse
+CASE row overflow
+CASE label overflow
+CASE illegal
+CASE nonmaximal
+CASE x bound
+CASE y bound
+CASE reset abort
+CASE candidate defaults disabled
+CASE candidate area upper bound
+CASE candidate width and height upper bounds
+CASE candidate aspect upper bound
+RLE_FEATURE_PASS cases=16
+$finish called at time : 3330 ns : File "C:/Users/14173/Documents/material-counter/.runtime/worktrees/ps-pl-offload-20261101/fpga/sim/rle/tb_rle_region_features.sv" Line 193
+exit
+INFO: [Common 17-206] Exiting xsim at Sun Nov  1 05:30:16 2026...

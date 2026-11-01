@@ -319,9 +319,9 @@ class DashboardComposer:
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
         self._work = np.empty((320, 512), dtype=np.uint8)
         self._fonts = {size: ImageFont.truetype(str(font_path), size)
-                       for size in (18, 20, 24, 34)}
+                       for size in (12, 18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
-                       for size in (18, 20, 24, 28, 34)}
+                       for size in (12, 18, 20, 24, 28, 34)}
         self._text_cache = OrderedDict()
         self._gutter_wrap_cache = OrderedDict()
         self._key = None
@@ -487,6 +487,8 @@ class DashboardComposer:
         exposure_range_text = str(dashboard.get("exposure_range_text", "范围 --"))
         feature_pl_text = str(dashboard.get("pl_text", "PL rates unavailable"))
         thread_text = str(dashboard.get("thread_text", "线程概要暂不可用"))
+        cpu_source_text = str(dashboard.get("cpu_source_text", "CPU 来源 unknown"))
+        queue_summary_text = str(dashboard.get("queue_summary_text", "队列 unknown"))
         button_status = str(dashboard.get("button_status", "IRQ READY"))
         preview_status = str(dashboard.get("preview_status", "预览 READY"))
         exposure_latency_text = str(dashboard.get("exposure_latency_text", ""))
@@ -522,7 +524,8 @@ class DashboardComposer:
         detail = page_lines[:3] if detail_page else tuple(lines[:3])
         key = (values, pie_key, state, binary_background, target_count,
                detail_page, page_lines, summary, detail, mode, exposure_text,
-               exposure_range_text, feature_pl_text, thread_text, button_status,
+               exposure_range_text, feature_pl_text, thread_text, cpu_source_text,
+               queue_summary_text, button_status,
                preview_status, exposure_latency_text, submitted_fps, processing_fps,
                processing_ms, rle_key, count_line_key)
         if key == self._key:
@@ -561,7 +564,9 @@ class DashboardComposer:
         self._text(draw, (934, 310), "二值提交 FPS", 18, 170)
         self._whole_latin_text(draw, (1092, 308), submitted_fps, 18, 226)
         self._text(draw, (934, 336), preview_status, 18, 170)
-        row_y = 362
+        self._text(draw, (934, 358), cpu_source_text[:38], 12, 190)
+        self._text(draw, (934, 376), queue_summary_text[:38], 12, 190)
+        row_y = 398
         for row_text in self._wrap_gutter(thread_text):
             if row_y + 20 > 474:
                 break

@@ -1,10 +1,12 @@
 from types import SimpleNamespace
 import pytest
-from scripts.standalone.pl_preview import PlPreview, PBO1_SIGNATURE
+from scripts.standalone.pl_preview import (PlPreview, PBO1_SIGNATURE, ButtonEventStatus,
+                                             BTN1_SIGNATURE)
 
 class MMIO:
     def __init__(self):
-        self.reg={0:PBO1_SIGNATURE,4:(400<<16)|640,8:9,0x18:7}
+        self.reg={0:PBO1_SIGNATURE,4:(400<<16)|640,8:9,0x18:7,
+                  0x80:BTN1_SIGNATURE,0x84:5,0x88:10,0x8c:2}
         self.writes=[]
     def read(self,a):return self.reg.get(a,0)
     def write(self,a,v):self.writes.append((a,v));self.reg[a]=v
@@ -42,3 +44,20 @@ def test_bounded_annotations_and_queue_stats():
     assert p.submit(packet(),SimpleNamespace(detections=[d]*17),line_x=320)
     assert (0x38,16) in m.writes
     assert p.stats()['annotations_truncated']==1
+
+
+def test_button_status_snapshot_and_clear_only_observed_sticky_bits():
+    m=MMIO(); status=ButtonEventStatus(m)
+    snapshot=status.snapshot(clear=True)
+    assert (snapshot.stable,snapshot.events,snapshot.fault)==(5,10,2)
+    assert m.writes==[(0x88,10),(0x8c,2)]
+
+
+def test_button_status_signature_required_and_snapshot_can_be_read_only():
+    m=MMIO(); m.reg[0x80]=0
+    with pytest.raises(ValueError,match="signature"):
+        ButtonEventStatus(m)
+    m=MMIO(); status=ButtonEventStatus(m)
+    snapshot=status.snapshot()
+    assert snapshot.stable==5 and snapshot.events==10 and snapshot.fault==2
+    assert not m.writes

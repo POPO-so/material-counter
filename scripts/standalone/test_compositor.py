@@ -545,6 +545,32 @@ def test_dashboard_labels_preview_rate_as_submission_rate(monkeypatch):
     assert "二值提交 FPS" in labels
 
 
+def test_dashboard_cpu_source_and_queue_summaries_refresh_on_change(monkeypatch):
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    drawn = []
+    original = c._text
+
+    def capture_text(draw, xy, text, size, fill):
+        if xy in ((934, 358), (934, 376)):
+            drawn.append((xy, text, size))
+        return original(draw, xy, text, size, fill)
+
+    monkeypatch.setattr(c, "_text", capture_text)
+    base = {
+        "cpu_source_text": "CPU 来源 camera 2%",
+        "queue_summary_text": "队列 相机丢1 覆盖True",
+    }
+    c.render(gray, gray, uuid.uuid4(), 1, dashboard=base)
+    assert ((934, 358), base["cpu_source_text"], 12) in drawn
+    assert ((934, 376), base["queue_summary_text"], 12) in drawn
+    first_count = len(drawn)
+
+    c.render(gray, gray, uuid.uuid4(), 2,
+             dashboard={**base, "cpu_source_text": "CPU 来源 camera 3%"})
+    assert len(drawn) == first_count + 2
+
+
 def test_dashboard_chrome_warmed_latin_strings_skip_all_text_rasterization(monkeypatch):
     api = _api()
     c = _dashboard_composer()
@@ -580,7 +606,7 @@ def test_dashboard_chrome_warmed_latin_strings_skip_all_text_rasterization(monke
     assert metric_calls == []
 
 
-@pytest.mark.parametrize("size", [18, 20, 24, 34])
+@pytest.mark.parametrize("size", [12, 18, 20, 24, 34])
 @pytest.mark.parametrize("background,fill", [(12, 242), (238, 35)])
 def test_dashboard_cached_whole_latin_text_matches_default_pillow_pixels(
         size, background, fill):

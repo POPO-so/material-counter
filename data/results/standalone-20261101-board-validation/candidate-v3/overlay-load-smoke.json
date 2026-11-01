@@ -1,0 +1,39 @@
+{
+  "schema": "material-counter.g2-overlay-load-smoke.v1",
+  "status": "BIT_HASH_AND_CLOCKS_PASS",
+  "boot_id": "6ca5a640-c3f0-4fd8-b3cf-883066534609",
+  "index_sha256": "91251c59fef9e9436eaaed9505bdcb932cc7881330cfb7e40a460a49f5bf34cf",
+  "manifest_sha256": "9ad5116194655f01ac3500f7b91173aeef2f801fc504abe6ad2294778fd6774b",
+  "bit_sha256": "4fcca329d763b42d8dc667ff3a9d86c9c82a414395c505247d369296184ab847",
+  "hwh_sha256": "610a79f773c1bf605705424a5f864dfccc26e29bfce27078a6d5082eab8ff253",
+  "integrity": {
+    "status": "PASS",
+    "files_checked": 63,
+    "hardware_actions": 0,
+    "scope": "integrity_only_no_gate"
+  },
+  "runtime_compatibility": "PASS",
+  "process_ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "pynq_loaded_state": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/standalone-g2-smoke-20261101-163250-3af7b29-v3/package/export/g2-integrated.bit",
+    "loaded_bit_sha1": "559f3136bba854a0645954413c04e7e0de384023",
+    "loaded_bit_sha256": "4fcca329d763b42d8dc667ff3a9d86c9c82a414395c505247d369296184ab847",
+    "loaded_bit_path_matches_expected": true
+  },
+  "fclk_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "pl_register_readback": "not_performed",
+  "camera_runner": "not_started",
+  "systemd_modified": false
+}

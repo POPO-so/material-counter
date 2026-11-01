@@ -1,0 +1,42 @@
+{
+  "scope": "offline software and RTL; no board actions",
+  "python_command": "C:/Users/14173/Documents/material-counter/.venv/Scripts/python.exe -m pytest scripts/standalone scripts/rle -q -p no:cacheprovider",
+  "python_result": {
+    "failed": 0,
+    "passed": 554,
+    "duration_s": 26.64,
+    "skipped": 1
+  },
+  "rtl": {
+    "tb_video_binary_overlay_scaled": "BINARY_OVERLAY_PASS checks=943 captures=3 drops=1",
+    "tb_video_binary_overlay_bd": "BINARY_OVERLAY_BD_PASS AXIL_features=PASS full_frame=PASS thresholds=PASS buttons=PASS",
+    "tb_rle_feature_tap": "RLE_FEATURE_TAP_PASS FRG2=PASS thresholds=PASS",
+    "tb_video_binary_overlay": "BINARY_OVERLAY_PASS checks=943 captures=3 drops=1"
+  },
+  "source_sha256": {
+    "fpga/experimental/rle/rle_feature_tap.v": "938d9f2884122048eeda6c4298b266898f339244fa2aadd798e8c61a53529213",
+    "fpga/experimental/standalone/video_binary_overlay.v": "15a4d53ae376634c4f46c95445cb8006ae9c4570e290937b545a878ba78acd40",
+    "fpga/experimental/standalone/video_binary_overlay_bd.v": "ceb0225fee43589faf3f2fb3331fa495f4acd62bbb9148ae706170dc32ac5656",
+    "fpga/sim/rle/tb_rle_feature_tap.sv": "d55aacf252b0a5d3af063e1a34a672eeac501883a5b6fbbed6462acc0b55c40e",
+    "fpga/sim/standalone/tb_video_binary_overlay.sv": "f236d58a55b902308240425d4ccdd4d1d4745eca4ad35c62308842d0daf7ba05",
+    "fpga/sim/standalone/tb_video_binary_overlay_bd.sv": "89d8ea17a34d2d0e1b96fffe66be6f641c01d7aed12d5b0c139484b4bf30bdad",
+    "scripts/rle/components.py": "624beebca3abfb0f6df2cd38a48672faf91811e37e23c43af66fd8b053ebbcb7",
+    "scripts/rle/features.py": "19351d1d1ed6b544d24b8ed4813215df5ff9e1360f3098dd555bbbe041a834e3",
+    "scripts/rle/test_features.py": "2466b6f1dbcd8efaa34e78890c8ae15b72fbb85b4e0acf244c3fa8438475269c",
+    "scripts/standalone/boot_policy.py": "2459ea711944acb59cbed067e08db1b1600f3a02ba11c4d3d03ba727d6cdc0e7",
+    "scripts/standalone/build_display.tcl": "8a0093ccc9659305ac99f82f00ea38c1093b4de74607fffc3954d96ec4a0a1e7",
+    "scripts/standalone/bundle.py": "99940378139f6d873eec1a965df0b8960c68584fbc2e5d756f0d0627aa361fee",
+    "scripts/standalone/connect_offload.tcl": "41c26e4ce778eb63fd6402137a1055e6248c7b33189fec70d1898c7c880e9576",
+    "scripts/standalone/integrated_run.py": "315d3a4bbcefb18e4d805669038e3c23f4afa6f94bb9d80a65851249e6cf8736",
+    "scripts/standalone/offload_cdc.xdc": "f479b8c524fc15813c48cb32d193ed47a42e42e5c9c34f5a3fa187743f0034c4",
+    "scripts/standalone/pl_preview.py": "ecd617c94741cbe1b4e1663f8e8b9007d19d59280d74b7d6aed1b9afae3e7a39",
+    "scripts/standalone/runtime_metrics.py": "f2b5b377a50648f068d731d8513244a56e7a4d94e59ef4cfcf8453eb14bb795f",
+    "scripts/standalone/test_boot_policy.py": "afe0eabce1c2291ddf579ae7882c03321b146b3ec341983a00a7b2a671fc9c26",
+    "scripts/standalone/test_build_offload_package.py": "0e01675f73e6e9d775acc7a18078c5fb5b1377c928ca50bcc789dc0f7abd7544",
+    "scripts/standalone/test_bundle.py": "9fb42a0d1039ab9a428b706808706cf243fb0ac2b2e4d9b3f460a865d17b0267",
+    "scripts/standalone/test_integrated_run.py": "017f8f75b2dde2dec0f10141988309efc42356550f2fdab551a07a746ddbcc52",
+    "scripts/standalone/test_pl_preview.py": "c329d1da0c5d8e66095f0a1c747faf77a975423d81fad2c104a91844dbb5f427",
+    "scripts/standalone/test_runtime_metrics.py": "0b0deacda626eb6c6518fce070f446323fa25b3a6e1d14486c55cd526cc3459b"
+  },
+  "hardware_actions": 0
+}

@@ -5,9 +5,14 @@ module tb_video_binary_overlay_bd;
   always #7 pclk=~pclk;
   reg resetn=0,presetn=0;
   reg vsync=0;
+  reg tap_valid=0,tap_sof=0,tap_eol=0;
+  reg [7:0] tap_data=0;
+  reg [31:0] tap_frame_id=0;
   reg [31:0] awaddr=0,wdata=0,araddr=0;
   reg awvalid=0,wvalid=0,arvalid=0,bready=0,rready=0;
   reg [3:0] wstrb=4'hf;
+  reg [3:0] button_state=4'b0101,button_events=4'b1010,button_fault=4'b0010;
+  wire [3:0] event_clear,fault_clear;
   wire awready,wready,arready,bvalid,rvalid;
   wire [1:0] bresp,rresp;
   wire [31:0] rdata;
@@ -20,18 +25,24 @@ module tb_video_binary_overlay_bd;
     .s_axi_wdata(wdata),.s_axi_wstrb(wstrb),.s_axi_wvalid(wvalid),.s_axi_wready(wready),
     .s_axi_bresp(bresp),.s_axi_bvalid(bvalid),.s_axi_bready(bready),.s_axi_araddr(araddr),.s_axi_arvalid(arvalid),
     .s_axi_arready(arready),.s_axi_rdata(rdata),.s_axi_rresp(rresp),.s_axi_rvalid(rvalid),.s_axi_rready(rready),
-    .mask_clk(clk),.mask_resetn(resetn),.tap_valid(1'b0),.tap_sof(1'b0),.tap_eol(1'b0),.tap_data(8'b0),.tap_frame_id(32'b0),
+    .mask_clk(clk),.mask_resetn(resetn),.tap_valid(tap_valid),.tap_sof(tap_sof),.tap_eol(tap_eol),.tap_data(tap_data),.tap_frame_id(tap_frame_id),
     .pixel_clk(pclk),.pixel_resetn(presetn),.vid_data24(24'h123456),.vid_active(1'b0),.vid_vsync(vsync),.vid_hsync(1'b0),
     .out_data24(out_data24),.out_active(out_active),.out_vsync(out_vsync),.out_hsync(out_hsync),
     .capture_count(capture_count),.drop_count(drop_count),.reject_count(reject_count),.capture_busy(capture_busy),
     .pending_valid(pending_valid),.completed_valid_status(completed_valid_status),.captured_frame_id(captured_frame_id),
-    .mask_displayed_frame_id(mask_displayed_frame_id),.mask_display_valid(mask_display_valid));
+    .mask_displayed_frame_id(mask_displayed_frame_id),.mask_display_valid(mask_display_valid),
+    .button_state(button_state),.button_events(button_events),.button_fault(button_fault),
+    .event_clear(event_clear),.fault_clear(fault_clear));
   task automatic read_reg(input [31:0] addr,input [31:0] expected,input [1:0] response);
     begin
       @(negedge clk);araddr=addr;arvalid=1;
       @(negedge clk);arvalid=0;
       wait(rvalid);
       if(rdata!==expected||rresp!==response)$fatal(1,"read %08x got %08x/%b expected %08x/%b",addr,rdata,rresp,expected,response);
+      repeat(3) begin
+        @(negedge clk);
+        if(!rvalid || rdata!==expected || rresp!==response) $fatal(1,"read response unstable under backpressure");
+      end
       @(negedge clk);rready=1;
       @(negedge clk);rready=0;
     end
@@ -42,11 +53,17 @@ module tb_video_binary_overlay_bd;
       if(separate)begin awvalid=1;wvalid=0;@(negedge clk);awvalid=0;wvalid=1;@(negedge clk);wvalid=0;end
       else begin awvalid=1;wvalid=1;@(negedge clk);awvalid=0;wvalid=0;end
       wait(bvalid);
-      if(bresp!==response)$fatal(1,"write %08x response %b expected %b",addr,bresp,response);
+      if(bresp!==response)$fatal(1,"write %08x value=%08x strb=%x response %b expected %b dut_addr=%08x dut_data=%08x dut_strb=%x aw_full=%b w_full=%b",
+        addr,value,strobe,bresp,response,dut.wr_addr,dut.wr_data,dut.wr_strb,dut.aw_full,dut.w_full);
+      if(response==0 && addr==32'h88 && event_clear!==value[3:0])$fatal(1,"event W1C mask mismatch");
+      if(response==0 && addr==32'h8c && fault_clear!==value[3:0])$fatal(1,"fault W1C mask mismatch");
       @(negedge clk);bready=1;
       @(negedge clk);bready=0;
     end
   endtask
+  integer x,y;
+  reg cfg_toggle_before;
+  integer cfg_wait;
   initial begin
     repeat(4)@(negedge clk);resetn=1;presetn=1;
     read_reg(0,32'h50424f31,0);
@@ -59,14 +76,69 @@ module tb_video_binary_overlay_bd;
     read_reg(32'h43c60034,0,2);
     write_reg(32'h3c,640,4'hf,2,0);
     write_reg(32'h3c,20,4'h7,2,0);
+    cfg_toggle_before=dut.core.cfg_toggle;
     write_reg(32'h40,1,4'hf,0,0);
+    cfg_wait=0;
+    while(dut.core.cfg_toggle===cfg_toggle_before && cfg_wait<256) begin
+      @(posedge clk); cfg_wait=cfg_wait+1;
+    end
+    if(dut.core.cfg_toggle===cfg_toggle_before)$fatal(1,"overlay metadata precompute timeout");
     repeat(5)@(posedge pclk);
     @(negedge pclk);vsync=1;
     @(negedge pclk);vsync=0;
-    repeat(10)@(posedge clk);
+    cfg_wait=0;
+    while(!dut.cfg_ready && cfg_wait<256) begin @(posedge clk); cfg_wait=cfg_wait+1; end
+    if(!dut.cfg_ready)$fatal(1,"overlay configuration acknowledgement timeout");
     read_reg(8,32'h1,0);
-    read_reg(32'h80,0,2);
-    $display("BINARY_OVERLAY_BD_PASS AXIL_reads_writes=12 local_and_absolute=PASS");$finish;
+    read_reg(32'h200,32'h46524732,0);
+    read_reg(32'h80,32'h42544e31,0);
+    read_reg(32'h84,5,0);
+    read_reg(32'h88,10,0);
+    read_reg(32'h8c,2,0);
+    write_reg(32'h88,4'b0010,4'hf,0,0);
+    write_reg(32'h8c,4'b0010,4'hf,0,0);
+    write_reg(32'h8c,32'h10,4'hf,2,0);
+    write_reg(32'h220,32'h123456,4'hf,0,0);
+    write_reg(32'h224,32'h1234,4'hf,0,0);
+    write_reg(32'h228,32'h5678,4'hf,0,0);
+    write_reg(32'h22c,16,4'hf,0,0);
+    read_reg(32'h220,32'h123456,0);
+    read_reg(32'h224,32'h1234,0);
+    read_reg(32'h228,32'h5678,0);
+    read_reg(32'h22c,16,0);
+    write_reg(32'h220,32'hff123456,4'hf,2,0);
+    read_reg(32'h43c50218,512,0);
+    write_reg(32'h200,0,4'hf,2,0);
+    // Full geometry: three connected foreground pixels at (10,0)..(12,0).
+    for(y=0;y<400;y=y+1) for(x=0;x<640;x=x+1) begin
+      @(negedge clk);
+      tap_valid=1;tap_sof=(x==0&&y==0);tap_eol=(x==639);
+      tap_frame_id=77;tap_data=(y==0&&x>=10&&x<=12)?1:0;
+      if(y==0 && x==20) begin
+        tap_valid=0;tap_sof=0;tap_eol=0;
+        write_reg(32'h220,1,4'hf,2,0);
+        tap_valid=1;tap_sof=0;tap_eol=0;tap_frame_id=77;tap_data=0;
+      end
+    end
+    @(negedge clk);tap_valid=0;tap_sof=0;tap_eol=0;
+    wait(dut.feature_done);
+    read_reg(32'h204,1,0);
+    read_reg(32'h208,77,0);
+    read_reg(32'h20c,1,0);
+    read_reg(32'h210,3,0);
+    read_reg(32'h1000,3,0);
+    read_reg(32'h43c51004,33,0);
+    read_reg(32'h1008,0,0);
+    read_reg(32'h100c,32'h000c000a,0);
+    read_reg(32'h1010,0,0);
+    read_reg(32'h1014,77,0);
+    // 3x1 bbox at aspect limit 1:1 reports candidate reason 4 plus flag 1.
+    read_reg(32'h1018,9,0);
+    read_reg(32'h101c,0,0);
+    read_reg(32'h5000,0,2);
+    read_reg(32'h1001,0,2);
+    read_reg(32'h43c61000,0,2);
+    $display("BINARY_OVERLAY_BD_PASS AXIL_features=PASS full_frame=PASS thresholds=PASS buttons=PASS");$finish;
   end
-  initial begin #200000;$fatal(1,"watchdog");end
+  initial begin #20000000;$fatal(1,"watchdog");end
 endmodule

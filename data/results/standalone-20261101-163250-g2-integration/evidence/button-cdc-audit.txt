@@ -1,0 +1,7 @@
+Routed implementation netlist audit (Vivado 2026.1).
+Button first-stage D pin count: 4/4; exact BTN0..BTN3 mapping recorded in button-exception-audit-return-string.log.
+PL asynchronous input false path: report_exceptions position 18, 4 source ports -> 4 destination pins, 4 endpoints, 100% source and destination coverage.
+GPIO synchronizer path: CDC-6 reports stable_state_reg[3:0] -> btns_gpio syncstages_ff_reg[0][3:0], False Path; report_exceptions position 19 covers 4 destination pins / 4 endpoints at 100%.
+CDC button external inputs: four CDC-3 Info rows, depth 2, each marked False Path; no button CDC-1 Critical rows.
+Legacy exception position 16 (external buttons -> GPIO synchronizer D pins) has 0% coverage because that direct route is no longer connected; it cuts no timing path. Retained in the build input; cleanup is non-blocking.
+See button-exception-coverage-return-string.rpt and reports-g2-integrated/cdc.rpt.

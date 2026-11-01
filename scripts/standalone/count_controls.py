@@ -20,13 +20,15 @@ def make_runtime_counter(library, *, profile='legacy'):
                       **(FIELD_V1_SETTINGS if profile=='field-v1' else {}))
 
 
-def advance_count(counter, controls, packet, commands=(), *, capture_monotonic_ns=None):
+def advance_count(counter, controls, packet, commands=(), *, capture_monotonic_ns=None,
+                  region_features=None):
     previous_clear = controls.clear_requests
     controls.apply(commands)
     if controls.clear_requests != previous_clear:
         counter.total_count = 0
     before = counter.total_count
-    result = counter.update_rle(packet, capture_monotonic_ns=capture_monotonic_ns)
+    result = counter.update_rle(packet, capture_monotonic_ns=capture_monotonic_ns,
+                                region_features=region_features)
     if controls.paused:
         # Association and per-track counted flags still advance. Only accounting
         # is suppressed, so a crossing during pause cannot be replayed later.

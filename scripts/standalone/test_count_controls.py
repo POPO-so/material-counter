@@ -89,3 +89,36 @@ def test_runtime_rle_packets_count_only_left_to_right_crossing(library,positions
         events.extend(result.events)
     assert counter.invalid_frames==0
     assert counter.total_count==len(events)==expected
+
+
+def test_advance_count_defaults_to_native_without_feature_reads(library):
+    class Reader:
+        def __init__(self): self.calls=0
+        def read(self, frame): self.calls+=1; return ()
+    counter=make_runtime_counter(library)
+    controls=ControlState()
+    reader=Reader()
+    advance_count(counter,controls,packet(0,160),capture_monotonic_ns=1)
+    assert reader.calls==0 and counter.last_backend=='native'
+
+
+def test_advance_count_passes_validated_features_or_native_fallback(library):
+    from scripts.rle.components import Component
+
+    class Reader:
+        def __init__(self, result): self.result=result; self.calls=[]
+        def read(self, frame): self.calls.append(frame.frame_id); return self.result
+
+    frame=packet(0,160)
+    component=Component(100,160,109,169,100,104.5,164.5)
+    reader=Reader((component,))
+    counter=make_runtime_counter(library)
+    advance_count(counter,ControlState(),frame,capture_monotonic_ns=1,
+                  region_features=reader.read(frame))
+    assert reader.calls==[0] and counter.last_backend=='pl_features'
+
+    reader=Reader(None)
+    counter=make_runtime_counter(library)
+    advance_count(counter,ControlState(),frame,capture_monotonic_ns=1,
+                  region_features=reader.read(frame))
+    assert reader.calls==[0] and counter.last_backend=='native'

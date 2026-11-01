@@ -24,7 +24,7 @@ if {![file isfile $transcript]} { error "RLE_FEATURES_TRANSCRIPT_MISSING:$transc
 set fd [open $transcript r]
 set transcript_text [read $fd]
 close $fd
-if {![regexp {RLE_FEATURE_PASS cases=12} $transcript_text]} {
+if {![regexp {RLE_FEATURE_PASS cases=16} $transcript_text]} {
     error "RLE_FEATURE_PASS_MARKER_MISSING:$transcript"
 }
 if {[regexp {Fatal:|TEST_FAIL|watchdog timeout} $transcript_text]} {

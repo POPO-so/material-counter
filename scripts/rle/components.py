@@ -39,6 +39,8 @@ class Component:
     area: int
     centroid_x: float
     centroid_y: float
+    # FRG2 reason bits; None means the source only provided legacy FRG1 data.
+    candidate: int | None = None
 
 
 @dataclass(frozen=True)

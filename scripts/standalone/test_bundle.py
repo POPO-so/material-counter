@@ -11,11 +11,12 @@ except ModuleNotFoundError:
     required_addresses = {}
 
 OFFLOAD = {
-    "abi": 1,
+    "abi": 2,
     "preview": {"signature": "PBO1", "base": 0x43C50000,
                 "source_geometry": [640, 400], "viewport": [384, 146, 512, 320]},
     "input": {"signature": "RAW1", "mode": "raw"},
-    "buttons": {"interrupt": True, "intc_index": 3},
+    "buttons": {"interrupt": True, "intc_index": 3, "status_signature": "BTN1"},
+    "features": {"signature": "FRG2"},
 }
 
 def bundle(tmp, *, offload=False):
@@ -67,16 +68,28 @@ def test_offload_bundle_checks_declared_capabilities_and_hwh_wiring(tmp_path):
     assert verify_offload_capabilities(json.loads(p.read_text()),tmp_path/"display.hwh")["register_signatures"] == "runtime_only"
 
 @pytest.mark.parametrize("mutate", [
+    lambda data: data["offload"].update(abi=1),
     lambda data: data["offload"]["preview"].update(base=0x43C40000),
     lambda data: data["offload"]["preview"].update(viewport=[0, 0, 640, 400]),
     lambda data: data["offload"]["input"].update(mode="packet"),
     lambda data: data["offload"]["buttons"].update(intc_index=2),
     lambda data: data["offload"]["buttons"].update(interrupt=1),
+    lambda data: data["offload"]["buttons"].update(status_signature="BTN0"),
+    lambda data: data["offload"]["features"].update(signature="FRG1"),
 ])
 def test_offload_manifest_must_match_fixed_contract(tmp_path, mutate):
     p,_=bundle(tmp_path,offload=True); data=json.loads(p.read_text()); mutate(data)
     with pytest.raises(ValueError,match="offload"):
         verify_offload_capabilities(data,tmp_path/"display.hwh")
+
+
+def test_abi1_offload_manifest_is_rejected_before_hardware_access(tmp_path):
+    p,_=bundle(tmp_path,offload=True)
+    data=json.loads(p.read_text())
+    data["offload"]["abi"]=1
+
+    with pytest.raises(ValueError,match="offload manifest capabilities"):
+        verify_offload_capabilities(data,tmp_path/"missing-old-hardware.hwh")
 
 @pytest.mark.parametrize("old,new", [
     ("0x43c50000", "0x43c60000"), ("0x43c20000", "0x43c30000"),

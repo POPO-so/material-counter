@@ -3,7 +3,50 @@
 All register access must run in the RLE DriverOwner domain. No pixel arrays are
 read or copied. A busy display drops previews while counting continues.
 """
+from dataclasses import dataclass
+
 PBO1_SIGNATURE = 0x50424F31
+BTN1_SIGNATURE = 0x42544E31
+BUTTON_SIGNATURE_OFFSET = 0x80
+BUTTON_STATE_OFFSET = 0x84
+BUTTON_EVENTS_OFFSET = 0x88
+BUTTON_FAULT_OFFSET = 0x8C
+
+
+@dataclass(frozen=True)
+class ButtonEventSnapshot:
+    stable: int
+    events: int
+    fault: int
+
+
+class ButtonEventStatus:
+    """BTN1 status reader with optional W1C of bits observed by each snapshot."""
+
+    def __init__(self, mmio):
+        self.mmio = mmio
+        self._require_signature()
+
+    def _require_signature(self):
+        if int(self.mmio.read(BUTTON_SIGNATURE_OFFSET)) != BTN1_SIGNATURE:
+            raise ValueError("button status capability signature mismatch")
+
+    def snapshot(self, *, clear=False) -> ButtonEventSnapshot:
+        if type(clear) is not bool:
+            raise ValueError("clear must be bool")
+        self._require_signature()
+        stable = int(self.mmio.read(BUTTON_STATE_OFFSET))
+        events = int(self.mmio.read(BUTTON_EVENTS_OFFSET))
+        fault = int(self.mmio.read(BUTTON_FAULT_OFFSET))
+        if any(value < 0 or value & ~0xF for value in (stable, events, fault)):
+            raise ValueError("button status contains reserved bits")
+        result = ButtonEventSnapshot(stable, events, fault)
+        if clear:
+            if events:
+                self.mmio.write(BUTTON_EVENTS_OFFSET, events)
+            if fault:
+                self.mmio.write(BUTTON_FAULT_OFFSET, fault)
+        return result
 
 
 class PlPreview:

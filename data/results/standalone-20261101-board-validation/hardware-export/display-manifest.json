@@ -1,0 +1,98 @@
+{
+  "files": {
+    "bit": {
+      "path": "g2-integrated.bit",
+      "sha256": "4fcca329d763b42d8dc667ff3a9d86c9c82a414395c505247d369296184ab847"
+    },
+    "hwh": {
+      "path": "g2-integrated.hwh",
+      "sha256": "610a79f773c1bf605705424a5f864dfccc26e29bfce27078a6d5082eab8ff253"
+    }
+  },
+  "offload": {
+    "abi": 2,
+    "buttons": {
+      "intc_index": 3,
+      "interrupt": true,
+      "status_signature": "BTN1"
+    },
+    "features": {
+      "signature": "FRG2"
+    },
+    "input": {
+      "mode": "raw",
+      "signature": "RAW1"
+    },
+    "preview": {
+      "base": 1136984064,
+      "signature": "PBO1",
+      "source_geometry": [
+        640,
+        400
+      ],
+      "viewport": [
+        384,
+        146,
+        512,
+        320
+      ]
+    }
+  },
+  "ready_for_board": true,
+  "resources": {
+    "bram_tiles": 24.5,
+    "dsp": 13,
+    "ff": 41249,
+    "lut": 34411,
+    "slice": 13270,
+    "whs_ns": 0.022,
+    "wns_ns": 0.273
+  },
+  "review_notes": [
+    "review_scope 仅授权本次受控板上 smoke test；不构成完整 HDMI IO timing closure，也不构成产品验收。",
+    "Routed 内部 setup/hold gate 通过：WNS +0.273 ns、TNS 0、WHS +0.022 ns、THS 0；HDMI TMDS 外部输出 delay 未按接收端/板级依据建模，因此不得声称完整 HDMI IO timing closure。",
+    "CDC-6 Warning 保留（消抖 stable_state_reg[3:0] 至 AXI GPIO 同步器；false-path 覆盖 4/4）；CDC-15 Warning 保留（1,703 项，frame monitor mailbox clock-enable CDC）；无 CDC-1 Critical。",
+    "DRC 保留 42 Warnings、3 Advisories、0 Errors；methodology 保留 7 Warnings（LUTAR-1 4、TIMING-9 1、ULMTCS-1 1、XDCB-5 1）。",
+    "Slice 使用 13,270/13,300（99.77%），接近器件容量上限，后续逻辑可能受 Slice 封装容量限制。"
+  ],
+  "review_scope": "本次用户授权的受控板上 smoke test",
+  "rle_monitor": {
+    "abi": 1,
+    "clock_hz": 50000000
+  },
+  "runtime": {
+    "font_sha256": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8",
+    "latin_font_sha256": "252d320379dd882551c53b75dfb620cb0ffe2d6657445743d79f2100f1d96f21",
+    "sources": [
+      {
+        "path": "lib/video/common.py",
+        "sha256": "2c4d6c2cb3ede0aca97aa2980dec7d5147ce6f4d446635ddd7dd1e894282cbf7"
+      },
+      {
+        "path": "lib/video/dma.py",
+        "sha256": "94346a4ae6a7a7f9e4b78887179e2a55ff821c7ed3724b584a7bb4c228fea30f"
+      },
+      {
+        "path": "lib/video/frontend.py",
+        "sha256": "da4f3a4915820cdf124773d64a48a4e289c62cdb9ffcbd623b9f3f2b0c17d28b"
+      },
+      {
+        "path": "lib/video/dvi.py",
+        "sha256": "ed46cd6259037474762725d654a9a7e266d02d2052d8202b37a58085b4520cea"
+      },
+      {
+        "path": "lib/video/pipeline.py",
+        "sha256": "a176db13a567ffe080af7e4691a8ce49382450fcb47c1bea6bca76422b37b7c3"
+      },
+      {
+        "path": "lib/video/hierarchies.py",
+        "sha256": "528106d7ea2c95cfd64ec27f2696f9daab76fb2c96341f1a48cd04b211f85950"
+      },
+      {
+        "path": "buffer.py",
+        "sha256": "532f1cee01509b4f90e3976d4270a0a5f7d525d4ba94f7233b0b5fda0f281463"
+      }
+    ]
+  },
+  "schema": "material-counter.display-build.v1"
+}

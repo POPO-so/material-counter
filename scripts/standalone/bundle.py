@@ -21,7 +21,7 @@ required_addresses = {
 }
 
 OFFLOAD_CAPABILITIES = {
-    "abi": 1,
+    "abi": 2,
     "preview": {
         "signature": "PBO1",
         "base": 0x43C50000,
@@ -29,7 +29,8 @@ OFFLOAD_CAPABILITIES = {
         "viewport": [384, 146, 512, 320],
     },
     "input": {"signature": "RAW1", "mode": "raw"},
-    "buttons": {"interrupt": True, "intc_index": 3},
+    "buttons": {"interrupt": True, "intc_index": 3, "status_signature": "BTN1"},
+    "features": {"signature": "FRG2"},
 }
 
 

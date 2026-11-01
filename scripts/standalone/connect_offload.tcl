@@ -11,6 +11,26 @@ capture overlay_concat_expand [list ipcfg::require video_interrupts [dict create
     {Preserve existing interrupt inputs 0-2 and append overlay GPIO at input 3}] {REQ:pinned+applied}
 
 create_bd_cell -type module -reference video_binary_overlay_bd binary_overlay
+create_bd_cell -type module -reference button_debounce_irq button_debounce
+set_property -dict [list CONFIG.KEY_COUNT 4 CONFIG.DEBOUNCE_CYCLES 1500000] [get_bd_cells button_debounce]
+create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 button_debounce_tieoff
+set_property -dict [list CONFIG.CONST_WIDTH 4 CONFIG.CONST_VAL 0] [get_bd_cells button_debounce_tieoff]
+set button_port [get_bd_ports btns_4bits_tri_i]
+set button_gpio_pin [get_bd_pins btns_gpio/gpio_io_i]
+set button_old_net [get_bd_nets -quiet -of_objects $button_gpio_pin]
+if {[llength $button_old_net] != 1} {error "OFFLOAD_BUTTON_INPUT_NET_MISSING_OR_AMBIGUOUS:$button_old_net"}
+disconnect_bd_net $button_old_net $button_port $button_gpio_pin
+connect_bd_net $button_port [get_bd_pins button_debounce/button_in]
+connect_bd_net [get_bd_pins button_debounce/stable_state] $button_gpio_pin [get_bd_pins binary_overlay/button_state]
+connect_bd_net [get_bd_pins ps7/FCLK_CLK0] [get_bd_pins button_debounce/clk]
+connect_bd_net [get_bd_pins reset_rle/peripheral_aresetn] [get_bd_pins button_debounce/resetn]
+connect_bd_net [get_bd_pins button_debounce/press_event] [get_bd_pins binary_overlay/button_events]
+connect_bd_net [get_bd_pins button_debounce/fault_sticky] [get_bd_pins binary_overlay/button_fault]
+connect_bd_net [get_bd_pins binary_overlay/event_clear] [get_bd_pins button_debounce/event_clear]
+connect_bd_net [get_bd_pins binary_overlay/fault_clear] [get_bd_pins button_debounce/fault_clear]
+connect_bd_net [get_bd_pins button_debounce_tieoff/dout] [get_bd_pins button_debounce/fault_in]
+# 按键消抖路径仍待综合验证；GPIO IRQ 到 INTC In3 保持原连接。
+# 当前没有外部故障源：fault_in 明确接常量 0，仅保留状态/W1C接口。
 if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != 12} {error "OFFLOAD_CONTROL_MI_READBACK_FAILED"}
 foreach pin {control/M11_AXI control/M11_ACLK control/M11_ARESETN} {
     if {![llength [get_bd_pins -quiet $pin]] && ![llength [get_bd_intf_pins -quiet $pin]]} {error "OFFLOAD_CONTROL_PIN_MISSING:$pin"}
