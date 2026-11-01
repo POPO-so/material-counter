@@ -10,12 +10,16 @@ from scale_parameters import DEFAULT_THRESHOLD, validate_threshold
 
 def software_binary8(gray: np.ndarray, *, threshold: int = DEFAULT_THRESHOLD,
                      output: np.ndarray | None = None,
-                     roi: tuple[int, int] = OUTPUT_ROI) -> np.ndarray:
+                     roi: tuple[int, int] = OUTPUT_ROI,
+                     inclusive: bool = False) -> np.ndarray:
     """Threshold prepared Gray8 in the active ROI into caller-owned cached RAM.
 
     The original image is never modified. Pixels outside the active ROI are
-    background, matching the lighting TX preparation followed by fixed PL >=128.
-    This function neither opens hardware nor participates in the board runner.
+    background. ``inclusive=False`` keeps the historical OpenCV comparison
+    (``cv2.THRESH_BINARY``: pixel > threshold), which is **not** the PL rule;
+    ``inclusive=True`` uses pixel >= threshold to match the fixed PL >=128
+    comparison. Software binary8 is never equivalent to a PL measurement and
+    must not be reported as board evidence.
     """
     image = np.asarray(gray)
     if image.dtype != np.uint8 or image.shape != (HEIGHT, WIDTH):
@@ -36,6 +40,9 @@ def software_binary8(gray: np.ndarray, *, threshold: int = DEFAULT_THRESHOLD,
     if np.shares_memory(image, output):
         raise ValueError("gray and output must not overlap")
     output.fill(0)
-    cv2.threshold(image[top:bottom], threshold, 255, cv2.THRESH_BINARY,
-                  dst=output[top:bottom])
+    if inclusive:
+        output[top:bottom] = np.where(image[top:bottom] >= threshold, 255, 0)
+    else:
+        cv2.threshold(image[top:bottom], threshold, 255, cv2.THRESH_BINARY,
+                      dst=output[top:bottom])
     return output
