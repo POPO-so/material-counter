@@ -243,3 +243,27 @@ def test_slverr_on_start_keeps_both_buffers_held():
     with pytest.raises(RuntimeError, match="DMA-owned"):
         transport.close()
     assert rig.tx.freed == rig.rx.freed == 0
+
+
+def test_transfer_timing_records_monotonic_stages_and_polls():
+    rig = FakeRig()
+    transport = make_transport(rig)
+    timing = {}
+    transport.transfer(np.zeros((HEIGHT, WIDTH), dtype=np.uint8), 31, timing=timing)
+    order = ["enter", "encoded", "configured", "started",
+             "waited", "synced", "decoded"]
+    assert all(name in timing for name in order)
+    assert all(timing[a] <= timing[b] for a, b in zip(order, order[1:]))
+    assert timing["poll_count"] >= 1
+    assert timing["poll_total_ms"] >= 0
+    assert timing["poll_max_gap_ms"] >= 0
+
+
+def test_transfer_timed_accepts_positional_sink():
+    rig = FakeRig()
+    transport = make_transport(rig)
+    timing = {}
+    frame = transport.transfer_timed(
+        np.zeros((HEIGHT, WIDTH), dtype=np.uint8), 32, timing)
+    assert frame.frame_id == 32
+    assert "decoded" in timing

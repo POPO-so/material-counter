@@ -231,6 +231,8 @@ def main(argv=None):
     parser.add_argument('--inject-drawing-start-failure',choices=('create','start','after-start'),
         help='inject one drawing process creation/start error on its first launch attempt')
     parser.add_argument('--freeze-telemetry-at-frame',type=int,help='test staleness without stopping safety checks')
+    parser.add_argument('--transfer-timing',action='store_true',
+        help='record per-stage transfer marks and poll gaps (default off; no behavior change)')
     parser.add_argument('--font',default='/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf')
     parser.add_argument('--latin-font',default='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
     parser.add_argument('--inherited-lock-fds',nargs=2,type=int,metavar=('DESKTOP_FD','STANDALONE_FD'),
@@ -303,6 +305,7 @@ def main(argv=None):
         manifest_sha256=args.manifest_sha256,native_sha256=sha256(args.native_lib),
         commands_sha256=sha256(args.commands) if args.commands else None,
         source=args.source,display=args.display,main_pid=os.getpid(),continuous=args.continuous,
+        transfer_timing_enabled=bool(args.transfer_timing),
         diagnostic_limits={'samples':1800,'events':2048,'recoveries':2048,'frame_trace':600,'annotations_per_frame':128,
             'button_raw_transitions':2048},
         session_id=str(uuid.uuid4()),ownership=audit_process_ownership(),state='STARTING',
@@ -362,7 +365,7 @@ def main(argv=None):
     drawing_errors=ctx.Queue(maxsize=1);drawing_counts=ctx.RawArray('Q',2)
     session=uuid.UUID(report['session_id'])
     previous_cpu=_parse_proc_stat(Path('/proc/stat').read_text())
-    stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','snapshot_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms')}
+    stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','snapshot_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms','transfer_parts')}
     try:
         dma=owner.retain(MMIO(0x40400000,0x1000))
         for offset in (4,0x34):
@@ -535,7 +538,13 @@ def main(argv=None):
             while True:
                 try:boundary.append(events.get_nowait())
                 except queue.Empty:break
-            packet=owner.call(transport.transfer,gray,index,timeout=6)
+            if args.transfer_timing:
+                transfer_timing={}
+                packet=owner.call(transport.transfer_timed,gray,index,transfer_timing,timeout=6)
+                report['transfer_timing_last']=transfer_timing
+                stages['transfer_parts'].append(transfer_timing)
+            else:
+                packet=owner.call(transport.transfer,gray,index,timeout=6)
             rx_total_bytes+=packet.actual_bytes
             last_rle_stats={'runs':packet.run_count,'rx_bytes':packet.actual_bytes}
             transfer_end=time.monotonic()
@@ -618,6 +627,7 @@ def main(argv=None):
                     cpu=_cpu_usage_percent(previous_cpu,cpu),vdma_status=vdma_status,
                     video_state=video_pump.state if video_pump else 'OFF',telemetry=cache.snapshot(time.monotonic()),
                     crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
+                    transfer_timing=report.get('transfer_timing_last'),
                     counters=owner.call(snapshot_counters,control)))
                 previous_cpu=cpu;last_sample=sample_time
         report['duration_s']=time.monotonic()-started
@@ -660,7 +670,20 @@ def main(argv=None):
             camera_released=True,buffers_released=not display_held,rle_buffers_released=True,after_memory=_memory(),
             drawing_published=int(drawing_counts[0]),drawing_dropped=int(drawing_counts[1]))
         report['timings_ms']={name:{f'p{p}':float(np.percentile(values,p)) if values else None for p in (50,95,99)}
-                             for name,values in stages.items()}
+                             for name,values in stages.items() if name!='transfer_parts'}
+        if args.transfer_timing and stages['transfer_parts']:
+            parts=list(stages['transfer_parts'])
+            def pcts(values):
+                return {f'p{p}':float(np.percentile(values,p)) if values else None for p in (50,95,99)}
+            transfer_stats={key:pcts([float(v.get(key,0.0)) for v in parts])
+                            for key in ('poll_count','poll_max_gap_ms','poll_total_ms')}
+            order=['enter','encoded','configured','started','waited','synced','decoded']
+            for first,second in zip(order,order[1:]):
+                durations=[(v[second]-v[first])*1000.0 for v in parts
+                           if first in v and second in v]
+                if durations:
+                    transfer_stats[f'{first}_to_{second}']=pcts(durations)
+            report['transfer_timing_percentiles_ms']=transfer_stats
         if video_pump is not None and not video_pump.is_alive:report['timings_ms'].update(video_pump.timing_percentiles_ms())
     except BaseException as error:
         if captures is not None:report['snapshot_writer_drained']=captures.close()

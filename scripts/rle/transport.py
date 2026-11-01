@@ -170,9 +170,24 @@ class RleDmaTransport:
         if int(self.control.read(0x18)) != start_word or int(self.control.read(0x1C)) != end_word:
             raise RuntimeError("RLE ROI readback mismatch")
 
-    def _wait_complete(self) -> tuple[int, int, int]:
+    @staticmethod
+    def _mark(timing, name):
+        if timing is not None:
+            timing[name] = time.monotonic()
+
+    def _wait_complete(self, timing=None) -> tuple[int, int, int]:
         deadline = time.monotonic() + self.timeout_s
+        polls = 0
+        last_poll = time.monotonic()
+        max_gap = 0.0
         while True:
+            now = time.monotonic()
+            if polls:
+                gap = now - last_poll
+                if gap > max_gap:
+                    max_gap = gap
+            last_poll = now
+            polls += 1
             mm2s = int(self.dma_regs.read(DMA_MM2S_STATUS))
             s2mm = int(self.dma_regs.read(DMA_S2MM_STATUS))
             state = int(self.control.read(0x08))
@@ -183,15 +198,23 @@ class RleDmaTransport:
             if (mm2s & DMA_IDLE) and (s2mm & DMA_IDLE) and (state & 0x2) and not (state & 0x1):
                 actual_dma = int(self.dma_regs.read(DMA_S2MM_LENGTH))
                 actual_hw = int(self.control.read(0x0C))
+                if timing is not None:
+                    timing["poll_count"] = polls
+                    timing["poll_max_gap_ms"] = max_gap * 1000.0
+                    timing["poll_total_ms"] = (time.monotonic() - (deadline - self.timeout_s)) * 1000.0
                 return actual_dma, actual_hw, state
             if time.monotonic() >= deadline:
+                if timing is not None:
+                    timing["poll_count"] = polls
+                    timing["poll_max_gap_ms"] = max_gap * 1000.0
                 raise TimeoutError("RLE DMA transfer did not complete before timeout")
             time.sleep(min(0.001, max(0.0001, self.timeout_s / 100)))
 
     def transfer(self, gray: Any, frame_id: int, *, params_version: int = 0,
                  roi: tuple[int, int, int, int] = (0, 0, WIDTH, HEIGHT),
                  threshold: int = 128, intensity_offset: int = 0,
-                 morph_mode: int = 0):
+                 morph_mode: int = 0, timing=None):
+        self._mark(timing, "enter")
         self._ensure_open()
         self.last_rx_bytes = 0
         frame_id = _uint(frame_id, "frame_id")
@@ -217,17 +240,21 @@ class RleDmaTransport:
             if not callable(flush):
                 raise RuntimeError("TX buffer has no sync_to_device or flush method")
             flush()
+        self._mark(timing, "encoded")
 
         self._configure(frame_id, params_version, roi, roi_start, roi_end,
                         threshold, intensity_offset, morph_mode)
+        self._mark(timing, "configured")
         # Set before the first channel start. Any exception afterwards keeps both
         # buffers held until an operator can establish that DMA ownership ended.
         self.dma_may_be_active = True
         self.recv_channel.transfer(self.rx_buffer, nbytes=RX_CAPACITY)
         self.control.write(0x00, 1)
         self.send_channel.transfer(self.tx_buffer, nbytes=TX_BYTES)
+        self._mark(timing, "started")
 
-        dma_actual, hw_actual, state = self._wait_complete()
+        dma_actual, hw_actual, state = self._wait_complete(timing)
+        self._mark(timing, "waited")
         if self.send_channel is not None:
             self.send_channel.wait()
         self.recv_channel.wait()
@@ -243,6 +270,7 @@ class RleDmaTransport:
             if not callable(invalidate):
                 raise RuntimeError("RX buffer has no sync_from_device or invalidate method")
             invalidate()
+        self._mark(timing, "synced")
 
         if dma_actual != hw_actual:
             raise RuntimeError(f"RLE actual length differs between DMA ({dma_actual}) and hardware ({hw_actual})")
@@ -261,7 +289,12 @@ class RleDmaTransport:
                 or frame.morph_mode != morph_mode):
             raise ValueError("RLE packet configuration metadata does not match the request")
 
+        self._mark(timing, "decoded")
         return frame
+
+    def transfer_timed(self, gray: Any, frame_id: int, timing):
+        """transfer() with a required timing sink (positional for DriverOwner.call)."""
+        return self.transfer(gray, frame_id, timing=timing)
 
     def snapshot(self) -> dict[str, int] | None:
         if self._last_snapshot is None:
