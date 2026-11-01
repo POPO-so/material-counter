@@ -4,7 +4,7 @@ module tb_button_debounce_irq;
   reg resetn=0;
   reg [1:0] button_in=0, event_clear=0, fault_in=0, fault_clear=0;
   wire [1:0] stable_state, press_pulse, release_pulse, press_event, fault_sticky;
-  integer press_count=0, release_count=0;
+  integer press_count=0, release_count=0, held_press_count=0, held_release_count=0;
 
   button_debounce_irq #(.KEY_COUNT(2), .DEBOUNCE_CYCLES(4)) dut (
     .clk(clk), .resetn(resetn), .button_in(button_in),
@@ -18,6 +18,8 @@ module tb_button_debounce_irq;
     if (resetn) begin
       if (press_pulse[0]) press_count=press_count+1;
       if (release_pulse[0]) release_count=release_count+1;
+      if (press_pulse[1]) held_press_count=held_press_count+1;
+      if (release_pulse[1]) held_release_count=held_release_count+1;
     end
   end
 
@@ -31,17 +33,44 @@ module tb_button_debounce_irq;
     if (stable_state !== 2'b00 || press_event !== 2'b00 || fault_sticky !== 2'b00)
       $fatal(1,"DEBOUNCE_FAIL reset outputs stable=%b event=%b fault=%b",stable_state,press_event,fault_sticky);
 
+    $display("CASE button held through reset release");
+    resetn=0; button_in[1]=1; #1;
+    if (stable_state !== 2'b00 || press_event !== 2'b00 || press_pulse !== 2'b00)
+      $fatal(1,"DEBOUNCE_FAIL held-key reset did not clear outputs");
+    clocks(2); resetn=1; clocks(1);
+    if (dut.button_meta[1] !== 1'b1 || dut.button_sync[1] !== 1'b0 ||
+        stable_state[1] !== 1'b0 || press_event[1] !== 1'b0)
+      $fatal(1,"DEBOUNCE_FAIL synchronizer/reset-release first stage behavior");
+    clocks(1);
+    if (dut.button_sync[1] !== 1'b1 || stable_state[1] !== 1'b0 || press_event[1] !== 1'b0)
+      $fatal(1,"DEBOUNCE_FAIL synchronizer did not run while filter reset was held");
+    clocks(12);
+    if (stable_state[1] !== 1'b1 || press_event[1] !== 1'b1 || held_press_count != 1 || held_release_count != 0)
+      $fatal(1,"DEBOUNCE_FAIL held-key press stable=%b press=%0d release=%0d event=%b",stable_state[1],held_press_count,held_release_count,press_event[1]);
+    button_in[1]=0; clocks(12);
+    if (stable_state[1] !== 1'b0 || held_press_count != 1 || held_release_count != 1)
+      $fatal(1,"DEBOUNCE_FAIL held-key release stable=%b press=%0d release=%0d",stable_state[1],held_press_count,held_release_count);
+    clocks(2); resetn=0; button_in[1]=0; clocks(2); resetn=1; clocks(4);
+
     $display("CASE bounce filtered");
     button_in[0]=1; clocks(2); button_in[0]=0; clocks(6);
     if (stable_state[0] !== 1'b0 || press_count != 0 || release_count != 0)
       $fatal(1,"DEBOUNCE_FAIL bounce was not filtered");
 
+    $display("CASE short press and release");
+    button_in[0]=1; clocks(8);
+    if (stable_state[0] !== 1'b1 || press_count != 1 || release_count != 0 || press_event[0] !== 1'b1)
+      $fatal(1,"DEBOUNCE_FAIL short press stable=%b press_count=%0d release_count=%0d event=%b",stable_state[0],press_count,release_count,press_event[0]);
+    button_in[0]=0; clocks(8);
+    if (stable_state[0] !== 1'b0 || press_count != 1 || release_count != 1)
+      $fatal(1,"DEBOUNCE_FAIL short release stable=%b press_count=%0d release_count=%0d",stable_state[0],press_count,release_count);
+
     $display("CASE stable press and long hold");
     button_in[0]=1; clocks(12);
-    if (stable_state[0] !== 1'b1 || press_count != 1 || release_count != 0 || press_event[0] !== 1'b1)
+    if (stable_state[0] !== 1'b1 || press_count != 2 || release_count != 1 || press_event[0] !== 1'b1)
       $fatal(1,"DEBOUNCE_FAIL stable press stable=%b press_count=%0d release_count=%0d event=%b",stable_state[0],press_count,release_count,press_event[0]);
     clocks(12);
-    if (press_count != 1) $fatal(1,"DEBOUNCE_FAIL long hold repeated press count=%0d",press_count);
+    if (press_count != 2) $fatal(1,"DEBOUNCE_FAIL long hold repeated press count=%0d",press_count);
 
     $display("CASE sticky event clear");
     event_clear[0]=1; clocks(1); event_clear[0]=0; clocks(1);
@@ -50,7 +79,7 @@ module tb_button_debounce_irq;
 
     $display("CASE release pulse");
     button_in[0]=0; clocks(12);
-    if (stable_state[0] !== 1'b0 || release_count != 1 || press_count != 1)
+    if (stable_state[0] !== 1'b0 || release_count != 2 || press_count != 2)
       $fatal(1,"DEBOUNCE_FAIL release stable=%b press_count=%0d release_count=%0d",stable_state[0],press_count,release_count);
 
     $display("CASE fault latch and clear");
@@ -68,7 +97,7 @@ module tb_button_debounce_irq;
     if (stable_state !== 2'b00 || press_event !== 2'b00 || fault_sticky !== 2'b00)
       $fatal(1,"DEBOUNCE_FAIL reset release state");
 
-    $display("DEBOUNCE_PASS cases=7");
+    $display("DEBOUNCE_PASS cases=8");
     $finish;
   end
 

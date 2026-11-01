@@ -51,10 +51,23 @@ if {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"} 
     set_property USED_IN_SYNTHESIS false [get_files $offload_xdc]
     set_property PROCESSING_ORDER LATE [get_files $offload_xdc]
 }
+# The IP's generic XDC models SerialClk as generated from PixelClk inside
+# rgb2dvi. This design disables that generator and supplies SerialClk from the
+# external axi_dynclk MMCM, so retain the real design-level clock constraint
+# and exclude only the incorrect generated IP clock definition.
+set rgb2dvi_clock_xdc [file normalize [file join $out project display.gen sources_1 bd display ip display_rgb2dvi_0_0 src rgb2dvi_clocks.xdc]]
+set rgb2dvi_clock_file [get_files -quiet -all $rgb2dvi_clock_xdc]
+if {[llength $rgb2dvi_clock_file] != 1} {error "RGB2DVI_CLOCK_XDC_NOT_FOUND:$rgb2dvi_clock_xdc"}
+set_property USED_IN_SYNTHESIS false $rgb2dvi_clock_file
+set_property USED_IN_IMPLEMENTATION false $rgb2dvi_clock_file
 if {$max_threads ne ""} {set_param general.maxThreads $max_threads}
 launch_runs synth_1 -jobs $jobs
 wait_on_run synth_1
 if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "DISPLAY_SYNTH_FAILED"}
+open_run synth_1
+set button_meta_first [get_pins -quiet -hier -regexp {.*button_debounce.*button_meta_reg\[[0-3]\]/D}]
+if {[llength $button_meta_first] != 4} {error "OFFLOAD_BUTTON_META_FIRST_STAGE_PIN_COUNT:[llength $button_meta_first]"}
+close_design
 launch_runs impl_1 -to_step write_bitstream -jobs $jobs
 wait_on_run impl_1
 if {[get_property PROGRESS [get_runs impl_1]] ne "100%" ||
@@ -69,6 +82,7 @@ report_drc -file [file join $reports drc.rpt]
 report_methodology -file [file join $reports methodology.rpt]
 report_cdc -details -file [file join $reports cdc.rpt]
 report_bus_skew -file [file join $reports bus-skew.rpt]
+report_exceptions -coverage -file [file join $reports exception-coverage.rpt]
 set setup [get_property SLACK [get_timing_paths -delay_type max -max_paths 1]]
 set hold [get_property SLACK [get_timing_paths -delay_type min -max_paths 1]]
 if {$setup eq "" || $hold eq "" || $setup < 0 || $hold < 0} {error "DISPLAY_TIMING_FAILED setup=$setup hold=$hold"}

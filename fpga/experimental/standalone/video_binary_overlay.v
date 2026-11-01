@@ -120,10 +120,11 @@ module video_binary_overlay #(
 
   reg cfg_toggle, cfg_ack;
   (* ASYNC_REG="TRUE" *) reg cfg_ack_s1, cfg_ack_s2;
-  localparam integer CFG_IDLE=0, CFG_LINE=1, CFG_BOXES=2, CFG_PUBLISH=3;
+  localparam integer CFG_IDLE=0, CFG_LINE=1, CFG_BOX_READ=2,
+                     CFG_BOX_SCALE=3, CFG_BOX_WRITE=4, CFG_PUBLISH=5;
   localparam integer CFG_COORDS=MAX_BOXES*4;
   localparam integer CFG_INDEX_W=(CFG_COORDS<2)?1:$clog2(CFG_COORDS);
-  reg [1:0] cfg_state;
+  reg [2:0] cfg_state;
   reg [CFG_INDEX_W-1:0] cfg_box_idx;
   reg [1:0] cfg_coord_sel;
   reg cfg_raw_enable;
@@ -133,13 +134,11 @@ module video_binary_overlay #(
   reg [MAX_BOXES-1:0] cfg_work_box_valid;
   reg [9:0] cfg_raw_line, cfg_work_line;
   reg cfg_work_line_valid;
+  reg [9:0] cfg_coord_raw, cfg_coord_scaled_reg;
   integer cfgb;
-  wire [9:0] cfg_coord_value=(cfg_state==CFG_LINE)?cfg_raw_line:
-      cfg_raw_boxes[cfg_box_idx*40+cfg_coord_sel*10 +: 10];
-  wire cfg_scale_x=(cfg_state==CFG_LINE)||(cfg_coord_sel<2);
-  wire [9:0] cfg_coord_scaled=cfg_scale_x?
-      ((cfg_coord_value*VIEW_WIDTH)/WIDTH):
-      ((cfg_coord_value*VIEW_HEIGHT)/HEIGHT);
+  wire [9:0] cfg_coord_scaled=(cfg_coord_sel<2)?
+      ((cfg_coord_raw*VIEW_WIDTH)/WIDTH):
+      ((cfg_coord_raw*VIEW_HEIGHT)/HEIGHT);
   reg cfg_mb_enable;
   reg [31:0] cfg_mb_id;
   reg [4:0] cfg_mb_count;
@@ -157,6 +156,7 @@ module video_binary_overlay #(
       cfg_raw_enable<=0; cfg_raw_id<=0; cfg_raw_count<=0;
       cfg_raw_boxes<=0; cfg_work_boxes<=0; cfg_work_box_valid<=0;
       cfg_raw_line<=0; cfg_work_line<=0; cfg_work_line_valid<=0;
+      cfg_coord_raw<=0; cfg_coord_scaled_reg<=0;
     end else begin
       cfg_ack_s1<=cfg_ack; cfg_ack_s2<=cfg_ack_s1;
       case(cfg_state)
@@ -174,16 +174,24 @@ module video_binary_overlay #(
           cfg_state<=CFG_LINE;
         end
         CFG_LINE: begin
-          cfg_work_line<=cfg_coord_scaled;
-          cfg_box_idx<=0; cfg_coord_sel<=0; cfg_state<=CFG_BOXES;
+          cfg_work_line<=(cfg_raw_line*VIEW_WIDTH)/WIDTH;
+          cfg_box_idx<=0; cfg_coord_sel<=0; cfg_state<=CFG_BOX_READ;
         end
-        CFG_BOXES: begin
-          cfg_work_boxes[cfg_box_idx*40+cfg_coord_sel*10 +: 10]<=cfg_coord_scaled;
+        CFG_BOX_READ: begin
+          cfg_coord_raw<=cfg_raw_boxes[cfg_box_idx*40+cfg_coord_sel*10 +: 10];
+          cfg_state<=CFG_BOX_SCALE;
+        end
+        CFG_BOX_SCALE: begin
+          cfg_coord_scaled_reg<=cfg_coord_scaled;
+          cfg_state<=CFG_BOX_WRITE;
+        end
+        CFG_BOX_WRITE: begin
+          cfg_work_boxes[cfg_box_idx*40+cfg_coord_sel*10 +: 10]<=cfg_coord_scaled_reg;
           if(cfg_coord_sel==3) begin
             cfg_coord_sel<=0;
             if(cfg_box_idx==MAX_BOXES-1) cfg_state<=CFG_PUBLISH;
-            else cfg_box_idx<=cfg_box_idx+1'b1;
-          end else cfg_coord_sel<=cfg_coord_sel+1'b1;
+            else begin cfg_box_idx<=cfg_box_idx+1'b1;cfg_state<=CFG_BOX_READ;end
+          end else begin cfg_coord_sel<=cfg_coord_sel+1'b1;cfg_state<=CFG_BOX_READ;end
         end
         CFG_PUBLISH: begin
           cfg_mb_enable<=cfg_raw_enable; cfg_mb_id<=cfg_raw_id;
@@ -214,6 +222,8 @@ module video_binary_overlay #(
        x>=VIEW_X && x<VIEW_X+VIEW_WIDTH && y>=VIEW_Y && y<VIEW_Y+VIEW_HEIGHT;
   wire [9:0] local_x=x-VIEW_X,local_y=y-VIEW_Y;
   wire [9:0] source_x,source_y;
+  reg [AW-1:0] row_base_addr;
+  reg [1:0] row_scale_phase;
   generate
     // The production preview maps 512x320 source pixels onto a 640x400
     // window. For this exact 5:4 scale, floor(v*5/4) == v + floor(v/4).
@@ -245,7 +255,16 @@ module video_binary_overlay #(
         line_or_box=1;
     end
   end
-  wire [AW-1:0] pixel_addr=source_y*WIDTH+source_x;
+  wire [AW-1:0] pixel_addr;
+  generate
+    // For the exact 5:4 vertical map, advance the source row base by 1,1,1,2
+    // rows per output line. This removes source_y*WIDTH from the pixel path.
+    if(HEIGHT*4==VIEW_HEIGHT*5) begin : g_row_base_5_4
+      assign pixel_addr=row_base_addr+source_x;
+    end else begin : g_row_base_generic
+      assign pixel_addr=source_y*WIDTH+source_x;
+    end
+  endgenerate
   wire bank0_q,bank1_q;
   reg bank_q;
   wire mask_q=bank_q?bank1_q:bank0_q;
@@ -267,6 +286,7 @@ module video_binary_overlay #(
       enable_p<=0;id_p<=0;count_p<=0;boxes_p<=0;box_valid_p<=0;line_p<=0;line_valid_p<=0;
       display_bank<=0;display_valid<=0;displayed_frame_id<=0;ack_toggle<=0;
       x<=0;y<=0;active_prev<=0;vsync_prev<=0;
+      row_base_addr<=0;row_scale_phase<=0;
       bank_q<=0;use_q<=0;overlay_q<=0;base_q<=0;
       active_q<=0;vsync_q<=0;hsync_q<=0;
       out_data24<=0;out_active<=0;out_vsync<=0;out_hsync<=0;
@@ -275,7 +295,7 @@ module video_binary_overlay #(
       cfg_req_s1<=cfg_toggle;cfg_req_s2<=cfg_req_s1;
       active_prev<=vid_active;vsync_prev<=vid_vsync;
       if(frame_boundary) begin
-        x<=0;y<=0;
+        x<=0;y<=0;row_base_addr<=0;row_scale_phase<=0;
         if(publish_sync2!=publish_seen) begin
           display_bank<=publish_bank;displayed_frame_id<=publish_id;display_valid<=1;
           publish_seen<=publish_sync2;ack_toggle<=publish_sync2;
@@ -287,7 +307,19 @@ module video_binary_overlay #(
           cfg_seen<=cfg_req_s2;cfg_ack<=cfg_req_s2;
         end
       end else if(vid_active) x<=x+1'b1;
-      else if(active_prev) begin x<=0;y<=y+1'b1;end
+      else if(active_prev) begin
+        x<=0;y<=y+1'b1;
+        if(HEIGHT*4==VIEW_HEIGHT*5) begin
+          if(y==VIEW_Y-1) begin row_base_addr<=0;row_scale_phase<=0;end
+          else if(y>=VIEW_Y && y<VIEW_Y+VIEW_HEIGHT-1) begin
+            if(row_scale_phase==3) begin
+              row_base_addr<=row_base_addr+2*WIDTH;row_scale_phase<=0;
+            end else begin
+              row_base_addr<=row_base_addr+WIDTH;row_scale_phase<=row_scale_phase+1'b1;
+            end
+          end
+        end
+      end
       bank_q<=display_bank;
       use_q<=in_view;overlay_q<=line_or_box;base_q<=vid_data24;
       active_q<=vid_active;vsync_q<=vid_vsync;hsync_q<=vid_hsync;

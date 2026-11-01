@@ -54,7 +54,7 @@ module tb_video_binary_overlay #(parameter W=8,H=4,VW=W,VH=H);
    repeat(2)@(posedge cfg_clk);
    if(dut.cfg_toggle!==prior_toggle)
     $fatal(1,"configuration mailbox published before coordinate precompute");
-   repeat(4*16+4)@(posedge cfg_clk);
+   repeat(12*16+4)@(posedge cfg_clk);
    if(dut.cfg_toggle===prior_toggle)
     $fatal(1,"configuration mailbox did not publish after bounded precompute");
    repeat(5)@(posedge pixel_clk);
@@ -71,10 +71,34 @@ module tb_video_binary_overlay #(parameter W=8,H=4,VW=W,VH=H);
    repeat(2)@(posedge cfg_clk);
    if(dut.cfg_toggle!==prior_toggle)
     $fatal(1,"invalid-box configuration bypassed coordinate precompute");
-   repeat(4*16+4)@(posedge cfg_clk);
+   repeat(12*16+4)@(posedge cfg_clk);
    if(dut.cfg_toggle===prior_toggle)
     $fatal(1,"invalid-box configuration failed to publish");
    repeat(5)@(posedge pixel_clk);
+  end
+ endtask
+ task automatic commit_all_boxes;
+  integer bi,bx0,bx1,by0,by1,cfg_wait;
+  reg prior_toggle;
+  begin
+   wait(cfg_ready);@(negedge cfg_clk);prior_toggle=dut.cfg_toggle;
+   cfg_enable=0;cfg_frame_id=7;cfg_box_count=16;cfg_line_x=W;cfg_boxes=0;
+   for(bi=0;bi<16;bi=bi+1)begin
+    bx0=bi%W;bx1=(bx0<W-1)?bx0+1:bx0;
+    by0=bi%H;by1=(by0<H-1)?by0+1:by0;
+    cfg_boxes[bi*40+:40]={10'(by1),10'(by0),10'(bx1),10'(bx0)};
+   end
+   cfg_commit=1;@(negedge cfg_clk);cfg_commit=0;
+   cfg_wait=0;
+   while(dut.cfg_toggle===prior_toggle && cfg_wait<220)begin @(posedge cfg_clk);cfg_wait=cfg_wait+1;end
+   if(dut.cfg_toggle===prior_toggle)$fatal(1,"all-box configuration precompute timeout");
+   boundary();wait(cfg_ready);
+   for(bi=0;bi<16;bi=bi+1)begin
+    bx0=bi%W;bx1=(bx0<W-1)?bx0+1:bx0;
+    by0=bi%H;by1=(by0<H-1)?by0+1:by0;
+    if(dut.boxes_p[bi*40+:40]!=={10'(by1*VH/H),10'(by0*VH/H),10'(bx1*VW/W),10'(bx0*VW/W)} || !dut.box_valid_p[bi])
+     $fatal(1,"configuration box %0d lost/scaled incorrectly",bi);
+   end
   end
  endtask
  task automatic send_frame(input integer fid,input integer ones_x,input bit gaps);
@@ -83,7 +107,7 @@ module tb_video_binary_overlay #(parameter W=8,H=4,VW=W,VH=H);
    for(yy=0;yy<H;yy=yy+1)for(xx=0;xx<W;xx=xx+1)begin
     if(gaps && (xx%3)==1)begin @(negedge mask_clk);tap_valid=0;tap_sof=0;tap_eol=0;end
     @(negedge mask_clk);tap_valid=1;tap_sof=(xx==0&&yy==0);tap_eol=(xx==W-1);
-    tap_frame_id=fid;tap_bit=(xx==ones_x&&yy==1);
+    tap_frame_id=fid;tap_bit=(xx==ones_x&&(yy%4)==1);
    end
    @(negedge mask_clk);tap_valid=0;tap_sof=0;tap_eol=0;
    repeat(2)@(posedge mask_clk);
@@ -104,7 +128,7 @@ module tb_video_binary_overlay #(parameter W=8,H=4,VW=W,VH=H);
      lx=xx-X0;ly=yy-Y0;
      if(en&&lx>=0&&lx<VW&&ly>=0&&ly<VH)begin
       sx=lx*W/VW;sy=ly*H/VH;
-      white=(sx==mask_x&&sy==1)||(linepos<W&&lx==linepos*VW/W);
+      white=(sx==mask_x&&(sy%4)==1)||(linepos<W&&lx==linepos*VW/W);
       if(box&&lx>=1*VW/W&&lx<=2*VW/W&&ly>=2*VH/H&&ly<=3*VH/H&&
         (lx==1*VW/W||lx==2*VW/W||ly==2*VH/H||ly==3*VH/H))white=1;
       exp=white?24'hffffff:24'h000000;
@@ -144,12 +168,17 @@ module tb_video_binary_overlay #(parameter W=8,H=4,VW=W,VH=H);
   // Reuse of the previous display bank only after synchronized ACK.
   send_frame(10,6,1);accept_frame(10);boundary();scan(1,6,W,0);
   if(capture_count!=3)$fatal(1,"capture count %0d",capture_count);
+  commit_all_boxes();
   $display("BINARY_OVERLAY_PASS checks=%0d captures=%0d drops=%0d",checks,capture_count,drop_count);$finish;
  end
- initial begin #2000000;$fatal(1,"watchdog");end
+ initial begin #(W*H*100+SW*SH*60+2000000);$fatal(1,"watchdog");end
 endmodule
 
 
 module tb_video_binary_overlay_scaled;
  tb_video_binary_overlay #(.W(10),.H(5),.VW(8),.VH(4)) test_scaled();
+endmodule
+
+module tb_video_binary_overlay_main_ratio;
+ tb_video_binary_overlay #(.W(640),.H(400),.VW(512),.VH(320)) test_main_ratio();
 endmodule

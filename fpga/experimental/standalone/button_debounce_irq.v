@@ -38,10 +38,21 @@ module button_debounce_irq #(
         end
     end
 
+    // Keep the asynchronous input on the first synchronizer stage's D pin,
+    // and the first stage on the second stage's D pin, including reset
+    // release. Filtering state is held separately until reset release ends.
     always @(posedge clk or negedge resetn) begin
         if (!resetn) begin
             button_meta <= {KEY_COUNT{1'b0}};
             button_sync <= {KEY_COUNT{1'b0}};
+        end else begin
+            button_meta <= button_in;
+            button_sync <= button_meta;
+        end
+    end
+
+    always @(posedge clk or negedge resetn) begin
+        if (!resetn) begin
             stable_state <= {KEY_COUNT{1'b0}};
             press_pulse <= {KEY_COUNT{1'b0}};
             release_pulse <= {KEY_COUNT{1'b0}};
@@ -49,8 +60,6 @@ module button_debounce_irq #(
             fault_sticky <= {KEY_COUNT{1'b0}};
             for (i=0; i<KEY_COUNT; i=i+1) debounce_count[i] <= {COUNT_W{1'b0}};
         end else if (!reset_release_sync) begin
-            button_meta <= {KEY_COUNT{1'b0}};
-            button_sync <= {KEY_COUNT{1'b0}};
             stable_state <= {KEY_COUNT{1'b0}};
             press_pulse <= {KEY_COUNT{1'b0}};
             release_pulse <= {KEY_COUNT{1'b0}};
@@ -58,8 +67,6 @@ module button_debounce_irq #(
             fault_sticky <= {KEY_COUNT{1'b0}};
             for (i=0; i<KEY_COUNT; i=i+1) debounce_count[i] <= {COUNT_W{1'b0}};
         end else begin
-            button_meta <= button_in;
-            button_sync <= button_meta;
             press_pulse <= {KEY_COUNT{1'b0}};
             release_pulse <= {KEY_COUNT{1'b0}};
             for (i=0; i<KEY_COUNT; i=i+1) begin
