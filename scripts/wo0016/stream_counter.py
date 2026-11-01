@@ -90,6 +90,24 @@ class Detection:
     centroid_y: float
 
 
+DEFORMED_OVERLAP_MIN_RATIO = 0.5
+DEFORMED_BACKWARD_TOLERANCE_PX = 8.0
+
+
+def _bbox_overlap_ratio(left: Detection, right: Detection) -> float:
+    """Fraction of the smaller bounding box shared by both detections."""
+    x_min = max(left.x_min, right.x_min)
+    x_max = min(left.x_max, right.x_max)
+    y_min = max(left.y_min, right.y_min)
+    y_max = min(left.y_max, right.y_max)
+    if x_max < x_min or y_max < y_min:
+        return 0.0
+    intersection = (x_max - x_min + 1) * (y_max - y_min + 1)
+    left_area = (left.x_max - left.x_min + 1) * (left.y_max - left.y_min + 1)
+    right_area = (right.x_max - right.x_min + 1) * (right.y_max - right.y_min + 1)
+    return intersection / min(left_area, right_area)
+
+
 @dataclass(frozen=True)
 class CountEvent:
     track_id: int
@@ -795,8 +813,18 @@ class MaskCounter:
                                  else self.max_lateral_step * dt)
                 if self.motion_timebase_s is not None and not (self.predictive_association and self.strict_lateral_gate):
                     lateral_limit = self.max_lateral_step * motion_dt
+                backward_limit = self.backward_tolerance
+                if (self.count_axis == "x" and dt == 1 and track.confirmed
+                        and forward < -backward_limit
+                        and _bbox_overlap_ratio(old, detection) >= DEFORMED_OVERLAP_MIN_RATIO):
+                    # A confirmed component can deform between frames (split
+                    # children change shape as they separate) while its bbox
+                    # still covers the same physical region; centroid jitter
+                    # must not break its identity. A genuinely new observation
+                    # does not share most of the previous bbox.
+                    backward_limit = DEFORMED_BACKWARD_TOLERANCE_PX
                 if (lateral <= lateral_limit
-                        and -self.backward_tolerance <= forward <= self.max_step * motion_dt
+                        and -backward_limit <= forward <= self.max_step * motion_dt
                         and 0.25 <= area_ratio <= 4.0):
                     predicted_x, predicted_y = old.centroid_x, old.centroid_y
                     if (missing_frames or self.predictive_association) and velocity is not None:
