@@ -161,8 +161,10 @@ set_property top display_wrapper [current_fileset]
 set fd [open [file join $::env(PYNQ_SOURCE) boards Pynq-Z2 base vivado constraints base.xdc]]
 set xdc [read $fd]; close $fd
 set selected [open [file join $out display-pins.xdc] w]
+set include_switches [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
 foreach line [split $xdc "\n"] {
-    if {[regexp {get_ports.*(hdmi_out|btns_4bits_tri_i)} $line]} {puts $selected $line}
+    if {[regexp {get_ports.*(hdmi_out|btns_4bits_tri_i)} $line] ||
+        ($include_switches && [regexp {get_ports.*sws_2bits_tri_i} $line])} {puts $selected $line}
 }
 close $selected
 add_files -fileset constrs_1 [file join $out display-pins.xdc]

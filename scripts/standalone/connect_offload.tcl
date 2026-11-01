@@ -9,6 +9,9 @@ capture overlay_gpio_irq [list ipcfg::require btns_gpio [dict create CONFIG.C_IN
     {Enable the existing board GPIO interrupt output for the overlay candidate}] {REQ:pinned+applied}
 capture overlay_concat_expand [list ipcfg::require video_interrupts [dict create CONFIG.NUM_PORTS 4] \
     {Preserve existing interrupt inputs 0-2 and append overlay GPIO at input 3}] {REQ:pinned+applied}
+capture overlay_gpio_switches [list ipcfg::require btns_gpio [dict create \
+    CONFIG.C_GPIO_WIDTH 6 CONFIG.C_INTERRUPT_PRESENT 1] \
+    {Keep BTN0-3 on bits 0-3; add SW0/SW1 on bits 4-5}] {REQ:pinned+applied}
 
 create_bd_cell -type module -reference video_binary_overlay_bd binary_overlay
 create_bd_cell -type module -reference button_debounce_irq button_debounce
@@ -16,12 +19,13 @@ set_property -dict [list CONFIG.KEY_COUNT 4 CONFIG.DEBOUNCE_CYCLES 1500000] [get
 create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 button_debounce_tieoff
 set_property -dict [list CONFIG.CONST_WIDTH 4 CONFIG.CONST_VAL 0] [get_bd_cells button_debounce_tieoff]
 set button_port [get_bd_ports btns_4bits_tri_i]
+create_bd_port -dir I -from 1 -to 0 sws_2bits_tri_i
 set button_gpio_pin [get_bd_pins btns_gpio/gpio_io_i]
 set button_old_net [get_bd_nets -quiet -of_objects $button_gpio_pin]
 if {[llength $button_old_net] != 1} {error "OFFLOAD_BUTTON_INPUT_NET_MISSING_OR_AMBIGUOUS:$button_old_net"}
 disconnect_bd_net $button_old_net $button_port $button_gpio_pin
 connect_bd_net $button_port [get_bd_pins button_debounce/button_in]
-connect_bd_net [get_bd_pins button_debounce/stable_state] $button_gpio_pin [get_bd_pins binary_overlay/button_state]
+connect_bd_net [get_bd_pins button_debounce/stable_state] [get_bd_pins binary_overlay/button_state]
 connect_bd_net [get_bd_pins ps7/FCLK_CLK0] [get_bd_pins button_debounce/clk]
 connect_bd_net [get_bd_pins reset_rle/peripheral_aresetn] [get_bd_pins button_debounce/resetn]
 connect_bd_net [get_bd_pins button_debounce/press_event] [get_bd_pins binary_overlay/button_events]
@@ -29,6 +33,16 @@ connect_bd_net [get_bd_pins button_debounce/fault_sticky] [get_bd_pins binary_ov
 connect_bd_net [get_bd_pins binary_overlay/event_clear] [get_bd_pins button_debounce/event_clear]
 connect_bd_net [get_bd_pins binary_overlay/fault_clear] [get_bd_pins button_debounce/fault_clear]
 connect_bd_net [get_bd_pins button_debounce_tieoff/dout] [get_bd_pins button_debounce/fault_in]
+create_bd_cell -type module -reference slide_switch_synchronizer switch_synchronizer
+create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 btns_gpio_concat
+set_property -dict [list CONFIG.NUM_PORTS 2 CONFIG.IN0_WIDTH 4 CONFIG.IN1_WIDTH 2] \
+    [get_bd_cells btns_gpio_concat]
+connect_bd_net [get_bd_ports sws_2bits_tri_i] [get_bd_pins switch_synchronizer/switch_async]
+connect_bd_net [get_bd_pins ps7/FCLK_CLK0] [get_bd_pins switch_synchronizer/clk]
+connect_bd_net [get_bd_pins reset_rle/peripheral_aresetn] [get_bd_pins switch_synchronizer/resetn]
+connect_bd_net [get_bd_pins button_debounce/stable_state] [get_bd_pins btns_gpio_concat/In0]
+connect_bd_net [get_bd_pins switch_synchronizer/switch_sync] [get_bd_pins btns_gpio_concat/In1]
+connect_bd_net [get_bd_pins btns_gpio_concat/dout] $button_gpio_pin
 # 按键消抖路径仍待综合验证；GPIO IRQ 到 INTC In3 保持原连接。
 # 当前没有外部故障源：fault_in 明确接常量 0，仅保留状态/W1C接口。
 if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != 12} {error "OFFLOAD_CONTROL_MI_READBACK_FAILED"}
@@ -153,11 +167,16 @@ foreach {source sink} {
 } {offload_require_shared_net $source $sink}
 if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != 12 ||
     [get_property CONFIG.NUM_PORTS [get_bd_cells video_interrupts]] != 4 ||
-    [get_property CONFIG.C_INTERRUPT_PRESENT [get_bd_cells btns_gpio]] != 1} {
+    [get_property CONFIG.C_INTERRUPT_PRESENT [get_bd_cells btns_gpio]] != 1 ||
+    [get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio]] != 6 ||
+    [llength [get_bd_ports -quiet sws_2bits_tri_i]] != 1 ||
+    [llength [get_bd_pins -quiet switch_synchronizer/switch_sync]] != 1} {
     error "OFFLOAD_READBACK_COUNT_OR_GPIO_MISMATCH"
 }
 set receipt [dict create candidate ps-pl-offload control_mi_count [get_property CONFIG.NUM_MI [get_bd_cells control]] \
     overlay_master M11 AXIL_base 0x43C50000 AXIL_range 0x10000 \
+    GPIO_width [get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio]] GPIO_input_bits {BTN0=0 BTN1=1 BTN2=2 BTN3=3 SW0=4 SW1=5} \
+    switch_pins {SW0=M20 SW1=M19} switch_polarity {up=1 down=0} \
     interrupt_ports [get_property CONFIG.NUM_PORTS [get_bd_cells video_interrupts]] GPIO_interrupt [get_property CONFIG.C_INTERRUPT_PRESENT [get_bd_cells btns_gpio]] \
     clock_domain {s_axi_aclk mask_clk cfg_clk=FCLK0_50MHz} pixel_clock hdmi_pixel_clock \
     reset_domains {AXI+mask=reset_rle_peripheral_aresetn pixel=reset_pixel_peripheral_aresetn} \

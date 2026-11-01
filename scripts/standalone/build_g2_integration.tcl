@@ -27,6 +27,11 @@ foreach cell {axi_dma_0 image_pipeline hp0_protocol hp1_fabric reset_rle} {
 if {$offload_candidate && (![llength [get_bd_cells -quiet binary_overlay]] || ![llength [get_bd_intf_pins -quiet control/M11_AXI]])} {
     error "G2_BUILD_OFFLOAD_CELLS_MISSING"
 }
+if {$offload_candidate && ([get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio]] != 6 ||
+    [llength [get_bd_ports -quiet sws_2bits_tri_i]] != 1 ||
+    [llength [get_bd_pins -quiet switch_synchronizer/switch_sync]] != 1)} {
+    error "G2_BUILD_SWITCH_GPIO_READBACK_MISMATCH"
+}
 if {[llength [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S]]] != 1 ||
     [llength [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins image_pipeline/m_axis]]] != 1} {
     error "G2_BUILD_STREAM_CONNECTION_MISSING"
@@ -39,5 +44,21 @@ source [file join $repo scripts standalone build_display.tcl]
 foreach extension {bit hwh} {
     set artifact [file join $g2_out export g2-integrated.$extension]
     if {![file isfile $artifact]} {error "G2_BUILD_ARTIFACT_MISSING:$artifact"}
+}
+if {$offload_candidate} {
+    set hwh_file [file join $g2_out export g2-integrated.hwh]
+    set channel [open $hwh_file r]
+    set hwh_text [read $channel]
+    close $channel
+    set readback_file [file join $g2_out evidence offload-bd-readback.tcldict]
+    set channel [open $readback_file r]
+    set readback_text [read $channel]
+    close $channel
+    foreach expected [list {NAME="C_GPIO_WIDTH" VALUE="6"} {NAME="sws_2bits_tri_i"}] {
+        if {[string first $expected $hwh_text] < 0} {error "G2_SWITCH_HWH_READBACK_MISMATCH:$expected"}
+    }
+    foreach expected [list {GPIO_width 6} SW0=4 SW1=5] {
+        if {[string first $expected $readback_text] < 0} {error "G2_SWITCH_BD_READBACK_MISMATCH:$expected"}
+    }
 }
 puts "G2_BUILD_COMPLETE:BIT_HWH_PRESENT;manifest_and_board_smoke_pending"

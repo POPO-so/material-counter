@@ -330,6 +330,30 @@ def reset_capture_context_on_transition(captures, transition):
         captures.reset_context('diagnostic_mode_changed')
 
 
+def crossing_snapshot_status(cli_enabled, diagnostic_enabled, sw1_status, captures,
+                             capture_enabled):
+    status=captures.status() if captures is not None else {'enabled':False}
+    if not cli_enabled:
+        state='cli_off'
+    elif sw1_status=='unavailable':
+        state='sw1_unavailable'
+    elif sw1_status=='unknown':
+        state='sw1_unknown'
+    elif sw1_status=='off':
+        state='sw1_off'
+    elif not diagnostic_enabled:
+        state='diagnostic_off'
+    elif capture_enabled:
+        state='capturing' if status.get('accepting',False) else 'writer_unavailable'
+    else:
+        state='disabled'
+    status.update(writer_enabled=bool(status.get('enabled',False)),
+        enabled=bool(capture_enabled and status.get('accepting',False)),
+        cli_enabled=bool(cli_enabled),diagnostic_enabled=bool(diagnostic_enabled),
+        sw1=sw1_status,capture_enabled=bool(capture_enabled),state=state)
+    return status
+
+
 def prepare_preview_binary(packet, output, binary_background=True):
     if binary_background:
         rasterize_into(packet,output)
@@ -517,9 +541,12 @@ def _read_pool_stats(pool):
 
 
 def record_diagnostic_frame(policy, trace, captures, frame_id, result, counter,
-                            gray, packet, *, trajectory_epoch=0, **metadata):
+                            gray, packet, *, trajectory_epoch=0,
+                            capture_enabled=None, **metadata):
     trace.add(frame_id,result,trajectory_epoch,enabled=policy.trace_enabled)
-    if policy.trace_enabled and captures is not None:
+    if capture_enabled is None:
+        capture_enabled=policy.trace_enabled
+    if capture_enabled and captures is not None:
         captures.observe(gray,packet,result,counter,trajectory_epoch=trajectory_epoch,**metadata)
 
 
@@ -978,7 +1005,10 @@ def main(argv=None):
             result['button_raw_transitions']=transitions
             result['button_raw_transition_total']=transition_total
             result['button_raw_transition_truncated']=transition_total-len(transitions)
-        result['crossing_snapshots']=captures.status() if captures is not None else {'enabled':False}
+        result['crossing_snapshots']=crossing_snapshot_status(
+            args.crossing_snapshots=='on',result.get('diagnostic_mode')=='diagnostic',
+            result.get('sw1_status','unknown'),captures,
+            result.get('snapshot_capture_enabled',False))
         result['report_exports']=exporter.status() if exporter is not None else {'enabled':False}
         return result
     report['cpu_scope']=CPU_SCOPE_DESCRIPTION
@@ -1045,6 +1075,10 @@ def main(argv=None):
         report['hp1_readwrite32']=owner.call(sync_hp1_readwrite32, files['hwh'], MMIO)
         hw=video_owner.call(lambda:setup_hardware(files,video_owner,start_display=False),timeout=60)
         report['clocks_mhz']=hw.clocks
+        report['gpio_channel1_width']=hw.gpio_width
+        report['sw1_available']=hw.sw1_available
+        report['sw1_status']='unknown' if hw.sw1_available else 'unavailable'
+        report['snapshot_capture_enabled']=False
         if args.button_input=='irq':
             if not button_gpio_irq_configured(hw.overlay,hw.buttons):
                 raise RuntimeError('GPIO IRQ unavailable in btns_gpio HWH; use --button-input polling only for legacy hardware')
@@ -1199,7 +1233,10 @@ def main(argv=None):
                 # and SD writes happen in a bounded background thread.
                 with button_raw_lock:
                     immutable=dict(report)
-                    immutable['crossing_snapshots']=captures.status() if captures else {'enabled':False}
+                    immutable['crossing_snapshots']=crossing_snapshot_status(
+                        args.crossing_snapshots=='on',report.get('diagnostic_mode')=='diagnostic',
+                        report.get('sw1_status','unknown'),captures,
+                        report.get('snapshot_capture_enabled',False))
                     immutable['report_exports']=exporter.status()
                     accepted=exporter.submit(exported,immutable)
                 if not accepted:
@@ -1366,8 +1403,21 @@ def main(argv=None):
             if transition is not None:
                 report['diagnostic_transitions'].append(transition)
                 report['diagnostic_mode']=mode
-                reset_capture_context_on_transition(captures,transition)
-            if diagnostic_policy.trace_enabled and captures is None and args.crossing_snapshots=='on':
+            if not hw.sw1_available:
+                sw1_status='unavailable'
+            else:
+                try:
+                    sw1_bits=video_owner.call(lambda: int(hw.buttons.read()),timeout=1)
+                    sw1_status='on' if sw1_bits & 0x20 else 'off'
+                except Exception:
+                    sw1_status='unknown'
+            report['sw1_status']=sw1_status
+            snapshot_capture_enabled=(args.crossing_snapshots=='on'
+                and diagnostic_policy.trace_enabled and sw1_status=='on')
+            if report['snapshot_capture_enabled'] and not snapshot_capture_enabled and captures is not None:
+                captures.reset_context('snapshot_capture_disabled')
+            report['snapshot_capture_enabled']=snapshot_capture_enabled
+            if snapshot_capture_enabled and captures is None:
                 try:captures=create_crossing_snapshots();diagnostic_error=None
                 except Exception as error:
                     diagnostic_error=str(error)
@@ -1376,6 +1426,7 @@ def main(argv=None):
             if result is not None:
                 record_diagnostic_frame(diagnostic_policy,trace,captures,index,result,counter,
                     gray,packet,trajectory_epoch=trajectory_epoch,
+                    capture_enabled=snapshot_capture_enabled,
                     capture_monotonic_ns=capture_ns,camera_sequence=camera_index if camera else index,
                     paused=controls.paused,commands=boundary,
                     timings={'transfer_ms':(transfer_end-frame_start)*1000,'count_ms':(count_end-transfer_end)*1000})
@@ -1383,6 +1434,8 @@ def main(argv=None):
             stages['transfer_ms'].append((transfer_end-frame_start)*1000)
             stages['count_ms'].append((count_end-transfer_end)*1000)
             stages['snapshot_ms'].append((snapshot_end-count_end)*1000)
+            snapshot_writer_accepting=(captures is not None
+                and captures.status().get('accepting',False))
             # These are the last completed frame's measurements, not window
             # averages; retain its identity so dense-frame stalls are visible.
             last_rle_stats.update(frame_id=packet.frame_id,
@@ -1410,8 +1463,12 @@ def main(argv=None):
                     metadata['preview_backend']=args.preview_backend
                     metadata['status_lines']=['本次会话累计 {}'.format(counter.total_count),
                         '暂停计数' if controls.paused else '运行中',
-                        '诊断快照 '+('启用' if diagnostic_policy.trace_enabled and captures is not None else
-                            '不可用' if diagnostic_error else '关闭')]
+                        '诊断快照 CLI:{} BTN1:{} SW1:{} {}'.format(
+                            args.crossing_snapshots,
+                            'ON' if diagnostic_policy.trace_enabled else 'OFF',
+                            {'on':'ON','off':'OFF','unknown':'未知','unavailable':'不可用'}[sw1_status],
+                            '采集' if snapshot_capture_enabled and snapshot_writer_accepting else
+                            '写入不可用' if snapshot_capture_enabled else '关闭')]
                     if metadata['annotations_truncated']:metadata['status_lines'].append('标注仅显示前128项 / 计数未截断')
                     telemetry=latest_dashboard_telemetry
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,
@@ -1643,7 +1700,10 @@ def main(argv=None):
                     video_state=video_pump.state if video_pump else 'OFF',telemetry=cache_values,
                     video_telemetry=cache_values.get('video_telemetry',{}),
                     pl_counters=pl_counters_snapshot(counters_sample),
-                    crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
+                    crossing_snapshots=crossing_snapshot_status(
+                        args.crossing_snapshots=='on',report.get('diagnostic_mode')=='diagnostic',
+                        report.get('sw1_status','unknown'),captures,
+                        report.get('snapshot_capture_enabled',False)),
                     counters=owner.call(snapshot_counters,control),
                     network=(runtime_sample or {}).get('network')))
                 previous_cpu=cpu;last_sample=sample_time

@@ -1,3 +1,15 @@
+## 2026-11-02 SW1 快照保存开关（源码已实现，硬件构建待环境）
+
+用户已指定以 SW1 bit5 控制快照，并保留 BTN1 诊断模式和 `--crossing-snapshots` CLI 门控。设计记录见 [SW1 快照控制设计](docs/superpowers/specs/2026-11-02-sw1-snapshot-control-design.md)。
+
+- [x] PL 源码：G2 GPIO Channel 1 扩为六位；BTN0–BTN3 保持 bit0–3，SW0/SW1 经两级同步后占 bit4/bit5，接入 PYNQ-Z2 开关约束，并加入构建/HWH 门禁。
+- [x] PS：按 HWH 宽度设置 PYNQ channel；仅在 SW1 ON、诊断模式开启、CLI on 时采集；关闭时 flush 并重置快照上下文，报告开关状态。
+- [x] 文档：同步项目树、快照采集说明和项目索引。
+- [x] 静态核对：实际 diff、Python AST 与 `git diff --check` 通过；Vivado 2026.1 G2 静态预检输出 `G2_STATIC_PREFLIGHT_PASS`。
+- [ ] 生成 BIT/HWH：当前缺少 `PYNQ_SOURCE` 和 `VIDEO_IP_BUILT` 构建目录，完整 G2 硬件构建尚未执行；环境准备后再生成并核对新 HWH。用户未要求板端部署，不切换或重配 PL。
+
+本轮未运行测试或板端部署。Vivado MCP 端点连接失败后，使用本机 Vivado 2026.1 batch 完成静态预检；完整构建及板卡位映射仍待验证。
+
 ## 2026-10-31 板端吞吐优化（源码与本轮实测已完成）
 
 源码固定于 `e2fb5952bfc4f36c3eacd53a8bdb6bdeec6c4fe2`，独立 worktree 分支 `perf/board-performance-20261031`。运行链优化和诊断元数据开销修复完成，指定本地回归 488 项通过；CPU 同输入回放与微基准保留在证据目录。

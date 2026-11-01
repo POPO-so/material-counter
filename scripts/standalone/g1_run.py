@@ -150,11 +150,18 @@ def setup_hardware(files, owner, *, start_display=True):
     if monitor.read(0) != 0x4D435631:
         raise RuntimeError("output monitor signature mismatch")
     buttons = overlay.btns_gpio.channel1
-    buttons.setlength(4)
+    gpio_parameters = overlay.ip_dict["btns_gpio"]["parameters"]
+    gpio_width_value = gpio_parameters["C_GPIO_WIDTH"]
+    gpio_width = (int(gpio_width_value, 0) if isinstance(gpio_width_value, str)
+                  else int(gpio_width_value))
+    if gpio_width < 4:
+        raise RuntimeError(f"btns_gpio Channel 1 width is too small: {gpio_width}")
+    buttons.setlength(gpio_width)
     buttons.setdirection("in")
     if start_display:
         start_display_output(hdmi)
     return SimpleNamespace(overlay=overlay, hdmi=hdmi, monitor=monitor, buttons=buttons,
+                           gpio_width=gpio_width, sw1_available=gpio_width > 5,
                            clocks=clocks, vdma=overlay.axi_vdma.mmio,
                            hp2_read32=hp2_read32)
 
@@ -463,6 +470,8 @@ def main(argv=None):
         hw = owner.call(setup_hardware, files, owner, timeout=60)
         report["clocks_mhz"] = hw.clocks
         report["hp2_read32"] = hw.hp2_read32
+        report["gpio_channel1_width"] = hw.gpio_width
+        report["sw1_status"] = "unknown" if hw.sw1_available else "unavailable"
         first = owner.call(snapshot, hw.monitor)
         report["samples"].append(first)
         frames = SharedFrames.create(ctx)
@@ -535,6 +544,16 @@ def main(argv=None):
                 if submitted > 5 and current["unique"] > previous["unique"] and current["session"] != session.int:
                     raise RuntimeError("output identity belongs to another session")
                 current["effective_fps"] = rate
+                if not hw.sw1_available:
+                    sw1_status = "unavailable"
+                else:
+                    try:
+                        sw1_bits = owner.call(lambda: int(hw.buttons.read()), timeout=1)
+                        sw1_status = "on" if sw1_bits & 0x20 else "off"
+                    except Exception:
+                        sw1_status = "unknown"
+                current["sw1_status"] = sw1_status
+                report["sw1_status"] = sw1_status
                 current["vdma_status"] = owner.call(hw.vdma.read, 4)
                 if current["vdma_status"] & 0x770:
                     raise RuntimeError("VDMA reports a transport error")
@@ -544,7 +563,9 @@ def main(argv=None):
                 status = (source_label, "本次运行累计：0；重启清零",
                           f"有效显示 {rate:.2f} FPS / 720p60",
                           f"输出新帧 {current['unique']}；重复 {current['repeat']}",
-                          f"无效扫描 {current['invalid']}；页 {controls.page}")
+                          f"无效扫描 {current['invalid']}；页 {controls.page}",
+                          "SW1：" + {"unavailable":"不可用","unknown":"读取未知",
+                                     "on":"ON","off":"OFF"}[sw1_status])
                 next_metrics = begin + 2
                 print(json.dumps({"elapsed": begin-start, **current}), flush=True)
             if begin >= next_memory:

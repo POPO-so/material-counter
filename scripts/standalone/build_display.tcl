@@ -67,6 +67,12 @@ if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "DISPLAY_SYNTH_
 open_run synth_1
 set button_meta_first [get_pins -quiet -hier -regexp {.*button_debounce.*button_meta_reg\[[0-3]\]/D}]
 if {[llength $button_meta_first] != 4} {error "OFFLOAD_BUTTON_META_FIRST_STAGE_PIN_COUNT:[llength $button_meta_first]"}
+if {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"} {
+    set switch_meta_first [get_pins -quiet -hier -regexp {.*switch_synchronizer.*switch_meta_reg\[[0-1]\]/D}]
+    if {[llength $switch_meta_first] != 2} {
+        error "OFFLOAD_SWITCH_META_FIRST_STAGE_PIN_COUNT:[llength $switch_meta_first]"
+    }
+}
 close_design
 launch_runs impl_1 -to_step write_bitstream -jobs $jobs
 wait_on_run impl_1
@@ -75,7 +81,17 @@ if {[get_property PROGRESS [get_runs impl_1]] ne "100%" ||
 open_run impl_1
 if {[llength [get_pins -quiet display_i/hdmi_out/frontend/axi_dynclk/U0/Inst_mmcme2_drp/mmcm_adv_inst/CLKOUT0]] != 1 ||
     [llength [get_pins -quiet display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk]] != 1} {error "VIDEO_CLOCK_TOPOLOGY_CHANGED"}
-if {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-3]\]/D}]] != 4} {error "BUTTON_SYNCHRONIZERS_CHANGED"}
+if {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"} {
+    if {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-5]\]/D}]] != 6} {
+        error "GPIO_INPUT_SYNCHRONIZERS_CHANGED"
+    }
+    if {[llength [get_pins -hier -regexp {.*switch_synchronizer.*switch_meta_reg\[[0-1]\]/D}]] != 2 ||
+        [llength [get_pins -hier -regexp {.*switch_synchronizer.*switch_sync_reg\[[0-1]\]/D}]] != 2} {
+        error "SWITCH_SYNCHRONIZER_TOPOLOGY_CHANGED"
+    }
+} elseif {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-3]\]/D}]] != 4} {
+    error "BUTTON_SYNCHRONIZERS_CHANGED"
+}
 report_timing_summary -delay_type min_max -report_unconstrained -file [file join $reports timing.rpt]
 report_utilization -file [file join $reports utilization.rpt]
 report_drc -file [file join $reports drc.rpt]
