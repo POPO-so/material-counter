@@ -110,11 +110,73 @@ def count_enclosed_holes(pixels: np.ndarray, *, min_hole_area: int = 30,
     return len(holes)
 
 
+class SplitAnalysis:
+    """Hole evidence computed once for one mask; neck candidates are lazy.
+
+    The analysis is only valid for the mask it was built from. ``split_touching_component``
+    re-checks shape and area before reusing it, and recursive children always build
+    their own analysis, so no stale per-region data can leak into a child split.
+    """
+
+    __slots__ = ("shape", "area", "holes", "centers", "min_child_area",
+                 "_pixels", "_neck")
+
+    def __init__(self, pixels: np.ndarray, min_child_area: int,
+                 min_hole_area: int, hole_area_cap: int):
+        self.shape = pixels.shape
+        self.holes, self.centers, self.area = _enclosed_holes(
+            pixels, int(min_hole_area), int(hole_area_cap))
+        self.min_child_area = int(min_child_area)
+        self._pixels = pixels
+        self._neck = None
+
+    @property
+    def has_evidence(self) -> bool:
+        """Same short-circuit the counter used before: holes first, neck second."""
+        return 2 <= len(self.holes) <= 3 or bool(self.neck_candidates())
+
+    def neck_candidates(self):
+        if self._neck is None:
+            self._neck = tuple(_projection_neck_candidates(
+                self._pixels, self.min_child_area))
+        return self._neck
+
+
+def analyze_split(component: np.ndarray, *, min_child_area: int,
+                  min_hole_area: int, hole_area_cap: int = 16) -> SplitAnalysis:
+    """Compute the hole/neck evidence a split attempt needs, once per mask."""
+    if isinstance(min_child_area, bool) or not isinstance(min_child_area, (int, np.integer)) or min_child_area < 1:
+        raise ValueError("min_child_area must be a positive integer")
+    if isinstance(min_hole_area, bool) or not isinstance(min_hole_area, (int, np.integer)) or min_hole_area < 1:
+        raise ValueError("min_hole_area must be a positive integer")
+    if isinstance(hole_area_cap, bool) or not isinstance(hole_area_cap, (int, np.integer)) or hole_area_cap < 1:
+        raise ValueError("hole_area_cap must be a positive integer")
+    pixels = np.asarray(component) != 0
+    if pixels.ndim != 2:
+        raise ValueError("component must be a 2D mask")
+    return SplitAnalysis(pixels, int(min_child_area), int(min_hole_area),
+                         int(hole_area_cap))
+
+
+def _analysis_for(pixels: np.ndarray, analysis: SplitAnalysis | None) -> SplitAnalysis | None:
+    """Drop an analysis that does not belong to this exact mask."""
+    if analysis is None:
+        return None
+    if analysis.shape != pixels.shape or analysis.area != int(np.count_nonzero(pixels)):
+        return None
+    return analysis
+
+
 def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_area: int = 30,
-                             min_hole_distance: float = 10, hole_area_cap: int = 16
+                             min_hole_distance: float = 10, hole_area_cap: int = 16,
+                             analysis: SplitAnalysis | None = None
                              ) -> tuple[np.ndarray, ...] | None:
     """Assign a joined cluster to two or three independently visible nut holes."""
-    holes, centers, area = _enclosed_holes(pixels, min_hole_area, hole_area_cap)
+    analysis = _analysis_for(pixels, analysis)
+    if analysis is not None:
+        holes, centers, area = analysis.holes, analysis.centers, analysis.area
+    else:
+        holes, centers, area = _enclosed_holes(pixels, min_hole_area, hole_area_cap)
     if len(holes) not in (2, 3):
         return None
     hole_centers = centers[holes]
@@ -200,9 +262,11 @@ def has_projection_neck(pixels: np.ndarray, *, min_child_area: int) -> bool:
 
 
 def _split_by_projection_neck(pixels: np.ndarray,
-                              min_child_area: int) -> tuple[np.ndarray, np.ndarray] | None:
+                              min_child_area: int,
+                              candidates=None) -> tuple[np.ndarray, np.ndarray] | None:
     """Return a connected two-way cut only when a narrow projected neck exists."""
-    candidates = _projection_neck_candidates(pixels, min_child_area)
+    candidates = (_projection_neck_candidates(pixels, min_child_area)
+                  if candidates is None else list(candidates))
     if not candidates:
         return None
     _, axis, cut = min(candidates)
@@ -233,17 +297,20 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
                      *, recursive_item_area: int | None,
                      min_hole_distance: float = 10,
                      hole_area_cap: int = 16,
-                     depth: int = 0) -> tuple[np.ndarray, ...]:
+                     depth: int = 0,
+                     analysis: SplitAnalysis | None = None) -> tuple[np.ndarray, ...]:
     """Retry a large two-seed child so a visible 1+2 cluster can yield three."""
     area = int(np.count_nonzero(pixels))
     if depth >= 2 or area < 2 * min_child_area:
         return (pixels,)
+    analysis = _analysis_for(pixels, analysis)
 
-    hole_pieces = (_split_by_enclosed_holes(pixels, min_child_area, min_hole_area)
-                  if min_hole_distance == 10 and hole_area_cap == 16 else
-                  _split_by_enclosed_holes(pixels, min_child_area, min_hole_area,
-                                           min_hole_distance=min_hole_distance,
-                                           hole_area_cap=hole_area_cap))
+    options = ({} if min_hole_distance == 10 and hole_area_cap == 16 else
+               dict(min_hole_distance=min_hole_distance, hole_area_cap=hole_area_cap))
+    if analysis is not None:
+        options["analysis"] = analysis
+    hole_pieces = _split_by_enclosed_holes(pixels, min_child_area, min_hole_area,
+                                           **options)
     if hole_pieces is not None:
         if (len(hole_pieces) == 3 or recursive_item_area is None
                 or area < (3 if depth == 0 else 2) * recursive_item_area):
@@ -267,7 +334,13 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
                         return candidate
             return hole_pieces
 
-    neck_pieces = _split_by_projection_neck(pixels, min_child_area)
+    neck_candidates = (analysis.neck_candidates()
+                       if analysis is not None and analysis.min_child_area == min_child_area
+                       else None)
+    neck_pieces = (_split_by_projection_neck(pixels, min_child_area)
+                   if neck_candidates is None else
+                   _split_by_projection_neck(pixels, min_child_area,
+                                             candidates=neck_candidates))
     if neck_pieces is None:
         return (pixels,)
     if (recursive_item_area is None
@@ -295,7 +368,8 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
                              min_hole_area: int = 30,
                              recursive_item_area: int | None = None,
                              min_hole_distance: float = 10, hole_area_cap: int = 16,
-                             assume_connected: bool = False
+                             assume_connected: bool = False,
+                             analysis: SplitAnalysis | None = None
                              ) -> tuple[np.ndarray, ...]:
     """Split two or three touching nuts when holes or a narrow neck are visible.
 
@@ -304,6 +378,8 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
     Ambiguous silhouettes stay intact, and accepted masks preserve the input
     union without overlap. ``assume_connected`` lets a caller that obtained the
     mask from a connected-component pass skip the repeated connectivity check.
+    ``analysis`` lets a caller that already ran ``analyze_split`` on this exact
+    mask reuse its holes and neck candidates instead of recomputing them.
     """
     if isinstance(min_child_area, bool) or not isinstance(min_child_area, (int, np.integer)) or min_child_area < 1:
         raise ValueError("min_child_area must be a positive integer")
@@ -323,6 +399,8 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
         raise ValueError("hole_area_cap must be a positive integer")
     if not isinstance(assume_connected, bool):
         raise ValueError("assume_connected must be a bool")
+    if analysis is not None and not isinstance(analysis, SplitAnalysis):
+        raise TypeError("analysis must be a SplitAnalysis")
     pixels = np.asarray(component) != 0
     if pixels.ndim != 2:
         raise ValueError("component must be a 2D mask")
@@ -330,11 +408,13 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
         return (pixels,)
     if not assume_connected and not is_single_connected_component(pixels):
         return (pixels,)
+    analysis = _analysis_for(pixels, analysis)
+    options = dict(recursive_item_area=(None if recursive_item_area is None
+                                        else int(recursive_item_area)),
+                   min_hole_distance=float(min_hole_distance),
+                   hole_area_cap=int(hole_area_cap))
+    if analysis is not None:
+        options["analysis"] = analysis
     pieces = _split_recursive(
-        pixels, int(min_child_area), int(min_hole_area),
-        recursive_item_area=(None if recursive_item_area is None
-                             else int(recursive_item_area)),
-        min_hole_distance=float(min_hole_distance),
-        hole_area_cap=int(hole_area_cap),
-    )
+        pixels, int(min_child_area), int(min_hole_area), **options)
     return pieces if _valid_partition(pixels, pieces) else (pixels,)

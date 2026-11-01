@@ -9,9 +9,7 @@ _LEGACY = Path(__file__).resolve().parents[1] / "wo0016"
 if str(_LEGACY) not in sys.path:
     sys.path.insert(0, str(_LEGACY))
 from scripts.wo0016.stream_counter import MaskCounter, Detection, FrameResult
-from scripts.wo0016.split_touching import (split_touching_component,
-                                          count_enclosed_holes,
-                                          has_projection_neck,
+from scripts.wo0016.split_touching import (analyze_split, split_touching_component,
                                           is_single_connected_component)
 from .components import analyze_runs, local_mask
 from .protocol import RleFrame
@@ -67,16 +65,18 @@ class RleCounter(MaskCounter):
                                               component.x_max, component.y_max)) != 0
                     # Only run the full split when it has a hole or neck path
                     # that can accept a partition; intact single parts exit here.
-                    if (count_enclosed_holes(mask, min_hole_area=self.split_min_hole_area,
-                                             hole_area_cap=self.split_hole_area_cap) in (2, 3)
-                            or has_projection_neck(
-                                mask, min_child_area=self.min_split_child_area)):
+                    # The analysis is computed once and handed to the splitter.
+                    split_analysis = analyze_split(mask,
+                        min_child_area=self.min_split_child_area,
+                        min_hole_area=self.split_min_hole_area,
+                        hole_area_cap=self.split_hole_area_cap)
+                    if split_analysis.has_evidence:
                         pieces = split_touching_component(mask,
                             min_child_area=self.min_split_child_area, min_hole_area=self.split_min_hole_area,
                             recursive_item_area=self.split_recursive_item_area,
                             min_hole_distance=self.split_min_hole_distance,
                             hole_area_cap=self.split_hole_area_cap,
-                            assume_connected=True)
+                            assume_connected=True, analysis=split_analysis)
                         # Keep the defensive check: the counter must never
                         # accept a disconnected or overlapping child set.
                         partitions = [np.asarray(piece) != 0 for piece in pieces]
