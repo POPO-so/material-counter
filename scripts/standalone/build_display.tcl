@@ -68,10 +68,34 @@ open_run synth_1
 set button_meta_first [get_pins -quiet -hier -regexp {.*button_debounce.*button_meta_reg\[[0-3]\]/D}]
 if {[llength $button_meta_first] != 4} {error "OFFLOAD_BUTTON_META_FIRST_STAGE_PIN_COUNT:[llength $button_meta_first]"}
 if {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"} {
-    set switch_meta_first [get_pins -quiet -hier -regexp {.*switch_synchronizer.*switch_meta_reg\[[0-1]\]/D}]
-    if {[llength $switch_meta_first] != 2} {
-        error "OFFLOAD_SWITCH_META_FIRST_STAGE_PIN_COUNT:[llength $switch_meta_first]"
+    set switch_input_ports [get_ports -quiet -regexp {^sws_2bits_tri_i\[[01]\]$}]
+    if {[llength $switch_input_ports] != 2} {
+        error "OFFLOAD_SWITCH_INPUT_PORT_COUNT:[llength $switch_input_ports]"
     }
+    # The synchronizer is synthesized out of context. At the top-level DCP,
+    # its internal registers are hidden behind the OOC cell boundary, so cut
+    # only the asynchronous physical input paths and keep the two-stage
+    # synchronizer paths timed.
+    set switch_xdc [file join $out offload-switch-cdc.xdc]
+    set fd [open $switch_xdc w]
+    puts $fd {# Cut asynchronous board switch inputs; keep meta-to-sync paths timed.}
+    foreach port $switch_input_ports {
+        set port_name [get_property NAME $port]
+        puts $fd [format {set_false_path -from [get_ports {%s}]} $port_name]
+    }
+    close $fd
+    add_files -fileset constrs_1 $switch_xdc
+    set switch_xdc_file [get_files $switch_xdc]
+    set_property USED_IN_SYNTHESIS false $switch_xdc_file
+    set_property PROCESSING_ORDER LATE $switch_xdc_file
+}
+if {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"} {
+    # The six-input GPIO changes placement around the shared pixel-clock monitor.
+    # Use timing-oriented implementation directives for this candidate overlay.
+    set impl_run [get_runs impl_1]
+    set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE Explore $impl_run
+    set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE AggressiveExplore $impl_run
+    set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE Explore $impl_run
 }
 close_design
 launch_runs impl_1 -to_step write_bitstream -jobs $jobs
@@ -85,9 +109,8 @@ if {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"} 
     if {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-5]\]/D}]] != 6} {
         error "GPIO_INPUT_SYNCHRONIZERS_CHANGED"
     }
-    if {[llength [get_pins -hier -regexp {.*switch_synchronizer.*switch_meta_reg\[[0-1]\]/D}]] != 2 ||
-        [llength [get_pins -hier -regexp {.*switch_synchronizer.*switch_sync_reg\[[0-1]\]/D}]] != 2} {
-        error "SWITCH_SYNCHRONIZER_TOPOLOGY_CHANGED"
+    if {[llength [get_ports -quiet -regexp {^sws_2bits_tri_i\[[01]\]$}]] != 2} {
+        error "SWITCH_INPUT_PORTS_CHANGED"
     }
 } elseif {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-3]\]/D}]] != 4} {
     error "BUTTON_SYNCHRONIZERS_CHANGED"

@@ -2,6 +2,11 @@
 foreach name {G2_OUT G2_MONITOR_SIM_OUT} {
     if {![info exists ::env($name)]} {error "Missing environment variable $name"}
 }
+foreach name {PYNQ_SOURCE VIDEO_IP_BUILT} {
+    if {![info exists ::env($name)] || ![file isdirectory $::env($name)]} {
+        error "G2_REQUIRED_DIRECTORY_MISSING:$name"
+    }
+}
 set g2_out [file normalize $::env(G2_OUT)]
 set repo [file normalize [file join [file dirname [info script]] ../..]]
 set results [file normalize [file join $repo data results]]
@@ -17,6 +22,13 @@ if {![file isfile $project_file] || ![file isfile $bd_file] || ![file isfile $re
 }
 
 if {![llength [get_projects -quiet]]} {open_project $project_file}
+# Re-register external IP repositories when this build is launched in a fresh
+# Vivado process. The project file may retain paths relative to its old drive.
+set_property ip_repo_paths [list \
+    [file normalize [file join $::env(PYNQ_SOURCE) boards ip]] \
+    [file normalize [file join $::env(VIDEO_IP_BUILT) color_convert solution1 impl ip]] \
+    [file normalize [file join $::env(VIDEO_IP_BUILT) pixel_unpack solution1 impl ip]]] [current_project]
+update_ip_catalog
 open_bd_design $bd_file
 set offload_candidate [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
 set expected_mi [expr {$offload_candidate ? 12 : 11}]
