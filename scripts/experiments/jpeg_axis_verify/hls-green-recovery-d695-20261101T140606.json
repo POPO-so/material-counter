@@ -1,0 +1,250 @@
+{
+  "status": "PASS",
+  "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+  "component_sha256": "0bdfce509b1f51829aa1c2b12536fba14088925f89ce8c7da2558707246725d5",
+  "checks": {
+    "csim": true,
+    "csynth": true,
+    "cosim": true
+  },
+  "scope": "Source-bound standalone normal frame1 and entropy-cut then good-frame RTL recovery; no BD/route/board acceptance",
+  "normal_cosim": "PASS",
+  "entropy_cosim": "PASS",
+  "random_stall": true,
+  "native_trace_level": "none",
+  "csim": {
+    "vendorY_frames": [
+      1,
+      98
+    ],
+    "vendorY_maxdiff": 0,
+    "APP15_mod4": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "header_reject_cases": 7,
+    "batch_frames": 120,
+    "opencv_maxdiff": 1,
+    "threshold128_flips": 0,
+    "entropy_same_stream_recovery": true
+  },
+  "entropy_error": {
+    "status": 101,
+    "payload_sum": 20990717,
+    "trailer_checksum": 20990718,
+    "checksum_invalid": true,
+    "following_frame_id": 21,
+    "following_y_maxdiff": 0
+  },
+  "rtl_latency_cycles": {
+    "normal": 157260,
+    "entropy": 157260,
+    "recovery_good": 157083,
+    "two_transaction_total": 314358
+  },
+  "actual_backpressure": {
+    "evidence_scope": "normal frame1 elaborated RTL/VIP port-VCD replay",
+    "input_stalled_cycles": 139868,
+    "output_stalled_cycles": 10598,
+    "input_gap_cycles": 546,
+    "output_gap_cycles": 72240,
+    "stability_errors": 0
+  },
+  "entropy_port_vcd": "optional independent debug replay currently running; not required for this official C/RTL recovery PASS",
+  "run_hashes": [
+    {
+      "run": "d695-snapshot-smoke1-20261101",
+      "log_sha256": "8012df6c0257d6ee81bb022413411119e9be78c3cc246d99b3ed77dd1ace2430",
+      "config_sha256": "98cd712010554f942914bb8ef157af3591c19221975e0af19bb3d7347c178da7",
+      "source_snapshot_sha256": "4e176d507ae3bfb5c1449e71e53ca22587709cb9af2c0570647d66c3ad7a2637"
+    },
+    {
+      "run": "d695-snapshot-smoke98-20261101",
+      "log_sha256": "5009ee1a5b754d2969d565c9ec906007ea0f6fcbb9e3e40549638d825d40d089",
+      "config_sha256": "b8f6321091d1a0baf8318815a1737d240022e20393e9d9dd5c5f7c90f276a3e9",
+      "source_snapshot_sha256": "4e176d507ae3bfb5c1449e71e53ca22587709cb9af2c0570647d66c3ad7a2637"
+    },
+    {
+      "run": "d695-snapshot-entropycut-samestream-20261101",
+      "log_sha256": "33464d7a1a84d9142ef9eef51f38b1f180906c7cf988b5197ec81684f0225e39",
+      "config_sha256": "afda5afd58a7b198a905e45a73598a313703f9f52f88824c84e80fa4573bedd5",
+      "source_snapshot_sha256": "5a7dfc6ce5152f3e35036dfa37b2de0e8c47e51ee26fe24c3c31d2650a86ae79"
+    },
+    {
+      "run": "d695-snapshot-faults-checksum-20261101",
+      "log_sha256": "c63a33fa7b746cdcf6eaeb90da60f7c785b39e2468f7c9cc5d6abc79dc0d1816",
+      "config_sha256": "4186829f8e3a9a7fc14d49e5118ff58a51a0278f83f771016a3e3330987a688b",
+      "source_snapshot_sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "run": "d695-snapshot-align-20261101",
+      "log_sha256": "233caa468be763468a56ea0f4e3980808d019b1f08869a56c98959c94c28f86c",
+      "config_sha256": "c43386d634d256c0a544c78f24c857d0787546e8585e28e231f15314f7ed1da7",
+      "source_snapshot_sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "run": "d695-snapshot-batch120-20261101",
+      "log_sha256": "743bd176b574b0f10a14ac55bc18297def71f6f5b57b24b63d5621cd77a0f7ca",
+      "config_sha256": "8a29d4eaa304383d00e550317f2f81b8ce3a41c931e525bb3388a6a8ad204a14",
+      "source_snapshot_sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "run": "d695-snapshot-csynth-final-20261101",
+      "log_sha256": "26816115d98f717dea3620c8f896dd97ab87e3b756f1c3e1d7dcc311c6ab10ec",
+      "config_sha256": "0cbeed514c3411c7f6d9992699edfddf5828b45a9fad6d2fff8e125d710fd87b",
+      "source_snapshot_sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "run": "d695-official-cosim-randomstall-smoke1-no-viewer-20261101",
+      "log_sha256": "ccf05efeafcb1065325761df90068f3ade3cde1f937662f4372a8c1eaeada60b",
+      "config_sha256": "4bbd70cfe90d59d1976f63f5c01545f39a572992dc78aaad2f7519ba3116da7d",
+      "source_snapshot_sha256": "5a7dfc6ce5152f3e35036dfa37b2de0e8c47e51ee26fe24c3c31d2650a86ae79"
+    },
+    {
+      "run": "d695-official-cosim-entropycut-good2-randomstall-20261101",
+      "log_sha256": "96872a90be38e3a72da3da56fedbbd534b9302fa1891ac8a5b352122fd48bd84",
+      "config_sha256": "f44a8154f4f302624b39a2f718b9fe734f6ced1fd6e60330a48bedb23aac3edf",
+      "source_snapshot_sha256": "5a7dfc6ce5152f3e35036dfa37b2de0e8c47e51ee26fe24c3c31d2650a86ae79"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke1-20261101/d695-snapshot-smoke1-20261101.log",
+      "sha256": "8012df6c0257d6ee81bb022413411119e9be78c3cc246d99b3ed77dd1ace2430"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke1-20261101/hls_config.cfg",
+      "sha256": "98cd712010554f942914bb8ef157af3591c19221975e0af19bb3d7347c178da7"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke1-20261101/source-snapshot.json",
+      "sha256": "4e176d507ae3bfb5c1449e71e53ca22587709cb9af2c0570647d66c3ad7a2637"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke98-20261101/d695-snapshot-smoke98-20261101.log",
+      "sha256": "5009ee1a5b754d2969d565c9ec906007ea0f6fcbb9e3e40549638d825d40d089"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke98-20261101/hls_config.cfg",
+      "sha256": "b8f6321091d1a0baf8318815a1737d240022e20393e9d9dd5c5f7c90f276a3e9"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke98-20261101/source-snapshot.json",
+      "sha256": "4e176d507ae3bfb5c1449e71e53ca22587709cb9af2c0570647d66c3ad7a2637"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-entropycut-samestream-20261101/d695-snapshot-entropycut-samestream-20261101.log",
+      "sha256": "33464d7a1a84d9142ef9eef51f38b1f180906c7cf988b5197ec81684f0225e39"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-entropycut-samestream-20261101/hls_config.cfg",
+      "sha256": "afda5afd58a7b198a905e45a73598a313703f9f52f88824c84e80fa4573bedd5"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-entropycut-samestream-20261101/source-snapshot.json",
+      "sha256": "5a7dfc6ce5152f3e35036dfa37b2de0e8c47e51ee26fe24c3c31d2650a86ae79"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-faults-checksum-20261101/d695-snapshot-faults-checksum-20261101.log",
+      "sha256": "c63a33fa7b746cdcf6eaeb90da60f7c785b39e2468f7c9cc5d6abc79dc0d1816"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-faults-checksum-20261101/hls_config.cfg",
+      "sha256": "4186829f8e3a9a7fc14d49e5118ff58a51a0278f83f771016a3e3330987a688b"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-faults-checksum-20261101/source-snapshot.json",
+      "sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-align-20261101/d695-snapshot-align-20261101.log",
+      "sha256": "233caa468be763468a56ea0f4e3980808d019b1f08869a56c98959c94c28f86c"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-align-20261101/hls_config.cfg",
+      "sha256": "c43386d634d256c0a544c78f24c857d0787546e8585e28e231f15314f7ed1da7"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-align-20261101/source-snapshot.json",
+      "sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-batch120-20261101/d695-snapshot-batch120-20261101.log",
+      "sha256": "743bd176b574b0f10a14ac55bc18297def71f6f5b57b24b63d5621cd77a0f7ca"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-batch120-20261101/hls_config.cfg",
+      "sha256": "8a29d4eaa304383d00e550317f2f81b8ce3a41c931e525bb3388a6a8ad204a14"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-batch120-20261101/source-snapshot.json",
+      "sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/d695-snapshot-csynth-final-20261101.log",
+      "sha256": "26816115d98f717dea3620c8f896dd97ab87e3b756f1c3e1d7dcc311c6ab10ec"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/hls_config.cfg",
+      "sha256": "0cbeed514c3411c7f6d9992699edfddf5828b45a9fad6d2fff8e125d710fd87b"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/source-snapshot.json",
+      "sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-randomstall-smoke1-no-viewer-20261101/d695-official-cosim-randomstall-smoke1-no-viewer-20261101.log",
+      "sha256": "ccf05efeafcb1065325761df90068f3ade3cde1f937662f4372a8c1eaeada60b"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-randomstall-smoke1-no-viewer-20261101/hls_config.cfg",
+      "sha256": "4bbd70cfe90d59d1976f63f5c01545f39a572992dc78aaad2f7519ba3116da7d"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-randomstall-smoke1-no-viewer-20261101/source-snapshot.json",
+      "sha256": "5a7dfc6ce5152f3e35036dfa37b2de0e8c47e51ee26fe24c3c31d2650a86ae79"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-entropycut-good2-randomstall-20261101/d695-official-cosim-entropycut-good2-randomstall-20261101.log",
+      "sha256": "96872a90be38e3a72da3da56fedbbd534b9302fa1891ac8a5b352122fd48bd84"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-entropycut-good2-randomstall-20261101/hls_config.cfg",
+      "sha256": "f44a8154f4f302624b39a2f718b9fe734f6ced1fd6e60330a48bedb23aac3edf"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-entropycut-good2-randomstall-20261101/source-snapshot.json",
+      "sha256": "5a7dfc6ce5152f3e35036dfa37b2de0e8c47e51ee26fe24c3c31d2650a86ae79"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-csynth-final-20261101/reports/component.xml",
+      "sha256": "0bdfce509b1f51829aa1c2b12536fba14088925f89ce8c7da2558707246725d5"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-randomstall-smoke1-no-viewer-20261101/reports/jpeg_axis_gray_cosim.rpt",
+      "sha256": "330a6bd37afcab688a9e1c1ddce7d127d072a39a3c23904f3161d0cb0ec8a574"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-entropycut-good2-randomstall-20261101/reports/jpeg_axis_gray_cosim.rpt",
+      "sha256": "7aa0350b1a081b8575d20c92e64c1f775484306b68695ea91ba77a234c462fcd"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-entropycut-good2-randomstall-20261101/reports/verilog/result.transaction.rpt",
+      "sha256": "6bcb2941d101dd6fd0e02cc4cd0b6bd998005db53243dba5d504b0a12b52fbc3"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-entropycut-good2-randomstall-20261101/reports/verilog/lat.rpt",
+      "sha256": "0c5cce93df29e4ecd7a9e7307051e8fff5b2512c2ad437e478140823feeb8596"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/diagnostic-direct-xsim-vcd-smoke1-20261101/axis-analysis.json",
+      "sha256": "a6c5ad436f6cd62f6dff2dfbd1e5e0b4fc4ff6ff6a005f5f681a94b16ffbe8c4"
+    },
+    {
+      "path": "C:/w/mc-jpeg-axis-hls-20261101/runs/diagnostic-direct-xsim-vcd-smoke1-20261101/axis-ports.vcd",
+      "sha256": "bb47f051178ce64c07920d3c0eeb5d8ee1f1af349fa68284247294c5176b0c6c"
+    }
+  ]
+}
