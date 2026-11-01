@@ -74,3 +74,9 @@ def test_field_profile_preserves_pause_and_clear_deduplication(library):
 def test_unknown_runtime_profile_is_rejected():
     with pytest.raises(ValueError,match='profile'):
         make_runtime_counter(None,profile='unknown')
+
+
+def test_field_profile_split_area_covers_dense_m8_merged_regions():
+    """Dense M8 merges measured 1747-1822 px; the field-v1 bound must admit them."""
+    from scripts.standalone.count_controls import FIELD_V1_SETTINGS
+    assert FIELD_V1_SETTINGS["single_intact_area"] < 1822 <= FIELD_V1_SETTINGS["max_split_area"]
