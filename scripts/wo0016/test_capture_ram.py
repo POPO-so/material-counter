@@ -158,3 +158,21 @@ def test_ram_tail_post_covers_last_frame(tmp_path):
     manifest, _, _ = _run(tmp_path, frames=6, diagnostics=True)
     assert manifest["tail_post_ms"] is not None
     assert manifest["tail_post_ms"] >= 0.0
+
+
+def test_protocol_status_lines(tmp_path, capsys):
+    manifest, _, _ = _run(tmp_path, frames=10, baseline_frames=3,
+                          camera_kwargs={"markers": {4: ["drop_start"],
+                                                     7: ["drop_end"]}})
+    assert manifest["status"] == "COMPLETE"
+    output = capsys.readouterr().out
+    assert "RECORDING_STARTED frame=0" in output
+    assert "BASELINE_COMPLETE frame=2" in output
+    assert "DROP_START_OBSERVED frame=4" in output
+    assert "DROP_END_OBSERVED frame=7" in output
+
+
+def test_protocol_stop_line(tmp_path, capsys):
+    with pytest.raises(capture.CaptureError, match="INCOMPLETE"):
+        _run(tmp_path, frames=10, camera_kwargs={"markers": {4: ["stop"]}})
+    assert "STOP_OBSERVED frame=" in capsys.readouterr().out

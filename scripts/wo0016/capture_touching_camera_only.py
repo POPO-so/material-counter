@@ -416,6 +416,7 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
         started_ns = _monotonic_ns()
         events["recording_started_at"] = started_ns
         state("RECORDING")
+        print(f"RECORDING_STARTED frame=0 monotonic_ns={started_ns}", flush=True)
         for index in range(frames):
             frame_started = time.perf_counter_ns()
             if STOP_REQUESTED["flag"]:
@@ -423,6 +424,8 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
                 break
             if _marker(events_dir, "stop"):
                 events["stop"] = {"frame": index, "monotonic_ns": _monotonic_ns()}
+                print(f"STOP_OBSERVED frame={index} "
+                      f"monotonic_ns={events['stop']['monotonic_ns']}", flush=True)
                 failure_reason = "stopped_by_marker"
                 break
             read_started = time.perf_counter_ns()
@@ -469,10 +472,16 @@ def capture_session(output_dir, *, session_id=None, frames=300, baseline_frames=
             captured = index + 1
             if baseline_frames and captured == baseline_frames:
                 events["baseline_end"] = {"frame": index, "monotonic_ns": timestamp}
+                print(f"BASELINE_COMPLETE frame={index} monotonic_ns={timestamp}",
+                      flush=True)
             if events["drop_start"] is None and _marker(events_dir, "drop_start"):
                 events["drop_start"] = {"frame": index, "monotonic_ns": timestamp}
+                print(f"DROP_START_OBSERVED frame={index} monotonic_ns={timestamp}",
+                      flush=True)
             if events["drop_end"] is None and _marker(events_dir, "drop_end"):
                 events["drop_end"] = {"frame": index, "monotonic_ns": timestamp}
+                print(f"DROP_END_OBSERVED frame={index} monotonic_ns={timestamp}",
+                      flush=True)
             if diag is not None:
                 frame_finished = time.perf_counter_ns()
                 diag["read_ms"][index] = (decoded_at - read_started) / 1e6
