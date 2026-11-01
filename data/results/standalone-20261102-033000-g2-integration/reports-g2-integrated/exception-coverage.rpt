@@ -1,0 +1,141 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
+| Date         : Mon Nov  2 06:04:23 2026
+| Host         : JiA running 64-bit major release  (build 9200)
+| Command      : report_exceptions -coverage -file W:/data/results/standalone-20261102-033000-g2-integration/reports-g2-integrated/exception-coverage.rpt
+| Design       : display_wrapper
+| Device       : 7z020-clg400
+| Speed File   : -1  PRODUCTION 1.12 2019-11-22
+| Design State : Routed
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Exceptions Report
+
+Position  Type                     Setup       Hold   From       Through  To          Endpoints  From (%)  Through (%)  To (%)
+--------  -----------------------  ----------  -----  ---------  -------  ----------  ---------  --------  -----------  ------
+7         False Path               false       false             2 pins               2                    100.00        
+8         False Path               false       false             1 pins               0                    100.00        
+9         False Path               false       false                      86 pins     86                                100.00
+10        False Path               false       false                      2 cells     2                                 33.33
+11        False Path               false       false                      3 pins      3                                 100.00
+12        Max Delay Datapath Only  max_dpo=10  -      965 cells           965 cells   965        100.00                 33.33
+13        Max Delay Datapath Only  max_dpo=10  -      1 clocks            219 cells   34         100.00                 5.18
+14        Max Delay Datapath Only  max_dpo=10  -      1 clocks            2383 cells  42         100.00                 0.59
+16        False Path               false       false  4 ports             4 pins      0          0.00                   0.00
+17        False Path               false       false                      1 ports     1                                 100.00
+18        False Path               false       false  4 ports             4 pins      4          100.00                 100.00
+19        False Path               false       false                      4 pins      4                                 100.00
+20        Max Delay Datapath Only  max_dpo=10  -      705 cells           705 cells   705        100.00                 33.33
+21        Max Delay Datapath Only  max_dpo=10  -      33 cells            65 cells    65         100.00                 33.33
+22        False Path               false       false  1 ports                         1          100.00                  
+23        False Path               false       false  1 ports                         1          100.00                  
+24        False Path               false       false                      6 cells     6                                 33.33
+25        False Path               false       false                      1 cells     0                                 0.00
+26        False Path               false       false             1 pins               2                    100.00        
+27        False Path               false       false             1 pins               2                    100.00        
+28        False Path               false       false             1 pins               2                    100.00        
+29        False Path               false       false             1 pins               2                    100.00        
+30        Max Delay Datapath Only  max_dpo=10  -      11 cells            11 cells    11         100.00                 33.33
+32        Max Delay Datapath Only  max_dpo=7   -      11 cells            11 cells    11         100.00                 33.33
+34        Max Delay Datapath Only  max_dpo=7   -      12 cells            12 cells    12         100.00                 33.33
+38        Max Delay Datapath Only  max_dpo=21  -      5 cells             5 cells     5          100.00                 33.33
+40        Max Delay Datapath Only  max_dpo=21  -      3 cells             3 cells     3          100.00                 33.33
+42        Max Delay Datapath Only  max_dpo=21  -      36 cells            36 cells    36         100.00                 33.33
+44        Max Delay Datapath Only  max_dpo=30  -      2 cells             2 cells     2          100.00                 33.33
+46        Max Delay Datapath Only  max_dpo=30  -      34 cells            34 cells    34         100.00                 33.33
+48        Max Delay Datapath Only  max_dpo=21  -      7 cells             7 cells     7          100.00                 33.33
+50        Max Delay Datapath Only  max_dpo=21  -      5 cells             5 cells     5          100.00                 33.33
+52        Max Delay Datapath Only  max_dpo=21  -      12 cells            12 cells    12         100.00                 33.33
+54        Max Delay Datapath Only  max_dpo=30  -      2 cells             2 cells     2          100.00                 33.33
+56        Max Delay Datapath Only  max_dpo=30  -      34 cells            34 cells    34         100.00                 33.33
+58        Max Delay Datapath Only  max_dpo=60  -      10 cells            10 cells    10         100.00                 33.33
+60        Max Delay Datapath Only  max_dpo=60  -      5 cells             5 cells     5          100.00                 33.33
+62        Max Delay Datapath Only  max_dpo=60  -      32 cells            32 cells    32         100.00                 33.33
+64        Max Delay Datapath Only  max_dpo=30  -      2 cells             2 cells     2          100.00                 33.33
+66        Max Delay Datapath Only  max_dpo=30  -      34 cells            34 cells    34         100.00                 33.33
+68        Max Delay Datapath Only  max_dpo=60  -      32 cells            32 cells    32         100.00                 33.33
+70        Max Delay Datapath Only  max_dpo=60  -      32 cells            32 cells    32         100.00                 33.33
+72        Max Delay Datapath Only  max_dpo=60  -      36 cells            36 cells    36         100.00                 33.33
+74        Max Delay Datapath Only  max_dpo=30  -      2 cells             2 cells     2          100.00                 33.33
+76        Max Delay Datapath Only  max_dpo=30  -      34 cells            34 cells    34         100.00                 33.33
+78        Max Delay Datapath Only  max_dpo=60  -      32 cells            32 cells    32         100.00                 33.33
+80        Max Delay Datapath Only  max_dpo=60  -      32 cells            32 cells    32         100.00                 33.33
+82        Max Delay Datapath Only  max_dpo=60  -      36 cells            36 cells    36         100.00                 33.33
+84        Max Delay Datapath Only  max_dpo=30  -      2 cells             2 cells     2          100.00                 33.33
+86        Max Delay Datapath Only  max_dpo=30  -      34 cells            34 cells    34         100.00                 33.33
+88        False Path               false       false                      1 cells     1                                 33.33
+89        False Path               false       false                      1 cells     1                                 33.33
+90        False Path               false       false                      1 cells     1                                 33.33
+91        False Path               false       false                      1 cells     1                                 33.33
+92        False Path               false       false                      1 cells     1                                 33.33
+93        False Path               false       false                      1 cells     1                                 33.33
+94        False Path               false       false                      1 cells     1                                 33.33
+95        False Path               false       false                      1 cells     1                                 33.33
+96        False Path               false       false                      1 cells     1                                 33.33
+97        False Path               false       false                      1 cells     1                                 33.33
+98        False Path               false       false                      1 cells     1                                 33.33
+99        False Path               false       false                      1 cells     1                                 33.33
+100       False Path               false       false                      1 cells     1                                 33.33
+101       False Path               false       false                      1 cells     1                                 33.33
+102       False Path               false       false                      1 cells     1                                 33.33
+103       False Path               false       false                      1 cells     1                                 33.33
+104       False Path               false       false                      1 cells     1                                 33.33
+105       False Path               false       false                      1 cells     1                                 33.33
+106       False Path               false       false                      1 cells     1                                 33.33
+107       False Path               false       false                      1 cells     1                                 33.33
+108       False Path               false       false                      1 cells     1                                 33.33
+109       False Path               false       false                      1 cells     1                                 33.33
+110       False Path               false       false                      1 cells     1                                 33.33
+111       False Path               false       false                      1 cells     1                                 33.33
+112       False Path               false       false                      1 cells     1                                 33.33
+113       False Path               false       false                      1 cells     1                                 33.33
+114       False Path               false       false                      1 cells     1                                 33.33
+115       False Path               false       false                      1 cells     1                                 33.33
+116       False Path               false       false                      1 cells     1                                 33.33
+117       False Path               false       false                      1 cells     1                                 33.33
+118       False Path               false       false                      1 cells     1                                 33.33
+119       False Path               false       false                      1 cells     1                                 33.33
+120       False Path               false       false                      1 cells     1                                 33.33
+121       False Path               false       false                      1 cells     1                                 33.33
+122       False Path               false       false                      1 cells     1                                 33.33
+123       False Path               false       false                      1 cells     1                                 33.33
+124       False Path               false       false                      1 cells     1                                 33.33
+125       False Path               false       false                      1 cells     1                                 33.33
+126       False Path               false       false                      1 cells     1                                 33.33
+127       False Path               false       false                      1 cells     1                                 33.33
+128       False Path               false       false                      1 cells     1                                 33.33
+129       False Path               false       false                      1 cells     1                                 33.33
+130       False Path               false       false                      1 cells     1                                 33.33
+131       False Path               false       false                      1 cells     1                                 33.33
+132       False Path               false       false                      1 cells     1                                 33.33
+133       False Path               false       false                      1 cells     1                                 33.33
+134       False Path               false       false                      1 cells     1                                 33.33
+135       False Path               false       false                      1 cells     1                                 33.33
+136       False Path               false       false                      1 cells     1                                 33.33
+137       False Path               false       false                      1 cells     1                                 33.33
+138       False Path               false       false                      1 cells     1                                 33.33
+139       False Path               false       false                      1 cells     1                                 33.33
+140       False Path               false       false                      1 cells     1                                 33.33
+141       False Path               false       false                      1 cells     1                                 33.33
+142       False Path               false       false                      1 cells     1                                 33.33
+143       False Path               false       false                      1 cells     1                                 33.33
+144       False Path               false       false                      1 cells     1                                 33.33
+145       False Path               false       false                      1 cells     1                                 33.33
+146       False Path               false       false                      1 cells     1                                 33.33
+147       False Path               false       false                      1 cells     0                                 0.00
+148       False Path               false       false                      1 cells     1                                 0.00
+149       False Path               false       false                      1 cells     0                                 0.00
+150       False Path               false       false                      1 cells     1                                 0.00
+151       False Path               false       false                      1 cells     0                                 0.00
+152       False Path               false       false                      1 cells     1                                 0.00
+153       False Path               false       false                      1 cells     0                                 0.00
+154       False Path               false       false                      1 cells     1                                 0.00
+155       False Path               false       false                      1 cells     1                                 33.33
+157       False Path               false       false                      1 cells     0                                 0.00
+158       False Path               false       false                      1 cells     1                                 33.33
+159       False Path               false       false                      1 cells     1                                 33.33
+160       False Path               false       false                      1 cells     1                                 33.33
+161       False Path               false       false                      1 cells     1                                 33.33
+
+Warning: the percentages reported indicate the number of pins covered by the exception relative to the number of pins specified implicitly or explicitly.

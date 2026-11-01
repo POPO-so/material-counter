@@ -76,6 +76,7 @@ if {$g2_offload_candidate} {
     lappend g2_rtl_sources fpga/experimental/rle/rle_region_features.v
     lappend g2_rtl_sources fpga/experimental/rle/rle_feature_tap.v
     lappend g2_rtl_sources fpga/experimental/standalone/button_debounce_irq.v
+    lappend g2_rtl_sources fpga/experimental/standalone/slide_switch_synchronizer.v
     lappend g2_rtl_sources fpga/experimental/standalone/video_binary_overlay.v
     lappend g2_rtl_sources fpga/experimental/standalone/video_binary_overlay_bd.v
 }

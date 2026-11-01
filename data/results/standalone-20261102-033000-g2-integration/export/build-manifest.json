@@ -1,0 +1,87 @@
+{
+  "schema": "material-counter.g2-sw1-candidate.v1",
+  "source_commit": "a4fa257",
+  "scope": "SW1 snapshot gate candidate; board acceptance pending",
+  "tool": {
+    "name": "Vivado",
+    "version": "2026.1",
+    "build": "6511674",
+    "part": "xc7z020clg400-1"
+  },
+  "variant": {
+    "name": "OFFLOAD_CANDIDATE",
+    "gpio_width": 6,
+    "gpio_input_bits": {
+      "BTN0": 0,
+      "BTN1": 1,
+      "BTN2": 2,
+      "BTN3": 3,
+      "SW0": 4,
+      "SW1": 5
+    },
+    "switch_pins": {
+      "SW0": "M20",
+      "SW1": "M19"
+    }
+  },
+  "files": {
+    "g2-integrated.bit": {
+      "sha256": "3216faed178485a48a3e1cbe7919bbd63fab54ab69f8821d02217f09dfe3a7b5",
+      "bytes": 4045770
+    },
+    "g2-integrated.hwh": {
+      "sha256": "e7b5cf32dc7a119c46cbf60c87185f55531dec0ba7d10d202b82290625b7d0ed",
+      "bytes": 848136
+    },
+    "../gpio-readback.tcldict": {
+      "sha256": "633b2999c16e82d22ae2ac2b1ba7a85307f1c03cffae59507b268d2aff6ed534",
+      "bytes": 1175
+    }
+  },
+  "rtl_sha256": {
+    "axis_dma_gray_adapter.v": "1d6f303af3ecbbd2fa72d9ff1921d23bce22f2e33bcfc90c03b4ff8a829137d4",
+    "axis_dma_rle_pipeline_bd.v": "7cfbdde5f0ec6fea7005e53fadcb51473fe7b9bf45d9013720c65274ed50f261",
+    "axis_morphology3x3.v": "41bd8ac2bd659357807c172ddc0e14b0b6a85d14afc8d5323836c60e8b277cb1",
+    "axis_raw_gray_adapter.v": "da12e1392d2c4d168277441a4e916d098d9222332aa408e7b30e36e3fc293060",
+    "axis_rle_encoder.v": "2606fc95105671a0f0864f5af01207ae2a2415fa76c9f45523c5e06103ed1bb7",
+    "button_debounce_irq.v": "ced042fe820a34772d74f77045244e7a04520442b23e52a73fc0891c6dabb118",
+    "rle_feature_tap.v": "02a2b51e55049bec3071010aa76f080833cd674b4d14752fe18853f731d3d34b",
+    "rle_region_features.v": "23e60ec727970cc92ffba19d10d953cdf860e98255bc7e1a9490ee2aaf1edfe3",
+    "slide_switch_synchronizer.v": "0fd98928d8a790259e0cc8ae8aa89457adc63b48080f3ee07db09e707c40014b",
+    "video_binary_overlay_bd.v": "d64d60395adcb50da9587057397b68daedac5ee38a65c758c7bdbb7afa21a0b4",
+    "video_binary_overlay.v": "fb010c846d872466004714dd929d7effc889d9be1eccfc91d1fd339b976f05eb"
+  },
+  "timing": {
+    "wns_ns": 0.052,
+    "tns_ns": 0.0,
+    "whs_ns": 0.023,
+    "ths_ns": 0.0,
+    "all_user_constraints_met": true,
+    "unrouted_nets": 0,
+    "partially_routed_nets": 0
+  },
+  "drc": {
+    "errors": 0,
+    "critical_warnings": 0,
+    "warnings_and_advisories_reviewed": false
+  },
+  "cdc": {
+    "cdc3_info": 120,
+    "cdc6_warning": 2,
+    "cdc15_warning": 1703,
+    "review": "manual_review_complete_2026-11-02",
+    "review_record": "../cdc-review.md",
+    "manual_disposition": {
+      "cdc6_button_gpio": "accepted_endpoint_specific_independent_controls",
+      "cdc6_v_tc_6_2": "accepted_vendor_documented_internal_cdc",
+      "cdc15": "accepted_handshake_bundled_data_with_max_delay_datapath_only",
+      "cdc15_bus_groups": 19,
+      "cdc15_frame_monitor_bits": 965,
+      "cdc15_binary_overlay_bits": 738,
+      "reset_assumption": "common_ps_fclk_reset_source_and_coordinated_reset"
+    },
+    "vivado_waivers_applied": false,
+    "warnings_retained_in_report": true
+  },
+  "board_acceptance": "PENDING_USER_DEFERRED"
+}

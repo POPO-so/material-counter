@@ -8,9 +8,15 @@ set source_root [file normalize $::env(PYNQ_SOURCE)]
 set output_root [file normalize $::env(VIDEO_IP_OUT)]
 # With both trees under the same source-workspace parent, this installation's
 # HLS 2026.1 persisted a design path relative to that parent, then omitted it
-# from csim.mk. Keep outputs separate; retain the failed logs for diagnosis.
-if {[string first "[file dirname $source_root]/" "$output_root/"] == 0} {
-    error "VIDEO_IP_OUT must be outside the PYNQ checkout's parent directory"
+# from csim.mk. Reject output anywhere inside that workspace; retain failed logs.
+set source_workspace_parent [file normalize [file dirname [file dirname $source_root]]]
+set source_filesystem_root [file normalize [file dirname $source_workspace_parent]]
+if {![string equal -nocase $source_workspace_parent $source_filesystem_root]} {
+    set workspace_prefix "[string trimright $source_workspace_parent /]/"
+    set output_prefix "[string trimright $output_root /]/"
+    if {[string first [string tolower $workspace_prefix] [string tolower $output_prefix]] == 0} {
+        error "VIDEO_IP_OUT must be outside the PYNQ source workspace root: $source_workspace_parent"
+    }
 }
 set repo [file normalize [file join [file dirname [info script]] ../..]]
 puts [exec $::env(VIDEO_PYTHON) -B [file join $repo scripts standalone verify_sources.py] --source-root $source_root --brief]

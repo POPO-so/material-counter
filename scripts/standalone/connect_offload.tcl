@@ -8,7 +8,6 @@ capture control_overlay_expand [list ipcfg::require control [dict create CONFIG.
     {Preserve M00-M10; append experimental overlay on M11}] {REQ:pinned+applied}
 capture overlay_concat_expand [list ipcfg::require video_interrupts [dict create CONFIG.NUM_PORTS 4] \
     {Preserve existing interrupt inputs 0-2 and append overlay GPIO at input 3}] {REQ:pinned+applied}
-
 create_bd_cell -type module -reference video_binary_overlay_bd binary_overlay
 create_bd_cell -type module -reference button_debounce_irq button_debounce
 set_property -dict [list CONFIG.KEY_COUNT 4 CONFIG.DEBOUNCE_CYCLES 1500000] [get_bd_cells button_debounce]
@@ -52,9 +51,20 @@ if {$g2_sw0_candidate} {
     close $sw0_xdc_channel
     add_files -fileset constrs_1 $sw0_xdc_file
 } else {
-    capture overlay_gpio_irq [list ipcfg::require btns_gpio [dict create CONFIG.C_INTERRUPT_PRESENT 1] \
-        {Enable the existing board GPIO interrupt output for the overlay candidate}] {REQ:pinned+applied}
-    connect_bd_net [get_bd_pins button_debounce/stable_state] $button_gpio_pin
+    capture overlay_gpio_switches [list ipcfg::require btns_gpio [dict create \
+        CONFIG.C_GPIO_WIDTH 6 CONFIG.C_INTERRUPT_PRESENT 1] \
+        {Keep BTN0-3 on bits 0-3; add SW0/SW1 on bits 4-5}] {REQ:pinned+applied}
+    create_bd_port -dir I -from 1 -to 0 sws_2bits_tri_i
+create_bd_cell -type module -reference slide_switch_synchronizer switch_synchronizer
+create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 btns_gpio_concat
+set_property -dict [list CONFIG.NUM_PORTS 2 CONFIG.IN0_WIDTH 4 CONFIG.IN1_WIDTH 2] \
+    [get_bd_cells btns_gpio_concat]
+connect_bd_net [get_bd_ports sws_2bits_tri_i] [get_bd_pins switch_synchronizer/switch_async]
+connect_bd_net [get_bd_pins ps7/FCLK_CLK0] [get_bd_pins switch_synchronizer/clk]
+connect_bd_net [get_bd_pins reset_rle/peripheral_aresetn] [get_bd_pins switch_synchronizer/resetn]
+connect_bd_net [get_bd_pins button_debounce/stable_state] [get_bd_pins btns_gpio_concat/In0]
+connect_bd_net [get_bd_pins switch_synchronizer/switch_sync] [get_bd_pins btns_gpio_concat/In1]
+connect_bd_net [get_bd_pins btns_gpio_concat/dout] $button_gpio_pin
 }
 # 按键消抖路径仍待综合验证；GPIO IRQ 到 INTC In3 保持原连接。
 # 当前没有外部故障源：fault_in 明确接常量 0，仅保留状态/W1C接口。
@@ -181,16 +191,29 @@ foreach {source sink} {
 if {[get_property CONFIG.NUM_MI [get_bd_cells control]] != 12 ||
     [get_property CONFIG.NUM_PORTS [get_bd_cells video_interrupts]] != 4 ||
     [get_property CONFIG.C_INTERRUPT_PRESENT [get_bd_cells btns_gpio]] != 1 ||
-    [get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio]] != [expr {$g2_sw0_candidate ? 5 : 4}]} {
+    [get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio]] != [expr {$g2_sw0_candidate ? 5 : 6}]} {
     error "OFFLOAD_READBACK_COUNT_OR_GPIO_MISMATCH"
 }
-if {$g2_sw0_candidate && [llength [get_bd_ports -quiet sw0]] != 1} {
-    error "SW0_EXTERNAL_PORT_MISSING"
+if {$g2_sw0_candidate} {
+    if {[llength [get_bd_ports -quiet sw0]] != 1 ||
+        [llength [get_bd_pins -quiet switch0_synchronizer/switch_sync]] != 1} {
+        error "SW0_EXTERNAL_PORT_OR_SYNCHRONIZER_MISSING"
+    }
+} elseif {[llength [get_bd_ports -quiet sws_2bits_tri_i]] != 1 ||
+          [llength [get_bd_pins -quiet switch_synchronizer/switch_sync]] != 1} {
+    error "SWITCH_INPUT_PORT_OR_SYNCHRONIZER_MISSING"
+}
+if {$g2_sw0_candidate} {
+    set gpio_input_bits {BTN0=0 BTN1=1 BTN2=2 BTN3=3 SW0=4}
+    set switch_pins {SW0=M20}
+} else {
+    set gpio_input_bits {BTN0=0 BTN1=1 BTN2=2 BTN3=3 SW0=4 SW1=5}
+    set switch_pins {SW0=M20 SW1=M19}
 }
 set receipt [dict create candidate ps-pl-offload control_mi_count [get_property CONFIG.NUM_MI [get_bd_cells control]] \
     overlay_master M11 AXIL_base 0x43C50000 AXIL_range 0x10000 \
-    switch0_candidate $g2_sw0_candidate gpio_input_bits {BTN0=0 BTN1=1 BTN2=2 BTN3=3 SW0=4} \
-    switch0_pin [expr {$g2_sw0_candidate ? "M20/LVCMOS33" : "not-connected"}] \
+    switch0_candidate $g2_sw0_candidate GPIO_width [get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio]] \
+    GPIO_input_bits $gpio_input_bits switch_pins $switch_pins switch_polarity {up=1 down=0} \
     interrupt_ports [get_property CONFIG.NUM_PORTS [get_bd_cells video_interrupts]] GPIO_interrupt [get_property CONFIG.C_INTERRUPT_PRESENT [get_bd_cells btns_gpio]] \
     clock_domain {s_axi_aclk mask_clk cfg_clk=FCLK0_50MHz} pixel_clock hdmi_pixel_clock \
     reset_domains {AXI+mask=reset_rle_peripheral_aresetn pixel=reset_pixel_peripheral_aresetn} \

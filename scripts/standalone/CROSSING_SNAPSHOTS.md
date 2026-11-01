@@ -20,7 +20,7 @@ SIGUSR1大报告现在先在主线程持采样锁复制有界状态，再由后�
 
 以下逐项文件说明描述 v6/full 格式；旧现场快照的48像素关联和关闭拆分参数也是v6历史配置，应以新组JSON中实际保存的参数为准。
 
-`integrated_run.py` 默认开启采集，适用于脱机 HDMI/RLE 运行入口。每个会话的报告 `session-….json` 旁会生成独立目录 `session-….crossings/`。此功能不调整阈值、跟踪规则或计数规则，也不恢复跨会话累计计数。
+`integrated_run.py` 的快照 CLI 参数默认开启，适用于脱机 HDMI/RLE 运行入口；实际采集还要求切入诊断模式并将 SW1 拨到 ON。每个会话的报告 `session-….json` 旁会生成独立目录 `session-….crossings/`。此功能不调整阈值、跟踪规则或计数规则，也不恢复跨会话累计计数。
 
 ## 触发条件
 
@@ -68,6 +68,13 @@ SIGUSR1大报告现在先在主线程持采样锁复制有界状态，再由后�
 运行报告及现有 SIGUSR1 导出中，`crossing_snapshots` 给出 `accepting`、`triggered/saved`、队列和存储丢弃数、写入/采集错误、最后错误、目录和写入字节数。正常停止尝试等待后台 2 秒，`snapshot_writer_drained=false` 表示仍有待写组，不能宣称全部样本已落盘。
 
 入口参数：`--crossing-snapshots off` 关闭；`--snapshot-max-events 1000` 和 `--snapshot-max-mib 512` 调整每会话限额。开机入口沿用默认开启行为。此版本仅接入脱机集成入口，桌面 GUI 独立入口尚未接入。
+
+## 硬件开关
+
+- BTN1 仍切换 normal/diagnostic；它不会绕过 SW1 或 CLI 门控。
+- PYNQ-Z2 的拨码开关上拨为逻辑高：SW0 在 GPIO Channel 1 bit4，SW1 在 bit5。快照采集的条件是 `--crossing-snapshots on`、诊断模式开启且 `(channel1.read() & 0x20) != 0`。
+- SW1 从 ON 切到 OFF 时停止接收新观察，并 flush 尚在等待后文的组；已经进入异步写队列的文件仍可能完成写入。重新拨 ON 后只收集新开关周期内的上下文帧。
+- HWH 若声明 GPIO 宽度小于 6（包括四位基线和五位 SW0 候选），报告会显示 SW1 未接入并停用快照采集；五位 SW0 候选仍可读取 SW0 bit4。BTN1、计数和四位按键逻辑仍可运行。
 
 本地验证入口：
 

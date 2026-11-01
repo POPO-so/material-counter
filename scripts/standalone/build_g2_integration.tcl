@@ -2,6 +2,11 @@
 foreach name {G2_OUT G2_MONITOR_SIM_OUT} {
     if {![info exists ::env($name)]} {error "Missing environment variable $name"}
 }
+foreach name {PYNQ_SOURCE VIDEO_IP_BUILT} {
+    if {![info exists ::env($name)] || ![file isdirectory $::env($name)]} {
+        error "G2_REQUIRED_DIRECTORY_MISSING:$name"
+    }
+}
 set g2_out [file normalize $::env(G2_OUT)]
 set repo [file normalize [file join [file dirname [info script]] ../..]]
 set results [file normalize [file join $repo data results]]
@@ -17,6 +22,13 @@ if {![file isfile $project_file] || ![file isfile $bd_file] || ![file isfile $re
 }
 
 if {![llength [get_projects -quiet]]} {open_project $project_file}
+# Re-register external IP repositories when this build is launched in a fresh
+# Vivado process. The project file may retain paths relative to its old drive.
+set_property ip_repo_paths [list \
+    [file normalize [file join $::env(PYNQ_SOURCE) boards ip]] \
+    [file normalize [file join $::env(VIDEO_IP_BUILT) color_convert solution1 impl ip]] \
+    [file normalize [file join $::env(VIDEO_IP_BUILT) pixel_unpack solution1 impl ip]]] [current_project]
+update_ip_catalog
 open_bd_design $bd_file
 set offload_candidate [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
 set sw0_candidate [expr {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"}]
@@ -33,6 +45,11 @@ if {$sw0_candidate && ([get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio
     [llength [get_bd_ports -quiet sw0]] != 1 ||
     [llength [get_bd_pins -quiet switch0_synchronizer/switch_sync]] != 1)} {
     error "G2_BUILD_SW0_BD_READBACK_MISMATCH"
+}
+if {$offload_candidate && !$sw0_candidate && ([get_property CONFIG.C_GPIO_WIDTH [get_bd_cells btns_gpio]] != 6 ||
+    [llength [get_bd_ports -quiet sws_2bits_tri_i]] != 1 ||
+    [llength [get_bd_pins -quiet switch_synchronizer/switch_sync]] != 1)} {
+    error "G2_BUILD_SWITCH_GPIO_READBACK_MISMATCH"
 }
 if {[llength [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S]]] != 1 ||
     [llength [get_bd_intf_nets -quiet -of_objects [get_bd_intf_pins image_pipeline/m_axis]]] != 1} {
@@ -60,6 +77,21 @@ if {$sw0_candidate} {
         [string first {NAME="sw0"} $hwh_text] < 0 ||
         [string first {SW0=4} $readback_text] < 0} {
         error "G2_SW0_HWH_READBACK_MISMATCH"
+    }
+} elseif {$offload_candidate} {
+    set hwh_file [file join $g2_out export g2-integrated.hwh]
+    set channel [open $hwh_file r]
+    set hwh_text [read $channel]
+    close $channel
+    set readback_file [file join $g2_out evidence offload-bd-readback.tcldict]
+    set channel [open $readback_file r]
+    set readback_text [read $channel]
+    close $channel
+    foreach expected [list {NAME="C_GPIO_WIDTH" VALUE="6"} {NAME="sws_2bits_tri_i"}] {
+        if {[string first $expected $hwh_text] < 0} {error "G2_SWITCH_HWH_READBACK_MISMATCH:$expected"}
+    }
+    foreach expected [list {GPIO_width 6} SW0=4 SW1=5] {
+        if {[string first $expected $readback_text] < 0} {error "G2_SWITCH_BD_READBACK_MISMATCH:$expected"}
     }
 }
 puts "G2_BUILD_COMPLETE:BIT_HWH_PRESENT;manifest_and_board_smoke_pending"

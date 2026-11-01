@@ -67,11 +67,43 @@ if {[get_property PROGRESS [get_runs synth_1]] ne "100%"} {error "DISPLAY_SYNTH_
 open_run synth_1
 set button_meta_first [get_pins -quiet -hier -regexp {.*button_debounce.*button_meta_reg\[[0-3]\]/D}]
 if {[llength $button_meta_first] != 4} {error "OFFLOAD_BUTTON_META_FIRST_STAGE_PIN_COUNT:[llength $button_meta_first]"}
-if {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"} {
+set sw0_candidate [expr {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"}]
+set offload_candidate [expr {[info exists ::env(OFFLOAD_CANDIDATE)] && $::env(OFFLOAD_CANDIDATE) eq "1"}]
+if {$sw0_candidate} {
     set switch_meta_first [get_pins -quiet -hier -regexp {.*switch0_synchronizer.*switch_meta_reg/D}]
     if {[llength $switch_meta_first] != 1 || [llength [get_ports -quiet sw0]] != 1} {
         error "SW0_SYNCHRONIZER_OR_PORT_MISSING_AFTER_SYNTHESIS"
     }
+}
+if {$offload_candidate && !$sw0_candidate} {
+    set switch_input_ports [get_ports -quiet -regexp {^sws_2bits_tri_i\[[01]\]$}]
+    if {[llength $switch_input_ports] != 2} {
+        error "OFFLOAD_SWITCH_INPUT_PORT_COUNT:[llength $switch_input_ports]"
+    }
+    # The synchronizer is synthesized out of context. At the top-level DCP,
+    # its internal registers are hidden behind the OOC cell boundary, so cut
+    # only the asynchronous physical input paths and keep the two-stage
+    # synchronizer paths timed.
+    set switch_xdc [file join $out offload-switch-cdc.xdc]
+    set fd [open $switch_xdc w]
+    puts $fd {# Cut asynchronous board switch inputs; keep meta-to-sync paths timed.}
+    foreach port $switch_input_ports {
+        set port_name [get_property NAME $port]
+        puts $fd [format {set_false_path -from [get_ports {%s}]} $port_name]
+    }
+    close $fd
+    add_files -fileset constrs_1 $switch_xdc
+    set switch_xdc_file [get_files $switch_xdc]
+    set_property USED_IN_SYNTHESIS false $switch_xdc_file
+    set_property PROCESSING_ORDER LATE $switch_xdc_file
+}
+if {$offload_candidate} {
+    # The extended GPIO candidate changes placement around the shared pixel-clock monitor.
+    # Use timing-oriented implementation directives for this candidate overlay.
+    set impl_run [get_runs impl_1]
+    set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE Explore $impl_run
+    set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE AggressiveExplore $impl_run
+    set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE Explore $impl_run
 }
 close_design
 launch_runs impl_1 -to_step write_bitstream -jobs $jobs
@@ -79,7 +111,7 @@ wait_on_run impl_1
 if {[get_property PROGRESS [get_runs impl_1]] ne "100%" ||
     ![string match {*write_bitstream Complete*} [get_property STATUS [get_runs impl_1]]]} {error "DISPLAY_IMPL_FAILED"}
 open_run impl_1
-if {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"} {
+if {$sw0_candidate} {
     set sw0_port [get_ports -quiet sw0]
     if {[llength $sw0_port] != 1 || [get_property PACKAGE_PIN $sw0_port] ne "M20" ||
         [get_property IOSTANDARD $sw0_port] ne "LVCMOS33"} {
@@ -88,7 +120,20 @@ if {[info exists ::env(SW0_CANDIDATE)] && $::env(SW0_CANDIDATE) eq "1"} {
 }
 if {[llength [get_pins -quiet display_i/hdmi_out/frontend/axi_dynclk/U0/Inst_mmcme2_drp/mmcm_adv_inst/CLKOUT0]] != 1 ||
     [llength [get_pins -quiet display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk]] != 1} {error "VIDEO_CLOCK_TOPOLOGY_CHANGED"}
-if {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-3]\]/D}]] != 4} {error "BUTTON_SYNCHRONIZERS_CHANGED"}
+if {$offload_candidate && $sw0_candidate} {
+    if {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-4]\]/D}]] != 5} {
+        error "SW0_GPIO_INPUT_SYNCHRONIZERS_CHANGED"
+    }
+} elseif {$offload_candidate} {
+    if {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-5]\]/D}]] != 6} {
+        error "GPIO_INPUT_SYNCHRONIZERS_CHANGED"
+    }
+    if {[llength [get_ports -quiet -regexp {^sws_2bits_tri_i\[[01]\]$}]] != 2} {
+        error "SWITCH_INPUT_PORTS_CHANGED"
+    }
+} elseif {[llength [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-3]\]/D}]] != 4} {
+    error "BUTTON_SYNCHRONIZERS_CHANGED"
+}
 report_timing_summary -delay_type min_max -report_unconstrained -file [file join $reports timing.rpt]
 report_utilization -file [file join $reports utilization.rpt]
 report_drc -file [file join $reports drc.rpt]
