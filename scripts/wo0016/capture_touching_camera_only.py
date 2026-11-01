@@ -28,7 +28,7 @@ MIN_FORMAL_FRAMES = 600
 MAX_NPZ_FRAMES = 300
 MAX_COMPACT_FRAMES = 1800
 MAX_MEMMAP_FRAMES = 3600
-RAM_MAX_FRAMES = 300
+RAM_MAX_FRAMES = 450
 RAM_RUNTIME_OVERHEAD_BYTES = 128 * 1024 * 1024
 RAM_SAFETY_MARGIN = 1.25
 DISK_RESERVE_BYTES = 256 * 1024 * 1024
@@ -134,7 +134,7 @@ def _precheck(output_dir, *, frames, compact, formal, output_format,
             raise PrecheckError("ram capture always keeps 640x400 source frames")
         if formal:
             raise PrecheckError("formal capture needs at least 600 frames; "
-                                "ram v1 caps at 300")
+                                "ram v1 caps at 450")
         limit = RAM_MAX_FRAMES
     elif output_format == "npz":
         limit = MAX_COMPACT_FRAMES if compact else MAX_NPZ_FRAMES

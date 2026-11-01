@@ -75,7 +75,7 @@ def test_ram_complete_session(tmp_path):
     manifest, output, _ = _run(tmp_path, frames=10, diagnostics=True)
     assert manifest["status"] == "COMPLETE"
     assert manifest["ram_only"] is True and manifest["preview_saved"] is False
-    assert manifest["ram_limit_frames"] == 300
+    assert manifest["ram_limit_frames"] == 450
     assert manifest["archive"] == "camera_ram_capture.npz"
     assert manifest["tail_post_ms"] is not None
     assert manifest["timing"]["non_positive_gaps"] == 0
@@ -102,24 +102,24 @@ def test_ram_loop_does_not_write_data_files(tmp_path):
 def test_ram_memory_precheck_accounts_for_runtime(tmp_path, monkeypatch):
     monkeypatch.setattr(capture, "_read_meminfo", lambda path="/proc/meminfo": 200_000)
     with pytest.raises(capture.PrecheckError, match="insufficient memory"):
-        capture.capture_session(tmp_path / "ram-a", frames=300, start_delay_s=0.0,
+        capture.capture_session(tmp_path / "ram-a", frames=450, start_delay_s=0.0,
                                 output_format="ram", camera_factory=lambda path: None)
-    monkeypatch.setattr(capture, "_read_meminfo", lambda path="/proc/meminfo": 300_000)
+    monkeypatch.setattr(capture, "_read_meminfo", lambda path="/proc/meminfo": 400_000)
     manifest = capture.capture_session(
-        tmp_path / "ram-b", frames=300, start_delay_s=0.0, output_format="ram",
+        tmp_path / "ram-b", frames=450, start_delay_s=0.0, output_format="ram",
         camera_factory=lambda path: FakeCamera((tmp_path / "ram-b" / "events")))
-    assert manifest["status"] == "COMPLETE"
+    assert manifest["status"] == "COMPLETE" and manifest["frame_count"] == 450
 
 
 def test_ram_rejects_windows_over_the_cap(tmp_path):
     with pytest.raises(capture.PrecheckError, match="not silently truncated"):
-        capture.capture_session(tmp_path / "ram-big", frames=301, start_delay_s=0.0,
+        capture.capture_session(tmp_path / "ram-big", frames=451, start_delay_s=0.0,
                                 output_format="ram", camera_factory=lambda path: None)
 
 
 def test_ram_rejects_formal_mode(tmp_path):
     with pytest.raises(capture.PrecheckError, match="600"):
-        capture.capture_session(tmp_path / "ram-formal", frames=300, formal=True,
+        capture.capture_session(tmp_path / "ram-formal", frames=450, formal=True,
                                 start_delay_s=0.0, output_format="ram",
                                 camera_factory=lambda path: None)
 
