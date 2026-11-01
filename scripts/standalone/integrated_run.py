@@ -27,6 +27,8 @@ from .count_controls import advance_count, make_runtime_counter
 from .crossing_snapshots import CrossingSnapshots
 from .async_evidence import EvidenceExporter
 from .driver_owner import DriverOwner
+from .display_health import DisplayHealthMonitor
+from .diag_snapshot import DiagnosticSnapshotWriter,compact_diagnostic_snapshot
 from .evidence import write_evidence,fail_hold,TraceBuffer
 from .g1_run import setup_hardware, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
 from .hp2 import sync_hp1_readwrite32
@@ -346,6 +348,12 @@ def main(argv=None):
         help='run the read-only B1a overlay preflight (default off)')
     parser.add_argument('--overlay-first-write',action='store_true',
         help='after preflight, perform the single CTRL=0 write (default off)')
+    parser.add_argument('--display-health-stop',action='store_true',
+        help='request a controlled stop on a detected display failure (default: record only)')
+    parser.add_argument('--diag-snapshot',action='store_true',
+        help='write a bounded periodic diagnostic snapshot (default off)')
+    parser.add_argument('--diag-snapshot-interval',type=float,default=30.0,
+        help='seconds between diagnostic snapshots')
     parser.add_argument('--font',default='/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf')
     parser.add_argument('--latin-font',default='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
     parser.add_argument('--inherited-lock-fds',nargs=2,type=int,metavar=('DESKTOP_FD','STANDALONE_FD'),
@@ -353,6 +361,8 @@ def main(argv=None):
     args=parser.parse_args(argv)
     if args.snapshot_max_events < 1 or args.snapshot_max_mib < 1:
         parser.error('snapshot storage limits must be positive')
+    if args.diag_snapshot_interval <= 0:
+        parser.error('diag snapshot interval must be positive')
     if not args.execute or not 1<=args.duration<=7200 or not 1<=args.frames<=200000 or (args.continuous and args.source!='camera'):
         parser.error('requires execute, duration 1..7200 and frames 1..200000')
     if args.inject_drawing_start_failure and args.display!='on':
@@ -480,6 +490,8 @@ def main(argv=None):
     previous_cpu=_parse_proc_stat(Path('/proc/stat').read_text())
     stages={key:deque(maxlen=20000) for key in ('transfer_ms','count_ms','snapshot_ms','publish_ms','scale_ms','draw_ms','copy_submit_ms','transfer_parts')}
     cleanup_stage='run'
+    diag_writer=None
+    display_health=None
     try:
         dma=owner.retain(MMIO(0x40400000,0x1000))
         for offset in (4,0x34):
@@ -553,6 +565,11 @@ def main(argv=None):
             'LUT {} / FF {}'.format(manifest.get('resources',{}).get('lut','未知'),manifest.get('resources',{}).get('ff','未知')),
             'BRAM {} / DSP {}'.format(manifest.get('resources',{}).get('bram_tiles','未知'),manifest.get('resources',{}).get('dsp','未知'))]
         status_cache={'key':None,'lines':()}
+        display_health=DisplayHealthMonitor() if args.display=='on' else None
+        diag_writer=(DiagnosticSnapshotWriter(args.output.with_suffix('.diag.json'))
+                     if args.diag_snapshot else None)
+        last_diag=0.0
+        report['display_health_events']=deque(maxlen=32)
         last_performance_index=last_performance_submitted=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
         trajectory_epoch=0;camera_in_error=False
         previous_process={}
@@ -729,15 +746,33 @@ def main(argv=None):
                 if vdma_status&0x770:
                     display_held=True
                     if video_pump is not None:video_pump.request_stop()
+                sample_telemetry=cache.snapshot(time.monotonic())
                 report['samples'].append(dict(monotonic=sample_time,processed=index,submitted=submitted,
                     monitor=monitor,count=counter.total_count,invalid=counter.invalid_frames,memory=_memory(),
                     cpu=_cpu_usage_percent(previous_cpu,cpu),vdma_status=vdma_status,
                     video_state=video_pump.state if video_pump else 'OFF',
                     video_pump_status=video_pump.status() if video_pump else {'state':'OFF'},
-                    telemetry=cache.snapshot(time.monotonic()),
+                    telemetry=sample_telemetry,
                     crossing_snapshots=captures.status() if captures is not None else {'enabled':False},
                     **timing_sample_fields(args.transfer_timing,report.get('transfer_timing_last')),
                     counters=owner.call(snapshot_counters,control)))
+                if display_health is not None and video_pump is not None:
+                    performance_sample=(sample_telemetry.get('performance') or {})
+                    perf_value=performance_sample.get('value') or {}
+                    stale=performance_sample.get('stale',True)
+                    display_fps=None if stale else perf_value.get('display_fps')
+                    fps_sample_time=None if stale else performance_sample.get('sampled_monotonic')
+                    event=display_health.observe(sample_time,index,controls.paused,
+                        args.display=='on',video_pump.status(),display_fps=display_fps,
+                        fps_sample_time=fps_sample_time)
+                    if event is not None:
+                        event['action']='stop_requested' if args.display_health_stop else 'record_only'
+                        report['display_health_events'].append(event)
+                        print(json.dumps(event,separators=(',',':')),flush=True)
+                        if args.display_health_stop:running=False
+                if diag_writer is not None and sample_time-last_diag>=args.diag_snapshot_interval:
+                    diag_writer.submit(compact_diagnostic_snapshot(report_snapshot()))
+                    last_diag=sample_time
                 previous_cpu=cpu;last_sample=sample_time
         report['duration_s']=time.monotonic()-started
         report.update(trace_sha256=trace.digest(),trace_frames=trace.frames_seen,
@@ -817,7 +852,12 @@ def main(argv=None):
             video_pump_failed_at=video_pump.failed_at if video_pump else None,
             video_pump_failed_stage=video_pump.failed_stage if video_pump else None,
             cleanup_stage=cleanup_stage)
+        if diag_writer is not None:
+            report['diag_snapshot']=diag_writer.close()
         fail_hold(lambda:write_evidence(args.output,report_snapshot()),'INTEGRATED_FAIL_HOLD '+repr(error))
+    if diag_writer is not None:
+        diag_writer.submit(compact_diagnostic_snapshot(report_snapshot()))
+        report['diag_snapshot']=diag_writer.close()
     write_evidence(args.output,report_snapshot())
     print(json.dumps({k:report[k] for k in ('state','processed','submitted','duration_s','total_count')}),flush=True)
     if display_held:
