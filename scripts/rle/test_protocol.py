@@ -259,3 +259,43 @@ def test_rle_input_error_frame_can_report_partial_accepted_pixels():
     assert frame.accepted_pixels == 200
     with pytest.raises(ValueError, match="input-error"):
         reconstruct(frame)
+
+
+def test_gray_packet_bytes_match_the_uint64_reference_encoder():
+    rng = np.random.default_rng(21)
+    gray = rng.integers(0, 256, size=(HEIGHT, WIDTH), dtype=np.uint8)
+    packet = encode_gray(gray, frame_id=0x00ABCDEF)
+
+    reference = bytearray(TX_BYTES)
+    struct.pack_into("<4I", reference, 0, 0x47525938, (HEIGHT << 16) | WIDTH,
+                     HEIGHT * WIDTH, 0x00ABCDEF)
+    reference[16:16 + HEIGHT * WIDTH] = gray.tobytes()
+    struct.pack_into("<4I", reference, 16 + HEIGHT * WIDTH, 0x454E4438, 0x00ABCDEF,
+                     int(gray.sum(dtype=np.uint64)) & 0xFFFFFFFF, 0xC0DEC018)
+
+    assert packet == bytes(reference)
+
+
+@pytest.mark.parametrize("fill", [0, 255])
+def test_gray_checksum_matches_uint64_reference_at_field_extremes(fill):
+    gray = np.full((HEIGHT, WIDTH), fill, dtype=np.uint8)
+    packet = encode_gray(gray, frame_id=3)
+    checksum_index = (16 + HEIGHT * WIDTH) // 4 + 2
+    assert _word(packet, checksum_index) == int(gray.sum(dtype=np.uint64)) & 0xFFFFFFFF
+
+
+def test_rle_projection_deltas_handle_runs_touching_both_column_edges():
+    mask = np.zeros((HEIGHT, WIDTH), np.uint8)
+    mask[0, 0:WIDTH] = 255
+    mask[HEIGHT - 1, 5:6] = 255
+
+    frame = decode_packet(encode_mask(mask))
+
+    assert frame.valid
+    assert frame.run_count == 2
+    assert int(frame.row_projection[0]) == WIDTH
+    assert int(frame.row_projection[HEIGHT - 1]) == 1
+    assert int(frame.column_projection[0]) == 1
+    assert int(frame.column_projection[WIDTH - 1]) == 1
+    assert int(frame.column_projection[5]) == 2
+    assert int(frame.column_projection.sum()) == frame.total_fg
