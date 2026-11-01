@@ -1,0 +1,40 @@
+{
+  "captured_local": "2026-11-01 15:18:32 +08:00",
+  "free_memory": {
+    "FreePhysicalMiB": 734.1,
+    "TotalVisibleMiB": 16077.5
+  },
+  "paging": {
+    "Name": "C:\\pagefile.sys",
+    "AllocatedBaseSize": 34816,
+    "CurrentUsage": 3455,
+    "PeakUsage": 4092
+  },
+  "vivado_processes": [
+    {
+      "Name": "vivado.exe",
+      "ProcessId": 44788,
+      "ParentProcessId": 44696
+    },
+    {
+      "Name": "cmd.exe",
+      "ProcessId": 46144,
+      "ParentProcessId": 44788
+    },
+    {
+      "Name": "vivado.exe",
+      "ProcessId": 46532,
+      "ParentProcessId": 51928
+    }
+  ],
+  "other_g2_path": {
+    "FullName": "Q:\\data\\results\\standalone-20261101-151222-g2-integration",
+    "LastWriteTime": "2026-11-01T15:14:45.4674135+08:00",
+    "Length": null
+  },
+  "manifest_verify_exit": 0,
+  "manifest_verify_log": "C:\\Users\\14173\\Documents\\material-counter\\.runtime\\worktrees\\jpeg-probe-20261101\\data\\results\\jpeg-axis-integration-followup-20261101-151831\\manifest_verify.log",
+  "stage": "C:/w/m",
+  "stage_manifest_sha256": "88d97eb800146dcbf5e3aeb964e5893900c241771901bcc92635eeb6c98fd50a",
+  "stage_spec_sha256": "b7ee37552f6f8510ea952313f459e2a09b6f6bb719a2d959947cd97ae17230a9"
+}

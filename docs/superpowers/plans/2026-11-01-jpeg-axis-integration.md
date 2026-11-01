@@ -33,7 +33,7 @@
 - [x] T2 实现 `fpga/experimental/jpeg_axis/`：vendor最小依赖、来源和许可清单；header缓存、entropy AXIS feeder、8行Y重排、Gray8封包。冻结cpp SHA `d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d`。已核对顶层接口无m_axi及dataflow进程间完成token依赖；硬件正确性仍待T5。
 - [x] T3 冻结版真实frame1/98与vendorY逐像素相同；120帧与OpenCV最大差1、阈值128翻转0，`d695-snapshot-batch120-20261101`为FLOW_PASS。样本在该阈值下均无前景，不构成物料准确率证据。熵流截断独立Csim确认错误status、无效checksum及后继好帧，仍不保证任意坏熵流恢复。硬件背压不能由C仿真代替。
 - [x] T4 实现 `fpga/experimental/jpeg_integration/rle_region_features.v` 的BRAM版本；512/320容量及端口语义不减。33个行为用例通过，冻结源码SHA `19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911`；统计表4 BRAM36、行表1 BRAM36，OOC为1244 LUT/514 FF/3 DSP。本地提交`f953885`，不是联合route证据。
-- [ ] T5 JPEG csynth、RTL co-sim：显式CFG/argv，独立HLS工作目录；检查是否仍有m_axi、FIFO死锁、背压和有效长度。保留失败日志，不把csynth等同于RTL通过。
+- [x] T5 JPEG HLS CSim、CSynth、RTL co-sim：receipt `hls-green-recovery-d695-20261101T140606.json` 绑定源码 SHA `d695aac9…2108f7d` 与导出 component SHA `0bdfce50…7246725d5`；三项检查均 PASS。端口映射含 AXIS、AXI-Lite 与控制口，无 m_axi；官方正常帧及 entropy-cut→good2 随机背压 RTL co-sim PASS，错误恢复两 transaction 共 314358 cycles、稳定性错误 0。120 帧 CSim 对 OpenCV maxdiff 1、阈值128翻转0。结论仅限独立 JPEG HLS/RTL；不表示联合 BD、全系统 route 或板端验收。详见 `data/results/jpeg-evidence-audit-20261101-151459/README.md`。
 - [ ] T6 联合候选构建：从offload固定快照读取模块，以优化区域核心替代原核心，在 MM2S 和 image_pipeline 之间接JPEG IP，补AXI-Lite控制、时钟/复位、DMA长度位宽。不合并其他分支、不覆盖其工作文件。
 - [ ] T7 XSim接口链路验收及联合综合/布局布线；报告资源、各时钟WNS/TNS/WHS/THS、DRC/CDC和BIT状态。route未完成不得标记ready_for_board。
 - [ ] T8 更新本计划、PROJECT_INDEX、文档/项目树及实验使用说明；只提交本任务文件，本地Commit；保留分支/worktree，不push/merge/部署。
@@ -63,3 +63,14 @@
 - 首次正式协仿停滞已保存为失败/中断记录；同一RTL独立重放完成64008输出beat，VCD确认输入/输出stall且稳定性错误0。正式关闭trace viewer的随机背压协仿于14:01:24 PASS，报告正常frame1 latency=157260cycles（50MHz约3.1452ms），源仍为D695；尚未把截断熵流的RTL后继恢复标为通过。
 - `C:/w/jj1101d`原生batch安全probe通过：实际关联的文件均在clone/批准IP目录，原baseline架构/时钟/地址保留；该clone无HLS green，因此本身不能启动connect/synth/route。联合脚本已补原始region receipt字段兼容及Windows路径长度检查。
 - Manager允许以不可变的正常帧RTL通过receipt推进隔离联合BD连接及资源综合，与错误恢复RTL验证并行；route前仍须实际错误恢复结果、资源与CDC/约束审查。单核新JPEG实际OOC资源也在独立验证，不能沿用旧AMD核19484LUT或HLS估计。
+
+## 显示与计数能力边界（固定c5a8680代码核查）
+
+- `video_binary_overlay_bd.v`中的`cfg_count`/`feature_count`分别是框数量（最多16个）和区域记录数，`capture_count`是捕获帧次数；均不是物料累计计数。固定PS `pl_preview.py`写入的是`len(boxes)`。
+- 当前PL overlay实际绘制二值mask、计数线和框，没有累计总数输入或数字字形逻辑。累计总数仍由PS跟踪/计数路径管理，不能把当前候选描述为“累计数字已由PL绘制并与mask原子同步”。
+- mask和框配置通过独立mailbox在VSYNC边界生效；仅`id_p == displayed_frame_id`时绘制框，身份不匹配时抑制框，不是两个mailbox联合原子提交。mask域公开displayed_id在pixel域切换后的CDC ACK到达后更新。
+- 本轮packet/连续视频验收证明的是上述现有功能，未新增总数字形、联合提交寄存器、PS MJPEG运行驱动或板端部署。需要这些功能时应单独设计、实现与验收，不能由JPEG解码/资源结果推断它们已经实现。
+
+2026-11-01 15:15 JPEG 证据复核：Manager验收 T5。正常帧与 entropy-cut→good2 recovery 官方 RTL co-sim 都 PASS；D695 C++/0bdf component 绑定有效，CSim/CSynth/Cosim receipt 引用文件 SHA 全匹配。单核实际 HLS IP OOC 为 17,358 LUT/13,758 FF/28 BRAM36 等效/34 DSP，尚未布局布线。区域 BRAM 19439 SHA 与当前文件一致，5 BRAM36 映射及区域回归 PASS（OOC）。packet XSim 对固定 c5a8680 joint-candidate snapshot 5/5 PASS；pipeline SHA 7cfbdde5…d50f261 与 `C:/w/m/snapshot` 及 `.runtime/jpeg-joint-snapshot-20261101` 一致，候选不使用 worktree 根旧 2adde 文件；测试未包含 JPEG decoder RTL。video continuity XSim 对同一固定 snapshot 的五帧数字视频 PASS，不是物理 HDMI/板端证据。灰度预览已移出需求；PL累计 glyph 未实现，但不在本轮资源接入验收范围。T6 joint BD 与 T7 联合实现/route/板端仍 pending。
+
+2026-11-01 本轮连接门禁修复：仅对 image_pipeline 的 refresh_region、Tcl code=0 且明确负 WARNING 计数差新增独立日志区间审查，原 FAIL receipt 保留；overlay refresh 不继承此例外。Manager复验15项测试及1项subtest通过，既有JPEG探针6项通过，固定21文件快照dry-run通过；`C:/w/m` 源码和green gates核对通过，两份region替换哈希均为19439。新clone尚未启动connect/synth；另一G2 Vivado正在运行、物理内存低于1 GiB，本轮不并发启动构建。恢复命令、资源快照及未验收项见 [修复交付记录](../../../data/results/jpeg-axis-integration-followup-20261101-151831/README.md)。后续仍为live BD readback→联合综合→Manager审查CDC/约束→route；没有BIT或上板结果。
