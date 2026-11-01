@@ -21,7 +21,7 @@ import cv2
 import numpy as np
 
 from .bundle import verify_bundle, verify_runtime, sha256
-from .camera import LatestCamera
+from .camera import LateDecodeTimeout, LatestCamera
 from .compositor import DashboardComposer
 from .controls import ButtonDecoder, ControlState
 from .count_controls import advance_count, make_runtime_counter
@@ -41,6 +41,14 @@ from .shared_frames import SharedFrames, WRITING, READING
 from scripts.rle.protocol import TX_BYTES, RX_CAPACITY
 from scripts.rle.transport import RleDmaTransport
 from scripts.wo0015.board_preflight import audit_process_ownership, inspect_pynq_global_state
+
+
+def read_camera_frame(camera, *, after, timeout):
+    """Consume late-decoded frames while preserving real no-frame timeouts."""
+    try:
+        return camera.read(after=after, timeout=timeout)
+    except LateDecodeTimeout as error:
+        return error.frame
 
 
 def rasterize_into(packet, output):
@@ -533,7 +541,8 @@ def main(argv=None):
                     # V4L2 camera startup and its two discarded warm-up frames
                     # can exceed the steady-state fresh-frame timeout.
                     camera_timeout=15.0 if camera_index<0 else .25
-                    camera_index,gray,captured=camera.read(after=camera_index,timeout=camera_timeout)
+                    camera_index,gray,captured=read_camera_frame(
+                        camera,after=camera_index,timeout=camera_timeout)
                 except (RuntimeError,TimeoutError) as error:
                     camera.close();camera=None;next_camera_retry=time.monotonic()+5
                     report['recoveries'].append(dict(kind='camera',frame=index,error=repr(error),monotonic=now))

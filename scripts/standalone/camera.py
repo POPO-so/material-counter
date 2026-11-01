@@ -5,6 +5,14 @@ import time
 from scripts.rle.run_counter import camera_mjpeg_frames, decode_camera_frame
 
 
+class LateDecodeTimeout(TimeoutError):
+    """A decoded frame missed its read deadline but remains usable."""
+
+    def __init__(self, frame):
+        self.frame = frame
+        super().__init__("no fresh real-camera Gray8 frame")
+
+
 class LatestCamera:
     def __init__(self, device, *, frames=None):
         if frames is None:
@@ -59,20 +67,25 @@ class LatestCamera:
                 self._condition.wait(timeout=min(remaining, 0.05))
         try:
             gray = decode_camera_frame(selected[1])
-        except BaseException as error:
+        except Exception as error:
             wrapped = RuntimeError(str(error))
             with self._condition:
                 self._decode_in_progress = False
                 self._error = wrapped
                 self._condition.notify_all()
             raise wrapped from error
+        except BaseException:
+            with self._condition:
+                self._decode_in_progress = False
+                self._condition.notify_all()
+            raise
         decoded = (selected[0], gray, selected[2])
         with self._condition:
             self._decoded = decoded
             self._decode_in_progress = False
             self._condition.notify_all()
             if time.monotonic() > deadline:
-                raise TimeoutError("no fresh real-camera Gray8 frame")
+                raise LateDecodeTimeout(decoded)
         return decoded
 
     def close(self):

@@ -15,7 +15,7 @@
 - Do not change camera FPS or V4L2 mode.
 - Do not change RLE, counting, display, or PL interfaces.
 - Preserve the existing `(sequence, gray8, timestamp)` result from `LatestCamera.read()`.
-- Preserve the deadline set at `read()` entry across synchronous decode. If decode finishes after it, cache the frame and raise `TimeoutError` for that call; later reads may return the cache immediately.
+- Preserve the deadline set at `read()` entry across synchronous decode. If decode finishes after it, cache the frame and raise a `TimeoutError` subtype carrying it; the integrated runner consumes that frame, while later reads may return the cache immediately. Genuine no-frame timeouts keep triggering recovery.
 - Preserve JPEG SOI and 640×400 Gray8 validation and explicit capture/decode errors.
 - Keep memory bounded to the latest compressed packet, one cached decoded Gray8 frame, and any packet held by an active decode.
 - Do not claim runtime CPU/FPS improvement without comparable board measurements.
@@ -26,6 +26,8 @@
 - The newest-frame test waits on a producer event confirming all three packets were published before calling `read()`.
 - Capture advances during decode or a repeated read sees no new capture: keep the selected packet stable, preserve capture sequence/timestamp, and reuse cached Gray8 without decoding again. Tests: `test_latest_camera_keeps_capture_sequence_and_timestamp_when_latest_advances`, `test_latest_camera_reuses_cached_decode_without_new_capture`.
 - Decode exceeds the call's original timeout: raise `TimeoutError` while retaining the decoded tuple for an immediate cached retry. Test: `test_latest_camera_times_out_when_decode_exceeds_read_deadline_and_caches_result`.
+- Integrated caller unwraps only the late-decode timeout into its carried frame; a genuine no-frame timeout continues to recovery. Tests: `test_integrated_camera_consumes_late_decode_timeout_without_recovery`, `test_integrated_camera_read_preserves_genuine_no_frame_timeout`.
+- Idle/exhausted capture source times out without a packet, decoder control-flow exceptions propagate after in-flight cleanup, and concurrent reads share one decode. Tests: `test_latest_camera_times_out_when_source_publishes_no_packet`, `test_latest_camera_clears_decode_state_and_reraises_control_flow_baseexception`, `test_latest_camera_deduplicates_concurrent_reads_for_selected_packet`.
 - Invalid or non-JPEG data reaches the decoder: reject it with the existing explicit validation error. Test: retain and run `test_camera_mjpeg_decode_preserves_all_source_pixels` and invalid-input assertion.
 - The camera source raises or produces no fresh frame: readers must retain explicit error and timeout behavior. Test: `test_camera_failure_and_timeout_are_explicit`.
 - Close occurs while capture is blocked: wait for the reader to exit before returning. Test: `test_close_waits_for_blocking_camera_read_to_finish`.

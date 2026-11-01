@@ -185,3 +185,103 @@ def test_latest_camera_times_out_when_decode_exceeds_read_deadline_and_caches_re
         assert len(calls) == 1
     finally:
         c.close()
+
+
+def test_latest_camera_clears_decode_state_and_reraises_control_flow_baseexception(monkeypatch):
+    import scripts.standalone.camera as camera_module
+    packet = _jpeg(61)
+    published = threading.Event()
+    original = camera_module.decode_camera_frame
+    abort = KeyboardInterrupt('decode interrupted')
+    def interrupt_decode(_raw):
+        raise abort
+    monkeypatch.setattr(camera_module, 'decode_camera_frame', interrupt_decode)
+    def frames(device, count):
+        yield packet
+        published.set()
+    c = LatestCamera('camera', frames=frames)
+    try:
+        assert published.wait(.5)
+        with pytest.raises(KeyboardInterrupt, match='decode interrupted') as caught:
+            c.read(timeout=.5)
+        assert caught.value is abort
+        assert c._decode_in_progress is False
+        monkeypatch.setattr(camera_module, 'decode_camera_frame', original)
+        assert c.read(timeout=.5)[0] == 0
+    finally:
+        c.close()
+
+
+@pytest.mark.parametrize('source_mode', ['ended', 'idle'])
+def test_latest_camera_times_out_when_source_publishes_no_packet(source_mode):
+    source_started = threading.Event()
+    release_source = threading.Event()
+    def frames(device, count):
+        source_started.set()
+        if source_mode == 'idle':
+            release_source.wait(.5)
+        if False:
+            yield None
+    c = LatestCamera('camera', frames=frames)
+    try:
+        assert source_started.wait(.5)
+        with pytest.raises(TimeoutError, match='no fresh real-camera Gray8 frame'):
+            c.read(timeout=.03)
+        assert c._latest is None and c._decoded is None
+    finally:
+        release_source.set()
+        c.close()
+
+
+def test_latest_camera_deduplicates_concurrent_reads_for_selected_packet(monkeypatch):
+    import scripts.standalone.camera as camera_module
+    packet = _jpeg(99)
+    published = threading.Event()
+    decoding = threading.Event()
+    release_decode = threading.Event()
+    waiter_waiting = threading.Event()
+    decode_calls = []
+    original_decode = camera_module.decode_camera_frame
+    def blocked_decode(raw):
+        decode_calls.append(1)
+        decoding.set()
+        assert release_decode.wait(.5)
+        return original_decode(raw)
+    def frames(device, count):
+        yield packet
+        published.set()
+    c = LatestCamera('camera', frames=frames)
+    monkeypatch.setattr(camera_module, 'decode_camera_frame', blocked_decode)
+    original_wait = c._condition.wait
+    def watched_wait(timeout=None):
+        waiter_waiting.set()
+        return original_wait(timeout)
+    monkeypatch.setattr(c._condition, 'wait', watched_wait)
+    results = []
+    errors = []
+    def read_frame():
+        try:
+            results.append(c.read(timeout=.8))
+        except BaseException as error:
+            errors.append(error)
+    first = threading.Thread(target=read_frame)
+    second = threading.Thread(target=read_frame)
+    try:
+        assert published.wait(.5)
+        first.start()
+        assert decoding.wait(.5)
+        second.start()
+        assert waiter_waiting.wait(.5)
+        release_decode.set()
+        first.join(.5)
+        second.join(.5)
+        assert not first.is_alive() and not second.is_alive()
+        assert not errors
+        assert len(results) == 2
+        assert results[0][0] == results[1][0] == 0
+        assert np.array_equal(results[0][1], results[1][1])
+        assert len(decode_calls) == 1
+        assert not c._decode_in_progress
+    finally:
+        release_decode.set()
+        c.close()
