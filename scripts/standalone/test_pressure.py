@@ -53,15 +53,15 @@ def test_counter_delta_uses_64_bit_modular_difference_and_records_sequences():
 def test_validate_transfers_accepts_exact_beats_and_reports_backpressure():
     delta = counter_delta(_snapshot(4, input_beats=0, output_beats=0,
                                    input_stall_cycles=0, output_stall_cycles=0),
-                          _snapshot(5, input_beats=2 * 64_008,
+                          _snapshot(5, input_beats=2 * 64_000,
                                     output_beats=12, input_stall_cycles=30,
                                     output_stall_cycles=50))
 
     result = validate_transfers(delta, frames=2, rx_bytes=[20, 28])
 
     assert result["valid"] is True
-    assert result["expected_input_beats"] == 2 * 64_008
-    assert result["observed_input_beats"] == 2 * 64_008
+    assert result["expected_input_beats"] == 2 * 64_000
+    assert result["observed_input_beats"] == 2 * 64_000
     assert result["expected_output_beats"] == 12
     assert result["observed_output_beats"] == 12
     assert result["input_stall_cycles"] == 30
@@ -69,7 +69,7 @@ def test_validate_transfers_accepts_exact_beats_and_reports_backpressure():
 
 
 def test_validate_transfers_rejects_corrupted_input_beat_count():
-    delta = counter_delta(_snapshot(1, input_beats=0), _snapshot(2, input_beats=64_007))
+    delta = counter_delta(_snapshot(1, input_beats=0), _snapshot(2, input_beats=63_999))
 
     with pytest.raises(ValueError, match="input_beats"):
         validate_transfers(delta, frames=1, rx_bytes=[20])
@@ -84,7 +84,7 @@ def test_validate_transfers_rejects_misaligned_rx_length():
 
 def test_validate_transfers_rejects_corrupted_output_beat_count():
     delta = counter_delta(_snapshot(1, input_beats=0, output_beats=0),
-                          _snapshot(2, input_beats=64_008, output_beats=4))
+                          _snapshot(2, input_beats=64_000, output_beats=4))
 
     with pytest.raises(ValueError, match="output_beats"):
         validate_transfers(delta, frames=1, rx_bytes=[20])
@@ -113,14 +113,26 @@ def test_validate_transfers_rejects_invalid_frame_count(frames):
 @pytest.mark.parametrize('frames',[0,1,1_000_000])
 def test_continuous_validation_uses_aggregate_bytes_without_growing_a_frame_list(frames):
     delta=counter_delta(_snapshot(1,input_beats=0,output_beats=0),
-                        _snapshot(2,input_beats=frames*64008,output_beats=frames*568))
+                        _snapshot(2,input_beats=frames*64000,output_beats=frames*568))
     result=validate_transfer_totals(delta,frames,frames*2272)
     assert result['valid'] and result['frames']==frames
     assert 'rx_bytes' not in result
 
 
+def test_raw1_300_frame_total_matches_pl_input_beat_telemetry():
+    frames = 300
+    delta = counter_delta(_snapshot(1, input_beats=0, output_beats=0),
+                          _snapshot(2, input_beats=19_200_000,
+                                    output_beats=frames * 568))
+
+    result = validate_transfer_totals(delta, frames, frames * 2272)
+
+    assert result['expected_input_beats'] == 19_200_000
+    assert result['observed_input_beats'] == 19_200_000
+
+
 def test_aggregate_validation_rejects_mismatch_and_misaligned_byte_totals():
     delta=counter_delta(_snapshot(1,input_beats=0,output_beats=0),
-                        _snapshot(2,input_beats=64008,output_beats=568))
+                        _snapshot(2,input_beats=64000,output_beats=568))
     with pytest.raises(ValueError):validate_transfer_totals(delta,1,2273)
     with pytest.raises(ValueError):validate_transfer_totals(delta,1,2280)
