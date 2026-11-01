@@ -59,3 +59,63 @@
 ## 5. 事件演练结果
 
 见本轮报告（同一协议、无物料、模拟 `drop_start/drop_end`）。
+## 6. 协议 v2（最终修订）
+
+### 6.1 终端 A 顺序（不得颠倒）
+
+```
+BASELINE_COMPLETE
+  → ssh sudo -n touch .../events/drop_start
+  → 等待 DROP_START_OBSERVED（程序在下一帧边界记录）
+  → 仅在两者都成功后才响铃并打印"现在开始投放"
+```
+
+- 任一环节失败（touch 非零、未出现 `DROP_START_OBSERVED`）→ **不发出投料信号**，打印失败标记；
+- 同一 session 内重复 `BASELINE_COMPLETE` 只处理一次；
+- 启动器使用 `set -o pipefail` + `PIPESTATUS[0]` 保留采集进程退出码；
+- `CAMERA_READY`/`BASELINE_COMPLETE` 均不是采集成功证据；最终以 `CAPTURE_RC=0` 与
+  manifest `status=COMPLETE` 为准。
+
+### 6.2 终端 B（一次按键）
+
+- 预先建立 SSH ControlMaster（`ControlPersist=900`），按键后仅发送 `touch drop_end`；
+- 发送前检查 `drop_end` 是否已存在，存在则拒绝重复发送；
+- 记录板端 `/proc/uptime` 作为触发时刻，可与 `DROP_END_OBSERVED.monotonic_ns` 计算真实延迟；
+- 不依赖 R5/DMA/Overlay/HDMI。
+
+### 6.3 450 帧时间预算（含延迟）
+
+| 阶段 | 估计 | 说明 |
+|---|---|---|
+| baseline → drop_start 观察 | 0.2–0.5 s | 同步 ssh touch + 下一帧边界 |
+| 观察 → 操作者响铃 | ≈0.01 s | 同一终端 |
+| 操作者反应 | 0.3–0.8 s | 需现场计时 |
+| 投放 10 颗 | 2.0–4.0 s | 需控制在 300 帧（≈5.05 s）内 |
+| drop_end 触发 → 观察 | 0.2–0.4 s | 按键 + 常驻连接 + 下一帧 |
+| 投放完成 → 全部离开画面 | 0.5–1.5 s | 依赖带速/投放点到视野出口距离 |
+| 尾部空载 | ≥90 帧（≈1.5 s） | 必须在 450 帧内 |
+
+**结论**：只有"投放 ≤4.0 s 且离开画面 ≤1.5 s"时，450 帧才能覆盖完整过程。
+若超出，记录真实窗口限制，标记"不适合完整计数验收"，**保留全部已采原始帧**；
+不得为凑 90 帧而虚标有效。
+
+### 6.4 有效性判定（修正）
+
+- 人工真值（10 颗）与算法检测数量**分开报告**；
+- 不得因二值连通块数 ≠ 10 废弃密集粘连样本；
+- 分别报告：人工真值、检测数量、轨迹计数、无法确认的遮挡；
+- `drop_start`/`drop_end` 只是事件标记；`drop_end` 后需 ≥90 帧并**用实际画面确认 ROI 清空**；
+- 窗口不足 → 标记不适合完整计数，但保留帧供局部拆分分析，不删除。
+
+### 6.5 离线模拟结果
+
+`build/simulate_protocol.sh`（不接摄像头、不连开发板）：
+
+- 正常顺序：响铃仅在 `DROP_START_OBSERVED` 之后出现一次；
+- touch 失败：无响铃，输出 `DROP_START_TOUCH_FAILED` / `DROP_START_NOT_ACKNOWLEDGED`；
+- 无确认：无响铃；
+- 重复 `BASELINE_COMPLETE`：只 touch 一次、只响铃一次；
+- 采集退出码 3：启动器报告 `CAPTURE_RC=3` 并以 3 退出；
+- `drop_end`：首次发送成功；再次执行被 `DROP_END_ALREADY_EXISTS` 拒绝。
+
+结果：**18 项检查全部 PASS**。
