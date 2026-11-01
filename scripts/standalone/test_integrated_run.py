@@ -372,6 +372,38 @@ def test_explicit_polling_worker_emits_events_and_stops_cleanly():
     assert commands==["clear"]
 
 
+def test_integrated_camera_consumes_late_decode_timeout_without_recovery():
+    from scripts.standalone.camera import LateDecodeTimeout
+    from scripts.standalone.integrated_run import read_camera_frame
+
+    frame = (7, np.full((400,640),123,np.uint8), time.monotonic())
+    class Camera:
+        def __init__(self):
+            self.close_calls = 0
+        def read(self, *, after, timeout):
+            assert after == 6 and timeout == .25
+            raise LateDecodeTimeout(frame)
+        def close(self):
+            self.close_calls += 1
+
+    camera=Camera()
+    result=read_camera_frame(camera,after=6,timeout=.25)
+    assert result[0]==frame[0] and result[2]==frame[2]
+    assert np.array_equal(result[1],frame[1])
+    assert camera.close_calls==0
+
+
+def test_integrated_camera_read_preserves_genuine_no_frame_timeout():
+    from scripts.standalone.integrated_run import read_camera_frame
+
+    class Camera:
+        def read(self, *, after, timeout):
+            raise TimeoutError('no fresh real-camera Gray8 frame')
+
+    with pytest.raises(TimeoutError,match='no fresh real-camera Gray8 frame'):
+        read_camera_frame(Camera(),after=6,timeout=.25)
+
+
 def test_source_identity_covers_loaded_counting_and_motion_code():
     identity=source_identity(Path(__file__).resolve().parents[2])
     assert 'scripts/wo0016/stream_counter.py' in identity['sha256_by_path']

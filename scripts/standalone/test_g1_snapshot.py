@@ -1,6 +1,7 @@
 import pytest
 
-from scripts.standalone.g1_run import snapshot
+from scripts.standalone.camera import LateDecodeTimeout
+from scripts.standalone.g1_run import read_camera_frame, snapshot
 
 
 class Monitor:
@@ -41,3 +42,19 @@ def test_snapshot_reads_diagnostic_flags_and_224_bit_markers_as_little_word_hex(
 def test_snapshot_rejects_sequence_change_during_diagnostic_read():
     with pytest.raises(RuntimeError, match="snapshot changed during atomic read"):
         snapshot(Monitor(final_sequence=12))
+
+
+def test_g1_camera_consumes_late_decoded_frame_and_preserves_empty_timeout():
+    frame = (4, object(), 1.0)
+
+    class Camera:
+        def __init__(self, error):
+            self.error = error
+
+        def read(self, *, after, timeout):
+            assert after == -1 and timeout == 0.25
+            raise self.error
+
+    assert read_camera_frame(Camera(LateDecodeTimeout(frame)), timeout=0.25) is frame
+    with pytest.raises(TimeoutError, match="no fresh frame"):
+        read_camera_frame(Camera(TimeoutError("no fresh frame")), timeout=0.25)

@@ -23,7 +23,7 @@ import numpy as np
 from scripts.wo0015.board_preflight import audit_process_ownership
 from .bundle import sha256, verify_bundle, verify_runtime
 from .compositor import GrayComposer
-from .camera import LatestCamera
+from .camera import LateDecodeTimeout, LatestCamera
 from .hp2 import sync_hp2_read32
 from .controls import ButtonDecoder, ControlState
 from .driver_owner import DriverOwner, FailHold
@@ -35,6 +35,14 @@ PRODUCER_STARTUP_TIMEOUT_SECONDS = 30
 PRODUCER_STALL_TIMEOUT_SECONDS = 5
 SYNC_SAMPLE_EVERY_SUBMITTED_FRAMES = 16
 G15_GRAY_INTERPOLATION = cv2.INTER_LINEAR
+
+
+def read_camera_frame(camera, *, after=-1, timeout=3.0):
+    """Use a late decoded frame in G1 while preserving empty-read timeouts."""
+    try:
+        return camera.read(after=after, timeout=timeout)
+    except LateDecodeTimeout as error:
+        return error.frame
 
 
 def _configure_opencv_threads(opencv):
@@ -270,7 +278,7 @@ def _compositor_process(frames, stop_event, updates, error_queue, counters, *, s
         session = uuid.UUID(session_uuid)
         if source == "camera":
             camera = LatestCamera(camera_device)
-            camera_index, gray, _capture_time = camera.read(timeout=5)
+            camera_index, gray, _capture_time = read_camera_frame(camera, timeout=5)
             if gray.shape != (400, 640) or gray.dtype != np.uint8:
                 raise ValueError("camera must provide 640x400 Gray8 frames")
         else:
@@ -312,7 +320,8 @@ def _compositor_process(frames, stop_event, updates, error_queue, counters, *, s
             try:
                 x = (frame_id * 9) % 560
                 if camera is not None:
-                    camera_index, gray, _capture_time = camera.read(after=camera_index, timeout=3)
+                    camera_index, gray, _capture_time = read_camera_frame(
+                        camera, after=camera_index, timeout=3)
                     boxes, tracks = ((x, 95, x + 60, 165),), (("1", x, 95),)
                 else:
                     gray[:] = base

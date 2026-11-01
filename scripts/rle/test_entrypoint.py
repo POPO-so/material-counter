@@ -91,6 +91,21 @@ def test_camera_mjpeg_decode_preserves_all_source_pixels():
     with pytest.raises(ValueError):decode_camera_frame(np.zeros((2,3),np.uint8))
 
 
+def test_camera_frames_decodes_raw_mjpeg_packets(monkeypatch):
+    import cv2
+    import scripts.rle.run_counter as run_counter
+    sources=[np.full((400,640),value,np.uint8) for value in (35,145)]
+    packets=[]
+    for source in sources:
+        ok,jpeg=cv2.imencode('.jpg',source)
+        assert ok
+        packets.append(jpeg)
+    monkeypatch.setattr(run_counter,'camera_mjpeg_frames',lambda device,count: iter(packets))
+    decoded=list(run_counter.camera_frames('/dev/test',2))
+    assert len(decoded)==2
+    assert all(np.array_equal(actual,decode_camera_frame(raw)) for actual,raw in zip(decoded,packets))
+
+
 def test_counter_configuration_preserves_x_axis_and_complex_rules(tmp_path):
     config=tmp_path/'counter.json'
     config.write_text(json.dumps(dict(count_axis='x',line_x=320,roi_top=20,roi_bottom=380,
