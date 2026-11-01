@@ -106,6 +106,14 @@ def _wait_for_output_identity(owner, monitor, session_value, frame_id, timeout=0
         time.sleep(0.001)
 
 
+def gpio_channel1_config(ip_dict):
+    value = ip_dict["btns_gpio"]["parameters"]["C_GPIO_WIDTH"]
+    width = int(value, 0) if isinstance(value, str) else int(value)
+    if width < 4:
+        raise RuntimeError(f"btns_gpio Channel 1 width is too small: {width}")
+    return width, width > 5
+
+
 def setup_hardware(files, owner, *, start_display=True):
     from pynq import Clocks, MMIO, Overlay, PL, allocate
 
@@ -150,18 +158,13 @@ def setup_hardware(files, owner, *, start_display=True):
     if monitor.read(0) != 0x4D435631:
         raise RuntimeError("output monitor signature mismatch")
     buttons = overlay.btns_gpio.channel1
-    gpio_parameters = overlay.ip_dict["btns_gpio"]["parameters"]
-    gpio_width_value = gpio_parameters["C_GPIO_WIDTH"]
-    gpio_width = (int(gpio_width_value, 0) if isinstance(gpio_width_value, str)
-                  else int(gpio_width_value))
-    if gpio_width < 4:
-        raise RuntimeError(f"btns_gpio Channel 1 width is too small: {gpio_width}")
+    gpio_width, sw1_available = gpio_channel1_config(overlay.ip_dict)
     buttons.setlength(gpio_width)
     buttons.setdirection("in")
     if start_display:
         start_display_output(hdmi)
     return SimpleNamespace(overlay=overlay, hdmi=hdmi, monitor=monitor, buttons=buttons,
-                           gpio_width=gpio_width, sw1_available=gpio_width > 5,
+                           gpio_width=gpio_width, sw1_available=sw1_available,
                            clocks=clocks, vdma=overlay.axi_vdma.mmio,
                            hp2_read32=hp2_read32)
 

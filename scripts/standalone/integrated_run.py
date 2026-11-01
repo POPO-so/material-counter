@@ -330,6 +330,10 @@ def reset_capture_context_on_transition(captures, transition):
         captures.reset_context('diagnostic_mode_changed')
 
 
+def snapshot_capture_allowed(cli_enabled, diagnostic_enabled, sw1_status):
+    return cli_enabled is True and diagnostic_enabled is True and sw1_status=='on'
+
+
 def crossing_snapshot_status(cli_enabled, diagnostic_enabled, sw1_status, captures,
                              capture_enabled):
     status=captures.status() if captures is not None else {'enabled':False}
@@ -1412,8 +1416,8 @@ def main(argv=None):
                 except Exception:
                     sw1_status='unknown'
             report['sw1_status']=sw1_status
-            snapshot_capture_enabled=(args.crossing_snapshots=='on'
-                and diagnostic_policy.trace_enabled and sw1_status=='on')
+            snapshot_capture_enabled=snapshot_capture_allowed(
+                args.crossing_snapshots=='on',diagnostic_policy.trace_enabled,sw1_status)
             if report['snapshot_capture_enabled'] and not snapshot_capture_enabled and captures is not None:
                 captures.reset_context('snapshot_capture_disabled')
             report['snapshot_capture_enabled']=snapshot_capture_enabled
