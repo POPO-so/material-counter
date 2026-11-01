@@ -1,0 +1,266 @@
+{
+  "schema_version": 2,
+  "recorded_at_utc": "2026-11-01T06:14:59.1010863Z",
+  "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+  "current_results": [
+    {
+      "run": "d695-snapshot-smoke1-20261101",
+      "status": "PASS",
+      "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+      "log_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke1-20261101/d695-snapshot-smoke1-20261101.log",
+      "log_sha256": "8012df6c0257d6ee81bb022413411119e9be78c3cc246d99b3ed77dd1ace2430",
+      "config_sha256": "98cd712010554f942914bb8ef157af3591c19221975e0af19bb3d7347c178da7",
+      "source_manifest_sha256": "4e176d507ae3bfb5c1449e71e53ca22587709cb9af2c0570647d66c3ad7a2637"
+    },
+    {
+      "run": "d695-snapshot-smoke98-20261101",
+      "status": "PASS",
+      "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+      "log_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-smoke98-20261101/d695-snapshot-smoke98-20261101.log",
+      "log_sha256": "5009ee1a5b754d2969d565c9ec906007ea0f6fcbb9e3e40549638d825d40d089",
+      "config_sha256": "b8f6321091d1a0baf8318815a1737d240022e20393e9d9dd5c5f7c90f276a3e9",
+      "source_manifest_sha256": "4e176d507ae3bfb5c1449e71e53ca22587709cb9af2c0570647d66c3ad7a2637"
+    },
+    {
+      "run": "d695-snapshot-entropycut-checksum-20261101",
+      "status": "PASS",
+      "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+      "log_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-entropycut-checksum-20261101/d695-snapshot-entropycut-checksum-20261101.log",
+      "log_sha256": "ad6f0e86993181c6efec1ab6e41ca88b994e28bd2672f8cace49fa1fafe40fcb",
+      "config_sha256": "35d2fac3f4fd6a324a24d4a9cec1f253bd00f9a63fafaeba72c64a01fbca1f9a",
+      "source_manifest_sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "run": "d695-snapshot-faults-checksum-20261101",
+      "status": "PASS",
+      "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+      "log_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-faults-checksum-20261101/d695-snapshot-faults-checksum-20261101.log",
+      "log_sha256": "c63a33fa7b746cdcf6eaeb90da60f7c785b39e2468f7c9cc5d6abc79dc0d1816",
+      "config_sha256": "4186829f8e3a9a7fc14d49e5118ff58a51a0278f83f771016a3e3330987a688b",
+      "source_manifest_sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "run": "d695-snapshot-align-20261101",
+      "status": "PASS",
+      "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+      "log_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-align-20261101/d695-snapshot-align-20261101.log",
+      "log_sha256": "233caa468be763468a56ea0f4e3980808d019b1f08869a56c98959c94c28f86c",
+      "config_sha256": "c43386d634d256c0a544c78f24c857d0787546e8585e28e231f15314f7ed1da7",
+      "source_manifest_sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "run": "d695-snapshot-batch120-20261101",
+      "status": "PASS",
+      "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+      "checked_good_frames": 120,
+      "max_y_diff": 1,
+      "threshold128_flips_total": 0,
+      "log_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-batch120-20261101/d695-snapshot-batch120-20261101.log",
+      "log_sha256": "743bd176b574b0f10a14ac55bc18297def71f6f5b57b24b63d5621cd77a0f7ca",
+      "config_sha256": "8a29d4eaa304383d00e550317f2f81b8ce3a41c931e525bb3388a6a8ad204a14",
+      "source_manifest_sha256": "5c800b4cf95f44ce959fd9017ca43f6c82357282747d33792d12b4e4ba3c407f"
+    },
+    {
+      "run": "d695-snapshot-entropycut-samestream-20261101",
+      "status": "PASS",
+      "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+      "same_stream_without_reset": true,
+      "error_status": 101,
+      "checksum_invalid": true,
+      "recovery_y_maxdiff": 0,
+      "log_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-snapshot-entropycut-samestream-20261101/d695-snapshot-entropycut-samestream-20261101.log",
+      "log_sha256": "33464d7a1a84d9142ef9eef51f38b1f180906c7cf988b5197ec81684f0225e39",
+      "config_sha256": "afda5afd58a7b198a905e45a73598a313703f9f52f88824c84e80fa4573bedd5",
+      "source_manifest_sha256": "5a7dfc6ce5152f3e35036dfa37b2de0e8c47e51ee26fe24c3c31d2650a86ae79"
+    }
+  ],
+  "batch120": "PASS_NEW_SOURCEBOUND_RUN",
+  "csynth": "PASS_FINAL_SOURCE_SNAPSHOT",
+  "cosim": {
+    "normal": "PASS",
+    "entropy_cut_then_good": "PASS",
+    "random_stall": true,
+    "native_trace_level": "none",
+    "normal_latency_cycles": 157260,
+    "entropy_latency_cycles": 157260,
+    "recovery_good_latency_cycles": 157083,
+    "two_transaction_total_cycles": 314358
+  },
+  "historical_results": [
+    {
+      "name": "vendorY-frame1",
+      "reference_kind": "vendorY",
+      "result": "PASS",
+      "checked_good_frames": 1,
+      "reject_cases": 0,
+      "max_y_diff": 0.0,
+      "threshold128_flips_total": 0.0,
+      "failure_signature": null,
+      "log": "C:/w/mc-jpeg-axis-hls-20261101/runs/csim-smoke-vendory-frame1-20261101-r2/csim-smoke-vendory-frame1-20261101-r2.log",
+      "log_sha256": "718de7267c24977d601fae37ca5c50fda490d930bcccd55750bad5f76403c621",
+      "config_sha256": "f6a82013c7f80bbde85ed4fab3178c65b2befb0786e4efdce17f7220b8d29b56",
+      "source_binding": "pre/post source hash capture not present for this historical run"
+    },
+    {
+      "name": "vendorY-frame98",
+      "reference_kind": "vendorY",
+      "result": "PASS",
+      "checked_good_frames": 1,
+      "reject_cases": 0,
+      "max_y_diff": 0.0,
+      "threshold128_flips_total": 0.0,
+      "failure_signature": null,
+      "log": "C:/w/mc-jpeg-axis-hls-20261101/runs/csim-smoke-vendory-frame98-20261101/csim-smoke-vendory-frame98-20261101.log",
+      "log_sha256": "d70a28026b5cac9dbb028ce5244f846fd0d39bfcb345a83b078b916f832107e5",
+      "config_sha256": "00a0d50c8c1fc0de54045d1a9941de7dc6c057fe53f6291d96e23fee2c6f3c69",
+      "source_binding": "pre/post source hash capture not present for this historical run"
+    },
+    {
+      "name": "header-faults-and-recovery",
+      "reference_kind": "vendorY",
+      "result": "PASS",
+      "checked_good_frames": 7,
+      "reject_cases": 7,
+      "max_y_diff": 0.0,
+      "threshold128_flips_total": 0.0,
+      "failure_signature": null,
+      "log": "C:/w/mc-jpeg-axis-hls-20261101/runs/csim-faults-vendory-frame1-20261101/csim-faults-vendory-frame1-20261101.log",
+      "log_sha256": "0a62f4e645f3436ae119b30475951946bab618cca9c44e173ce9bcd91fdc9786",
+      "config_sha256": "70109c4aa80746cb7a972c3560a71a60e30fc32e08c6e7f6a7a2b1cac1866d43",
+      "source_binding": "pre/post source hash capture not present for this historical run"
+    },
+    {
+      "name": "APP15-tailmod0-3",
+      "reference_kind": "vendorY",
+      "result": "PASS",
+      "checked_good_frames": 4,
+      "reject_cases": 0,
+      "max_y_diff": 0.0,
+      "threshold128_flips_total": 0.0,
+      "failure_signature": null,
+      "log": "C:/w/mc-jpeg-axis-hls-20261101/runs/csim-align-app15-vendory-frame1-r1-20261101/csim-align-app15-vendory-frame1-r1-20261101.log",
+      "log_sha256": "dc62d3d14c0f0b18b95db77107d6cda2b7a7e16414b374500dc74b51a61e2c78",
+      "config_sha256": "f8694313032ea53c92fd65461bcd7cdabd98069a731f08dbe3ef903c6df2fc16",
+      "source_binding": "pre/post source hash capture not present for this historical run"
+    },
+    {
+      "name": "opencv-batch120",
+      "reference_kind": "opencv",
+      "result": "PASS",
+      "checked_good_frames": 120,
+      "reject_cases": 0,
+      "max_y_diff": 1.0,
+      "threshold128_flips_total": 0.0,
+      "failure_signature": null,
+      "log": "C:/w/mc-jpeg-axis-hls-20261101/runs/csim-batch-opencv-120-20261101/csim-batch-opencv-120-20261101.log",
+      "log_sha256": "b9c10dc699241905a9c3d35c554180a6fa26a30f527f4542b79fb79f1607f85a",
+      "config_sha256": "9dd7cb502d8d8b6149d74c8874fdd2ba6e838498b2c1ebaa504c8c311511dc7f",
+      "source_binding": "pre/post source hash capture not present for this historical run"
+    },
+    {
+      "name": "entropy-cut-after-SOS",
+      "reference_kind": "vendorY",
+      "result": "FAIL",
+      "checked_good_frames": 0,
+      "reject_cases": 0,
+      "max_y_diff": null,
+      "threshold128_flips_total": 0.0,
+      "failure_signature": "HLS SIM hls::stream read while empty; main returned 3; no status/recovery observed",
+      "log": "C:/w/mc-jpeg-axis-hls-20261101/runs/csim-entropy-cut-after-sos-frame1-20261101/csim-entropy-cut-after-sos-frame1-20261101.log",
+      "log_sha256": "55387b6dc89822de3224114931135b08e4706e4e6760cb774b1c1e4b22684f79",
+      "config_sha256": "63b5aa564cd1475baf1d887ce9e77515eb53d46f7677ca78a9374137b7bb4ee9",
+      "source_binding": "pre/post source hash capture not present for this historical run"
+    }
+  ],
+  "notes": [
+    "Historical results are not inherited by the D695 guard revision",
+    "HLS green receipt will be created only after actual RTL cosim PASS",
+    "OpenCV references and JPEG variants are external generated data"
+  ],
+  "receipts": [
+    {
+      "path": "hls-green-smoke1-d695-20261101T140124.json",
+      "sha256": "9a956fc9f0ca4a7312c68164c44839af1e6ae99a0f5a0a046ad7dcdcd1b29b19"
+    },
+    {
+      "path": "hls-green-recovery-d695-20261101T140606.json",
+      "sha256": "914452f67c427fb777c02c7d915f2d63070e039da49f96f26f1fdcafd5bfa614"
+    }
+  ],
+  "interruptions": [
+    {
+      "run": "d695-snapshot-cosim-randomstall-smoke1-20261101",
+      "classification": "INTERRUPTED_NO_PROGRESS",
+      "dut_failure": false,
+      "cause": "association with viewer/driver path observed; full root cause not established"
+    },
+    {
+      "run": "d695-entropycut-good2-port-vcd-20261101",
+      "classification": "DIAGNOSTIC_SETUP_FAILURE",
+      "dut_failure": false,
+      "cause": "Simulator45-10: no debug trace info in official trace-none snapshot; diagnostic replay interrupted immediately"
+    }
+  ],
+  "optional_entropy_vcd": "PASS",
+  "entropy_waveform_receipt": {
+    "path": "rtl-entropy-waveform-d695-20261101T141242.json",
+    "sha256": "47f1e16160e0397b5191361e92f6c7574aeb0d6956198f5e0135586c927f7c08"
+  },
+  "official_entropy_cosim": {
+    "status": "PASS",
+    "run": "d695-official-cosim-entropycut-good2-randomstall-20261101",
+    "log_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-entropycut-good2-randomstall-20261101/d695-official-cosim-entropycut-good2-randomstall-20261101.log",
+    "report_path": "C:/w/mc-jpeg-axis-hls-20261101/runs/d695-official-cosim-entropycut-good2-randomstall-20261101/reports/jpeg_axis_gray_cosim.rpt",
+    "note": "Official C/RTL PASS preceded optional Simulator45-10 diagnostic replay failure; do not conflate their outcomes"
+  },
+  "failure_classifications": [
+    {
+      "kind": "EXPECTED_RED",
+      "case": "missing implementation",
+      "resolved": true
+    },
+    {
+      "kind": "IMPLEMENTATION_COMPILE",
+      "case": "include order",
+      "resolved": true
+    },
+    {
+      "kind": "HARNESS",
+      "case": "C-string concatenation and alignment file naming",
+      "resolved": true
+    },
+    {
+      "kind": "ENVIRONMENT",
+      "case": "wrong PATH Python and external Python output permission",
+      "resolved": true
+    },
+    {
+      "kind": "BUILD_CONFIGURATION",
+      "case": "Csim include shadowed synthesis headers",
+      "resolved": true
+    },
+    {
+      "kind": "HISTORICAL_IMPLEMENTATION",
+      "case": "pre-D695 entropy empty stream read",
+      "resolved": true
+    },
+    {
+      "kind": "INTERRUPTED",
+      "case": "native port-viewer no progress",
+      "dut_failure": false,
+      "root_cause": "not fully established",
+      "workaround": "official no-viewer random-stall flow passed"
+    },
+    {
+      "kind": "DIAGNOSTIC_SETUP",
+      "case": "VCD requested from non-debug elaboration",
+      "dut_failure": false,
+      "resolved": true
+    }
+  ],
+  "remaining_required_tests": [],
+  "remaining_uncertainty": [
+    "Root cause of native port-viewer/driver interruption is not completely established",
+    "Standalone HLS verification does not establish BD/route/board acceptance"
+  ]
+}

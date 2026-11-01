@@ -106,11 +106,15 @@ def _ring_mask(centers, outer=24, inner=8):
     return mask
 
 
-def test_process_frame_splits_touching_pair_via_run_based_counter(library):
+@pytest.mark.parametrize("centers,expected", [
+    ([(100, 200), (121, 201)], 2),
+    ([(100, 200), (121, 200), (142, 200), (163, 200)], 4),
+])
+def test_process_frame_splits_touching_rings_via_run_based_counter(library, centers, expected):
     from scripts.standalone.count_controls import make_runtime_counter
     from scripts.rle.protocol import encode_mask, decode_packet
 
-    mask = _ring_mask([(100, 200), (121, 201)])
+    mask = _ring_mask(centers)
     frame = decode_packet(encode_mask(mask, frame_id=0))
     control = FeatureControl(frame_id=0, state=1)  # FRG empty and valid
 
@@ -127,7 +131,7 @@ def test_process_frame_splits_touching_pair_via_run_based_counter(library):
     transport = Transport()
     tracker = make_runtime_counter(library, profile="field-v1")
     result = process_jpeg_frame(transport, tracker, b"\xff\xd8j\xff\xd9", 0,
-    capture_monotonic_ns=1)
+                                capture_monotonic_ns=1)
 
-    assert len(result.detections) == 2
-    assert len(transport.last_boxes) == 2
+    assert len(result.detections) == expected
+    assert len(transport.last_boxes) == expected

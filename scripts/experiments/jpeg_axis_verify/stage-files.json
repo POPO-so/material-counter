@@ -1,0 +1,68 @@
+{
+  "scope": "Manager may stage only these verification sources and small manifests, plus this stage-files.json if desired",
+  "files": [
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/.gitignore",
+      "sha256": "cae6158f6e99a04fcb52d37cdc1570478a3b2e4cf9d564dc0b827a34a7d93a92"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/README.md",
+      "sha256": "cf26297976514d36c3083333bc63e0bb5d66da1460256b8830b9ceb1fd89af55"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/hls_config.cfg",
+      "sha256": "876729953972052caa3e4ef2fed68795b283242b971320b44735fa49e8bf8eda"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/run.ps1",
+      "sha256": "c035647236dcae88305a103fd14b87c5f03cbe9a16b15aea516a0eff64f783db"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/jpeg_axis_gray_tb.cpp",
+      "sha256": "e1804c93cdf544c69a5f1ab24f1a2731fde6c77f26eda49bf8ba92023068bd78"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/prepare_vectors.py",
+      "sha256": "bb8b5fc764217ed412731b8122ebf710a301a3e3e1f27d6d215020de84a504bc"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/prepare_batch_refs.py",
+      "sha256": "12d927c344d0ae197801a69adb3c5837d6449382b8dbabaed11463e6cf16ddae"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/capture_axis_ports.tcl",
+      "sha256": "26b79d7993910e39e3e19972a41884ae6476e27f0f38b05ec2718b584a6b8a77"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/analyze_axis_vcd.py",
+      "sha256": "bee3cd654d1c7c4a726b965b41d71895034853a5b4093bd051fbcdfbf3f43d33"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/replay_cosim.ps1",
+      "sha256": "df499838af1c98e4e34ded081f23a6236946579f959157cb9079099dc889742d"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/verification-summary.json",
+      "sha256": "8196c42ce10a5cd3e90b187e9ac4edab036a31f12fc9cc3c4c0fd45c12c70f14"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/hls-green-smoke1-d695-20261101T140124.json",
+      "sha256": "9a956fc9f0ca4a7312c68164c44839af1e6ae99a0f5a0a046ad7dcdcd1b29b19"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/hls-green-recovery-d695-20261101T140606.json",
+      "sha256": "914452f67c427fb777c02c7d915f2d63070e039da49f96f26f1fdcafd5bfa614"
+    },
+    {
+      "path": "scripts/experiments/jpeg_axis_verify/rtl-entropy-waveform-d695-20261101T141242.json",
+      "sha256": "47f1e16160e0397b5191361e92f6c7574aeb0d6956198f5e0135586c927f7c08"
+    }
+  ],
+  "exclude": [
+    "generated references/vectors",
+    "external HLS artifacts",
+    "old untracked experiments",
+    "implementation and vendor files owned by other worker"
+  ],
+  "committed": false
+}

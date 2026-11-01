@@ -1,0 +1,30 @@
+{
+  "status": "PASS_OOC_AREA_ONLY",
+  "top": "jpeg_axis_gray",
+  "part": "xc7z020clg400-1",
+  "period_ns": 20,
+  "source_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+  "component_sha256": "0bdfce509b1f51829aa1c2b12536fba14088925f89ce8c7da2558707246725d5",
+  "input_manifest_sha256": "d9a279570bbdd457c38775d0c17badbf5ceaaef547d773905345cf9fe17b4f15",
+  "resources": {
+    "lut": 17358,
+    "ff": 13758,
+    "bram36_equivalent": 28,
+    "ramb36e1": 2,
+    "ramb18e1": 52,
+    "dsp48e1": 34
+  },
+  "timing_scope": "OOC synthesis estimate only; no HD.CLK_SRC or place/route",
+  "setup_wns_ns": 4.964,
+  "hold_whs_ns": 0.174,
+  "native_warning_count": 78,
+  "native_critical_warning_count": 0,
+  "native_error_count": 0,
+  "results_path": "C:/w/jpo1101a/results.json",
+  "results_sha256": "eeb33cc144ea6098695165df32be246df3ff6a794d572d332f66755c1c86c88f",
+  "utilization_path": "C:/w/jpo1101a/utilization.rpt",
+  "native_log_path": "C:/w/jpo1101a/vivado.log",
+  "sources_unchanged": true,
+  "routed": false,
+  "board_ready": false
+}
