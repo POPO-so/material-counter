@@ -14,19 +14,24 @@ def interrupt_available(interrupt):
 
 class ButtonEventRunner:
     def __init__(self, interrupt, read_bits, on_commands,
-                 *, decoder=None, clock=time.monotonic, sleep=asyncio.sleep):
+                 *, decoder=None, read_switch0=None, clock=time.monotonic,
+                 sleep=asyncio.sleep):
         self.interrupt = interrupt
         self.read_bits = read_bits
         self.on_commands = on_commands
         self.decoder = decoder or ButtonDecoder()
+        self.read_switch0 = read_switch0
         self.clock = clock
         self.sleep = sleep
+
+    def _read_switch0(self):
+        return self.read_switch0() if self.read_switch0 is not None else None
 
     async def run(self):
         wait = getattr(self.interrupt, "wait_for_interrupt_async", None)
         if not interrupt_available(self.interrupt):
             raise RuntimeError("GPIO interrupt unavailable; button event runner cannot start")
-        initial = self.decoder.update(self.read_bits(), self.clock())
+        initial = self.decoder.update(self.read_bits(), self.clock(), self._read_switch0())
         if initial:
             self.on_commands(initial)
         edge_task = asyncio.create_task(wait())
@@ -58,10 +63,11 @@ class ButtonEventRunner:
                 # instead of being swallowed and retried in a hot loop.
                 if edge_task in done:
                     edge_task.result()
-                    commands = self.decoder.update(self.read_bits(), self.clock())
+                    commands = self.decoder.update(
+                        self.read_bits(), self.clock(), self._read_switch0())
                     edge_task = asyncio.create_task(wait())
                 elif timer_fired:
-                    commands = self.decoder.advance(self.clock())
+                    commands = self.decoder.advance(self.clock(), self._read_switch0())
                 else:
                     continue
                 if commands:

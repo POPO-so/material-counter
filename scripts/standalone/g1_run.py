@@ -570,8 +570,10 @@ def main(argv=None):
                       "0/128/255 灰阶应无色偏、无拉伸")
             live_status = (detail if controls.page else status) + (
                 "计数已暂停（图像/显示继续）" if controls.paused else "计数状态：运行",
-                f"BTN1 长按清零次数 {controls.clear_requests}",
-                "BTN0 暂停　BTN1 长按清零", "BTN2 底图　BTN3 参数页")
+                f"BTN0 清零次数 {controls.clear_requests}",
+                "BTN0 清零　BTN1 诊断模式",
+                "SW0开+BTN2曝光增加 / SW0关+BTN2曝光减少（当前SW0未接入）",
+                "BTN3 参数页")
             _send_latest_state(updates, {"status_lines": live_status,
                                          "binary_background": controls.binary_background})
             lease = frames.acquire_latest()
