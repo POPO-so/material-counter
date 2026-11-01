@@ -10,8 +10,10 @@ import numpy as np
 
 WIDTH = 640
 HEIGHT = 400
-INPUT_BYTES = 256_032
-INPUT_BEATS_PER_FRAME = INPUT_BYTES // 4
+# RAW1 sends only Gray8 pixels. The 16-byte header and 16-byte trailer belong
+# to packet mode and never enter the PL input-beat counter.
+RAW1_INPUT_BYTES = WIDTH * HEIGHT
+INPUT_BEATS_PER_FRAME = RAW1_INPUT_BYTES // 4
 _U32_MAX = (1 << 32) - 1
 _U64_MASK = (1 << 64) - 1
 _COUNTER_NAMES = (
