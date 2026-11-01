@@ -23,10 +23,13 @@ if ($Ack -ne 0 -and (Test-Path $start)) {
     Emit 'DROP_START_OBSERVED frame=61 monotonic_ns=1300000000'
 }
 $end = Join-Path $Dir 'drop_end'
+$stop = Join-Path $Dir 'stop'
+$sawEnd = $false
 for ($i = 0; $i -lt 100; $i++) {
-    if (Test-Path $end) { break }
+    if (Test-Path $end) { $sawEnd = $true; break }
+    if (Test-Path $stop) { Emit 'STOP_OBSERVED frame=62 monotonic_ns=1400000000'; break }
     Start-Sleep -Milliseconds 50
 }
-if (Test-Path $end) { Emit 'DROP_END_OBSERVED frame=300 monotonic_ns=5000000000' }
+if ($sawEnd) { Emit 'DROP_END_OBSERVED frame=300 monotonic_ns=5000000000' }
 Emit '{"status":"COMPLETE","frame_count":450}'
 exit $ExitCode

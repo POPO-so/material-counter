@@ -80,5 +80,16 @@ Check 'exit3 controller rc=1' ($r.rc -eq 1)
 $exited = @($r.events | Where-Object { $_.event -eq 'capture_exited' })[0]
 Check 'exit3 preserved' ($exited.data.rc -eq 3)
 
+$r = New-Scenario 'cue-fail' {
+    param($dir, $params)
+    $params.CueMode = 'Fail'
+}
+Check 'cue-fail rc=2' ($r.rc -eq 2)
+Check 'cue-fail no drop_end' ((Count-Event $r.events 'drop_end_touched') -eq 0)
+Check 'cue-fail abort event' ((Count-Event $r.events 'cue_failed_abort') -eq 1)
+Check 'cue-fail stop marker' (Test-Path (Join-Path $r.dir 'stop'))
+Check 'cue-fail not acknowledged as ready' ((Count-Event $r.events 'cue_issued') -eq 0)
+
 Write-Host "RESULT pass=$script:pass fail=$script:fail"
 if ($script:fail -ne 0) { exit 1 }
+exit 0

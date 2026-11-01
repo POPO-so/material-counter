@@ -14,7 +14,7 @@ param(
     [int]$Tail = 90,
     [int]$StartDelay = 12,
     [double]$DropWindowSeconds = 4.0,
-    [ValidateSet('Window', 'LogOnly')][string]$CueMode = 'Window',
+    [ValidateSet('Window', 'LogOnly', 'Fail')][string]$CueMode = 'Window',
     [switch]$Simulation,
     [string]$CaptureExe,
     [string[]]$CaptureArgs = @(),
@@ -28,12 +28,52 @@ param(
 $ErrorActionPreference = 'Stop'
 $script:events = [System.Collections.Generic.List[object]]::new()
 $script:scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$script:cueProcess = $null
+$script:cueSignal = $null
 
 function Add-Event([string]$name, $data = $null) {
     $entry = [ordered]@{ at = (Get-Date).ToUniversalTime().ToString('o'); event = $name }
     if ($null -ne $data) { $entry.data = $data }
     $script:events.Add($entry) | Out-Null
     Write-Host ("[{0}] {1}" -f $entry.at, $name)
+}
+
+if (-not ('WinProbe' -as [type])) {
+    Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public static class WinProbe {
+    public delegate bool EnumProc(IntPtr hWnd, IntPtr lParam);
+    [DllImport("user32.dll")] public static extern bool EnumWindows(EnumProc cb, IntPtr lParam);
+    [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hWnd);
+    [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder text, int max);
+    public static bool HasTitledWindow(uint target, string title) {
+        bool found = false;
+        EnumWindows((h, l) => {
+            uint pid;
+            GetWindowThreadProcessId(h, out pid);
+            if (pid == target && IsWindowVisible(h)) {
+                var text = new System.Text.StringBuilder(256);
+                GetWindowText(h, text, 256);
+                if (text.ToString().Contains(title)) { found = true; return false; }
+            }
+            return true;
+        }, IntPtr.Zero);
+        return found;
+    }
+}
+"@
+}
+
+function Test-CueVisible([int]$cueProcessId, [int]$timeoutMs = 3000) {
+    $deadline = (Get-Date).AddMilliseconds($timeoutMs)
+    while ((Get-Date) -lt $deadline) {
+        if ([WinProbe]::HasTitledWindow([uint32]$cueProcessId, '投料提示')) { return $true }
+        Start-Sleep -Milliseconds 50
+    }
+    return $false
 }
 
 function Invoke-Process([string]$exe, [string[]]$arguments) {
@@ -94,12 +134,28 @@ function Send-Marker([string]$marker) {
 
 function Show-Cue {
     $text = "现在开始投放 10 颗 M8"
-    Add-Event 'cue_issued' @{ text = $text; mode = $CueMode }
-    if ($CueMode -eq 'LogOnly') { return }
-    $cueScript = Join-Path $script:scriptRoot 'show_drop_cue.ps1'
-    Start-Process -FilePath 'pwsh' -ArgumentList @(
-        '-NoProfile', '-WindowStyle', 'Normal', '-File', $cueScript,
-        '-Text', $text, '-Seconds', '12') | Out-Null
+    if ($CueMode -eq 'Fail') {
+        Add-Event 'cue_failed' @{ reason = 'simulated' }
+        return $false
+    }
+    if ($CueMode -eq 'LogOnly') {
+        Add-Event 'cue_issued' @{ text = $text; mode = 'LogOnly'; visible = $false }
+        return $true
+    }
+    if (-not $script:cueProcess) {
+        Add-Event 'cue_failed' @{ reason = 'prewarm_missing' }
+        return $false
+    }
+    New-Item -ItemType File -Path $script:cueSignal -Force | Out-Null
+    $visible = Test-CueVisible $script:cueProcess.Id 1500
+    if (-not $visible) {
+        Add-Event 'cue_failed' @{ reason = 'window_not_visible'; pid = $script:cueProcess.Id }
+        try { $script:cueProcess.Kill() } catch { }
+        return $false
+    }
+    Add-Event 'cue_issued' @{ text = $text; mode = 'Window'; visible = $true;
+        pid = $script:cueProcess.Id; drop_seconds = $DropWindowSeconds }
+    return $true
 }
 
 function Start-Capture {
@@ -124,6 +180,17 @@ function Start-Capture {
     $proc = [System.Diagnostics.Process]::Start($psi)
     $stderrTask = $proc.StandardError.ReadToEndAsync()
     Add-Event 'capture_started' @{ pid = $proc.Id }
+    if ($CueMode -eq 'Window') {
+        $script:cueSignal = Join-Path ([System.IO.Path]::GetTempPath()) (
+            'm8-cue-' + [guid]::NewGuid().ToString('N') + '.flag')
+        $cueScript = Join-Path $script:scriptRoot 'show_drop_cue.ps1'
+        $script:cueProcess = Start-Process -FilePath 'pwsh' -ArgumentList @(
+            '-NoProfile', '-WindowStyle', 'Hidden', '-File', $cueScript,
+            '-Text', '现在开始投放 10 颗 M8', '-DropSeconds', [string]$DropWindowSeconds,
+            '-CloseDelay', '3', '-SignalPath', $script:cueSignal,
+            '-WaitSeconds', '90') -PassThru
+        Add-Event 'cue_prewarmed' @{ pid = $script:cueProcess.Id }
+    }
     return [pscustomobject]@{ proc = $proc; stderr = $stderrTask }
 }
 
@@ -135,6 +202,7 @@ function Monitor-Capture($capture) {
     $cueAt = $null
     $dropEndTouched = $false
     $dropEndObserved = $false
+    $cueFailed = $false
     $readTask = $proc.StandardOutput.ReadLineAsync()
     while ($true) {
         if ($readTask.Wait(50)) {
@@ -157,8 +225,17 @@ function Monitor-Capture($capture) {
                 if ($dropStartTouched -and -not $dropStartAcked) {
                     $dropStartAcked = $true
                     Add-Event 'drop_start_observed' @{ frame = [int]$Matches[1]; monotonic_ns = [long]$Matches[2] }
-                    Show-Cue
-                    $cueAt = Get-Date
+                    $cueOk = Show-Cue
+                    if ($cueOk) {
+                        $cueAt = Get-Date
+                    } else {
+                        $cueFailed = $true
+                        $stopResult = Send-Marker 'stop'
+                        Add-Event 'cue_failed_abort' @{
+                            stop_rc = $stopResult.rc
+                            board_uptime = ($stopResult.stdout -split "`n")[0]
+                        }
+                    }
                 }
             } elseif ($line -match 'DROP_END_OBSERVED frame=(\d+) monotonic_ns=(\d+)') {
                 $dropEndObserved = $true
@@ -171,6 +248,7 @@ function Monitor-Capture($capture) {
             ((Get-Date) - $cueAt).TotalSeconds -ge $DropWindowSeconds) {
             $result = Send-Marker 'drop_end'
             $dropEndTouched = $true
+            Add-Event 'drop_window_ended' @{ window_seconds = $DropWindowSeconds }
             Add-Event 'drop_end_touched' @{
                 rc = $result.rc
                 board_uptime = ($result.stdout -split "`n")[0]
@@ -185,7 +263,7 @@ function Monitor-Capture($capture) {
     if (-not $dropStartAcked) { Add-Event 'drop_start_not_acknowledged' }
     if (-not $dropEndTouched) { Add-Event 'drop_end_not_sent' }
     if (-not $dropEndObserved) { Add-Event 'drop_end_not_observed' }
-    return $proc.ExitCode
+    return [pscustomobject]@{ rc = $proc.ExitCode; cueFailed = $cueFailed }
 }
 
 function Verify-Session([int]$rc) {
@@ -212,14 +290,27 @@ try {
     Add-Event 'controller_started' @{ simulation = [bool]$Simulation; session = $SessionDir }
     Assert-Gates
     $capture = Start-Capture
-    $rc = Monitor-Capture $capture
-    $verifyRc = Verify-Session $rc
-    Add-Event 'controller_finished' @{ capture_rc = $rc; verify_rc = $verifyRc }
-    $exit = if ($rc -ne 0 -or $verifyRc -ne 0) { 1 } else { 0 }
+    $monitor = Monitor-Capture $capture
+    $rc = $monitor.rc
+    if ($monitor.cueFailed) {
+        Add-Event 'session_invalid_cue_failed'
+        $verifyRc = 1
+        $exit = 2
+    } else {
+        $verifyRc = Verify-Session $rc
+        $exit = if ($rc -ne 0 -or $verifyRc -ne 0) { 1 } else { 0 }
+    }
+    Add-Event 'controller_finished' @{ capture_rc = $rc; verify_rc = $verifyRc; exit = $exit }
 } catch {
     Add-Event 'controller_failed' @{ error = $_.Exception.Message }
     $exit = 2
 } finally {
+    if ($script:cueProcess -and -not $script:cueProcess.HasExited) {
+        try { $script:cueProcess.Kill() } catch { }
+    }
+    if ($script:cueSignal -and (Test-Path $script:cueSignal)) {
+        Remove-Item $script:cueSignal -Force -ErrorAction SilentlyContinue
+    }
     Add-Event 'controller_exit' @{ code = $exit }
     $path = if ($EventsPath) { $EventsPath } else { Join-Path (Get-Location) 'controller-events.json' }
     $script:events | ConvertTo-Json -Depth 8 | Set-Content -Path $path -Encoding utf8
