@@ -532,3 +532,90 @@ def test_dashboard_text_cache_has_a_fixed_memory_bound():
     for index in range(300):
         c._text(draw, (0, 0), f"标签{index}", 18, 170)
     assert len(c._text_cache) <= 128
+
+
+def _p13_frame(index):
+    gray = np.full((400, 640), (index * 7) & 0xFF, dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    binary[::3, (index % 5)::7] = 255
+    if index % 11 == 0:
+        boxes = ()
+        tracks = ()
+    else:
+        boxes = ((10 + index % 50, 20, 60 + index % 50, 70),
+                 (200, 100 + index % 30, 260, 160))
+        tracks = (("{}:{}".format(0, index % 7), 30 + index % 40, 50),)
+    # 1000 -> 999 crosses a digit boundary; empty boxes shrink the count text.
+    count = 1000 - (index // 50)
+    dashboard = {
+        "count": count,
+        "display_fps": 12.0 + (index % 5),
+        "processing_ms": 80.0 + (index % 9),
+        "cpu_percent": 90 + (index % 5),
+        "memory_percent": 60 + (index % 3),
+        "state": "PAUSED" if index % 97 == 0 else "RUNNING",
+        "detail_page": index % 41 == 0,
+    }
+    lines = ("累计 {} 件".format(count), "运行中" if index % 97 else "暂停计数",
+             "第{}帧".format(index))
+    return dict(gray=gray, binary=binary, boxes=boxes, tracks=tracks,
+                dashboard=dashboard, status_lines=lines,
+                binary_background=(index // 100) % 2 == 1,
+                line_y=200 if index % 3 else None,
+                line_x=320)
+
+
+def test_dashboard_slot_reuse_matches_full_copy_for_300_frames():
+    reference = _dashboard_composer()
+    slots_composer = _dashboard_composer()
+    session = uuid.uuid4()
+    reference_target = np.zeros((720, 1280), dtype=np.uint8)
+    slots = [np.full((720, 1280), 0xAA, dtype=np.uint8) for _ in range(3)]
+    for index in range(300):
+        frame = _p13_frame(index)
+        reference.render(frame["gray"], frame["binary"], session, index + 1,
+                         boxes=frame["boxes"], tracks=frame["tracks"],
+                         line_x=frame["line_x"], line_y=frame["line_y"],
+                         status_lines=frame["status_lines"],
+                         binary_background=frame["binary_background"],
+                         dashboard=frame["dashboard"], output=reference_target)
+        slot = index % 3
+        slots_composer.render(frame["gray"], frame["binary"], session, index + 1,
+                              boxes=frame["boxes"], tracks=frame["tracks"],
+                              line_x=frame["line_x"], line_y=frame["line_y"],
+                              status_lines=frame["status_lines"],
+                              binary_background=frame["binary_background"],
+                              dashboard=frame["dashboard"], output=slots[slot],
+                              slot_key=slot)
+        assert np.array_equal(slots[slot], reference_target), index
+
+
+def test_dashboard_invalidate_slot_forces_full_initialization():
+    reference = _dashboard_composer()
+    composer = _dashboard_composer()
+    session = uuid.uuid4()
+    frame = _p13_frame(7)
+    expected = np.zeros((720, 1280), dtype=np.uint8)
+    reference.render(frame["gray"], frame["binary"], session, 8,
+                     boxes=frame["boxes"], tracks=frame["tracks"],
+                     line_x=frame["line_x"], line_y=frame["line_y"],
+                     status_lines=frame["status_lines"],
+                     binary_background=frame["binary_background"],
+                     dashboard=frame["dashboard"], output=expected)
+    slot = np.zeros((720, 1280), dtype=np.uint8)
+    composer.render(frame["gray"], frame["binary"], session, 8,
+                    boxes=frame["boxes"], tracks=frame["tracks"],
+                    line_x=frame["line_x"], line_y=frame["line_y"],
+                    status_lines=frame["status_lines"],
+                    binary_background=frame["binary_background"],
+                    dashboard=frame["dashboard"], output=slot, slot_key=0)
+    assert np.array_equal(slot, expected)
+    slot[:] = 0x5A
+    composer.invalidate_slot(0)
+    composer.render(frame["gray"], frame["binary"], session, 8,
+                    boxes=frame["boxes"], tracks=frame["tracks"],
+                    line_x=frame["line_x"], line_y=frame["line_y"],
+                    status_lines=frame["status_lines"],
+                    binary_background=frame["binary_background"],
+                    dashboard=frame["dashboard"], output=slot, slot_key=0)
+    assert np.array_equal(slot, expected)

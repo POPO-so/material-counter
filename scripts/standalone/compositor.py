@@ -325,6 +325,7 @@ class DashboardComposer:
         self._text_cache = OrderedDict()
         self._key = None
         self._chrome = np.zeros_like(self.canvas)
+        self._slot_chrome_key = {}
         self.last_timings_ms = {"scale_ms": 0.0, "draw_ms": 0.0}
 
     @staticmethod
@@ -398,7 +399,7 @@ class DashboardComposer:
         detail = tuple(lines[:3]) if dashboard.get("detail_page") else ()
         key = (values, state, binary_background, target_count, detail)
         if key == self._key:
-            return
+            return False
         image = Image.new("L", (WIDTH, HEIGHT), 14)
         draw = ImageDraw.Draw(image)
         self._whole_latin_text(draw, (24, 12), "NUT VISION COUNTER", 28, 242)
@@ -445,10 +446,11 @@ class DashboardComposer:
                     draw.rounded_rectangle((left, 682, end, 689), radius=3, fill=218)
         self._chrome[:] = np.asarray(image)
         self._key = key
+        return True
 
     def render(self, gray, binary, session_id, frame_id, boxes=(), tracks=(),
                line_x=320, status_lines=(), *, binary_background=False, output=None,
-               line_y=None, dashboard=None):
+               line_y=None, dashboard=None, slot_key=None):
         GrayComposer._validate_image(gray, "gray")
         GrayComposer._validate_image(binary, "binary")
         if not isinstance(binary_background, bool):
@@ -466,8 +468,14 @@ class DashboardComposer:
             line_y = _integer(line_y, "line_y")
         marker = encode_marker(session_id, frame_id)
         started = perf_counter_ns()
-        self._redraw_chrome(dict(dashboard or {}), binary_background, len(boxes), lines)
-        np.copyto(target, self._chrome)
+        chrome_redrawn = self._redraw_chrome(dict(dashboard or {}), binary_background, len(boxes), lines)
+        if slot_key is None:
+            np.copyto(target, self._chrome)
+        elif chrome_redrawn or self._slot_chrome_key.get(slot_key) != self._key:
+            # First use of this shared slot, or the chrome changed since the slot
+            # was last written. Reusing a slot with an unchanged chrome is safe:
+            # the viewport and marker rows are rewritten below on every frame.
+            np.copyto(target, self._chrome)
         draw_ms = (perf_counter_ns() - started) / 1_000_000
         started = perf_counter_ns()
         cv2.resize(binary if binary_background else gray, (768, 480), dst=self._work,
@@ -505,4 +513,11 @@ class DashboardComposer:
         target[HEIGHT - 1, MARKER_X:MARKER_X + MARKER_WIDTH] = bits
         self.last_timings_ms = {"scale_ms": scale_ms,
                                 "draw_ms": draw_ms + (perf_counter_ns() - started) / 1_000_000}
+        if slot_key is not None:
+            self._slot_chrome_key[slot_key] = self._key
         return target
+
+    def invalidate_slot(self, slot_key):
+        """Forget a slot's chrome state after a failed or aborted write."""
+        if slot_key is not None:
+            self._slot_chrome_key.pop(slot_key, None)

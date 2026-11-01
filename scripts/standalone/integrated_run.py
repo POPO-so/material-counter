@@ -187,11 +187,14 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
                     binary_background=meta['binary_background'],output=pixels,
                     line_x=count_line['position'] if count_line['axis']=='x' else 320,
                     line_y=count_line['position'] if count_line['axis']=='y' else None,
-                    dashboard=meta.get('dashboard'))
+                    dashboard=meta.get('dashboard'),slot_key=slot)
                 timings=composer.last_timings_ms
                 outputs.publish(slot,lease.session_uuid,lease.frame_id,
                     scale_ns=int(timings['scale_ms']*1e6),draw_ns=int(timings['draw_ms']*1e6))
                 slot=None;counters[0]+=1
+            except BaseException:
+                if slot is not None:composer.invalidate_slot(slot)
+                raise
             finally:
                 if slot is not None:outputs.abort_write(slot)
                 inputs.release(lease)
