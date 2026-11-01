@@ -319,9 +319,9 @@ class DashboardComposer:
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
         self._work = np.empty((288, 460), dtype=np.uint8)
         self._fonts = {size: ImageFont.truetype(str(font_path), size)
-                       for size in (12, 14, 18, 20, 24, 34)}
+                       for size in (12, 14, 16, 18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
-                       for size in (12, 14, 18, 20, 24, 28, 34)}
+                       for size in (12, 14, 16, 18, 20, 24, 28, 34)}
         self._text_cache = OrderedDict()
         self._gutter_wrap_cache = OrderedDict()
         self._key = None
@@ -565,50 +565,94 @@ class DashboardComposer:
             draw.rounded_rectangle((x, 58, x + 300, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
             self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
-        draw.rounded_rectangle((24, 136, 1256, 474), radius=10, fill=25, outline=58)
-        self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
-        left_y = 190
-        for text in summary:
-            if left_y >= 400:
-                break
-            left_y = self._draw_wrapped(
-                draw, text, 42, left_y, 340, 14, 170,
-                max_rows=min(2, max(1, (400 - left_y) // 17)), line_height=17)
+        draw.rounded_rectangle((24, 136, 1256, 474), radius=10, fill=25, outline=66)
         axis_label = "X" if axis == "x" else "Y"
         direction_label = (("左→右" if direction == 1 else "右→左") if axis == "x"
                            else ("上→下" if direction == 1 else "下→上"))
-        self._draw_wrapped(draw, "计数线 {}={} / {} · 模式 {} / {}".format(
-            axis_label, position, direction_label, mode,
-            "二值" if binary_background else "灰度"), 42, 400, 340, 14, 175, 1, 17)
-        self._draw_wrapped(draw, "{} · {}".format(
-            exposure_text, exposure_range_text), 42, 417, 340, 14, 190, 1, 17)
-        self._text(draw, (874, 158), "检测目标", 20, 170)
-        self._whole_latin_text(draw, (874, 184), str(target_count), 28, 242)
-        self._text(draw, (984, 158), "跟踪 ID / 检测框", 18, 170)
-        self._draw_wrapped(draw, "计数真值待人工核对", 984, 182, 246, 14, 144, 1, 17)
-        self._draw_wrapped(draw, button_status, 874, 214, 356, 14, 170, 1, 17)
-        self._text(draw, (874, 232), "二值提交 FPS", 14, 170)
-        self._whole_latin_text(draw, (984, 230), submitted_fps, 14, 226)
-        self._draw_wrapped(draw, preview_status, 874, 250, 356, 14, 190, 1, 17)
-        row_y = self._draw_wrapped(draw, cpu_source_text, 874, 268, 356, 14,
-                                   190, 2, 17)
-        row_y = self._draw_wrapped(draw, queue_summary_text, 874, row_y, 356, 14,
-                                   190, 2, 17)
-        row_y = self._draw_wrapped(draw, thread_text, 874, row_y, 356, 14,
-                                   170, 3, 17)
-        if exposure_latency_text and row_y < 425:
-            row_y = self._draw_wrapped(draw, exposure_latency_text, 874, row_y,
-                                       356, 14, 190, 1, 17)
-        for line in detail:
-            if row_y >= 440:
-                break
-            row_y = self._draw_wrapped(draw, line, 874, row_y, 356, 14,
-                                       170, max(1, (440 - row_y) // 17), 17)
-        self._text(draw, (42, 444),
-                   "BTN0 清零 · BTN1 诊断模式 · BTN2 调曝光 · BTN3 翻页", 12, 210)
-        self._draw_wrapped(
-            draw, "BTN2 方向由 SW0 决定：SW0 ON 增加曝光 · SW0 OFF 减少曝光",
-            42, 459, 1190, 12, 210, 1, 15)
+        left_x, left_width = 42, 340
+        right_x, right_width = 874, 356
+
+        def centered(text, x, y, width, size, fill, max_rows=1, line_height=None):
+            rows = self._wrap_gutter(text, width, size, max_rows)
+            line_height = line_height or size + 1
+            for index, line in enumerate(rows):
+                line_width = sum(
+                    (self._latin[size] if ord(ch) < 256 else self._fonts[size])
+                    .getlength(ch) for ch in line)
+                self._text(draw, (x + (width - line_width) / 2,
+                                  y + index * line_height), line, size, fill)
+            return y + len(rows) * line_height
+
+        def section_title(text, x, y, width):
+            centered(text, x, y, width, 18, 238)
+
+        def separator(x, y, width):
+            draw.line((x, y, x + width, y), fill=100, width=1)
+
+        # Left gutter: image/count rules, exposure controls, then performance.
+        section_title("CAM 01 · 画面与计数规则", left_x, 151, left_width)
+        separator(left_x, 174, left_width)
+        centered(f"输入 {input_resolution} · 预览 640x400", left_x, 179,
+                 left_width, 16, 246, max_rows=1)
+        centered("输出 1280x720 · 模式 {}".format(
+            "二值" if binary_background else "灰度"), left_x, 199,
+            left_width, 16, 246)
+        centered("计数线 {}={} / {} · {}".format(
+            axis_label, position, direction_label, mode),
+            left_x, 219, left_width, 16, 224)
+
+        section_title("曝光", left_x, 246, left_width)
+        separator(left_x, 269, left_width)
+        centered(exposure_text, left_x, 274, left_width, 16, 232, max_rows=1)
+        centered(exposure_range_text, left_x, 294, left_width, 16, 232, max_rows=1)
+
+        section_title("性能", left_x, 320, left_width)
+        separator(left_x, 343, left_width)
+        for index, text in enumerate(summary[3:]):
+            centered(text, left_x, 347 + index * 17, left_width, 14, 226,
+                     max_rows=1)
+
+        # Right gutter: detection, preview path, and runtime state.
+        section_title("检测结果", right_x, 151, right_width)
+        separator(right_x, 174, right_width)
+        count_label = "检测目标"
+        label_width = sum((self._latin[16] if ord(ch) < 256 else self._fonts[16])
+                          .getlength(ch) for ch in count_label)
+        count_value = str(target_count)
+        count_width = self._latin[24].getlength(count_value)
+        count_start = right_x + (right_width - label_width - 10 - count_width) / 2
+        self._text(draw, (count_start, 184), count_label, 16, 216)
+        self._whole_latin_text(draw, (count_start + label_width + 10, 178),
+                               count_value, 24, 255)
+        centered("跟踪 ID / 检测框 · 计数真值待人工核对", right_x, 207,
+                 right_width, 14, 214)
+
+        section_title("预览链路", right_x, 226, right_width)
+        separator(right_x, 249, right_width)
+        centered(preview_status, right_x, 253, right_width, 16, 238)
+        centered(f"二值提交 {submitted_fps}", right_x, 273,
+                 right_width, 16, 250)
+
+        section_title("运行状态", right_x, 296, right_width)
+        separator(right_x, 319, right_width)
+        centered(f"{state} · {button_status}", right_x, 323,
+                 right_width, 14, 246)
+        centered(cpu_source_text, right_x, 338, right_width, 14, 222)
+        centered(queue_summary_text, right_x, 353, right_width, 14, 222)
+        centered(thread_text, right_x, 368, right_width, 14, 222)
+        if exposure_latency_text:
+            centered(exposure_latency_text, right_x, 383,
+                     right_width, 14, 222)
+        detail_y = 394 if exposure_latency_text else 379
+        for index, line in enumerate(detail[:3]):
+            centered(line, right_x, detail_y + index * 14,
+                     right_width, 14, 222)
+        separator(left_x, 440, left_width)
+        separator(right_x, 440, right_width)
+        centered("BTN0 清零 · BTN1 诊断模式 · BTN2 调曝光 · BTN3 翻页",
+                 42, 442, 1190, 14, 246)
+        centered("BTN2 方向由 SW0 决定：SW0 ON 增加曝光 · SW0 OFF 减少曝光",
+                 42, 457, 1190, 14, 232)
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
                 (558, 630, 594, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
