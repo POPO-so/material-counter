@@ -537,14 +537,25 @@ class DashboardComposer:
             f"PS RLE {self._number(regions_mean)} / TRK {self._number(track_mean)} ms",
             f"处理 {self._number(dashboard.get('processing_fps'))} / 显示 "
             f"{self._number(dashboard.get('display_fps'))} FPS",
-            f"有效输入 {effective_input_fps}",
+            f"有效输入 {effective_input_fps} / 二值提交 {submitted_fps}",
             f"处理延迟 {processing_ms}",
         )
         rle_key = tuple(dashboard.get(name) for name in (
             "rle_fresh", "rle_activity_pct", "input_mb_s", "output_mb_s",
             "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps"))
         detail_page = dashboard.get("detail_page")
-        detail = page_lines[:3] if detail_page else tuple(lines[:3])
+        if detail_page and page in (1, 2):
+            # Page titles, PL cycles/activity, and PS RLE/TRK timings already
+            # have dedicated slots in the header, left summary, and RLE meter.
+            detail = page_lines[2:3]
+        elif detail_page:
+            detail = page_lines[:3]
+        else:
+            # Count, run state, and processing FPS already have dedicated slots.
+            detail = tuple(line for line in lines
+                           if not line.startswith("本次会话累计 ")
+                           and line not in ("运行中", "暂停计数")
+                           and not (line.startswith("处理 ") and " FPS" in line))[:3]
         key = (values, pie_key, state, page_label, binary_background, target_count,
                detail_page, page_lines, summary, detail, mode, exposure_text,
                exposure_range_text, feature_pl_text, thread_text, cpu_source_text,
@@ -630,20 +641,18 @@ class DashboardComposer:
         section_title("预览链路", right_x, 226, right_width)
         separator(right_x, 249, right_width)
         centered(preview_status, right_x, 253, right_width, 16, 238)
-        centered(f"二值提交 {submitted_fps}", right_x, 273,
-                 right_width, 16, 250)
 
-        section_title("运行状态", right_x, 296, right_width)
-        separator(right_x, 319, right_width)
-        centered(f"{state} · {button_status}", right_x, 323,
+        section_title("运行状态", right_x, 280, right_width)
+        separator(right_x, 303, right_width)
+        centered(button_status, right_x, 307,
                  right_width, 14, 246)
-        centered(cpu_source_text, right_x, 338, right_width, 14, 222)
-        centered(queue_summary_text, right_x, 353, right_width, 14, 222)
-        centered(thread_text, right_x, 368, right_width, 14, 222)
+        centered(cpu_source_text, right_x, 322, right_width, 14, 222)
+        centered(queue_summary_text, right_x, 337, right_width, 14, 222)
+        centered(thread_text, right_x, 352, right_width, 14, 222)
         if exposure_latency_text:
-            centered(exposure_latency_text, right_x, 383,
+            centered(exposure_latency_text, right_x, 367,
                      right_width, 14, 222)
-        detail_y = 394 if exposure_latency_text else 379
+        detail_y = 378 if exposure_latency_text else 363
         for index, line in enumerate(detail[:3]):
             centered(line, right_x, detail_y + index * 14,
                      right_width, 14, 222)
