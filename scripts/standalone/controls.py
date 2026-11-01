@@ -7,7 +7,7 @@ _UNSET = object()
 
 
 class ButtonDecoder:
-    """Decode active-high BTN0..BTN3 bits; deadlines avoid polling while idle."""
+    """Decode active-high BTN0..BTN3 bits; BTN3 is currently unassigned."""
 
     def __init__(self, debounce=0.03):
         if debounce < 0:
@@ -64,8 +64,6 @@ class ButtonDecoder:
                     commands.append("exposure_up")
                 elif self._sw0_state is False:
                     commands.append("exposure_down")
-            if pressed & 8:
-                commands.append("page")
         self.next_deadline = None
         if self._candidate != self._stable:
             self.next_deadline = self._changed + self.debounce
@@ -76,7 +74,7 @@ class ButtonDecoder:
 class ControlState:
     paused: bool = False
     binary_background: bool = True
-    page: int = 0
+    page: int = 0  # Compatibility field; BTN3 no longer changes pages.
     clear_requests: int = 0
     diagnostic: bool = False
 
@@ -87,7 +85,8 @@ class ControlState:
             elif command == "background":
                 self.binary_background = not self.binary_background
             elif command == "page":
-                self.page = (self.page + 1) % 3
+                # Ignore legacy replay commands; the display is a single page.
+                continue
             elif command == "clear":
                 self.clear_requests += 1
             elif command == "mode":

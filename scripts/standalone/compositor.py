@@ -470,18 +470,6 @@ class DashboardComposer:
             for value in live_pies + static_pies
         )
         state = str(dashboard.get("state", "RUNNING"))
-        raw_page = dashboard.get("page", 0)
-        page = raw_page if isinstance(raw_page, int) and not isinstance(raw_page, bool) else 0
-        page_names = ("总览", "PL", "PS")
-        page_label = (f"{page_names[page]} · {page + 1}/3"
-                      if 0 <= page < len(page_names) else f"页面 {page} · ?/3")
-        raw_page_lines = dashboard.get("page_lines", ())
-        if isinstance(raw_page_lines, str):
-            page_lines = (raw_page_lines,)
-        elif isinstance(raw_page_lines, (tuple, list)):
-            page_lines = tuple(str(line) for line in raw_page_lines if isinstance(line, str))
-        else:
-            page_lines = ()
         chain = dashboard.get("resolution_chain")
         if isinstance(chain, (tuple, list)) and chain:
             input_resolution = str(chain[0])
@@ -543,21 +531,13 @@ class DashboardComposer:
         rle_key = tuple(dashboard.get(name) for name in (
             "rle_fresh", "rle_activity_pct", "input_mb_s", "output_mb_s",
             "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps"))
-        detail_page = dashboard.get("detail_page")
-        if detail_page and page in (1, 2):
-            # Page titles, PL cycles/activity, and PS RLE/TRK timings already
-            # have dedicated slots in the header, left summary, and RLE meter.
-            detail = page_lines[2:3]
-        elif detail_page:
-            detail = page_lines[:3]
-        else:
-            # Count, run state, and processing FPS already have dedicated slots.
-            detail = tuple(line for line in lines
-                           if not line.startswith("本次会话累计 ")
-                           and line not in ("运行中", "暂停计数")
-                           and not (line.startswith("处理 ") and " FPS" in line))[:3]
-        key = (values, pie_key, state, page_label, binary_background, target_count,
-               detail_page, page_lines, summary, detail, mode, exposure_text,
+        # Count, run state, and processing FPS already have dedicated slots.
+        detail = tuple(line for line in lines
+                       if not line.startswith("本次会话累计 ")
+                       and line not in ("运行中", "暂停计数")
+                       and not (line.startswith("处理 ") and " FPS" in line))[:3]
+        key = (values, pie_key, state, binary_background, target_count,
+               summary, detail, mode, exposure_text,
                exposure_range_text, feature_pl_text, thread_text, cpu_source_text,
                queue_summary_text, button_status,
                preview_status, exposure_latency_text, submitted_fps, processing_fps,
@@ -567,7 +547,6 @@ class DashboardComposer:
         image = Image.new("L", (WIDTH, HEIGHT), 14)
         draw = ImageDraw.Draw(image)
         self._whole_latin_text(draw, (24, 12), "NUT VISION COUNTER", 28, 242)
-        self._text(draw, (470, 18), page_label, 18, 208)
         draw.ellipse((1060, 25, 1070, 35), fill=224)
         self._whole_latin_text(draw, (1082, 19), state[:15], 18, 208)
         for x, label, value in zip((24, 340, 656, 972),
@@ -620,7 +599,7 @@ class DashboardComposer:
         section_title("性能", left_x, 320, left_width)
         separator(left_x, 343, left_width)
         for index, text in enumerate(summary[3:]):
-            centered(text, left_x, 347 + index * 17, left_width, 14, 226,
+            centered(text, left_x, 347 + index * 18, left_width, 14, 226,
                      max_rows=1)
 
         # Right gutter: detection, preview path, and runtime state.
@@ -644,24 +623,22 @@ class DashboardComposer:
 
         section_title("运行状态", right_x, 280, right_width)
         separator(right_x, 303, right_width)
-        centered(button_status, right_x, 307,
-                 right_width, 14, 246)
-        centered(cpu_source_text, right_x, 322, right_width, 14, 222)
-        centered(queue_summary_text, right_x, 337, right_width, 14, 222)
-        centered(thread_text, right_x, 352, right_width, 14, 222)
-        if exposure_latency_text:
-            centered(exposure_latency_text, right_x, 367,
-                     right_width, 14, 222)
-        detail_y = 378 if exposure_latency_text else 363
+        control_status = " · ".join(
+            text for text in (button_status, exposure_latency_text) if text)
+        centered(control_status, right_x, 307, right_width, 14, 246)
+        centered(cpu_source_text, right_x, 325, right_width, 14, 222)
+        centered(queue_summary_text, right_x, 343, right_width, 14, 222)
+        centered(thread_text, right_x, 361, right_width, 14, 222)
+        detail_y = 379
         for index, line in enumerate(detail[:3]):
-            centered(line, right_x, detail_y + index * 14,
+            centered(line, right_x, detail_y + index * 17,
                      right_width, 14, 222)
         separator(left_x, 440, left_width)
         separator(right_x, 440, right_width)
-        centered("BTN0 清零 · BTN1 诊断模式 · BTN2 调曝光 · BTN3 翻页",
+        centered("BTN0 清零 · BTN1 诊断模式 · BTN2 调曝光 · BTN3 空闲",
                  42, 442, 1190, 14, 246)
         centered("BTN2 方向由 SW0 决定：SW0 ON 增加曝光 · SW0 OFF 减少曝光",
-                 42, 457, 1190, 14, 232)
+                 42, 459, 1190, 14, 232)
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
                 (558, 630, 594, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
