@@ -1,0 +1,4 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "R:/fpga/experimental/standalone/video_frame_monitor.v" into library work
+INFO: [VRFC 10-311] analyzing module video_frame_monitor
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "R:/fpga/sim/standalone/tb_video_frame_monitor.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_video_frame_monitor
