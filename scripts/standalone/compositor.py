@@ -317,7 +317,6 @@ class DashboardComposer:
             raise ValueError("gray_interpolation must be INTER_AREA or INTER_LINEAR")
         self.gray_interpolation = gray_interpolation
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
-        self._work = np.empty((480, 768), dtype=np.uint8)
         self._fonts = {size: ImageFont.truetype(str(font_path), size)
                        for size in (18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
@@ -325,6 +324,8 @@ class DashboardComposer:
         self._text_cache = OrderedDict()
         self._key = None
         self._chrome = np.zeros_like(self.canvas)
+        self._chrome_base_image = None
+        self._chrome_base_mode = None
         self._slot_chrome_key = {}
         self.last_timings_ms = {"scale_ms": 0.0, "draw_ms": 0.0}
 
@@ -387,6 +388,41 @@ class DashboardComposer:
         offset_x, offset_y, mask = cached
         draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
 
+    def _chrome_base(self, binary_background):
+        """Static dashboard skeleton; rebuilt only when the display mode changes."""
+        if self._chrome_base_image is not None and self._chrome_base_mode == binary_background:
+            return self._chrome_base_image
+        image = Image.new("L", (WIDTH, HEIGHT), 14)
+        draw = ImageDraw.Draw(image)
+        self._whole_latin_text(draw, (24, 12), "NUT VISION COUNTER", 28, 242)
+        draw.ellipse((1060, 25, 1070, 35), fill=224)
+        for x, label in zip((24, 440, 856),
+                            ("本次累计计数", "显示 FPS", "处理延迟 / RLE + 计数")):
+            draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
+            self._text(draw, (x + 16, 62), label, 18, 170)
+        draw.rounded_rectangle((24, 136, 1256, 632), radius=10, fill=25, outline=58)
+        self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
+        self._whole_latin_text(draw, (42, 194), "640 x 400", 18, 158)
+        self._text(draw, (42, 222), "二值预览" if binary_background else "实时灰度画面", 20, 212)
+        draw.line((44, 284, 100, 284), fill=240, width=2)
+        self._text(draw, (42, 298), "实际计数线", 18, 175)
+        self._text(draw, (42, 328), "从左向右计数", 18, 212)
+        for y, text in zip((448, 480, 512, 544),
+                           ("BTN0  暂停 / 恢复", "BTN1  长按 2 秒清零",
+                            "BTN2  灰度 / 二值", "BTN3  详细状态")):
+            self._text(draw, (42, y), text, 18, 144)
+        self._text(draw, (1044, 158), "检测目标", 20, 170)
+        self._text(draw, (1044, 248), "跟踪 ID / 检测框", 18, 170)
+        self._text(draw, (1044, 279), "计数真值待人工核对", 18, 144)
+        for x, width, label in ((24, 600, "PS CPU 使用率"),
+                                (640, 616, "DDR 内存占用")):
+            draw.rounded_rectangle((x, 646, x + width, 704), radius=9, fill=40)
+            self._text(draw, (x + 16, 650), label, 18, 178)
+            draw.rounded_rectangle((x + 16, 682, x + width - 92, 689), radius=3, fill=82)
+        self._chrome_base_image = image
+        self._chrome_base_mode = binary_background
+        return image
+
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
         values = (
             self._number(dashboard.get("count"), 0),
@@ -400,44 +436,23 @@ class DashboardComposer:
         key = (values, state, binary_background, target_count, detail)
         if key == self._key:
             return False
-        image = Image.new("L", (WIDTH, HEIGHT), 14)
+        # Copying the cached skeleton is a C memcpy; only the value fields,
+        # state, detail page and bar fills are redrawn on top of it.
+        image = self._chrome_base(binary_background).copy()
         draw = ImageDraw.Draw(image)
-        self._whole_latin_text(draw, (24, 12), "NUT VISION COUNTER", 28, 242)
-        draw.ellipse((1060, 25, 1070, 35), fill=224)
         self._whole_latin_text(draw, (1082, 19), state[:15], 18, 208)
-        for x, label, value in zip((24, 440, 856),
-                                   ("本次累计计数", "显示 FPS", "处理延迟 / RLE + 计数"),
-                                   values[:3]):
-            draw.rounded_rectangle((x, 58, x + 400, 126), radius=10, fill=42)
-            self._text(draw, (x + 16, 62), label, 18, 170)
+        for x, value in zip((24, 440, 856), values[:3]):
             self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
-        draw.rounded_rectangle((24, 136, 1256, 632), radius=10, fill=25, outline=58)
-        self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
-        self._whole_latin_text(draw, (42, 194), "640 x 400", 18, 158)
-        self._text(draw, (42, 222), "二值预览" if binary_background else "实时灰度画面", 20, 212)
-        draw.line((44, 284, 100, 284), fill=240, width=2)
-        self._text(draw, (42, 298), "实际计数线", 18, 175)
-        self._text(draw, (42, 328), "从左向右计数", 18, 212)
-        for y, text in zip((448, 480, 512, 544),
-                           ("BTN0  暂停 / 恢复", "BTN1  长按 2 秒清零",
-                            "BTN2  灰度 / 二值", "BTN3  详细状态")):
-            self._text(draw, (42, y), text, 18, 144)
-        self._text(draw, (1044, 158), "检测目标", 20, 170)
         self._whole_latin_text(draw, (1044, 190), str(target_count), 34, 242)
-        self._text(draw, (1044, 248), "跟踪 ID / 检测框", 18, 170)
-        self._text(draw, (1044, 279), "计数真值待人工核对", 18, 144)
         for i, text in enumerate(detail):
             # Keep diagnostic text inside the narrow gutter.
             for row in range(0, min(len(text), 30), 10):
                 self._text(draw, (1044, 344 + i * 78 + row // 10 * 24), text[row:row + 10], 18, 170)
-        for x, width, label, text, field in (
-                (24, 600, "PS CPU 使用率", values[3], "cpu_percent"),
-                (640, 616, "DDR 内存占用", values[4], "memory_percent")):
-            draw.rounded_rectangle((x, 646, x + width, 704), radius=9, fill=40)
-            self._text(draw, (x + 16, 650), label, 18, 178)
+        for x, width, text, field in (
+                (24, 600, values[3], "cpu_percent"),
+                (640, 616, values[4], "memory_percent")):
             self._whole_latin_text(draw, (x + width - 74, 674), text, 18, 238)
             left, right = x + 16, x + width - 92
-            draw.rounded_rectangle((left, 682, right, 689), radius=3, fill=82)
             percent = dashboard.get(field)
             if (isinstance(percent, (int, float)) and not isinstance(percent, bool)
                     and math.isfinite(percent) and percent > 0):
@@ -478,11 +493,12 @@ class DashboardComposer:
             np.copyto(target, self._chrome)
         draw_ms = (perf_counter_ns() - started) / 1_000_000
         started = perf_counter_ns()
-        cv2.resize(binary if binary_background else gray, (768, 480), dst=self._work,
-                   interpolation=cv2.INTER_NEAREST if binary_background else self.gray_interpolation)
         x0, y0, width, height = self.VIEW
         image = target[y0:y0 + height, x0:x0 + width]
-        np.copyto(image, self._work)
+        # Resize straight into the viewport view: the 368 KiB scratch copy is
+        # gone and the result is byte-identical to resizing into a scratch array.
+        cv2.resize(binary if binary_background else gray, (width, height), dst=image,
+                   interpolation=cv2.INTER_NEAREST if binary_background else self.gray_interpolation)
         scale_ms = (perf_counter_ns() - started) / 1_000_000
         started = perf_counter_ns()
         sx = lambda x: min(width - 1, max(0, math.floor(x * width / SOURCE_WIDTH + 0.5)))
@@ -490,11 +506,16 @@ class DashboardComposer:
         horizontal = line_y is not None
         fixed = sy(line_y) if horizontal else sx(line_x)
         extent = width if horizontal else height
-        for start in range(0, extent, 24):
-            end = min(extent - 1, start + 13)
-            a, b = ((start, fixed), (end, fixed)) if horizontal else ((fixed, start), (fixed, end))
-            cv2.line(image, a, b, 0, 5, cv2.LINE_8)
-            cv2.line(image, a, b, 248, 2, cv2.LINE_8)
+        # One polylines call per colour replaces 2 cv2.line calls per dash; the
+        # rasterised pixels are identical.
+        if horizontal:
+            segments = np.array([[[start, fixed], [min(extent - 1, start + 13), fixed]]
+                                 for start in range(0, extent, 24)], dtype=np.int32)
+        else:
+            segments = np.array([[[fixed, start], [fixed, min(extent - 1, start + 13)]]
+                                 for start in range(0, extent, 24)], dtype=np.int32)
+        cv2.polylines(image, segments, False, 0, 5, cv2.LINE_8)
+        cv2.polylines(image, segments, False, 248, 2, cv2.LINE_8)
         label_at = (12, max(22, fixed - 12)) if horizontal else (min(width - 140, fixed + 12), 24)
         cv2.putText(image, "COUNT LINE", label_at, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 0, 4, cv2.LINE_8)
         cv2.putText(image, "COUNT LINE", label_at, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 248, 1, cv2.LINE_8)
