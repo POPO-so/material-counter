@@ -62,6 +62,7 @@ def _jpeg(value):
 def test_latest_camera_decodes_only_newest_compressed_packet_once(monkeypatch):
     packets = [_jpeg(v) for v in (20, 90, 180)]
     consumed = []
+    all_published = threading.Event()
     original = cv2.imdecode
     def tracked_decode(data, flags):
         consumed.append(bytes(data))
@@ -69,9 +70,11 @@ def test_latest_camera_decodes_only_newest_compressed_packet_once(monkeypatch):
     monkeypatch.setattr(cv2, 'imdecode', tracked_decode)
     def frames(device, count):
         yield from packets
+        all_published.set()
         time.sleep(.1)
     c = LatestCamera('camera', frames=frames)
     try:
+        assert all_published.wait(.5)
         result = c.read(timeout=.5)
         assert result[0] == 2
         assert np.array_equal(result[1], original(packets[-1], cv2.IMREAD_GRAYSCALE))
@@ -153,5 +156,32 @@ def test_latest_camera_wraps_decode_validation_error_for_reader():
         with pytest.raises(RuntimeError, match='camera must return raw MJPEG with JPEG SOI') as error:
             c.read(timeout=.5)
         assert isinstance(error.value.__cause__, ValueError)
+    finally:
+        c.close()
+
+
+def test_latest_camera_times_out_when_decode_exceeds_read_deadline_and_caches_result(monkeypatch):
+    import scripts.standalone.camera as camera_module
+    packet = _jpeg(112)
+    published = threading.Event()
+    calls = []
+    original = camera_module.decode_camera_frame
+    def slow_decode(raw):
+        calls.append(1)
+        time.sleep(.06)
+        return original(raw)
+    monkeypatch.setattr(camera_module, 'decode_camera_frame', slow_decode)
+    def frames(device, count):
+        yield packet
+        published.set()
+    c = LatestCamera('camera', frames=frames)
+    try:
+        assert published.wait(.5)
+        with pytest.raises(TimeoutError, match='no fresh real-camera Gray8 frame'):
+            c.read(timeout=.02)
+        cached = c.read(timeout=.5)
+        assert cached[0] == 0
+        assert np.array_equal(cached[1], original(packet))
+        assert len(calls) == 1
     finally:
         c.close()

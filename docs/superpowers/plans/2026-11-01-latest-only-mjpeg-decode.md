@@ -15,6 +15,7 @@
 - Do not change camera FPS or V4L2 mode.
 - Do not change RLE, counting, display, or PL interfaces.
 - Preserve the existing `(sequence, gray8, timestamp)` result from `LatestCamera.read()`.
+- Preserve the deadline set at `read()` entry across synchronous decode. If decode finishes after it, cache the frame and raise `TimeoutError` for that call; later reads may return the cache immediately.
 - Preserve JPEG SOI and 640×400 Gray8 validation and explicit capture/decode errors.
 - Keep memory bounded to the latest compressed packet, one cached decoded Gray8 frame, and any packet held by an active decode.
 - Do not claim runtime CPU/FPS improvement without comparable board measurements.
@@ -22,14 +23,16 @@
 ## Review Focus
 
 - Multiple frames arrive before a read: return the newest captured sequence and decode only that packet once. Test: `test_latest_camera_decodes_only_newest_compressed_packet_once`.
+- The newest-frame test waits on a producer event confirming all three packets were published before calling `read()`.
 - Capture advances during decode or a repeated read sees no new capture: keep the selected packet stable, preserve capture sequence/timestamp, and reuse cached Gray8 without decoding again. Tests: `test_latest_camera_keeps_capture_sequence_and_timestamp_when_latest_advances`, `test_latest_camera_reuses_cached_decode_without_new_capture`.
+- Decode exceeds the call's original timeout: raise `TimeoutError` while retaining the decoded tuple for an immediate cached retry. Test: `test_latest_camera_times_out_when_decode_exceeds_read_deadline_and_caches_result`.
 - Invalid or non-JPEG data reaches the decoder: reject it with the existing explicit validation error. Test: retain and run `test_camera_mjpeg_decode_preserves_all_source_pixels` and invalid-input assertion.
 - The camera source raises or produces no fresh frame: readers must retain explicit error and timeout behavior. Test: `test_camera_failure_and_timeout_are_explicit`.
 - Close occurs while capture is blocked: wait for the reader to exit before returning. Test: `test_close_waits_for_blocking_camera_read_to_finish`.
 
 ---
 
-### Task 1: Keep compressed frames until the consumer selects one
+### Task 1: Keep compressed frames until the consumer selects one — Complete
 
 **Files:**
 - Modify: `scripts/rle/run_counter.py` — add a raw MJPEG iterator and retain `camera_frames()` as its decoded compatibility wrapper.
@@ -50,8 +53,9 @@
 - [x] **Step 2: Run the focused tests to confirm the expected failures.** Run: `python -m pytest scripts/standalone/test_camera.py::test_latest_camera_decodes_only_newest_compressed_packet_once scripts/standalone/test_camera.py::test_latest_camera_keeps_capture_sequence_and_timestamp_when_latest_advances scripts/standalone/test_camera.py::test_latest_camera_reuses_cached_decode_without_new_capture scripts/rle/test_entrypoint.py::test_camera_frames_decodes_raw_mjpeg_packets -q`. Expected: FAIL because the current camera producer publishes decoded frames rather than retaining raw JPEG packets for consumer selection.
 - [x] **Step 3: Add the raw MJPEG iterator and preserve the decoded wrapper.** Implement `camera_mjpeg_frames(device, count)` with the current format, dimensions, FPS request, buffer size, two-frame warmup, read failure handling, and capture release. Implement `camera_frames(device, count)` as a generator over it that decodes every yielded packet for existing direct callers.
 - [x] **Step 4: Make `LatestCamera` retain and decode only the selected raw packet.** Preserve capture-side sequence and monotonic timestamp when replacing the raw slot. In `read()`, prefer the latest raw packet newer than `after`; snapshot it under the condition lock, decode outside the lock, cache its decoded tuple, and return it. Reuse the cache if no newer raw packet exists. Preserve error propagation, timeout, and close semantics.
-- [x] **Step 5: Run the focused regression tests.** Run with `C:/Users/14173/Documents/material-counter/.venv/Scripts/python.exe -m pytest scripts/standalone/test_camera.py scripts/rle/test_entrypoint.py -q`. All 16 tests passed.
-- [x] **Step 6: Review the diff and commit the task.** Committed the four code/test files plus this plan and its design spec as `32169df` (`按需解码最新 MJPEG 帧`).
+- [x] **Step 5: Run the focused regression tests.** The initial Task 1 run passed 16 tests. After the timeout-contract follow-up, the same command passed 17 tests.
+- [x] **Step 6: Review the diff and commit the task.** Task 1 is complete; commits are recorded in branch history.
+- [x] **Step 7: Apply the timeout-contract follow-up.** Added deterministic producer synchronization and decode-deadline coverage; updated the approved design, plan, regenerated brief, and appended exact verification evidence to the task report.
 
 ## Expected Limits
 

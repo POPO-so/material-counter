@@ -9,6 +9,7 @@ Reduce PS CPU spent JPEG-decoding camera frames that the processing loop will ov
 - Keep continuous camera capture and the current latest-frame consumer contract.
 - Retain compressed MJPEG frames in the capture thread and decode only a frame selected by `read(after=...)`.
 - Preserve monotonically increasing capture sequence numbers, capture-time timestamps, timeout behavior, and explicit camera/decode errors.
+- Preserve the original `read()` deadline across synchronous decode: if decode completes after that deadline, cache the decoded frame but raise `TimeoutError` for that call; a later read may return the cached frame immediately.
 - Reuse the most recently decoded Gray8 frame if a caller reads again before a newer raw packet arrives.
 - Keep the direct camera-entrypoint behavior available where it is used outside `LatestCamera`.
 
@@ -26,7 +27,7 @@ Reduce PS CPU spent JPEG-decoding camera frames that the processing loop will ov
 
 ## Design
 
-Add a raw-MJPEG camera iterator for the integrated `LatestCamera` path. Keep the existing decoded-frame iterator as a compatibility wrapper for the standalone camera entrypoint. The capture thread records each raw packet with its capture sequence and monotonic capture timestamp, replacing the prior packet. `LatestCamera.read(after=...)` waits for a newer sequence, snapshots the newest raw packet and metadata under the condition lock, and decodes outside the lock. Cache the last decoded `(sequence, gray8, timestamp)` so repeated reads can reuse it without another JPEG decode. Return the existing tuple shape. The existing JPEG SOI and 640×400 Gray8 checks remain in force. Malformed data and capture failures remain observable to readers; close continues to join the capture thread and release V4L2.
+Add a raw-MJPEG camera iterator for the integrated `LatestCamera` path. Keep the existing decoded-frame iterator as a compatibility wrapper for the standalone camera entrypoint. The capture thread records each raw packet with its capture sequence and monotonic capture timestamp, replacing the prior packet. `LatestCamera.read(after=...)` waits for a newer sequence, snapshots the newest raw packet and metadata under the condition lock, and decodes outside the lock. Cache the last decoded `(sequence, gray8, timestamp)` so repeated reads can reuse it without another JPEG decode. Keep the deadline established at method entry: if synchronous decoding finishes after the deadline, retain the cache, clear the in-flight state, notify waiters, and raise `TimeoutError` for the current call. A subsequent read may return that cached tuple immediately. Return the existing tuple shape. The existing JPEG SOI and 640×400 Gray8 checks remain in force. Malformed data and capture failures remain observable to readers; close continues to join the capture thread and release V4L2.
 
 ## Constraints and risks
 
@@ -38,5 +39,7 @@ Add a raw-MJPEG camera iterator for the integrated `LatestCamera` path. Keep the
 ## Acceptance evidence
 
 - Tests prove that when multiple raw frames arrive before a consumer read, the latest capture sequence is returned and only that selected packet is decoded; subsequent reads reuse the cached decode until capture advances.
+- The newest-frame test synchronizes on producer completion of all three packets before calling `read()`.
+- A regression test forces decode past the read deadline and verifies that the call times out, the completed frame remains cached, and retry does not decode again. Already-cached reads remain immediate.
 - Tests preserve decoded pixels, capture sequence/timestamp behavior, timeout, capture/decode error, and close behavior.
 - Run the focused camera and entrypoint tests. Board CPU and processing-FPS comparison remains a separate runtime acceptance check.

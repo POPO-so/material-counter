@@ -71,6 +71,8 @@ class LatestCamera:
             self._decoded = decoded
             self._decode_in_progress = False
             self._condition.notify_all()
+            if time.monotonic() > deadline:
+                raise TimeoutError("no fresh real-camera Gray8 frame")
         return decoded
 
     def close(self):
