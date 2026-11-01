@@ -1,0 +1,207 @@
+[
+  {
+    "at": "2026-11-01T19:14:24.4679411Z",
+    "event": "controller_started",
+    "data": {
+      "session": "/home/xilinx/captures/m8-first-10-20261102",
+      "simulation": false
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:25.1996913Z",
+    "event": "gate_service",
+    "data": {
+      "value": "inactive",
+      "rc": 3
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:25.9339139Z",
+    "event": "gate_enabled",
+    "data": {
+      "value": "disabled",
+      "rc": 1
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:26.6759768Z",
+    "event": "gate_processes",
+    "data": {
+      "value": "",
+      "rc": 0
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:27.6149110Z",
+    "event": "gate_video_holders",
+    "data": {
+      "value": "",
+      "rc": 0
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:28.3142909Z",
+    "event": "gate_memavailable",
+    "data": {
+      "value": "443208",
+      "rc": 0
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:28.9886243Z",
+    "event": "gate_disk_free_kib",
+    "data": {
+      "value": "4685524",
+      "rc": 0
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:29.6981634Z",
+    "event": "gate_kernel",
+    "data": {
+      "value": "",
+      "rc": 0
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:30.5732103Z",
+    "event": "gate_sudo",
+    "data": {
+      "value": "SUDO_OK",
+      "rc": 0
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:31.3425848Z",
+    "event": "gates_passed"
+  },
+  {
+    "at": "2026-11-01T19:14:31.3555956Z",
+    "event": "capture_started",
+    "data": {
+      "pid": 29304
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:31.4714291Z",
+    "event": "cue_prewarmed",
+    "data": {
+      "pid": 14220
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:53.4592795Z",
+    "event": "baseline_complete",
+    "data": {
+      "monotonic_ns": 12248362270383,
+      "frame": 59
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:54.5469633Z",
+    "event": "drop_start_touched",
+    "data": {
+      "board_uptime": "12249.22 22657.83"
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:54.5476499Z",
+    "event": "drop_start_observed",
+    "data": {
+      "monotonic_ns": 12249393856067,
+      "frame": 120
+    }
+  },
+  {
+    "at": "2026-11-01T19:14:54.8756671Z",
+    "event": "cue_issued",
+    "data": {
+      "drop_seconds": 4.0,
+      "pid": 14220,
+      "mode": "Window",
+      "text": "现在开始投放 10 颗 M8",
+      "visible": true
+    }
+  },
+  {
+    "at": "2026-11-01T19:15:00.1162735Z",
+    "event": "drop_window_ended",
+    "data": {
+      "window_seconds": 4.0
+    }
+  },
+  {
+    "at": "2026-11-01T19:15:00.1168474Z",
+    "event": "drop_end_touched",
+    "data": {
+      "window_seconds": 4.0,
+      "source": "ESTIMATED_FIXED_WINDOW",
+      "rc": 0,
+      "board_uptime": "12254.72 22662.68"
+    }
+  },
+  {
+    "at": "2026-11-01T19:15:00.1173580Z",
+    "event": "drop_end_observed",
+    "data": {
+      "monotonic_ns": 12254957077234,
+      "frame": 449
+    }
+  },
+  {
+    "at": "2026-11-01T19:15:16.3670081Z",
+    "event": "capture_exited",
+    "data": {
+      "stderr": "Running scope as unit: run-r9ecce0f2d8704c0dac7303c0ef81f29a.scope",
+      "rc": 0
+    }
+  },
+  {
+    "at": "2026-11-01T19:15:17.1751085Z",
+    "event": "verify",
+    "data": {
+      "status": "COMPLETE",
+      "frames_after_drop_end": 0,
+      "timing": {
+        "gap_threshold_ms": 35.868,
+        "gaps_over_threshold": 1,
+        "max_gap_ms": 40.532,
+        "median_gap_ms": 17.934,
+        "non_positive_gaps": 0
+      },
+      "frame_count": 450,
+      "events": {
+        "baseline_end": {
+          "frame": 59,
+          "monotonic_ns": 12248362270383
+        },
+        "drop_end": {
+          "frame": 449,
+          "monotonic_ns": 12254957077234
+        },
+        "drop_start": {
+          "frame": 120,
+          "monotonic_ns": 12249393856067
+        },
+        "recording_started_at": 12247360295012,
+        "stop": null
+      }
+    }
+  },
+  {
+    "at": "2026-11-01T19:15:17.1765238Z",
+    "event": "controller_finished",
+    "data": {
+      "verify_rc": 0,
+      "exit": 0,
+      "capture_rc": 0
+    }
+  },
+  {
+    "at": "2026-11-01T19:15:17.1817989Z",
+    "event": "controller_exit",
+    "data": {
+      "code": 0
+    }
+  }
+]

@@ -235,3 +235,48 @@ pwsh -NoProfile -File scripts/wo0016/operator_capture_controller.ps1 `
 2. 接受 4 s 提示窗口与"投料时间结束"切换；
 3. 接受 `drop_end` 为 `ESTIMATED_FIXED_WINDOW` 自动估计；
 4. 授权仅一组 10 颗 M8 采集。
+
+## 9. 首次正式采集运行记录（2026-11-02）
+
+### 9.1 授权与实际
+
+- 授权：仅一组 M8 采集，不自动重试、不开始第二组。
+- 实际投放：**7 颗**（用户现场确认；提示文案仍为"10 颗"，属于文案与现场不符，不影响采集数据）。
+- 结果：`status=COMPLETE`，450/450 帧，`effective_fps=59.198`，`elapsed_s=7.602`。
+- 归档：`camera_ram_capture.npz`，115,210,038 B，sha256 `eb237dce...59fdf`（板卡复核一致）。
+- 现场 truth：manifest `independent_ground_truth=UNKNOWN`；`truth-template.json` 待填 7。
+
+### 9.2 门禁
+
+全部通过：service inactive/disabled、无业务进程、`/dev/video0` 空闲、
+MemAvailable 442,980→417,104 KiB、磁盘 4.69 GB、内核无 OOM/DMA/EXT4 异常、`sudo -n` 正常、目标目录不存在。
+
+**门禁缺陷（已修）**：`pgrep -af 'integrated_run|...'` 会匹配远程 shell 自身的命令行，
+真实运行必被误判为"业务进程存在"。已改为括号模式 `[i]ntegrated_run|...`（提交 `2d5a4d4e`），
+并实测精确命令与括号命令的行为差异。
+
+### 9.3 实测时序
+
+| 里程碑 | 时间/帧 |
+|---|---|
+| BASELINE_COMPLETE | frame 59，`monotonic_ns=12248362270383` |
+| drop_start touch → OBSERVED | 1.09 s（ssh 往返）→ frame 120 |
+| cue 显示（ack 后） | 0.33 s |
+| cue 4 s 窗口结束 | 约 frame 380 附近 |
+| drop_end touch → OBSERVED | 窗口结束后 **1.24 s** 才落盘 → frame 449 |
+| frames_after_drop_end | **0** |
+| tail_post_ms | 4.869 ms |
+
+`drop_end` 延迟原因：控制器先执行 ssh `sudo touch`（约 1.2 s）再记录事件，
+窗口计时本身准确；但 touch 落盘时采集已到最后一帧，**本次没有 drop_end 之后的尾帧**。
+
+### 9.4 诊断
+
+- 间隔异常 1 处：frame 385→386，`gap_ms=40.532`（read 17.86 ms、decode 19.67 ms）；
+- `max_gap_ms=40.532`，中位 17.934 ms，无非正间隔；
+- 采集后板卡回到空闲：service inactive、无进程、video FREE、MemAvailable 445,420 KiB、内核 CLEAN。
+
+### 9.5 结论
+
+本次数据可用于 7 颗物料的离线计数分析；但缺少 drop_end 后的空载尾帧，
+且 drop_end 观测发生在最后一帧，不能用于验证"投放结束后空载"。未重试、未开始第二组。
