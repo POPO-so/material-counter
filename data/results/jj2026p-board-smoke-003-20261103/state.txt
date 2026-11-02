@@ -1,0 +1,18 @@
+boot_id=6b0d11ee-d9cb-4513-afc8-fee3296448df
+uptime= 08:28:05 up 5 min,  1 user,  load average: 0.52, 0.76, 0.38
+fpga_state=operating
+fpga_flags=0
+--- hold process ---
+  PID  PPID     ELAPSED STAT CMD
+HOLD_PROCESS_GONE
+--- tasks ---
+NONE
+--- pynq state ---
+{"bitfile_name": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/overlays/base/base.bit", "active_name": "Pynq-Z2", "timestamp": "2025/5/17 8:25:9 +263217", "bitfile_hash": "39b937b490015ec0e1d29f18a9143292821f74ad", "shutdown_ips": {}, "psddr": {"raw_type": 1, "used": 1, "base_address": 0, "size": 268435456, "type": "DDR4", "streaming": false, "idx": 0, "tag": "PSDDR"}}--- camera owners ---
+--- cma ---
+CmaTotal:         131072 kB
+CmaFree:           30536 kB
+--- dirs ---
+ls: cannot access '/home/xilinx/jpeg-candidate-20261103c': No such file or directory
+drwxr-xr-x 5 xilinx xilinx 4096 May 17 07:48 /home/xilinx/jpeg-candidate-20261103
+drwxr-xr-x 4 xilinx xilinx 4096 May 17 08:09 /home/xilinx/jpeg-candidate-20261103b

@@ -1,0 +1,124 @@
+{
+  "boot_id": "6b0d11ee-d9cb-4513-afc8-fee3296448df",
+  "camera_owners": [],
+  "process_ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "pynq_state": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/overlays/base/base.bit",
+    "loaded_bit_sha1": "39b937b490015ec0e1d29f18a9143292821f74ad",
+    "loaded_bit_sha256": "3239e9cc37ee4993c25f02ae6c97da0b3372f0e722e267d10073e20adc5d6717",
+    "loaded_bit_path_matches_expected": null
+  },
+  "boot_state": {
+    "boot_id": "6b0d11ee-d9cb-4513-afc8-fee3296448df",
+    "fpga_manager": {
+      "state": "operating",
+      "flags": "0"
+    },
+    "fpga_manager_error": null,
+    "boot_bitstream": "base.bin",
+    "boot_bitstream_error": null
+  },
+  "classification": {
+    "kind": "UNKNOWN",
+    "reason": "loaded overlay identity is not in the known table",
+    "loaded_bit_sha256": "3239e9cc37ee4993c25f02ae6c97da0b3372f0e722e267d10073e20adc5d6717"
+  },
+  "negotiated": {
+    "format": "MJPG",
+    "width": 640,
+    "height": 400
+  },
+  "frames": [
+    {
+      "index": 0,
+      "bytes": 15692,
+      "sha256": "2e34621fa5fff106571c2432a77baca49358f2098922ad3ddb9cb557b0bf35eb",
+      "header": {
+        "width": 640,
+        "height": 400,
+        "precision": 8,
+        "sampling": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "dri": 40,
+        "scans": 1,
+        "header_bytes": 597
+      }
+    },
+    {
+      "index": 1,
+      "bytes": 15628,
+      "sha256": "ee2cdc6aed912806e3c58e820047fe9e8afee021943e54d4b07b5fc0c42d3eb5",
+      "header": {
+        "width": 640,
+        "height": 400,
+        "precision": 8,
+        "sampling": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "dri": 40,
+        "scans": 1,
+        "header_bytes": 597
+      }
+    },
+    {
+      "index": 2,
+      "bytes": 15656,
+      "sha256": "3365551699cd30c28af120315ef50d2d5bbfc46dc305fff94f66ec4e99f76968",
+      "header": {
+        "width": 640,
+        "height": 400,
+        "precision": 8,
+        "sampling": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "dri": 40,
+        "scans": 1,
+        "header_bytes": 597
+      }
+    }
+  ],
+  "camera_status": "PASS",
+  "run_blocked": true
+}

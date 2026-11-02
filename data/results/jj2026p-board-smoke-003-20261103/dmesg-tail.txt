@@ -1,0 +1,60 @@
+[   45.944268] systemd[1]: Listening on udev Control Socket.
+[   45.980436] systemd[1]: Listening on udev Kernel Socket.
+[   46.020494] systemd[1]: Condition check resulted in Huge Pages File System being skipped.
+[   46.089796] systemd[1]: Mounting POSIX Message Queue File System...
+[   46.136993] systemd[1]: Mounting Kernel Debug File System...
+[   46.170151] systemd[1]: Condition check resulted in Kernel Trace File System being skipped.
+[   46.230408] systemd[1]: Starting Journal Service...
+[   46.272324] systemd[1]: Starting Restore / save the current clock...
+[   46.323423] systemd[1]: Starting Set the console keyboard layout...
+[   46.360632] systemd[1]: Condition check resulted in Create List of Static Device Nodes being skipped.
+[   46.410596] systemd[1]: Starting Load Kernel Module configfs...
+[   46.470123] systemd[1]: Starting Load Kernel Module drm...
+[   46.550364] systemd[1]: Starting Load Kernel Module fuse...
+[   46.590069] systemd[1]: Started Nameserver information manager.
+[   46.654769] systemd[1]: Reached target Preparation for Network.
+[   46.740231] systemd[1]: Starting Load Kernel Modules...
+[   46.790956] systemd[1]: Starting Remount Root and Kernel File Systems...
+[   46.819440] systemd[1]: Starting Coldplug All udev Devices...
+[   46.874786] systemd[1]: Started Journal Service.
+[   47.606593] systemd-journald[81]: Received client request to flush runtime journal.
+[   47.650401] Adding 524284k swap on /var/swap.  Priority:-2 extents:2 across:2097148k SS
+[   47.776989] systemd-journald[81]: File /var/log/journal/c82cf5bcd3a14b95935d65bfb529d72d/system.journal corrupted or uncleanly shut down, renaming and replacing.
+[   51.394311] zocl: loading out-of-tree module taints kernel.
+[   51.426128] [drm] Probing for xlnx,zocl
+[   51.426190] zocl-drm axi:zyxclmm_drm: error -ENXIO: IRQ index 0 not found
+[   51.462841] [drm] PR[0] Isolation addr 0x0
+[   51.489328] [drm] Initialized zocl 0.0.0  for axi:zyxclmm_drm on minor 0
+[   52.341418] usb 1-1: Found UVC 1.00 device USB Camera (0edc:2076)
+[   52.376228] usbcore: registered new interface driver uvcvideo
+[   56.285924] macb e000b000.ethernet eth0: PHY [e000b000.ethernet-ffffffff:00] driver [RTL8211E Gigabit Ethernet] (irq=POLL)
+[   56.285965] macb e000b000.ethernet eth0: configuring for phy/rgmii-id link mode
+[   57.668394] FAT-fs (mmcblk0p1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.
+[   59.391950] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[   73.771923] systemd[529]: memfd_create() called without MFD_EXEC or MFD_NOEXEC_SEAL set
+[  107.669024] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(352), ret: 0
+[  107.669295] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(352)
+[  107.670262] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(352), ret: 0
+[  125.378310] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(687), ret: 0
+[  125.378431] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(687)
+[  125.379397] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(687), ret: 0
+[  129.307627] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(687)
+[  133.847813] fpga_manager fpga0: writing base.bin to Xilinx Zynq FPGA Manager
+[  133.931000] [drm] Loading xclbin efd3b7a1-aa09-5e99-4ed3-bd6ec5196ace to slot 0
+[  133.931033] [drm] skip kind 29(AIE_RESOURCES) return code: -22
+[  133.931055] [drm] skip kind 8(IP_LAYOUT) return code: -22
+[  133.931071] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22
+[  133.931085] [drm] skip kind 25(AIE_METADATA) return code: -22
+[  133.931098] [drm] skip kind 7(CONNECTIVITY) return code: -22
+[  133.931111] [drm] found kind 6(MEM_TOPOLOGY)
+[  133.931237] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA
+[  133.931314] [drm] Memory 1 is not reserved in device tree. Will allocate memory from CMA
+[  133.931384] [drm] Memory 2 is not reserved in device tree. Will allocate memory from CMA
+[  133.931453] [drm] Memory 3 is not reserved in device tree. Will allocate memory from CMA
+[  133.931520] [drm] Memory 4 is not reserved in device tree. Will allocate memory from CMA
+[  133.931587] [drm] zocl_xclbin_read_axlf efd3b7a1-aa09-5e99-4ed3-bd6ec5196ace ret: 0
+[  133.959493] [drm] bitstream efd3b7a1-aa09-5e99-4ed3-bd6ec5196ace locked, ref=1
+[  133.959597] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_add_context: Client pid(352) add context Domain(65535) CU(0xffff) shared(true)
+[  133.959698] zocl-drm axi:zyxclmm_drm:  ffffffffc14a0810 kds_del_context: Client pid(352) del context Domain(65535) CU(0xffff)
+[  133.959753] [drm] bitstream efd3b7a1-aa09-5e99-4ed3-bd6ec5196ace unlocked, ref=0
+[  139.661783] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(352)
