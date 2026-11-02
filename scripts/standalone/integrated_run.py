@@ -822,6 +822,7 @@ def drawing_process(inputs, outputs, stop, errors, counters, font, latin_font):
                 composer.render(lease.gray,lease.binary,lease.session_uuid,lease.frame_id,
                     boxes=meta['boxes'],tracks=meta['tracks'],status_lines=lines,
                     binary_background=meta['binary_background'],output=pixels,
+                    output_slot=slot,
                     line_x=count_line['position'] if count_line['axis']=='x' else 320,
                     line_y=count_line['position'] if count_line['axis']=='y' else None,
                     dashboard=meta.get('dashboard'),pl_preview=meta.get('pl_preview',False))
