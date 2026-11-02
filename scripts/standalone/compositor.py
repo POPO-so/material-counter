@@ -823,29 +823,38 @@ class DashboardComposer:
         self._key = key
         self._chrome_version += 1
 
-    def _draw_dynamic_region(self, target, bounds, draw_content):
+    @staticmethod
+    def _target_draw(target):
+        """Create a writable Pillow draw surface over the full frame buffer."""
+        image = Image.frombuffer("L", (WIDTH, HEIGHT), target, "raw", "L", 0, 1)
+        if image.readonly:
+            image.readonly = 0
+        return ImageDraw.Draw(image)
+
+    def _draw_dynamic_region(self, target, bounds, draw_content, draw=None):
         x0, y0, x1, y1 = bounds
         pixels = target[y0:y1, x0:x1]
         np.copyto(pixels, self._chrome[y0:y1, x0:x1])
-        image = Image.fromarray(pixels)
-        draw_content(ImageDraw.Draw(image), x0, y0)
-        np.copyto(pixels, np.asarray(image))
+        draw = self._target_draw(target) if draw is None else draw
+        # The shared draw surface is full-frame, so dynamic content uses absolute coordinates.
+        draw_content(draw, 0, 0)
 
-    def _draw_dynamic_overlays(self, target):
+    def _draw_dynamic_overlays(self, target, draw=None):
         state = self._dynamic_state
+        draw = self._target_draw(target) if draw is None else draw
 
         def top_values(draw, x0, y0):
             for x, value in zip((24, 340, 656, 972), state["top_values"]):
                 self._whole_latin_text(draw, (x + 16 - x0, 84 - y0), value, 34, 248)
 
-        self._draw_dynamic_region(target, (24, 58, 1256, 126), top_values)
+        self._draw_dynamic_region(target, (24, 58, 1256, 126), top_values, draw)
 
         def performance_values(draw, x0, y0):
             for index, value in enumerate(state["performance_values"]):
                 row = self._wrap_gutter(value, 206, 12, 1)[0]
                 self._text(draw, (162 - x0, 346 + index * 16 - y0), row, 12, 238)
 
-        self._draw_dynamic_region(target, (38, 316, 380, 432), performance_values)
+        self._draw_dynamic_region(target, (38, 316, 380, 432), performance_values, draw)
 
         def live_resource_values(draw, x0, y0):
             labels = ("PS CPU", "CPU0", "CPU1", "内存")
@@ -853,7 +862,7 @@ class DashboardComposer:
                 self._resource_pie(draw, 116 + index * 280 - x0,
                                    516 - y0, label, value)
 
-        self._draw_dynamic_region(target, (24, 480, 1256, 552), live_resource_values)
+        self._draw_dynamic_region(target, (24, 480, 1256, 552), live_resource_values, draw)
 
         def runtime_values(draw, x0, y0):
             values = [(state["control_status"], 321, 246)]
@@ -869,7 +878,7 @@ class DashboardComposer:
             for index, line in enumerate(state["visible_details"][:3]):
                 self._text(draw, (908 - x0, 386 + index * 15 - y0), line, 12, 206)
 
-        self._draw_dynamic_region(target, (874, 291, 1242, 432), runtime_values)
+        self._draw_dynamic_region(target, (874, 291, 1242, 432), runtime_values, draw)
 
         def rle_values(draw, x0, y0):
             labels = ("活动(含等待)", "IN MB/s", "OUT MB/s", "IN 阻塞", "OUT 阻塞")
@@ -880,15 +889,14 @@ class DashboardComposer:
                 self._whole_latin_text(draw, (x - x0, 672 - y0), shown, 24,
                                        226 if state["rle_fresh"] else 142)
 
-        self._draw_dynamic_region(target, (24, 636, 1256, 708), rle_values)
+        self._draw_dynamic_region(target, (24, 636, 1256, 708), rle_values, draw)
 
-    def _draw_detection_count(self, target, target_count):
+    def _draw_detection_count(self, target, target_count, draw=None):
         x0, y0, x1, y1 = 974, 174, 1230, 201
         pixels = target[y0:y1, x0:x1]
         pixels.fill(43)
-        image = Image.fromarray(pixels)
-        self._text(ImageDraw.Draw(image), (0, 177 - y0), str(target_count), 20, 255)
-        np.copyto(pixels, np.asarray(image))
+        draw = self._target_draw(target) if draw is None else draw
+        self._text(draw, (x0, 177), str(target_count), 20, 255)
 
     def render(self, gray, binary, session_id, frame_id, boxes=(), tracks=(),
                line_x=320, status_lines=(), *, binary_background=False, output=None,
@@ -928,14 +936,16 @@ class DashboardComposer:
                 self._output_detection_counts[output_slot] = None
         dynamic_sync = (output_slot is None
                         or self._output_dynamic_keys[output_slot] != self._dynamic_key)
+        target_count = len(boxes)
+        detection_sync = (output_slot is None
+                          or self._output_detection_counts[output_slot] != target_count)
+        draw = self._target_draw(target) if dynamic_sync or detection_sync else None
         if dynamic_sync:
-            self._draw_dynamic_overlays(target)
+            self._draw_dynamic_overlays(target, draw)
             if output_slot is not None:
                 self._output_dynamic_keys[output_slot] = self._dynamic_key
-        target_count = len(boxes)
-        if (output_slot is None
-                or self._output_detection_counts[output_slot] != target_count):
-            self._draw_detection_count(target, target_count)
+        if detection_sync:
+            self._draw_detection_count(target, target_count, draw)
             if output_slot is not None:
                 self._output_detection_counts[output_slot] = target_count
         draw_ms = (perf_counter_ns() - started) / 1_000_000
