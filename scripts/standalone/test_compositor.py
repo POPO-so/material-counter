@@ -446,10 +446,115 @@ def test_dashboard_unknown_metrics_render_placeholder(monkeypatch):
     gray = np.zeros((400, 640), dtype=np.uint8)
 
     c.render(gray, gray, uuid.uuid4(), 1, dashboard={
-        "count": 1, "camera_fps": None, "e2e_ms": None, "drop_total": None,
+        "count": 1, "camera_fps": None,
+        "e2e_ms": {"mean": float("nan")}, "drop_total": "stale",
+        "cpu_percent": -1,
     })
 
-    assert "--" in texts
+    assert texts.count("--") >= 4
+
+
+def test_dashboard_subprecision_telemetry_hits_key_without_panel_pixel_changes():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    first = c.render(gray, gray, session, 1, dashboard={
+        "camera_fps": 29.51, "cpu_percent": 20.01,
+    }).copy()
+    second = c.render(gray, gray, session, 2, dashboard={
+        "camera_fps": 29.54, "cpu_percent": 20.04,
+    }).copy()
+
+    assert c.key_stats == {
+        "frames": 2, "key_hits": 1, "key_misses": 1, "hit_rate": 0.5,
+    }
+    assert np.array_equal(first[1:719, :], second[1:719, :])
+
+
+def test_dashboard_display_precision_boundary_misses_key():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    c.render(gray, gray, session, 1, dashboard={"camera_fps": 29.54})
+    before = c._chrome.copy()
+    after = c.render(gray, gray, session, 2,
+                     dashboard={"camera_fps": 29.56}).copy()
+
+    assert c.key_stats == {
+        "frames": 2, "key_hits": 0, "key_misses": 2, "hit_rate": 0.0,
+    }
+    assert not np.array_equal(before[1:719], after[1:719])
+
+
+def test_dashboard_page_lines_and_low_level_diagnostics_are_scoped_to_ps_page(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    texts = _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    dashboard = {
+        "count": 12, "camera_fps": 29.5, "drop_total": 4,
+        "processing_fps": 28.2, "display_fps": 27.9,
+        "cpu_percent": 35, "memory_percent": 42,
+        "pl": {"aggregate": {"active_cycles": 123, "total_cycles": 456}},
+        "rle_fresh": True, "rle_activity_pct": 22,
+        "page": 0, "page_lines": (),
+        "cpu_source_text": "CPU 来源 camera 2%",
+        "queue_summary_text": "队列 相机丢1 覆盖True",
+        "thread_text": "threads capture=1",
+        "button_status": "BTN3 PS/丢帧",
+    }
+
+    c.render(gray, gray, uuid.uuid4(), 1, dashboard=dashboard)
+    overview = " ".join(texts)
+    assert "本次累计计数" in overview and "相机帧率" in overview
+    assert "camera 2%" not in overview
+    assert "相机丢1 覆盖True" not in overview
+    assert "threads capture" not in overview
+
+    texts.clear()
+    c.render(gray, gray, uuid.uuid4(), 2,
+             dashboard={**dashboard, "page": 2,
+                        "page_lines": ("PS 与丢帧", "RLE 5.5 / TRK 0.3 ms")})
+    detail = " ".join(texts)
+    assert "PS 与丢帧" in detail
+    assert "CPU 来源" in detail and "队列" in detail
+    assert "camera 2%" in detail and "相机丢1 覆盖True" in detail
+    assert "capture=1" in detail
+
+
+def test_dashboard_key_ignores_page_lines_and_diagnostics_hidden_on_overview():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    base = {"page": 0, "count": 12, "camera_fps": 29.5}
+    c.render(gray, gray, session, 1, dashboard={
+        **base, "page_lines": ("hidden page text A",),
+        "cpu_source_text": "CPU 来源 camera 2%",
+        "queue_summary_text": "队列 相机丢1", "thread_text": "threads capture=1",
+    })
+    c.render(gray, gray, session, 2, dashboard={
+        **base, "page_lines": ("hidden page text B",),
+        "cpu_source_text": "CPU 来源 camera 3%",
+        "queue_summary_text": "队列 相机丢2", "thread_text": "threads capture=2",
+    })
+
+    assert c.key_stats == {
+        "frames": 2, "key_hits": 1, "key_misses": 1, "hit_rate": 0.5,
+    }
+
+
+def test_dashboard_key_stats_report_first_redraw_and_hits():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    c.render(gray, gray, session, 1, dashboard={"camera_fps": 29.5})
+    assert c.key_stats == {
+        "frames": 1, "key_hits": 0, "key_misses": 1, "hit_rate": 0.0,
+    }
+    c.render(gray, gray, session, 2, dashboard={"camera_fps": 29.5})
+    assert c.key_stats == {
+        "frames": 2, "key_hits": 1, "key_misses": 1, "hit_rate": 0.5,
+    }
 
 
 @pytest.mark.parametrize(("page", "page_lines", "expected"), [
@@ -542,7 +647,7 @@ def test_dashboard_labels_preview_rate_as_submission_rate(monkeypatch):
              dashboard={"preview_submitted_fps": 23.5},
              binary_background=True)
 
-    assert "二值提交 FPS" in labels
+    assert any("二值提交 FPS" in label for label in labels)
 
 
 def test_dashboard_cpu_source_and_queue_summaries_refresh_on_change(monkeypatch):
@@ -552,23 +657,25 @@ def test_dashboard_cpu_source_and_queue_summaries_refresh_on_change(monkeypatch)
     original = c._text
 
     def capture_text(draw, xy, text, size, fill):
-        if xy in ((934, 358), (934, 376)):
+        if text.startswith(("CPU 来源", "队列", "camera", "相机丢")):
             drawn.append((xy, text, size))
         return original(draw, xy, text, size, fill)
 
     monkeypatch.setattr(c, "_text", capture_text)
     base = {
+        "page": 2,
         "cpu_source_text": "CPU 来源 camera 2%",
         "queue_summary_text": "队列 相机丢1 覆盖True",
     }
     c.render(gray, gray, uuid.uuid4(), 1, dashboard=base)
-    assert ((934, 358), base["cpu_source_text"], 12) in drawn
-    assert ((934, 376), base["queue_summary_text"], 12) in drawn
+    assert any(text == "camera 2%" for _, text, _ in drawn)
+    assert any(text == "相机丢1 覆盖True" for _, text, _ in drawn)
     first_count = len(drawn)
 
     c.render(gray, gray, uuid.uuid4(), 2,
              dashboard={**base, "cpu_source_text": "CPU 来源 camera 3%"})
-    assert len(drawn) == first_count + 2
+    assert any(text == "camera 3%" for _, text, _ in drawn)
+    assert len(drawn) > first_count
 
 
 def test_dashboard_chrome_warmed_latin_strings_skip_all_text_rasterization(monkeypatch):
