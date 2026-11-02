@@ -92,6 +92,7 @@ proc joint::capture_compile_order {script} {
     # validate_bd_design, dropping the accumulated WARNING count to zero with no
     # exported messages. Accept only that exact confirmed anomaly; keep the
     # original FAIL receipt and reject anything else (ERROR/CRITICAL/other).
+    variable cfg
     variable evidence
     variable sequence
     incr sequence
