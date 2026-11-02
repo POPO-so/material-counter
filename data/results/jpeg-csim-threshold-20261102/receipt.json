@@ -1,0 +1,16 @@
+{
+  "schema": "material-counter.jpeg-hls-probe-receipt.v1",
+  "recorded_at_utc": "2026-11-02T05:59:00Z",
+  "status": "PASS",
+  "flow": "csim", "mode": "smoke", "reference_kind": "opencv",
+  "tool": {"entry": "vitis-run", "version": "v2026.1", "hls_build": "6493734"},
+  "input": {"seed": 20261103, "description": "luma ramp 110->146 sweeping through 128",
+            "jpeg_sha256": "8ac7b3b5a7964fd3b58a75d8f2d7813268fcba61a6e247fe09bb8ed453980cbd",
+            "reference_sha256": "d54562ed6f697895e3f07e203db4ebae2be0e65dd783a4260967b95aee291099",
+            "risk_band_126_129_pixels": 46080},
+  "result": {"frame_id": 1, "max_y_diff": 1,
+             "threshold128_count": 51200, "reference_threshold128_count": 51200,
+             "threshold_pixel_mismatches": 0, "checksum": 30910720, "beats": 64008},
+  "conclusion": "With 46080 threshold-adjacent (126-129) pixels, the D695 C model and OpenCV still binarize identically (0 flips): the <=1 Y difference does not cross 128 for this content. This is one data point demonstrating boundary consistency, not a proof for all JPEG content (IDCT ringing elsewhere could still straddle 128).",
+  "evidence": {"workdir": "C:/fpga/wt/_hlsprobe/runs/probe-csim-threshold-20261102"}
+}
