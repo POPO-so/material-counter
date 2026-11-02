@@ -53,7 +53,9 @@ class FakeMmioFactory:
     def __init__(self, events, *, control_signature=0x31454C52,
                  mm2s_status=0x3, s2mm_status=0x3,
                  vdma_mm2s_control=0x0, vdma_mm2s_status=0x1,
-                 vdma_s2mm_control=0x0, vdma_s2mm_status=0x1):
+                 vdma_s2mm_control=0x0, vdma_s2mm_status=0x1,
+                 trace_pi_control=0x0, trace_pi_status=0x1,
+                 trace_pmodb_control=0x0, trace_pmodb_status=0x1):
         self.events = events
         self.control_signature = control_signature
         self.mm2s_status = mm2s_status
@@ -62,6 +64,10 @@ class FakeMmioFactory:
         self.vdma_mm2s_status = vdma_mm2s_status
         self.vdma_s2mm_control = vdma_s2mm_control
         self.vdma_s2mm_status = vdma_s2mm_status
+        self.trace_pi_control = trace_pi_control
+        self.trace_pi_status = trace_pi_status
+        self.trace_pmodb_control = trace_pmodb_control
+        self.trace_pmodb_status = trace_pmodb_status
         self.calls = []
 
     def __call__(self, base, size):
@@ -76,6 +82,12 @@ class FakeMmioFactory:
                              0x04: self.vdma_mm2s_status,
                              0x30: self.vdma_s2mm_control,
                              0x34: self.vdma_s2mm_status})
+        if base == 0x80430000:
+            return FakeMmio({0x30: self.trace_pi_control,
+                             0x34: self.trace_pi_status})
+        if base == 0x80420000:
+            return FakeMmio({0x30: self.trace_pmodb_control,
+                             0x34: self.trace_pmodb_status})
         return FakeMmio()
 
 
@@ -119,13 +131,18 @@ def run_sequence(cls, events, *, overlay_factory, identity_failure=False,
                  factory=None, mm2s_status=0x3, s2mm_status=0x3,
                  vdma_mm2s_control=0x0, vdma_mm2s_status=0x1,
                  vdma_s2mm_control=0x0, vdma_s2mm_status=0x1,
+                 trace_pi_control=0x0, trace_pi_status=0x1,
+                 trace_pmodb_control=0x0, trace_pmodb_status=0x1,
                  base_evidence_reader=base_evidence):
     factory = factory or FakeMmioFactory(
         events, mm2s_status=mm2s_status, s2mm_status=s2mm_status,
         vdma_mm2s_control=vdma_mm2s_control,
         vdma_mm2s_status=vdma_mm2s_status,
         vdma_s2mm_control=vdma_s2mm_control,
-        vdma_s2mm_status=vdma_s2mm_status)
+        vdma_s2mm_status=vdma_s2mm_status,
+        trace_pi_control=trace_pi_control, trace_pi_status=trace_pi_status,
+        trace_pmodb_control=trace_pmodb_control,
+        trace_pmodb_status=trace_pmodb_status)
 
     def post_load_identity(overlay):
         events.append(("identity",))
@@ -258,18 +275,27 @@ def test_known_base_probes_only_confirmed_vdma_before_overlay():
         overlay_factory=lambda: events.append(("overlay",)) or "overlay")
     overlay_index = events.index(("overlay",))
     pre_mmio = [event[1] for event in events[:overlay_index] if event[0] == "mmio"]
-    assert pre_mmio == [runner.BASE_VDMA_BASE]
+    assert pre_mmio == [runner.BASE_VDMA_BASE, 0x80430000, 0x80420000]
     for candidate_base in (runner.DMA_BASE, runner.RLE_BASE,
                            runner.OVERLAY_BASE, runner.JPEG_BASE):
         assert candidate_base not in pre_mmio
     assert result["probe"]["bus_masters"]["video_axi_vdma"]["mm2s"] == {
+        "type": "axi_vdma",
         "control": 0x0, "status": 0x1, "rs": False, "halted": True,
         "reserved_bit1": 0, "error_mask": 0x00F0,
         "error_bits": [], "reserved_bits": 0}
     assert result["probe"]["bus_masters"]["video_axi_vdma"]["s2mm"] == {
+        "type": "axi_vdma",
         "control": 0x0, "status": 0x1, "rs": False, "halted": True,
         "reserved_bit1": 0, "error_mask": 0x89F0,
         "error_bits": [], "reserved_bits": 0}
+    for trace in ("trace_analyzer_pi_axi_dma_0",
+                  "trace_analyzer_pmodb_axi_dma_0"):
+        assert result["probe"]["bus_masters"][trace]["s2mm"] == {
+            "type": "axi_dma",
+            "control": 0x0, "status": 0x1, "rs": False, "halted": True,
+            "reserved_bit1": 0, "error_mask": 0x0770,
+            "error_bits": [], "reserved_bits": 0}
 
 
 def test_known_base_active_vdma_is_refused_before_overlay():
@@ -310,6 +336,22 @@ BASE_HWH_TEMPLATE = """<?xml version="1.0"?>
       <PARAMETER NAME="C_INCLUDE_S2MM" VALUE="1"/>
     </PARAMETERS>
   </MODULE>
+  <MODULE INSTANCENAME="trace_analyzer_pi_axi_dma_0" VLNV="xilinx.com:ip:axi_dma:7.1">
+    <PARAMETERS>
+      <PARAMETER NAME="C_BASEADDR" VALUE="0x80430000"/>
+      <PARAMETER NAME="C_HIGHADDR" VALUE="0x8043FFFF"/>
+      <PARAMETER NAME="C_INCLUDE_MM2S" VALUE="0"/>
+      <PARAMETER NAME="C_INCLUDE_S2MM" VALUE="1"/>
+    </PARAMETERS>
+  </MODULE>
+  <MODULE INSTANCENAME="trace_analyzer_pmodb_axi_dma_0" VLNV="xilinx.com:ip:axi_dma:7.1">
+    <PARAMETERS>
+      <PARAMETER NAME="C_BASEADDR" VALUE="0x80420000"/>
+      <PARAMETER NAME="C_HIGHADDR" VALUE="0x8042FFFF"/>
+      <PARAMETER NAME="C_INCLUDE_MM2S" VALUE="0"/>
+      <PARAMETER NAME="C_INCLUDE_S2MM" VALUE="1"/>
+    </PARAMETERS>
+  </MODULE>
   {extra}
 </EDKSYSTEM>
 """
@@ -326,10 +368,17 @@ def test_base_hwh_matches_the_pinned_bus_master_map(tmp_path, monkeypatch):
                         lambda _path: runner.KNOWN_BASE_HWH_SHA256)
     base = {**runner.known_bases()[0], "hwh_path": str(hwh)}
     evidence = runner.read_base_hwh_evidence(base)
-    assert evidence["bus_masters"] == [{
-        "instance": "video_axi_vdma",
-        "vlnv": "xilinx.com:ip:axi_vdma:6.3", "base": 0x43000000,
-        "channels": ("mm2s", "s2mm")}]
+    actual = {(item["instance"], item["vlnv"], item["type"],
+               item["base"], item["channels"])
+              for item in evidence["bus_masters"]}
+    assert actual == {
+        ("video_axi_vdma", "xilinx.com:ip:axi_vdma:6.3", "axi_vdma",
+         0x43000000, ("mm2s", "s2mm")),
+        ("trace_analyzer_pi_axi_dma_0", "xilinx.com:ip:axi_dma:7.1",
+         "axi_dma", 0x80430000, ("s2mm",)),
+        ("trace_analyzer_pmodb_axi_dma_0", "xilinx.com:ip:axi_dma:7.1",
+         "axi_dma", 0x80420000, ("s2mm",)),
+    }
 
 
 def test_base_hwh_additional_dma_master_is_refused(tmp_path, monkeypatch):
@@ -369,11 +418,20 @@ VDMA_FAILURES = [
     ("s2mm", {"vdma_s2mm_status": 0x1 | (1 << 15)}, "eol_late_err"),
     ("mm2s", {"vdma_mm2s_control": 0x1}, "not safely halted"),
     ("mm2s", {"vdma_mm2s_status": 0x1 | (1 << 9)}, "reserved"),
+    ("s2mm", {"trace_pi_status": 0x1 | (1 << 4)}, "dma_int_err"),
+    ("s2mm", {"trace_pmodb_status": 0x1 | (1 << 8)}, "sg_int_err"),
+    ("s2mm", {"trace_pi_control": 0x1}, "not safely halted"),
+    ("s2mm", {"trace_pi_status": 0x1 | (1 << 2)}, "reserved"),
 ]
+
+CONFIRMED_BASE_MMIO = {runner.BASE_VDMA_BASE, 0x80420000, 0x80430000}
+CANDIDATE_BASE_MMIO = {runner.DMA_BASE, runner.RLE_BASE,
+                       runner.OVERLAY_BASE, runner.JPEG_BASE}
 
 
 @pytest.mark.parametrize("channel,kwargs,reason", VDMA_FAILURES)
-def test_known_base_vdma_is_refused_before_overlay(channel, kwargs, reason):
+def test_known_base_unsafe_bus_master_is_refused_before_overlay(
+        channel, kwargs, reason):
     events = []
     factory = FakeMmioFactory(events, **kwargs)
     with pytest.raises(runner.PreloadUnsafe, match=reason):
@@ -382,8 +440,16 @@ def test_known_base_vdma_is_refused_before_overlay(channel, kwargs, reason):
             overlay_factory=lambda: events.append(("overlay",)) or "overlay",
             factory=factory)
     assert ("overlay",) not in events
-    assert all(event[1] == runner.BASE_VDMA_BASE
-               for event in events if event[0] == "mmio")
+    touched = {event[1] for event in events if event[0] == "mmio"}
+    assert touched <= CONFIRMED_BASE_MMIO
+    assert not touched & CANDIDATE_BASE_MMIO
+
+
+def test_axi_dma_masks_match_pg021_and_do_not_gate_idle():
+    assert runner.AXI_DMA_CHANNELS["s2mm"]["error_mask"] == 0x0770
+    assert runner.AXI_DMA_CHANNELS["s2mm"]["reserved_mask"] == 0x8884
+    assert runner.AXI_DMA_CHANNELS["s2mm"]["reserved_mask"] & (1 << 1) == 0
+    assert runner.AXI_DMA_CHANNELS["s2mm"]["reserved_mask"] & (1 << 3) == 0
 
 
 def test_vdma_masks_are_channel_specific_not_the_axi_dma_mask():

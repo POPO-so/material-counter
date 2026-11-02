@@ -15,7 +15,12 @@ The previous KNOWN_BASE probe reused the AXI DMA status mask and required
 - `VDMASR` bit 1 is **Reserved, always 0** in AXI VDMA; it is not an Idle bit.
   Requiring it to be 1 would make every real VDMA read fail the gate.
 - The AXI DMA mask `0x770` (bits 4,5,6,8,9,10) does not match either VDMA
-  channel's error layout.
+  channel's error layout: it omits SOFEarlyErr (bit 7), SOFLateErr (bit 11),
+  and EOLLateErr (bit 15); bit 8 is Reserved on MM2S but EOLEarlyErr on S2MM,
+  so it cannot be treated as one generic error; and it treats VDMA reserved
+  bits 9–10 as errors. (Correction: the earlier wording “0x770 misses bit 8”
+  was wrong — `0x770` includes bit 8; the defect is the channel-dependent
+  meaning, not omission.)
 
 Per the authorization (“若发现代码需要修改，停止本次板测，离线修复、测试、重新打包后交审”),
 the board test was stopped. Step 1 (read-only base.hwh retrieval) was not

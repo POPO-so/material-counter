@@ -63,6 +63,24 @@ VDMA_CHANNELS = {
                               (15, "eol_late_err")),
              "reserved_mask": 0x060E},
 }
+# AXI DMA v7.1 (PG021) DMASR: bit 1 is a real Idle bit, but it reads 0 while
+# Halted=1, so a halted channel is Halted=1 + RS=0, not Idle=1. The 0x770
+# error mask is correct for AXI DMA (bits 4-6 and 8-10).
+AXI_DMA_CHANNELS = {
+    "mm2s": {"control_offset": 0x00, "status_offset": 0x04,
+             "error_mask": 0x0770,
+             "error_fields": ((4, "dma_int_err"), (5, "dma_slv_err"),
+                              (6, "dma_dec_err"), (8, "sg_int_err"),
+                              (9, "sg_slv_err"), (10, "sg_dec_err")),
+             "reserved_mask": 0x8884},
+    "s2mm": {"control_offset": 0x30, "status_offset": 0x34,
+             "error_mask": 0x0770,
+             "error_fields": ((4, "dma_int_err"), (5, "dma_slv_err"),
+                              (6, "dma_dec_err"), (8, "sg_int_err"),
+                              (9, "sg_slv_err"), (10, "sg_dec_err")),
+             "reserved_mask": 0x8884},
+}
+BUS_MASTER_PROFILES = {"axi_vdma": VDMA_CHANNELS, "axi_dma": AXI_DMA_CHANNELS}
 _CANDIDATE_CONTROL_SIGNATURE = RLE_SIGNATURE
 _BOOT_WRITE = re.compile(r"writing (.+?) to Xilinx Zynq FPGA Manager")
 
@@ -103,10 +121,18 @@ def known_bases() -> tuple[dict[str, Any], ...]:
          "bit_sha1": KNOWN_BASE_BIT_SHA1,
          "hwh_sha256": KNOWN_BASE_HWH_SHA256,
          "bus_masters": (
-             {"instance": "video_axi_vdma",
+             {"instance": "video_axi_vdma", "type": "axi_vdma",
               "vlnv": "xilinx.com:ip:axi_vdma:6.3",
               "base": BASE_VDMA_BASE, "high": BASE_VDMA_HIGH,
-              "channels": ("mm2s", "s2mm")},)},
+              "channels": ("mm2s", "s2mm")},
+             {"instance": "trace_analyzer_pi_axi_dma_0", "type": "axi_dma",
+              "vlnv": "xilinx.com:ip:axi_dma:7.1",
+              "base": 0x80430000, "high": 0x8043FFFF,
+              "channels": ("s2mm",)},
+             {"instance": "trace_analyzer_pmodb_axi_dma_0", "type": "axi_dma",
+              "vlnv": "xilinx.com:ip:axi_dma:7.1",
+              "base": 0x80420000, "high": 0x8042FFFF,
+              "channels": ("s2mm",)},)},
     )
 
 
@@ -266,9 +292,16 @@ def _hwh_dma_masters(hwh: Path) -> list[dict[str, Any]]:
         if module.tag.split("}")[-1] not in ("MODULE", "IP"):
             continue
         vlnv = module.get("VLNV") or module.get("VLNV_NAME") or ""
-        if not any(token in vlnv.lower()
+        lowered = vlnv.lower()
+        if not any(token in lowered
                    for token in ("axi_vdma", "axi_dma", "axi_cdma")):
             continue
+        if "axi_vdma" in lowered:
+            master_type = "axi_vdma"
+        elif "axi_dma" in lowered:
+            master_type = "axi_dma"
+        else:
+            raise PreloadUnsafe(f"unsupported DMA bus master {vlnv!r}")
         parameters = {}
         for item in module.iter():
             if item.tag.split("}")[-1] in ("PARAMETER", "PARAM"):
@@ -301,6 +334,7 @@ def _hwh_dma_masters(hwh: Path) -> list[dict[str, Any]]:
         masters.append({
             "instance": (module.get("INSTANCENAME") or module.get("INSTANCE")
                          or module.get("NAME") or "unknown"),
+            "type": master_type,
             "vlnv": vlnv, "base": int(str(base_value), 16),
             "channels": channels})
     return masters
@@ -317,11 +351,12 @@ def read_base_hwh_evidence(base: dict[str, Any]) -> dict[str, Any]:
         raise PreloadUnsafe(
             "base HWH SHA-256 differs from the captured base address-map evidence")
     masters = _hwh_dma_masters(hwh)
-    expected = {(str(item["vlnv"]).lower(), int(item["base"]),
-                 tuple(item.get("channels", ())))
+    expected = {(str(item["vlnv"]).lower(), str(item["type"]),
+                 int(item["base"]), tuple(item.get("channels", ())))
                 for item in base["bus_masters"]}
-    actual = {(str(item["vlnv"]).lower(), int(item["base"]),
-               tuple(item.get("channels", ()))) for item in masters}
+    actual = {(str(item["vlnv"]).lower(), str(item["type"]),
+               int(item["base"]), tuple(item.get("channels", ())))
+              for item in masters}
     if actual != expected:
         raise PreloadUnsafe(
             f"base HWH bus-master map differs from the captured evidence: "
@@ -349,13 +384,14 @@ def probe_preload_mmio(classification: dict[str, Any], *, mmio_factory,
             dma = mmio_factory(int(master["base"]), 0x1000)
             decoded = {}
             for channel in master["channels"]:
-                spec = VDMA_CHANNELS[channel]
+                spec = BUS_MASTER_PROFILES[master["type"]][channel]
                 control = int(dma.read(spec["control_offset"])) & 0xFFFFFFFF
                 status = int(dma.read(spec["status_offset"])) & 0xFFFFFFFF
                 errors = [name for bit, name in spec["error_fields"]
                           if status & (1 << bit)]
                 reserved = status & spec["reserved_mask"]
                 decoded[channel] = {
+                    "type": master["type"],
                     "control": control, "status": status,
                     "rs": bool(control & 0x1),
                     "halted": bool(status & 0x1),
