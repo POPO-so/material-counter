@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "scope": "count glyph BCD and atomic pixel-domain overlay update",
+  "pass_markers": [
+    "TEST_PASS count glyph",
+    "TEST_PASS overlay atomic update"
+  ],
+  "sources_and_logs": [
+    {
+      "path": "C:\\Users\\14173\\Documents\\material-counter\\.runtime\\worktrees\\jpeg-probe-20261101\\fpga\\experimental\\jpeg_integration\\overrides\\video_binary_overlay.v",
+      "sha256": "e44969b0fc2367f1194ff9b9d2adafcde0e235975f678ffb41313aa41a5e8871",
+      "bytes": 22689
+    },
+    {
+      "path": "C:\\AMDDesignTools\\2026.1\\Vivado\\data\\ip\\xpm\\xpm_cdc\\hdl\\xpm_cdc.sv",
+      "sha256": "27592359d8363d7e6575298f9d0faa7c9f9258ea77f19c9a38946fbaf3783f09",
+      "bytes": 63282
+    },
+    {
+      "path": "C:\\AMDDesignTools\\2026.1\\Vivado\\data\\verilog\\src\\glbl.v",
+      "sha256": "6270251cf35e1fce3119fc79f8fb968912f7983027e43cf030409ba68f048936",
+      "bytes": 1762
+    },
+    {
+      "path": "C:\\Users\\14173\\Documents\\material-counter\\.runtime\\worktrees\\jpeg-probe-20261101\\fpga\\experimental\\jpeg_integration\\tb_overlay_count_atomic.sv",
+      "sha256": "0fcde17c1ac2128f45ccce272a3ad63ef853e3c1e6437fe74805ea58412b838b",
+      "bytes": 5773
+    },
+    {
+      "path": "C:\\Users\\14173\\Documents\\material-counter\\.runtime\\worktrees\\jpeg-probe-20261101\\fpga\\experimental\\jpeg_integration\\tb_overlay_atomic_update.sv",
+      "sha256": "28ddbc30225af8b8f480a66dc73bfe0ad4d111df18ab349d80e821747bc21aae",
+      "bytes": 10338
+    },
+    {
+      "path": "T:\\overlay-xsim-jj1102\\overlay-xsim-20261102-062219-f9388e77\\compile.xvlog.log",
+      "sha256": "e1da4446e46a4c30829a152fc7d15d39a3f4a8823d5a74bf13f0c17db97ba55f",
+      "bytes": 1613
+    },
+    {
+      "path": "T:\\overlay-xsim-jj1102\\overlay-xsim-20261102-062219-f9388e77\\count.xelab.log",
+      "sha256": "4f5c95a85d9fddeda2c30a77c64beae7ac99d12ee5b4f5894ccad31711b7f513",
+      "bytes": 881
+    },
+    {
+      "path": "T:\\overlay-xsim-jj1102\\overlay-xsim-20261102-062219-f9388e77\\count.simulate.log",
+      "sha256": "83b71f18a5c4cca1f9186738cdc56306ce7eea29932318e5579d2bfc112d335a",
+      "bytes": 1604
+    },
+    {
+      "path": "T:\\overlay-xsim-jj1102\\overlay-xsim-20261102-062219-f9388e77\\atomic.xelab.log",
+      "sha256": "55b9591acf1c76df6038fd42fdfca27c8749a13bd918bd9357a10df363878ffa",
+      "bytes": 882
+    },
+    {
+      "path": "T:\\overlay-xsim-jj1102\\overlay-xsim-20261102-062219-f9388e77\\atomic.simulate.log",
+      "sha256": "cc409628e26ff6a04c07abc0b036c59dcb018a6368cdcada4d43db8910aa9bd7",
+      "bytes": 1617
+    }
+  ],
+  "build_dir": "T:\\overlay-xsim-jj1102\\overlay-xsim-20261102-062219-f9388e77"
+}

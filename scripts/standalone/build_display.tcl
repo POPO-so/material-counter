@@ -37,7 +37,7 @@ set fd [open $cdc_file w]
 puts $fd {# Request/acknowledge synchronizers terminate these CDC paths.}
 puts $fd {set_false_path -to [get_pins -hier -regexp {.*frame_monitor.*(request_sync1|acknowledge_sync1|axi_reset_sync1)_reg/D}]}
 puts $fd {# Mailbox is held until the next handshake; data settles before ack is used.}
-puts $fd {set_max_delay -datapath_only 10 -from [get_cells -hier -regexp {.*frame_monitor.*mailbox_.*_reg.*}] -to [get_cells -hier -regexp {.*frame_monitor.*snap_.*_reg.*}]}
+puts $fd {set_max_delay -datapath_only 10 -from [get_cells -hier -regexp {.*frame_monitor.*mailbox_.*_reg(\[[0-9]+\])?$}] -to [get_cells -hier -regexp {.*frame_monitor.*snap_.*_reg(\[[0-9]+\])?$}]}
 close $fd
 add_files -fileset constrs_1 $cdc_file
 set_property USED_IN_SYNTHESIS false [get_files $cdc_file]

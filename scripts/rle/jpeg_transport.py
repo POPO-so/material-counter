@@ -70,8 +70,21 @@ def _bytes_view(value: Any) -> memoryview:
         raise TypeError("JPEG frame must be contiguous bytes-like data") from exc
 
 
-def iter_raw_mjpeg(device: Any = 0, *, cv2_module: Any = None) -> Iterator[bytes]:
-    """Yield unchanged V4L2 MJPG payloads requested at 640x400."""
+def iter_raw_mjpeg(device: Any = 0, *, cv2_module: Any = None,
+                   max_consecutive_invalid: int = 3,
+                   stats: dict[str, Any] | None = None) -> Iterator[bytes]:
+    """Yield complete raw V4L2 MJPG packets, dropping a bounded corrupt streak."""
+    if (isinstance(max_consecutive_invalid, bool) or
+            not isinstance(max_consecutive_invalid, numbers.Integral) or
+            max_consecutive_invalid < 0):
+        raise ValueError("max_consecutive_invalid must be a nonnegative integer")
+    if stats is None:
+        stats = {}
+    if not isinstance(stats, dict):
+        raise TypeError("stats must be a dict")
+    stats.update(valid_packets=0, invalid_packets=0, consecutive_invalid_packets=0,
+                 max_consecutive_invalid=int(max_consecutive_invalid),
+                 last_invalid_reason=None)
     if cv2_module is None:
         import cv2 as cv2_module
     capture = cv2_module.VideoCapture(device, cv2_module.CAP_V4L2)
@@ -98,18 +111,39 @@ def iter_raw_mjpeg(device: Any = 0, *, cv2_module: Any = None) -> Iterator[bytes
                 f"V4L2 negotiated {actual_format!r} {actual_width}x{actual_height}; "
                 f"expected MJPG {WIDTH}x{HEIGHT}"
             )
+        consecutive_invalid = 0
         while True:
             ok, encoded = capture.read()
             if not ok:
                 return
+            payload = None
+            invalid_reason = None
             if encoded is None:
-                raise RuntimeError("V4L2 returned an empty MJPG payload")
-            payload = _bytes_view(encoded)
-            if (payload.nbytes < 4 or payload[:2].tobytes() != b"\xff\xd8"
-                    or payload[-2:].tobytes() != b"\xff\xd9"):
-                raise RuntimeError("V4L2 did not return a complete JPEG packet")
+                invalid_reason = "empty payload"
+            else:
+                try:
+                    payload = _bytes_view(encoded)
+                except (TypeError, ValueError):
+                    invalid_reason = "payload is not a contiguous byte stream"
+                if (invalid_reason is None and
+                        (payload.nbytes < 4 or payload[:2].tobytes() != b"\xff\xd8"
+                         or payload[-2:].tobytes() != b"\xff\xd9")):
+                    invalid_reason = "incomplete JPEG markers"
+            if invalid_reason is not None:
+                consecutive_invalid += 1
+                stats["invalid_packets"] += 1
+                stats["consecutive_invalid_packets"] = consecutive_invalid
+                stats["last_invalid_reason"] = invalid_reason
+                if consecutive_invalid > max_consecutive_invalid:
+                    raise RuntimeError(
+                        "V4L2 exceeded the consecutive invalid MJPG packet limit: "
+                        f"{consecutive_invalid} ({invalid_reason})")
+                continue
             if payload.nbytes > JPEG_MAX_BYTES:
                 raise RuntimeError(f"V4L2 JPEG packet exceeds {JPEG_MAX_BYTES} bytes")
+            consecutive_invalid = 0
+            stats["valid_packets"] += 1
+            stats["consecutive_invalid_packets"] = 0
             yield payload.tobytes()
     finally:
         capture.release()
@@ -156,12 +190,24 @@ class JpegRleDmaTransport:
             raise RuntimeError("JPEG core is not idle")
         if int(self.preview_control.read(0x0200)) != FRG_SIGNATURE:
             raise RuntimeError("FRG signature mismatch")
-        for offset, name in ((DMA_MM2S_STATUS, "MM2S"), (DMA_S2MM_STATUS, "S2MM")):
+        channels = ((DMA_MM2S_STATUS, "MM2S", self.send_channel),
+                    (DMA_S2MM_STATUS, "S2MM", self.recv_channel))
+        for offset, name, channel in channels:
             status = int(self.dma_regs.read(offset))
             if status & DMA_STATUS_ERROR_MASK:
                 raise RuntimeError(f"{name} DMA has error bits set")
             if not status & (DMA_IDLE | DMA_HALTED):
-                raise RuntimeError(f"{name} DMA is not idle")
+                # PYNQ 3.1.1 starts simple-mode channels when the Overlay driver
+                # constructs them. Its first transfer is explicitly permitted
+                # before DMASR.IDLE is asserted; later transfers still require
+                # the completion poll above to prove the channel idle.
+                initial_pynq_start = (
+                    self._completed_frames == 0 and self._last_frame_id is None and
+                    bool(getattr(channel, "_first_transfer", False)) and
+                    getattr(channel, "_active_buffer", None) is None and
+                    bool(getattr(channel, "running", False)))
+                if not initial_pynq_start:
+                    raise RuntimeError(f"{name} DMA is not idle")
 
     def _wait_for_completion(self) -> tuple[int, int]:
         deadline = time.monotonic() + self.timeout_s
@@ -386,6 +432,15 @@ class JpegRleDmaTransport:
         if self._closed: return
         if self.dma_may_be_active:
             raise RuntimeError("DMA-owned buffers cannot be freed while ownership is uncertain")
+        for channel, offset, name in (
+                (self.send_channel, DMA_MM2S_STATUS, "MM2S"),
+                (self.recv_channel, DMA_S2MM_STATUS, "S2MM")):
+            stop = getattr(channel, "stop", None)
+            if callable(stop):
+                stop()
+            status = int(self.dma_regs.read(offset))
+            if status & DMA_STATUS_ERROR_MASK or not status & (DMA_IDLE | DMA_HALTED):
+                raise RuntimeError(f"{name} DMA did not reach idle/halted state during close")
         for buffer in (self.tx_buffer, self.rx_buffer):
             free = getattr(buffer, "freebuffer", None)
             if not callable(free): raise RuntimeError("DMA buffer has no freebuffer method")

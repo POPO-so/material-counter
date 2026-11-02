@@ -1,13 +1,11 @@
-# PYNQ v3.1 rgb2dvi's generic constraint assumes SerialClk is generated from
-# PixelClk inside that IP. This design sets kGenerateSerialClk=false: both are
-# supplied by axi_dynclk. Follow the real MMCM serial output through the BUFG.
-# The build excludes rgb2dvi's generic clock XDC because this design supplies
-# SerialClk from axi_dynclk rather than generating it inside rgb2dvi.
-set serial_source [get_pins -quiet display_i/hdmi_out/frontend/axi_dynclk/U0/Inst_mmcme2_drp/mmcm_adv_inst/CLKOUT0]
-set serial_target [get_pins -quiet display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk]
-create_generated_clock -name display_i/hdmi_out/frontend/rgb2dvi_0/U0/SerialClk \
-    -source $serial_source -divide_by 1 $serial_target
+# axi_dynclk supplies PXL_CLK_O and PXL_CLK_5X_O from sibling MMCM outputs.
+# Keep their propagated common master; do not model the 5x output as derived
+# through the rgb2dvi PixelClk input.
 
+# rgb2dvi_clocks.xdc derives SerialClk from PixelClk, but this design drives
+# SerialClk from axi_dynclk's sibling 5x MMCM output. joint_build.tcl disables
+# that one duplicate XDC at project level for synthesis and implementation;
+# the propagated MMCM clock remains the timing source for the connected pin.
 # Mechanical buttons are asynchronous. The instantiated GPIO has four
 # synchronization stages; only the path to its first stage is asynchronous.
 set button_first [get_pins -hier -regexp {.*btns_gpio.*syncstages_ff_reg\[0\]\[[0-3]\]/D}]

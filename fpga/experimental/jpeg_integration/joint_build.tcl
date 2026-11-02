@@ -32,28 +32,46 @@ proc joint::thread_hooks {stage} {
 
 proc joint::resource_gate {reports} {
     variable cfg
-    set text [report_utilization -return_string]
+    set text [report_utilization -hierarchical -return_string]
     set ch [open [file join $reports utilization.rpt] {WRONLY CREAT EXCL}]
     puts $ch $text
     close $ch
-    if {![regexp {\|\s*(?:Slice|CLB) LUTs\*?\s*\|\s*([0-9]+)} $text -> lut]} {error "JOINT_LUT_UTILIZATION_UNPARSED"}
-    if {![regexp {\|\s*(?:Slice|CLB) Registers\s*\|\s*([0-9]+)} $text -> ff]} {error "JOINT_FF_UTILIZATION_UNPARSED"}
-    set bram36 [llength [get_cells -hier -filter {REF_NAME =~ RAMB36*}]]
-    set bram18 [llength [get_cells -hier -filter {REF_NAME =~ RAMB18*}]]
-    set dsp [llength [get_cells -hier -filter {REF_NAME =~ DSP48*}]]
+    set top [get_property TOP [get_filesets sources_1]]
+    set totals [joint::parse_hierarchical_resources $text $top]
+    set lut [dict get $totals lut]
+    set ff [dict get $totals ff]
+    set bram36 [dict get $totals bram36]
+    set bram18 [dict get $totals bram18]
+    set dsp [dict get $totals dsp]
     set stats [get_cells -hier -filter {NAME =~ *stats_mem* && REF_NAME =~ RAMB*}]
     set rows [get_cells -hier -filter {NAME =~ *row_mem* && REF_NAME =~ RAMB*}]
     if {![llength $stats] || ![llength $rows]} {error "JOINT_REGION_BRAM_MAPPING_MISSING:stats=$stats rows=$rows"}
     foreach {key value} [list max_lut $lut max_ff $ff max_bram36 [expr {$bram36 + $bram18/2.0}] max_dsp $dsp] {
         if {$value > [dict get $cfg $key]} {error "JOINT_RESOURCE_LIMIT:$key:$value>[dict get $cfg $key]"}
     }
-    return [dict create lut $lut ff $ff bram36 $bram36 bram18 $bram18 dsp $dsp region_stats_bram $stats region_rows_bram $rows]
+    return [dict merge $totals [dict create region_stats_bram $stats region_rows_bram $rows]]
+}
+
+proc joint::disable_duplicate_rgb2dvi_clock_xdc {} {
+    set matches [get_files -all -quiet *rgb2dvi_clocks.xdc]
+    if {[llength $matches] != 1} {
+        error "JOINT_RGB2DVI_CLOCK_XDC_COUNT:[llength $matches]"
+    }
+    set xdc [lindex $matches 0]
+    set_property USED_IN_SYNTHESIS false $xdc
+    set_property USED_IN_IMPLEMENTATION false $xdc
+    if {[get_property USED_IN_SYNTHESIS $xdc] || [get_property USED_IN_IMPLEMENTATION $xdc]} {
+        error "JOINT_RGB2DVI_CLOCK_XDC_STILL_ENABLED:$xdc"
+    }
+    return SUCCESS:joint_duplicate_rgb2dvi_clock_xdc_disabled
 }
 
 if {$stage eq "synth"} {
     joint::capture child_thread_limits {joint::thread_hooks synth} {SUCCESS:joint_thread_hooks}
     joint::capture generate_bd {generate_target all [joint::one [get_files */display.bd] display.bd]}
-    joint::capture synth {
+    joint::capture duplicate_rgb2dvi_clock_xdc {joint::disable_duplicate_rgb2dvi_clock_xdc} \
+        {SUCCESS:joint_duplicate_rgb2dvi_clock_xdc_disabled}
+    set synth_capture [joint::capture_run synth_run {
         launch_runs synth_1 -jobs 1
         wait_on_run synth_1
         set run [get_runs synth_1]
@@ -61,7 +79,8 @@ if {$stage eq "synth"} {
             error "JOINT_SYNTH_FAILED:[get_property STATUS $run]"
         }
         open_run synth_1
-    }
+        set run_capture_marker JOINT_SYNTH_RUN_COMPLETE
+    } JOINT_SYNTH_RUN_COMPLETE]
     set resources [joint::resource_gate $reports]
     joint::capture reports {
         report_cdc -details -file [file join $reports cdc.rpt]
@@ -71,7 +90,14 @@ if {$stage eq "synth"} {
         report_timing_summary -report_unconstrained -file [file join $reports timing.rpt]
         write_checkpoint [file join $out joint-synth.dcp]
     }
-    puts [ipcfg::write_evidence [file join $out joint-synth.tcldict] [dict create status SYNTHESIZED_CDC_REVIEW_PENDING resources $resources reports $reports]]
+    set synth_status SYNTHESIZED_CDC_REVIEW_PENDING
+    if {[dict exists $synth_capture reporting_status] &&
+        [dict get $synth_capture reporting_status] eq "VERIFIED_FOR_REPORTING_REVIEW_REQUIRED"} {
+        set synth_status SYNTHESIZED_REPORTS_READY_CRITICAL_WARNING_REVIEW_REQUIRED
+    }
+    puts [ipcfg::write_evidence [file join $out joint-synth.tcldict] [dict create \
+        status $synth_status run_capture [dict remove $synth_capture raw options output messages capture_options] \
+        resources $resources reports $reports board_ready 0]]
     puts "JOINT_SYNTH_COMPLETE: route requires explicit Manager CDC review and HLS cosim PASS receipt"
 } else {
     if {![file isfile [file join $out joint-synth.tcldict]] || ![dict exists $options -cdc-review]} {error "JOINT_SYNTH_AND_CDC_REVIEW_REQUIRED"}
@@ -81,7 +107,9 @@ if {$stage eq "synth"} {
         if {$result ne "JOINT_SOURCE_HASHES_OK\nJOINT_GREEN_GATES_OK\nJOINT_ROUTE_REVIEW_OK"} {error "JOINT_ROUTE_REVIEW_FAILED:$result"}
     }
     joint::capture child_thread_limits {joint::thread_hooks route} {SUCCESS:joint_thread_hooks}
-    joint::capture route {
+    joint::capture duplicate_rgb2dvi_clock_xdc {joint::disable_duplicate_rgb2dvi_clock_xdc} \
+        {SUCCESS:joint_duplicate_rgb2dvi_clock_xdc_disabled}
+    set route_capture [joint::capture_run route_run {
         launch_runs impl_1 -to_step route_design -jobs 1
         wait_on_run impl_1
         set run [get_runs impl_1]
@@ -89,7 +117,8 @@ if {$stage eq "synth"} {
             error "JOINT_ROUTE_FAILED:[get_property STATUS $run]"
         }
         open_run impl_1
-    }
+        set run_capture_marker JOINT_ROUTE_RUN_COMPLETE
+    } JOINT_ROUTE_RUN_COMPLETE]
     set resources [joint::resource_gate $reports]
     joint::capture route_reports {
         set route_status [report_route_status -return_string]
@@ -102,22 +131,27 @@ if {$stage eq "synth"} {
         report_cdc -details -file [file join $reports cdc.rpt]
         report_bus_skew -file [file join $reports bus-skew.rpt]
     }
+    set timing_slacks [dict create]
     foreach type {max min} {
         set path [joint::one [get_timing_paths -delay_type $type -max_paths 1] timing_$type]
-        if {[get_property SLACK $path] < 0} {error "JOINT_TIMING_FAIL:$type:[get_property SLACK $path]"}
+        dict set timing_slacks $type [get_property SLACK $path]
+        if {[dict get $timing_slacks $type] < 0} {
+            error "JOINT_TIMING_FAIL:$type:[dict get $timing_slacks $type]"
+        }
     }
     foreach violation [concat [get_drc_violations] [get_methodology_violations]] {
-        if {[get_property SEVERITY $violation] in {Error {Critical Warning}}} {error "JOINT_ROUTE_VIOLATION:$violation"}
+        if {[get_property SEVERITY $violation] in {Error {Critical Warning}}} {
+            error "JOINT_ROUTE_VIOLATION:$violation"
+        }
     }
-    # Read the actual report, not an assumed current_design ROUTE_STATUS property.
-    if {![regexp -nocase {# of unrouted nets[.\s:|]*([0-9]+)} $route_status -> unrouted] || $unrouted != 0} {
-        error "JOINT_UNROUTED_OR_UNPARSED:see [file join $reports route-status.rpt]"
-    }
-    if {![regexp -nocase {# of nets with routing errors[.\s:|]*([0-9]+)} $route_status -> route_errors] || $route_errors != 0} {
-        error "JOINT_ROUTING_ERRORS_OR_UNPARSED:see [file join $reports route-status.rpt]"
-    }
+    # Vivado reports routable and fully routed totals, not a separate
+    # '# of unrouted nets' line.
+    set route_counts [joint::parse_route_status $route_status]
     write_checkpoint [file join $out joint-routed.dcp]
-    puts [ipcfg::write_evidence [file join $out joint-route.tcldict] [dict create status ROUTED_REVIEW_PENDING resources $resources reports $reports board_ready 0]]
+    puts [ipcfg::write_evidence [file join $out joint-route.tcldict] [dict create \
+        status ROUTED_REVIEW_PENDING route_run_capture [dict remove $route_capture raw options output messages capture_options] \
+        resources $resources reports $reports route_counts $route_counts \
+        wns [dict get $timing_slacks max] whs [dict get $timing_slacks min] board_ready 0]]
     puts "JOINT_ROUTE_COMPLETE: no bitstream/deployment; final CDC/constraint review and board acceptance pending"
 }
 joint::verify_sources

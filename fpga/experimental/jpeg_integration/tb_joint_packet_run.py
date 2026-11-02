@@ -174,8 +174,8 @@ def main():
     compile_command = 'exec xvlog -sv ' + ' '.join(tcl_path(p) for p in sources) + ' > compile.log 2>@1'
     tcl = build/'tb_joint_packet_xsim.tcl'
     tcl.write_text(compile_command+'\n'
-                   'exec xelab tb_joint_packet -s tb_joint_packet_snapshot > elaborate.log 2>@1\n'
-                   f'exec xsim tb_joint_packet_snapshot -runall -testplusarg {{VECTORS={vectors.as_posix()}}} '
+                   'exec xelab tb_joint_packet -s tb_joint_packet_snapshot_mt2 -mt 2 -v 2 > elaborate.log 2>@1\n'
+                   f'exec xsim tb_joint_packet_snapshot_mt2 -runall -testplusarg {{VECTORS={vectors.as_posix()}}} '
                    f'-testplusarg {{CASES={len(cases)}}} > simulate.log 2>@1\n', encoding='ascii')
     with (sim/'driver_stdout.log').open('wb') as stream:
         completed = subprocess.run([str(args.vivado), '-mode', 'batch', '-source', str(tcl),

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "status": "PACKAGE_HASH_VERIFIED",
+  "branch": "test/验证MJPEG硬解码前提",
+  "commit": "b269ee01c765a43f0cfa6aeca657b63b34f02b2b",
+  "package": "jpeg-pl-runtime-v8.zip",
+  "package_sha256": "6939451aa26c943c7a66c1f60ba1b7d5d650e2dd2a758515eb6f16b2dedf817f",
+  "package_bytes": 1323908,
+  "manifest_sha256": "ddf649cfd77e3a3178c90a9272fc9d111dbf14091d2572f1d8189c63e71ae859",
+  "source_files_verified": 18,
+  "zip_entries_verified": 21,
+  "bit_sha256": "9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed",
+  "hwh_sha256": "79b8abcb954667e6791c8d7f0eba3e59ad2215ca3f175ebb8b5e98892dd9968f",
+  "build_status": "ROUTED_NOT_BOARD_VERIFIED",
+  "native_library": "build source-hash-named shared library before hardware access when no configured library exists; requires g++",
+  "board_deployed": false,
+  "physical_hdmi_verified": false
+}

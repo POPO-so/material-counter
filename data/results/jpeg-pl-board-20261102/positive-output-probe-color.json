@@ -1,0 +1,180 @@
+{
+  "status": "JPEG_PL_RUN_COMPLETED_OUTPUT_MONITORED",
+  "mode": "jpeg_file_to_jpeg_pl",
+  "resolution": [
+    640,
+    400
+  ],
+  "expected_frames": 1,
+  "frames": 1,
+  "total_count": 0,
+  "count_accuracy": "NOT_MEASURED",
+  "artifacts": {
+    "status": "ROUTED_NOT_BOARD_VERIFIED",
+    "part": "xc7z020clg400-1",
+    "bit_path": "/home/xilinx/jpeg-joint-20261102-v8/artifacts/jpeg-joint.bit",
+    "bit_sha256": "9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed",
+    "hwh_path": "/home/xilinx/jpeg-joint-20261102-v8/artifacts/jpeg-joint.hwh",
+    "hwh_sha256": "79b8abcb954667e6791c8d7f0eba3e59ad2215ca3f175ebb8b5e98892dd9968f",
+    "dma_base": 1077936128,
+    "rle_base": 1136787456,
+    "overlay_base": 1136984064,
+    "jpeg_base": 1137180672
+  },
+  "boot_id_expected": "99f9fcff-0685-42ed-a8df-9822cfca6cd0",
+  "timing_ms": [
+    72.4512369997683
+  ],
+  "frames_evidence": [
+    {
+      "frame_id": 1,
+      "jpeg_bytes": 6295,
+      "detection_count": 1,
+      "total_count": 0,
+      "detections": [
+        {
+          "x_min": 100,
+          "x_max": 139,
+          "y_min": 100,
+          "y_max": 139,
+          "area": 1600,
+          "centroid_x": 119.5,
+          "centroid_y": 119.5
+        }
+      ],
+      "frame_interval_ms": 72.48212299964507,
+      "displayed_frame_id": 1,
+      "hdmi_output": {
+        "unique": 2,
+        "scans": 6,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 1,
+        "session": 141938186134526511100880339545883123229,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    }
+  ],
+  "input_source": {
+    "kind": "single_jpeg_fixture",
+    "path": "/home/xilinx/jpeg-joint-20261102-v8/positive-box-ycbcr422-dri40.jpg",
+    "jpeg_bytes": 6295,
+    "sha256": "23e831640eab294b7fbe7e1e06e929646527acb3b40d2e24f36b524eddaf10da"
+  },
+  "process_ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "camera_owners_before": [],
+  "pynq_state_before": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/jpeg-joint-20261102-v5/artifacts/jpeg-joint.bit",
+    "loaded_bit_sha1": "6228001b4732b9927decccbd6d2cb90d5b87872c",
+    "loaded_bit_sha256": "9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed",
+    "loaded_bit_path_matches_expected": null
+  },
+  "dma_before_load": {
+    "mm2s": 1,
+    "s2mm": 1
+  },
+  "vdma_before_load": {
+    "control": 69640,
+    "status": 69633
+  },
+  "pynq_overlay": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/jpeg-joint-20261102-v5/artifacts/jpeg-joint.bit",
+    "loaded_bit_sha1": "6228001b4732b9927decccbd6d2cb90d5b87872c",
+    "loaded_bit_sha256": "9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed",
+    "loaded_bit_path_matches_expected": false
+  },
+  "hp1_readwrite32": {
+    "status": "HP1_READWRITE_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/jpeg-joint-20261102-v8/artifacts/jpeg-joint.hwh",
+    "hwh_hp1_data_width_bits": 32,
+    "slcr_fpga_rst_ctrl": 0,
+    "rle_dma": {
+      "base": "0x40400000",
+      "status": {
+        "read": {
+          "offset": 4,
+          "status": 1
+        },
+        "write": {
+          "offset": 52,
+          "status": 1
+        }
+      }
+    },
+    "rle_pipeline": {
+      "base": "0x43c20000",
+      "signature": 826625106,
+      "geometry": 26215040,
+      "max_runs": 16384,
+      "state": 0
+    },
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xF8009000",
+        "before": 1,
+        "write_value": null,
+        "after": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xF8009014",
+        "before": 3841,
+        "write_value": null,
+        "after": 3841
+      }
+    }
+  },
+  "hdmi_monitor_base": "0x43c40000",
+  "hdmi_monitor_signature": "0x4d435631",
+  "hdmi_clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "hdmi_mode": {
+    "width": 1280,
+    "height": 720,
+    "bits_per_pixel": 8,
+    "fps": 60,
+    "format": "Gray8"
+  },
+  "hdmi_monitor_baseline": {
+    "unique": 1,
+    "scans": 1,
+    "invalid": 0,
+    "partial": 0,
+    "frame": 0,
+    "session": 141938186134526511100880339545883123229,
+    "diagnostics": {
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false
+    }
+  },
+  "session_id": "6ac84cdf-fdff-4c80-85b0-0f149c879e1d",
+  "elapsed_s": 0.0729349600005662,
+  "throughput_fps": 13.710845937150536,
+  "hdmi_evidence": "on-board HDMI pixel monitor matched each submitted session/frame marker with valid 1280x720 Gray8 scan; external display was not visually observed",
+  "external_display_visual_observation": "NOT_OBSERVED",
+  "hdmi_stopped": true,
+  "buffers_held": false
+}
