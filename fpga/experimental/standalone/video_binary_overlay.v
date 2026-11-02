@@ -239,12 +239,13 @@ module video_binary_overlay #(
       assign source_y=(local_y*HEIGHT)/VIEW_HEIGHT;
     end
   endgenerate
-  reg line_or_box;
+  reg [MAX_BOXES-1:0] box_hit, hit_q;
+  reg line_hit, line_hit_q;
   integer b;
   reg [9:0] bx0,bx1,by0,by1;
   always @* begin
-    line_or_box=in_view && line_valid_p && local_x==line_p;
-    bx0=0;bx1=0;by0=0;by1=0;
+    line_hit=in_view && line_valid_p && local_x==line_p;
+    box_hit=0; bx0=0;bx1=0;by0=0;by1=0;
     for(b=0;b<MAX_BOXES;b=b+1) begin
       bx0=boxes_p[b*40 +: 10]; bx1=boxes_p[b*40+10 +: 10];
       by0=boxes_p[b*40+20 +: 10]; by1=boxes_p[b*40+30 +: 10];
@@ -252,7 +253,7 @@ module video_binary_overlay #(
          box_valid_p[b] && bx0<=bx1 && by0<=by1 &&
          local_x>=bx0 && local_x<=bx1 && local_y>=by0 && local_y<=by1 &&
          (local_x==bx0 || local_x==bx1 || local_y==by0 || local_y==by1))
-        line_or_box=1;
+        box_hit[b]=1'b1;
     end
   end
   wire [AW-1:0] pixel_addr;
@@ -277,6 +278,9 @@ module video_binary_overlay #(
   reg use_q,overlay_q;
   reg [23:0] base_q;
   reg active_q,vsync_q,hsync_q;
+  reg mask_q2,use_q2;
+  reg [23:0] base_q2;
+  reg active_q2,vsync_q2,hsync_q2;
   // BRAM synchronous read and the base-video metadata take the same one-pixel
   // delay. A zero mask pixel is black (not the old background pixel).
   always @(posedge pixel_clk) begin
@@ -289,6 +293,8 @@ module video_binary_overlay #(
       row_base_addr<=0;row_scale_phase<=0;
       bank_q<=0;use_q<=0;overlay_q<=0;base_q<=0;
       active_q<=0;vsync_q<=0;hsync_q<=0;
+      hit_q<=0;line_hit_q<=0;
+      mask_q2<=0;use_q2<=0;base_q2<=0;active_q2<=0;vsync_q2<=0;hsync_q2<=0;
       out_data24<=0;out_active<=0;out_vsync<=0;out_hsync<=0;
     end else begin
       publish_sync1<=publish_toggle;publish_sync2<=publish_sync1;
@@ -321,10 +327,14 @@ module video_binary_overlay #(
         end
       end
       bank_q<=display_bank;
-      use_q<=in_view;overlay_q<=line_or_box;base_q<=vid_data24;
+      hit_q<=box_hit;line_hit_q<=line_hit;
+      use_q<=in_view;base_q<=vid_data24;
       active_q<=vid_active;vsync_q<=vid_vsync;hsync_q<=vid_hsync;
-      out_data24<=use_q ? ((mask_q || overlay_q)?24'hffffff:24'h000000) : base_q;
-      out_active<=active_q;out_vsync<=vsync_q;out_hsync<=hsync_q;
+      overlay_q<=line_hit_q | (|hit_q);
+      mask_q2<=mask_q;use_q2<=use_q;base_q2<=base_q;
+      active_q2<=active_q;vsync_q2<=vsync_q;hsync_q2<=hsync_q;
+      out_data24<=use_q2 ? ((mask_q2 || overlay_q)?24'hffffff:24'h000000) : base_q2;
+      out_active<=active_q2;out_vsync<=vsync_q2;out_hsync<=hsync_q2;
     end
   end
 endmodule
