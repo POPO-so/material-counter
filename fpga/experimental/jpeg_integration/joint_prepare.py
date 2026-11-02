@@ -15,6 +15,21 @@ import sys
 import xml.etree.ElementTree as ET
 
 BASE_COMMIT = "c5a86807c93e6ed572e2f75e13a6f9c7f1320321"
+CANDIDATE_MAILBOX_XDC = """\
+# Candidate mailbox CDC: explicit, anchored destination set.
+# The frozen original scripts/standalone/offload_cdc.xdc is retained unchanged
+# and is not added to this candidate project.
+# XDC does not support if/foreach/error (Designutils 20-1307); the exact
+# 705/32/16/1 counts and the MaxDelay readback are asserted in joint_build.tcl
+# after open_run.
+set cfg_src [get_cells -hier -regexp {.*binary_overlay.*cfg_mb_.*_reg.*$}]
+set cfg_dst [get_cells -hier -regexp {.*binary_overlay.*/(enable_p|id_p|count_p|boxes_p|box_valid_p|line_p|line_valid_p)_reg(\\[[0-9]+\\])?$}]
+set publish_src [get_cells -hier -regexp {.*binary_overlay.*publish_(id|bank)_reg.*$}]
+set publish_dst [get_cells -hier -regexp {.*binary_overlay.*/(displayed_frame_id|display_bank)_reg(\\[[0-9]+\\])?$}]
+set_false_path -to [get_pins -hier -regexp {.*binary_overlay.*(publish_sync1|ack_sync1|cfg_ack_s1|cfg_req_s1)_reg/D}]
+set_max_delay -datapath_only 10 -from $cfg_src -to $cfg_dst
+set_max_delay -datapath_only 10 -from $publish_src -to $publish_dst
+"""
 XPR_REL = "data/results/standalone-20261101-055148-g2-integration/project/display.xpr"
 
 
@@ -343,6 +358,9 @@ def stage(args, result: dict) -> None:
         'set_max_delay -datapath_only 10 -from [get_cells -hier -regexp {.*frame_monitor.*mailbox_.*_reg.*}] -to [get_cells -hier -regexp {.*frame_monitor.*snap_.*_reg.*}]\n',
         encoding="utf-8")
     snapshot_sources.append(entry(monitor_xdc))
+    candidate_xdc = staged / "constraints" / "candidate_offload_cdc.xdc"
+    candidate_xdc.write_text(CANDIDATE_MAILBOX_XDC, encoding="utf-8", newline="\n")
+    snapshot_sources.append(entry(candidate_xdc))
     code_files = [Path(__file__)] + [Path(__file__).with_name(name) for name in
                                   ("joint_common.tcl", "joint_connect.tcl", "joint_build.tcl", "joint_probe.tcl",
                                    "joint_capture_review.py")]

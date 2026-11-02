@@ -226,8 +226,79 @@ proc joint::capture_refresh_region {script expected_result} {
     return $receipt
 }
 
+# The synth stage is the only operation allowed to enter this path: launch_runs
+# spawns a child that resets Vivado's in-process message counter, so a negative
+# WARNING delta is expected. The original ipcfg receipt stays FAIL; a separate
+# review parses the exact native-log byte range and fails on any ERROR or
+# CRITICAL WARNING. No other capture operation is adapted.
+proc joint::capture_synth {label script {expect {}}} {
+    variable cfg
+    variable evidence
+    variable sequence
+    incr sequence
+    set file [file join $evidence [format {%03d-%s.tcldict} $sequence $label]]
+    set summary [uplevel 1 [list ipcfg::capture $file $script $expect]]
+    set receipt [joint::read_capture_evidence $file $summary]
+    puts $receipt
+    if {[dict get $receipt status] eq "OK"} {return $receipt}
+    if {[dict get $receipt status] ne "FAIL" || [dict get $receipt code] != 0} {
+        error "JOINT_SYNTH_CAPTURE_FAIL:$file"
+    }
+    if {![dict exists $receipt capture_error] ||
+        ![regexp {^CAPTURE_FAIL:native message export incomplete or counters changed: WARNING emitted=-[1-9][0-9]* exported=[0-9]+$} [dict get $receipt capture_error]]} {
+        error "JOINT_SYNTH_CAPTURE_ERROR_NOT_ALLOWLISTED:$file"
+    }
+    if {[dict get $receipt critical_count] != 0 || [dict get $receipt error_count] != 0} {
+        error "JOINT_SYNTH_CAPTURE_SEVERITY_NOT_CLEAN:$file"
+    }
+    foreach key {native_log_source native_log_offsets native_counts_before native_counts_after messages} {
+        if {![dict exists $receipt $key]} {error "JOINT_SYNTH_CAPTURE_EVIDENCE_MISSING:$key:$file"}
+    }
+    set native_log [file normalize [dict get $receipt native_log_source]]
+    if {$native_log ne [file normalize $::ipcfg::native_log_path]} {
+        error "JOINT_SYNTH_CAPTURE_NATIVE_LOG_MISMATCH:$file"
+    }
+    set offsets [dict get $receipt native_log_offsets]
+    if {[llength $offsets] != 2} {error "JOINT_SYNTH_CAPTURE_RANGE_MALFORMED:$file"}
+    set before [dict get [dict get $receipt native_counts_before] WARNING]
+    set after [dict get [dict get $receipt native_counts_after] WARNING]
+    set review_file [file join $evidence [format {%03d-%s.supplement.json} $sequence $label]]
+    set review_args [list --scope synth --capture-receipt $file \
+        --status [dict get $receipt status] --code [dict get $receipt code] \
+        --capture-error [dict get $receipt capture_error] \
+        --warning-before $before --warning-after $after --native-log $native_log \
+        --start [lindex $offsets 0] --end [lindex $offsets 1] --out $review_file]
+    set messages_file [file join $evidence [format {%03d-%s.messages.txt} $sequence $label]]
+    set mch [open $messages_file w]
+    fconfigure $mch -encoding utf-8 -translation lf
+    set warning_messages 0
+    foreach message [dict get $receipt messages] {
+        if {![string match {WARNING:*} $message]} {
+            close $mch
+            error "JOINT_SYNTH_CAPTURE_UNEXPECTED_EXPORTED_SEVERITY:$file"
+        }
+        puts $mch $message
+        incr warning_messages
+    }
+    close $mch
+    if {!$warning_messages} {error "JOINT_SYNTH_CAPTURE_NO_EXPORTED_WARNINGS:$file"}
+    lappend review_args --messages-file $messages_file
+    set review [ipcfg::python_script [dict get $cfg capture_review] {*}$review_args]
+    if {![string match {JOINT_CAPTURE_REVIEW_PASS *} $review]} {
+        error "JOINT_SYNTH_SUPPLEMENTAL_REVIEW_FAIL:$review_file:$review"
+    }
+    puts $review
+    dict set receipt supplement_review $review_file
+    return $receipt
+}
+
 proc joint::same_windows_path {left right} {
     return [string equal -nocase [file normalize $left] [file normalize $right]]
+}
+
+proc joint::file_sha256 {path} {
+    if {![file isfile $path]} {error "JOINT_SHA256_FILE_MISSING:$path"}
+    return [ipcfg::python_exec -c {import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())} [file normalize $path]]
 }
 
 proc joint::refresh_module_reference_checked {reference expected_result} {

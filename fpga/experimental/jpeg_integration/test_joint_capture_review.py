@@ -133,6 +133,95 @@ class JointCaptureReviewTests(unittest.TestCase):
             self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["status"], "PASS_SUPPLEMENTAL_REVIEW")
             self.assertEqual(original.read_text(encoding="utf-8"), "preserve original FAIL receipt")
 
+    def test_synth_scope_accepts_warning_only_reset_without_result_pair(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            receipt, _ = inputs(Path(directory))
+            receipt.pop("raw")
+            receipt.pop("expected_result")
+            result = review.audit_synth_capture(receipt)
+            self.assertEqual(result["status"], "PASS_SUPPLEMENTAL_REVIEW")
+            self.assertIn("synth only", result["scope"])
+            self.assertNotIn("expected_result", result)
+            self.assertEqual(result["severity_counts"], {"WARNING": 2, "CRITICAL WARNING": 0, "ERROR": 0})
+
+    def test_synth_scope_rejects_critical_warning_in_range(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            receipt, _ = inputs(Path(directory))
+            log = Path(receipt["native_log"])
+            critical = (b"CRITICAL WARNING: [Timing 38-249] Generated clock has no "
+                        b"logical paths from master clock hdmi_out_PXL_CLK_O.\n")
+            log.write_bytes(log.read_bytes() + critical)
+            receipt["end"] = len(log.read_bytes())
+            with self.assertRaises(review.AuditError):
+                review.audit_synth_capture(receipt)
+
+    def test_synth_scope_rejects_native_error_in_range(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            receipt, _ = inputs(Path(directory))
+            log = Path(receipt["native_log"])
+            error = b"ERROR: [Synth 8-439] module not found\n"
+            log.write_bytes(log.read_bytes() + error)
+            receipt["end"] = len(log.read_bytes())
+            with self.assertRaises(review.AuditError):
+                review.audit_synth_capture(receipt)
+
+    def test_synth_cli_writes_pass_supplement_without_result_pair(self):
+        import json
+        import tempfile
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            receipt, _ = inputs(root)
+            original = root / "original.tcldict"
+            original.write_text("preserve original FAIL receipt", encoding="utf-8")
+            out = root / "synth-supplement.json"
+            argv = ["joint_capture_review.py", "--scope", "synth",
+                    "--capture-receipt", str(original),
+                    "--status", receipt["status"], "--code", "0",
+                    "--capture-error", receipt["capture_error"],
+                    "--warning-before", "9", "--warning-after", "4",
+                    "--native-log", receipt["native_log"],
+                    "--start", str(receipt["start"]), "--end", str(receipt["end"]),
+                    "--warning-message", WARNING.decode(), "--warning-message", WARNING.decode(),
+                    "--out", str(out)]
+            with patch("sys.argv", argv):
+                self.assertEqual(review.main(), 0)
+            payload = json.loads(out.read_text(encoding="utf-8"))
+            self.assertEqual(payload["status"], "PASS_SUPPLEMENTAL_REVIEW")
+            self.assertIn("synth only", payload["scope"])
+            self.assertEqual(original.read_text(encoding="utf-8"), "preserve original FAIL receipt")
+
+    def test_synth_cli_reads_warning_messages_from_file(self):
+        import json
+        import tempfile
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            receipt, _ = inputs(root)
+            messages = root / "messages.txt"
+            messages.write_text(WARNING.decode() + "\n" + WARNING.decode() + "\n", encoding="utf-8")
+            original = root / "original.tcldict"
+            original.write_text("preserve original FAIL receipt", encoding="utf-8")
+            out = root / "synth-supplement.json"
+            argv = ["joint_capture_review.py", "--scope", "synth",
+                    "--capture-receipt", str(original),
+                    "--status", receipt["status"], "--code", "0",
+                    "--capture-error", receipt["capture_error"],
+                    "--warning-before", "9", "--warning-after", "4",
+                    "--native-log", receipt["native_log"],
+                    "--start", str(receipt["start"]), "--end", str(receipt["end"]),
+                    "--messages-file", str(messages),
+                    "--out", str(out)]
+            with patch("sys.argv", argv):
+                self.assertEqual(review.main(), 0)
+            payload = json.loads(out.read_text(encoding="utf-8"))
+            self.assertEqual(payload["status"], "PASS_SUPPLEMENTAL_REVIEW")
+            self.assertEqual(payload["warning_messages_file"], str(messages.resolve()))
+            self.assertIn("warning_messages_sha256", payload)
+
     class _expect_audit_error:
         def __init__(self, **overrides):
             self.overrides = overrides

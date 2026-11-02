@@ -74,7 +74,6 @@ joint::capture assign_control {
 }
 joint::capture constraints {
     foreach path [list [file join [dict get $cfg source_root] scripts standalone display_timing.xdc] \
-        [file join [dict get $cfg source_root] scripts standalone offload_cdc.xdc] \
         [file join [dict get $cfg source_root] constraints joint_monitor_cdc.xdc]] {
         set matches [get_files -filter "NAME == \"$path\""]
         if {![llength $matches]} {add_files -fileset constrs_1 $path}
@@ -82,6 +81,26 @@ joint::capture constraints {
         set_property USED_IN_SYNTHESIS false $file
         set_property PROCESSING_ORDER LATE $file
     }
+    # The frozen scripts/standalone/offload_cdc.xdc is kept unchanged and is
+    # deliberately not added: its -to regex covers the new box_valid_p /
+    # line_valid_p registers only because id_p matches the substring inside
+    # valid_p. Use the staged explicit candidate constraint instead.
+    set candidate [file join [dict get $cfg source_root] constraints candidate_offload_cdc.xdc]
+    if {![file isfile $candidate]} {error "CANDIDATE_MAILBOX_XDC_MISSING:$candidate"}
+    set matches [get_files -filter "NAME == \"$candidate\""]
+    if {![llength $matches]} {add_files -fileset constrs_1 $candidate}
+    set file [joint::one [get_files -filter "NAME == \"$candidate\""] $candidate]
+    set_property USED_IN_SYNTHESIS true $file
+    set_property USED_IN_IMPLEMENTATION true $file
+    set_property PROCESSING_ORDER LATE $file
+    if {[get_property IS_ENABLED $file] != 1 || [get_property USED_IN_SYNTHESIS $file] != 1} {
+        error "CANDIDATE_MAILBOX_XDC_NOT_ACTIVE:$candidate"
+    }
+    set timing [joint::one [get_files -filter "NAME == \"[file join [dict get $cfg source_root] scripts standalone display_timing.xdc]\""] display_timing]
+    if {[get_property IS_ENABLED $timing] != 1 || [get_property USED_IN_IMPLEMENTATION $timing] != 1} {
+        error "DISPLAY_TIMING_XDC_NOT_ACTIVE"
+    }
+    puts "CANDIDATE_CONSTRAINTS mailbox=$candidate timing=$timing"
 }
 joint::capture bd_validation {validate_bd_design}
 joint::capture architecture_readback {joint::check_jpeg} {SUCCESS:joint_jpeg_readback}
