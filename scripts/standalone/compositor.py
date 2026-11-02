@@ -789,10 +789,21 @@ class DashboardComposer:
         card(right_x, 291, right_width, 141, f"运行状态 · 第{page}页")
         control_status = " · ".join(
             text for text in (button_status, exposure_latency_text) if text)
-        runtime_labels = (("按键 / SW0", "CPU 来源", "队列", "线程")
-                          if page == 2 else ("按键 / SW0",))
-        for index, label in enumerate(runtime_labels):
-            self._text(draw, (right_x + 12, 321 + index * 16), label, 12, 174)
+        if page == 2:
+            runtime_rows = (
+                ("按键 / SW0", control_status),
+                ("CPU 来源", strip_prefix(cpu_source_text, "CPU 来源")),
+                ("队列", strip_prefix(queue_summary_text, "队列")),
+                ("线程", strip_prefix(thread_text, "threads")),
+            )
+        else:
+            runtime_rows = (("按键 / SW0", control_status), ("", ""), ("", ""), ("", ""))
+        for index, (label, value) in enumerate(runtime_rows):
+            if not label and not value:
+                continue
+            aligned_row(label, value, right_x + 12, 321 + index * 16,
+                        right_width - 24, label_width=82, size=12,
+                        value_size=12, value_fill=246 if index == 0 else 226)
         for index, line in enumerate(visible_details[:3]):
             y = 386 + index * 15
             draw.ellipse((right_x + 12, y + 5, right_x + 16, y + 9), fill=182)

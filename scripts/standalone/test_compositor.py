@@ -1,5 +1,6 @@
 import binascii
 import importlib.util
+import math
 from multiprocessing import shared_memory
 import uuid
 from pathlib import Path
@@ -579,6 +580,15 @@ def test_dashboard_key_stats_report_first_redraw_and_hits():
     }
 
 
+def test_dashboard_gutter_wrap_honors_size_and_row_limit():
+    c = _dashboard_composer()
+
+    rows = c._wrap_gutter("CPU 来源 camera process", 72, 12, 1)
+
+    assert len(rows) == 1
+    assert rows[0].endswith("…")
+
+
 def test_dashboard_detection_count_changes_update_display_without_chrome_miss(monkeypatch):
     api = _api()
     c = _dashboard_composer()
@@ -630,7 +640,6 @@ def test_dashboard_telemetry_updates_change_pixels_without_chrome_miss(monkeypat
     assert not np.array_equal(first[58:126, 340:640], second[58:126, 340:640])
     assert "29.5 FPS" in texts and "30.5 FPS" in texts
     assert "1,200.0 ms" in texts and "1,300.0 ms" in texts
-
 
 def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reused(monkeypatch):
     api = _api()
@@ -1080,17 +1089,18 @@ def test_dashboard_unavailable_percentages_show_dashes_and_empty_rings():
     assert image[599, 140 - 18] == 76
 
 
-def test_dashboard_viewport_is_binary_512_by_320_four_fifths_scale():
+def test_dashboard_viewport_is_binary_460_by_288_dashboard_scale():
     c = _dashboard_composer()
     gray = np.full((400, 640), 103, dtype=np.uint8)
     binary = np.zeros_like(gray)
     image = c.render(gray, binary, uuid.uuid4(), 1)
 
-    assert c.VIEW == (384, 146, 512, 320)
+    assert c.VIEW == (398, 154, 460, 288)
     assert image.shape == (720, 1280)
     assert image[200, 420] == 0
     assert image[300, 800] == 0
-    assert image[450, 895] == 0
+    x, y, width, height = c.VIEW
+    assert image[y + height - 1, x + width - 1] == 0
 
 
 def test_dashboard_mode_exposure_and_pl_status_change_without_hiding_rate_panels():
@@ -1121,10 +1131,11 @@ def test_dashboard_binary_view_uses_four_fifths_nearest_golden():
                      dashboard={"count": 1})
     x, y, width, height = c.VIEW
     expected = binary[np.arange(height) * 400 // height][:, np.arange(width) * 640 // width]
-    assert c.VIEW == (384, 146, 512, 320)
+    assert c.VIEW == (398, 154, 460, 288)
     visible = np.ones((height, width), dtype=bool)
-    visible[:, 248:265] = False
-    visible[:40, 260:] = False
+    line_x = math.floor(320 * width / 640 + 0.5)
+    visible[:, max(0, line_x - 9):min(width, line_x + 10)] = False
+    visible[:40, min(width, line_x + 12):] = False
     assert np.array_equal(image[y:y + height, x:x + width][visible], expected[visible])
 
 
