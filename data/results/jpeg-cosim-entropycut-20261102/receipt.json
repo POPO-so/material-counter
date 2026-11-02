@@ -1,0 +1,15 @@
+{
+  "schema": "material-counter.jpeg-hls-probe-receipt.v1",
+  "recorded_at_utc": "2026-11-02T05:52:00Z",
+  "status": "PASS",
+  "flow": "cosim", "mode": "entropy-cut", "reference_kind": "opencv",
+  "tool": {"entry": "vitis-run", "version": "v2026.1", "hls_build": "6493734", "simulator": "XSIM"},
+  "random_stall": true,
+  "c_rtl_consistency": "PASS",
+  "result": {
+    "reject_status": 101, "reject_reason": "entropy truncated after SOS / early TLAST",
+    "tlast_beat": 12235, "byte": 48941, "entropy_range": [629, 97253],
+    "recovery": "same-stream frame_id=2, full packet re-check passes (maxdiff<=1, 0 flips, checksum 33151563, 64008 beats)"
+  },
+  "evidence": {"workdir": "C:/fpga/wt/_hlsprobe/runs/probe-cosim-entropycut-20261102"}
+}
