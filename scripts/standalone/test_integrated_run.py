@@ -579,13 +579,16 @@ def test_actual_drawing_child_preserves_frame_identity_and_renders_count_line(ax
         marker=np.packbits((lease.array[0,640:864]==255).astype(np.uint8)).tobytes()
         assert uuid.UUID(bytes=marker[2:18])==session
         assert int.from_bytes(marker[18:26],'big')==77
-        # The source count coordinate is preserved under 4/5 binary preview scaling.
+        # The source count coordinate is preserved in the active dashboard viewport.
+        view_x, view_y, view_width, view_height = integrated_run.DashboardComposer.VIEW
         if axis=='x':
-            assert lease.array[156,640]==248
-            assert lease.array[166,640]==0
+            display_x = view_x + round(position * view_width / 640)
+            assert lease.array[view_y + 2, display_x]==248
+            assert lease.array[view_y + 16, display_x]==0
         else:
-            assert lease.array[306,394]==248
-            assert lease.array[306,402]==0
+            display_y = view_y + round(position * view_height / 400)
+            assert lease.array[display_y, view_x + 10]==248
+            assert lease.array[display_y, view_x + 18]==0
         outputs.release_read(lease.slot);lease=None
     finally:
         stop.set();child.join(timeout=10)
