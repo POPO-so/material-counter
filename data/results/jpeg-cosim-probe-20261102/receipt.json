@@ -1,0 +1,20 @@
+{
+  "schema": "material-counter.jpeg-hls-probe-receipt.v1",
+  "recorded_at_utc": "2026-11-02T05:20:00Z",
+  "status": "PASS",
+  "flow": "cosim",
+  "tool": {"entry": "vitis-run", "version": "v2026.1", "hls_build": "6493734",
+           "root": "F:/AMDDesignTools/2026.1/Vitis", "simulator": "XSIM"},
+  "design": {"wrapper_cpp_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d"},
+  "result": {
+    "c_rtl_consistency": "PASS",
+    "rtl_transactions": 1,
+    "tb_on_rtl": {"frame_id": 1, "max_y_diff": 1,
+                  "threshold128_count": 128000, "reference_threshold128_count": 128000,
+                  "threshold_pixel_mismatches": 0, "checksum": 33151563, "beats": 64008},
+    "ii": "NA (single transaction)",
+    "note": "C/RTL co-sim compares RTL output to the C model bit-exactly; the OpenCV +/-1 external reference is a separate check, not used to relax the C/RTL comparison."
+  },
+  "evidence": {"cosim_report": "jpeg_axis_gray_cosim.rpt", "xsim_log": "xsim.log",
+               "workdir": "C:/fpga/wt/_hlsprobe/runs/probe-cosim-20261102"}
+}
