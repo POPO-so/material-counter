@@ -95,15 +95,15 @@ Path: `C:/w/jj2026p/board-package-firstframe-fix-20261103c`
 
 | Item | SHA-256 |
 |---|---|
-| manifest | `280971324f9fff23f1b98f19bdf44446da878cc8af90ebdd6564a9d0698ac16c` |
-| SHA256SUMS | `ed252984501c1ff3a4c89b9be2c651dcacb1e08989ebf58b1d6f45f839e9619c` |
+| manifest | `a2e615582236a35c3bf2ab56323aef43dfc87c94120bf5df91a7e80b9871395a` |
+| SHA256SUMS | `f383cf02234f57617f9ea06d7b00b7053ad0971d481c8ff87e48b8449a9721c8` |
 | README | `6dbd24c093ea98567a9b374cea23c5e87882b92d9ccbb85855754f51fca2f263` |
 | BIT (unchanged) | `75577d743060a0908f5248e5a12062428bc1d6ad603c81fc5fdaedc9b15b230b` |
 | HWH (unchanged) | `06cf10cafc545d930fa210cd8fdd88d09981d808cb1c4197146183f822901380` |
-| `jpeg_transport.py` | `c646e45606e1014b33943b2b1b2cd34b36837723aa39df3ba5604256c30cb177` |
-| `test_jpeg_transport.py` | `42c06a5147a92d025021a3730e999bdbede77182eb88f4a35165fd5503761bfa` |
+| `jpeg_transport.py` | `bc043247f81fb6be260272c0385006b3a3e40b96ca67a376f5c7392671e871b5` |
+| `test_jpeg_transport.py` | `5d4332ba97ba0ab69e112106f0763b1024acab4403c569b5efa36012a8b30ffe` |
 | `run_jpeg_counter.py` | `8bf5c7ab6e5ad1e341537c53ecc69714615ea4ece903eb4419b5f11a9c0984a4` |
-| `test_jpeg_transport_integration.py` | `17562142f99996e2459241f7c56355ead2b76a00dd334e450d6986e862b1971c` |
+| `test_jpeg_transport_integration.py` | `be0fc9b9957da47864581456f6bd57c2a875f10d38485de30177341504d5e507` |
 
 `package_root` is `C:/w/jj2026p/board-package-firstframe-fix-20261103c`.
 `sha256sum -c SHA256SUMS` = 345/345 OK; manifest source check has no
