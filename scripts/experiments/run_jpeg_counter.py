@@ -32,6 +32,7 @@ from scripts.rle.counter import RleCounter
 
 EXPECTED_PART = "xc7z020clg400-1"
 DMA_BASE = 0x40400000
+VDMA_BASE = 0x43000000
 RLE_BASE = 0x43C20000
 OVERLAY_BASE = 0x43C50000
 JPEG_BASE = 0x43C80000
@@ -286,6 +287,13 @@ def main(argv: list[str] | None = None) -> int:
         report["dma_before_load"] = prior_dma
         if any(value & 0x770 or not value & 0x3 for value in prior_dma.values()):
             raise RuntimeError("DMA is active or faulty before the experimental PL load")
+        vdma_probe = MMIO(VDMA_BASE, 0x1000)
+        prior_vdma = {"control": int(vdma_probe.read(0x00)),
+                      "status": int(vdma_probe.read(0x04))}
+        report["vdma_before_load"] = prior_vdma
+        if (prior_vdma["control"] & 1 or not prior_vdma["status"] & 1 or
+                prior_vdma["status"] & 0x770):
+            raise RuntimeError("HDMI VDMA is active or faulty before the experimental PL load")
 
         overlay = Overlay(str(artifacts["bit_path"]), download=True)
         report["pynq_overlay"] = inspect_pynq_global_state(
