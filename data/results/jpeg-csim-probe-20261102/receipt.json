@@ -1,0 +1,50 @@
+{
+  "schema": "material-counter.jpeg-hls-probe-receipt.v1",
+  "recorded_at_utc": "2026-11-02T05:07:10Z",
+  "status": "PASS",
+  "flow": "csim",
+  "mode": "smoke",
+  "reference_kind": "opencv",
+  "tool": {
+    "entry": "vitis-run",
+    "version": "v2026.1 (64-bit)",
+    "hls_build": "6493734",
+    "root": "F:/AMDDesignTools/2026.1/Vitis"
+  },
+  "input": {
+    "jpeg_path": "C:/fpga/wt/_scratch_verify/probe_input.jpg",
+    "jpeg_sha256": "40fddf494dca90a939d76b62ddefbd2049a93a968990a03523473c010c52ccda",
+    "reference_path": "C:/fpga/wt/_scratch_verify/probe_reference.gray8",
+    "reference_sha256": "d2418931c16e663c240805c055a02a8e92d89c4ab7a2e8223b0ebc20e8b9f776"
+  },
+  "generation": {
+    "seed": 20261102,
+    "encoder": "Pillow",
+    "subsampling": 1,
+    "restart_marker_blocks": 40,
+    "quality": 90,
+    "pillow": "12.3.0",
+    "opencv": "5.0.0",
+    "numpy": "2.5.3",
+    "threshold128_risk_pixels_126_129": 0
+  },
+  "design": {
+    "wrapper_cpp_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d",
+    "snapshot_files": 11
+  },
+  "config_sha256": "26f00640e213987add2f90cdf004158b79c54a6eecd8bcaae6538de51310bb38",
+  "result": {
+    "frame_id": 1,
+    "max_y_diff": 1,
+    "threshold128_count": 128000,
+    "reference_threshold128_count": 128000,
+    "threshold_pixel_mismatches": 0,
+    "checksum": 33151563,
+    "beats": 64008
+  },
+  "acceptance_scope": [
+    "OpenCV tolerance: per-pixel maxdiff <= 1 (this probe).",
+    "vendorY bit-exact (maxdiff == 0) and C/RTL co-sim exact consistency remain outstanding.",
+    "No board access, deployment, or joint-implementation conclusion drawn from this CSim."
+  ]
+}
