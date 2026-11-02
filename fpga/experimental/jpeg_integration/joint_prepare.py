@@ -266,8 +266,11 @@ def _check_bram_g2_region_receipt(receipt: dict,
     for name in ("region_candidates.log", "region_cases.log", "region_diff.log",
                  "region_limits.log", "region_driver.log", "region_elab_tap.log"):
         text = bound[name][0].read_text(encoding="utf-8")
-        require(re.search(r"Fatal:|ERROR:|watchdog timeout|REGION_XSIM_FAIL|REGION_BRAM_FAIL", text,
-                          re.IGNORECASE) is None,
+        failure = re.search(
+            r"^[ \t]*(?:Fatal:|ERROR:|REGION_XSIM_FAIL\b|REGION_BRAM_FAIL\b)|"
+            r"^(?![ \t]*#).*watchdog timeout",
+            text, re.IGNORECASE | re.MULTILINE)
+        require(failure is None,
                 f"region log contains a failure marker: {name}")
     require(bound["region_elab_tap.log"][0].stat().st_size > 0,
             "region tap elaboration log is empty")

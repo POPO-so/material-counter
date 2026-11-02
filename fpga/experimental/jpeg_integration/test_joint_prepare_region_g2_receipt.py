@@ -170,6 +170,7 @@ def _write_bram_g2_receipt(root: Path):
         "region_diff.log": "REGION_DIFF_PASS compared=500\n",
         "region_limits.log": "REGION_LIMITS_PASS row_runs=320 labels=512 overflow=513\n",
         "region_driver.log": (
+            "# if {[regexp {Fatal:|ERROR:|watchdog timeout} $transcript]} { error \"REGION_XSIM_FAIL\" }\n"
             "REGION_TAP_LINK_PASS\n"
             "REGION_XSIM_PASS: region_cases.log RLE_FEATURE_PASS cases=12\n"
             "REGION_XSIM_PASS: region_diff.log REGION_DIFF_PASS\n"
