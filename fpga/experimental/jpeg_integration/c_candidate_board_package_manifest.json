@@ -1,0 +1,161 @@
+{
+  "schema": "material-counter.jpeg-candidate-board-package.v1",
+  "date": "2026-11-03",
+  "status": "ROUTED_NOT_BOARD_VERIFIED",
+  "board_ready": false,
+  "package_root": "C:/w/jj2026p/board-package",
+  "artifacts": {
+    "bit": {
+      "path": "jpeg_candidate.bit",
+      "sha256": "75577d743060a0908f5248e5a12062428bc1d6ad603c81fc5fdaedc9b15b230b"
+    },
+    "hwh": {
+      "path": "jpeg_candidate.hwh",
+      "sha256": "06cf10cafc545d930fa210cd8fdd88d09981d808cb1c4197146183f822901380"
+    },
+    "routed_dcp": {
+      "path": "C:\\w\\jj2026p\\joint-routed.dcp",
+      "sha256": "c45429ef2f38c774480d6a30d22905795b800afd6ab091e18cde1b622c5caf21"
+    },
+    "route_receipt": {
+      "path": "C:\\w\\jj2026p\\joint-route.tcldict",
+      "sha256": "3443612f2b3d5942cc66390fd7bbf5455e6bb1796cae0622463e47ebd40b9b82"
+    },
+    "synth_receipt": {
+      "path": "C:\\w\\jj2026p\\joint-synth.tcldict",
+      "sha256": "f2ddc23b0c5c56e82610d33ecd0b818ebc724016c8d921baddd5590f127ebb4e"
+    },
+    "joint_manifest": {
+      "path": "C:\\w\\jj2026p\\joint_manifest.json",
+      "sha256": "1bc1ffc9af42ece2e114cdb1f2e0786e8c1220456cff4be3bb70784863cf73b8"
+    },
+    "route_review": {
+      "path": "C:\\fpga\\wt\\claude-jpeg-20261102\\fpga\\experimental\\jpeg_integration\\c_candidate_route_review_jj2026p.json",
+      "sha256": "bc6f5092ed24d724f54bc0b6fbf64268a3647730937ae23490c136ed914bd126"
+    }
+  },
+  "build_inputs": {
+    "rtl": {
+      "video_binary_overlay.v": "811db98140f55686ff54fd89d6456a57c9fe27f64f7c7290cf3476a18eacec57",
+      "video_binary_overlay_bd.v": "dfc487227d9ad9eade9084f2d90f72ddc7e909cd208ef91a1ced63548355e0be",
+      "rle_feature_tap.v": "493bc04f15e5b72b4a8ccf8b6257abc5d3810045b596334399a7517d99874b0c",
+      "rle_region_features.v": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911"
+    },
+    "constraints": {
+      "candidate_offload_cdc.xdc": "a1a75ca572f7fd7154c7539fe7726173dd65164b3aff2f66987243cfe0f69b57",
+      "display_timing.xdc": "4ace486d68600ad81b3f76ef4d6838a2649d9106c96fc452c54bdfaf2579f3f7",
+      "offload_cdc.xdc": "3a8be351e66d9572d4165e7edb65a9ed3d0d9429feb821fce64db5b181461587",
+      "joint_monitor_cdc.xdc": "31ed0a71b595789dd975b4914a9dfdcb14349c3cfb2d92ca5ee9c83c1acf860f"
+    }
+  },
+  "contract": {
+    "part": "xc7z020clg400-1",
+    "clock_mhz": 50,
+    "bases": {
+      "dma": "0x40400000",
+      "rle": "0x43C20000",
+      "overlay": "0x43C50000",
+      "jpeg": "0x43C80000"
+    },
+    "dma": {
+      "mode": "simple",
+      "include_mm2s": true,
+      "include_s2mm": true,
+      "include_sg": false,
+      "micro_dma": false,
+      "length_width": 19,
+      "mm2s_memory_width": 64,
+      "s2mm_memory_width": 32,
+      "mm2s_stream_width": 32,
+      "s2mm_stream_width": 32,
+      "mm2s_dre": false,
+      "s2mm_dre": false
+    },
+    "control": {
+      "num_mi": 13,
+      "jpeg_m12": "0x43C80000/0x10000",
+      "jpeg_clock": "FCLK0 50 MHz",
+      "jpeg_reset": "reset_rle_peripheral_aresetn"
+    },
+    "jpeg": {
+      "vlnv": "xilinx.com:hls:jpeg_axis_gray:1.0",
+      "module": "jpeg_axis_gray_0",
+      "control_interface": "s_axi_control",
+      "control_range": 65536,
+      "interfaces": [
+        "s_axi_control",
+        "jpeg_axis_in",
+        "gray_axis_out"
+      ],
+      "ports": [
+        "ap_clk",
+        "ap_rst_n",
+        "jpeg_axis_in_TDATA",
+        "jpeg_axis_in_TKEEP",
+        "jpeg_axis_in_TLAST",
+        "jpeg_axis_in_TVALID",
+        "gray_axis_out_TDATA",
+        "gray_axis_out_TKEEP",
+        "gray_axis_out_TLAST",
+        "gray_axis_out_TVALID"
+      ],
+      "registers": {
+        "CTRL": "0x00",
+        "GIER": "0x04",
+        "IP_IER": "0x08",
+        "IP_ISR": "0x0C",
+        "jpeg_size": "0x10",
+        "frame_id": "0x18",
+        "status": "0x20",
+        "status_ctrl": "0x24"
+      }
+    },
+    "rle": {
+      "module": "image_pipeline",
+      "width": 640,
+      "height": 400,
+      "max_runs": 16384
+    },
+    "overlay": {
+      "module": "binary_overlay",
+      "modtype": "video_binary_overlay_bd"
+    },
+    "frg": {
+      "signature": "0x46524731",
+      "runtime_constant": "scripts.rle.jpeg_transport.FRG_SIGNATURE",
+      "rtl_source": "video_binary_overlay_bd.v:116"
+    }
+  },
+  "software": {
+    "python": "3.12.10",
+    "vivado": "2026.1",
+    "pynq": "capture at board run time",
+    "files": {
+      "software/scripts/experiments/run_jpeg_counter.py": "1e4680864f77fccba05f4d04a03be18c924d8e5995febbad53f4003f59c03fa4",
+      "software/scripts/rle/jpeg_runtime.py": "7e0e11b481c8867203cec96d2735e7a96214b3660193dd79fb13f1ec271883e7",
+      "software/scripts/rle/jpeg_transport.py": "a4b77a1dd4b62963b2dc1c8c3b6b851b4705fc54768a8f4a86d113bb0c47b68e",
+      "software/scripts/rle/protocol.py": "5b7ddd1b075e979812e3a3fede95506096c4c5e6c780d90e23063c68c928ac28",
+      "software/scripts/rle/transport.py": "8065c2558e24a6fbd06b58de57f69a49ef9f9d3c0fc3cc292277ccfb85a8ba05",
+      "software/scripts/rle/counter.py": "b4543bd6c61f8bd883979931930fa41b051ed0827111ecd8243509224aef0617",
+      "software/scripts/rle/components.py": "0653fa956879e036c3a1ff0b3df148a1f0c6ad7b8e01d87041e0d1708bbba4ef",
+      "software/scripts/standalone/count_controls.py": "8d9151873ebb506350f01063c6f8bddd025a5524e1a17ebee5d19a3131032c05",
+      "software/scripts/wo0015/board_preflight.py": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+      "software/scripts/wo0016/stream_counter.py": "cf2729fbeaaf588c46c561b39d265349ef1562acaf083f8918dc766354015b23",
+      "software/scripts/wo0016/split_touching.py": "731760687187391497894ebc1298f6fe07033bd7ce51335ddb444c918b26e630"
+    }
+  },
+  "admission": {
+    "verify_runtime_artifacts": "PASS",
+    "test_run_jpeg_counter": "5 passed",
+    "test_jpeg_runtime_transport": "63 passed",
+    "joint_manifest_verify": "JOINT_SOURCE_HASHES_OK",
+    "hwh_contract": "PASS: part, bases, JPEG registers/interfaces, DMA length 19/DRE 0, NUM_MI 13, FCLK0 50 MHz, RLE 640x400/16384, FRG1"
+  },
+  "restrictions": [
+    "no board access in this preparation",
+    "no deployment",
+    "no push",
+    "no merge",
+    "no bitstream/clock waiver"
+  ]
+}

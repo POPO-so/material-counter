@@ -73,10 +73,19 @@ def _parse_hwh(hwh: Path) -> dict[str, Any]:
         raise ValueError("HWH SYSTEMINFO is missing device/package/speed fields")
     bases = set()
     for parameter in root.iter("PARAMETER"):
-        if parameter.get("NAME") == "C_BASEADDR":
+        name = parameter.get("NAME") or ""
+        if name == "C_BASEADDR" or name.endswith("_BASEADDR"):
             value = parameter.get("VALUE") or ""
             if not value.lower().startswith("0x"):
-                raise ValueError("HWH C_BASEADDR is not hexadecimal")
+                if name == "C_BASEADDR":
+                    raise ValueError("HWH C_BASEADDR is not hexadecimal")
+                continue
+            bases.add(int(value, 16))
+    # HLS control interfaces name the address parameter C_S_AXI_CONTROL_BASEADDR;
+    # the MEMRANGE BASEVALUE is the same address in the address-map table.
+    for memrange in root.iter("MEMRANGE"):
+        value = memrange.get("BASEVALUE") or ""
+        if value.lower().startswith("0x"):
             bases.add(int(value, 16))
     return {"part": f"xc{device}{package}{speed}", "bases": bases}
 

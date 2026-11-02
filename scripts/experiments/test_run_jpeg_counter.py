@@ -30,6 +30,33 @@ def _hwh(*, device="7z020", package="clg400", speed="-1",
             f'SPEEDGRADE="{speed}"/>{params}</EDKSYSTEM>').encode()
 
 
+def _hwh_hls() -> bytes:
+    """Real HLS control interfaces use C_S_AXI_CONTROL_BASEADDR, not C_BASEADDR."""
+    params = (
+        '<PARAMETER NAME="C_BASEADDR" VALUE="0x40400000"/>'
+        '<PARAMETER NAME="C_BASEADDR" VALUE="0x43C20000"/>'
+        '<PARAMETER NAME="C_BASEADDR" VALUE="0x43C50000"/>'
+        '<PARAMETER NAME="C_S_AXI_CONTROL_BASEADDR" VALUE="0x43C80000"/>'
+    )
+    return (f'<?xml version="1.0"?><EDKSYSTEM>'
+            f'<SYSTEMINFO ARCH="zynq" DEVICE="7z020" PACKAGE="clg400" '
+            f'SPEEDGRADE="-1"/>{params}</EDKSYSTEM>').encode()
+
+
+def test_artifact_admission_accepts_hls_control_base_parameter():
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        bit = root / "joint.bit"
+        hwh = root / "joint.hwh"
+        bit.write_bytes(_bit())
+        hwh.write_bytes(_hwh_hls())
+
+        binding = runner.verify_runtime_artifacts(bit, digest(bit), hwh, digest(hwh),
+                                                  status="ROUTED_NOT_BOARD_VERIFIED")
+        assert binding["jpeg_base"] == 0x43C80000
+        assert binding["status"] == "ROUTED_NOT_BOARD_VERIFIED"
+
+
 def test_artifact_admission_requires_matching_bit_hwh_hashes_and_routed_state():
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
