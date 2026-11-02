@@ -32,10 +32,17 @@ CMA 79,776 KiB free; no video owner. The new package directory was absent.
 
 ## 2. Field condition: monitor not powered
 
-The monitor was not powered during this run. The observed black screen is
-explained by that field condition and is **not** attributed to the RLE packet
-header failure. The run report's display evidence remains the PL display start
-call and register readback only; no valid physical picture is claimed in either
+Timeline:
+
+- Before/during the 10-frame run: the monitor was not powered. The observed
+  black screen is explained by that field condition and is **not** attributed to
+  the RLE packet header failure.
+- After the run: no new frame and no physical display observation were made;
+  the HOLD retains the failed frame state. Powering the monitor after the fact
+  does not retroactively validate the failed frame.
+
+The run report's display evidence remains the PL display start call and
+register readback only; no valid physical picture is claimed in either
 direction.
 
 ## 2. Package verification
@@ -118,25 +125,48 @@ KiB, after 15,420 KiB (retained resources; not a leak inference).
 
 ### 4.1 Offline byte/contract comparison
 
-`offline_packet_compare.py/.txt` compares the captured S2MM buffer words with
-the RLE_PACKET_V1 contract (expected header from
-`docs/superpowers/specs/2026-10-28-rle-design.md`, `axis_rle_encoder.v`, and the
-retained netlist vector
-`data/results/rle-20261028-final-sim/vectors/baseline-expected.hex`).
+`compare_packet_contract.py` / `offline_packet_compare.txt` compare the
+captured S2MM buffer words with **this run's actual** RLE_PACKET_V1 header.
+Actual parameters: frame_id 0, params_version 0, full ROI (0,0,640,400),
+threshold 128, offset 0, morph 0; timestamp words are dynamic. The historical
+vector `baseline-expected.hex` is a format reference only (it has frame_id
+0x11/params_version 3, not this run).
 
-- Expected word 0/1: `0x31454c52` / `0x00000001`.
-- Captured words (independent `/dev/mem` read): `0x00000001` / `0x00000000`;
-  no simple shift matches the expected header.
-- The candidate RLE module is `axis_dma_rle_pipeline_bd:1.0` (same RTL family as
-  the retained netlist vector).
-- **Caveat:** the independent `/dev/mem` read bypasses the PYNQ buffer cache
-  invalidation used by the runtime, so those words are corroborating only, not
-  authoritative packet bytes. The authoritative observation is the runtime's
-  post-`sync_from_device` `decode_packet` rejection at h[0]/h[1].
-- This does not yet distinguish (a) a PL RLE packet/header-content issue from
-  (b) a software buffer-sync/mapping issue. Resolving it requires a reliable
-  read of the synced RX buffer or a trace that does not touch the HOLD; the
-  decoder must not be patched to bypass the check.
+Fixed-field result (timestamp words 7/8 excluded): 6/14 match. Magic/version/
+geometry/ROI end/flags/projection/max_runs/threshold do not match; frame_id/
+params/ROI start/offset/morph/reserved do. Captured word 0/1 are
+`0x00000001`/`0x00000000`.
+
+Build-source trace (from `C:/w/jj2026p/joint_manifest.json`):
+
+- pinned `axis_rle_encoder.v` = `2606fc95...` (same as the worktree); its
+  header state machine writes magic/version at index 0/1 before pixels;
+- pinned wrapper `axis_dma_rle_pipeline_bd.v` = `7cfbdde5...` (snapshot); the
+  worktree copy is `2addeae7...`. The pinned wrapper adds
+  `axis_raw_gray_adapter`, `input_mode` at register `0x74`, and preview ports;
+- HWH connections: `jpeg_axis_gray_0/gray_axis_out` → `image_pipeline/s_axis`;
+  `image_pipeline/m_axis` → `axi_dma_0/S_AXIS_S2MM`;
+- the runtime writes RLE `0x00` start and config `0x10`–`0x28`, but does **not**
+  write `0x74 input_mode`. Default `input_mode=0` selects the packetized gray
+  adapter, while the JPEG output is a raw gray stream. This is a concrete
+  configuration/connection discrepancy to review; it is not yet proven to be
+  the cause of the header failure.
+
+Software buffer path: `_buffer_span` verifies RX physical==device, exactly
+`RX_CAPACITY`, DDR range and 4-byte alignment; `recv_channel.transfer` writes
+the physical address/length; `_wait_for_completion` matches DMA S2MM length and
+RLE actual length (5320); `send/recv wait`, `sync_from_device`, then
+`memoryview(rx_buffer)[:dma_bytes]`, then `decode_packet`. The byte view starts
+at offset 0 and the length is within the buffer. The generic PYNQ
+`pynq/lib/dma.py` sync implementation is not hash-verified from retained
+materials; that remains an unverified boundary.
+
+**Caveat:** the independent `/dev/mem` read bypasses the PYNQ buffer cache
+invalidation used by the runtime, so the captured words are corroborating
+only. The authoritative observation is the runtime's post-`sync_from_device`
+`decode_packet` rejection at h[0]/h[1]. The current evidence cannot distinguish
+(a) a PL RLE packet/header/configuration issue from (b) a software
+buffer-sync/mapping issue. Do not patch the decoder to bypass the check.
 
 ## 5. Evidence
 
@@ -151,8 +181,8 @@ Directory: `data/results/jj2026p-board-smoke-10frame-20261103/`
 | `jpeg-smoke-010.python.pid` | `53ee0258ae5308cd63fe2ce806596f62e173803ca1af6bdd120e519f1e1b5f9c` |
 | `hold-state.txt` | `f7b31805ab2c2eea7bab7a36aa1bcffe6cdfffa6bed7a30b00a1933b201e7e22` |
 | `hold-registers.txt` | `65a9d52ef57af725ee5e2b5f3406b7007325af7f46df3a3f7a24cee339b43dae` |
-| `offline_packet_compare.txt` | `5898e72c9791ac8b6a3dd0c2d623c34e17df7a760723c836d122b0695542505a` |
-| `compare_packet_contract.py` | `6225eaa8c3f67f052b17753927b8636aad991f73a83b8f21457ec0a33da6c885` |
+| `offline_packet_compare.txt` | `8ef2dadc5c0733a884a58eaa8c7b6562197fdcf17462a46e2cf181446867b37d` |
+| `compare_packet_contract.py` | `82027a1d18bd33cae0436ac44d1b578214f0e7135b75ebcd8d0ca448e5114088` |
 
 ## 6. Status and next step
 
@@ -172,3 +202,32 @@ Directory: `data/results/jj2026p-board-smoke-10frame-20261103/`
 - `count_accuracy` remains `NOT_MEASURED`; no physical picture or accuracy
   claim.
 - No source/hardware change, no push/merge.
+
+### 6.1 Next-run minimal capture plan (not executed)
+
+Do not inject into the current HOLD. On a separately authorized run, after the
+existing `sync_from_device()` and **before** `decode_packet()`:
+
+1. Write a bounded evidence file next to the run output (only when the packet
+   is about to be validated; flush before decoding):
+   - `dma_bytes`, `rle_bytes`;
+   - RX buffer `physical_address`, `device_address`, `nbytes`, and the
+     `memoryview` offset/length used for the packet;
+   - first 64 and last 64 bytes as hex, plus SHA-256 of the full `dma_bytes`;
+   - header words `h[0..15]` as hex/decoded;
+   - DMA S2MM DA/length/status, RLE actual length and `0x74 input_mode`
+     readback, RLE config, JPEG size/frame_id/status.
+2. Leave `decode_packet()` unchanged. If it raises, preserve the original
+   exception and enter the existing FAIL_HOLD path; no close/free/reset/reload/
+   retry; the evidence file must already be flushed.
+3. Keep the capture bounded; no full RX buffer dump unless separately
+   authorized. The head/tail words plus the digest are enough to distinguish
+   a header/format mismatch from a sync/mapping mismatch.
+4. Also read back the pinned wrapper's `0x74 input_mode` in that run. If the
+   reviewed contract requires raw mode, make a separate offline source/test
+   change and review it; do not hotfix the running process.
+
+Acceptance of the capture: it must show whether the synced buffer starts with
+`0x31454c52/1`, whether the fixed fields match this run's actual parameters,
+and what `input_mode` was selected. That distinguishes (a) PL RLE
+header/configuration from (b) software buffer sync/mapping.
