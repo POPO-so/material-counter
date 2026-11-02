@@ -13,6 +13,8 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+from .shared_frames import SLOT_COUNT
+
 
 WIDTH = 1280
 HEIGHT = 720
@@ -326,6 +328,8 @@ class DashboardComposer:
         self._gutter_wrap_cache = OrderedDict()
         self._key = None
         self._chrome = np.zeros_like(self.canvas)
+        self._chrome_version = 0
+        self._output_chrome_versions = [None] * SLOT_COUNT
         self.last_timings_ms = {"scale_ms": 0.0, "draw_ms": 0.0}
         self._frames = 0
         self._key_hits = 0
@@ -743,14 +747,22 @@ class DashboardComposer:
             self._whole_latin_text(draw,(x,center_y),shown,24,226 if fresh else 142)
         self._chrome[:] = np.asarray(image)
         self._key = key
+        self._chrome_version += 1
 
     def render(self, gray, binary, session_id, frame_id, boxes=(), tracks=(),
                line_x=320, status_lines=(), *, binary_background=False, output=None,
-               line_y=None, dashboard=None, pl_preview=False):
+               line_y=None, dashboard=None, pl_preview=False, output_slot=None):
         GrayComposer._validate_image(gray, "gray")
         GrayComposer._validate_image(binary, "binary")
         if not isinstance(binary_background, bool):
             raise TypeError("binary_background must be bool")
+        if output_slot is not None:
+            if (isinstance(output_slot, bool) or not isinstance(output_slot, int)
+                    or not 0 <= output_slot < SLOT_COUNT):
+                raise ValueError("output_slot must be an integer from 0 to {}".format(
+                    SLOT_COUNT - 1))
+            if output is None:
+                raise ValueError("output_slot requires an explicit output buffer")
         if not np.all((binary == 0) | (binary == 255)):
             raise ValueError("binary input may contain only 0 and 255")
         target = self.canvas if output is None else output
@@ -765,7 +777,11 @@ class DashboardComposer:
         marker = encode_marker(session_id, frame_id)
         started = perf_counter_ns()
         self._redraw_chrome(dict(dashboard or {}), binary_background, len(boxes), lines)
-        np.copyto(target, self._chrome)
+        if (output_slot is None
+                or self._output_chrome_versions[output_slot] != self._chrome_version):
+            np.copyto(target, self._chrome)
+            if output_slot is not None:
+                self._output_chrome_versions[output_slot] = self._chrome_version
         draw_ms = (perf_counter_ns() - started) / 1_000_000
         started = perf_counter_ns()
         x0, y0, width, height = self.VIEW

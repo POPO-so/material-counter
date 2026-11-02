@@ -557,6 +557,82 @@ def test_dashboard_key_stats_report_first_redraw_and_hits():
     }
 
 
+def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reused(monkeypatch):
+    api = _api()
+    slot_composer = _dashboard_composer()
+    reference_composer = _dashboard_composer()
+    outputs = [np.empty((720, 1280), dtype=np.uint8) for _ in range(3)]
+    slot_copies = []
+    original_copyto = api.np.copyto
+
+    def track_slot_copy(destination, source, *args, **kwargs):
+        for slot, output in enumerate(outputs):
+            if destination is output:
+                slot_copies.append(slot)
+                break
+        return original_copyto(destination, source, *args, **kwargs)
+
+    monkeypatch.setattr(api.np, "copyto", track_slot_copy)
+    session = uuid.uuid4()
+    y, x = np.indices((400, 640))
+    cases = (
+        (0, 20.0, False),
+        (1, 20.0, False),
+        (2, 20.0, True),
+        (0, 21.1, False),
+        (1, 21.1, True),
+        (2, 21.1, False),
+        (0, 21.1, True),
+        (1, 22.2, False),
+        (2, 22.2, True),
+        (0, 22.2, False),
+    )
+
+    for frame_id, (slot, cpu_percent, pl_preview) in enumerate(cases, 1):
+        gray = np.full((400, 640), frame_id * 9, dtype=np.uint8)
+        binary = (((x + y + frame_id) % 11) < 4).astype(np.uint8) * 255
+        dashboard = {
+            "count": 7,
+            "camera_fps": 29.5,
+            "cpu_percent": cpu_percent,
+            "page": 0,
+        }
+        annotations = {
+            "boxes": ((20 + frame_id, 30, 100, 120),),
+            "tracks": ((str(frame_id), 180 + frame_id, 210),),
+            "line_x": 160 + frame_id,
+            "line_y": 90 + frame_id if frame_id % 2 else None,
+            "dashboard": dashboard,
+            "pl_preview": pl_preview,
+        }
+        actual = slot_composer.render(
+            gray, binary, session, frame_id, output=outputs[slot],
+            output_slot=slot, **annotations)
+        expected = reference_composer.render(
+            gray, binary, session, frame_id, **annotations)
+
+        assert actual is outputs[slot]
+        assert np.array_equal(actual, expected), f"frame {frame_id}, slot {slot}"
+
+    assert slot_composer._output_chrome_versions == [
+        slot_composer._chrome_version,
+        slot_composer._chrome_version,
+        slot_composer._chrome_version,
+    ]
+    assert slot_copies == [0, 1, 2, 0, 1, 2, 1, 2, 0]
+
+
+def test_dashboard_output_slot_requires_a_valid_explicit_output():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    output = np.empty((720, 1280), dtype=np.uint8)
+
+    with pytest.raises(ValueError, match="output_slot"):
+        c.render(gray, gray, uuid.uuid4(), 1, output=output, output_slot=3)
+    with pytest.raises(ValueError, match="output_slot"):
+        c.render(gray, gray, uuid.uuid4(), 1, output_slot=0)
+
+
 @pytest.mark.parametrize(("page", "page_lines", "expected"), [
     (1, ("第一页详情",), "第一页详情"),
     (2, ("第二页详情",), "第二页详情"),
