@@ -21,17 +21,21 @@ these exact DMA addresses:
 
 The observed `S2MM_DMACR = 0x00011003` is exactly that value read back with the
 documented always-1 Reserved bit 1 and IRQThreshold=1. `S2MM_DMASR = 0`, so
-`Halted=0`; `S2MM_DA = 0` and `S2MM_LENGTH = 0`, so **no transfer is armed**.
-This is the “started, waiting for data” state, not a committed transfer.
+`Halted=0`; `S2MM_DA = 0` and `S2MM_LENGTH = 0`, so **no transfer is armed at
+the time of sampling**. This is the “started, waiting for data” state. The
+registers do not establish whether an earlier transfer completed before this
+sample (the completion value could have been overwritten or reset), so the
+stop plan does not assume a clean history.
 
 No boot service, startup script, crontab, or rc.local references
-`BaseOverlay`/`TraceAnalyzer`, and no current process owns them. The most
-likely trigger is an earlier `BaseOverlay` construction (for example a trace
-analyzer notebook/session) whose process exited without stopping the DMA. The
-base overlay state timestamp and the running Jupyter server are consistent
-with that, but the exact historical process is not recoverable from the
-current logs. The verified cause is the PYNQ driver initialization, not this
-candidate runtime and not a boot service.
+`BaseOverlay`/`TraceAnalyzer`, and no current process owns them. The observed
+register value exactly matches the driver's initialization write. Which
+process or session constructed `BaseOverlay` and left the channels running is
+**not established** by the available logs; that historical caller remains
+unknown. The Jupyter service is running, but its log shows no kernel or trace
+activity, so it cannot be attributed. The verified mechanism is the PYNQ
+driver initialization itself; the candidate runtime and a boot service are
+ruled out.
 
 The formal runtime uses `pynq.Overlay(candidate)`, which only downloads and
 parses the candidate bitstream; it does **not** instantiate `BaseOverlay` or
@@ -200,6 +204,6 @@ stage order includes `known_base_dma_stop` before `overlay_download`.
 - No board register was written this round; no stop was executed; no candidate
   was loaded; no smoke ran.
 - `count_accuracy` remains `NOT_MEASURED`; no physical HDMI or accuracy claim.
-- The historical process that left the DMA started is not recoverable; the
-  verified mechanism is the PYNQ `BaseOverlay`/`TraceAnalyzer`/`DMA`
-  initialization.
+- The historical caller that constructed `BaseOverlay` and left the DMA started
+  is not established; the verified mechanism is the PYNQ
+  `BaseOverlay`/`TraceAnalyzer`/`DMA` initialization.
