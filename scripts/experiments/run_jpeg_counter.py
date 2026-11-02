@@ -1,8 +1,9 @@
 """One-shot camera → JPEG PL → FRG tracker → frame-matched HDMI overlay runner.
 
-This experimental path is available as ``scripts/rle/run_counter.py --jpeg-pl``
-and as a direct module entry. It requires an explicit --execute switch and routed,
-hash-matched BIT/HWH files. It does not download dependencies or stop other apps.
+This path is the default for camera/hardware invocations through
+``scripts/rle/run_counter.py``; ``--jpeg-pl`` remains a compatibility alias.
+It requires an explicit --execute switch and routed, hash-matched BIT/HWH files.
+It does not download dependencies or stop other apps.
 """
 from __future__ import annotations
 

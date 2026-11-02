@@ -1,4 +1,4 @@
-"""640x400 camera and Gray8 runner with default PL RLE or opt-in PL JPEG."""
+"""640x400 camera runner; hardware camera runs default to JPEG PL."""
 from __future__ import annotations
 import argparse
 from dataclasses import asdict
@@ -97,17 +97,62 @@ def camera_frames(device,count):
         capture.release()
 
 
+_JPEG_PL_OPTIONS = (
+    '--execute', '--bit', '--bit-sha256', '--hwh', '--hwh-sha256',
+    '--build-status', '--boot-id', '--input-jpeg',
+)
+
+
+def _option_present(argv, option):
+    return any(value == option or value.startswith(option + '=') for value in argv)
+
+
+def _mode_is_camera(argv):
+    for index, value in enumerate(argv):
+        if value == '--mode' and index + 1 < len(argv) and argv[index + 1] == 'camera':
+            return True
+        if value == '--mode=camera':
+            return True
+    return False
+
+
+def _without_camera_mode(argv):
+    forwarded=[]
+    index=0
+    while index < len(argv):
+        if argv[index] == '--mode' and index + 1 < len(argv) and argv[index + 1] == 'camera':
+            index += 2
+        elif argv[index] == '--mode=camera':
+            index += 1
+        else:
+            forwarded.append(argv[index])
+            index += 1
+    return forwarded
+
+
 def main(argv=None):
     argv=list(sys.argv[1:] if argv is None else argv)
-    if '--jpeg-pl' in argv:
-        if argv.count('--jpeg-pl') != 1:
-            raise SystemExit('--jpeg-pl may only be specified once')
-        argv.remove('--jpeg-pl')
+    jpeg_pl_count=argv.count('--jpeg-pl')
+    software_decode_count=argv.count('--software-decode')
+    if jpeg_pl_count > 1:
+        raise SystemExit('--jpeg-pl may only be specified once')
+    if software_decode_count > 1:
+        raise SystemExit('--software-decode may only be specified once')
+    if jpeg_pl_count and software_decode_count:
+        raise SystemExit('--jpeg-pl and --software-decode are mutually exclusive')
+    hardware_request=(_mode_is_camera(argv) or
+        any(_option_present(argv, option) for option in _JPEG_PL_OPTIONS))
+    if jpeg_pl_count or (hardware_request and not software_decode_count):
+        if jpeg_pl_count:
+            argv.remove('--jpeg-pl')
+        argv=_without_camera_mode(argv)
         from scripts.experiments.run_jpeg_counter import main as jpeg_pl_main
         return jpeg_pl_main(argv)
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--jpeg-pl',action='store_true',
-        help='use raw MJPG through the experimental PL JPEG path and its routed-artifact checks')
+        help='compatibility alias for the default JPEG PL camera path')
+    parser.add_argument('--software-decode',action='store_true',
+        help='explicitly keep the legacy OpenCV decode + PL RLE camera path')
     parser.add_argument('--mode',choices=('offline','self-test','camera'),default='offline')
     parser.add_argument('--frames',type=int,default=12)
     parser.add_argument('--output',type=Path,required=True)
