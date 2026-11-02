@@ -1,0 +1,102 @@
+{
+  "status": "PASS",
+  "camera_device": "/dev/video0",
+  "camera_owners": [],
+  "pynq_state": {
+    "pl_state_status": "COLD_BOOT_NO_GLOBAL_STATE",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "loaded_bit_path": null,
+    "loaded_bit_sha1": null,
+    "loaded_bit_sha256": null,
+    "loaded_bit_path_matches_expected": null
+  },
+  "negotiated": {
+    "format": "MJPG",
+    "width": 640,
+    "height": 400
+  },
+  "frames": [
+    {
+      "index": 0,
+      "bytes": 15540,
+      "sha256": "0c5a8497f5853009fc5ca98e78d6e3d522c50b7969243c0681bec22ddfd0a39d",
+      "header": {
+        "width": 640,
+        "height": 400,
+        "precision": 8,
+        "sampling": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "dri": 40,
+        "scans": 1,
+        "header_bytes": 597
+      }
+    },
+    {
+      "index": 1,
+      "bytes": 15560,
+      "sha256": "f824cb5c7c8ad4a22e8d1f1b1da9606c9136057c3dc11220913a26e20e959ad1",
+      "header": {
+        "width": 640,
+        "height": 400,
+        "precision": 8,
+        "sampling": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "dri": 40,
+        "scans": 1,
+        "header_bytes": 597
+      }
+    },
+    {
+      "index": 2,
+      "bytes": 15544,
+      "sha256": "4f48c24c5f8b017c427fac6bed9b8fa5d617bac6c9b90174f273d6624364d7b4",
+      "header": {
+        "width": 640,
+        "height": 400,
+        "precision": 8,
+        "sampling": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "dri": 40,
+        "scans": 1,
+        "header_bytes": 597
+      }
+    }
+  ]
+}

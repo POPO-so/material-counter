@@ -1,0 +1,14 @@
+boot_id=b8034c58-663f-4f86-b68c-37e4bf7cdca2
+uptime= 07:49:45 up 33 min,  1 user,  load average: 0.41, 0.29, 0.20
+fpga_state=operating
+fpga_name=Xilinx Zynq FPGA Manager
+pynq_state_file=ls: cannot access '/home/xilinx/pynq/pl_server/global_pl_state_.json': No such file or directory
+75577d743060a0908f5248e5a12062428bc1d6ad603c81fc5fdaedc9b15b230b  jpeg_candidate.bit
+06cf10cafc545d930fa210cd8fdd88d09981d808cb1c4197146183f822901380  jpeg_candidate.hwh
+b1d7ba32fe420cfd23e19a49916eaee1d5716825d4e86ef4fcf6272588509834  artifact-manifest.json
+6461fa9d6c113f12b83b4f5c6e61af687c7536fed9b8cc71528a41ea30e24652  SHA256SUMS
+total 8
+drwxrwxr-x 2 xilinx xilinx 4096 May 17 07:48 .
+drwxr-xr-x 5 xilinx xilinx 4096 May 17 07:48 ..
+-rw-rw-r-- 1 xilinx xilinx    0 May 17 07:48 jpeg-smoke-001.console.log
+NO_RUNNER

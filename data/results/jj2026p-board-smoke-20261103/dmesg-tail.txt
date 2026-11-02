@@ -1,0 +1,80 @@
+[   49.929959] systemd[1]: Reached target Remote File Systems.
+[   49.969478] systemd[1]: Reached target Slice Units.
+[   49.999815] systemd[1]: Reached target Local Verity Protected Volumes.
+[   50.040501] systemd[1]: Listening on Syslog Socket.
+[   50.070010] systemd[1]: Listening on initctl Compatibility Named Pipe.
+[   50.123539] systemd[1]: Condition check resulted in Journal Audit Socket being skipped.
+[   50.131711] systemd[1]: Listening on Journal Socket (/dev/log).
+[   50.170590] systemd[1]: Listening on Journal Socket.
+[   50.202845] systemd[1]: Listening on udev Control Socket.
+[   50.240405] systemd[1]: Listening on udev Kernel Socket.
+[   50.290482] systemd[1]: Condition check resulted in Huge Pages File System being skipped.
+[   50.349830] systemd[1]: Mounting POSIX Message Queue File System...
+[   50.398207] systemd[1]: Mounting Kernel Debug File System...
+[   50.430168] systemd[1]: Condition check resulted in Kernel Trace File System being skipped.
+[   50.450749] systemd[1]: Starting Journal Service...
+[   50.560228] systemd[1]: Starting Restore / save the current clock...
+[   50.621827] systemd[1]: Starting Set the console keyboard layout...
+[   50.660119] systemd[1]: Condition check resulted in Create List of Static Device Nodes being skipped.
+[   50.677954] systemd[1]: Starting Load Kernel Module configfs...
+[   50.718182] systemd[1]: Starting Load Kernel Module drm...
+[   50.758208] systemd[1]: Starting Load Kernel Module fuse...
+[   50.800287] systemd[1]: Started Nameserver information manager.
+[   50.854443] systemd[1]: Reached target Preparation for Network.
+[   51.130391] systemd[1]: Starting Load Kernel Modules...
+[   51.178095] systemd[1]: Starting Remount Root and Kernel File Systems...
+[   51.228369] systemd[1]: Starting Coldplug All udev Devices...
+[   51.278105] systemd[1]: Started Journal Service.
+[   51.959912] systemd-journald[82]: Received client request to flush runtime journal.
+[   52.044157] Adding 524284k swap on /var/swap.  Priority:-2 extents:2 across:2097148k SS
+[   52.476398] systemd-journald[82]: File /var/log/journal/c82cf5bcd3a14b95935d65bfb529d72d/system.journal corrupted or uncleanly shut down, renaming and replacing.
+[   53.255891] systemd-journald[82]: Failed to read journal file /var/log/journal/c82cf5bcd3a14b95935d65bfb529d72d/user-1000.journal for rotation, trying to move it out of the way: Device or resource busy
+[   55.257633] zocl: loading out-of-tree module taints kernel.
+[   55.263406] [drm] Probing for xlnx,zocl
+[   55.263456] zocl-drm axi:zyxclmm_drm: error -ENXIO: IRQ index 0 not found
+[   55.272139] [drm] PR[0] Isolation addr 0x0
+[   55.279329] [drm] Initialized zocl 0.0.0  for axi:zyxclmm_drm on minor 0
+[   56.269600] usb 1-1: Found UVC 1.00 device USB Camera (0edc:2076)
+[   56.295565] usbcore: registered new interface driver uvcvideo
+[   58.506003] macb e000b000.ethernet eth0: PHY [e000b000.ethernet-ffffffff:00] driver [RTL8211E Gigabit Ethernet] (irq=POLL)
+[   58.506048] macb e000b000.ethernet eth0: configuring for phy/rgmii-id link mode
+[   61.621894] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+[   63.120148] FAT-fs (mmcblk0p1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.
+[   78.022064] systemd[527]: memfd_create() called without MFD_EXEC or MFD_NOEXEC_SEAL set
+[  119.455234] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(351), ret: 0
+[  119.455360] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(351)
+[  119.456156] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(351), ret: 0
+[  146.489364] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(742), ret: 0
+[  146.489488] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(742)
+[  146.490177] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(742), ret: 0
+[  150.168947] fpga_manager fpga0: writing base.bin to Xilinx Zynq FPGA Manager
+[  150.818242] [drm] Loading xclbin c862883b-d30e-2771-d4a9-d666044af095 to slot 0
+[  150.818281] [drm] skip kind 29(AIE_RESOURCES) return code: -22
+[  150.818303] [drm] skip kind 8(IP_LAYOUT) return code: -22
+[  150.818319] [drm] skip kind 9(DEBUG_IP_LAYOUT) return code: -22
+[  150.818333] [drm] skip kind 25(AIE_METADATA) return code: -22
+[  150.818346] [drm] skip kind 7(CONNECTIVITY) return code: -22
+[  150.818360] [drm] found kind 6(MEM_TOPOLOGY)
+[  150.818488] [drm] Memory 0 is not reserved in device tree. Will allocate memory from CMA
+[  150.818565] [drm] Memory 1 is not reserved in device tree. Will allocate memory from CMA
+[  150.818636] [drm] Memory 2 is not reserved in device tree. Will allocate memory from CMA
+[  150.818707] [drm] Memory 3 is not reserved in device tree. Will allocate memory from CMA
+[  150.818772] [drm] Memory 4 is not reserved in device tree. Will allocate memory from CMA
+[  150.818843] [drm] zocl_xclbin_read_axlf c862883b-d30e-2771-d4a9-d666044af095 ret: 0
+[  150.851475] [drm] bitstream c862883b-d30e-2771-d4a9-d666044af095 locked, ref=1
+[  150.851591] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(351) add context Domain(65535) CU(0xffff) shared(true)
+[  150.851734] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(351) del context Domain(65535) CU(0xffff)
+[  150.851789] [drm] bitstream c862883b-d30e-2771-d4a9-d666044af095 unlocked, ref=0
+[  156.907030] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(351)
+[  158.124787] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(742)
+[ 1935.241907] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(7168), ret: 0
+[ 1935.242026] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(7168)
+[ 1935.242718] zocl-drm axi:zyxclmm_drm: zocl_create_client: created KDS client for pid(7168), ret: 0
+[ 1935.245877] [drm] bitstream c862883b-d30e-2771-d4a9-d666044af095 locked, ref=1
+[ 1935.245970] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_add_context: Client pid(7168) add context Domain(65535) CU(0xffff) shared(true)
+[ 1935.248385] zocl-drm axi:zyxclmm_drm:  ffffffffc157c810 kds_del_context: Client pid(7168) del context Domain(65535) CU(0xffff)
+[ 1935.248449] [drm] bitstream c862883b-d30e-2771-d4a9-d666044af095 unlocked, ref=0
+[ 1935.527896] 8<--- cut here ---
+[ 1935.529670] Unhandled fault: external abort on non-linefetch (0x018) at 0xb6f30004
+[ 1935.535954] [b6f30004] *pgd=02fdf831, *pte=40400703, *ppte=40400e33
+[ 1937.479666] zocl-drm axi:zyxclmm_drm: zocl_destroy_client: client exits pid(7168)

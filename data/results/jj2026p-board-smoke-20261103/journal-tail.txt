@@ -1,0 +1,80 @@
+May 17 07:48:59 pynq systemd-logind[254]: New session c99 of user xilinx.
+May 17 07:48:59 pynq systemd[1]: Started Session c99 of User xilinx.
+May 17 07:49:00 pynq sudo[7385]:   xilinx : PWD=/home/xilinx/jpeg-candidate-20261103 ; USER=root ; COMMAND=/usr/bin/ls -l /home/xilinx/pynq/pl_server/global_pl_state_.json
+May 17 07:49:00 pynq sudo[7385]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 07:49:00 pynq sudo[7385]: pam_unix(sudo:session): session closed for user root
+May 17 07:49:00 pynq sudo[7394]:   xilinx : PWD=/home/xilinx/jpeg-candidate-20261103 ; USER=root ; COMMAND=/usr/bin/dmesg
+May 17 07:49:00 pynq sudo[7394]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 07:49:00 pynq sudo[7394]: pam_unix(sudo:session): session closed for user root
+May 17 07:49:00 pynq sudo[7404]:   xilinx : PWD=/home/xilinx/jpeg-candidate-20261103 ; USER=root ; COMMAND=/usr/bin/journalctl -n 30 --no-pager
+May 17 07:49:00 pynq sudo[7404]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 07:49:02 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 5 (xid=0xb950566d)
+May 17 07:49:05 pynq sshd[7411]: Accepted publickey for xilinx from 192.168.2.10 port 53648 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 07:49:05 pynq sshd[7411]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 07:49:05 pynq systemd-logind[254]: New session c100 of user xilinx.
+May 17 07:49:05 pynq systemd[1]: Started Session c100 of User xilinx.
+May 17 07:49:05 pynq sudo[7429]:   xilinx : PWD=/home/xilinx ; USER=root ; COMMAND=/usr/bin/cat /var/lib/material-counter/ac86aaba-53a2-4dc9-83ab-03f285b8dab7/session-fee3d9e6-5c03-41ba-afae-85d1754e863d.diag.json
+May 17 07:49:05 pynq sudo[7429]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 07:49:05 pynq sudo[7429]: pam_unix(sudo:session): session closed for user root
+May 17 07:49:06 pynq sshd[7427]: Received disconnect from 192.168.2.10 port 53648:11: disconnected by user
+May 17 07:49:06 pynq sshd[7427]: Disconnected from user xilinx 192.168.2.10 port 53648
+May 17 07:49:06 pynq sshd[7411]: pam_unix(sshd:session): session closed for user xilinx
+May 17 07:49:06 pynq systemd[1]: session-c100.scope: Deactivated successfully.
+May 17 07:49:06 pynq systemd-logind[254]: Session c100 logged out. Waiting for processes to exit.
+May 17 07:49:06 pynq systemd-logind[254]: Removed session c100.
+May 17 07:49:06 pynq sudo[7404]: pam_unix(sudo:session): session closed for user root
+May 17 07:49:06 pynq sudo[7445]:   xilinx : PWD=/home/xilinx/jpeg-candidate-20261103 ; USER=root ; COMMAND=/usr/bin/bash -c for p in /proc/[0-9]*; do [ -d "$p/fd" ] || continue; for f in "$p"/fd/*; do t=$(readlink "$f" 2>/dev/null) || continue; case "$t" in /dev/video*) echo "${p#/proc/} $t";; esac; done; done
+May 17 07:49:06 pynq sudo[7445]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 07:49:07 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 3 (xid=0xb950566d)
+May 17 07:49:10 pynq dhclient[207]: No DHCPOFFERS received.
+May 17 07:49:10 pynq dhclient[207]: No working leases in persistent database - sleeping.
+May 17 07:49:12 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 3 (xid=0xb13c392b)
+May 17 07:49:12 pynq sudo[7445]: pam_unix(sudo:session): session closed for user root
+May 17 07:49:13 pynq sshd[7373]: Received disconnect from 192.168.2.10 port 53642:11: disconnected by user
+May 17 07:49:13 pynq sshd[7373]: Disconnected from user xilinx 192.168.2.10 port 53642
+May 17 07:49:13 pynq sshd[7357]: pam_unix(sshd:session): session closed for user xilinx
+May 17 07:49:13 pynq systemd[1]: session-c99.scope: Deactivated successfully.
+May 17 07:49:13 pynq systemd[1]: session-c99.scope: Consumed 8.243s CPU time.
+May 17 07:49:13 pynq systemd-logind[254]: Session c99 logged out. Waiting for processes to exit.
+May 17 07:49:13 pynq systemd-logind[254]: Removed session c99.
+May 17 07:49:15 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 8 (xid=0xb13c392b)
+May 17 07:49:23 pynq dhclient[207]: No DHCPOFFERS received.
+May 17 07:49:23 pynq dhclient[207]: No working leases in persistent database - sleeping.
+May 17 07:49:25 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 3 (xid=0x5e173d40)
+May 17 07:49:26 pynq sshd[8516]: Accepted publickey for xilinx from 192.168.2.10 port 53688 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 07:49:26 pynq sshd[8516]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 07:49:26 pynq systemd-logind[254]: New session c101 of user xilinx.
+May 17 07:49:26 pynq systemd[1]: Started Session c101 of User xilinx.
+May 17 07:49:26 pynq sudo[8534]:   xilinx : PWD=/home/xilinx ; USER=root ; COMMAND=/usr/bin/cat /var/lib/material-counter/ac86aaba-53a2-4dc9-83ab-03f285b8dab7/session-fee3d9e6-5c03-41ba-afae-85d1754e863d.diag.json
+May 17 07:49:26 pynq sudo[8534]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 07:49:26 pynq sudo[8534]: pam_unix(sudo:session): session closed for user root
+May 17 07:49:26 pynq sshd[8532]: Received disconnect from 192.168.2.10 port 53688:11: disconnected by user
+May 17 07:49:26 pynq sshd[8532]: Disconnected from user xilinx 192.168.2.10 port 53688
+May 17 07:49:26 pynq sshd[8516]: pam_unix(sshd:session): session closed for user xilinx
+May 17 07:49:27 pynq systemd[1]: session-c101.scope: Deactivated successfully.
+May 17 07:49:27 pynq systemd-logind[254]: Session c101 logged out. Waiting for processes to exit.
+May 17 07:49:27 pynq systemd-logind[254]: Removed session c101.
+May 17 07:49:28 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 8 (xid=0x5e173d40)
+May 17 07:49:36 pynq dhclient[207]: No DHCPOFFERS received.
+May 17 07:49:36 pynq dhclient[207]: No working leases in persistent database - sleeping.
+May 17 07:49:37 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 3 (xid=0x8e35be63)
+May 17 07:49:40 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 6 (xid=0x8e35be63)
+May 17 07:49:41 pynq sshd[8563]: Accepted publickey for xilinx from 192.168.2.10 port 53709 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 07:49:41 pynq sshd[8563]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 07:49:41 pynq systemd-logind[254]: New session c102 of user xilinx.
+May 17 07:49:41 pynq systemd[1]: Started Session c102 of User xilinx.
+May 17 07:49:41 pynq sudo[8582]:   xilinx : PWD=/home/xilinx ; USER=root ; COMMAND=/usr/bin/dmesg
+May 17 07:49:41 pynq sudo[8582]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 07:49:41 pynq sudo[8582]: pam_unix(sudo:session): session closed for user root
+May 17 07:49:41 pynq sshd[8579]: Received disconnect from 192.168.2.10 port 53709:11: disconnected by user
+May 17 07:49:41 pynq sshd[8579]: Disconnected from user xilinx 192.168.2.10 port 53709
+May 17 07:49:41 pynq sshd[8563]: pam_unix(sshd:session): session closed for user xilinx
+May 17 07:49:41 pynq systemd[1]: session-c102.scope: Deactivated successfully.
+May 17 07:49:41 pynq systemd-logind[254]: Session c102 logged out. Waiting for processes to exit.
+May 17 07:49:41 pynq systemd-logind[254]: Removed session c102.
+May 17 07:49:42 pynq sshd[8595]: Accepted publickey for xilinx from 192.168.2.10 port 53712 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 07:49:42 pynq sshd[8595]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 07:49:42 pynq systemd-logind[254]: New session c103 of user xilinx.
+May 17 07:49:42 pynq systemd[1]: Started Session c103 of User xilinx.
+May 17 07:49:42 pynq sudo[8613]:   xilinx : PWD=/home/xilinx ; USER=root ; COMMAND=/usr/bin/journalctl -n 80 --no-pager
+May 17 07:49:42 pynq sudo[8613]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
