@@ -97,3 +97,10 @@
 - Windows CPython 3.12.10 本机 A/B：基线 `797bebe` 与候选使用相同 210 帧合成输入、3 个输出缓冲、每 60 帧变化一次遥测、移动检测框/轨迹；每轮预热 20 帧、计时 190 帧，4 轮交替执行。各轮中位数 `draw_ms` mean/p50/p95：基线 0.291/0.146/1.585 ms，候选 0.140/0.099/0.270 ms，mean 下降 51.9%。候选 key 总命中 209/210（99.52%），预热后 190/190；均为合成负载，不代表板端运行。
 - 最终本地验证：`test_compositor.py` 81 passed；绘图子进程共享帧身份、marker 与当前视口计数线像素验证 2 passed；差异空白检查通过。
 - 未部署板端，未启动/停止/重启服务；兼容候选在板端并发负载下的 `draw_ms` 与 E2E 仍待 Manager 另行部署后测量，不能由本地基准认定已达到目标。
+
+### PYNQ-Z2 目标 CPU 隔离回放（2026-11-02）
+
+- 当前 boot ID `99f9fcff-0685-42ed-a8df-9822cfca6cd0`；`material-counter-integrated.service` 与 `material-counter-g1-display.service` 均为 inactive/dead，current release 仍是 `ddd5174`。当前 boot 目录没有 `snapshot-0` 文件，因此无可用的本轮服务遥测快照或 E2E 样本。
+- 通过 SSH stdin 在板端 Python 3.10.4 进程内执行候选 `compositor.py`，源码 SHA-256 为 `2e7178e7cb88881221e2eed1e5bc6f2c6ce4b2e221454d9512095708765efee2`；输出使用 3 个临时 `multiprocessing.shared_memory` 帧槽并在脚本结束时关闭、unlink。没有写入板端文件，没有加载硬件或控制服务。
+- 基线安装源码 `ddd5174` 与候选各做 2 次交替回放；每次 50 帧、10 帧预热、40 帧计时，使用 `dashboard_values` 字段形态、2 秒级显示值变更、移动检测框/轨迹和软件预览。两次结果的中位数 `draw_ms` mean/p50/p95：基线 22.034/6.700/53.475 ms，候选 7.219/4.400/13.142 ms，mean 下降 67.2%；候选预热后 key 命中 40/40。
+- 这是目标板 CPU 上的隔离内存回放，不包含主循环 CPU 争用、共享帧进程间调度、VideoPump 或 HDMI 提交，不能证明真实运行 `draw_ms` 或 E2E 达到目标。它与前文旧回放的 80.914/404.543 ms 结果使用的负载构造不同，暂不直接比较；原始服务运行态差异仍需在 Manager 安排的部署后复测。
