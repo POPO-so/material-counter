@@ -181,6 +181,105 @@ def pass_receipt(path: Path, identity_key: str, expected: str) -> dict:
     return entry(path)
 
 
+def _check_bram_g2_region_receipt(receipt: dict,
+                                  expected_source_sha256: str | None = None) -> None:
+    """Validate the independent source-bound BRAM region evidence bundle."""
+    require(receipt.get("schema") == "material-counter.rle-region-bram-g2-green.v1",
+            "unsupported region receipt schema")
+    require(receipt.get("status") == "PASS", "BRAM G2 region receipt is not PASS")
+    source_sha256 = receipt.get("source_sha256")
+    require(isinstance(source_sha256, str) and re.fullmatch(r"[0-9a-fA-F]{64}", source_sha256),
+            "BRAM G2 region receipt has no valid source SHA-256")
+    if expected_source_sha256 is not None:
+        require(source_sha256 == expected_source_sha256,
+                "BRAM G2 region receipt source does not match preflight")
+
+    evidence = receipt.get("evidence", [])
+    require(isinstance(evidence, list) and evidence,
+            "BRAM G2 region receipt has no evidence")
+
+    required = (
+        "rle_region_features.v", "tb_region_candidate_filters.sv",
+        "rle_feature_tap.v", "region_candidates.log", "region_cases.log",
+        "region_diff.log", "region_limits.log", "region_driver.log",
+        "region_inputs.sha256", "region_memory.rpt", "region_util.rpt",
+        "region_elab_tap.log",
+    )
+    by_name: dict[str, list[tuple[Path, str]]] = {name: [] for name in required}
+    for item in evidence:
+        require(isinstance(item, dict) and isinstance(item.get("path"), str) and
+                isinstance(item.get("sha256"), str) and
+                re.fullmatch(r"[0-9a-fA-F]{64}", item["sha256"]),
+                "BRAM G2 evidence entry has an invalid path or SHA-256")
+        path = Path(item["path"]).resolve()
+        if path.name in by_name:
+            by_name[path.name].append((path, item["sha256"]))
+
+    def one_evidence(name: str) -> tuple[Path, str]:
+        matches = by_name[name]
+        require(len(matches) == 1,
+                f"BRAM G2 receipt must bind exactly one {name}")
+        path, expected_sha = matches[0]
+        require(sha(path) == expected_sha,
+                f"BRAM G2 evidence hash mismatch: {name}")
+        return path, expected_sha
+
+    bound = {name: one_evidence(name) for name in required}
+    source, source_evidence_sha = bound["rle_region_features.v"]
+    require(source_evidence_sha == source_sha256,
+            "BRAM G2 region source evidence hash mismatch")
+
+    manifest_path, _ = bound["region_inputs.sha256"]
+    manifest_hashes = {}
+    for line in manifest_path.read_text(encoding="ascii").splitlines():
+        match = re.fullmatch(r"\s*([0-9a-fA-F]{64})\s+\*?(.+?)\s*", line)
+        require(match is not None, "region input manifest has a malformed hash line")
+        digest, name = match.groups()
+        require(name not in manifest_hashes, f"duplicate input in region manifest: {name}")
+        manifest_hashes[name] = digest.lower()
+    for name in required[:3]:
+        require(manifest_hashes.get(name) == bound[name][1].lower(),
+                f"region input manifest hash mismatch: {name}")
+
+    markers = {
+        "region_candidates.log": r"REGION_CANDIDATE_PASS cases=7",
+        "region_cases.log": r"RLE_FEATURE_PASS cases=12",
+        "region_diff.log": r"REGION_DIFF_PASS compared=\d+",
+        "region_limits.log": r"REGION_LIMITS_PASS row_runs=320 labels=512 overflow=513",
+    }
+    for name, marker in markers.items():
+        text = bound[name][0].read_text(encoding="utf-8")
+        require(re.search(rf"(?m)^{marker}$", text) is not None,
+                f"region PASS marker missing or invalid: {name}")
+    driver = bound["region_driver.log"][0].read_text(encoding="utf-8")
+    driver_markers = {
+        "region_candidates.log": "REGION_CANDIDATE_PASS cases=7",
+        "region_cases.log": "RLE_FEATURE_PASS cases=12",
+        "region_diff.log": "REGION_DIFF_PASS",
+        "region_limits.log": "REGION_LIMITS_PASS",
+    }
+    require(re.search(r"(?m)^REGION_TAP_LINK_PASS$", driver) is not None and
+            all(re.search(rf"(?m)^REGION_XSIM_PASS: {re.escape(name)} {re.escape(marker)}$", driver)
+                is not None for name, marker in driver_markers.items()),
+            "region driver log is missing an exact PASS marker")
+
+    for name in ("region_candidates.log", "region_cases.log", "region_diff.log",
+                 "region_limits.log", "region_driver.log", "region_elab_tap.log"):
+        text = bound[name][0].read_text(encoding="utf-8")
+        require(re.search(r"Fatal:|ERROR:|watchdog timeout|REGION_XSIM_FAIL|REGION_BRAM_FAIL", text,
+                          re.IGNORECASE) is None,
+                f"region log contains a failure marker: {name}")
+    require(bound["region_elab_tap.log"][0].stat().st_size > 0,
+            "region tap elaboration log is empty")
+
+    memory = bound["region_memory.rpt"][0].read_text(encoding="utf-8")
+    for name, count in (("stats_bram", 4), ("row_bram", 1), ("stats_lutram", 0)):
+        require(re.search(rf"(?m)^{name}={count}(?:\s|:|$)", memory) is not None,
+                f"region memory report must contain {name}={count}")
+    require(bound["region_util.rpt"][0].stat().st_size > 0,
+            "region utilization report is empty")
+
+
 def _check_g2_region_receipt(receipt: dict,
                              expected_source_sha256: str | None = None) -> None:
     """Accept current RLE RTL only with source-bound XSim and routed G2 evidence."""
@@ -253,6 +352,9 @@ def _check_g2_region_receipt(receipt: dict,
 def check_region_receipt(receipt: dict,
                          expected_source_sha256: str | None = None) -> None:
     """Validate either the legacy BRAM proof or current routed-G2 region proof."""
+    if receipt.get("schema") == "material-counter.rle-region-bram-g2-green.v1":
+        _check_bram_g2_region_receipt(receipt, expected_source_sha256)
+        return
     if receipt.get("schema") == "material-counter.rle-region-g2-green.v1":
         _check_g2_region_receipt(receipt, expected_source_sha256)
         return
@@ -269,7 +371,16 @@ def check_region_source(path: Path, receipt_schema: str | None = None) -> None:
     source = path.read_text(encoding="utf-8")
     require("module rle_region_features" in source,
             "region source does not define rle_region_features")
-    if receipt_schema == "material-counter.rle-region-g2-green.v1":
+    if receipt_schema == "material-counter.rle-region-bram-g2-green.v1":
+        header = re.search(r"module\s+rle_region_features\b([\s\S]*?);", source)
+        require(header is not None and all(re.search(rf"\b{port}\b", header.group(1))
+                                           for port in (
+            "candidate_flag", "candidate_reason", "cfg_max_area", "cfg_max_w",
+            "cfg_max_h", "cfg_aspect_x16")),
+            "BRAM G2 region source is missing candidate configuration ports")
+        require(all(name in source for name in ("stats_mem", "row_mem", "ram_style")),
+                "BRAM G2 region source is missing BRAM memory structures")
+    elif receipt_schema == "material-counter.rle-region-g2-green.v1":
         require(all(port in source for port in (
             "candidate_flag", "candidate_reason", "cfg_max_area", "cfg_max_w",
             "cfg_max_h", "cfg_aspect_x16")),
