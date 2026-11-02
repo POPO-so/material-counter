@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "manifest_sha256": "1bc1ffc9af42ece2e114cdb1f2e0786e8c1220456cff4be3bb70784863cf73b8",
+  "cdc_reviewed": true,
+  "constraints_reviewed": true,
+  "report_sha256": {
+    "cdc.rpt": "626bbb288c5f13524d0dffdc140d6349b55d5f9c57e7aebb18814c2d42468f87",
+    "clock-interaction.rpt": "cdaaa2acc29140a8d87aebdc3d2c216fe6dcaf18c8da1dd2ccb8b3cd7fe8f3b7",
+    "timing.rpt": "429ea22f34d054a92c2eef0284dccc969b0181253968727dad44580d012da823",
+    "drc.rpt": "12d04851bc0077aad0f4eac1900384a25d0ef2fd78570e1ab617e4440828403a",
+    "methodology.rpt": "6b53a4c6320dfaed46da0647683b76f1270a1511c38839045e34752f0b9d32fa"
+  },
+  "synth_receipt": "C:\\w\\jj2026p\\joint-synth.tcldict",
+  "synth_receipt_sha256": "f2ddc23b0c5c56e82610d33ecd0b818ebc724016c8d921baddd5590f127ebb4e",
+  "candidate_mailbox_xdc": "C:\\w\\jj2026p\\snapshot\\constraints\\candidate_offload_cdc.xdc",
+  "candidate_mailbox_xdc_sha256": "a1a75ca572f7fd7154c7539fe7726173dd65164b3aff2f66987243cfe0f69b57",
+  "reviewed_utc": "2026-11-02T15:31:37.499248+00:00",
+  "reviewer": "material-counter team (route pre-review authorized)",
+  "scope": "synth/CDC/constraint review for route execution; no board, deployment, push, or merge",
+  "hold_note": "8 rgb2dvi OSERDESE2 reset hold endpoints remain an implementation verification item; no false_path or waiver was added"
+}

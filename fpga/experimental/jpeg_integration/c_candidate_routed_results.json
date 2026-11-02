@@ -1,0 +1,197 @@
+{
+  "schema": "material-counter.candidate-route-results.v1",
+  "date": "2026-11-02",
+  "worktree": "C:/fpga/wt/claude-jpeg-20261102",
+  "stage_root": "C:\\w\\jj2026p",
+  "status": "ROUTED_REVIEW_PENDING",
+  "timing": {
+    "setup_wns_ns": 0.126,
+    "setup_tns_ns": 0.0,
+    "setup_failing_endpoints": 0,
+    "setup_total_endpoints": 130455,
+    "hold_whs_ns": 0.018,
+    "hold_ths_ns": 0.0,
+    "hold_failing_endpoints": 0,
+    "hold_total_endpoints": 128065,
+    "pulse_width_wpws_ns": 0.333,
+    "pulse_width_failing_endpoints": 0,
+    "pulse_width_total_endpoints": 43436,
+    "constraints_met": true
+  },
+  "hold8": [
+    {
+      "endpoint": "ClockSerializer/SerializerMaster/RST",
+      "slack_ns": 0.442
+    },
+    {
+      "endpoint": "ClockSerializer/SerializerSlave/RST",
+      "slack_ns": 0.378
+    },
+    {
+      "endpoint": "DataEncoders[0].DataSerializer/SerializerMaster/RST",
+      "slack_ns": 0.316
+    },
+    {
+      "endpoint": "DataEncoders[0].DataSerializer/SerializerSlave/RST",
+      "slack_ns": 0.253
+    },
+    {
+      "endpoint": "DataEncoders[1].DataSerializer/SerializerMaster/RST",
+      "slack_ns": 0.556
+    },
+    {
+      "endpoint": "DataEncoders[1].DataSerializer/SerializerSlave/RST",
+      "slack_ns": 0.503
+    },
+    {
+      "endpoint": "DataEncoders[2].DataSerializer/SerializerMaster/RST",
+      "slack_ns": 0.287
+    },
+    {
+      "endpoint": "DataEncoders[2].DataSerializer/SerializerSlave/RST",
+      "slack_ns": 0.341
+    }
+  ],
+  "route": {
+    "logical_nets": 94254,
+    "routable_nets": 65210,
+    "fully_routed_nets": 65210,
+    "routing_errors": 0,
+    "unrouted_nets": 0
+  },
+  "cdc": {
+    "cdc3_info": 126,
+    "cdc6_warning": 1,
+    "cdc13_critical": 0,
+    "cdc15_warning": 1703
+  },
+  "drc": {
+    "checks": 102,
+    "errors": 0,
+    "critical_warnings": 0,
+    "categories": {
+      "DPIP-1": 46,
+      "DPOP-1": 13,
+      "DPOP-2": 19,
+      "PDCN-1569": 4,
+      "REQP-1839": 8,
+      "REQP-1840": 8,
+      "RTSTAT-10": 1
+    }
+  },
+  "methodology": {
+    "checks": 7,
+    "errors": 0,
+    "critical_warnings": 0,
+    "categories": {
+      "LUTAR-1": 4,
+      "TIMING-9": 1,
+      "ULMTCS-1": 1,
+      "XDCB-5": 1
+    }
+  },
+  "exceptions": {
+    "mailbox_row": 19,
+    "mailbox_endpoints": 705,
+    "id_p": 32,
+    "box_valid_p": 16,
+    "line_valid_p": 1,
+    "new_endpoints": 17,
+    "max_delay_ns": 10.0
+  },
+  "resources": {
+    "slice_lut": 35275,
+    "slice_registers": 36173,
+    "bram_tiles": 57.5,
+    "ramb36": 30,
+    "ramb18": 55,
+    "dsp48e1": 49
+  },
+  "inputs": {
+    "manifest": {
+      "path": "C:\\w\\jj2026p\\joint_manifest.json",
+      "sha256": "1bc1ffc9af42ece2e114cdb1f2e0786e8c1220456cff4be3bb70784863cf73b8"
+    },
+    "synth_receipt": {
+      "path": "C:\\w\\jj2026p\\joint-synth.tcldict",
+      "sha256": "f2ddc23b0c5c56e82610d33ecd0b818ebc724016c8d921baddd5590f127ebb4e"
+    },
+    "candidate_mailbox_xdc": {
+      "path": "C:\\w\\jj2026p\\snapshot\\constraints\\candidate_offload_cdc.xdc",
+      "sha256": "a1a75ca572f7fd7154c7539fe7726173dd65164b3aff2f66987243cfe0f69b57"
+    },
+    "route_review": {
+      "path": "C:/fpga/wt/claude-jpeg-20261102/data/results/jj2026p-route-review-20261102/route-review.json",
+      "sha256": "bc6f5092ed24d724f54bc0b6fbf64268a3647730937ae23490c136ed914bd126"
+    },
+    "route_capture_receipt": {
+      "path": "C:\\w\\jj2026p\\evidence\\route\\005-route.tcldict",
+      "sha256": "2a4a86b75e85f4091ce271e1cb5d72158357f9ecfdcc0701626a3daf501be44c"
+    },
+    "route_capture_supplement": {
+      "path": "C:\\w\\jj2026p\\evidence\\route_continue2\\route-capture.supplement.json",
+      "sha256": "1c61c9bb380b83482ec03577abd1b99f3750121b0e08e0a0a79ee081d193b477"
+    }
+  },
+  "artifacts": {
+    "routed_dcp": {
+      "path": "C:\\w\\jj2026p\\joint-routed.dcp",
+      "sha256": "c45429ef2f38c774480d6a30d22905795b800afd6ab091e18cde1b622c5caf21"
+    },
+    "route_receipt": {
+      "path": "C:\\w\\jj2026p\\joint-route.tcldict",
+      "sha256": "3443612f2b3d5942cc66390fd7bbf5455e6bb1796cae0622463e47ebd40b9b82"
+    },
+    "reports": {
+      "bus-skew.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\bus-skew.rpt",
+        "sha256": "7a85d6c00d93d063f82e6394ba2359d34ff0eff3e5b14739700ad1ad624870cc"
+      },
+      "cdc.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\cdc.rpt",
+        "sha256": "52402fc22f42e5862f1a327b5b72f095f9e7551d275fc3c87df5f7cdcb5ee443"
+      },
+      "drc.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\drc.rpt",
+        "sha256": "58b254de2bb9ca5271b2d3466d6a064d840f42da2f2e21eb19aabf7b231b13c9"
+      },
+      "exceptions.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\exceptions.rpt",
+        "sha256": "96f6b4aa36e21c3cdde826a81f017af2728e94757c384cead14501fe5b351ed6"
+      },
+      "methodology.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\methodology.rpt",
+        "sha256": "acf75e51f4fd14011c91709c69f29de669cc75f3132cab808608579ac6b82a04"
+      },
+      "route-status.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\route-status.rpt",
+        "sha256": "702ab00e2b5eec7ac85a9b67b22c3330440e34e3301a0cbde3de05232cf96c8a"
+      },
+      "timing.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\timing.rpt",
+        "sha256": "816960b5849e26607b61969e4a17cc87ac4ffee7d2cca8e92e931660404c3833"
+      },
+      "utilization.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\utilization.rpt",
+        "sha256": "686560640b8d2a7364fc1c30c4753542532c04f6dd5894905f09e387007a2c58"
+      },
+      "rgb2dvi_hold.rpt": {
+        "path": "C:\\w\\jj2026p\\reports\\route\\rgb2dvi_hold.rpt",
+        "sha256": "64510adc0392e209ac7a1854d3070a395d7627a5b4f0cf63cd674b55fe78604f"
+      }
+    }
+  },
+  "capture_adapter": {
+    "route_completed": true,
+    "generic_capture_failure": "WARNING emitted=-3 exported=6",
+    "supplemental_review": "PASS; WARNING=6 CRITICAL=0 ERROR=0",
+    "waivers_added": false
+  },
+  "restrictions": [
+    "no bitstream",
+    "no board access",
+    "no deployment",
+    "no push",
+    "no merge"
+  ]
+}
