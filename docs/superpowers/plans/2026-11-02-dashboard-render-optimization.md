@@ -34,10 +34,11 @@
 - Test: `scripts/standalone/test_compositor.py`
 - Record: 相同 100 帧本地合成负载的 `draw_ms` 与 key 命中率
 
-- [ ] 添加显示精度 key、像素值归一化、绘制帧/key 命中/key 重建计数器的测试。
-- [ ] 在面板渲染中对屏幕显示一位小数的遥测值统一归一化后再构造 key 与绘制；保持 unknown 和非数值占位符。
-- [ ] 将 `page_lines` 接入右侧详情区；总览保留现场主指标，将 CPU 来源、队列、线程诊断收进 PS/丢帧详情页。
-- [ ] 运行 `scripts/standalone/test_compositor.py`；记录与基线相同负载下的 key 命中率、`draw_ms` mean/p50/p95，并标明本地平台。
+- [x] 添加显示精度 key、像素值归一化、绘制帧/key 命中/key 重建计数器的测试。
+- [x] 在面板渲染中对屏幕显示一位小数的遥测值统一归一化后再构造 key 与绘制；保持 unknown 和非数值占位符。
+- [x] 将 `page_lines` 接入右侧详情区；总览保留现场主指标，将 CPU 来源、队列、线程诊断收进 PS/丢帧详情页。
+- [x] 运行本地测试并记录基准；`test_compositor.py` 为 68 passed、4 failed。4 个失败（字体度量缓存 2 项、过时 viewport 尺寸 2 项）也存在于改动前基线；相关新增/更新断言通过。`test_integrated_run.py` 为 53 passed、5 failed，失败在既有详情页返回类型、预览默认值、旧视口坐标和未初始化相机对象断言。
+- [x] 同一 Windows 本地合成负载跑 100 帧：key 变化 4 次，命中率 96%；`draw_ms` mean/p50/p95 为 0.187/0.065/0.114 ms，对比基线 2.666/2.642/3.172 ms。
 - [ ] 检查差异后提交第一阶段。
 
 ### Task 2：静态 chrome 持久化与输出槽版本同步
@@ -57,3 +58,5 @@
 
 - 当前 `test_compositor.py`：57 passed、10 failed；失败涉及既有详情页文本、字体测量缓存、标签、CPU/队列绘制和过时 viewport 断言。阶段结果须和该基线区分，相关失败需在验收时明确说明。
 - 合成 100 帧基准：99 次面板 key 变化，命中率 1%；`draw_ms` mean 2.666 ms、p50 2.642 ms、p95 3.172 ms（本机 Windows，PL 预览合成帧）。这不是板端数据。
+
+**Task 1 结果（本地 Windows 合成负载，非板端）：**同一 100 帧输入下，key 变化 4 次、命中率 96%；`draw_ms` mean/p50/p95 为 0.187/0.065/0.114 ms。`key_stats` 运行计数包括 warm-up 帧，warm-up 后窗口命中率按 100 帧实测为 96%。
