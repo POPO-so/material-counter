@@ -37,12 +37,14 @@ No board access, deployment, push, or merge was performed.
 | Display timing XDC | `display_timing.xdc` | `4ace486d...` |
 | Frozen offload XDC | `offload_cdc.xdc` | `3a8be351...` |
 | Monitor XDC | `joint_monitor_cdc.xdc` | `31ed0a71...` |
-| Package manifest | `board-package/artifact-manifest.json` | `63606157...` |
-| Package sums | `board-package/SHA256SUMS` | `932eeaaa...` |
+| Package manifest | `board-package/artifact-manifest.json` | `b1d7ba32...` |
+| Package sums | `board-package/SHA256SUMS` | `6461fa9d...` |
 
 Software: Python 3.12.10; Vivado 2026.1. The package records the exact runtime
 script SHAs in `artifact-manifest.json`; the runtime entry
-`software/scripts/experiments/run_jpeg_counter.py` is `1e468086...`.
+`software/scripts/experiments/run_jpeg_counter.py` is `50617018...` and the
+display bring-up module `software/scripts/standalone/display_bringup.py` is
+`81c11447...`.
 
 ## 3. Offline IP/address/JPEG/FRG contract
 
@@ -77,15 +79,71 @@ The runtime constants (`scripts/rle/jpeg_transport.py`) match the HWH:
 | `verify_runtime_artifacts` on the exported BIT/HWH | **PASS** (part, SHA, bases) |
 | Same check from the packaged `software/` layout | **PASS** |
 | `scripts/experiments/test_run_jpeg_counter.py` | 5 passed |
+| `scripts/experiments/test_jpeg_display_and_hold.py` | 13 passed |
 | `scripts/rle/test_jpeg_runtime.py` + `test_jpeg_transport.py` | 63 passed |
 | `joint_prepare.py --verify-manifest C:/w/jj2026p/joint_manifest.json` | `JOINT_SOURCE_HASHES_OK` |
 | Package `sha256sum -c SHA256SUMS` | PASS |
+
+Total JPEG offline tests: **81 passed** (5 admission + 13 display/HOLD + 63
+runtime/transport).
 
 One software admission fix was required and tested: the HWH names the JPEG HLS
 control base `C_S_AXI_CONTROL_BASEADDR` (not `C_BASEADDR`), so
 `run_jpeg_counter._parse_hwh` now accepts `*_BASEADDR` parameters and
 `MEMRANGE BASEVALUE`. This is a software-only fix; the reviewed BIT/HWH, RTL and
 constraints were not changed.
+
+## 4b. First-smoke software fixes (display bring-up and FAIL_HOLD)
+
+### 4b.1 Display timing initialization
+
+The runtime previously loaded the Overlay but never configured/started the
+HDMI/VTC/VDMA chain; `publish_overlay` waits for a VSYNC-latched `cfg_ready`, so
+the first cold-boot smoke could block or publish nothing. New
+`scripts/standalone/display_bringup.py` reuses the relevant parts of
+`g1_run.setup_hardware`/`snapshot` (clocks, `hdmi_out` + `axi_vdma`, frame
+monitor mailbox) and deliberately excludes the G1/WO-0015 bitstream-transition
+logic.
+
+Order now enforced:
+
+1. set/read back FCLK0/1/2 = 50/100/142.857 MHz;
+2. configure `hdmi_out` as `VideoMode(1280,720,8,60)`, `PIXEL_GRAY`;
+3. `hdmi.start()`;
+4. wait for the frame monitor's `scans` counter to advance, proving VSYNC;
+5. only then allocate TX/RX, create the JPEG/RLE transport, and enter the frame
+   loop.
+
+If display prepare/start/VSYNC fails, `bring_up_display_and_dma` raises before
+any allocation/transport/publish; the handle is attached to the exception for
+ownership decisions. On normal completion the runtime calls `hdmi.close()`,
+proves the VDMA halted (status bit 0), and only then frees the JPEG/RLE buffers.
+No unconditional reset, reload, or free is introduced.
+
+### 4b.2 FAIL_HOLD lifecycle
+
+`finalize_run` now retains both DMA owners when ownership is uncertain:
+
+- `FAIL_HOLD` does not call `hdmi.close`, `transport.close`, `freebuffer`, DMA
+  reset, or Overlay reload;
+- the camera is not DMA-owned and may be closed;
+- SIGINT/SIGTERM are consumed while the HOLD process is alive and recorded in
+  `output.hold.json`; a second Ctrl+C/SIGTERM cannot unwind the process and run
+  buffer destructors;
+- the primary report and a live `.hold.json` can be collected over an
+  independent connection; recovery is an operator-authorized reboot;
+- SIGKILL cannot be intercepted; if used, no Python cleanup/buffer-release
+  guarantee exists and reboot is still required.
+
+Normal completion still stops the display, proves VDMA halt, closes the
+transport, frees TX/RX, and writes the normal report. If display stop or
+transport close fails, the run escalates to `FAIL_HOLD` rather than freeing.
+
+Tests in `scripts/experiments/test_jpeg_display_and_hold.py` (13) use fakes for:
+display start before allocation/transport; start/prepare failure blocks
+transfer; VSYNC timeout; VDMA uncertain/halt readback; signal handler
+consume/raise; HOLD never close/free/reset/reload; normal stop/free; stop/close
+failure escalation; no-transport buffer cleanup.
 
 ## 5. Board validation package
 
@@ -95,7 +153,8 @@ constraints were not changed.
 - `artifact-manifest.json` (SHA binding, contract, software versions)
 - `README.md` (commands, acceptance, rollback)
 - `SHA256SUMS`
-- `software/scripts/...` (runtime sources copied from the reviewed worktree)
+- `software/scripts/...` (runtime sources copied from the reviewed worktree,
+  including `scripts/standalone/display_bringup.py`)
 
 First-run command form (not executed here):
 
@@ -134,3 +193,8 @@ BIT/HWH; on ordinary failure, preserve the report and do not auto-retry.
 4. No bitstream deployment, board access, push, or merge was performed.
 5. No timing waiver, `false_path`, or clock relaxation was added in export or
    package preparation.
+6. Display bring-up and VSYNC readback are PYNQ/board-side; offline tests use
+   fakes. Actual HDMI/VTC/VDMA startup and physical VSYNC remain unverified
+   until the separately authorized board run.
+7. SIGKILL cannot be intercepted; the HOLD signal guarantee covers SIGINT and
+   SIGTERM only, and a SIGKILL still requires reboot.

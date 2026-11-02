@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import signal
 import sys
 import time
 from typing import Any
@@ -24,6 +25,7 @@ from scripts.rle.jpeg_transport import JPEG_MAX_BYTES, JpegRleDmaTransport, iter
 from scripts.rle.protocol import HEIGHT, RX_CAPACITY, WIDTH
 from scripts.rle.transport import RLE_SIGNATURE
 from scripts.standalone.count_controls import make_runtime_counter
+from scripts.standalone.display_bringup import prepare_display
 from scripts.wo0015.board_preflight import (audit_process_ownership,
     inspect_pynq_global_state, read_boot_id)
 
@@ -176,6 +178,126 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def bring_up_display_and_dma(*, prepare, allocate_tx, allocate_rx, make_transport):
+    """Start the display before allocating or transferring any DMA buffer.
+
+    If display bring-up fails, no JPEG/RLE buffer is allocated and no frame can
+    be published. The display handle is attached to the exception so the caller
+    can decide whether the VDMA still owns resources.
+    """
+    display = None
+    allocated = []
+    try:
+        display = prepare()
+        display.start()
+        tx = allocate_tx()
+        allocated.append(tx)
+        rx = allocate_rx()
+        allocated.append(rx)
+        transport = make_transport(tx, rx)
+        return display, tx, rx, transport, allocated
+    except BaseException as exc:
+        if display is not None:
+            setattr(exc, "display", display)
+        setattr(exc, "allocated", allocated)
+        raise
+
+
+def install_hold_signal_handlers(hold_mode, *, signal_module=signal):
+    """Consume SIGINT/SIGTERM while a FAIL_HOLD process is retaining DMA.
+
+    Outside HOLD the handler raises KeyboardInterrupt so the normal fail-hold
+    path can inspect DMA ownership. Inside HOLD it records the signal and
+    returns; it must not let a second Ctrl+C/SIGTERM unwind the process and run
+    buffer destructors. SIGKILL cannot be intercepted.
+    """
+    def handler(signum, frame):
+        if hold_mode.get("active"):
+            hold_mode.setdefault("signals", []).append(int(signum))
+            print(f"JPEG_PL_HOLD_SIGNAL_IGNORED:{int(signum)}", flush=True)
+            return
+        raise KeyboardInterrupt(f"signal {int(signum)}")
+
+    signal_module.signal(signal_module.SIGINT, handler)
+    signal_module.signal(signal_module.SIGTERM, handler)
+    return handler
+
+
+def _write_hold_state(output: Path, report: dict[str, Any], hold_mode: dict[str, Any]) -> None:
+    state = {
+        "status": "FAIL_HOLD",
+        "output": str(output),
+        "buffers_held": bool(report.get("buffers_held", True)),
+        "hold_signals": list(hold_mode.get("signals", [])),
+        "display": report.get("display"),
+        "error": report.get("error"),
+        "error_type": report.get("error_type"),
+        "hint": ("keep this process alive; collect the report via an independent "
+                 "connection; reboot with operator authorization"),
+    }
+    try:
+        Path(str(output) + ".hold.json").write_text(
+            json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    except BaseException as exc:
+        print(f"JPEG_PL_HOLD_STATE_WRITE_FAILED:{exc!r}", flush=True)
+
+
+def finalize_run(*, held, display, transport, allocated, capture_source, report, output,
+                 hold_mode, hold_loop=True, sleep=time.sleep):
+    """Normal cleanup or FAIL_HOLD retention.
+
+    When held is true, neither DMA owner is closed/freed/reset/reloaded. The
+    camera is not DMA-owned and may be closed. During cleanup and HOLD, signals
+    are consumed so an abnormal exit cannot trigger buffer destructors.
+    """
+    hold_mode["active"] = True
+    if capture_source is not None:
+        close = getattr(capture_source, "close", None)
+        if callable(close):
+            try:
+                close()
+            except BaseException as exc:
+                report["camera_close_error"] = repr(exc)
+    if not held and display is not None and not getattr(display, "closed", False):
+        try:
+            display.stop()
+        except BaseException as exc:
+            held = True
+            report["display_stop_error"] = repr(exc)
+    if not held:
+        try:
+            if transport is not None:
+                transport.close()
+            else:
+                for buffer in allocated:
+                    buffer.freebuffer()
+        except BaseException as exc:
+            held = True
+            report["close_error"] = repr(exc)
+    if held and report.get("status") == "JPEG_PL_RUN_COMPLETED_NOT_BOARD_VALIDATED":
+        report["status"] = "FAIL_HOLD"
+        report.setdefault("error", "display stop or transport close failed during normal completion")
+        report.setdefault("error_type", "CloseError")
+    report["display"] = display.state() if display is not None else None
+    report["buffers_held"] = held
+    report["hold_signals"] = list(hold_mode.get("signals", []))
+    with output.open("x", encoding="utf-8") as stream:
+        json.dump(report, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+    print(json.dumps({key: value for key, value in report.items()
+                      if key not in ("frames_evidence", "timing_ms")},
+                     ensure_ascii=False), flush=True)
+    if held:
+        print("JPEG_PL_FAIL_HOLD: retaining DMA-owned buffers/display; "
+              "keep this process alive and recover by authorized reboot", flush=True)
+        _write_hold_state(output, report, hold_mode)
+        if hold_loop:
+            while True:
+                sleep(1.0)
+                _write_hold_state(output, report, hold_mode)
+    return held
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
@@ -196,9 +318,12 @@ def main(argv: list[str] | None = None) -> int:
         "timing_ms": [], "frames_evidence": [],
     }
     transport = None
+    display = None
     capture_source = None
     allocated = []
     held = False
+    hold_mode = {"active": False, "signals": []}
+    install_hold_signal_handlers(hold_mode)
     try:
         if not hasattr(os, "geteuid") or os.geteuid() != 0 or os.environ.get("XILINX_XRT") != "/usr":
             raise RuntimeError("hardware mode requires root and XILINX_XRT=/usr")
@@ -227,13 +352,15 @@ def main(argv: list[str] | None = None) -> int:
             pynq.__file__, require_empty_shutdown=True, require_loaded_bit=True,
             expected_bit_path=artifacts["bit_path"], expected_bit_sha256=artifacts["bit_sha256"],
             allow_equivalent_bit_path=True)
-        tx = allocate(shape=(JPEG_MAX_BYTES,), dtype=np.uint8); allocated.append(tx)
-        rx = allocate(shape=(RX_CAPACITY,), dtype=np.uint8); allocated.append(rx)
         preview = MMIO(OVERLAY_BASE, OVERLAY_MAP_BYTES)
-        transport = JpegRleDmaTransport(
-            overlay.axi_dma_0.sendchannel, overlay.axi_dma_0.recvchannel,
-            MMIO(DMA_BASE, 0x10000), MMIO(RLE_BASE, 0x10000),
-            MMIO(JPEG_BASE, 0x10000), preview, tx, rx)
+        display, tx, rx, transport, allocated = bring_up_display_and_dma(
+            prepare=lambda: prepare_display(overlay),
+            allocate_tx=lambda: allocate(shape=(JPEG_MAX_BYTES,), dtype=np.uint8),
+            allocate_rx=lambda: allocate(shape=(RX_CAPACITY,), dtype=np.uint8),
+            make_transport=lambda tx, rx: JpegRleDmaTransport(
+                overlay.axi_dma_0.sendchannel, overlay.axi_dma_0.recvchannel,
+                MMIO(DMA_BASE, 0x10000), MMIO(RLE_BASE, 0x10000),
+                MMIO(JPEG_BASE, 0x10000), preview, tx, rx))
         # Field-v1 counter keeps the production count line, association and
         # 2-4 way touching split; the JPEG path counts through update_rle.
         tracker = make_runtime_counter(args.native_lib, profile="field-v1")
@@ -260,36 +387,23 @@ def main(argv: list[str] | None = None) -> int:
             })
             previous = finished
         elapsed = time.perf_counter() - start
+        display.stop()
         report.update(status="JPEG_PL_RUN_COMPLETED_NOT_BOARD_VALIDATED",
                       elapsed_s=elapsed, throughput_fps=report["frames"] / elapsed,
                       total_count=tracker.total_count,
                       hdmi_evidence="PL displayed_frame_id register only; no physical monitor observation")
     except BaseException as exc:
-        held = bool(transport and transport.dma_may_be_active)
+        display = getattr(exc, "display", display)
+        allocated = getattr(exc, "allocated", allocated)
+        held = bool((transport and transport.dma_may_be_active) or
+                    (display is not None and display.dma_uncertain()))
         report.update(status="FAIL_HOLD" if held else "FAILED",
                       error=str(exc), error_type=type(exc).__name__)
     finally:
-        if capture_source is not None:
-            close = getattr(capture_source, "close", None)
-            if callable(close):
-                close()
-        if not held:
-            if transport is not None:
-                transport.close()
-            else:
-                for buffer in allocated:
-                    buffer.freebuffer()
-        report["buffers_held"] = held
-        with args.output.open("x", encoding="utf-8") as stream:
-            json.dump(report, stream, ensure_ascii=False, indent=2)
-            stream.write("\n")
-        print(json.dumps({key: value for key, value in report.items()
-                          if key not in ("frames_evidence", "timing_ms")},
-                         ensure_ascii=False), flush=True)
-        if held:
-            print("JPEG_PL_FAIL_HOLD: retaining DMA-owned CMA buffers; operator recovery required", flush=True)
-            while True:
-                time.sleep(1)
+        finalize_run(held=held, display=display, transport=transport,
+                     allocated=allocated, capture_source=capture_source,
+                     report=report, output=args.output, hold_mode=hold_mode,
+                     hold_loop=True)
     return 0 if report["status"] == "JPEG_PL_RUN_COMPLETED_NOT_BOARD_VALIDATED" else 1
 
 

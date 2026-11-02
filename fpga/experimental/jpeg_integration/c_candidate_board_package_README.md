@@ -98,11 +98,22 @@ sudo -n env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python3 \
 The runtime is one-shot: if `runs/jpeg-smoke-001.json` exists, choose a new
 output name only after the previous run has been reviewed; do not overwrite.
 
+Before the first frame, the runtime sets FCLK0/1/2 to 50/100/142.857 MHz,
+configures `hdmi_out` as `VideoMode(1280,720,8,60)` grayscale, starts the
+HDMI/VTC/VDMA chain, and waits for the frame monitor's VSYNC scan counter to
+advance. `publish_overlay` requires that VSYNC boundary. If display bring-up or
+the VSYNC readback fails, no JPEG/RLE buffer is allocated and no transfer or
+publish is attempted. On normal completion the runtime closes the display,
+proves the VDMA halted, and only then frees the JPEG/RLE buffers.
+
 ## 5. Acceptance items
 
 ### 5.1 Smoke acceptance (first run)
 
 - Package integrity and offline admission PASS with the exact SHAs above.
+- Display bring-up succeeded: FCLK readback, HDMI/VTC/VDMA start, and a frame
+  monitor scan advance proving VSYNC before the first frame. If bring-up fails,
+  no frame transfer or overlay publish is attempted.
 - Report status: `JPEG_PL_RUN_COMPLETED_NOT_BOARD_VALIDATED`.
 - `frames` equals the requested 60; no `FAIL_HOLD`; no DMA active/faulty
   pre-load error; no camera-owner error.
@@ -132,10 +143,14 @@ as an accuracy PASS.
 
 ## 6. Rollback and failure handling
 
-1. **`FAIL_HOLD`**: the runtime retains DMA-owned CMA buffers and loops. Do not
-   retry, reset DMA, or reload the overlay. Interrupt the process, preserve
-   `runs/jpeg-smoke-001.json` and the console output, and recover by rebooting
-   the board with operator approval. The DMA may still own buffers.
+1. **`FAIL_HOLD`**: the runtime retains DMA-owned CMA buffers/display and loops.
+   Keep the HOLD process alive. Do not Ctrl+C/kill it, retry, reset DMA, reload
+   the overlay, or free buffers. Collect `runs/jpeg-smoke-001.json` and the live
+   `runs/jpeg-smoke-001.json.hold.json` through an independent connection, then
+   recover by rebooting the board with operator authorization. SIGINT and
+   SIGTERM are consumed during HOLD; SIGKILL cannot be intercepted, so no Python
+   cleanup or buffer-release guarantee exists if the process is killed with
+   SIGKILL — reboot is still required.
 2. **Overlay/PYNQ failure before or during download**: do not substitute another
    BIT or HWH. Preserve the report; reboot if PYNQ global state is uncertain.
 3. **Ordinary frame/JPEG/FRG failure**: the runtime closes the transport and
@@ -150,6 +165,7 @@ as an accuracy PASS.
 
 - `jpeg_candidate.bit`, `jpeg_candidate.hwh` — reviewed export pair.
 - `artifact-manifest.json` — SHA binding, contract, software versions.
-- `software/scripts/...` — runtime sources copied from the reviewed worktree.
+- `software/scripts/...` — runtime sources copied from the reviewed worktree,
+  including `scripts/standalone/display_bringup.py`.
 - `SHA256SUMS` — integrity list for the package (excluding itself).
 - `README.md` — this document.
