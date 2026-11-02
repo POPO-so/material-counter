@@ -1,0 +1,30 @@
+{
+  "schema": "material-counter.jpeg-hls-probe-receipt.v1",
+  "recorded_at_utc": "2026-11-02T05:15:00Z",
+  "status": "PASS",
+  "flow": "csynth",
+  "tool": {"entry": "v++", "version": "v2026.1", "hls_build": "6493734",
+           "root": "F:/AMDDesignTools/2026.1/Vitis"},
+  "design": {"wrapper_cpp_sha256": "d695aac91915f3bf8b4d4357d7b2ca539929197720b2f2390cfb5a2472108f7d"},
+  "config_sha256": "c8cd1b6456cf",
+  "utilization_estimate": {"BRAM_18K": 56, "BRAM_36K_eq": 28, "DSP": 33, "FF": 24650, "LUT": 51598, "URAM": 0},
+  "timing": {"target_period_ns": 20.0, "clock_uncertainty_ns": 5.4,
+             "effective_budget_ns": 14.6, "estimated_period_ns": 15.960,
+             "estimated_fmax_mhz": 62.66,
+             "warning": "estimated period exceeds effective budget (15.96 > 14.60 ns)"},
+  "errors": 0, "warnings": 1,
+  "note": "HLS C-synthesis estimate; LUT/FF are pre-mapping estimates, higher than the teammate's post-Vivado OOC figure (17358 LUT / 13758 FF). Actual OOC/synthesis to be re-measured in the joint flow. Timing is marginal vs the 5.4 ns uncertainty budget and must be re-checked at joint synthesis.",
+  "joint_input_sources": {
+    "fixed_c5a8680_FRG1_set": {
+      "axis_dma_rle_pipeline_bd.v": "7cfbdde5f0ec6fea7005e53fadcb51473fe7b9bf45d9013720c65274ed50f261",
+      "axis_rle_encoder.v":      "2606fc95105671a0f0864f5af01207ae2a2415fa76c9f45523c5e06103ed1bb7",
+      "rle_feature_tap.v":       "493bc04f15e5b72b4a8ccf8b6257abc5d3810045b596334399a7517d99874b0c",
+      "video_binary_overlay.v":  "01d5563c7be95e92d38b20028063b7e85cf67ef4428d27c6c9d411b3b70ef9f9",
+      "video_binary_overlay_bd.v": "dfc487227d9ad9eade9084f2d90f72ddc7e909cd208ef91a1ced63548355e0be"
+    },
+    "not_at_c5a8680": {
+      "jpeg_axis_gray.cpp/h": "D695 wrapper added in a later commit (wrapper cpp sha256 d695aac...)",
+      "jpeg_integration/rle_region_features.v": "19439 BRAM region (REGION_SHA 19439a2c...) is 'optimized branch RTL', a recorded replacement, not at c5a8680"
+    }
+  }
+}

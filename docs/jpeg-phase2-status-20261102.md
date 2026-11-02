@@ -15,7 +15,7 @@ Vivado/Vitis **are installed** and working: `F:\AMDDesignTools\2026.1\Vivado\bin
 |---|---|---|
 | 1 | 0x44 total_count register absent in RTL | Fixed in PS (write removed). **This is not digit display**: current display capability is mask/line/boxes only; a running count digit is a separate, not-yet-scoped RTL task |
 | 2 | JPEG runtime bypassed touching-nut split | **Fixed** — counts via `update_rle`; FRG identity/status/geometry still validated |
-| 3 | FRG1 vs FRG2 | **Decision for this round: fixed c5a8680 / FRG1** (has the JPEG receipt). FRG2 (latest `overlay_bd`, 0x46524732) is a later, separate upgrade; transport fails closed on it |
+| 3 | FRG version | **Fixed candidate = c5a8680, all FRG1.** `video_binary_overlay_bd.v` (dfc48722…) returns `0x46524731`; `rle_feature_tap.v` (493bc04f…) is instantiated by that FRG1 wrapper — neither is FRG2. FRG2 (`0x46524732`) exists only in the *latest* worktree `overlay_bd`; it is a separate later upgrade, not part of this candidate. Pinned set: see `data/results/jpeg-csynth-probe-20261102/receipt.json`. The D695 wrapper (`d695aac…`) and the 19439 BRAM region (`19439a2c…`, recorded replacement) are NOT at c5a8680 — they come from later branches. |
 | 4 | Artifact admission (file/hash/status-string only) | **Open** — HWH part/IP parse, source-manifest and route binding (offline-doable, not yet done) |
 | 5 | JPEG format restrictions | SOI/EOI/size + PS header preflight (baseline, 640x400, 4:2:2, DRI=40, single-scan, header≤4096); PL wrapper remains final authority |
 | 6 | DRI/DQT "not PS-checkable" claim | **Corrected** — DRI/SOF/DQT presence are PS-parseable; `preflight_jpeg_header` does this |
