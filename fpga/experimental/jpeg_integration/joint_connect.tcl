@@ -87,7 +87,11 @@ joint::capture bd_validation {validate_bd_design}
 joint::capture architecture_readback {joint::check_jpeg} {SUCCESS:joint_jpeg_readback}
 set after [joint::check_preserved $before]
 joint::capture save_design_only {save_bd_design} {}
-joint::capture compile_order_only {update_compile_order -fileset sources_1} {}
+joint::capture_compile_order {update_compile_order -fileset sources_1}
+# Independent re-open + readback after the message-cache reset: confirm the
+# saved BD persisted the JPEG wiring and baseline before moving on.
+joint::capture post_save_reopen {close_bd_design [current_bd_design]; open_bd_design [joint::one [get_files */display.bd] display.bd]} {}
+joint::capture post_save_architecture_readback {joint::check_jpeg} {SUCCESS:joint_jpeg_readback}
 joint::verify_sources
 joint::capture live_sources {joint::live_sources}
 puts [ipcfg::write_evidence [file join $out joint-connected.tcldict] [dict create \

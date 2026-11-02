@@ -87,6 +87,50 @@ proc joint::verify_sources {} {
     puts $result
 }
 
+proc joint::capture_compile_order {script} {
+    # update_compile_order -fileset sources_1 resets Vivado's message cache after
+    # validate_bd_design, dropping the accumulated WARNING count to zero with no
+    # exported messages. Accept only that exact confirmed anomaly; keep the
+    # original FAIL receipt and reject anything else (ERROR/CRITICAL/other).
+    variable evidence
+    variable sequence
+    incr sequence
+    set file [file join $evidence [format {%03d-compile_order.tcldict} $sequence]]
+    set summary [uplevel 1 [list ipcfg::capture $file $script]]
+    set data [joint::read_capture_evidence $file $summary]
+    if {[dict get $data status] ne "FAIL" || [dict get $data code] != 0} {
+        error "JOINT_COMPILE_ORDER_UNEXPECTED:$file"
+    }
+    if {[dict get $data critical_count] != 0 || [dict get $data error_count] != 0} {
+        error "JOINT_COMPILE_ORDER_CRITICAL_OR_ERROR:$file"
+    }
+    if {![regexp {WARNING emitted=-[1-9][0-9]* exported=0$} [dict get $data capture_error]]} {
+        error "JOINT_COMPILE_ORDER_ANOMALY_NOT_ALLOWLISTED:$file"
+    }
+    set offsets [dict get $data native_log_offsets]
+    if {[llength $offsets] != 2 || [lindex $offsets 0] > [lindex $offsets 1]} {
+        error "JOINT_COMPILE_ORDER_RANGE_MALFORMED:$file"
+    }
+    set src [dict get $data native_log_source]
+    if {![file isfile $src]} {error "JOINT_COMPILE_ORDER_LOG_SOURCE_MISSING:$src"}
+    set fh [open $src r]
+    fconfigure $fh -translation binary
+    seek $fh [lindex $offsets 0]
+    set range_bytes [read $fh [expr {[lindex $offsets 1] - [lindex $offsets 0] + 1}]]
+    close $fh
+    set tmp [file join [dict get $cfg out] evidence [format {compile-range-%03d.bin} $sequence]]
+    set wh [open $tmp w]
+    fconfigure $wh -translation binary
+    puts -nonewline $wh $range_bytes
+    close $wh
+    set range_sha [string trim [exec [dict get $cfg python] -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" $tmp]]
+    file delete $tmp
+    puts [ipcfg::write_evidence [file join $evidence [format {%03d-compile_order.range.json} $sequence]] \
+        [dict create schema compile_order_range_v1 offsets $offsets source $src range_sha256 $range_sha]]
+    puts "JOINT_COMPILE_ORDER_REVIEW_PASS: code=0 no_ERROR/CRITICAL range=[lindex $offsets 0]..[lindex $offsets 1] range_sha256=$range_sha"
+    return $data
+}
+
 proc joint::capture {label script {expect {}}} {
     variable evidence
     variable sequence
