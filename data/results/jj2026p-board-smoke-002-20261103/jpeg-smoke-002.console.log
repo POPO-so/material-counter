@@ -1,0 +1,11 @@
+JPEG_STAGE preflight
+JPEG_STAGE overlay_download
+JPEG_STAGE overlay_loaded
+JPEG_STAGE post_load_identity
+JPEG_STAGE candidate_dma
+JPEG_STAGE display_prepare
+JPEG_STAGE display_prepared
+JPEG_STAGE display_start
+JPEG_STAGE display_started
+{"status": "FAIL_HOLD", "mode": "raw_mjpeg_to_jpeg_pl", "resolution": [640, 400], "expected_frames": 60, "frames": 0, "total_count": 0, "count_accuracy": "NOT_MEASURED", "artifacts": {"status": "ROUTED_NOT_BOARD_VERIFIED", "part": "xc7z020clg400-1", "bit_path": "/home/xilinx/jpeg-candidate-20261103b/jpeg_candidate.bit", "bit_sha256": "75577d743060a0908f5248e5a12062428bc1d6ad603c81fc5fdaedc9b15b230b", "hwh_path": "/home/xilinx/jpeg-candidate-20261103b/jpeg_candidate.hwh", "hwh_sha256": "06cf10cafc545d930fa210cd8fdd88d09981d808cb1c4197146183f822901380", "dma_base": 1077936128, "rle_base": 1136787456, "overlay_base": 1136984064, "jpeg_base": 1137180672}, "boot_id_expected": "b8034c58-663f-4f86-b68c-37e4bf7cdca2", "process_ownership": {"findings": [], "denied": [], "scanned_proc": "/proc"}, "camera_owners_before": [], "pynq_state_before": {"pl_state_status": "COLD_BOOT_NO_GLOBAL_STATE", "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json", "shutdown_ips": {}, "loaded_bit_path": null, "loaded_bit_sha1": null, "loaded_bit_sha256": null, "loaded_bit_path_matches_expected": null}, "boot_state": {"boot_id": "b8034c58-663f-4f86-b68c-37e4bf7cdca2", "fpga_manager": {"state": "operating", "flags": "0"}, "fpga_manager_error": null, "boot_bitstream": "base.bin", "boot_bitstream_error": null}, "preload_classification": {"kind": "COLD_BASE", "reason": "cold PYNQ state, boot base.bin, no FPGA owner", "candidate_mmio_before_load": false}, "error": "name 'overlay' is not defined", "error_type": "NameError", "display": {"started": true, "closed": false, "clocks": [50.0, 100.0, 142.857143], "vsync": {"unique": 0, "scans": 1, "repeat": 0, "invalid": 1, "partial": 0, "frame": 0, "sequence": 86, "capture_started": 3183.349559018, "sampled_monotonic": 3183.34988919}, "vdma_uncertain": true}, "buffers_held": true, "hold_signals": []}
+JPEG_PL_FAIL_HOLD: retaining DMA-owned buffers/display; keep this process alive and recover by authorized reboot

@@ -1,0 +1,60 @@
+May 17 08:10:07 pynq systemd-logind[254]: Session c178 logged out. Waiting for processes to exit.
+May 17 08:10:07 pynq systemd-logind[254]: Removed session c178.
+May 17 08:10:08 pynq sshd[14719]: Accepted publickey for xilinx from 192.168.2.10 port 55439 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 08:10:08 pynq sshd[14719]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 08:10:08 pynq systemd-logind[254]: New session c179 of user xilinx.
+May 17 08:10:08 pynq systemd[1]: Started Session c179 of User xilinx.
+May 17 08:10:08 pynq sshd[14735]: Received disconnect from 192.168.2.10 port 55439:11: disconnected by user
+May 17 08:10:08 pynq sshd[14735]: Disconnected from user xilinx 192.168.2.10 port 55439
+May 17 08:10:08 pynq sshd[14719]: pam_unix(sshd:session): session closed for user xilinx
+May 17 08:10:08 pynq systemd[1]: session-c179.scope: Deactivated successfully.
+May 17 08:10:08 pynq systemd-logind[254]: Session c179 logged out. Waiting for processes to exit.
+May 17 08:10:08 pynq systemd-logind[254]: Removed session c179.
+May 17 08:10:08 pynq sshd[14741]: Accepted publickey for xilinx from 192.168.2.10 port 55440 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 08:10:09 pynq sshd[14741]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 08:10:09 pynq systemd-logind[254]: New session c180 of user xilinx.
+May 17 08:10:09 pynq dhclient[207]: No DHCPOFFERS received.
+May 17 08:10:09 pynq dhclient[207]: No working leases in persistent database - sleeping.
+May 17 08:10:09 pynq systemd[1]: Started Session c180 of User xilinx.
+May 17 08:10:09 pynq sshd[14771]: Received disconnect from 192.168.2.10 port 55440:11: disconnected by user
+May 17 08:10:09 pynq sshd[14771]: Disconnected from user xilinx 192.168.2.10 port 55440
+May 17 08:10:09 pynq sshd[14741]: pam_unix(sshd:session): session closed for user xilinx
+May 17 08:10:09 pynq systemd[1]: session-c180.scope: Deactivated successfully.
+May 17 08:10:09 pynq systemd-logind[254]: Session c180 logged out. Waiting for processes to exit.
+May 17 08:10:09 pynq systemd-logind[254]: Removed session c180.
+May 17 08:10:09 pynq sshd[14780]: Accepted publickey for xilinx from 192.168.2.10 port 55446 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 08:10:09 pynq sshd[14780]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 08:10:09 pynq systemd-logind[254]: New session c181 of user xilinx.
+May 17 08:10:09 pynq systemd[1]: Started Session c181 of User xilinx.
+May 17 08:10:10 pynq dhclient[207]: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 3 (xid=0x74ff3e20)
+May 17 08:10:10 pynq sudo[14806]:   xilinx : PWD=/home/xilinx ; USER=root ; COMMAND=/usr/bin/grep -E State|VmRSS|Threads /proc/14240/status
+May 17 08:10:10 pynq sudo[14806]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 08:10:10 pynq sudo[14806]: pam_unix(sudo:session): session closed for user root
+May 17 08:10:10 pynq sudo[14815]:   xilinx : PWD=/home/xilinx ; USER=root ; COMMAND=/usr/bin/ls -l /proc/14240/fd
+May 17 08:10:10 pynq sudo[14815]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 08:10:10 pynq sudo[14815]: pam_unix(sudo:session): session closed for user root
+May 17 08:10:11 pynq sshd[14796]: Received disconnect from 192.168.2.10 port 55446:11: disconnected by user
+May 17 08:10:11 pynq sshd[14796]: Disconnected from user xilinx 192.168.2.10 port 55446
+May 17 08:10:11 pynq sshd[14780]: pam_unix(sshd:session): session closed for user xilinx
+May 17 08:10:11 pynq systemd[1]: session-c181.scope: Deactivated successfully.
+May 17 08:10:11 pynq systemd-logind[254]: Session c181 logged out. Waiting for processes to exit.
+May 17 08:10:11 pynq systemd-logind[254]: Removed session c181.
+May 17 08:10:11 pynq sshd[14829]: Accepted publickey for xilinx from 192.168.2.10 port 55448 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 08:10:11 pynq sshd[14829]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 08:10:11 pynq systemd-logind[254]: New session c182 of user xilinx.
+May 17 08:10:11 pynq systemd[1]: Started Session c182 of User xilinx.
+May 17 08:10:11 pynq sudo[14848]:   xilinx : PWD=/home/xilinx ; USER=root ; COMMAND=/usr/bin/dmesg
+May 17 08:10:11 pynq sudo[14848]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+May 17 08:10:11 pynq sudo[14848]: pam_unix(sudo:session): session closed for user root
+May 17 08:10:11 pynq sshd[14845]: Received disconnect from 192.168.2.10 port 55448:11: disconnected by user
+May 17 08:10:11 pynq sshd[14845]: Disconnected from user xilinx 192.168.2.10 port 55448
+May 17 08:10:11 pynq sshd[14829]: pam_unix(sshd:session): session closed for user xilinx
+May 17 08:10:11 pynq systemd[1]: session-c182.scope: Deactivated successfully.
+May 17 08:10:11 pynq systemd-logind[254]: Session c182 logged out. Waiting for processes to exit.
+May 17 08:10:11 pynq systemd-logind[254]: Removed session c182.
+May 17 08:10:12 pynq sshd[14861]: Accepted publickey for xilinx from 192.168.2.10 port 55451 ssh2: ED25519 SHA256:IedOS+6NwYSMUWcVuKeXV/Fw9vxktlydfoMwM+l3pSo
+May 17 08:10:12 pynq sshd[14861]: pam_unix(sshd:session): session opened for user xilinx(uid=1000) by (uid=0)
+May 17 08:10:12 pynq systemd-logind[254]: New session c183 of user xilinx.
+May 17 08:10:12 pynq systemd[1]: Started Session c183 of User xilinx.
+May 17 08:10:12 pynq sudo[14879]:   xilinx : PWD=/home/xilinx ; USER=root ; COMMAND=/usr/bin/journalctl -n 60 --no-pager
+May 17 08:10:12 pynq sudo[14879]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)

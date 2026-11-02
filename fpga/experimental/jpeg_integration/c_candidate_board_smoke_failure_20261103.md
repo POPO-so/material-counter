@@ -12,7 +12,9 @@ Board-access correction: the board **was** accessed read-only for identity,
 PYNQ/camera ownership and package checks, the package was copied, and the
 formal smoke entry was launched once. An earlier summary wording
 "未访问板卡" is withdrawn. The candidate BIT was not loaded and no candidate
-MMIO was issued before the fault.
+transfer was started; however, the runtime did attempt to read the unmapped
+expected DMA address `0x40400004` before the candidate load, and that read
+triggered the external abort.
 
 ## 1. Preconditions that passed
 

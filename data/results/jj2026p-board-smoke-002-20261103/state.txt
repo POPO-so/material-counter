@@ -1,0 +1,31 @@
+boot_id=b8034c58-663f-4f86-b68c-37e4bf7cdca2
+uptime= 08:10:10 up 54 min,  1 user,  load average: 0.44, 0.24, 0.15
+fpga_state=operating
+fpga_flags=0
+  PID  PPID     ELAPSED STAT %CPU %MEM CMD
+14240 14234       01:22 SLs  27.1 27.2 /usr/local/share/pynq-venv/bin/python3 software/scripts/experiments/run_jpeg_counter.py --execute --bit jpeg_candidate.bit --bit-sha256 75577d743060a0908f5248e5a12062428bc1d6ad603c81fc5fdaedc9b15b230b --hwh jpeg_candidate.hwh --hwh-sha256 06cf10cafc545d930fa210cd8fdd88d09981d808cb1c4197146183f822901380 --build-status ROUTED_NOT_BOARD_VERIFIED --boot-id b8034c58-663f-4f86-b68c-37e4bf7cdca2 --frames 60 --output run-20261103b/jpeg-smoke-002.json
+State:	S (sleeping)
+VmRSS:	  137052 kB
+Threads:	1
+total 0
+lr-x------ 1 root root 64 May 17 08:09 0 -> /dev/null
+l-wx------ 1 root root 64 May 17 08:09 1 -> /home/xilinx/jpeg-candidate-20261103b/run-20261103b/jpeg-smoke-002.console.log
+lrwx------ 1 root root 64 May 17 08:09 11 -> /dev/mem
+lrwx------ 1 root root 64 May 17 08:09 12 -> /dev/mem
+lrwx------ 1 root root 64 May 17 08:09 13 -> /dev/mem
+lrwx------ 1 root root 64 May 17 08:09 14 -> /dev/uio1
+lrwx------ 1 root root 64 May 17 08:09 15 -> /dev/mem
+lrwx------ 1 root root 64 May 17 08:09 16 -> /dev/mem
+lrwx------ 1 root root 64 May 17 08:09 18 -> /dev/mem
+l-wx------ 1 root root 64 May 17 08:09 2 -> /home/xilinx/jpeg-candidate-20261103b/run-20261103b/jpeg-smoke-002.console.log
+l-wx------ 1 root root 64 May 17 08:09 3 -> /dev/null
+lrwx------ 1 root root 64 May 17 08:09 4 -> /dev/dri/renderD128
+lrwx------ 1 root root 64 May 17 08:09 5 -> anon_inode:[eventpoll]
+lrwx------ 1 root root 64 May 17 08:09 6 -> socket:[29214]
+lrwx------ 1 root root 64 May 17 08:09 7 -> socket:[29215]
+lrwx------ 1 root root 64 May 17 08:09 8 -> /dev/mem
+lrwx------ 1 root root 64 May 17 08:09 9 -> /dev/mem
+75577d743060a0908f5248e5a12062428bc1d6ad603c81fc5fdaedc9b15b230b  jpeg_candidate.bit
+06cf10cafc545d930fa210cd8fdd88d09981d808cb1c4197146183f822901380  jpeg_candidate.hwh
+22071968be2bba9da8ebebfe2c2c7dfea4f1cfb27a95b9e430e72b2719472461  artifact-manifest.json
+112c0edc202e20948aaa77e5f3122e03787f031cc321c2dcfec2776e2a8cb3fd  SHA256SUMS

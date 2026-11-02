@@ -1,0 +1,30 @@
+{
+  "status": "FAIL_HOLD",
+  "output": "run-20261103b/jpeg-smoke-002.json",
+  "buffers_held": true,
+  "hold_signals": [],
+  "display": {
+    "started": true,
+    "closed": false,
+    "clocks": [
+      50.0,
+      100.0,
+      142.857143
+    ],
+    "vsync": {
+      "unique": 0,
+      "scans": 1,
+      "repeat": 0,
+      "invalid": 1,
+      "partial": 0,
+      "frame": 0,
+      "sequence": 86,
+      "capture_started": 3183.349559018,
+      "sampled_monotonic": 3183.34988919
+    },
+    "vdma_uncertain": true
+  },
+  "error": "name 'overlay' is not defined",
+  "error_type": "NameError",
+  "hint": "keep this process alive; collect the report via an independent connection; reboot with operator authorization"
+}
