@@ -20,7 +20,23 @@ Vivado/Vitis **are installed** and working: `F:\AMDDesignTools\2026.1\Vivado\bin
 | 5 | JPEG format restrictions | SOI/EOI/size + PS header preflight (baseline, 640x400, 4:2:2, DRI=40, single-scan, header≤4096); PL wrapper remains final authority |
 | 6 | DRI/DQT "not PS-checkable" claim | **Corrected** — DRI/SOF/DQT presence are PS-parseable; `preflight_jpeg_header` does this |
 
-## Blocked / remaining
-- Hardware build (HLS joint synth, place/route, BIT/HWH export, clock/CDC/mailbox review) not yet run here; teammate HLS logs / `.runtime/j9` are not in the repo, so evidence must be regenerated from source.
-- Gap 4 (admission binding) is next and is offline-only.
-- FRG2 candidate remains a separate future upgrade; do not mix its snapshots with the FRG1 receipt.
+## Dependencies (verified on this machine — no PYNQ blocker)
+- PYNQ_SOURCE = `C:/fpga/ext/pynq-v3.1` (HEAD 19ed17d4…; `verify_sources.py` 32/32 ok, 0 errors).
+- VIDEO_IP_BUILT = `C:/fpga/video-ip-20261101` (`color_convert` + `pixel_unpack` `solution1/impl/ip` present).
+- board repo = `C:/fpga/vivado_board_repos` (Pynq-Z2 def at `tul.com.tw/pynq-z2/A.0`).
+- ipcfg = in-repo `.agents/skills/vivado-ip-configurator/lib/ipcfg.tcl`.
+
+## Done this round
+- HLS CSim / CSynth / C/RTL co-sim (smoke + faults×7 + entropy-cut, random_stall) + independent Vivado OOC all PASS; threshold-boundary CSim (46k risk px) 0 flips.
+- 19439 region verification (sim reference_diff/limits + OOC BRAM mapping) `REGION_RUN_PASS` (`C:/fpga/wt/rgn2026/region-…`).
+- `prepare_snapshot.py` extracted fixed c5a8680 FRG1 sources + per-file manifest.
+
+## Remaining (serial heavy, in order)
+1. `create_g2_integration.tcl` (single entry, `OFFLOAD_CANDIDATE=1`) → FRG1 baseline XPR/BD + validate/save + clock/CDC/pin readback (env: PYNQ_SOURCE, VIDEO_IP_BUILT, G2_OUT/DISPLAY_OUT/DISPLAY_NATIVE_LOG).
+2. `joint_prepare --verify-gates --stage` (HLS + region green receipts bound).
+3. `joint_connect.tcl` → `joint_build.tcl` (joint synth) → clock/CDC/mailbox/DRC/timing review → route → matched BIT/HWH export (per-input/report SHA).
+
+## Unclosed / later
+- HLS timing estimate 15.96 ns vs 14.6 ns budget (OOC nominal WNS 4.964 ns) — reaffirm at joint synthesis; keep the warning open.
+- vendorY bit-exact reference — later, non-blocking.
+- FRG2 remains a separate future upgrade (fixed candidate = FRG1).

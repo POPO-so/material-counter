@@ -1,0 +1,13 @@
+{
+  "schema": "material-counter.jpeg-region-receipt.v1",
+  "recorded_at_utc": "2026-11-02T06:24:00Z",
+  "status": "PASS",
+  "region": "19439 BRAM region (jpeg_integration/rle_region_features.v)",
+  "region_sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911",
+  "mode": "all (sim + ooc)", "require_bram": true,
+  "sim": {"result": "PASS", "checks": ["reference_diff", "limits"]},
+  "ooc": {"result": "PASS", "checks": ["BRAM mapping"], "marker": "REGION_BRAM_PASS"},
+  "driver": "REGION_RUN_PASS: C:\\fpga\\wt\\rgn2026\\region-20261102-142222-233",
+  "tool": "F:/AMDDesignTools/2026.1/Vivado/bin/vivado.bat",
+  "evidence": "C:/fpga/wt/rgn2026/region-20261102-142222-233 (region_inputs.sha256 + sim/ + ooc/)"
+}
