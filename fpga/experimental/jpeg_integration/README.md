@@ -246,7 +246,11 @@ runner and `JpegRleDmaTransport`. `--jpeg-pl` remains a compatibility alias;
 The JPEG runner still requires `--execute`, pinned routed BIT/HWH hashes, boot
 ID validation, and its existing camera/DMA preflight. Earlier board evidence
 used the explicit alias; the revised default dispatch has local focused tests
-but awaits the user's next board run.
+and is included in the source-bound [v8 runtime package](../../../data/results/jpeg-pl-board-20261102/jpeg-pl-runtime-v8-release.json).
+That bundle also contains the exact routed BIT/HWH and native C++ source; if no
+`--native-lib`/`RLE_NATIVE_LIB` is supplied, the runner builds a source-hash
+named `.so` before touching the PL (so the board needs `g++`). The bundle awaits
+the user's next board run.
 
 T7 joint synthesis and route completed in candidate `T:/jj1102l`. Final route
 resources were 36,483 LUT, 38,734 FF, 30 BRAM36 + 55 BRAM18, and 49 DSP.

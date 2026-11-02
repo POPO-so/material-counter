@@ -4,11 +4,11 @@ PS 读取 MJPEG 并直接解码为 640×400 Gray8，不缩放；PL 完成 ROI、
 
 这是独立候选运行入口，不自动替换桌面 GUI 的已验软件相机入口。正式 Route／接口冻结状态不因实现改变。完整 ABI 见 [设计](../../docs/superpowers/specs/2026-10-28-rle-design.md)。
 
-联合 JPEG 硬解候选可从同一入口显式使用 `--jpeg-pl`：它将 V4L2 协商为 640×400 MJPG，把压缩字节送入 PL；PL 回传 RLE/FRG 后由 PS 跟踪计数，再发布匹配帧的二值 mask、计数线、框和累计计数字形。运行器启动 1280×720 Gray8 HDMI VideoOut/VDMA，并用 PL 输出监视器逐帧核对 session/frame 标记。相机最多容忍 3 个连续不完整 MJPEG 包，统计后跳过；超限即失败。
+联合 JPEG 硬解候选现由同一入口的 `--mode camera` 默认启用：PS 将 V4L2 协商为 640×400 MJPG，把压缩字节送入 PL；PL 完成 JPEG→Gray8→RLE/FRG，PS 跟踪计数后发布匹配帧的二值 mask、计数线、框和累计计数字形。运行器启动 1280×720 Gray8 HDMI VideoOut/VDMA，并用 PL 输出监视器逐帧核对 session/frame 标记。相机最多容忍 3 个连续不完整 MJPEG 包，统计后跳过；超限即失败。`--jpeg-pl` 保留为兼容别名；仅传 `--software-decode` 才会选择旧的 PS OpenCV 解码 + PL-RLE 路径。`--mode self-test` 仍保留原硬件自测分支。JPEG runner 若未给 `--native-lib` 且未设置 `RLE_NATIVE_LIB`，会在触碰板端硬件前用包内 C++ 源码编译源码哈希绑定的 `.so` 到报告目录；因此板端需要已有 RLE 原生库或 `g++`，构建失败会在 PL 初始化前退出。
 
-2026-11-02 板端单次验收：匹配候选 BIT/HWH 完成 120/120 帧，11.31 fps；每帧 HDMI 像素流身份匹配，监视器 invalid/partial 为 0，最终 DMA/VDMA 均安全停止。报告见 [board-run.json](../../data/results/jpeg-pl-board-20261102/board-run.json)。该样本无检测前景，`total_count=0` 不代表计数准确率；尚无外接显示器肉眼观察。本模式仍要求匹配的 BIT/HWH 哈希、`ROUTED_NOT_BOARD_VERIFIED` 构建状态、boot ID 和 `--execute`，默认相机模式仍沿用软件解码路径。
+2026-11-02 板端单次验收：匹配候选 BIT/HWH 完成 120/120 帧，11.31 fps；每帧 HDMI 像素流身份匹配，监视器 invalid/partial 为 0，最终 DMA/VDMA 均安全停止。报告见 [board-run.json](../../data/results/jpeg-pl-board-20261102/board-run.json)。该样本无检测前景，`total_count=0` 不代表计数准确率；尚无外接显示器肉眼观察。本模式仍要求匹配的 BIT/HWH 哈希、`ROUTED_NOT_BOARD_VERIFIED` 构建状态、boot ID 和 `--execute`。
 
-2026-11-02 正样本补测：单张 4:2:2 JPEG 经板端 PL 检出一个 40×40 区域；随后五张受支持 JPEG 通过同一入口依次处理，目标越过 x=320 后板端计数从 0 增至 1。可重复 --input-jpeg <文件> 并令 --frames 与文件数相同，所有 JPEG 会在硬件访问前预检，总 fixture 上限 32 MiB。样本、哈希和报告见 [JPEG PL 板测证据](../../data/results/jpeg-pl-board-20261102/README.md)。HDMI monitor 核验帧标记与扫描，不检查 mask/框/计数字形像素；外接显示器和真实物料准确率仍未验收。默认相机模式不变。
+2026-11-02 正样本补测：单张 4:2:2 JPEG 经板端 PL 检出一个 40×40 区域；随后五张受支持 JPEG 通过同一入口依次处理，目标越过 x=320 后板端计数从 0 增至 1。可重复 `--input-jpeg <文件>` 并令 `--frames` 与文件数相同，所有 JPEG 会在硬件访问前预检，总 fixture 上限 32 MiB。样本、哈希和报告见 [JPEG PL 板测证据](../../data/results/jpeg-pl-board-20261102/README.md)。HDMI monitor 核验帧标记与扫描，不检查 mask/框/计数字形像素；外接显示器和真实物料准确率仍未验收。新默认入口及匹配的 v8 运行包需由用户完成下一次板端实跑；包和执行命令见 [v8 runtime release](../../data/results/jpeg-pl-board-20261102/README.md#v8-默认入口运行包)。
 ## 文件
 
 - `protocol.py`：Gray8 输入包、RLE 编码黄金模型及严格校验，正常解析采用 NumPy 向量运算。

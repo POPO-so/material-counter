@@ -47,3 +47,28 @@ HDMI monitor 核验帧身份和扫描，不统计 mask/框的非零像素，也�
 ## 最终 route CDC 复核
 
 T7 最终 routed CDC 报告、timing 报告、route 收据及两份 CDC 约束已归档于 [route-cdc-review](route-cdc-review/README.md)。复核确认 CDC-13 critical 为 0；998 条 CDC-15 和 1 条 CDC-6 均按最终 routed 报告完成路径归因，warning 仍保留并有对应约束/协议说明。`datapath_only` 例外路径不做 hold 检查；该限制及握手稳定数据的处置依据已写入复核记录。没有为隐藏 warning 添加 false path。
+
+## v8 默认入口运行包
+
+已生成可直接部署的 [jpeg-pl-runtime-v8.zip](jpeg-pl-runtime-v8.zip)，SHA-256：`6939451aa26c943c7a66c1f60ba1b7d5d650e2dd2a758515eb6f16b2dedf817f`，大小 1,323,908 bytes。包内 18 个运行源码均按 manifest 逐项校验；新增默认 JPEG PL 分发代码和兼容别名已包含。JPEG runner 会优先使用 `--native-lib`/`RLE_NATIVE_LIB` 指定的库，否则在硬件初始化前从包内 C++ 源码构建一个以源码 SHA 命名的 `.so`；这需要 PYNQ 系统已有 `g++`。包内 BIT/HWH 与已板测的候选相同：BIT `9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed`，HWH `79b8abcb954667e6791c8d7f0eba3e59ad2215ca3f175ebb8b5e98892dd9968f`。release 收据：[jpeg-pl-runtime-v8-release.json](jpeg-pl-runtime-v8-release.json)。此包尚未部署；下面是你在板上执行的入口。
+
+将 ZIP 复制到 PYNQ-Z2（下例使用现有地址），再在板端解包并运行：
+
+```powershell
+scp data/results/jpeg-pl-board-20261102/jpeg-pl-runtime-v8.zip xilinx@192.168.2.99:/home/xilinx/
+```
+
+```bash
+mkdir -p /home/xilinx/jpeg-joint-20261102-v8
+unzip -oq /home/xilinx/jpeg-pl-runtime-v8.zip -d /home/xilinx/jpeg-joint-20261102-v8
+cd /home/xilinx/jpeg-joint-20261102-v8
+sudo env XILINX_XRT=/usr /usr/local/share/pynq-venv/bin/python3 -B -m scripts.rle.run_counter \
+  --mode camera --frames 120 --execute \
+  --bit artifacts/jpeg-joint.bit --bit-sha256 9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed \
+  --hwh artifacts/jpeg-joint.hwh --hwh-sha256 79b8abcb954667e6791c8d7f0eba3e59ad2215ca3f175ebb8b5e98892dd9968f \
+  --build-status ROUTED_NOT_BOARD_VERIFIED \
+  --boot-id "$(cat /proc/sys/kernel/random/boot_id)" \
+  --output /home/xilinx/jpeg-joint-20261102-v8/run-camera.json
+```
+
+JPEG runner 会执行已有相机占用、DMA/VDMA idle、BIT/HWH 哈希和 boot ID 检查；遇到不匹配会停止，不会继续加载不匹配位流。实际接 HDMI OUT 显示器观察画面，并用运行报告核对 120 帧、packet invalid/partial、累计计数和安全停机状态。此前 120 帧空场景、五帧合成越线板测是链路证据；物料准确率仍需要你用已知数量的实物完成真值核对。
