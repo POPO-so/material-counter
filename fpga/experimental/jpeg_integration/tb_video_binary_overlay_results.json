@@ -47,6 +47,13 @@
       "purpose": "64x64 explicit boundary + window-edge coverage",
       "result": "PASS",
       "detail": "box_l/r/t/b=1, line=1, line_low=1, interior_black=1, edge=2, cmp_mm=0, any_white=104"
+    },
+    {
+      "tb": "tb_video_binary_overlay_viewport.sv",
+      "purpose": "viewport sub-rectangle (8,8)..(39,39): uncovered-region passthrough",
+      "result": "PASS",
+      "detail": "in_black=1024 (=32x32), out_gray=3072 (=64x64-1024), edge_in=2, edge_out=4, bad=0, cmp_mm=0",
+      "conclusion": "every sampled pixel is exactly black inside the view or base RGB 0x404040 outside it; the unique base encoding appears only in uncovered regions"
     }
   ],
   "small_tb_prior_failure": {
