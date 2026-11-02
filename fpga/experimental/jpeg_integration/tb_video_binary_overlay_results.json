@@ -1,0 +1,58 @@
+{
+  "schema": "material-counter.overlay-candidate-c.results.v1",
+  "date": "2026-11-02",
+  "worktree": "C:/fpga/wt/claude-jpeg-20261102",
+  "branch": "codex/claude-jpeg-20261102",
+  "note": "All runs are XSim only. No routing, no board access, no deployment, no push.",
+  "sources": {
+    "frozen_baseline": {
+      "path": "C:/w/jj2026j/snapshot/data/results/standalone-20261102-143331-g2-integration/rtl/video_binary_overlay.v",
+      "sha256": "01d5563c7be95e92d38b20028063b7e85cf67ef4428d27c6c9d411b3b70ef9f9",
+      "already_contains": "g_source_x_5_4 (local_x + (local_x>>2)) x-direction 5:4 precomputation",
+      "does_not_contain": "g_row_base_5_4 / row_base_addr (y-direction row-base precomputation)",
+      "test_copy": "fpga/experimental/standalone/video_binary_overlay_frozen.v (module renamed, binary_mask_ram removed; body unchanged)"
+    },
+    "frozen_bd_frg1": {
+      "path": "C:/w/jj2026j/snapshot/data/results/standalone-20261102-143331-g2-integration/rtl/video_binary_overlay_bd.v",
+      "sha256": "dfc487227d9ad9ea",
+      "signature": "FRG1 0x46524731"
+    },
+    "candidate": {
+      "path": "fpga/experimental/standalone/video_binary_overlay.v",
+      "sha256": "811db98140f55686ff54fd89d6456a57c9fe27f64f7c7290cf3476a18eacec57",
+      "commit": "72f77cce",
+      "changes": "hit-vector box reduce pipelined one stage with q2 output alignment"
+    },
+    "retired": {
+      "path": "fpga/experimental/standalone/video_binary_overlay_old_renamed.v",
+      "sha256": "b96ee30915220dd8",
+      "reason": "ad-hoc copy lacking the CFG scale state machine; NOT the frozen baseline; removed to avoid a false comparison reference"
+    }
+  },
+  "simulations": [
+    {
+      "tb": "tb_video_binary_overlay_cmp.sv",
+      "purpose": "old/new delay alignment",
+      "result": "PASS",
+      "detail": "mismatches=0 (new == frozen delayed by 1 pixel_clk)"
+    },
+    {
+      "tb": "tb_video_binary_overlay_func.sv",
+      "purpose": "640x400 functional overlay",
+      "result": "PASS",
+      "detail": "white=414, cmp_mismatch=0"
+    },
+    {
+      "tb": "tb_video_binary_overlay_small.sv",
+      "purpose": "64x64 explicit boundary + window-edge coverage",
+      "result": "PASS",
+      "detail": "box_l/r/t/b=1, line=1, line_low=1, interior_black=1, edge=2, cmp_mm=0, any_white=104"
+    }
+  ],
+  "small_tb_prior_failure": {
+    "symptom": "coverage NOT MET at rx=10/rx=30 with output black",
+    "root_cause": "the TB coordinate label used the wrong delay tap; the DUT output was correct",
+    "evidence": "white pixels observed at d1 taps: line x=30 all rows, box x=10/20 y=10..20, box y=10/20 x=10..20",
+    "fix": "assert on the d1 TB-driven source-coordinate tap, calibrated against the published cfg (independent model, no DUT internals)"
+  }
+}

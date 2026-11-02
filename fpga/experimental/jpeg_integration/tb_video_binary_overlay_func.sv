@@ -48,7 +48,7 @@ module tb_video_binary_overlay_func;
     .displayed_frame_id(),.capture_busy(),.pending_valid(),.completed_valid_status(),
     .display_valid(new_dv),.mask_displayed_frame_id(),.mask_display_valid());
 
-  video_binary_overlay_old #(.WIDTH(640),.HEIGHT(400)) old_dut (
+  video_binary_overlay_frozen #(.WIDTH(640),.HEIGHT(400)) old_dut (
     .mask_clk(mask_clk),.mask_resetn(mask_resetn),
     .tap_valid(tap_valid),.tap_sof(tap_sof),.tap_eol(tap_eol),.tap_bit(tap_bit),
     .tap_frame_id(tap_frame_id),.mask_accept(mask_accept),.accepted_frame_id(accepted_frame_id),

@@ -3,7 +3,7 @@
 // remains immutable until the pixel-domain VSYNC swap has crossed back as ACK.
 // Independent resets during use require a coordinated reset of all three domains.
 // Status ports belong to the named domain; consumers must use a CDC snapshot.
-module video_binary_overlay_old #(
+module video_binary_overlay_frozen #(
   parameter integer WIDTH=640, HEIGHT=400, VIEW_X=384, VIEW_Y=146,
   parameter integer VIEW_WIDTH=WIDTH, VIEW_HEIGHT=HEIGHT,
   parameter integer MAX_BOXES=16
@@ -120,88 +120,24 @@ module video_binary_overlay_old #(
 
   reg cfg_toggle, cfg_ack;
   (* ASYNC_REG="TRUE" *) reg cfg_ack_s1, cfg_ack_s2;
-  localparam integer CFG_IDLE=0, CFG_LINE=1, CFG_BOX_READ=2,
-                     CFG_BOX_SCALE=3, CFG_BOX_WRITE=4, CFG_PUBLISH=5;
-  localparam integer CFG_COORDS=MAX_BOXES*4;
-  localparam integer CFG_INDEX_W=(CFG_COORDS<2)?1:$clog2(CFG_COORDS);
-  reg [2:0] cfg_state;
-  reg [CFG_INDEX_W-1:0] cfg_box_idx;
-  reg [1:0] cfg_coord_sel;
-  reg cfg_raw_enable;
-  reg [31:0] cfg_raw_id;
-  reg [4:0] cfg_raw_count;
-  reg [MAX_BOXES*40-1:0] cfg_raw_boxes, cfg_work_boxes;
-  reg [MAX_BOXES-1:0] cfg_work_box_valid;
-  reg [9:0] cfg_raw_line, cfg_work_line;
-  reg cfg_work_line_valid;
-  reg [9:0] cfg_coord_raw, cfg_coord_scaled_reg;
-  integer cfgb;
-  wire [9:0] cfg_coord_scaled=(cfg_coord_sel<2)?
-      ((cfg_coord_raw*VIEW_WIDTH)/WIDTH):
-      ((cfg_coord_raw*VIEW_HEIGHT)/HEIGHT);
   reg cfg_mb_enable;
   reg [31:0] cfg_mb_id;
   reg [4:0] cfg_mb_count;
   reg [MAX_BOXES*40-1:0] cfg_mb_boxes;
   reg [9:0] cfg_mb_line;
-  reg [MAX_BOXES-1:0] cfg_mb_box_valid;
-  reg cfg_mb_line_valid;
-  assign cfg_ready=cfg_resetn && cfg_state==CFG_IDLE && cfg_ack_s2==cfg_toggle;
+  assign cfg_ready=cfg_resetn && cfg_ack_s2==cfg_toggle;
   always @(posedge cfg_clk) begin
     if(!cfg_resetn) begin
       cfg_toggle<=0; cfg_ack_s1<=0; cfg_ack_s2<=0;
       cfg_mb_enable<=0; cfg_mb_id<=0; cfg_mb_count<=0;
-      cfg_mb_boxes<=0; cfg_mb_line<=0; cfg_mb_box_valid<=0; cfg_mb_line_valid<=0;
-      cfg_state<=CFG_IDLE; cfg_box_idx<=0; cfg_coord_sel<=0;
-      cfg_raw_enable<=0; cfg_raw_id<=0; cfg_raw_count<=0;
-      cfg_raw_boxes<=0; cfg_work_boxes<=0; cfg_work_box_valid<=0;
-      cfg_raw_line<=0; cfg_work_line<=0; cfg_work_line_valid<=0;
-      cfg_coord_raw<=0; cfg_coord_scaled_reg<=0;
+      cfg_mb_boxes<=0; cfg_mb_line<=0;
     end else begin
       cfg_ack_s1<=cfg_ack; cfg_ack_s2<=cfg_ack_s1;
-      case(cfg_state)
-        CFG_IDLE: if(cfg_commit && cfg_ready) begin
-          cfg_raw_enable<=cfg_enable; cfg_raw_id<=cfg_frame_id;
-          cfg_raw_count<=cfg_box_count; cfg_raw_boxes<=cfg_boxes;
-          cfg_raw_line<=cfg_line_x; cfg_work_line_valid<=cfg_line_x<WIDTH;
-          for(cfgb=0;cfgb<MAX_BOXES;cfgb=cfgb+1) begin
-            cfg_work_box_valid[cfgb]<=
-              cfg_boxes[cfgb*40+0 +: 10]<=cfg_boxes[cfgb*40+10 +: 10] &&
-              cfg_boxes[cfgb*40+20 +: 10]<=cfg_boxes[cfgb*40+30 +: 10] &&
-              cfg_boxes[cfgb*40+10 +: 10]<WIDTH &&
-              cfg_boxes[cfgb*40+30 +: 10]<HEIGHT;
-          end
-          cfg_state<=CFG_LINE;
-        end
-        CFG_LINE: begin
-          cfg_work_line<=(cfg_raw_line*VIEW_WIDTH)/WIDTH;
-          cfg_box_idx<=0; cfg_coord_sel<=0; cfg_state<=CFG_BOX_READ;
-        end
-        CFG_BOX_READ: begin
-          cfg_coord_raw<=cfg_raw_boxes[cfg_box_idx*40+cfg_coord_sel*10 +: 10];
-          cfg_state<=CFG_BOX_SCALE;
-        end
-        CFG_BOX_SCALE: begin
-          cfg_coord_scaled_reg<=cfg_coord_scaled;
-          cfg_state<=CFG_BOX_WRITE;
-        end
-        CFG_BOX_WRITE: begin
-          cfg_work_boxes[cfg_box_idx*40+cfg_coord_sel*10 +: 10]<=cfg_coord_scaled_reg;
-          if(cfg_coord_sel==3) begin
-            cfg_coord_sel<=0;
-            if(cfg_box_idx==MAX_BOXES-1) cfg_state<=CFG_PUBLISH;
-            else begin cfg_box_idx<=cfg_box_idx+1'b1;cfg_state<=CFG_BOX_READ;end
-          end else begin cfg_coord_sel<=cfg_coord_sel+1'b1;cfg_state<=CFG_BOX_READ;end
-        end
-        CFG_PUBLISH: begin
-          cfg_mb_enable<=cfg_raw_enable; cfg_mb_id<=cfg_raw_id;
-          cfg_mb_count<=cfg_raw_count; cfg_mb_boxes<=cfg_work_boxes;
-          cfg_mb_box_valid<=cfg_work_box_valid;
-          cfg_mb_line<=cfg_work_line; cfg_mb_line_valid<=cfg_work_line_valid;
-          cfg_toggle<=~cfg_toggle; cfg_state<=CFG_IDLE;
-        end
-        default: cfg_state<=CFG_IDLE;
-      endcase
+      if(cfg_commit && cfg_ready) begin
+        cfg_mb_enable<=cfg_enable; cfg_mb_id<=cfg_frame_id;
+        cfg_mb_count<=cfg_box_count; cfg_mb_boxes<=cfg_boxes;
+        cfg_mb_line<=cfg_line_x; cfg_toggle<=~cfg_toggle;
+      end
     end
   end
 
@@ -212,9 +148,7 @@ module video_binary_overlay_old #(
   reg [31:0] id_p;
   reg [4:0] count_p;
   reg [MAX_BOXES*40-1:0] boxes_p;
-  reg [MAX_BOXES-1:0] box_valid_p;
   reg [9:0] line_p;
-  reg line_valid_p;
   reg [11:0] x,y;
   reg active_prev,vsync_prev;
   wire frame_boundary=vid_vsync && !vsync_prev;
@@ -222,8 +156,6 @@ module video_binary_overlay_old #(
        x>=VIEW_X && x<VIEW_X+VIEW_WIDTH && y>=VIEW_Y && y<VIEW_Y+VIEW_HEIGHT;
   wire [9:0] local_x=x-VIEW_X,local_y=y-VIEW_Y;
   wire [9:0] source_x,source_y;
-  reg [AW-1:0] row_base_addr;
-  reg [1:0] row_scale_phase;
   generate
     // The production preview maps 512x320 source pixels onto a 640x400
     // window. For this exact 5:4 scale, floor(v*5/4) == v + floor(v/4).
@@ -243,28 +175,21 @@ module video_binary_overlay_old #(
   integer b;
   reg [9:0] bx0,bx1,by0,by1;
   always @* begin
-    line_or_box=in_view && line_valid_p && local_x==line_p;
+    line_or_box=in_view && line_p<WIDTH && local_x==(line_p*VIEW_WIDTH)/WIDTH;
     bx0=0;bx1=0;by0=0;by1=0;
     for(b=0;b<MAX_BOXES;b=b+1) begin
       bx0=boxes_p[b*40 +: 10]; bx1=boxes_p[b*40+10 +: 10];
       by0=boxes_p[b*40+20 +: 10]; by1=boxes_p[b*40+30 +: 10];
       if(in_view && id_p==displayed_frame_id && b<count_p &&
-         box_valid_p[b] && bx0<=bx1 && by0<=by1 &&
-         local_x>=bx0 && local_x<=bx1 && local_y>=by0 && local_y<=by1 &&
-         (local_x==bx0 || local_x==bx1 || local_y==by0 || local_y==by1))
+         bx0<=bx1 && by0<=by1 && bx1<WIDTH && by1<HEIGHT &&
+         local_x>=(bx0*VIEW_WIDTH)/WIDTH && local_x<=(bx1*VIEW_WIDTH)/WIDTH &&
+         local_y>=(by0*VIEW_HEIGHT)/HEIGHT && local_y<=(by1*VIEW_HEIGHT)/HEIGHT &&
+         (local_x==(bx0*VIEW_WIDTH)/WIDTH || local_x==(bx1*VIEW_WIDTH)/WIDTH ||
+          local_y==(by0*VIEW_HEIGHT)/HEIGHT || local_y==(by1*VIEW_HEIGHT)/HEIGHT))
         line_or_box=1;
     end
   end
-  wire [AW-1:0] pixel_addr;
-  generate
-    // For the exact 5:4 vertical map, advance the source row base by 1,1,1,2
-    // rows per output line. This removes source_y*WIDTH from the pixel path.
-    if(HEIGHT*4==VIEW_HEIGHT*5) begin : g_row_base_5_4
-      assign pixel_addr=row_base_addr+source_x;
-    end else begin : g_row_base_generic
-      assign pixel_addr=source_y*WIDTH+source_x;
-    end
-  endgenerate
+  wire [AW-1:0] pixel_addr=source_y*WIDTH+source_x;
   wire bank0_q,bank1_q;
   reg bank_q;
   wire mask_q=bank_q?bank1_q:bank0_q;
@@ -283,10 +208,9 @@ module video_binary_overlay_old #(
     if(!pixel_resetn) begin
       publish_sync1<=0;publish_sync2<=0;publish_seen<=0;
       cfg_req_s1<=0;cfg_req_s2<=0;cfg_seen<=0;cfg_ack<=0;
-      enable_p<=0;id_p<=0;count_p<=0;boxes_p<=0;box_valid_p<=0;line_p<=0;line_valid_p<=0;
+      enable_p<=0;id_p<=0;count_p<=0;boxes_p<=0;line_p<=0;
       display_bank<=0;display_valid<=0;displayed_frame_id<=0;ack_toggle<=0;
       x<=0;y<=0;active_prev<=0;vsync_prev<=0;
-      row_base_addr<=0;row_scale_phase<=0;
       bank_q<=0;use_q<=0;overlay_q<=0;base_q<=0;
       active_q<=0;vsync_q<=0;hsync_q<=0;
       out_data24<=0;out_active<=0;out_vsync<=0;out_hsync<=0;
@@ -295,31 +219,18 @@ module video_binary_overlay_old #(
       cfg_req_s1<=cfg_toggle;cfg_req_s2<=cfg_req_s1;
       active_prev<=vid_active;vsync_prev<=vid_vsync;
       if(frame_boundary) begin
-        x<=0;y<=0;row_base_addr<=0;row_scale_phase<=0;
+        x<=0;y<=0;
         if(publish_sync2!=publish_seen) begin
           display_bank<=publish_bank;displayed_frame_id<=publish_id;display_valid<=1;
           publish_seen<=publish_sync2;ack_toggle<=publish_sync2;
         end
         if(cfg_req_s2!=cfg_seen) begin
           enable_p<=cfg_mb_enable;id_p<=cfg_mb_id;count_p<=cfg_mb_count;
-          boxes_p<=cfg_mb_boxes;box_valid_p<=cfg_mb_box_valid;
-          line_p<=cfg_mb_line;line_valid_p<=cfg_mb_line_valid;
+          boxes_p<=cfg_mb_boxes;line_p<=cfg_mb_line;
           cfg_seen<=cfg_req_s2;cfg_ack<=cfg_req_s2;
         end
       end else if(vid_active) x<=x+1'b1;
-      else if(active_prev) begin
-        x<=0;y<=y+1'b1;
-        if(HEIGHT*4==VIEW_HEIGHT*5) begin
-          if(y==VIEW_Y-1) begin row_base_addr<=0;row_scale_phase<=0;end
-          else if(y>=VIEW_Y && y<VIEW_Y+VIEW_HEIGHT-1) begin
-            if(row_scale_phase==3) begin
-              row_base_addr<=row_base_addr+2*WIDTH;row_scale_phase<=0;
-            end else begin
-              row_base_addr<=row_base_addr+WIDTH;row_scale_phase<=row_scale_phase+1'b1;
-            end
-          end
-        end
-      end
+      else if(active_prev) begin x<=0;y<=y+1'b1;end
       bank_q<=display_bank;
       use_q<=in_view;overlay_q<=line_or_box;base_q<=vid_data24;
       active_q<=vid_active;vsync_q<=vid_vsync;hsync_q<=vid_hsync;
@@ -328,5 +239,3 @@ module video_binary_overlay_old #(
     end
   end
 endmodule
-
-// AMD UG901 simple dual-port RAM, independent read/write clocks.

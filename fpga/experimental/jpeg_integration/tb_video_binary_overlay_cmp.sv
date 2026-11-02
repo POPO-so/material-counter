@@ -32,7 +32,7 @@ module tb_video_binary_overlay_cmp;
     .displayed_frame_id(), .capture_busy(), .pending_valid(), .completed_valid_status(),
     .display_valid(), .mask_displayed_frame_id(), .mask_display_valid());
 
-  video_binary_overlay_old #(.WIDTH(640),.HEIGHT(400)) old_dut (
+  video_binary_overlay_frozen #(.WIDTH(640),.HEIGHT(400)) old_dut (
     .mask_clk(mask_clk), .mask_resetn(mask_resetn),
     .tap_valid(1'b0), .tap_sof(1'b0), .tap_eol(1'b0), .tap_bit(1'b0),
     .tap_frame_id(32'd0), .mask_accept(1'b0), .accepted_frame_id(32'd0),
