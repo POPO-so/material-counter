@@ -1,5 +1,9 @@
+import hashlib
+
 import numpy as np
 import pytest
+
+import scripts.rle.jpeg_transport as jpeg_transport
 
 from scripts.rle.protocol import HEIGHT, MAX_RUNS, RX_CAPACITY, WIDTH, encode_mask
 from scripts.rle.jpeg_transport import (
@@ -139,7 +143,8 @@ class Rig:
         self.rle = Mmio({0x04: 0x31454C52, 0x08: 0, 0x0c: 0,
                          0x10: 0, 0x14: 0, 0x18: 0, 0x1c: 0,
                          0x20: 128, 0x24: 0, 0x28: 0,
-                         0x2c: (HEIGHT << 16) | WIDTH, 0x30: MAX_RUNS}, self.events, "rle")
+                         0x2c: (HEIGHT << 16) | WIDTH, 0x30: MAX_RUNS,
+                         0x70: 0x52415731, 0x74: 0}, self.events, "rle")
         self.jpeg = Mmio({0x00: 4, 0x10: 0, 0x18: 0, 0x20: 0xdeadbeef, 0x24: 0}, self.events, "jpeg")
         self.preview = Mmio({0x0000: 0x50424f31, 0x0008: preview,
             0x0018: 9, 0x001c: 9, 0x0010: drop, 0x0200: 0x46524731,
@@ -220,12 +225,14 @@ class Rig:
                 "length": self.dma.values.get(base + 0x28, 0)}
 
 
-def transport(rig, timeout_s=0.02, first_transfer_guard="auto"):
+def transport(rig, timeout_s=0.02, first_transfer_guard="auto", rx_capture=None):
     if first_transfer_guard == "auto":
         first_transfer_guard = rig.guard if rig.driver_started else None
     kwargs = {}
     if first_transfer_guard is not None:
         kwargs["first_transfer_guard"] = first_transfer_guard
+    if rx_capture is not None:
+        kwargs["rx_capture"] = rx_capture
     return JpegRleDmaTransport(rig.send, rig.recv, rig.dma, rig.rle,
         rig.jpeg, rig.preview, rig.tx, rig.rx, timeout_s=timeout_s, **kwargs)
 
@@ -290,6 +297,98 @@ def test_jpeg_non_idle_preflight_does_not_write_buffer_or_start_channels():
         transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
     assert bytes(rig.tx[:8]) == original
     assert not any(e[0] in ("s2mm", "mm2s") and e[1] == "transfer" for e in rig.events)
+
+
+def test_raw_input_mode_is_configured_before_dma_and_pipeline():
+    rig = Rig(driver_started=True)
+    transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    events = rig.events
+    mode_index = events.index(("rle", "write", 0x74, 1))
+    first_dma = min(i for i, event in enumerate(events)
+                    if event[0] in ("s2mm", "mm2s") and event[1] == "transfer")
+    rle_start = events.index(("rle", "write", 0x00, 1))
+    jpeg_start = events.index(("jpeg", "write", 0x00, 1))
+    assert mode_index < first_dma
+    assert mode_index < rle_start
+    assert mode_index < jpeg_start
+    assert rig.rle.values[0x74] == 1
+
+
+def test_raw_capability_missing_is_rejected_before_tx_or_start():
+    rig = Rig(driver_started=True)
+    rig.rle.values[0x70] = 0
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="raw input capability"):
+        transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_start_or_tx_write(rig, tx_before)
+    assert not any(event[:3] == ("rle", "write", 0x74)
+                   for event in rig.events)
+
+
+def test_raw_mode_readback_failure_is_rejected_before_tx_or_start():
+    rig = Rig(driver_started=True)
+
+    def ignore_mode(offset, value):
+        if offset == 0x74:
+            rig.rle.values[0x74] = 0
+
+    rig.rle.on_write = ignore_mode
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="readback mismatch"):
+        transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_start_or_tx_write(rig, tx_before)
+
+
+def test_rx_capture_matches_decode_input(monkeypatch):
+    decoded = []
+    real_decode = jpeg_transport.decode_packet
+
+    def record(packet, *args, **kwargs):
+        decoded.append(bytes(packet))
+        return real_decode(packet, *args, **kwargs)
+
+    monkeypatch.setattr(jpeg_transport, "decode_packet", record)
+    captures = []
+    rig = Rig(driver_started=True)
+    transport_with_capture = transport(
+        rig, rx_capture=lambda frame_id, packet, metadata: captures.append(
+            (frame_id, packet, metadata)))
+    transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9)
+
+    assert captures and decoded
+    frame_id, packet, metadata = captures[0]
+    assert frame_id == 9
+    assert packet == decoded[0]
+    assert metadata["length"] == len(decoded[0])
+    assert metadata["length"] == metadata["dma_bytes"] == metadata["rle_bytes"]
+    assert metadata["length"] < metadata["rx_nbytes"]
+    assert metadata["sha256"] == hashlib.sha256(decoded[0]).hexdigest()
+    assert metadata["head_hex"] == decoded[0][:64].hex()
+    assert metadata["tail_hex"] == decoded[0][-64:].hex()
+    assert len(metadata["header_words"]) == 16
+    assert metadata["rx_physical_address"] == rig.rx.physical_address
+    assert metadata["hardware_s2mm_da"] == rig.rx.physical_address
+    assert metadata["physical_matches_da"] is True
+    assert metadata["input_mode"] == 1
+    assert metadata["raw_capability"] == 0x52415731
+    assert metadata["s2mm_idle"] is True
+    assert metadata["completion_state"]["dma_length_matches_rle"] is True
+
+    transport_with_capture.transfer(b"\xff\xd8b\xff\xd9", 10)
+    assert len(captures) == 1
+    assert len(decoded) == 2
+
+
+def test_rx_capture_failure_does_not_mask_decode_error():
+    rig = Rig(driver_started=True, rle_packet=b"malformed" * 256)
+
+    def bad_capture(*args):
+        raise OSError("capture failed")
+
+    transport_with_capture = transport(rig, rx_capture=bad_capture)
+    with pytest.raises(ValueError, match="RLE header magic or version"):
+        transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9)
+    assert "capture failed" in (transport_with_capture.rx_capture_error or "")
 
 
 def test_repeated_call_accepts_prior_completed_rle_and_idle_jpeg_state():

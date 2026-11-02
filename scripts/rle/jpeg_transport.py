@@ -6,9 +6,11 @@ established safe; it never resets a channel or retries implicitly.
 """
 from __future__ import annotations
 
+import hashlib
 import math
 import numbers
 import operator
+import struct
 import time
 from typing import Any, Iterator
 
@@ -23,6 +25,9 @@ JPEG_MAX_BYTES = 512000
 DMA_CONTROL_RS = 0x1
 DMA_CONTROL_RESET = 0x4
 DMA_STATUS_RESERVED_MASK = 0x8884
+RLE_RAW_CAPABILITY = 0x70
+RLE_RAW_CAPABILITY_VALUE = 0x52415731
+RLE_INPUT_MODE = 0x74
 JPEG_SIZE = 0x10
 JPEG_FRAME_ID = 0x18
 JPEG_STATUS = 0x20
@@ -201,7 +206,7 @@ class JpegRleDmaTransport:
     def __init__(self, send_channel: Any, recv_channel: Any, dma_regs: Any,
                  rle_control: Any, jpeg_control: Any, preview_control: Any,
                  tx_buffer: Any, rx_buffer: Any, timeout_s: float = 5.0,
-                 *, first_transfer_guard=None):
+                 *, first_transfer_guard=None, rx_capture=None):
         if (isinstance(timeout_s, bool) or not isinstance(timeout_s, numbers.Real)
                 or not math.isfinite(timeout_s) or timeout_s <= 0):
             raise ValueError("timeout_s must be a positive finite number")
@@ -211,10 +216,14 @@ class JpegRleDmaTransport:
         self.tx_buffer, self.rx_buffer = tx_buffer, rx_buffer
         self.timeout_s = float(timeout_s)
         self.first_transfer_guard = first_transfer_guard
+        self.rx_capture = rx_capture
+        self.rx_capture_error = None
+        self._rx_capture_done = False
         self.dma_may_be_active = False
         self._closed = False
         self._completed_frames = 0
         self._submitted_frames = 0
+        self._raw_mode_configured = False
         self._last_frame_id: int | None = None
         self._pending_frame_id: int | None = None
 
@@ -309,6 +318,73 @@ class JpegRleDmaTransport:
             raise RuntimeError(
                 f"{name} DMA is not idle: committed first transfer")
 
+    def _ensure_raw_input_mode(self) -> None:
+        """Select and verify the pinned wrapper's raw-gray input mode.
+
+        The candidate wrapper exposes RAW1 at 0x70 and selects the raw adapter
+        with 0x74=1. The JPEG path is a raw gray stream, so the transport must
+        not leave the default packetized adapter selected. This runs after the
+        existing preflight and before TX writes, RLE/JPEG start, or DMA submit.
+        """
+        capability = int(self.rle_control.read(RLE_RAW_CAPABILITY)) & 0xFFFFFFFF
+        if capability != RLE_RAW_CAPABILITY_VALUE:
+            raise RuntimeError(
+                f"RLE raw input capability missing: 0x{capability:08x}")
+        if not self._raw_mode_configured:
+            self.rle_control.write(RLE_INPUT_MODE, 1)
+        mode = int(self.rle_control.read(RLE_INPUT_MODE)) & 0xFFFFFFFF
+        if mode != 1:
+            raise RuntimeError(
+                f"RLE raw input mode readback mismatch: 0x{mode:08x}")
+        self._raw_mode_configured = True
+
+    def _capture_rx(self, frame_id: int, packet: bytes,
+                    dma_bytes: int, rle_bytes: int) -> None:
+        """Capture the exact bytes handed to decode_packet; never mask errors."""
+        if self.rx_capture is None or self._rx_capture_done:
+            return
+        try:
+            header = (list(struct.unpack_from("<16I", packet))
+                      if len(packet) >= 64 else None)
+            status = int(self.dma_regs.read(DMA_S2MM_STATUS)) & 0xFFFFFFFF
+            da = int(self.dma_regs.read(DMA_S2MM_ADDRESS)) & 0xFFFFFFFF
+            physical = int(self.rx_buffer.physical_address)
+            metadata = {
+                "frame_id": frame_id,
+                "length": len(packet),
+                "sha256": hashlib.sha256(packet).hexdigest(),
+                "head_hex": packet[:64].hex(),
+                "tail_hex": packet[-64:].hex() if len(packet) >= 64 else packet.hex(),
+                "header_words": header,
+                "dma_bytes": dma_bytes,
+                "rle_bytes": rle_bytes,
+                "rx_physical_address": physical,
+                "rx_device_address": int(self.rx_buffer.device_address),
+                "rx_nbytes": int(self.rx_buffer.nbytes),
+                "hardware_s2mm_da": da,
+                "hardware_s2mm_da_msb":
+                    int(self.dma_regs.read(DMA_S2MM_ADDRESS + 4)) & 0xFFFFFFFF,
+                "hardware_s2mm_length":
+                    int(self.dma_regs.read(DMA_S2MM_LENGTH)) & 0xFFFFFFFF,
+                "hardware_s2mm_status": status,
+                "physical_matches_da": physical == da,
+                "s2mm_idle": bool(status & DMA_IDLE),
+                "completion_state": {
+                    "dma_length_matches_rle": dma_bytes == rle_bytes,
+                    "rle_state": int(self.rle_control.read(0x08)) & 0xFFFFFFFF,
+                    "rle_actual_length": int(self.rle_control.read(0x0C)) & 0xFFFFFFFF,
+                },
+                "raw_capability": int(self.rle_control.read(RLE_RAW_CAPABILITY)) & 0xFFFFFFFF,
+                "input_mode": int(self.rle_control.read(RLE_INPUT_MODE)) & 0xFFFFFFFF,
+            }
+            self.rx_capture_error = None
+            self.rx_capture(frame_id, packet, metadata)
+            self._rx_capture_done = True
+        except BaseException as exc:
+            # Capture must never replace the decode/transport exception or
+            # alter the HOLD decision.
+            self.rx_capture_error = repr(exc)
+
     def _wait_for_completion(self) -> tuple[int, int]:
         deadline = time.monotonic() + self.timeout_s
         jpeg_valid = False
@@ -392,6 +468,7 @@ class JpegRleDmaTransport:
             raise ValueError("intensity_offset must be in -255..255")
         morph_mode = _uint(morph_mode, "morph_mode", 2)
         self._preflight()
+        self._ensure_raw_input_mode()
         self.tx_buffer[:length] = view
         sync_tx = getattr(self.tx_buffer, "sync_to_device", None)
         if not callable(sync_tx):
@@ -439,7 +516,8 @@ class JpegRleDmaTransport:
         jpeg_status = int(self.jpeg_control.read(JPEG_STATUS)) & 0xFFFFFFFF
         if jpeg_status:
             raise RuntimeError(f"JPEG status error: 0x{jpeg_status:08x}")
-        packet = memoryview(self.rx_buffer).cast("B")[:dma_bytes]
+        packet = bytes(memoryview(self.rx_buffer).cast("B")[:dma_bytes])
+        self._capture_rx(frame_id, packet, dma_bytes, rle_bytes)
         frame = decode_packet(packet, expected_frame_id=frame_id,
                               expected_params_version=params_version)
         if not frame.valid or frame.status != 0:

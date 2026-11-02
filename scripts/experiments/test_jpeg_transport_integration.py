@@ -9,6 +9,7 @@ lambda.
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -101,10 +102,10 @@ class FakeTransportFactory:
         self.calls = []
 
     def __call__(self, send, recv, dma, rle, jpeg, preview, tx, rx,
-                 first_transfer_guard=None):
+                 first_transfer_guard=None, rx_capture=None):
         self.events.append(("transport_factory",))
         self.calls.append((send, recv, dma, rle, jpeg, preview, tx, rx,
-                           first_transfer_guard))
+                           first_transfer_guard, rx_capture))
         if self.error is not None:
             raise self.error
         return "transport"
@@ -124,7 +125,8 @@ def _sequence_kwargs(events, mmio, overlay, display, transport_factory,
         allocate_tx=lambda: FakeBuffer(events, "tx"),
         allocate_rx=lambda: FakeBuffer(events, "rx"),
         make_transport=runner.build_transport_callback(
-            transport_factory=transport_factory, mmio_factory=mmio),
+            transport_factory=transport_factory, mmio_factory=mmio,
+            rx_capture=lambda *args: None),
         stage=stage or (lambda name, **fields: events.append(("stage", name))),
     )
 
@@ -141,12 +143,14 @@ def test_production_transport_callback_receives_same_overlay_and_preview():
     result = runner.run_candidate_sequence(
         **_sequence_kwargs(events, mmio, overlay, display, transport_factory))
 
-    send, recv, dma, rle, jpeg, got_preview, tx, rx, guard = transport_factory.calls[0]
+    send, recv, dma, rle, jpeg, got_preview, tx, rx, guard, capture = transport_factory.calls[0]
     assert send is overlay.axi_dma_0.sendchannel
     assert recv is overlay.axi_dma_0.recvchannel
     assert got_preview is result["preview"]
     assert tx is result["tx"] and rx is result["rx"]
     assert callable(guard)
+    assert callable(capture)
+    assert callable(capture)
     assert guard("MM2S", send, dma)["owned"] is True
     assert guard("S2MM", recv, dma)["owned"] is True
     assert guard("MM2S", recv, dma) is None
@@ -184,7 +188,7 @@ def test_main_assembled_callbacks_normal_path_uses_production_signatures(tmp_pat
     assert result["display"] is display
     assert display.started is True
     assert transport_factory.calls
-    _, _, _, _, _, got_preview, got_tx, got_rx, guard = transport_factory.calls[0]
+    _, _, _, _, _, got_preview, got_tx, got_rx, guard, capture = transport_factory.calls[0]
     assert got_preview is result["preview"]
     assert got_tx is result["tx"] and got_rx is result["rx"]
     assert callable(guard)
@@ -277,7 +281,7 @@ def test_production_guard_allows_only_an_unarmed_started_first_transfer():
     runner.build_transport_callback(
         transport_factory=factory, mmio_factory=mmio)(
         object(), object(), overlay, object())
-    send, recv, dma, rle, jpeg, preview, tx, rx, guard = factory.calls[0]
+    send, recv, dma, rle, jpeg, preview, tx, rx, guard, capture = factory.calls[0]
 
     transport = JpegRleDmaTransport(
         send, recv, dma, rle, jpeg, preview, tx, rx,
@@ -315,10 +319,11 @@ def production_transport(rig, timeout_s=0.02):
         raise KeyError(base)
 
     def factory(send, recv, dma, rle, jpeg, preview, tx, rx, *,
-                first_transfer_guard=None):
+                first_transfer_guard=None, rx_capture=None):
         return JpegRleDmaTransport(
             send, recv, dma, rig.rle, rig.jpeg, rig.preview, tx, rx,
-            timeout_s=timeout_s, first_transfer_guard=first_transfer_guard)
+            timeout_s=timeout_s, first_transfer_guard=first_transfer_guard,
+            rx_capture=rx_capture)
 
     make = runner.build_transport_callback(
         transport_factory=factory, mmio_factory=mmio)
@@ -335,11 +340,38 @@ def _assert_no_transfer_start(rig, tx_before):
     assert not any(event[:3] == ("jpeg", "write", 0x00) for event in rig.events)
 
 
+def test_make_rx_capture_writes_exact_bytes_and_metadata(tmp_path):
+    packet = bytes(range(256)) * 9
+    metadata = {"length": len(packet), "dma_bytes": len(packet),
+                "rle_bytes": len(packet), "input_mode": 1}
+    capture = runner.make_rx_capture(tmp_path / "run.json")
+    capture(7, packet, metadata)
+    bin_path = tmp_path / "run.json.rx-frame-7.bin"
+    json_path = tmp_path / "run.json.rx-frame-7.json"
+    assert bin_path.read_bytes() == packet
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    assert payload["schema"] == "material-counter.jpeg-smoke-rx.v1"
+    assert payload["length"] == len(packet) == payload["dma_bytes"]
+    assert payload["input_mode"] == 1
+
+
 def test_production_guard_transfer_accepts_first_and_second_frame():
     rig = Rig(driver_started=True)
     transport = production_transport(rig)
     assert transport.transfer(b"\xff\xd8a\xff\xd9", 9).frame_id == 9
+    assert rig.rle.values[0x74] == 1
+    assert sum(event[:3] == ("rle", "write", 0x74) for event in rig.events) == 1
     assert transport.transfer(b"\xff\xd8b\xff\xd9", 10).frame_id == 10
+
+
+def test_production_guard_rejects_missing_raw_capability():
+    rig = Rig(driver_started=True)
+    rig.rle.values[0x70] = 0
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="raw input capability"):
+        production_transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_transfer_start(rig, tx_before)
+    assert not any(event[:3] == ("rle", "write", 0x74) for event in rig.events)
 
 
 def test_production_guard_transfer_rejects_nonzero_outer_status():

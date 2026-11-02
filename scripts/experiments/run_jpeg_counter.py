@@ -526,7 +526,27 @@ def check_candidate_dma_idle(*, mmio_factory):
     return status
 
 
-def build_transport_callback(*, transport_factory, mmio_factory):
+def make_rx_capture(output: Path):
+    """Write the exact bytes handed to decode_packet, bounded to one frame."""
+    def capture(frame_id, packet, metadata):
+        base = str(output) + f".rx-frame-{frame_id}"
+        bin_path = Path(base + ".bin")
+        json_path = Path(base + ".json")
+        with bin_path.open("wb") as stream:
+            stream.write(packet)
+            stream.flush()
+            os.fsync(stream.fileno())
+        payload = {"schema": "material-counter.jpeg-smoke-rx.v1", **metadata}
+        with json_path.open("w", encoding="utf-8") as stream:
+            json.dump(payload, stream, ensure_ascii=False, indent=2)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+    return capture
+
+
+def build_transport_callback(*, transport_factory, mmio_factory,
+                             rx_capture=None):
     """Production transport factory: explicit overlay + preview ownership."""
     def make_transport(tx, rx, overlay, preview):
         send = overlay.axi_dma_0.sendchannel
@@ -566,7 +586,8 @@ def build_transport_callback(*, transport_factory, mmio_factory):
             mmio_factory(JPEG_BASE, 0x10000),
             preview,
             tx, rx,
-            first_transfer_guard=first_transfer_guard)
+            first_transfer_guard=first_transfer_guard,
+            rx_capture=rx_capture)
     return make_transport
 
 
@@ -601,7 +622,8 @@ def assemble_candidate_callbacks(*, artifacts, output, report, pynq_module,
         "allocate_tx": lambda: allocate(shape=(JPEG_MAX_BYTES,), dtype=dtype),
         "allocate_rx": lambda: allocate(shape=(RX_CAPACITY,), dtype=dtype),
         "make_transport": build_transport_callback(
-            transport_factory=transport_factory, mmio_factory=mmio_factory),
+            transport_factory=transport_factory, mmio_factory=mmio_factory,
+            rx_capture=make_rx_capture(output)),
         "stage": stage or (lambda name, **fields: write_stage(
             output, report, name, **fields)),
     }
@@ -1094,6 +1116,9 @@ def main(argv: list[str] | None = None) -> int:
             report["cma_after"] = read_cma_meminfo()
         except BaseException as exc:
             report["cma_after_error"] = repr(exc)
+        if transport is not None:
+            report["rx_capture_error"] = getattr(
+                transport, "rx_capture_error", None)
         finalize_run(held=held, display=display, transport=transport,
                      allocated=allocated, capture_source=capture_source,
                      report=report, output=args.output, hold_mode=hold_mode,

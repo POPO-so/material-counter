@@ -37,13 +37,14 @@ Timeline:
 - Before/during the 10-frame run: the monitor was not powered. The observed
   black screen is explained by that field condition and is **not** attributed to
   the RLE packet header failure.
-- After the run: no new frame and no physical display observation were made;
-  the HOLD retains the failed frame state. Powering the monitor after the fact
-  does not retroactively validate the failed frame.
+- After the user powered the monitor, the user observed a signal but no
+  picture. This is a field observation, not a board validation; a valid
+  physical picture is still **not accepted**.
+- The HOLD has no new frame; powering the monitor after the fact does not
+  retroactively validate the failed frame.
 
 The run report's display evidence remains the PL display start call and
-register readback only; no valid physical picture is claimed in either
-direction.
+register readback only; no valid physical picture is claimed.
 
 ## 2. Package verification
 
