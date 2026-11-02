@@ -1,5 +1,7 @@
 # Project Index
 
+**2026-11-02 五帧 JPEG/PL 越线补测：** 五张受支持格式的压缩 JPEG 依次经 MM2S、PL JPEG/RLE/FRG 和 PS 跟踪；每帧检出一个目标，中心从 x=239.5 移至 359.5 越过计数线 320，板端累计计数从 0 增至 1。HDMI 像素监视器匹配 frame ID 1–5，扫描 invalid/partial 均为 0。它验证合成轨迹上的链路计数，不是实物准确率或外接显示器观察；报告见 [JPEG PL 板测](data/results/jpeg-pl-board-20261102/README.md)。
+
 **2026-11-02 合成正样本补测：** 单帧三分量 4:2:2 JPEG fixture 经同一候选 PL 得到 1 个 40×40 区域；overlay frame ID=1 与板载 HDMI 像素监视器 frame ID=1 匹配，扫描 invalid/partial=0。监视器不抽样 mask/框像素，未观察外接显示器；该单帧也不证明跨帧计数准确率。灰度 JPEG 失败探针确认后，入口已在硬件访问前拒绝不支持的 JPEG 头。报告、SHA 与恢复记录见 [JPEG PL 板测](data/results/jpeg-pl-board-20261102/README.md)。
 **2026-11-02 板端实机后续状态（PS MJPEG → PL JPEG → RLE/FRG → HDMI）：** 同一候选 T:/jj1102l 的 BIT/HWH 已部署到 PYNQ-Z2；新建实验入口用真实 MJPEG 完成 120/120 帧，11.31 fps，输入 120 个有效 packet、0 个无效 packet。板载 HDMI 像素监视器逐帧匹配 session/frame 标记；每帧 invalid=0、partial=0、诊断标志均为 false。结束时 AXI DMA/HDMI VDMA 均已停、缓冲已释放，boot ID 99f9fcff-0685-42ed-a8df-9822cfca6cd0。原始报告及证据范围见 [JPEG PL 板测](data/results/jpeg-pl-board-20261102/README.md)。样本没有检测前景，total_count=0 不构成计数准确率证据；没有外接显示器肉眼观察，故只验收到 HDMI 输出像素流。默认运行入口仍走 OpenCV 软件解码，JPEG PL 需显式使用 --jpeg-pl。
 

@@ -8,7 +8,7 @@ PS 读取 MJPEG 并直接解码为 640×400 Gray8，不缩放；PL 完成 ROI、
 
 2026-11-02 板端单次验收：匹配候选 BIT/HWH 完成 120/120 帧，11.31 fps；每帧 HDMI 像素流身份匹配，监视器 invalid/partial 为 0，最终 DMA/VDMA 均安全停止。报告见 [board-run.json](../../data/results/jpeg-pl-board-20261102/board-run.json)。该样本无检测前景，`total_count=0` 不代表计数准确率；尚无外接显示器肉眼观察。本模式仍要求匹配的 BIT/HWH 哈希、`ROUTED_NOT_BOARD_VERIFIED` 构建状态、boot ID 和 `--execute`，默认相机模式仍沿用软件解码路径。
 
-2026-11-02 补测：确定性 4:2:2 JPEG 文件经板端 PL 解码与处理产生 1 个已知区域（40×40，area=1600），并提交到与 HDMI monitor 匹配的 frame ID=1。测试文件和报告见 [正样本板测证据](../../data/results/jpeg-pl-board-20261102/README.md)。板载 monitor 核验帧标记和扫描有效性，不检测 mask/框像素；尚无外接显示器肉眼观察或多帧计数真值。运行器新增单帧 --input-jpeg 探针，其头部预检在申请硬件前筛除解码器不支持的 JPEG；不影响默认相机采集路径。
+2026-11-02 正样本补测：单张 4:2:2 JPEG 经板端 PL 检出一个 40×40 区域；随后五张受支持 JPEG 通过同一入口依次处理，目标越过 x=320 后板端计数从 0 增至 1。可重复 --input-jpeg <文件> 并令 --frames 与文件数相同，所有 JPEG 会在硬件访问前预检，总 fixture 上限 32 MiB。样本、哈希和报告见 [JPEG PL 板测证据](../../data/results/jpeg-pl-board-20261102/README.md)。HDMI monitor 核验帧标记与扫描，不检查 mask/框/计数字形像素；外接显示器和真实物料准确率仍未验收。默认相机模式不变。
 ## 文件
 
 - `protocol.py`：Gray8 输入包、RLE 编码黄金模型及严格校验，正常解析采用 NumPy 向量运算。
