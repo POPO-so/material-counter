@@ -52,6 +52,105 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _validate_jpeg_fixture_header(payload: bytes) -> None:
+    """Admit only the baseline 640x400 4:2:2/restart-40 JPEG subset used by PL."""
+    offset = 2
+    saw_sof = False
+    saw_dri = False
+    dqt = {0: False, 1: False}
+    dht = {(table_class, table_id): False
+           for table_class in (0, 1) for table_id in (0, 1)}
+    component_ids: list[int] = []
+
+    while offset + 4 <= len(payload) - 2:
+        if payload[offset] != 0xFF:
+            raise ValueError("JPEG fixture has malformed marker framing")
+        marker = payload[offset + 1]
+        if marker in (0x00, 0xD8, 0xD9, 0x01) or 0xD0 <= marker <= 0xD7:
+            raise ValueError("JPEG fixture contains an unsupported standalone marker")
+        segment_length = int.from_bytes(payload[offset + 2:offset + 4], "big")
+        end = offset + 2 + segment_length
+        if segment_length < 2 or end > len(payload) - 2 or end > 4096:
+            raise ValueError("JPEG fixture header has an invalid or oversized segment")
+        body = payload[offset + 4:end]
+
+        if 0xE0 <= marker <= 0xEF:
+            pass
+        elif marker == 0xDB:
+            cursor = 0
+            while cursor < len(body):
+                info = body[cursor]
+                cursor += 1
+                precision, table_id = info >> 4, info & 0x0F
+                if precision != 0 or table_id > 1 or cursor + 64 > len(body):
+                    raise ValueError("JPEG fixture has an unsupported quantization table")
+                if any(value == 0 for value in body[cursor:cursor + 64]):
+                    raise ValueError("JPEG fixture has a zero quantization entry")
+                cursor += 64
+                dqt[table_id] = True
+        elif marker == 0xC4:
+            cursor = 0
+            while cursor < len(body):
+                info = body[cursor]
+                cursor += 1
+                table_class, table_id = info >> 4, info & 0x0F
+                if table_class > 1 or table_id > 1 or cursor + 16 > len(body):
+                    raise ValueError("JPEG fixture has an unsupported Huffman table")
+                symbol_count = sum(body[cursor:cursor + 16])
+                cursor += 16
+                limit = 165 if table_class else 12
+                if (symbol_count == 0 or symbol_count > limit or
+                        cursor + symbol_count > len(body)):
+                    raise ValueError("JPEG fixture has an invalid Huffman table")
+                cursor += symbol_count
+                dht[(table_class, table_id)] = True
+        elif marker == 0xC0:
+            if (saw_sof or segment_length != 17 or len(body) != 15 or body[0] != 8 or
+                    int.from_bytes(body[1:3], "big") != HEIGHT or
+                    int.from_bytes(body[3:5], "big") != WIDTH or body[5] != 3):
+                raise ValueError("JPEG fixture must be 8-bit 640x400 with 3-component baseline SOF0")
+            components = [tuple(body[6 + 3 * index:9 + 3 * index]) for index in range(3)]
+            component_ids = [component[0] for component in components]
+            if (len(set(component_ids)) != 3 or
+                    [component[1] for component in components] != [0x21, 0x11, 0x11] or
+                    [component[2] for component in components] != [0, 1, 1]):
+                raise ValueError("JPEG fixture must use the PL decoder's 4:2:2 sampling and quantization tables")
+            saw_sof = True
+        elif marker == 0xDD:
+            if saw_dri or len(body) != 2 or int.from_bytes(body, "big") != 40:
+                raise ValueError("JPEG fixture must have one restart interval of 40")
+            saw_dri = True
+        elif marker == 0xDA:
+            if (not saw_sof or segment_length != 12 or len(body) != 10 or body[0] != 3 or
+                    not all(dqt.values()) or not all(dht.values()) or not saw_dri):
+                raise ValueError("JPEG fixture is missing the PL decoder's SOF/DRI/DQT/DHT/SOS requirements")
+            scan = [tuple(body[1 + 2 * index:3 + 2 * index]) for index in range(3)]
+            if ([item[0] for item in scan] != component_ids or
+                    [item[1] for item in scan] != [0, 0x11, 0x11] or
+                    body[7:10] != b"\x00\x3f\x00"):
+                raise ValueError("JPEG fixture scan selectors are outside the PL decoder's supported subset")
+            return
+        else:
+            raise ValueError(f"JPEG fixture contains unsupported header marker 0x{marker:02x}")
+        offset = end
+
+    raise ValueError("JPEG fixture has no complete baseline SOS header")
+
+
+def load_jpeg_fixture(path: str | Path, *, frames: int) -> bytes:
+    """Read one bounded, complete JPEG for a deterministic PL hardware probe."""
+    if frames != 1:
+        raise ValueError("a JPEG fixture is a single frame; pass --frames 1")
+    with Path(path).expanduser().open("rb") as stream:
+        payload = stream.read(JPEG_MAX_BYTES + 1)
+    if len(payload) > JPEG_MAX_BYTES:
+        raise ValueError(f"JPEG fixture exceeds {JPEG_MAX_BYTES} bytes")
+    if len(payload) < 4 or payload[:2] != b"\xff\xd8" or payload[-2:] != b"\xff\xd9":
+        raise ValueError("JPEG fixture must have SOI and EOI markers")
+    _validate_jpeg_fixture_header(payload)
+    return payload
+
+
 def verify_runtime_artifacts(bit_path: str | Path, bit_sha256: str,
                              hwh_path: str | Path, hwh_sha256: str,
                              *, status: str) -> dict[str, Any]:
@@ -224,6 +323,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--boot-id", required=True)
     parser.add_argument("--frames", type=int, default=120)
     parser.add_argument("--device", type=int, default=0)
+    parser.add_argument("--input-jpeg", type=Path,
+                        help="send one complete JPEG file instead of capturing the camera")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--native-lib", type=Path)
     parser.add_argument("--line-x", type=int, default=320)
@@ -241,6 +342,12 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("hardware access requires --execute")
     if not 1 <= args.frames <= 100000:
         parser.error("--frames must be in 1..100000")
+    fixture_jpeg = None
+    if args.input_jpeg is not None:
+        try:
+            fixture_jpeg = load_jpeg_fixture(args.input_jpeg, frames=args.frames)
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
     if not 0 <= args.line_x < WIDTH or not 0 <= args.line_y < HEIGHT:
         parser.error("counting line is outside the 640x400 source frame")
     if not 1 <= args.min_area <= args.max_area <= WIDTH * HEIGHT:
@@ -251,12 +358,20 @@ def main(argv: list[str] | None = None) -> int:
                                          args.hwh_sha256, status=args.build_status)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     report: dict[str, Any] = {
-        "status": "STARTING", "mode": "raw_mjpeg_to_jpeg_pl",
+        "status": "STARTING",
+        "mode": "jpeg_file_to_jpeg_pl" if fixture_jpeg is not None else "raw_mjpeg_to_jpeg_pl",
         "resolution": [WIDTH, HEIGHT], "expected_frames": args.frames,
         "frames": 0, "total_count": 0, "count_accuracy": "NOT_MEASURED",
         "artifacts": artifacts, "boot_id_expected": args.boot_id,
         "timing_ms": [], "frames_evidence": [],
     }
+    if fixture_jpeg is not None:
+        report["input_source"] = {
+            "kind": "single_jpeg_fixture",
+            "path": str(args.input_jpeg.expanduser().resolve()),
+            "jpeg_bytes": len(fixture_jpeg),
+            "sha256": hashlib.sha256(fixture_jpeg).hexdigest(),
+        }
     transport = None
     capture_source = None
     capture_stats: dict[str, Any] = {}
@@ -333,12 +448,18 @@ def main(argv: list[str] | None = None) -> int:
             width=WIDTH, height=HEIGHT, count_axis="x", line_x=args.line_x,
             line_y=args.line_y, min_area=args.min_area, max_area=args.max_area,
             hysteresis=args.hysteresis)
-        capture_source = iter_raw_mjpeg(args.device, stats=capture_stats)
+        if fixture_jpeg is None:
+            capture_source = iter_raw_mjpeg(args.device, stats=capture_stats)
         report["session_id"] = str(session_id)
         start = time.perf_counter()
         previous = start
         for frame_id in range(1, args.frames + 1):
-            jpeg = next(capture_source)
+            if fixture_jpeg is None:
+                if capture_source is None:
+                    raise RuntimeError("camera source was not initialized")
+                jpeg = next(capture_source)
+            else:
+                jpeg = fixture_jpeg
             stamp = time.monotonic_ns()
             frame_start = time.perf_counter()
             result = process_jpeg_frame(transport, tracker, jpeg, frame_id,

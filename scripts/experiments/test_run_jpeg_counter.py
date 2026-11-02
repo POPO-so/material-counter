@@ -20,6 +20,25 @@ def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _segment(marker: int, body: bytes) -> bytes:
+    return bytes((0xFF, marker)) + (len(body) + 2).to_bytes(2, "big") + body
+
+
+def _supported_jpeg_header() -> bytes:
+    quantization = _segment(0xDB, bytes((0,)) + bytes((1,)) * 64 +
+                            bytes((1,)) + bytes((1,)) * 64)
+    huffman_tables = b""
+    for table_class in (0, 1):
+        for table_id in (0, 1):
+            huffman_tables += _segment(
+                0xC4, bytes(((table_class << 4) | table_id, 1)) + bytes(15) + b"\x00")
+    frame = _segment(0xC0, bytes((8, 1, 144, 2, 128, 3,
+                                  1, 0x21, 0, 2, 0x11, 1, 3, 0x11, 1)) )
+    restart = _segment(0xDD, bytes((0, 40)))
+    scan = _segment(0xDA, bytes((3, 1, 0, 2, 0x11, 3, 0x11, 0, 63, 0)))
+    return b"\xff\xd8" + quantization + huffman_tables + frame + restart + scan + b"\x00\xff\xd9"
+
+
 def test_artifact_admission_requires_matching_bit_hwh_hashes_and_routed_state():
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
@@ -104,3 +123,54 @@ def test_hdmi_frame_marker_has_expected_identity_and_crc():
     assert marker[2:18] == session.bytes
     assert int.from_bytes(marker[18:26], "big") == 23
     assert int.from_bytes(marker[26:], "big") == runner.binascii.crc_hqx(marker[:26], 0xFFFF)
+
+
+def test_jpeg_fixture_accepts_one_complete_bounded_jpeg():
+    with tempfile.TemporaryDirectory() as temporary:
+        path = Path(temporary) / "fixture.jpg"
+        payload = _supported_jpeg_header()
+        path.write_bytes(payload)
+
+        assert runner.load_jpeg_fixture(path, frames=1) == payload
+
+
+def test_jpeg_fixture_rejects_frame_replay_and_invalid_or_oversized_payloads():
+    with tempfile.TemporaryDirectory() as temporary:
+        path = Path(temporary) / "fixture.jpg"
+        path.write_bytes(_supported_jpeg_header())
+        try:
+            runner.load_jpeg_fixture(path, frames=2)
+        except ValueError as exc:
+            assert "single frame" in str(exc)
+        else:
+            raise AssertionError("single-frame JPEG fixture accepted multiple frames")
+
+        path.write_bytes(b"not jpeg")
+        try:
+            runner.load_jpeg_fixture(path, frames=1)
+        except ValueError as exc:
+            assert "SOI and EOI" in str(exc)
+        else:
+            raise AssertionError("JPEG fixture without markers was accepted")
+
+        path.write_bytes(b"\xff\xd8" + b"x" * runner.JPEG_MAX_BYTES + b"\xff\xd9")
+        try:
+            runner.load_jpeg_fixture(path, frames=1)
+        except ValueError as exc:
+            assert "exceeds" in str(exc)
+        else:
+            raise AssertionError("oversized JPEG fixture was accepted")
+
+
+def test_jpeg_fixture_rejects_grayscale_sof_before_hardware_access():
+    with tempfile.TemporaryDirectory() as temporary:
+        path = Path(temporary) / "grayscale.jpg"
+        sof_body = bytes((8, 1, 144, 2, 128, 1, 1, 0x11, 0))
+        path.write_bytes(b"\xff\xd8\xff\xc0\x00\x0b" + sof_body + b"\xff\xd9")
+
+        try:
+            runner.load_jpeg_fixture(path, frames=1)
+        except ValueError as exc:
+            assert "3-component" in str(exc)
+        else:
+            raise AssertionError("grayscale JPEG unsupported by the PL decoder was accepted")
