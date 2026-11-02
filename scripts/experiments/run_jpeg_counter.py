@@ -24,7 +24,8 @@ if __package__ in (None, ""):
 from scripts.rle.jpeg_runtime import process_jpeg_frame
 from scripts.rle.jpeg_transport import JPEG_MAX_BYTES, JpegRleDmaTransport, iter_raw_mjpeg
 from scripts.rle.protocol import HEIGHT, RX_CAPACITY, WIDTH
-from scripts.rle.transport import RLE_SIGNATURE
+from scripts.rle.transport import (DMA_MM2S_ADDRESS, DMA_S2MM_ADDRESS,
+                                   RLE_SIGNATURE)
 from scripts.standalone.count_controls import make_runtime_counter
 from scripts.standalone.display_bringup import prepare_display
 from scripts.wo0015.board_preflight import (audit_process_ownership,
@@ -528,14 +529,44 @@ def check_candidate_dma_idle(*, mmio_factory):
 def build_transport_callback(*, transport_factory, mmio_factory):
     """Production transport factory: explicit overlay + preview ownership."""
     def make_transport(tx, rx, overlay, preview):
+        send = overlay.axi_dma_0.sendchannel
+        recv = overlay.axi_dma_0.recvchannel
+        dma_regs = mmio_factory(DMA_BASE, 0x10000)
+
+        def first_transfer_guard(name, channel, regs):
+            """Prove the exact channel/MMIO ownership for a status-0 first frame.
+
+            The transport uses the returned control/status/address/length
+            values as the unarmed proof; a different channel or MMIO object is
+            not owned evidence.
+            """
+            if regs is not dma_regs:
+                return None
+            if name == "MM2S":
+                if channel is not send:
+                    return None
+                control_offset, address_offset = 0x00, DMA_MM2S_ADDRESS
+            elif name == "S2MM":
+                if channel is not recv:
+                    return None
+                control_offset, address_offset = 0x30, DMA_S2MM_ADDRESS
+            else:
+                return None
+            return {"owned": True,
+                    "control": int(regs.read(control_offset)) & 0xFFFFFFFF,
+                    "status": int(regs.read(control_offset + 4)) & 0xFFFFFFFF,
+                    "address": int(regs.read(address_offset)) & 0xFFFFFFFF,
+                    "length": int(regs.read(control_offset + 0x28)) & 0xFFFFFFFF}
+
         return transport_factory(
-            overlay.axi_dma_0.sendchannel,
-            overlay.axi_dma_0.recvchannel,
-            mmio_factory(DMA_BASE, 0x10000),
+            send,
+            recv,
+            dma_regs,
             mmio_factory(RLE_BASE, 0x10000),
             mmio_factory(JPEG_BASE, 0x10000),
             preview,
-            tx, rx)
+            tx, rx,
+            first_transfer_guard=first_transfer_guard)
     return make_transport
 
 

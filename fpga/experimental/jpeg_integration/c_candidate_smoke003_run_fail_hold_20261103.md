@@ -80,9 +80,10 @@ frames_start
 The formal entry's stop step was idempotent: both trace channels were already
 `RS=0/Halted=1`, so `wrote_rs_clear=false` and no second write occurred. The
 loaded candidate BIT identity matched `75577d74...`; display clocks read
-50/100/142.857 MHz; display started (VSYNC snapshot `unique=0, scans=1,
-invalid=1, sequence=79`); the production transport factory completed
-(`transport_ready`).
+50/100/142.857 MHz; the display start call returned (VSYNC snapshot `unique=0,
+scans=1, invalid=1, sequence=79`). This is a completed start call, **not** a
+claim that a valid physical picture was verified. The production transport
+factory completed (`transport_ready`).
 
 ## 3. Failure
 
@@ -116,7 +117,11 @@ Read-only state during HOLD:
 | S2MM DMASR 0x34 | `0x00000000` |
 
 No error bits; both channels are running (RS=1, Halted=0), consistent with
-the PYNQ driver start.
+the PYNQ driver start. MM2S and S2MM control registers are distinct: MM2S
+uses control `0x00`, status `0x04`, address `0x18`, length `0x28`; S2MM uses
+control `0x30`, status `0x34`, address `0x48`, length `0x58`. The error
+message named MM2S because it is checked first; both channels were in the
+same started/unarmed state.
 
 This is a transport preflight issue, not the trace-DMA stop plan. No code was
 changed and the HOLD process was not touched.
@@ -184,3 +189,10 @@ Camera frames and stop camera copies are in `stop/camera-frame-*.jpg`.
   tests, then a separately authorized reboot and rerun. No such code change
   was made in this round.
 - No RTL/BIT/HWH/constraint or startup bitstream change; no push or merge.
+
+## 8. Follow-up (offline only)
+
+The first-frame preflight was fixed offline in
+`c_candidate_smoke003_first_frame_fix_20261103.md`. That work did not access
+the board, the HOLD process, or its buffers; the HOLD remains as described
+here until an authorized reboot.

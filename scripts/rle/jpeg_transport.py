@@ -20,6 +20,9 @@ from .transport import (
 )
 
 JPEG_MAX_BYTES = 512000
+DMA_CONTROL_RS = 0x1
+DMA_CONTROL_RESET = 0x4
+DMA_STATUS_RESERVED_MASK = 0x8884
 JPEG_SIZE = 0x10
 JPEG_FRAME_ID = 0x18
 JPEG_STATUS = 0x20
@@ -197,7 +200,8 @@ class JpegRleDmaTransport:
 
     def __init__(self, send_channel: Any, recv_channel: Any, dma_regs: Any,
                  rle_control: Any, jpeg_control: Any, preview_control: Any,
-                 tx_buffer: Any, rx_buffer: Any, timeout_s: float = 5.0):
+                 tx_buffer: Any, rx_buffer: Any, timeout_s: float = 5.0,
+                 *, first_transfer_guard=None):
         if (isinstance(timeout_s, bool) or not isinstance(timeout_s, numbers.Real)
                 or not math.isfinite(timeout_s) or timeout_s <= 0):
             raise ValueError("timeout_s must be a positive finite number")
@@ -206,9 +210,11 @@ class JpegRleDmaTransport:
         self.preview_control = preview_control
         self.tx_buffer, self.rx_buffer = tx_buffer, rx_buffer
         self.timeout_s = float(timeout_s)
+        self.first_transfer_guard = first_transfer_guard
         self.dma_may_be_active = False
         self._closed = False
         self._completed_frames = 0
+        self._submitted_frames = 0
         self._last_frame_id: int | None = None
         self._pending_frame_id: int | None = None
 
@@ -237,12 +243,66 @@ class JpegRleDmaTransport:
                 f"overlay region-feature signature mismatch: read 0x{actual_frg:08x}, "
                 f"expected FRG1 0x{FRG_SIGNATURE:08x}; a FRG2 bitstream uses a "
                 f"different record layout that this transport does not implement")
-        for offset, name in ((DMA_MM2S_STATUS, "MM2S"), (DMA_S2MM_STATUS, "S2MM")):
-            status = int(self.dma_regs.read(offset))
+        for offset, name, address_offset, length_offset in (
+                (DMA_MM2S_STATUS, "MM2S", DMA_MM2S_ADDRESS, DMA_MM2S_LENGTH),
+                (DMA_S2MM_STATUS, "S2MM", DMA_S2MM_ADDRESS, DMA_S2MM_LENGTH)):
+            status = int(self.dma_regs.read(offset)) & 0xFFFFFFFF
             if status & DMA_STATUS_ERROR_MASK:
                 raise RuntimeError(f"{name} DMA has error bits set")
-            if not status & (DMA_IDLE | DMA_HALTED):
-                raise RuntimeError(f"{name} DMA is not idle")
+            if status & (DMA_IDLE | DMA_HALTED):
+                continue
+            self._require_unsubmitted_first_transfer(
+                name, status, address_offset, length_offset)
+
+    def _require_unsubmitted_first_transfer(self, name: str,
+                                            observed_status: int,
+                                            address_offset: int,
+                                            length_offset: int) -> None:
+        """Allow Halted=0/Idle=0 only with ownership and unarmed proof.
+
+        PYNQ starts both Direct-mode channels when the DMA driver is created,
+        so before the first submission they read Halted=0, Idle=0. A real
+        in-progress transfer has the same status, so the exception requires:
+        this transport has never submitted, the production guard proves the
+        exact channel/MMIO ownership, and the hardware address and length
+        registers are still zero. The address/length check is the unsubmitted
+        proof; the transport's own counter alone is not sufficient.
+        """
+        if self._submitted_frames:
+            raise RuntimeError(f"{name} DMA is not idle")
+        guard = self.first_transfer_guard
+        if guard is None:
+            raise RuntimeError(
+                f"{name} DMA is not idle: no first-transfer ownership evidence")
+        channel = self.send_channel if name == "MM2S" else self.recv_channel
+        try:
+            proof = guard(name, channel, self.dma_regs)
+        except BaseException as exc:
+            raise RuntimeError(
+                f"{name} DMA is not idle: first-transfer proof failed: {exc}") from exc
+        if not isinstance(proof, dict) or proof.get("owned") is not True:
+            raise RuntimeError(
+                f"{name} DMA is not idle: first-transfer ownership missing")
+        control = int(proof.get("control", -1)) & 0xFFFFFFFF
+        status = int(proof.get("status", -1)) & 0xFFFFFFFF
+        address = int(proof.get("address", -1)) & 0xFFFFFFFF
+        length = int(proof.get("length", -1)) & 0xFFFFFFFF
+        if status & DMA_STATUS_ERROR_MASK:
+            raise RuntimeError(f"{name} DMA has error bits set")
+        if status & DMA_STATUS_RESERVED_MASK:
+            raise RuntimeError(f"{name} DMA has reserved status bits set")
+        if status & (DMA_IDLE | DMA_HALTED):
+            return
+        if status != observed_status:
+            raise RuntimeError(
+                f"{name} DMA is not idle: state changed during first-transfer proof")
+        if not control & DMA_CONTROL_RS:
+            raise RuntimeError(f"{name} DMA is not idle: driver is not running")
+        if control & DMA_CONTROL_RESET:
+            raise RuntimeError(f"{name} DMA is not idle: reset is asserted")
+        if address != 0 or length != 0:
+            raise RuntimeError(
+                f"{name} DMA is not idle: committed first transfer")
 
     def _wait_for_completion(self) -> tuple[int, int]:
         deadline = time.monotonic() + self.timeout_s
@@ -353,6 +413,7 @@ class JpegRleDmaTransport:
         # if arming or any subsequent hardware transaction fails.
         self._last_frame_id = frame_id
         self.dma_may_be_active = True
+        self._submitted_frames += 1
         self.recv_channel.transfer(self.rx_buffer, nbytes=RX_CAPACITY)
         self.rle_control.write(0x00, 1)
         self.jpeg_control.write(JPEG_AP_CTRL, 1)

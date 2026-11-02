@@ -12,6 +12,8 @@ import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
 
+from scripts.rle.jpeg_transport import JpegRleDmaTransport
+
 RUNNER_PATH = Path(__file__).with_name("run_jpeg_counter.py")
 SPEC = importlib.util.spec_from_file_location("jpeg_transport_integration_tests", RUNNER_PATH)
 assert SPEC is not None and SPEC.loader is not None
@@ -95,9 +97,11 @@ class FakeTransportFactory:
         self.error = error
         self.calls = []
 
-    def __call__(self, send, recv, dma, rle, jpeg, preview, tx, rx):
+    def __call__(self, send, recv, dma, rle, jpeg, preview, tx, rx,
+                 first_transfer_guard=None):
         self.events.append(("transport_factory",))
-        self.calls.append((send, recv, dma, rle, jpeg, preview, tx, rx))
+        self.calls.append((send, recv, dma, rle, jpeg, preview, tx, rx,
+                           first_transfer_guard))
         if self.error is not None:
             raise self.error
         return "transport"
@@ -134,11 +138,16 @@ def test_production_transport_callback_receives_same_overlay_and_preview():
     result = runner.run_candidate_sequence(
         **_sequence_kwargs(events, mmio, overlay, display, transport_factory))
 
-    send, recv, dma, rle, jpeg, got_preview, tx, rx = transport_factory.calls[0]
+    send, recv, dma, rle, jpeg, got_preview, tx, rx, guard = transport_factory.calls[0]
     assert send is overlay.axi_dma_0.sendchannel
     assert recv is overlay.axi_dma_0.recvchannel
     assert got_preview is result["preview"]
     assert tx is result["tx"] and rx is result["rx"]
+    assert callable(guard)
+    assert guard("MM2S", send, dma)["owned"] is True
+    assert guard("S2MM", recv, dma)["owned"] is True
+    assert guard("MM2S", recv, dma) is None
+    assert guard("MM2S", send, object()) is None
     assert events.index(("display_start",)) < events.index(("transport_factory",))
     assert any(base == runner.OVERLAY_BASE for base, _ in mmio.calls)
 
@@ -172,9 +181,10 @@ def test_main_assembled_callbacks_normal_path_uses_production_signatures(tmp_pat
     assert result["display"] is display
     assert display.started is True
     assert transport_factory.calls
-    _, _, _, _, _, got_preview, got_tx, got_rx = transport_factory.calls[0]
+    _, _, _, _, _, got_preview, got_tx, got_rx, guard = transport_factory.calls[0]
     assert got_preview is result["preview"]
     assert got_tx is result["tx"] and got_rx is result["rx"]
+    assert callable(guard)
     assert stage_names[:4] == [
         "overlay_download", "overlay_loaded", "post_load_identity", "candidate_dma"
     ]
@@ -231,3 +241,59 @@ def test_transport_factory_failure_holds_without_camera_or_release(tmp_path):
     assert display.stop_calls == 0
     assert all(buffer.free_calls == 0 for buffer in failure.allocated)
     assert display.closed is False
+
+
+class FirstFrameMmioFactory:
+    """Shared-state MMIO with PYNQ's started-but-unarmed DMA state."""
+
+    def __init__(self, events):
+        self.events = events
+        self.devices = {}
+
+    def __call__(self, base, size):
+        self.events.append(("mmio", base))
+        if base not in self.devices:
+            if base == runner.DMA_BASE:
+                self.devices[base] = FakeMmio(base, {
+                    0x00: 0x10003, 0x04: 0x0, 0x30: 0x10003, 0x34: 0x0,
+                    0x18: 0, 0x28: 0, 0x48: 0, 0x58: 0})
+            elif base == runner.RLE_BASE:
+                self.devices[base] = FakeMmio(base, {0x04: 0x31454C52})
+            else:
+                self.devices[base] = FakeMmio(base)
+        return self.devices[base]
+
+
+def test_production_guard_allows_only_an_unarmed_started_first_transfer():
+    events = []
+    mmio = FirstFrameMmioFactory(events)
+    overlay = FakeOverlay()
+    overlay.axi_dma_0.sendchannel = object()
+    overlay.axi_dma_0.recvchannel = object()
+    factory = FakeTransportFactory(events)
+    runner.build_transport_callback(
+        transport_factory=factory, mmio_factory=mmio)(
+        object(), object(), overlay, object())
+    send, recv, dma, rle, jpeg, preview, tx, rx, guard = factory.calls[0]
+
+    transport = JpegRleDmaTransport(
+        send, recv, dma, rle, jpeg, preview, tx, rx,
+        first_transfer_guard=guard)
+    transport._require_unsubmitted_first_transfer("MM2S", 0, 0x18, 0x28)
+    transport._require_unsubmitted_first_transfer("S2MM", 0, 0x48, 0x58)
+
+    dma.values[0x28] = 7
+    try:
+        transport._require_unsubmitted_first_transfer("MM2S", 0, 0x18, 0x28)
+    except RuntimeError as exc:
+        assert "committed first transfer" in str(exc)
+    else:
+        raise AssertionError("committed first transfer was accepted")
+    dma.values[0x28] = 0
+    dma.values[0x18] = 0x11000000
+    try:
+        transport._require_unsubmitted_first_transfer("MM2S", 0, 0x18, 0x28)
+    except RuntimeError as exc:
+        assert "committed first transfer" in str(exc)
+    else:
+        raise AssertionError("committed address was accepted")

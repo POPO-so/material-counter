@@ -8,8 +8,10 @@ unchanged; no push or merge.
 
 ## 1. Why the two trace S2MM channels are running
 
-The installed PYNQ base overlay driver is the only component that programs
-these exact DMA addresses:
+The installed PYNQ base overlay driver is a component that programs
+these exact DMA addresses; the observed register value matches its
+initialization exactly. No other component is identified in the retained
+evidence, but the historical caller is not established (see section 7).
 
 - `pynq/overlays/base/base.py`: `BaseOverlay.__init__` constructs
   `TraceAnalyzer` objects (`trace_rpi`, `trace_pmoda`, `trace_pmodb`).

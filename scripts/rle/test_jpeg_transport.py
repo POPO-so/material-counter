@@ -95,8 +95,24 @@ class Channel:
 
     def transfer(self, buffer, *, nbytes):
         self.events.append((self.name, "transfer", nbytes))
-        if getattr(self, "rig", None) and self.rig.dma_error:
-            self.rig.dma.values[0x04 if self.name == "mm2s" else 0x34] = 0x10
+        rig = getattr(self, "rig", None)
+        if rig is not None and rig.driver_started:
+            if self.name == "s2mm":
+                rig.dma.values[0x48] = buffer.physical_address
+                rig.dma.values[0x4C] = 0
+                rig.dma.values[0x58] = nbytes
+                rig.dma.values[0x34] = 0
+                rig.recv_started = True
+            else:
+                rig.dma.values[0x18] = buffer.physical_address
+                rig.dma.values[0x1C] = 0
+                rig.dma.values[0x28] = nbytes
+                rig.dma.values[0x04] = 0
+                rig.send_started = True
+        if rig is not None and rig.dma_error:
+            rig.dma.values[0x04 if self.name == "mm2s" else 0x34] = 0x10
+        if rig is not None and rig.driver_started:
+            rig._maybe_complete()
     def wait(self):
         self.events.append((self.name, "wait")); self.wait_count += 1
 
@@ -104,13 +120,22 @@ class Channel:
 class Rig:
     def __init__(self, jpeg=b"\xff\xd8raw\xff\xd9", *, jpeg_status=0,
                  rle_packet=None, frg=1, preview=1 << 3, drop=0,
-                 dma_error=False, auto_complete=True, late_downstream=False):
+                 dma_error=False, auto_complete=True, late_downstream=False,
+                 driver_started=False):
         self.events = []
         self.tx, self.rx = Buffer(JPEG_MAX_BYTES, 0x11000000), Buffer(RX_CAPACITY, 0x12000000)
         self.send, self.recv = Channel("mm2s", self.events), Channel("s2mm", self.events)
         self.send.rig = self.recv.rig = self
-        self.dma = Mmio({0x04: 0x1002, 0x34: 0x1002, 0x18: 0, 0x28: 0,
-                         0x48: 0, 0x58: 0}, self.events, "dma")
+        initial_status = 0x0 if driver_started else 0x1002
+        initial_control = 0x10003 if driver_started else 0
+        self.dma = Mmio({0x00: initial_control, 0x04: initial_status,
+                         0x30: initial_control, 0x34: initial_status,
+                         0x18: 0, 0x28: 0, 0x48: 0, 0x58: 0}, self.events, "dma")
+        self.driver_started = driver_started
+        self.guard_calls = []
+        self.jpeg_started = False
+        self.recv_started = False
+        self.send_started = False
         self.rle = Mmio({0x04: 0x31454C52, 0x08: 0, 0x0c: 0,
                          0x10: 0, 0x14: 0, 0x18: 0, 0x1c: 0,
                          0x20: 128, 0x24: 0, 0x28: 0,
@@ -134,41 +159,75 @@ class Rig:
 
     def _jpeg_write(self, off, val):
         if off == 0 and val == 1 and self.auto_complete:
-            packet = self.rle_packet
-            if packet is None:
-                packet = encode_mask(np.zeros((HEIGHT, WIDTH), np.uint8),
-                    frame_id=self.jpeg.values[0x18], params_version=self.rle.values[0x14],
-                    roi=(0, 0, WIDTH, HEIGHT), threshold=128)
-            self.rx[:len(packet)] = packet
-            self.dma.values[0x58] = len(packet)
-            self.rle.values[0x0c] = len(packet)
-            self.rle.values[0x08] = 1 if self.late_downstream else 2
-            self.dma.values[0x04] = self.dma.values[0x34] = 0 if self.late_downstream else 0x1002
-            if self.late_downstream:
-                self.rle_state_reads = 0
-                def finish_downstream(offset):
-                    if offset == 0x08:
-                        self.rle_state_reads += 1
-                        if self.rle_state_reads >= 2:
-                            self.rle.values[0x08] = 2
-                            self.dma.values[0x04] = self.dma.values[0x34] = 0x1002
-                self.rle.on_read = finish_downstream
-            self.jpeg.values[0x00] = 6
-            self.jpeg.values[0x20] = self.jpeg_status
-            self.jpeg.values[0x24] = 1
-            self.preview.values[0x0204] = 1
-            self.preview.values[0x0208] = self.jpeg.values[0x18]
-            self.preview.values[0x0018] = self.jpeg.values[0x18]
+            self.jpeg_started = True
+            if not self.driver_started:
+                self._complete()
+            else:
+                self._maybe_complete()
+
+    def _maybe_complete(self):
+        if (self.driver_started and self.auto_complete and self.jpeg_started
+                and self.recv_started and self.send_started):
+            self._complete()
+
+    def _complete(self):
+        packet = self.rle_packet
+        if packet is None:
+            packet = encode_mask(np.zeros((HEIGHT, WIDTH), np.uint8),
+                frame_id=self.jpeg.values[0x18], params_version=self.rle.values[0x14],
+                roi=(0, 0, WIDTH, HEIGHT), threshold=128)
+        self.rx[:len(packet)] = packet
+        self.dma.values[0x58] = len(packet)
+        self.rle.values[0x0c] = len(packet)
+        self.rle.values[0x08] = 1 if self.late_downstream else 2
+        self.dma.values[0x04] = self.dma.values[0x34] = 0 if self.late_downstream else 0x1002
+        if self.late_downstream:
+            self.rle_state_reads = 0
+            def finish_downstream(offset):
+                if offset == 0x08:
+                    self.rle_state_reads += 1
+                    if self.rle_state_reads >= 2:
+                        self.rle.values[0x08] = 2
+                        self.dma.values[0x04] = self.dma.values[0x34] = 0x1002
+            self.rle.on_read = finish_downstream
+        self.jpeg.values[0x00] = 6
+        self.jpeg.values[0x20] = self.jpeg_status
+        self.jpeg.values[0x24] = 1
+        self.preview.values[0x0204] = 1
+        self.preview.values[0x0208] = self.jpeg.values[0x18]
+        self.preview.values[0x0018] = self.jpeg.values[0x18]
 
     def _preview_write(self, off, val):
         if off == 0x24 and val == 1:
             self.preview.values[0x0008] |= 1 << 4
             self.preview.values[0x001c] = self.preview.values[0x20]
 
+    def guard(self, name, channel, regs):
+        expected = self.send if name == "MM2S" else self.recv
+        self.guard_calls.append((name, channel is expected, regs is self.dma))
+        if regs is not self.dma or channel is not expected:
+            return None
+        if name == "MM2S":
+            base, address = 0x00, 0x18
+        elif name == "S2MM":
+            base, address = 0x30, 0x48
+        else:
+            return None
+        return {"owned": True,
+                "control": self.dma.values.get(base, 0),
+                "status": self.dma.values.get(base + 4, 0),
+                "address": self.dma.values.get(address, 0),
+                "length": self.dma.values.get(base + 0x28, 0)}
 
-def transport(rig, timeout_s=0.02):
+
+def transport(rig, timeout_s=0.02, first_transfer_guard="auto"):
+    if first_transfer_guard == "auto":
+        first_transfer_guard = rig.guard if rig.driver_started else None
+    kwargs = {}
+    if first_transfer_guard is not None:
+        kwargs["first_transfer_guard"] = first_transfer_guard
     return JpegRleDmaTransport(rig.send, rig.recv, rig.dma, rig.rle,
-        rig.jpeg, rig.preview, rig.tx, rig.rx, timeout_s=timeout_s)
+        rig.jpeg, rig.preview, rig.tx, rig.rx, timeout_s=timeout_s, **kwargs)
 
 
 def test_accepts_raw_jpeg_with_exact_byte_length_order_and_single_mask_accept():
@@ -238,6 +297,103 @@ def test_repeated_call_accepts_prior_completed_rle_and_idle_jpeg_state():
     t = transport(rig)
     assert t.transfer(b"\xff\xd8a\xff\xd9", 9).frame_id == 9
     assert t.transfer(b"\xff\xd8b\xff\xd9", 10).frame_id == 10
+
+
+def _assert_no_start_or_tx_write(rig, tx_before):
+    assert bytes(rig.tx[:len(tx_before)]) == tx_before
+    assert not any(e[0] in ("s2mm", "mm2s") and e[1] == "transfer"
+                   for e in rig.events)
+    assert not any(e[:3] == ("rle", "write", 0x00) for e in rig.events)
+    assert not any(e[:3] == ("jpeg", "write", 0x00) for e in rig.events)
+
+
+def test_driver_started_status_zero_without_ownership_proof_is_rejected():
+    rig = Rig(driver_started=True)
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="not idle"):
+        transport(rig, first_transfer_guard=None).transfer(
+            b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_start_or_tx_write(rig, tx_before)
+
+
+def test_driver_started_status_zero_with_proof_is_accepted():
+    rig = Rig(driver_started=True)
+    frame = transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    assert frame.frame_id == 9
+    assert len(rig.guard_calls) == 2
+
+
+@pytest.mark.parametrize("zero_channel", ["mm2s", "s2mm"])
+def test_driver_started_single_channel_status_zero_is_accepted(zero_channel):
+    rig = Rig(driver_started=True)
+    idle_offset = 0x04 if zero_channel == "mm2s" else 0x34
+    other = 0x34 if zero_channel == "mm2s" else 0x04
+    rig.dma.values[other] = 0x1002
+    frame = transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    assert frame.frame_id == 9
+
+
+def test_second_frame_after_completion_does_not_use_first_exception():
+    rig = Rig(driver_started=True)
+    t = transport(rig)
+    assert t.transfer(b"\xff\xd8a\xff\xd9", 9).frame_id == 9
+    calls_after_first = len(rig.guard_calls)
+    assert t.transfer(b"\xff\xd8b\xff\xd9", 10).frame_id == 10
+    assert len(rig.guard_calls) == calls_after_first
+
+
+def test_new_transport_on_committed_active_transfer_is_rejected():
+    rig = Rig(driver_started=True)
+    rig.dma.values[0x48] = 0x12000000
+    rig.dma.values[0x58] = RX_CAPACITY
+    rig.dma.values[0x34] = 0
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="not idle"):
+        transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_start_or_tx_write(rig, tx_before)
+
+
+@pytest.mark.parametrize("channel,address,length", [
+    ("s2mm", 0x12000000, 0),
+    ("s2mm", 0, RX_CAPACITY),
+    ("mm2s", 0x11000000, 0),
+    ("mm2s", 0, JPEG_MAX_BYTES),
+])
+def test_partial_submission_anomaly_is_rejected(channel, address, length):
+    rig = Rig(driver_started=True)
+    base = 0x00 if channel == "mm2s" else 0x30
+    addr_offset = 0x18 if channel == "mm2s" else 0x48
+    rig.dma.values[base + 4] = 0
+    rig.dma.values[addr_offset] = address
+    rig.dma.values[base + 0x28] = length
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="not idle"):
+        transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_start_or_tx_write(rig, tx_before)
+
+
+def test_error_status_is_rejected_before_first_transfer_exception():
+    rig = Rig(driver_started=True)
+    rig.dma.values[0x04] = 0x10
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="error bits"):
+        transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_start_or_tx_write(rig, tx_before)
+
+
+@pytest.mark.parametrize("guard", [
+    None,
+    lambda *args: None,
+    lambda *args: {"owned": False, "control": 1, "status": 0,
+                   "address": 0, "length": 0},
+])
+def test_missing_or_unowned_first_transfer_proof_is_rejected(guard):
+    rig = Rig(driver_started=True)
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="not idle"):
+        transport(rig, first_transfer_guard=guard).transfer(
+            b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_start_or_tx_write(rig, tx_before)
 
 
 @pytest.mark.parametrize("retry_id", [10, 9])
@@ -479,6 +635,15 @@ def test_old_displayed_id_waits_until_new_frame_is_displayed():
 
 def test_start_timeout_holds_buffers_and_forbids_retry_or_close():
     rig = Rig(auto_complete=False)
+    t = transport(rig, timeout_s=0.001)
+    with pytest.raises(TimeoutError): t.transfer(b"\xff\xd8a\xff\xd9", 9)
+    with pytest.raises(RuntimeError, match="ownership"): t.transfer(b"\xff\xd8a\xff\xd9", 10)
+    with pytest.raises(RuntimeError, match="DMA-owned"): t.close()
+    assert rig.tx.freed == rig.rx.freed == 0
+
+
+def test_driver_started_timeout_holds_buffers_and_forbids_retry_or_close():
+    rig = Rig(driver_started=True, auto_complete=False)
     t = transport(rig, timeout_s=0.001)
     with pytest.raises(TimeoutError): t.transfer(b"\xff\xd8a\xff\xd9", 9)
     with pytest.raises(RuntimeError, match="ownership"): t.transfer(b"\xff\xd8a\xff\xd9", 10)
