@@ -41,9 +41,14 @@ joint::capture create_jpeg [list ipcfg::create_cell [dict get $cfg vlnv] $cell] 
 # These names come from component.xml. Fail if catalog elaboration differs.
 foreach {key mode protocol} {input_intf Slave axis output_intf Master axis control_intf Slave aximm} {
     set pin [joint::one [get_bd_intf_pins $cell/[dict get $cfg $key]] $key]
+    set vlnv [get_property VLNV $pin]
+    # Vivado 2026.1 reports the modern interface abstraction names (axis_rtl /
+    # aximm_rtl) while the component.xml busType still says axis/aximm. Accept
+    # both spellings; MODE and protocol family remain strictly enforced.
     if {![string equal -nocase [get_property MODE $pin] $mode] ||
-        ![string match "xilinx.com:interface:${protocol}:*" [get_property VLNV $pin]]} {
-        error "JOINT_HLS_INTERFACE_CHANGED:$key"
+        (![string match "xilinx.com:interface:${protocol}:*" $vlnv] &&
+         ![string match "xilinx.com:interface:${protocol}_rtl:*" $vlnv])} {
+        error "JOINT_HLS_INTERFACE_CHANGED:$key (MODE=[get_property MODE $pin] VLNV=$vlnv)"
     }
 }
 foreach key {clock_pin reset_pin input_data_pin output_data_pin} {
