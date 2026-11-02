@@ -878,10 +878,10 @@ def stage(args, result: dict) -> None:
             offload_cdc_replacements.append({"source": offload_cdc_binding["source"],
                 "replacement": replacement, "candidate": offload_cdc_binding["candidate"],
                 "target_relative_path": offload_cdc_binding["target_relative_path"],
-                "reason": "Anchor bundled-data max-delay endpoints to sequential register cells"})
+                "reason": "Use static joint CDC constraints; the pinned switch XDC already covers GPIO/SW inputs"})
         elif source.name == "rle_region_features.v":
             target.write_bytes(Path(result["region"]["path"]).read_bytes())
-            replacements.append({"source": entry(source), "replacement": entry(target), "reason": "Manager-selected BRAM region core"})
+            replacements.append({"source": entry(source), "replacement": entry(target), "reason": "Manager-selected G2 region feature core"})
         else:
             shutil.copy2(source, target)
         if target.suffix not in (".xpr", ".bd") and not any(p.endswith(".gen") for p in target.parts):
@@ -1006,8 +1006,8 @@ def main() -> int:
                    default=Path(__file__).resolve().parents[3] / "scripts/standalone/display_timing.xdc",
                    help="Reviewed display timing XDC; staging replaces the fixed snapshot copy")
     p.add_argument("--offload-cdc-xdc", type=Path,
-                   default=Path(__file__).resolve().parents[3] / "scripts/standalone/offload_cdc.xdc",
-                   help="Reviewed sequential-endpoint CDC XDC; staging replaces the fixed snapshot copy")
+                   default=Path(__file__).resolve().parents[3] / "scripts/standalone/jpeg_joint_cdc.xdc",
+                   help="Reviewed static JPEG joint CDC XDC; staging replaces the fixed snapshot copy")
     p.add_argument("--jpeg-source", type=Path, default=repo / "fpga/experimental/jpeg_axis/jpeg_axis_gray.cpp")
     p.add_argument("--result", type=Path, help="Fresh JSON path; omitted means stdout only")
     p.add_argument("--stage", type=Path, help="Explicitly stage a new build directory; never starts Vivado")
