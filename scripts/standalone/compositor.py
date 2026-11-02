@@ -13,6 +13,8 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+from .shared_frames import SLOT_COUNT
+
 
 WIDTH = 1280
 HEIGHT = 720
@@ -323,10 +325,32 @@ class DashboardComposer:
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
                        for size in (12, 14, 16, 18, 20, 24, 28, 34)}
         self._text_cache = OrderedDict()
+        self._latin_advance_cache = {
+            (size, chr(codepoint)): self._latin[size].getlength(chr(codepoint))
+            for size in (12, 20) for codepoint in range(32, 127)
+        }
+        self._latin_glyph_cache = OrderedDict()
         self._gutter_wrap_cache = OrderedDict()
         self._key = None
         self._chrome = np.zeros_like(self.canvas)
+        self._chrome_version = 0
+        self._output_chrome_versions = [None] * SLOT_COUNT
+        self._output_dynamic_keys = [None] * SLOT_COUNT
+        self._output_detection_counts = [None] * SLOT_COUNT
         self.last_timings_ms = {"scale_ms": 0.0, "draw_ms": 0.0}
+        self._frames = 0
+        self._key_hits = 0
+        self._key_misses = 0
+
+    @property
+    def key_stats(self):
+        frames = self._frames
+        return {
+            "frames": frames,
+            "key_hits": self._key_hits,
+            "key_misses": self._key_misses,
+            "hit_rate": self._key_hits / frames if frames else 0.0,
+        }
 
     @staticmethod
     def _number(value, digits=1, suffix=""):
@@ -335,6 +359,75 @@ class DashboardComposer:
             return "--"
         return f"{value:,.{digits}f}{suffix}"
 
+    def _latin_advance(self, character, size):
+        key = (size, character)
+        advance = self._latin_advance_cache.get(key)
+        if advance is None:
+            advance = self._latin[size].getlength(character)
+            self._latin_advance_cache[key] = advance
+        return advance
+
+    def _latin_glyph(self, character, size, phase):
+        key = (size, character, phase)
+        cached = self._latin_glyph_cache.get(key)
+        if cached is not None:
+            self._latin_glyph_cache.move_to_end(key)
+            return cached
+
+        margin = 64
+        font = self._latin[size]
+        advance = self._latin_advance(character, size)
+        glyph = Image.new(
+            "L", (max(1, margin * 2 + math.ceil(advance) + 16), size * 4 + margin * 2), 0)
+        ImageDraw.Draw(glyph).text(
+            (margin + phase / 64, margin + size), character,
+            font=font, fill=255, anchor="ls")
+        bounds = glyph.getbbox()
+        if bounds is None:
+            cached = (0, 0, glyph.crop((0, 0, 1, 1)))
+        else:
+            left, top, right, bottom = bounds
+            cached = (left - margin, top - margin - size,
+                      glyph.crop((left, top, right, bottom)))
+
+        self._latin_glyph_cache[key] = cached
+        if len(self._latin_glyph_cache) > 512:
+            self._latin_glyph_cache.popitem(last=False)
+        return cached
+
+    def _latin_text_mask(self, text, size, margin):
+        advances = [self._latin_advance(character, size) for character in text]
+        width = margin * 2 + sum(advances)
+        pixels = np.zeros((size * 4 + margin * 2,
+                           max(1, math.ceil(width))), dtype=np.uint8)
+        x = float(margin)
+        for character, advance in zip(text, advances):
+            base_x = math.floor(x)
+            phase = int(round((x - base_x) * 64))
+            if phase == 64:
+                base_x += 1
+                phase = 0
+            offset_x, offset_y, glyph = self._latin_glyph(character, size, phase)
+            glyph_pixels = np.asarray(glyph)
+            glyph_x = base_x + offset_x
+            glyph_y = margin + size + offset_y
+            left, top = max(0, glyph_x), max(0, glyph_y)
+            right = min(pixels.shape[1], glyph_x + glyph_pixels.shape[1])
+            bottom = min(pixels.shape[0], glyph_y + glyph_pixels.shape[0])
+            if left < right and top < bottom:
+                source = glyph_pixels[top - glyph_y:bottom - glyph_y,
+                                      left - glyph_x:right - glyph_x]
+                destination = pixels[top:bottom, left:right]
+                np.copyto(destination, source, where=source != 0)
+            x += advance
+
+        mask = Image.fromarray(pixels)
+        bounds = mask.getbbox()
+        if bounds is None:
+            return 0, 0, mask.crop((0, 0, 1, 1))
+        left, top, right, bottom = bounds
+        return left - margin, top - margin, mask.crop(bounds)
+
     def _text(self, draw, xy, text, size, fill):
         key = ("mixed", text, size)
         cached = self._text_cache.get(key)
@@ -342,24 +435,27 @@ class DashboardComposer:
             # Render at an integer offset so glyph bearings and fractional
             # advances match the original per-character drawing path exactly.
             margin = 64
-            width = margin * 2 + sum(
-                (self._latin[size] if ord(character) < 256 else self._fonts[size])
-                .getlength(character) for character in text)
-            mask = Image.new("L", (max(1, math.ceil(width)), size * 4 + margin * 2), 0)
-            mask_draw = ImageDraw.Draw(mask)
-            x = float(margin)
-            for character in text:
-                font = self._latin[size] if ord(character) < 256 else self._fonts[size]
-                mask_draw.text((x, margin + size), character, font=font,
-                               fill=255, anchor="ls")
-                x += font.getlength(character)
-            bounds = mask.getbbox()
-            if bounds is None:
-                cached = (0, 0, mask.crop((0, 0, 1, 1)))
+            if all(ord(character) < 256 for character in text):
+                cached = self._latin_text_mask(text, size, margin)
             else:
-                left, top, right, bottom = bounds
-                cached = (left - margin, top - margin,
-                          mask.crop((left, top, right, bottom)))
+                width = margin * 2 + sum(
+                    (self._latin[size] if ord(character) < 256 else self._fonts[size])
+                    .getlength(character) for character in text)
+                mask = Image.new("L", (max(1, math.ceil(width)), size * 4 + margin * 2), 0)
+                mask_draw = ImageDraw.Draw(mask)
+                x = float(margin)
+                for character in text:
+                    font = self._latin[size] if ord(character) < 256 else self._fonts[size]
+                    mask_draw.text((x, margin + size), character, font=font,
+                                   fill=255, anchor="ls")
+                    x += font.getlength(character)
+                bounds = mask.getbbox()
+                if bounds is None:
+                    cached = (0, 0, mask.crop((0, 0, 1, 1)))
+                else:
+                    left, top, right, bottom = bounds
+                    cached = (left - margin, top - margin,
+                              mask.crop((left, top, right, bottom)))
         else:
             self._text_cache.move_to_end(key)
         self._cache_text(key, cached)
@@ -414,27 +510,33 @@ class DashboardComposer:
         if rows is not None:
             self._gutter_wrap_cache.move_to_end(key)
             return rows
-        rows, current = [], ''
+        rows, row_prefix_widths = [], []
+        current, current_width = '', 0.0
+        current_prefix_widths = []
         for character in key[0]:
-            trial = current + character
-            trial_width = sum(
-                (self._latin[size] if ord(ch) < 256 else self._fonts[size]).getlength(ch)
-                for ch in trial)
-            if current and trial_width > max_width:
+            font = self._latin[size] if ord(character) < 256 else self._fonts[size]
+            character_width = (self._latin_advance(character, size)
+                               if ord(character) < 256 else font.getlength(character))
+            if current and current_width + character_width > max_width:
                 rows.append(current)
-                current = character
+                row_prefix_widths.append(current_prefix_widths)
+                current, current_width = character, character_width
+                current_prefix_widths = [current_width]
             else:
-                current = trial
+                current += character
+                current_width += character_width
+                current_prefix_widths.append(current_width)
         if current:
             rows.append(current)
+            row_prefix_widths.append(current_prefix_widths)
         if max_rows is not None and len(rows) > max_rows:
             rows = rows[:max_rows]
             last = rows[-1]
-            font_for = lambda value: sum(
-                (self._latin[size] if ord(ch) < 256 else self._fonts[size]).getlength(ch)
-                for ch in value)
-            while last and font_for(last + "…") > max_width:
+            prefix_widths = row_prefix_widths[max_rows - 1]
+            ellipsis_width = self._fonts[size].getlength("…")
+            while last and prefix_widths[-1] + ellipsis_width > max_width:
                 last = last[:-1]
+                prefix_widths.pop()
             rows[-1] = last + "…"
         rows = tuple(rows)
         self._gutter_wrap_cache[key] = rows
@@ -449,7 +551,11 @@ class DashboardComposer:
             y += line_height
         return y
 
-    def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
+    def _redraw_chrome(self, dashboard, binary_background, lines):
+        def strip_prefix(text, prefix):
+            value = str(text).strip()
+            return value[len(prefix):].strip(" :：") if value.startswith(prefix) else value
+
         e2e = dashboard.get("e2e_ms")
         if isinstance(e2e, dict):
             e2e = e2e.get("mean")
@@ -459,16 +565,18 @@ class DashboardComposer:
             self._number(e2e, 1, " ms"),
             self._number(dashboard.get("drop_total"), 0),
         )
-        live_pies = tuple(dashboard.get(name) for name in (
+        raw_live_pies = tuple(dashboard.get(name) for name in (
             "cpu_percent", "cpu0_percent", "cpu1_percent", "memory_percent"))
-        static_pies = tuple(dashboard.get(name) for name in (
+        raw_static_pies = tuple(dashboard.get(name) for name in (
             "static_lut_percent", "static_ff_percent",
             "static_bram_percent", "static_dsp_percent"))
-        pie_key = tuple(
-            value if (isinstance(value, (int, float)) and not isinstance(value, bool)
-                      and math.isfinite(value) and value >= 0) else None
-            for value in live_pies + static_pies
-        )
+        def display_percent(value):
+            if (isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not math.isfinite(value) or value < 0):
+                return None
+            return float(f"{value:.1f}")
+        live_pies = tuple(display_percent(value) for value in raw_live_pies)
+        static_pies = tuple(display_percent(value) for value in raw_static_pies)
         state = str(dashboard.get("state", "RUNNING"))
         chain = dashboard.get("resolution_chain")
         if isinstance(chain, (tuple, list)) and chain:
@@ -489,6 +597,12 @@ class DashboardComposer:
         else:
             pl_text = "PL --"
 
+        feature_pl_text = str(dashboard.get("pl_text", "PL rates unavailable"))
+        if "unavailable" in feature_pl_text.lower():
+            pl_summary = pl_text
+        else:
+            pl_summary = feature_pl_text
+
         regions = dashboard.get("regions_ms")
         regions_mean = regions.get("mean") if isinstance(regions, dict) else None
         track = dashboard.get("track_ms")
@@ -496,13 +610,26 @@ class DashboardComposer:
         mode = str(dashboard.get("mode", "NORMAL"))
         exposure_text = str(dashboard.get("exposure_text", "曝光不可用"))
         exposure_range_text = str(dashboard.get("exposure_range_text", "范围 --"))
-        feature_pl_text = str(dashboard.get("pl_text", "PL rates unavailable"))
         thread_text = str(dashboard.get("thread_text", "线程概要暂不可用"))
         cpu_source_text = str(dashboard.get("cpu_source_text", "CPU 来源 unknown"))
         queue_summary_text = str(dashboard.get("queue_summary_text", "队列 unknown"))
         button_status = str(dashboard.get("button_status", "IRQ READY"))
         preview_status = str(dashboard.get("preview_status", "预览 READY"))
         exposure_latency_text = str(dashboard.get("exposure_latency_text", ""))
+        page = dashboard.get("page")
+        if page is None:
+            page = dashboard.get("detail_page", 0)
+            if page is True:
+                page = 1
+        if isinstance(page, bool) or not isinstance(page, int):
+            page = 0
+        raw_page_lines = dashboard.get("page_lines", ())
+        if isinstance(raw_page_lines, str):
+            page_lines = (raw_page_lines,) if raw_page_lines else ()
+        elif isinstance(raw_page_lines, (tuple, list)):
+            page_lines = tuple(str(line) for line in raw_page_lines if str(line))
+        else:
+            page_lines = ()
         count_line = dashboard.get("count_line")
         if not isinstance(count_line, dict):
             count_line = {"axis": "x", "position": 320, "direction": 1}
@@ -516,41 +643,67 @@ class DashboardComposer:
         count_line_key = (axis, position, direction)
         submitted_fps = self._number(
             dashboard.get("preview_submitted_fps", dashboard.get("binary_fps")), 1, " FPS")
-        processing_fps = self._number(dashboard.get("processing_fps"), 1, " FPS")
         processing_ms = self._number(dashboard.get("processing_ms"), 1, " ms")
         effective_input_fps = self._number(dashboard.get("effective_input_fps"), 1, " FPS")
-        summary = (
-            f"输入 {input_resolution}", "预览 640x400", "输出 1280x720",
-            pl_text,
-            f"PS RLE {self._number(regions_mean)} / TRK {self._number(track_mean)} ms",
-            f"处理 {self._number(dashboard.get('processing_fps'))} / 显示 "
-            f"{self._number(dashboard.get('display_fps'))} FPS",
-            f"有效输入 {effective_input_fps} / 二值提交 {submitted_fps}",
-            f"处理延迟 {processing_ms}",
-        )
-        if dashboard.get("detail_page"):
-            summary = (
-                "合成器输入 {}".format(self._number(dashboard.get("compositor_input_fps"), 1, " FPS")),
-                "绘图输出 {}".format(self._number(dashboard.get("drawing_output_fps"), 1, " FPS")),
-                "PL 接受 {}".format(self._number(dashboard.get("pl_preview_accept_fps"), 1, " FPS")),
-                "HDMI writeframe 提交 {}".format(self._number(dashboard.get("display_fps"), 1, " FPS")),
-            ) + summary
-        rle_key = tuple(dashboard.get(name) for name in (
-            "rle_fresh", "rle_activity_pct", "input_mb_s", "output_mb_s",
-            "input_stall_pct", "output_stall_pct", "preview_submitted_fps", "binary_fps"))
+        fresh = bool(dashboard.get("rle_fresh"))
+        raw_rle_values = (dashboard.get("rle_activity_pct"),
+                          dashboard.get("input_mb_s"), dashboard.get("output_mb_s"),
+                          dashboard.get("input_stall_pct"), dashboard.get("output_stall_pct"))
+        rle_values = tuple(self._number(value, 1) for value in raw_rle_values)
         # Count, run state, and processing FPS already have dedicated slots.
         detail = tuple(line for line in lines
                        if not line.startswith("本次会话累计 ")
                        and line not in ("运行中", "暂停计数")
                        and not (line.startswith("处理 ") and " FPS" in line))[:3]
-        key = (values, pie_key, state, binary_background, target_count,
-               summary, detail, mode, exposure_text,
-               exposure_range_text, feature_pl_text, thread_text, cpu_source_text,
-               queue_summary_text, button_status,
-               preview_status, exposure_latency_text, submitted_fps, processing_fps,
-               processing_ms, rle_key, count_line_key)
+        visible_details = page_lines if page and page_lines else detail
+        visible_details = tuple(self._wrap_gutter(line, 334, 12, 1)[0]
+                                for line in visible_details)
+        visible_cpu_source = (self._wrap_gutter(
+            strip_prefix(cpu_source_text, "CPU 来源"), 262, 12, 1)[0]
+            if page == 2 else "")
+        visible_queue = (self._wrap_gutter(
+            strip_prefix(queue_summary_text, "队列"), 262, 12, 1)[0]
+            if page == 2 else "")
+        visible_thread = (self._wrap_gutter(
+            strip_prefix(thread_text, "threads"), 262, 12, 1)[0]
+            if page == 2 else "")
+        pl_summary_display = self._wrap_gutter(pl_summary, 206, 12, 1)[0]
+        performance_values = (
+            pl_summary_display,
+            f"{self._number(regions_mean)} / {self._number(track_mean)} ms",
+            f"{self._number(dashboard.get('processing_fps'))} / "
+            f"{self._number(dashboard.get('display_fps'))} FPS",
+            f"{effective_input_fps} / {submitted_fps}",
+            processing_ms,
+        )
+        control_status = " · ".join(
+            text for text in (button_status, exposure_latency_text) if text)
+        self._dynamic_state = {
+            "top_values": values,
+            "live_pies": live_pies,
+            "performance_values": performance_values,
+            "control_status": control_status,
+            "visible_cpu_source": visible_cpu_source,
+            "visible_queue": visible_queue,
+            "visible_thread": visible_thread,
+            "visible_details": visible_details,
+            "page": page,
+            "rle_fresh": fresh,
+            "rle_values": rle_values,
+        }
+        self._dynamic_key = (
+            values, live_pies, performance_values, control_status,
+            visible_cpu_source, visible_queue, visible_thread, visible_details,
+            fresh, rle_values if fresh else ("--",) * len(rle_values),
+        )
+        key = (state, binary_background, input_resolution, mode,
+               exposure_text, exposure_range_text, page, preview_status,
+               static_pies, count_line_key)
+        self._frames += 1
         if key == self._key:
+            self._key_hits += 1
             return
+        self._key_misses += 1
         image = Image.new("L", (WIDTH, HEIGHT), 14)
         draw = ImageDraw.Draw(image)
         self._whole_latin_text(draw, (24, 12), "NUT VISION COUNTER", 28, 242)
@@ -561,7 +714,6 @@ class DashboardComposer:
                                    values[:4]):
             draw.rounded_rectangle((x, 58, x + 300, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
-            self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
         draw.rounded_rectangle((24, 136, 1256, 474), radius=10, fill=25, outline=66)
         axis_label = "X" if axis == "x" else "Y"
         direction_label = (("左→右" if direction == 1 else "右→左") if axis == "x"
@@ -586,10 +738,6 @@ class DashboardComposer:
         def card_line(text, x, y, width, *, size=12, fill=218):
             rows = self._wrap_gutter(text, width, size, 1)
             self._text(draw, (x, y), rows[0], size, fill)
-
-        def strip_prefix(text, prefix):
-            value = str(text).strip()
-            return value[len(prefix):].strip(" :：") if value.startswith(prefix) else value
 
         def centered(text, x, y, width, size, fill, max_rows=1, line_height=None):
             rows = self._wrap_gutter(text, width, size, max_rows)
@@ -621,24 +769,16 @@ class DashboardComposer:
                     left_x + 12, 292, left_width - 24, label_width=82, size=14)
 
         card(left_x, 316, left_width, 116, "处理性能")
-        performance_rows = (
-            ("PL 周期", strip_prefix(pl_text, "PL")),
-            ("PS RLE / TRK", f"{self._number(regions_mean)} / {self._number(track_mean)} ms"),
-            ("处理 / 显示", f"{self._number(dashboard.get('processing_fps'))} / "
-                             f"{self._number(dashboard.get('display_fps'))} FPS"),
-            ("有效 / 提交", f"{effective_input_fps} / {submitted_fps}"),
-            ("处理延迟", processing_ms),
+        performance_labels = (
+            "PL / RLE", "PS RLE / TRK", "处理 / 显示",
+            "有效 / 二值提交 FPS", "处理延迟",
         )
-        for index, (label, value) in enumerate(performance_rows):
-            aligned_row(label, value, left_x + 12, 346 + index * 16,
-                        left_width - 24, label_width=112, size=12,
-                        value_size=12, value_fill=238)
+        for index, label in enumerate(performance_labels):
+            self._text(draw, (left_x + 12, 346 + index * 16), label, 12, 174)
 
         # Right gutter: detection, preview path, and runtime state.
         card(right_x, 145, right_width, 76, "检测结果")
-        aligned_row("检测目标", str(target_count), right_x + 12, 177,
-                    right_width - 24, label_width=88, size=14,
-                    value_size=20, value_fill=255)
+        self._text(draw, (right_x + 12, 177), "检测目标", 14, 174)
         card_line("跟踪 ID / 检测框 · 计数真值待人工核对",
                   right_x + 12, 201, right_width - 24, size=12, fill=218)
 
@@ -646,24 +786,27 @@ class DashboardComposer:
         card_line(preview_status, right_x + 12, 259,
                   right_width - 24, size=14, fill=246)
 
-        card(right_x, 291, right_width, 141, "运行状态")
+        card(right_x, 291, right_width, 141, f"运行状态 · 第{page}页")
         control_status = " · ".join(
             text for text in (button_status, exposure_latency_text) if text)
-        runtime_rows = (
-            ("按键 / SW0", control_status),
-            ("CPU 来源", strip_prefix(cpu_source_text, "CPU 来源")),
-            ("队列", strip_prefix(queue_summary_text, "队列")),
-            ("线程", strip_prefix(thread_text, "threads")),
-        )
+        if page == 2:
+            runtime_rows = (
+                ("按键 / SW0", control_status),
+                ("CPU 来源", strip_prefix(cpu_source_text, "CPU 来源")),
+                ("队列", strip_prefix(queue_summary_text, "队列")),
+                ("线程", strip_prefix(thread_text, "threads")),
+            )
+        else:
+            runtime_rows = (("按键 / SW0", control_status), ("", ""), ("", ""), ("", ""))
         for index, (label, value) in enumerate(runtime_rows):
+            if not label and not value:
+                continue
             aligned_row(label, value, right_x + 12, 321 + index * 16,
                         right_width - 24, label_width=82, size=12,
                         value_size=12, value_fill=246 if index == 0 else 226)
-        for index, line in enumerate(detail[:3]):
+        for index, line in enumerate(visible_details[:3]):
             y = 386 + index * 15
             draw.ellipse((right_x + 12, y + 5, right_x + 16, y + 9), fill=182)
-            card_line(line, right_x + 22, y, right_width - 34,
-                      size=12, fill=206)
         draw.line((left_x, 440, left_x + left_width, 440), fill=100, width=1)
         draw.line((right_x, 440, right_x + right_width, 440), fill=100, width=1)
         centered("BTN0 清零累计计数 · BTN1 切换诊断模式 · BTN2 调整曝光 · BTN3 预留",
@@ -671,8 +814,10 @@ class DashboardComposer:
         centered("SW0 ON + BTN2：增加曝光 · SW0 OFF + BTN2：减少曝光",
                  42, 459, 1190, 16, 246)
         for top, bottom, center_y, title, labels, percentages, is_static in (
-                (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
-                (558, 630, 594, "STATIC", ("LUT", "FF", "BRAM", "DSP"), static_pies, True)):
+                (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"),
+                 (None,) * len(live_pies), False),
+                (558, 630, 594, "STATIC", ("LUT", "FF", "BRAM", "DSP"),
+                 static_pies, True)):
             draw.rounded_rectangle((24, top, 1256, bottom), radius=9, fill=40)
             self._whole_latin_text(draw, (36, center_y - 12), title, 18, 232)
             for index, (label, percent) in enumerate(zip(labels, percentages)):
@@ -681,26 +826,103 @@ class DashboardComposer:
         top,bottom,center_y=636,708,672
         draw.rounded_rectangle((24,top,1256,bottom),radius=9,fill=40)
         self._whole_latin_text(draw,(36,center_y-12),"RLE",18,232)
-        rle_values=(dashboard.get("rle_activity_pct"),dashboard.get("input_mb_s"),
-                    dashboard.get("output_mb_s"),dashboard.get("input_stall_pct"),
-                    dashboard.get("output_stall_pct"))
         rle_labels=("活动(含等待)","IN MB/s","OUT MB/s","IN 阻塞","OUT 阻塞")
-        fresh=bool(dashboard.get("rle_fresh"))
-        for index,(label,value) in enumerate(zip(rle_labels,rle_values)):
+        for index,(label,value_text) in enumerate(zip(rle_labels,rle_values)):
             x=184+index*210
             self._text(draw,(x,center_y-23),label,18,170)
-            shown=self._number(value,1,"%" if index in (0,3,4) else "") if fresh else "--"
-            self._whole_latin_text(draw,(x,center_y),shown,24,226 if fresh else 142)
         self._chrome[:] = np.asarray(image)
         self._key = key
+        self._chrome_version += 1
+
+    @staticmethod
+    def _target_draw(target):
+        """Create a writable Pillow draw surface over the full frame buffer."""
+        image = Image.frombuffer("L", (WIDTH, HEIGHT), target, "raw", "L", 0, 1)
+        if image.readonly:
+            image.readonly = 0
+        return ImageDraw.Draw(image)
+
+    def _draw_dynamic_region(self, target, bounds, draw_content, draw=None):
+        x0, y0, x1, y1 = bounds
+        pixels = target[y0:y1, x0:x1]
+        np.copyto(pixels, self._chrome[y0:y1, x0:x1])
+        draw = self._target_draw(target) if draw is None else draw
+        # The shared draw surface is full-frame, so dynamic content uses absolute coordinates.
+        draw_content(draw, 0, 0)
+
+    def _draw_dynamic_overlays(self, target, draw=None):
+        state = self._dynamic_state
+        draw = self._target_draw(target) if draw is None else draw
+
+        def top_values(draw, x0, y0):
+            for x, value in zip((24, 340, 656, 972), state["top_values"]):
+                self._whole_latin_text(draw, (x + 16 - x0, 84 - y0), value, 34, 248)
+
+        self._draw_dynamic_region(target, (24, 58, 1256, 126), top_values, draw)
+
+        def performance_values(draw, x0, y0):
+            for index, value in enumerate(state["performance_values"]):
+                row = self._wrap_gutter(value, 206, 12, 1)[0]
+                self._text(draw, (162 - x0, 346 + index * 16 - y0), row, 12, 238)
+
+        self._draw_dynamic_region(target, (38, 316, 380, 432), performance_values, draw)
+
+        def live_resource_values(draw, x0, y0):
+            labels = ("PS CPU", "CPU0", "CPU1", "内存")
+            for index, (label, value) in enumerate(zip(labels, state["live_pies"])):
+                self._resource_pie(draw, 116 + index * 280 - x0,
+                                   516 - y0, label, value)
+
+        self._draw_dynamic_region(target, (24, 480, 1256, 552), live_resource_values, draw)
+
+        def runtime_values(draw, x0, y0):
+            values = [(state["control_status"], 321, 246)]
+            if state["page"] == 2:
+                values.extend((
+                    (state["visible_cpu_source"], 337, 226),
+                    (state["visible_queue"], 353, 226),
+                    (state["visible_thread"], 369, 226),
+                ))
+            for value, y, fill in values:
+                row = self._wrap_gutter(value, 262, 12, 1)[0]
+                self._text(draw, (968 - x0, y - y0), row, 12, fill)
+            for index, line in enumerate(state["visible_details"][:3]):
+                self._text(draw, (908 - x0, 386 + index * 15 - y0), line, 12, 206)
+
+        self._draw_dynamic_region(target, (874, 291, 1242, 432), runtime_values, draw)
+
+        def rle_values(draw, x0, y0):
+            labels = ("活动(含等待)", "IN MB/s", "OUT MB/s", "IN 阻塞", "OUT 阻塞")
+            for index, value_text in enumerate(state["rle_values"]):
+                shown = (value_text + ("%" if index in (0, 3, 4) and value_text != "--" else "")
+                         if state["rle_fresh"] else "--")
+                x = 184 + index * 210
+                self._whole_latin_text(draw, (x - x0, 672 - y0), shown, 24,
+                                       226 if state["rle_fresh"] else 142)
+
+        self._draw_dynamic_region(target, (24, 636, 1256, 708), rle_values, draw)
+
+    def _draw_detection_count(self, target, target_count, draw=None):
+        x0, y0, x1, y1 = 974, 174, 1230, 201
+        pixels = target[y0:y1, x0:x1]
+        pixels.fill(43)
+        draw = self._target_draw(target) if draw is None else draw
+        self._text(draw, (x0, 177), str(target_count), 20, 255)
 
     def render(self, gray, binary, session_id, frame_id, boxes=(), tracks=(),
                line_x=320, status_lines=(), *, binary_background=False, output=None,
-               line_y=None, dashboard=None, pl_preview=False):
+               line_y=None, dashboard=None, pl_preview=False, output_slot=None):
         GrayComposer._validate_image(gray, "gray")
         GrayComposer._validate_image(binary, "binary")
         if not isinstance(binary_background, bool):
             raise TypeError("binary_background must be bool")
+        if output_slot is not None:
+            if (isinstance(output_slot, bool) or not isinstance(output_slot, int)
+                    or not 0 <= output_slot < SLOT_COUNT):
+                raise ValueError("output_slot must be an integer from 0 to {}".format(
+                    SLOT_COUNT - 1))
+            if output is None:
+                raise ValueError("output_slot requires an explicit output buffer")
         if not np.all((binary == 0) | (binary == 255)):
             raise ValueError("binary input may contain only 0 and 255")
         target = self.canvas if output is None else output
@@ -714,8 +936,29 @@ class DashboardComposer:
             line_y = _integer(line_y, "line_y")
         marker = encode_marker(session_id, frame_id)
         started = perf_counter_ns()
-        self._redraw_chrome(dict(dashboard or {}), binary_background, len(boxes), lines)
-        np.copyto(target, self._chrome)
+        self._redraw_chrome(dict(dashboard or {}), binary_background, lines)
+        chrome_sync = (output_slot is None
+                       or self._output_chrome_versions[output_slot] != self._chrome_version)
+        if chrome_sync:
+            np.copyto(target, self._chrome)
+            if output_slot is not None:
+                self._output_chrome_versions[output_slot] = self._chrome_version
+                self._output_dynamic_keys[output_slot] = None
+                self._output_detection_counts[output_slot] = None
+        dynamic_sync = (output_slot is None
+                        or self._output_dynamic_keys[output_slot] != self._dynamic_key)
+        target_count = len(boxes)
+        detection_sync = (output_slot is None
+                          or self._output_detection_counts[output_slot] != target_count)
+        draw = self._target_draw(target) if dynamic_sync or detection_sync else None
+        if dynamic_sync:
+            self._draw_dynamic_overlays(target, draw)
+            if output_slot is not None:
+                self._output_dynamic_keys[output_slot] = self._dynamic_key
+        if detection_sync:
+            self._draw_detection_count(target, target_count, draw)
+            if output_slot is not None:
+                self._output_detection_counts[output_slot] = target_count
         draw_ms = (perf_counter_ns() - started) / 1_000_000
         started = perf_counter_ns()
         x0, y0, width, height = self.VIEW
