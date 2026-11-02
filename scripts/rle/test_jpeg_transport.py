@@ -311,11 +311,11 @@ def test_jpeg_non_idle_preflight_does_not_write_buffer_or_start_channels():
     assert not any(e[0] in ("s2mm", "mm2s") and e[1] == "transfer" for e in rig.events)
 
 
-def test_raw_input_mode_is_configured_before_dma_and_pipeline():
+def test_packetized_input_mode_is_configured_before_dma_and_pipeline():
     rig = Rig(driver_started=True)
     transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
     events = rig.events
-    mode_index = events.index(("rle", "write", 0x74, 1))
+    mode_index = events.index(("rle", "write", 0x74, 0))
     first_dma = min(i for i, event in enumerate(events)
                     if event[0] in ("s2mm", "mm2s") and event[1] == "transfer")
     rle_start = events.index(("rle", "write", 0x00, 1))
@@ -323,32 +323,58 @@ def test_raw_input_mode_is_configured_before_dma_and_pipeline():
     assert mode_index < first_dma
     assert mode_index < rle_start
     assert mode_index < jpeg_start
-    assert rig.rle.values[0x74] == 1
+    assert rig.rle.values[0x74] == 0
 
 
-def test_raw_capability_missing_is_rejected_before_tx_or_start():
+def test_packetized_mode_overrides_preexisting_raw_selection():
+    rig = Rig(driver_started=True)
+    rig.rle.values[0x74] = 1
+    transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    assert ("rle", "write", 0x74, 0) in rig.events
+    assert rig.rle.values[0x74] == 0
+
+
+def test_input_capability_missing_is_rejected_before_tx_or_start():
     rig = Rig(driver_started=True)
     rig.rle.values[0x70] = 0
     tx_before = bytes(rig.tx[:8])
-    with pytest.raises(RuntimeError, match="raw input capability"):
+    with pytest.raises(RuntimeError, match="RAW1 capability"):
         transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
     _assert_no_start_or_tx_write(rig, tx_before)
     assert not any(event[:3] == ("rle", "write", 0x74)
                    for event in rig.events)
 
 
-def test_raw_mode_readback_failure_is_rejected_before_tx_or_start():
+def test_packetized_mode_readback_failure_is_rejected_before_tx_or_start():
     rig = Rig(driver_started=True)
 
     def ignore_mode(offset, value):
         if offset == 0x74:
-            rig.rle.values[0x74] = 0
+            rig.rle.values[0x74] = 1
 
     rig.rle.on_write = ignore_mode
     tx_before = bytes(rig.tx[:8])
-    with pytest.raises(RuntimeError, match="readback mismatch"):
+    with pytest.raises(RuntimeError, match="packetized input mode readback mismatch"):
         transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
     _assert_no_start_or_tx_write(rig, tx_before)
+
+
+def test_second_frame_rejects_mode_drift_before_tx_or_start():
+    rig = Rig(driver_started=True)
+    t = transport(rig)
+    t.transfer(b"\xff\xd8a\xff\xd9", 9)
+    rig.rle.values[0x74] = 1
+    tx_before = bytes(rig.tx[:8])
+    marker = len(rig.events)
+    with pytest.raises(RuntimeError, match="packetized input mode readback mismatch"):
+        t.transfer(b"\xff\xd8b\xff\xd9", 10)
+    new_events = rig.events[marker:]
+    assert bytes(rig.tx[:8]) == tx_before
+    assert not any(event[0] in ("s2mm", "mm2s") and event[1] == "transfer"
+                   for event in new_events)
+    assert not any(event[:3] in (("rle", "write", 0x00),
+                                 ("jpeg", "write", 0x00))
+                   for event in new_events)
 
 
 def test_rx_capture_matches_decode_input(monkeypatch):
@@ -381,7 +407,7 @@ def test_rx_capture_matches_decode_input(monkeypatch):
     assert metadata["rx_physical_address"] == rig.rx.physical_address
     assert metadata["hardware_s2mm_da"] == rig.rx.physical_address
     assert metadata["physical_matches_da"] is True
-    assert metadata["input_mode"] == 1
+    assert metadata["input_mode"] == 0
     assert metadata["raw_capability"] == 0x52415731
     assert metadata["s2mm_idle"] is True
     assert metadata["completion_state"]["dma_length_matches_rle"] is True
@@ -558,7 +584,7 @@ def test_diagnostic_capture_skips_rx_read_when_lengths_disagree():
     assert "lengths disagree" in decision["reason"]
 
 
-def test_diagnostic_capture_skips_rx_read_when_packet_done_missing():
+def test_diagnostic_capture_skips_rx_read_when_done_seen_missing():
     calls = []
     rig = Rig(driver_started=True, rle_state_override=0)
     transport_with_capture = transport(
@@ -570,7 +596,7 @@ def test_diagnostic_capture_skips_rx_read_when_packet_done_missing():
     assert rig.rx.sync_from_count == 0
     decision = transport_with_capture.rx_capture_decision
     assert decision["captured"] is False
-    assert "packet_done was not observed" in decision["reason"]
+    assert "output completion done_seen was not observed" in decision["reason"]
 
 
 def test_diagnostic_capture_failure_preserves_original_timeout():

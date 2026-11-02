@@ -226,7 +226,7 @@ class JpegRleDmaTransport:
         self._closed = False
         self._completed_frames = 0
         self._submitted_frames = 0
-        self._raw_mode_configured = False
+        self._input_mode_configured = False
         self._last_frame_id: int | None = None
         self._pending_frame_id: int | None = None
 
@@ -321,25 +321,30 @@ class JpegRleDmaTransport:
             raise RuntimeError(
                 f"{name} DMA is not idle: committed first transfer")
 
-    def _ensure_raw_input_mode(self) -> None:
-        """Select and verify the pinned wrapper's raw-gray input mode.
+    def _ensure_packetized_input_mode(self) -> None:
+        """Select and verify the pinned wrapper's packetized input mode.
 
-        The candidate wrapper exposes RAW1 at 0x70 and selects the raw adapter
-        with 0x74=1. The JPEG path is a raw gray stream, so the transport must
-        not leave the default packetized adapter selected. This runs after the
-        existing preflight and before TX writes, RLE/JPEG start, or DMA submit.
+        The frozen JPEG producer (`jpeg_axis_gray.cpp`) emits a GRAY1 packet:
+        four header words, 64,000 payload words, four trailer words, with
+        TLAST only on the final guard word. The wrapper selector 0x74 chooses
+        the packetized adapter at 0 and the raw adapter at 1; the packetized
+        adapter (`axis_dma_gray_adapter.v`) checks H0-H3/T0-T3 and emits
+        packet_done. The transport writes 0 explicitly on the first frame and
+        verifies 0 on every frame; the reset default is not relied on. This
+        runs after the existing preflight and before TX writes, RLE/JPEG
+        start, or DMA submit.
         """
         capability = int(self.rle_control.read(RLE_RAW_CAPABILITY)) & 0xFFFFFFFF
         if capability != RLE_RAW_CAPABILITY_VALUE:
             raise RuntimeError(
-                f"RLE raw input capability missing: 0x{capability:08x}")
-        if not self._raw_mode_configured:
-            self.rle_control.write(RLE_INPUT_MODE, 1)
+                f"RLE RAW1 capability missing: 0x{capability:08x}")
+        if not self._input_mode_configured:
+            self.rle_control.write(RLE_INPUT_MODE, 0)
         mode = int(self.rle_control.read(RLE_INPUT_MODE)) & 0xFFFFFFFF
-        if mode != 1:
+        if mode != 0:
             raise RuntimeError(
-                f"RLE raw input mode readback mismatch: 0x{mode:08x}")
-        self._raw_mode_configured = True
+                f"RLE packetized input mode readback mismatch: 0x{mode:08x}")
+        self._input_mode_configured = True
 
     def _capture_metadata(self, frame_id: int, packet: bytes,
                           dma_bytes: int, rle_bytes: int) -> dict:
@@ -407,8 +412,9 @@ class JpegRleDmaTransport:
         """Read endpoint state and decide whether an RX read is safe.
 
         Reading is allowed only after the write side has stopped: both DMA
-        channels Idle with no error bits, RLE not busy, packet_done observed,
-        and the S2MM/RLE lengths equal, aligned and inside the RX buffer.
+        channels Idle with no error bits, RLE not busy, output completion
+        (done_seen) observed, and the S2MM/RLE lengths equal, aligned and
+        inside the RX buffer.
         """
         mm2s = int(self.dma_regs.read(DMA_MM2S_STATUS)) & 0xFFFFFFFF
         s2mm = int(self.dma_regs.read(DMA_S2MM_STATUS)) & 0xFFFFFFFF
@@ -429,7 +435,7 @@ class JpegRleDmaTransport:
         if rle_state & 0x1:
             return facts, "RLE pipeline is busy"
         if not rle_state & 0x2:
-            return facts, "RLE packet_done was not observed"
+            return facts, "RLE output completion done_seen was not observed"
         if dma_bytes != rle_bytes:
             return facts, "DMA and RLE lengths disagree"
         if (dma_bytes % 4 or
@@ -571,7 +577,7 @@ class JpegRleDmaTransport:
             raise ValueError("intensity_offset must be in -255..255")
         morph_mode = _uint(morph_mode, "morph_mode", 2)
         self._preflight()
-        self._ensure_raw_input_mode()
+        self._ensure_packetized_input_mode()
         self.tx_buffer[:length] = view
         sync_tx = getattr(self.tx_buffer, "sync_to_device", None)
         if not callable(sync_tx):

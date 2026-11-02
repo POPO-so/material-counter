@@ -108,27 +108,65 @@ Selecting `0x74=1` for this frozen JPEG output is a protocol error:
   `frame_mismatch` comparison uses `raw_frame_id=cfg_frame_id`, so it cannot
   detect a frame-ID mismatch in raw mode.
 
-This matches the board observation: `RLE 0x08=0x6` (done_seen + input-error
-latched), `0x74=1`, DMA Idle, S2MM length 2,220 equal to RLE actual length
-2,220. The transport then timed out because `_wait_for_completion()` requires
-`rle_state & 0x2` and `not (rle_state & 0x5)`.
+This matches the board observation: `RLE 0x08=0x6`
+(output-completion `done_seen` + input-error latched), `0x74=1`, DMA Idle,
+S2MM length 2,220 equal to RLE actual length 2,220. `0x08` bit 1 is the
+encoder's `done_seen` (set when the RLE encoder reaches FINISH), not the input
+adapter's `packet_done`; the adapter's `packet_done` is a separate pulse at
+T3/TLAST. The transport then timed out because `_wait_for_completion()`
+requires `rle_state & 0x2` and `not (rle_state & 0x5)`.
 
 Backpressure is not the cause of this failure. Both adapters gate output with
 `output_space`/`after_emit`, hold `m_tvalid` and data stable while `m_tready`
 is low, and advance counters only on accepted handshakes. No drop or duplicate
-beat follows from the source-level handshake logic. The raw adapter fails on
-the beat-count/TLAST contract before backpressure can matter.
+beat follows from the source-level handshake logic. This is source-contract
+analysis, not a completed backpressure simulation signoff; no RTL simulation
+was run in this round. The raw adapter fails on the beat-count/TLAST contract
+before backpressure can matter.
 
 **Conclusion:** the frozen JPEG output is GRAY1 packetized; only the
 packetized adapter matches its beat count, header/trailer, TKEEP, TLAST and
 frame-ID contract. Raw mode (`0x74=1`) is the wrong selection. This does not
 by itself explain the earlier packetized-mode `RLE header magic or version is
-invalid` failure; that remains a separate open item. No source or
-configuration change is made in this round; the evidence points to a
-configuration decision (`0x74=0`), not an RTL change. If raw mode must be
-supported, the raw adapter would need a GRAY1 parser (duplicating the
-packetized adapter) or the JPEG core would need to emit a raw stream; both
-are interface changes requiring separate evidence and scope approval.
+invalid` failure; that remains a separate open item. The transport now
+explicitly selects packetized mode (`0x74=0`) and verifies it on every frame;
+see section 2.2. This is a configuration change, not an RTL change. If raw
+mode must be supported, the raw adapter would need a GRAY1 parser
+(duplicating the packetized adapter) or the JPEG core would need to emit a
+raw stream; both are interface changes requiring separate evidence and scope
+approval.
+
+### 2.2 Packetized mode selection (implemented)
+
+`_ensure_packetized_input_mode()` replaces the former raw-mode selector:
+
+- reads the pinned wrapper's RAW1 capability at `0x70` and requires
+  `0x52415731`;
+- on the first frame writes `0x74=0` explicitly, then reads back and requires
+  `0`; the reset default is not relied on;
+- on every later frame reads `0x74` and requires `0`;
+- runs after the existing preflight and before TX writes, RLE/JPEG start, or
+  DMA submit; a readback mismatch therefore produces no TX write, no start
+  and no DMA submission.
+
+The protocol basis is the frozen producer (`jpeg_axis_gray.cpp`: GRAY1 header,
+64,000 payload and trailer words, TLAST only on the final guard), the wrapper
+selector (`axis_dma_rle_pipeline_bd.v`: `0x74=0` packetized, `1` raw), and the
+packetized adapter (`axis_dma_gray_adapter.v`: H0-H3/T0-T3 checks and
+`packet_done`), not module names alone.
+
+Tests:
+
+- `test_packetized_input_mode_is_configured_before_dma_and_pipeline`;
+- `test_packetized_mode_overrides_preexisting_raw_selection` (`0x74=1` before
+  the first frame, explicit write `0` and final value `0`);
+- `test_packetized_mode_readback_failure_is_rejected_before_tx_or_start`;
+- `test_second_frame_rejects_mode_drift_before_tx_or_start` (second frame
+  readback `1` → no TX write/start/DMA submit for that frame);
+- `test_input_capability_missing_is_rejected_before_tx_or_start`.
+
+The failure-capture safety gates, exception re-raise, no-accept rule and HOLD
+retention described in section 3 are unchanged.
 
 ### 2.1 `0x38` evidence gap
 
@@ -147,7 +185,9 @@ RX is read only when all of the following hold after a completion failure:
 
 1. MM2S and S2MM status have no error bits;
 2. MM2S and S2MM both report Idle (the write side has stopped);
-3. RLE `0x08` busy bit is clear and `packet_done` (done_seen) is observed;
+3. RLE `0x08` busy bit is clear and output-completion `done_seen` is
+   observed (the encoder's `done` at FINISH, not the input adapter's
+   `packet_done`);
 4. S2MM length and RLE actual length are equal;
 5. the length is 4-byte aligned and within
    `MIN_RLE_PACKET_BYTES..RX_CAPACITY`;
@@ -193,8 +233,8 @@ success.
   `dma_may_be_active=true`, no preview accept.
 - `test_diagnostic_capture_skips_rx_read_when_dma_not_idle`: DMA not Idle →
   no `sync_from_device`, no callback, state recorded.
-- `test_diagnostic_capture_skips_rx_read_when_packet_done_missing`: RLE not
-  done → no RX read.
+- `test_diagnostic_capture_skips_rx_read_when_done_seen_missing`: RLE output
+  completion not observed → no RX read.
 - `test_diagnostic_capture_skips_rx_read_when_lengths_disagree`: S2MM/RLE
   lengths differ → no RX read.
 - `test_diagnostic_capture_failure_preserves_original_timeout`: capture
@@ -206,7 +246,8 @@ success.
 the production `rx-error-frame-<id>` naming and `diagnostic`/
 `frame_accepted` metadata.
 
-Full JPEG suite after the change: **168 passed** (previous 162 + 6 new).
+Full JPEG suite after the mode and capture changes: **170 passed** (the
+previous 162 plus 6 capture-path tests and 2 packetized-mode tests).
 
 ## 4. Corrections to the previous evidence statements
 
@@ -233,6 +274,9 @@ Full JPEG suite after the change: **168 passed** (previous 162 + 6 new).
 - No HLS, synthesis, route, RTL/BIT/HWH or constraint change.
 - No source hotfix on the board; no reboot, retry, push or merge.
 - The frozen JPEG output / raw adapter / wrapper analysis is source-level.
-  No local Vivado/XSim entry is available; XSim was not run.
+  No local Vivado/XSim entry is available; XSim was not run. The
+  backpressure discussion is not a completed simulation signoff.
+- New independent package: `C:/w/jj2026p/board-package-firstframe-fix-20261103e`;
+  package d and all earlier packages/failure evidence are unchanged.
 - `count_accuracy` remains `NOT_MEASURED`.
 - Offline revision awaiting audit.

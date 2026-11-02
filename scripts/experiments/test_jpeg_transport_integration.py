@@ -343,7 +343,7 @@ def _assert_no_transfer_start(rig, tx_before):
 def test_make_rx_capture_writes_exact_bytes_and_metadata(tmp_path):
     packet = bytes(range(256)) * 9
     metadata = {"length": len(packet), "dma_bytes": len(packet),
-                "rle_bytes": len(packet), "input_mode": 1}
+                "rle_bytes": len(packet), "input_mode": 0}
     capture = runner.make_rx_capture(tmp_path / "run.json")
     capture(7, packet, metadata)
     bin_path = tmp_path / "run.json.rx-frame-7.bin"
@@ -352,7 +352,7 @@ def test_make_rx_capture_writes_exact_bytes_and_metadata(tmp_path):
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     assert payload["schema"] == "material-counter.jpeg-smoke-rx.v1"
     assert payload["length"] == len(packet) == payload["dma_bytes"]
-    assert payload["input_mode"] == 1
+    assert payload["input_mode"] == 0
 
 
 def test_make_rx_capture_writes_error_named_files_for_diagnostic_frame(tmp_path):
@@ -374,16 +374,17 @@ def test_production_guard_transfer_accepts_first_and_second_frame():
     rig = Rig(driver_started=True)
     transport = production_transport(rig)
     assert transport.transfer(b"\xff\xd8a\xff\xd9", 9).frame_id == 9
-    assert rig.rle.values[0x74] == 1
+    assert rig.rle.values[0x74] == 0
     assert sum(event[:3] == ("rle", "write", 0x74) for event in rig.events) == 1
+    assert ("rle", "write", 0x74, 0) in rig.events
     assert transport.transfer(b"\xff\xd8b\xff\xd9", 10).frame_id == 10
 
 
-def test_production_guard_rejects_missing_raw_capability():
+def test_production_guard_rejects_missing_input_capability():
     rig = Rig(driver_started=True)
     rig.rle.values[0x70] = 0
     tx_before = bytes(rig.tx[:8])
-    with pytest.raises(RuntimeError, match="raw input capability"):
+    with pytest.raises(RuntimeError, match="RAW1 capability"):
         production_transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
     _assert_no_transfer_start(rig, tx_before)
     assert not any(event[:3] == ("rle", "write", 0x74) for event in rig.events)
