@@ -1,0 +1,40 @@
+{
+  "schema": "material-counter.candidate-synth-inputs.v1",
+  "date": "2026-11-02",
+  "stage": "synth",
+  "task": "Regenerate the joint netlist with the C candidate overlay (811db981). The prior synth reports in C:/w/jj2026j were built from the frozen baseline 01d5563c.",
+  "constraints_observed": ["no route", "no board access", "no deployment", "no push", "no merge"],
+  "staged_root": "C:/w/jj2026k",
+  "inputs": {
+    "staged_overlay_rtl": {"path": "C:/w/jj2026k/snapshot/data/results/standalone-20261102-143331-g2-integration/rtl/video_binary_overlay.v", "sha256": "811db98140f55686ff54fd89d6456a57c9fe27f64f7c7290cf3476a18eacec57"},
+    "source_overlay_rtl": {"path": "C:/fpga/wt/joint-snapshot-cand-20261102/fpga/experimental/standalone/video_binary_overlay.v", "sha256": "811db98140f55686ff54fd89d6456a57c9fe27f64f7c7290cf3476a18eacec57"},
+    "frozen_baseline_rtl": {"path": "C:/w/jj2026j/snapshot/data/results/standalone-20261102-143331-g2-integration/rtl/video_binary_overlay.v", "sha256": "01d5563c7be95e92d38b20028063b7e85cf67ef4428d27c6c9d411b3b70ef9f9"},
+    "xpr": {"path": "C:/w/jj2026k/snapshot/data/results/standalone-20261102-143331-g2-integration/project/display.xpr", "sha256": "a3b011470ba5aebd9f83bbe3fd827595e46e456117d0d7f89bc928f7542469ba"},
+    "joint_spec": {"path": "C:/w/jj2026k/joint_spec.tcldict", "sha256": "72a4d5f0ac909c89058b5820f3469f5e45f00134d8d53866d75216498b415e8f"},
+    "joint_manifest": {"path": "C:/w/jj2026k/joint_manifest.json", "sha256": "cc32ba6837ac0157f62473e97a5f4b5c2224b2ebec228a2d304cc7e0a9bc68f0"},
+    "joint_connected": {"path": "C:/w/jj2026k/joint-connected.tcldict", "sha256": "06cc40d595bc8e83e519f54c4627e536e7a94c356e81881bc98cb6170b30a5ce"},
+    "hls_component": {"path": "C:/w/jj2026k/ip/jpeg_axis_gray/component.xml", "sha256": "eced34830135508c2c4bb2ef682b7c1c70398c8adad24e963fd486c27c23ccd4"},
+    "region_rtl": {"path": "C:/fpga/wt/claude-jpeg-20261102/fpga/experimental/jpeg_integration/rle_region_features.v", "sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911"}
+  },
+  "override": {
+    "file": "fpga/experimental/standalone/video_binary_overlay.v",
+    "reason": "C candidate hit-vector pipeline + row-base precompute (commit 72f77cce)",
+    "base_sha256": "01d5563c7be95e92d38b20028063b7e85cf67ef4428d27c6c9d411b3b70ef9f9",
+    "staged_sha256": "811db98140f55686ff54fd89d6456a57c9fe27f64f7c7290cf3476a18eacec57",
+    "recorded_in": "C:/fpga/wt/joint-snapshot-cand-20261102/jpeg-joint-source.json"
+  },
+  "commands": {
+    "stage": ".venv/Scripts/python.exe joint_prepare.py --snapshot C:/fpga/wt/joint-snapshot-cand-20261102 --xpr <cand>/.../display.xpr --hls-ip C:/fpga/wt/_hlsprobe/hls/impl/ip --region <integration>/rle_region_features.v --jpeg-source <integration>/../jpeg_axis/jpeg_axis_gray.cpp --ipcfg .agents/skills/vivado-ip-configurator/lib/ipcfg.tcl --hls-green _scratch_verify/hls-green-receipt.json --region-green _scratch_verify/region-green-receipt.json --stage C:/w/jj2026k",
+    "connect": "vivado -mode batch -source joint_connect.tcl -log C:/w/jj2026k/native-connect.log -journal C:/w/jj2026k/native-connect.jou -tclargs -spec C:/w/jj2026k/joint_spec.tcldict -native-log C:/w/jj2026k/native-connect.log",
+    "synth": "vivado -mode batch -source joint_build.tcl -log C:/w/jj2026k/native-synth.log -journal C:/w/jj2026k/native-synth.jou -tclargs -spec C:/w/jj2026k/joint_spec.tcldict -native-log C:/w/jj2026k/native-synth.log -stage synth"
+  },
+  "logs": {
+    "connect_native": "C:/w/jj2026k/native-connect.log",
+    "connect_evidence": "C:/w/jj2026k/evidence/connect/",
+    "synth_native": "C:/w/jj2026k/native-synth.log",
+    "synth_evidence": "C:/w/jj2026k/evidence/synth/",
+    "synth_reports": "C:/w/jj2026k/reports/synth/"
+  },
+  "status": "SYNTHESIZED_REPORTS_BOUND",
+  "synth_results": "fpga/experimental/jpeg_integration/candidate_synth_results.json"
+}

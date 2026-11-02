@@ -59,9 +59,9 @@
       "tb": "tb_video_binary_overlay_frg1.sv",
       "purpose": "real FRG1 parameters (640x400, VIEW 384/146/512/320), checkerboard mask",
       "result": "PASS",
-      "detail": "mismatch_in=0 over 130048 in-view pixels (2 active frames x 256x254), bad_out=0 over 380672, cmp_mm=0, row_first/last/phase3/wrap=512 each, f2=f3=65024",
+      "detail": "mismatch_in=0 over 327680 in-view pixels (2 active frames x 512x320), bad_out=0 over 1512960 out-of-view samples, cmp_mm=0; per-frame f2=f3=163840; row_first/row_last=512 and col_first/col_last=320 per frame; row phase3/wrap=1024 each",
       "branch": "ROW_BASE_BRANCH_ACTIVE (HEIGHT*4=1600 == VIEW_HEIGHT*5); SOURCE_X_BRANCH_ACTIVE (WIDTH*4=2560 == VIEW_WIDTH*5)",
-      "note": "VIEW_X+VIEW_WIDTH=896 > WIDTH=640, so the reachable window is x in [384,639]; this is a frozen-baseline property, not a candidate change"
+      "note": "corrected TB separates the 640x400 source mask from the 1280x720 output scan and covers the full viewport x in [384,895], y in [146,465]. The earlier 130048 (2 x 256x254) was a TB boundary crop and is superseded."
     },
     {
       "tb": "tb_video_binary_overlay_cfgswitch.sv",

@@ -12,7 +12,7 @@ Scope: XSim only. No routing, board access, deployment, push, or merge.
 | functional overlay (640x400) | PASS, white = 414, cmp_mismatch = 0 |
 | small boundary (64x64, full view) | PASS, all four box edges + line + interior + window edge |
 | viewport sub-rectangle (64x64, view 32x32) | PASS, uncovered passthrough exact |
-| real FRG1 parameters + checkerboard mask | PASS, 130048 in-view pixels, 0 mismatches |
+| real FRG1 parameters + checkerboard mask | PASS, 327680 in-view pixels (2 x 512x320), 0 mismatches |
 | config switch / near-VSYNC / mid-frame | PASS, 7 scenarios + old/new identical |
 
 The previous claim that "the RTL is verified correct and the TB is the only blocker"
@@ -102,21 +102,32 @@ boxes and no count line the output inside the view must be white iff the source
 bit at `(lx+(lx>>2), ly+(ly>>2))` is 1. Three frames are driven; the mask
 handshake completes at the second boundary, so frames 2 and 3 are both active.
 
+Correction: the source mask is 640x400, but the output pixel stream is not.
+The earlier run drove only a 640x400 output scan, so the viewport was clipped
+to x in [384,639], y in [146,399] (256x254 per active frame); its 130048 count
+is a TB boundary artifact, not viewport coverage. The corrected TB drives a
+1280x720 output scan, which fully contains the viewport right edge x=895 and
+last row y=465.
+
+The coverage gate now checks each complete valid frame for exactly
+`512*320 = 163840` viewport pixels, and counts the true window first/last rows
+and columns per frame (512 pixels per row, 320 per column). Non-zero counts
+are no longer accepted as coverage.
+
 ```
-FRG1: in_checked=130048 out_checked=380672 mismatch_in=0 bad_out=0 cmp_mm=0
-FRG1 coverage: row_first=512 row_last=512 row_phase3=512 row_wrap=512 f1=0 f2=65024 f3=65024
+FRG1: in_checked=327680 out_checked=1512960 mismatch_in=0 bad_out=0 cmp_mm=0
+FRG1 coverage: f1=0 f2=163840 f3=163840 (want 0/163840/163840)
+FRG1 edges f2: row_first=512 row_last=512 col_first=320 col_last=320
+FRG1 edges f3: row_first=512 row_last=512 col_first=320 col_last=320
+FRG1 row_base: phase3=1024 wrap=1024 (want 1024 each)
 C_FRG1_PASS
 ```
 
-`130048 = 2 x 256 x 254` in-view pixels, zero mismatches; `row_phase3`
-(local_y=3, phase 3) and `row_wrap` (local_y=4, base += 2*WIDTH) are both
-covered in both active frames, and the second active frame proves the
-next-frame row-base reset.
-
-Reachability note: `VIEW_X+VIEW_WIDTH=896 > WIDTH=640`, so the physically
-reachable window is x in [384,639] (256 columns), y in [146,399]. This is a
-property of the frozen baseline, not a candidate change; it is recorded here so
-the window geometry is not misread.
+`327680 = 2 x 512 x 320` in-view pixels, zero mismatches. Every complete
+active frame covers all 163840 viewport pixels, including the first and last
+row and the first and last column. `row_phase3` (local_y=3, phase 3) and
+`row_wrap` (local_y=4, base += 2*WIDTH) are covered 512 times per active frame,
+and the second active frame proves the next-frame row-base reset.
 
 ## 5c. Configuration switch regression
 
@@ -181,6 +192,77 @@ capture counters, the two-FF config mailbox CDC, and the x-direction
 - Config commit exactly on the VSYNC edge (the executed test used 5 pixel_clk margin).
 - Commit while the scaling FSM is busy (`cfg_ready=0` backpressure).
 - Reset asserted during config scaling.
+
+## 5f. Candidate synthesis (new netlist)
+
+The prior synth reports under `C:/w/jj2026j/reports/synth` were produced from the
+**frozen** RTL `01d5563c` (the snapshot file at
+`.../rtl/video_binary_overlay.v` was still `01d5563c`). The candidate override
+was only recorded in `c_rtl_override.json`, never applied to that build.
+
+A new build root was staged at `C:/w/jj2026k` with the candidate RTL
+`811db981` as a recorded override (`jpeg-joint-source.json`:
+`base_sha256=01d5563c...`, `staged_sha256=811db981...`). Inputs and command
+lines are in `candidate_synth_inputs.json`; results in
+`candidate_synth_results.json`. `synth_1` completed 100%
+(`synth_design Complete!`), DCP
+`C:/w/jj2026k/joint-synth-candidate.dcp` (sha256 `56cc8f68...`).
+
+Resources:
+
+| Resource | Candidate (811db981) | Prior frozen build |
+|---|---|---|
+| Slice LUTs | 37821 (71.09%) | 42184 |
+| Slice Registers | 37432 (35.18%) | 35955 |
+| Block RAM Tile | 57.5 (41.07%) | 57.5 |
+| DSP48 | 49 (22.27%) | 81 |
+
+Timing (synth only):
+
+| Metric | Value |
+|---|---|
+| Setup WNS | +1.006 ns |
+| Setup TNS / failing endpoints | 0.000 ns / 0 |
+| Hold WHS | -0.167 ns |
+| Hold THS / failing endpoints | -1.335 ns / 8 |
+| Pulse width WPWS / failing | +0.333 ns / 0 |
+
+All 8 hold failures share one source
+(`rgb2dvi_0/U0/LockLostReset/SyncAsyncx/oSyncStages_reg[1]/C`) and drive the
+vendor serializer reset pins on `hdmi_out_PXL_CLK_O` (OSERDESE2 `RST` in four
+encoders). They are in the vendor HDMI IP, not in the overlay, and must be
+revisited at implementation; this report does not claim they are resolved.
+
+B crossing rediscovery on the new netlist:
+
+- source cells matching `binary_overlay.*cfg_mb_.*_reg`: **705**
+- destination cells: **705**, all with `REQUIREMENT=10.000`, none missing
+- candidate-added destinations: **17** (`box_valid_p_reg[0..15]`,
+  `line_valid_p_reg`)
+- worst slack over all 705 destination paths: **+8.968 ns**
+  (`box_valid_p_reg[0]`)
+
+The 17 new destinations are matched only because the existing regex alternative
+`id_p` matches the substring `id_p` inside `valid_p`. Coverage is accidental;
+an explicit `(box_valid_p|line_valid_p)` alternative is recommended. No
+constraint change was applied.
+
+CDC / methodology on the new netlist:
+
+- overlay mailbox crossings report as CDC-15 (clock-enable-controlled CDC,
+  Max Delay Datapath Only) — the intended toggle-handshake structure.
+- CDC-6 (2) is in the vendor VTC `AXI4_LITE_INTERFACE`, not the overlay.
+- Methodology: LUTAR-1 x4, TIMING-9 x1, ULMTCS-1 x1, XDCB-5 x1, XDCC-1 x1,
+  XDCC-7 x1. TIMING-9 is one `max_delay -datapath_only` crossing without a
+  double-register synchronizer on the capture side.
+
+Tooling note: the joint `synth` capture gate failed with
+`CAPTURE_FAIL: WARNING emitted=-8 exported=210` because `launch_runs` spawns a
+child process that resets Vivado's in-process message counter. The netlist
+itself completed. `ipcfg::capture` was fixed to skip the delta check when a
+severity counter decreases and rely on the native log slice. The `jj2026k`
+joint evidence directory therefore records the synth stage as FAIL even though
+the netlist and the reports above are valid.
 
 ## 6. Reproduce
 

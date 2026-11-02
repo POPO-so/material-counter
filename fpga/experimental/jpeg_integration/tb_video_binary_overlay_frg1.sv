@@ -1,23 +1,26 @@
 `timescale 1ns/1ps
 // C candidate: real FRG1 parameters + non-zero row/column mask.
 //
-// WIDTH=640 HEIGHT=400 VIEW_X=384 VIEW_Y=146 VIEW_WIDTH=512 VIEW_HEIGHT=320
-// satisfies HEIGHT*4==VIEW_HEIGHT*5, so the g_row_base_5_4 branch is the one
-// elaborated (the TB asserts the same condition the RTL generate uses).
+// Source mask: WIDTH=640 HEIGHT=400. Output video: OW=1280 OH=720.
+// View: VIEW_X=384 VIEW_Y=146 VIEW_WIDTH=512 VIEW_HEIGHT=320.
+// WIDTH*4==VIEW_WIDTH*5 and HEIGHT*4==VIEW_HEIGHT*5, so the
+// g_source_x_5_4 / g_row_base_5_4 branches are the ones elaborated (the TB
+// asserts the same conditions the RTL generate uses).
 //
 // The mask is a checkerboard bit(x,y) = (x+y)&1 written in raster order. With
 // no boxes and no count line, the output inside the view must be white iff the
 // source mask bit at (source_x,source_y) is 1. source_x=lx+(lx>>2),
 // source_y=ly+(ly>>2) with lx=x-384, ly=y-146. Any row-base stepping error,
 // phase-wrap error, or first/last-row error changes the parity and shows up.
-// The whole frame is driven twice so the next-frame reset is exercised too.
 //
-// Reachability note: VIEW_X+VIEW_WIDTH=896 > WIDTH=640, so the physically
-// reachable window is x in [384,639], y in [146,399] (256x254). This is a
-// property of the frozen baseline, not a candidate change.
+// The output scan spans the full viewport: right edge x=895, last row y=465.
+// The source mask size (640x400) is not the output scan boundary. Three output
+// frames are driven; frames 2 and 3 are overlay-active and each must cover all
+// 512*320 = 163840 viewport pixels. The true window first/last rows and columns
+// are counted explicitly per frame, so a cropped range cannot pass as coverage.
 module tb_video_binary_overlay_frg1;
 
-  localparam integer W=640, H=400, VX=384, VY=146, VW=512, VH=320;
+  localparam integer W=640, H=400, OW=1280, OH=720, VX=384, VY=146, VW=512, VH=320;
   localparam [23:0] WHITE=24'hffffff, BLACK=24'h000000, BASE=24'h404040;
 
   reg pixel_clk=0, mask_clk=0, cfg_clk=0;
@@ -66,15 +69,17 @@ module tb_video_binary_overlay_frg1;
   always @(posedge pixel_clk) begin old_data_d<=old_data; old_active_d<=old_active; old_vsync_d<=old_vsync; old_hsync_d<=old_hsync; end
 
   integer xpos, ypos;
-  reg [9:0] dx0=0, dx1=0, dx2=0; reg [9:0] dy0=0, dy1=0, dy2=0;
+  reg [11:0] dx0=0, dx1=0, dx2=0; reg [11:0] dy0=0, dy1=0, dy2=0;
   always @(posedge pixel_clk) begin
     dx0<=xpos; dx1<=dx0; dx2<=dx1;
     dy0<=ypos; dy1<=dy0; dy2<=dy1;
   end
 
   integer in_checked=0, out_checked=0, mismatch_in=0, bad_out=0, cmp_mismatches=0;
-  integer row_first=0, row_last=0, row_phase3=0, row_wrap=0;
+  integer row_phase3=0, row_wrap=0;
   integer f1_checked=0, f2_checked=0, f3_checked=0, frame_idx=0;
+  integer f2_row_first=0, f2_row_last=0, f2_col_first=0, f2_col_last=0;
+  integer f3_row_first=0, f3_row_last=0, f3_col_first=0, f3_col_last=0;
   reg vsync_prev=0;
 
   initial begin : stim
@@ -101,31 +106,42 @@ module tb_video_binary_overlay_frg1;
     // three full frames: the mask handshake completes at the second frame
     // boundary, so frames 2 and 3 are both overlay-active and prove the
     // next-frame row-base reset.
-    for (py=0; py<H; py=py+1) begin
+    for (py=0; py<OH; py=py+1) begin
       vid_vsync<= (py==0);
-      for (px=0; px<W; px=px+1) begin xpos<=px; ypos<=py; vid_active<=1; vid_hsync<=(px==0); @(posedge pixel_clk); end
+      for (px=0; px<OW; px=px+1) begin xpos<=px; ypos<=py; vid_active<=1; vid_hsync<=(px==0); @(posedge pixel_clk); end
       vid_active<=0; @(posedge pixel_clk);
     end
-    for (py=0; py<H; py=py+1) begin
+    for (py=0; py<OH; py=py+1) begin
       vid_vsync<= (py==0);
-      for (px=0; px<W; px=px+1) begin xpos<=px; ypos<=py; vid_active<=1; vid_hsync<=(px==0); @(posedge pixel_clk); end
+      for (px=0; px<OW; px=px+1) begin xpos<=px; ypos<=py; vid_active<=1; vid_hsync<=(px==0); @(posedge pixel_clk); end
       vid_active<=0; @(posedge pixel_clk);
     end
-    for (py=0; py<H; py=py+1) begin
+    for (py=0; py<OH; py=py+1) begin
       vid_vsync<= (py==0);
-      for (px=0; px<W; px=px+1) begin xpos<=px; ypos<=py; vid_active<=1; vid_hsync<=(px==0); @(posedge pixel_clk); end
+      for (px=0; px<OW; px=px+1) begin xpos<=px; ypos<=py; vid_active<=1; vid_hsync<=(px==0); @(posedge pixel_clk); end
       vid_active<=0; @(posedge pixel_clk);
     end
     vid_active<=0;
     repeat(8) @(posedge pixel_clk);
     $display("FRG1: in_checked=%0d out_checked=%0d mismatch_in=%0d bad_out=%0d cmp_mm=%0d",
              in_checked, out_checked, mismatch_in, bad_out, cmp_mismatches);
-    $display("FRG1 coverage: row_first=%0d row_last=%0d row_phase3=%0d row_wrap=%0d f1=%0d f2=%0d f3=%0d",
-             row_first, row_last, row_phase3, row_wrap, f1_checked, f2_checked, f3_checked);
+    $display("FRG1 coverage: f1=%0d f2=%0d f3=%0d (want 0/%0d/%0d)",
+             f1_checked, f2_checked, f3_checked, VW*VH, VW*VH);
+    $display("FRG1 edges f2: row_first=%0d row_last=%0d col_first=%0d col_last=%0d",
+             f2_row_first, f2_row_last, f2_col_first, f2_col_last);
+    $display("FRG1 edges f3: row_first=%0d row_last=%0d col_first=%0d col_last=%0d",
+             f3_row_first, f3_row_last, f3_col_first, f3_col_last);
+    $display("FRG1 row_base: phase3=%0d wrap=%0d (want %0d each)",
+             row_phase3, row_wrap, 2*VW);
     if (mismatch_in!=0 || bad_out!=0 || cmp_mismatches!=0) $fatal(1,"FRG1_DATA_MISMATCH");
-    if (in_checked==0 || out_checked==0) $fatal(1,"FRG1_NO_PIXELS");
-    if (row_first==0 || row_last==0 || row_phase3==0 || row_wrap==0) $fatal(1,"FRG1_ROW_COVERAGE_NOT_MET");
-    if (f2_checked==0 || f3_checked==0) $fatal(1,"FRG1_FRAME_COVERAGE_NOT_MET");
+    if (f1_checked!=0) $fatal(1,"FRG1_FRAME1_ACTIVE_UNEXPECTED");
+    if (f2_checked!=VW*VH || f3_checked!=VW*VH) $fatal(1,"FRG1_VIEWPORT_FRAME_COVERAGE_NOT_MET");
+    if (in_checked!=2*VW*VH) $fatal(1,"FRG1_VIEWPORT_TOTAL_NOT_MET");
+    if (f2_row_first!=VW || f3_row_first!=VW) $fatal(1,"FRG1_ROW_FIRST_COVERAGE_NOT_MET");
+    if (f2_row_last!=VW  || f3_row_last!=VW)  $fatal(1,"FRG1_ROW_LAST_COVERAGE_NOT_MET");
+    if (f2_col_first!=VH || f3_col_first!=VH) $fatal(1,"FRG1_COL_FIRST_COVERAGE_NOT_MET");
+    if (f2_col_last!=VH  || f3_col_last!=VH)  $fatal(1,"FRG1_COL_LAST_COVERAGE_NOT_MET");
+    if (row_phase3!=2*VW || row_wrap!=2*VW)   $fatal(1,"FRG1_ROW_BASE_COVERAGE_NOT_MET");
     $display("C_FRG1_PASS");
     $finish;
   end
@@ -145,10 +161,19 @@ module tb_video_binary_overlay_frg1;
             begin if (old_data!==BLACK) mismatch_in<=mismatch_in+1; end
           in_checked<=in_checked+1;
           if (frame_idx==1) f1_checked<=f1_checked+1;
-          else if (frame_idx==2) f2_checked<=f2_checked+1;
-          else if (frame_idx==3) f3_checked<=f3_checked+1;
-          if (dy1==VY)        row_first<=row_first+1;
-          if (dy1==H-1)       row_last<=row_last+1;
+          else if (frame_idx==2) begin
+            f2_checked<=f2_checked+1;
+            if (dy1==VY)        f2_row_first<=f2_row_first+1;
+            if (dy1==VY+VH-1)   f2_row_last<=f2_row_last+1;
+            if (dx1==VX)        f2_col_first<=f2_col_first+1;
+            if (dx1==VX+VW-1)   f2_col_last<=f2_col_last+1;
+          end else if (frame_idx==3) begin
+            f3_checked<=f3_checked+1;
+            if (dy1==VY)        f3_row_first<=f3_row_first+1;
+            if (dy1==VY+VH-1)   f3_row_last<=f3_row_last+1;
+            if (dx1==VX)        f3_col_first<=f3_col_first+1;
+            if (dx1==VX+VW-1)   f3_col_last<=f3_col_last+1;
+          end
           if (dy1==VY+3)      row_phase3<=row_phase3+1;  // local_y=3, phase 3
           if (dy1==VY+4)      row_wrap<=row_wrap+1;      // local_y=4, wrap adds 2 rows
         end else begin

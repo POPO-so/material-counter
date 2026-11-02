@@ -1,0 +1,39 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Mon Nov  2 20:53:14 2026
+# Process ID         : 2080
+# Current directory  : C:/fpga/wt/claude-jpeg-20261102/data/results/frg1-full-viewport-20261102
+# Command line       : xsim.exe -log xsim.log -mode tcl -source {xsim.dir/frg1_full_snap/xsim_script.tcl}
+# Log file           : C:/fpga/wt/claude-jpeg-20261102/data/results/frg1-full-viewport-20261102/xsim.log
+# Journal file       : C:/fpga/wt/claude-jpeg-20261102/data/results/frg1-full-viewport-20261102\xsim.jou
+# Running On         : BWIN
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i7-14650HX
+# CPU Frequency      : 2419 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 34056 MB
+# Swap memory        : 7103 MB
+# Total Virtual      : 41160 MB
+# Available Virtual  : 7859 MB
+#-----------------------------------------------------------
+source xsim.dir/frg1_full_snap/xsim_script.tcl
+# xsim {frg1_full_snap} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+ROW_BASE_BRANCH_ACTIVE HEIGHT*4=1600 VIEW_HEIGHT*5=1600
+SOURCE_X_BRANCH_ACTIVE WIDTH*4=2560 VIEW_WIDTH*5=2560
+FRG1: in_checked=327680 out_checked=1512960 mismatch_in=0 bad_out=0 cmp_mm=0
+FRG1 coverage: f1=0 f2=163840 f3=163840 (want 0/163840/163840)
+FRG1 edges f2: row_first=512 row_last=512 col_first=320 col_last=320
+FRG1 edges f3: row_first=512 row_last=512 col_first=320 col_last=320
+FRG1 row_base: phase3=1024 wrap=1024 (want 1024 each)
+C_FRG1_PASS
+$finish called at time : 32790245 ns : File "C:/fpga/wt/claude-jpeg-20261102/fpga/experimental/jpeg_integration/tb_video_binary_overlay_frg1.sv" Line 146
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:09 . Memory (MB): peak = 239.137 ; gain = 0.000
+exit
+INFO: [Common 17-206] Exiting xsim at Mon Nov  2 20:53:25 2026...

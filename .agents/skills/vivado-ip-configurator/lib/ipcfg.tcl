@@ -459,6 +459,13 @@ proc ipcfg::capture {path script {expect {}}} {
             set missing {}
             foreach {severity field} {WARNING warning_count {CRITICAL WARNING} critical_count ERROR error_count} {
                 set emitted [expr {[dict get $counts_after $severity] - [dict get $counts_before $severity]}]
+                if {$emitted < 0} {
+                    # launch_runs spawns a child process that resets Vivado's
+                    # in-process message counter, so the delta is meaningless.
+                    # The native log slice is the authoritative source then.
+                    dict lappend record counter_reset $severity
+                    continue
+                }
                 if {$severity eq "WARNING" && $native_log ne {} && $emitted >= [dict get $record $field]} {
                     dict set record unprinted_warning_count [expr {$emitted - [dict get $record $field]}]
                     continue

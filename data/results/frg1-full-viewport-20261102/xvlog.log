@@ -1,0 +1,7 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/wt/claude-jpeg-20261102/fpga/experimental/jpeg_integration/tb_video_binary_overlay_frg1.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_video_binary_overlay_frg1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/wt/claude-jpeg-20261102/fpga/experimental/standalone/video_binary_overlay.v" into library work
+INFO: [VRFC 10-311] analyzing module video_binary_overlay
+INFO: [VRFC 10-311] analyzing module binary_mask_ram
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/fpga/wt/claude-jpeg-20261102/fpga/experimental/standalone/video_binary_overlay_frozen.v" into library work
+INFO: [VRFC 10-311] analyzing module video_binary_overlay_frozen

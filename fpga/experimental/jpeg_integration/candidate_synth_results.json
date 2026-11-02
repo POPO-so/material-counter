@@ -1,0 +1,97 @@
+{
+  "schema": "material-counter.candidate-synth-results.v1",
+  "date": "2026-11-02",
+  "stage": "synth",
+  "status": "SYNTHESIZED_REPORTS_BOUND",
+  "constraints_observed": ["no route", "no board access", "no deployment", "no push", "no merge"],
+  "netlist": {
+    "run_status": "synth_design Complete!",
+    "progress": "100%",
+    "dcp": {"path": "C:/w/jj2026k/joint-synth-candidate.dcp", "sha256": "56cc8f680dd3a9566c475526e712ea069c51dee1a836acf0691ed2155dcc59f8"}
+  },
+  "inputs": {
+    "candidate_overlay_rtl_sha256": "811db98140f55686ff54fd89d6456a57c9fe27f64f7c7290cf3476a18eacec57",
+    "frozen_baseline_rtl_sha256": "01d5563c7be95e92d38b20028063b7e85cf67ef4428d27c6c9d411b3b70ef9f9",
+    "xpr_sha256": "a3b011470ba5aebd9f83bbe3fd827595e46e456117d0d7f89bc928f7542469ba",
+    "joint_spec_sha256": "72a4d5f0ac909c89058b5820f3469f5e45f00134d8d53866d75216498b415e8f",
+    "joint_manifest_sha256": "cc32ba6837ac0157f62473e97a5f4b5c2224b2ebec228a2d304cc7e0a9bc68f0",
+    "joint_connected_sha256": "06cc40d595bc8e83e519f54c4627e536e7a94c356e81881bc98cb6170b30a5ce",
+    "hls_component_sha256": "eced34830135508c2c4bb2ef682b7c1c70398c8adad24e963fd486c27c23ccd4",
+    "region_rtl_sha256": "19439a2c666696d48521b112705763df6ac48012cfacd9476fcd6850a3551911"
+  },
+  "resources": {
+    "slice_lut": 37821,
+    "slice_registers": 37432,
+    "bram_tiles": 57.5,
+    "ramb36": 30,
+    "ramb18": 55,
+    "dsp": 49
+  },
+  "timing": {
+    "setup_wns_ns": 1.006,
+    "setup_tns_ns": 0.0,
+    "setup_failing_endpoints": 0,
+    "setup_total_endpoints": 133462,
+    "hold_whs_ns": -0.167,
+    "hold_ths_ns": -1.335,
+    "hold_failing_endpoints": 8,
+    "hold_total_endpoints": 130950,
+    "pulse_width_wpws_ns": 0.333,
+    "pulse_width_failing_endpoints": 0,
+    "hold_failures_all_from": "display_i/hdmi_out/frontend/rgb2dvi_0/U0/LockLostReset/SyncAsyncx/oSyncStages_reg[1]/C",
+    "hold_failures_all_to": "rgb2dvi OSERDESE2 RST pins (SerializerMaster/SerializerSlave x4 encoders) on hdmi_out_PXL_CLK_O (10.000 ns)"
+  },
+  "b_crossing": {
+    "constraint": "set_max_delay -datapath_only 10.000 from binary_overlay cfg_mb_* to enable_p/id_p/count_p/boxes_p/line_p latch",
+    "source_cells": 705,
+    "destination_cells": 705,
+    "new_candidate_destinations": 17,
+    "new_candidate_destinations_list": ["box_valid_p_reg[0..15]", "line_valid_p_reg"],
+    "destinations_with_requirement_10ns": 705,
+    "destinations_missing_requirement": 0,
+    "checked_paths": 705,
+    "missing_paths": 0,
+    "worst_slack_ns": 8.968,
+    "worst_cell": "display_i/binary_overlay/inst/core/box_valid_p_reg[0]",
+    "note": "The 17 candidate-added destinations are covered only because the regex alternative id_p matches the substring 'id_p' inside 'valid_p'. The coverage is accidental; an explicit (box_valid_p|line_valid_p) alternative is recommended but was not applied without a change request."
+  },
+  "cdc": {
+    "overlay_crossings": "CDC-15 clock-enable-controlled CDC structure, Max Delay Datapath Only (expected handshake)",
+    "cdc6_multibit_async_reg": 2,
+    "cdc6_locations": "vendor VTC AXI4_LITE_INTERFACE in hdmi_out (not the overlay)",
+    "timing9_unknown_cdc_logic": 1,
+    "timing9_class": "max_delay datapath_only crossing without a double-register synchronizer on the capture side (mailbox handshake classes)",
+    "xdcc1": 1,
+    "xdcc7": 1,
+    "xdcc_note": "SerialClk scoped clock override; pre-existing"
+  },
+  "methodology": {
+    "LUTAR-1": 4,
+    "TIMING-9": 1,
+    "ULMTCS-1": 1,
+    "XDCB-5": 1,
+    "XDCC-1": 1,
+    "XDCC-7": 1
+  },
+  "reports": {
+    "utilization": {"path": "C:/w/jj2026k/reports/synth-candidate/utilization.rpt", "sha256": "8df7f668ef8104ee219c9b70af7942f954b443790f19a7fa69d965a713ff6686"},
+    "timing": {"path": "C:/w/jj2026k/reports/synth-candidate/timing.rpt", "sha256": "8b020f3e93fbb71b90c981bdb535a0d3e4cf313136dfd7e704378a1ce9fbf20d"},
+    "clocks": {"path": "C:/w/jj2026k/reports/synth-candidate/clocks.rpt", "sha256": "c6f8b761492b9fbe93820a2e65db5a029cc396b0b93397fc6705c57adf0b4ffa"},
+    "cdc": {"path": "C:/w/jj2026k/reports/synth-candidate/cdc.rpt", "sha256": "ecc2e10d51047e221873e22d19babcc4a3728a9dd2c8d9f979c08e4334688b3e"},
+    "methodology": {"path": "C:/w/jj2026k/reports/synth-candidate/methodology.rpt", "sha256": "8e01a1214b0aa55dd155ace3f9057840e16c4702d769e73930027f21a673b064"},
+    "clock_interaction": {"path": "C:/w/jj2026k/reports/synth-candidate/clock-interaction.rpt", "sha256": "689a51e1f871d15af837aebcbcf007b7af01dee09d1cc04414f65f0c64bde75f"},
+    "drc": {"path": "C:/w/jj2026k/reports/synth-candidate/drc.rpt", "sha256": "8dbc8658231ba9d8226b81796f9fc44da82ebcdebe2c89a12cd6e3ad750245e4"},
+    "exceptions": {"path": "C:/w/jj2026k/reports/synth-candidate/exceptions.rpt", "sha256": "734128e726cadf424e15f75ac9b4368c0457ab9d2577f9d08aff3b15535f4acd"}
+  },
+  "logs": {
+    "synth_native": {"path": "C:/w/jj2026k/native-synth.log", "sha256": "7e7d85a964ce7bc0813443f4900aacc7246a7d209925222114b6e7d4f6f3114e"},
+    "report_native": {"path": "C:/w/jj2026k/native-synth-reports.log", "sha256": "55ba46d1519b652ad76773d13e531600d9531da73ab7fbc3026385f92fa55e60"},
+    "b_slack_native": {"path": "C:/w/jj2026k/native-b-slack.log", "sha256": "12cb2ada95651ee24129fde3dd966a8de02116edba5996013eec22b3498a9b18"}
+  },
+  "tooling_note": {
+    "joint_capture_failure": "JOINT_CAPTURE_FAIL on the synth stage: WARNING emitted=-8 exported=210",
+    "cause": "launch_runs child process reset Vivado's in-process message counter, so the before/after delta is invalid",
+    "fix": "ipcfg::capture now skips the delta check for a severity whose counter decreased (negative emitted) and relies on the native log slice",
+    "consequence": "the jj2026k joint evidence directory recorded the synth stage as FAIL; the netlist itself completed and the reports above were regenerated on that same netlist"
+  }
+}
