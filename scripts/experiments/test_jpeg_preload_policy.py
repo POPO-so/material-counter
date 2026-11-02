@@ -133,7 +133,8 @@ def run_sequence(cls, events, *, overlay_factory, identity_failure=False,
                  vdma_s2mm_control=0x0, vdma_s2mm_status=0x1,
                  trace_pi_control=0x0, trace_pi_status=0x1,
                  trace_pmodb_control=0x0, trace_pmodb_status=0x1,
-                 base_evidence_reader=base_evidence):
+                 base_evidence_reader=base_evidence,
+                 stop_base_dmas=False, stop_kwargs=None):
     factory = factory or FakeMmioFactory(
         events, mm2s_status=mm2s_status, s2mm_status=s2mm_status,
         vdma_mm2s_control=vdma_mm2s_control,
@@ -168,6 +169,7 @@ def run_sequence(cls, events, *, overlay_factory, identity_failure=False,
         make_transport=lambda tx, rx, overlay, preview: (
             events.append(("transport",)) or "transport"),
         base_evidence_reader=base_evidence_reader,
+        stop_base_dmas=stop_base_dmas, stop_kwargs=stop_kwargs,
         stage=lambda name, **fields: events.append(("stage", name)),
     )
 
@@ -468,6 +470,157 @@ def test_known_base_old_paths_still_work():
                     "loaded_bit_sha256": old["sha256"], "shutdown_ips": {}})
     assert known["kind"] == "KNOWN_OLD"
     assert classification()["kind"] == "COLD_BASE"
+
+
+class FakeStopDevice:
+    def __init__(self, *, control=0x00011003, status=0x00000000,
+                 stop_works=True, error_after=False, rearm=False):
+        self.regs = {0x30: control, 0x34: status}
+        self.writes = []
+        self.stop_works = stop_works
+        self.error_after = error_after
+        self.rearm = rearm
+        self.post_write_control_reads = 0
+
+    def read(self, offset):
+        if offset == 0x30 and self.writes:
+            self.post_write_control_reads += 1
+            if self.rearm and self.post_write_control_reads >= 2:
+                return self.regs[0x30] | 0x1
+        return self.regs.get(offset, 0)
+
+    def write(self, offset, value):
+        self.writes.append((offset, value))
+        self.regs[offset] = value
+        if offset == 0x30 and not (value & 0x1) and self.stop_works:
+            self.regs[0x34] |= 0x1
+            if self.error_after:
+                self.regs[0x34] |= 0x10
+
+
+def stop_clock():
+    stop_clock.value += 1
+    return stop_clock.value
+
+
+stop_clock.value = 0
+
+
+def stop_devices(*, pi=None, pmodb=None):
+    return {0x80430000: pi if pi is not None else FakeStopDevice(),
+            0x80420000: pmodb if pmodb is not None else FakeStopDevice()}
+
+
+def stop_factory(devices):
+    return lambda base, size: devices[base]
+
+
+def call_stop(devices, **kwargs):
+    stop_clock.value = 0
+    kwargs.setdefault("timeout_s", 1.0)
+    kwargs.setdefault("stable_s", 0.0)
+    kwargs.setdefault("sleep", lambda _seconds: None)
+    kwargs.setdefault("clock", stop_clock)
+    return runner.stop_base_trace_dmas(
+        base_classification(), mmio_factory=stop_factory(devices), **kwargs)
+
+
+def test_stop_base_trace_dmas_writes_only_rs_on_the_two_channels():
+    devices = stop_devices()
+    result = call_stop(devices)
+    for device in devices.values():
+        assert device.writes == [(0x30, 0x00011002)]
+    assert result["trace_analyzer_pi_axi_dma_0"]["after"]["halted"] is True
+    assert result["trace_analyzer_pmodb_axi_dma_0"]["after"]["halted"] is True
+
+
+def test_stop_base_trace_dmas_is_idempotent_when_already_halted():
+    devices = stop_devices(
+        pi=FakeStopDevice(control=0x00011002, status=0x00000001),
+        pmodb=FakeStopDevice(control=0x00011002, status=0x00000001))
+    result = call_stop(devices)
+    for device in devices.values():
+        assert device.writes == []
+    assert result["trace_analyzer_pi_axi_dma_0"]["wrote_rs_clear"] is False
+
+
+def test_stop_base_trace_dmas_timeout_does_not_reset_or_clear():
+    pi = FakeStopDevice(stop_works=False)
+    devices = stop_devices(pi=pi)
+    with pytest.raises(runner.DmaStopTimeout):
+        call_stop(devices)
+    assert pi.writes == [(0x30, 0x00011002)]
+    assert pi.writes[0][1] & 0x4 == 0
+    assert all(offset != 0x34 for offset, _ in pi.writes)
+
+
+def test_stop_base_trace_dmas_reports_error_without_clearing_it():
+    pi = FakeStopDevice(error_after=True)
+    devices = stop_devices(pi=pi)
+    with pytest.raises(runner.PreloadUnsafe, match="error/reserved"):
+        call_stop(devices)
+    assert pi.writes == [(0x30, 0x00011002)]
+    assert pi.regs[0x34] & 0x10
+
+
+def test_stop_base_trace_dmas_detects_rearm():
+    pi = FakeStopDevice(rearm=True)
+    devices = stop_devices(pi=pi)
+    with pytest.raises(runner.PreloadUnsafe, match="re-armed"):
+        call_stop(devices)
+    assert pi.writes == [(0x30, 0x00011002)]
+
+
+def test_stop_base_trace_dmas_rejects_unexpected_target_set():
+    cls = base_classification()
+    cls["base"]["bus_masters"] = tuple(
+        m for m in cls["base"]["bus_masters"]
+        if m["instance"] != "trace_analyzer_pmodb_axi_dma_0")
+    called = []
+    with pytest.raises(runner.PreloadUnsafe, match="unexpected base axi_dma"):
+        runner.stop_base_trace_dmas(
+            cls, mmio_factory=lambda base, size: called.append(base))
+    assert called == []
+
+
+def test_run_sequence_stops_then_rechecks_before_overlay():
+    events = []
+    devices = stop_devices()
+    devices[0x43000000] = FakeMmio({
+        0x00: 0x00010082, 0x04: 0x00010001,
+        0x30: 0x00010002, 0x34: 0x00010001})
+    devices[runner.DMA_BASE] = FakeMmio({0x04: 0x3, 0x34: 0x3})
+    result = run_sequence(
+        base_classification(), events,
+        overlay_factory=lambda: events.append(("overlay",)) or "overlay",
+        factory=stop_factory(devices), stop_base_dmas=True,
+        stop_kwargs={"timeout_s": 1.0, "stable_s": 0.0,
+                     "sleep": lambda _seconds: None, "clock": stop_clock})
+    for base in (0x80430000, 0x80420000):
+        assert [write for write in devices[base].writes
+                if write[0] != 0x30] == []
+    assert result["base_dma_stop"]["trace_analyzer_pi_axi_dma_0"][
+        "after"]["halted"] is True
+    names = [event[1] for event in events if event[0] == "stage"]
+    assert names.index("known_base_dma_stop") < names.index(
+        "known_base_dma_stop_done") < names.index("known_base_probe_done")
+    assert names.index("known_base_probe_done") < names.index("overlay_download")
+
+
+def test_run_sequence_without_stop_flag_never_writes():
+    events = []
+    devices = stop_devices()
+    devices[0x43000000] = FakeMmio({
+        0x00: 0x00010082, 0x04: 0x00010001,
+        0x30: 0x00010002, 0x34: 0x00010001})
+    devices[runner.DMA_BASE] = FakeMmio({0x04: 0x3, 0x34: 0x3})
+    with pytest.raises(runner.PreloadUnsafe):
+        run_sequence(
+            base_classification(), events,
+            overlay_factory=lambda: events.append(("overlay",)) or "overlay",
+            factory=stop_factory(devices), stop_base_dmas=False)
+    for device in devices.values():
+        assert getattr(device, "writes", []) == []
 
 
 def test_cma_budget_covers_explicit_buffers_and_reserve():

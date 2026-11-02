@@ -58,11 +58,12 @@ Saved in `precheck/four-channel.json`.
 - MM2S control `0x00010082`: RS (bit 0) = 0; Circular_Park (bit 1) = 1;
   GenlockSrc (bit 7) = 1; IRQFrameCount (bits 23–16) = 1. No Reset.
 - MM2S status `0x00010001`: Halted (bit 0) = 1; bit 1 Reserved = 0;
-  error bits 4–7 = 0; reserved bits = 0; FrmCnt_Irq (bit 12) = 1;
-  IRQFrameCntSts = 1.
+  error bits 4–7 = 0; reserved bits = 0; FrmCnt_Irq (bit 12) = 0;
+  IRQFrameCntSts (bits 23–16) = 1.
 - S2MM control `0x00010002`: RS = 0; Circular_Park = 1; IRQFrameCount = 1.
 - S2MM status `0x00010001`: Halted = 1; bit 1 Reserved = 0; error bits
-  4–8/11/15 = 0; reserved bits = 0; FrmCnt_Irq = 1.
+  4–8/11/15 = 0; reserved bits = 0; FrmCnt_Irq (bit 12) = 0;
+  IRQFrameCntSts = 1.
 - Verdict: halted, stopped, error-free → safe.
 
 ### 3.2 trace_analyzer AXI DMA (PG021 v7.1)

@@ -81,6 +81,10 @@ AXI_DMA_CHANNELS = {
              "reserved_mask": 0x8884},
 }
 BUS_MASTER_PROFILES = {"axi_vdma": VDMA_CHANNELS, "axi_dma": AXI_DMA_CHANNELS}
+TRACE_DMA_TARGETS = {
+    "trace_analyzer_pi_axi_dma_0": 0x80430000,
+    "trace_analyzer_pmodb_axi_dma_0": 0x80420000,
+}
 _CANDIDATE_CONTROL_SIGNATURE = RLE_SIGNATURE
 _BOOT_WRITE = re.compile(r"writing (.+?) to Xilinx Zynq FPGA Manager")
 
@@ -91,6 +95,10 @@ class DmaOwnershipUncertain(RuntimeError):
 
 class PreloadUnsafe(RuntimeError):
     """A verified base's HWH map or bus-master state is not safe to overwrite."""
+
+
+class DmaStopTimeout(RuntimeError):
+    """The bounded normal-stop request did not reach RS=0/Halted=1."""
 
 
 def known_overlays(candidate_bit_sha256: str) -> tuple[dict[str, Any], ...]:
@@ -427,6 +435,85 @@ def probe_preload_mmio(classification: dict[str, Any], *, mmio_factory,
             "dma": status}
 
 
+def _axi_dma_s2mm_state(mmio) -> tuple[int, int]:
+    return (int(mmio.read(0x30)) & 0xFFFFFFFF,
+            int(mmio.read(0x34)) & 0xFFFFFFFF)
+
+
+def _axi_dma_s2mm_decode(control: int, status: int) -> dict[str, Any]:
+    spec = AXI_DMA_CHANNELS["s2mm"]
+    errors = [name for bit, name in spec["error_fields"]
+              if status & (1 << bit)]
+    return {"control": control, "status": status,
+            "rs": bool(control & 0x1), "halted": bool(status & 0x1),
+            "idle_bit1": (status >> 1) & 0x1,
+            "error_bits": errors,
+            "reserved_bits": status & spec["reserved_mask"]}
+
+
+def stop_base_trace_dmas(classification: dict[str, Any], *, mmio_factory,
+                         timeout_s: float = 1.0, poll_s: float = 0.02,
+                         stable_s: float = 0.2, sleep=time.sleep,
+                         clock=time.monotonic) -> dict[str, Any]:
+    """Clear RS on exactly the two confirmed base trace S2MM channels.
+
+    The only write is S2MM_DMACR (offset 0x30) with bit 0 cleared; every other
+    control bit is preserved. S2MM_DMASR is never written, so errors are not
+    cleared and no reset is requested. The channel must reach RS=0 and
+    Halted=1 within the timeout and stay stopped through the stability window.
+    """
+    if classification.get("kind") != "KNOWN_BASE":
+        raise PreloadUnsafe("trace DMA stop is only defined for KNOWN_BASE")
+    base = classification["base"]
+    if base.get("name") != "pynq_base":
+        raise PreloadUnsafe("trace DMA stop requires the pinned pynq_base")
+    axi_masters = [m for m in base["bus_masters"] if m.get("type") == "axi_dma"]
+    actual = {m.get("instance"): int(m.get("base", -1)) for m in axi_masters}
+    if actual != TRACE_DMA_TARGETS:
+        raise PreloadUnsafe(
+            f"unexpected base axi_dma set; refusing to write: {actual}")
+    for master in axi_masters:
+        if master.get("channels") != ("s2mm",):
+            raise PreloadUnsafe(
+                f"{master.get('instance')} is not the expected S2MM-only channel")
+    result = {}
+    for instance, address in TRACE_DMA_TARGETS.items():
+        mmio = mmio_factory(address, 0x1000)
+        before_control, before_status = _axi_dma_s2mm_state(mmio)
+        wrote = False
+        if before_control & 0x1:
+            mmio.write(0x30, before_control & ~0x1 & 0xFFFFFFFF)
+            wrote = True
+        deadline = clock() + max(0.0, float(timeout_s))
+        while True:
+            control, status = _axi_dma_s2mm_state(mmio)
+            if not (control & 0x1) and (status & 0x1):
+                break
+            if clock() >= deadline:
+                raise DmaStopTimeout(
+                    f"{instance} did not reach RS=0/Halted=1 within "
+                    f"{timeout_s}s: control=0x{control:08x} status=0x{status:08x}")
+            sleep(poll_s)
+        if stable_s:
+            sleep(stable_s)
+        after_control, after_status = _axi_dma_s2mm_state(mmio)
+        if (after_control & 0x1) or not (after_status & 0x1):
+            raise PreloadUnsafe(
+                f"{instance} was re-armed after stop: "
+                f"control=0x{after_control:08x} status=0x{after_status:08x}")
+        decoded = _axi_dma_s2mm_decode(after_control, after_status)
+        if decoded["error_bits"] or decoded["reserved_bits"]:
+            raise PreloadUnsafe(
+                f"{instance} stopped with error/reserved bits: {decoded}")
+        result[instance] = {
+            "base": f"0x{address:08x}",
+            "before": _axi_dma_s2mm_decode(before_control, before_status),
+            "after": decoded,
+            "wrote_rs_clear": wrote,
+        }
+    return result
+
+
 def check_candidate_dma_idle(*, mmio_factory):
     """Post-load candidate DMA check at the HWH-confirmed DMA base."""
     dma = mmio_factory(DMA_BASE, 0x10000)
@@ -493,14 +580,17 @@ def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
                            post_load_identity, candidate_dma_check,
                            preview_factory, prepare_display_fn,
                            allocate_tx, allocate_rx, make_transport,
-                           base_evidence_reader=None,
+                           base_evidence_reader=None, stop_base_dmas=False,
+                           stop_kwargs=None,
                            stage=lambda *args, **kwargs: None):
     """Load the candidate only after the pre-load decision.
 
     COLD_BASE: no candidate MMIO before Overlay.download.
     KNOWN_OLD: only the confirmed old control/DMA addresses are read.
-    KNOWN_BASE: only the pinned base HWH map and its confirmed VDMA status are
-    read; no candidate address is touched before Overlay.download.
+    KNOWN_BASE: only the pinned base HWH map and its confirmed DMA channels are
+    read; no candidate address is touched before Overlay.download. When
+    ``stop_base_dmas`` is true, the two confirmed trace S2MM channels are
+    normally stopped (RS bit cleared only) before the four-channel recheck.
     UNKNOWN: stop before Overlay.download; never probe unknown MMIO.
     After load: identity/contract, candidate DMA, display, then allocation.
     """
@@ -510,14 +600,24 @@ def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
             "preload state is unknown; refusing Overlay.download and MMIO")
     allocated: list[Any] = []
     probe = None
+    stop_result = None
     if kind == "KNOWN_OLD":
         stage("known_old_probe", classification=classification)
         probe = probe_preload_mmio(classification, mmio_factory=mmio_factory)
         stage("known_old_probe_done", probe=probe)
     elif kind == "KNOWN_BASE":
         stage("known_base_probe", classification=classification)
-        probe = probe_preload_mmio(classification, mmio_factory=mmio_factory,
-                                   base_evidence_reader=base_evidence_reader)
+        evidence = (base_evidence_reader or read_base_hwh_evidence)(
+            classification["base"])
+        if stop_base_dmas:
+            stage("known_base_dma_stop", classification=classification)
+            stop_result = stop_base_trace_dmas(
+                classification, mmio_factory=mmio_factory,
+                **(stop_kwargs or {}))
+            stage("known_base_dma_stop_done", stop_result=stop_result)
+        probe = probe_preload_mmio(
+            classification, mmio_factory=mmio_factory,
+            base_evidence_reader=lambda _base: evidence)
         stage("known_base_probe_done", probe=probe)
     stage("overlay_download", classification=classification)
     overlay = overlay_factory()
@@ -545,7 +645,8 @@ def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
         return {"display": display, "tx": tx, "rx": rx,
                 "transport": transport, "allocated": allocated,
                 "preview": preview, "probe": probe, "identity": identity,
-                "candidate_dma": candidate_dma}
+                "candidate_dma": candidate_dma,
+                "base_dma_stop": stop_result}
     except BaseException as exc:
         setattr(exc, "display", display)
         setattr(exc, "allocated", allocated)
@@ -708,6 +809,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--device", type=int, default=0)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--native-lib", type=Path)
+    parser.add_argument("--stop-base-trace-dmas", action="store_true",
+                        help=("clear RS only on the two confirmed base trace "
+                              "S2MM channels before Overlay.download"))
     return parser
 
 
@@ -899,7 +1003,8 @@ def main(argv: list[str] | None = None) -> int:
             allocate=allocate, dtype=np.uint8, display_prepare=prepare_display,
             transport_factory=JpegRleDmaTransport)
         sequence = run_candidate_sequence(
-            classification=classification, mmio_factory=MMIO, **callbacks)
+            classification=classification, mmio_factory=MMIO,
+            stop_base_dmas=args.stop_base_trace_dmas, **callbacks)
         display = sequence["display"]
         tx = sequence["tx"]
         rx = sequence["rx"]
@@ -907,6 +1012,7 @@ def main(argv: list[str] | None = None) -> int:
         allocated = sequence["allocated"]
         preview = sequence["preview"]
         report["preload_probe"] = sequence["probe"]
+        report["base_dma_stop_result"] = sequence["base_dma_stop"]
         report["pynq_overlay"] = sequence["identity"]
         report["candidate_dma_after_load"] = sequence["candidate_dma"]
         write_stage(args.output, report, "frames_start")
