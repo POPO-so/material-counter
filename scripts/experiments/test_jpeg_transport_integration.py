@@ -12,7 +12,10 @@ import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from scripts.rle.jpeg_transport import JpegRleDmaTransport
+from scripts.rle.test_jpeg_transport import Rig
 
 RUNNER_PATH = Path(__file__).with_name("run_jpeg_counter.py")
 SPEC = importlib.util.spec_from_file_location("jpeg_transport_integration_tests", RUNNER_PATH)
@@ -297,3 +300,83 @@ def test_production_guard_allows_only_an_unarmed_started_first_transfer():
         assert "committed first transfer" in str(exc)
     else:
         raise AssertionError("committed address was accepted")
+
+
+def production_transport(rig, timeout_s=0.02):
+    def mmio(base, size):
+        if base == runner.DMA_BASE:
+            return rig.dma
+        if base == runner.RLE_BASE:
+            return rig.rle
+        if base == runner.JPEG_BASE:
+            return rig.jpeg
+        if base == runner.OVERLAY_BASE:
+            return rig.preview
+        raise KeyError(base)
+
+    def factory(send, recv, dma, rle, jpeg, preview, tx, rx, *,
+                first_transfer_guard=None):
+        return JpegRleDmaTransport(
+            send, recv, dma, rig.rle, rig.jpeg, rig.preview, tx, rx,
+            timeout_s=timeout_s, first_transfer_guard=first_transfer_guard)
+
+    make = runner.build_transport_callback(
+        transport_factory=factory, mmio_factory=mmio)
+    overlay = SimpleNamespace(
+        axi_dma_0=SimpleNamespace(sendchannel=rig.send, recvchannel=rig.recv))
+    return make(rig.tx, rig.rx, overlay, "preview")
+
+
+def _assert_no_transfer_start(rig, tx_before):
+    assert bytes(rig.tx[:len(tx_before)]) == tx_before
+    assert not any(event[0] in ("mm2s", "s2mm") and event[1] == "transfer"
+                   for event in rig.events)
+    assert not any(event[:3] == ("rle", "write", 0x00) for event in rig.events)
+    assert not any(event[:3] == ("jpeg", "write", 0x00) for event in rig.events)
+
+
+def test_production_guard_transfer_accepts_first_and_second_frame():
+    rig = Rig(driver_started=True)
+    transport = production_transport(rig)
+    assert transport.transfer(b"\xff\xd8a\xff\xd9", 9).frame_id == 9
+    assert transport.transfer(b"\xff\xd8b\xff\xd9", 10).frame_id == 10
+
+
+def test_production_guard_transfer_rejects_nonzero_outer_status():
+    rig = Rig(driver_started=True)
+    rig.dma.values[0x04] = 0x1000  # nonzero, but not Idle/Halted
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="first-transfer status is not zero"):
+        production_transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_transfer_start(rig, tx_before)
+
+
+@pytest.mark.parametrize("new_status", [0x1, 0x2])
+def test_production_guard_transfer_rejects_state_change_during_proof(new_status):
+    rig = Rig(driver_started=True)
+    reads = {"count": 0}
+
+    def on_read(offset):
+        if offset == 0x04:
+            reads["count"] += 1
+            if reads["count"] == 2:
+                rig.dma.values[0x04] = new_status
+
+    rig.dma.on_read = on_read
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match="state changed during first-transfer proof"):
+        production_transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_transfer_start(rig, tx_before)
+
+
+@pytest.mark.parametrize("control,reason", [
+    (0x00010002, "driver is not running"),
+    (0x00010007, "reset is asserted"),
+])
+def test_production_guard_transfer_rejects_rs_and_reset(control, reason):
+    rig = Rig(driver_started=True)
+    rig.dma.values[0x00] = control
+    tx_before = bytes(rig.tx[:8])
+    with pytest.raises(RuntimeError, match=reason):
+        production_transport(rig).transfer(b"\xff\xd8a\xff\xd9", 9)
+    _assert_no_transfer_start(rig, tx_before)

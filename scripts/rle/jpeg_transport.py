@@ -265,11 +265,15 @@ class JpegRleDmaTransport:
         in-progress transfer has the same status, so the exception requires:
         this transport has never submitted, the production guard proves the
         exact channel/MMIO ownership, and the hardware address and length
-        registers are still zero. The address/length check is the unsubmitted
-        proof; the transport's own counter alone is not sufficient.
+        registers are still zero. Both the outer status and the guard status
+        must be strictly zero; a transition to Idle/Halted during the proof is
+        rejected rather than accepted as a normal idle state.
         """
         if self._submitted_frames:
             raise RuntimeError(f"{name} DMA is not idle")
+        if observed_status != 0:
+            raise RuntimeError(
+                f"{name} DMA is not idle: first-transfer status is not zero")
         guard = self.first_transfer_guard
         if guard is None:
             raise RuntimeError(
@@ -291,11 +295,12 @@ class JpegRleDmaTransport:
             raise RuntimeError(f"{name} DMA has error bits set")
         if status & DMA_STATUS_RESERVED_MASK:
             raise RuntimeError(f"{name} DMA has reserved status bits set")
-        if status & (DMA_IDLE | DMA_HALTED):
-            return
         if status != observed_status:
             raise RuntimeError(
                 f"{name} DMA is not idle: state changed during first-transfer proof")
+        if status != 0:
+            raise RuntimeError(
+                f"{name} DMA is not idle: first-transfer status is not zero")
         if not control & DMA_CONTROL_RS:
             raise RuntimeError(f"{name} DMA is not idle: driver is not running")
         if control & DMA_CONTROL_RESET:
