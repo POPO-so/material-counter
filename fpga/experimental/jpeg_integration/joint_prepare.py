@@ -821,8 +821,11 @@ def stage(args, result: dict) -> None:
     if offload_cdc_target is not None and offload_cdc_target.as_posix() not in required_live:
         required_live.append(offload_cdc_target.as_posix())
         register_timing_xdc_in_project(project, offload_cdc_target)
-    top = [n.attrib["Val"] for n in project.findall(".//Option") if n.attrib.get("Name") == "TopModule"]
-    require(top == ["display_wrapper"], f"unexpected XPR top: {top}")
+    synth_fileset = project.find(".//FileSet[@Name='sources_1']")
+    require(synth_fileset is not None, "XPR is missing the sources_1 synthesis fileset")
+    top = [n.attrib["Val"] for n in synth_fileset.findall(".//Option")
+           if n.attrib.get("Name") == "TopModule"]
+    require(top == ["display_wrapper"], f"unexpected sources_1 XPR top: {top}")
     wrapper = next(p for p in required_live if Path(p).name == "display_wrapper.v")
     require(re.search(r"\bmodule\s+display_wrapper\b", Path(wrapper).read_text(encoding="utf-8")), "staged wrapper does not declare display_wrapper")
     external_repos = [n.attrib["Val"] for n in project.findall(".//Option") if n.attrib.get("Name") == "IPRepoPath"]
