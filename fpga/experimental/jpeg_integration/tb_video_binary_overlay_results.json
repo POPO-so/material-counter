@@ -54,6 +54,20 @@
       "result": "PASS",
       "detail": "in_black=1024 (=32x32), out_gray=3072 (=64x64-1024), edge_in=2, edge_out=4, bad=0, cmp_mm=0",
       "conclusion": "every sampled pixel is exactly black inside the view or base RGB 0x404040 outside it; the unique base encoding appears only in uncovered regions"
+    },
+    {
+      "tb": "tb_video_binary_overlay_frg1.sv",
+      "purpose": "real FRG1 parameters (640x400, VIEW 384/146/512/320), checkerboard mask",
+      "result": "PASS",
+      "detail": "mismatch_in=0 over 130048 in-view pixels (2 active frames x 256x254), bad_out=0 over 380672, cmp_mm=0, row_first/last/phase3/wrap=512 each, f2=f3=65024",
+      "branch": "ROW_BASE_BRANCH_ACTIVE (HEIGHT*4=1600 == VIEW_HEIGHT*5); SOURCE_X_BRANCH_ACTIVE (WIDTH*4=2560 == VIEW_WIDTH*5)",
+      "note": "VIEW_X+VIEW_WIDTH=896 > WIDTH=640, so the reachable window is x in [384,639]; this is a frozen-baseline property, not a candidate change"
+    },
+    {
+      "tb": "tb_video_binary_overlay_cfgswitch.sv",
+      "purpose": "config switch, near-VSYNC commit, mid-frame commit, frame_id/validity",
+      "result": "PASS",
+      "detail": "A drawn; B replaces A (near-VSYNC, 5 pixel_clk); C id=2 suppresses box, line drawn; D count=0; E illegal x0>x1 invalidated; F enable=0 -> base gray; G committed mid-frame applies only at the next boundary; cmp_mm=0"
     }
   ],
   "small_tb_prior_failure": {

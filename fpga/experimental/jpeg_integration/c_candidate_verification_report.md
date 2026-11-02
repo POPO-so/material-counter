@@ -12,6 +12,8 @@ Scope: XSim only. No routing, board access, deployment, push, or merge.
 | functional overlay (640x400) | PASS, white = 414, cmp_mismatch = 0 |
 | small boundary (64x64, full view) | PASS, all four box edges + line + interior + window edge |
 | viewport sub-rectangle (64x64, view 32x32) | PASS, uncovered passthrough exact |
+| real FRG1 parameters + checkerboard mask | PASS, 130048 in-view pixels, 0 mismatches |
+| config switch / near-VSYNC / mid-frame | PASS, 7 scenarios + old/new identical |
 
 The previous claim that "the RTL is verified correct and the TB is the only blocker"
 is withdrawn. What is now proven is narrower and reproducible: the current
@@ -86,6 +88,100 @@ The frozen baseline already includes the x-direction precomputation; the
 candidate does not re-introduce it. The candidate's delta is the row-base
 precompute plus the hit-vector pipeline and `q2` alignment.
 
+## 5b. Real FRG1 parameter regression
+
+Instantiation matches `video_binary_overlay_bd.v:87`: `WIDTH=640 HEIGHT=400
+VIEW_X=384 VIEW_Y=146 VIEW_WIDTH=512 VIEW_HEIGHT=320`. Both generate conditions
+hold, and the TB asserts them before driving: `HEIGHT*4=1600 == VIEW_HEIGHT*5`
+so `g_row_base_5_4` is the elaborated branch, and `WIDTH*4=2560 ==
+VIEW_WIDTH*5` for `g_source_x_5_4`.
+
+The mask is a checkerboard `bit(x,y)=(x+y)&1` written in raster order, so any
+row-base step, phase wrap, or first/last-row error changes the parity. With no
+boxes and no count line the output inside the view must be white iff the source
+bit at `(lx+(lx>>2), ly+(ly>>2))` is 1. Three frames are driven; the mask
+handshake completes at the second boundary, so frames 2 and 3 are both active.
+
+```
+FRG1: in_checked=130048 out_checked=380672 mismatch_in=0 bad_out=0 cmp_mm=0
+FRG1 coverage: row_first=512 row_last=512 row_phase3=512 row_wrap=512 f1=0 f2=65024 f3=65024
+C_FRG1_PASS
+```
+
+`130048 = 2 x 256 x 254` in-view pixels, zero mismatches; `row_phase3`
+(local_y=3, phase 3) and `row_wrap` (local_y=4, base += 2*WIDTH) are both
+covered in both active frames, and the second active frame proves the
+next-frame row-base reset.
+
+Reachability note: `VIEW_X+VIEW_WIDTH=896 > WIDTH=640`, so the physically
+reachable window is x in [384,639] (256 columns), y in [146,399]. This is a
+property of the frozen baseline, not a candidate change; it is recorded here so
+the window geometry is not misread.
+
+## 5c. Configuration switch regression
+
+64x64, full viewport, all-zero mask; probes at the d1 tap.
+
+| Frame | Config | Expectation | Result |
+|---|---|---|---|
+| 2 | A: box 10..20, line 30 | box edge + line white | PASS |
+| 3 | B committed 5 pixel_clk before VSYNC: box 30..40, line 50 | B drawn, A's box and A's line gone | PASS |
+| 4 | C: `cfg_frame_id=2`, displayed id=1 | box suppressed, line drawn | PASS |
+| 5 | D: `count=0` | no box, line drawn | PASS |
+| 6 | E: illegal box `x0>x1` | box invalidated, line drawn | PASS |
+| 7 | F: `enable=0` | everything suppressed -> base gray | PASS |
+| 8 | G committed mid-frame 7 | applies only at frame 8 boundary | PASS |
+
+`cmp_mm=0` in every frame. Note that `cfg_ready` only returns after the
+pixel-domain ack at a frame boundary, so a config commit cannot be issued
+twice between boundaries; the TB synchronises on the publish toggle.
+
+## 5d. Candidate vs frozen baseline (01d5563c) change list
+
+Config domain (`cfg_clk`):
+
+1. Added a six-state scaling FSM (`CFG_IDLE`, `CFG_LINE`, `CFG_BOX_READ`,
+   `CFG_BOX_SCALE`, `CFG_BOX_WRITE`, `CFG_PUBLISH`).
+2. `cfg_ready` additionally requires `cfg_state==CFG_IDLE`.
+3. Box coordinates are scaled once at load (`cfg_coord_scaled`), replacing the
+   per-pixel `(bx*VIEW_WIDTH)/WIDTH` and `(by*VIEW_HEIGHT)/HEIGHT` products.
+4. The count line is scaled once at load (`cfg_work_line`), replacing the
+   per-pixel `(line_p*VIEW_WIDTH)/WIDTH` product.
+5. Per-box validity computed at load: `x0<=x1`, `y0<=y1`, `x1<WIDTH`,
+   `y1<HEIGHT` -> `cfg_mb_box_valid`.
+6. Line validity computed at load: `cfg_line_x<WIDTH` -> `cfg_mb_line_valid`.
+7. Mailbox extended with `cfg_mb_box_valid` / `cfg_mb_line_valid`.
+8. The pixel-domain boundary latch copies `box_valid_p` / `line_valid_p`.
+
+Pixel domain:
+
+9. Scalar `line_or_box` replaced by `box_hit[MAX_BOXES]` + `line_hit`.
+10. Box comparisons use the pre-scaled local coordinates directly.
+11. Added `row_base_addr` + `row_scale_phase`; `pixel_addr = row_base_addr +
+    source_x` under `g_row_base_5_4`; the generic path keeps
+    `source_y*WIDTH+source_x`.
+12. Row base advances by `WIDTH` normally and by `2*WIDTH` on phase 3
+    (1,1,1,2), reset at the frame boundary and at `y==VIEW_Y-1`.
+13. Added one output pipeline stage: `hit_q`/`line_hit_q` -> `overlay_q`;
+    `mask_q2`/`use_q2`/`base_q2`; `active_q2`/`vsync_q2`/`hsync_q2`. Output
+    latency increases by one `pixel_clk`.
+14. Output expression keeps the same form: white when
+    `use_q2 && (mask_q2 || overlay_q)`, black when `use_q2` and neither, base
+    otherwise.
+
+Unchanged: mask banks and their CDC, the mask write/publish/ack handshake,
+capture counters, the two-FF config mailbox CDC, and the x-direction
+`g_source_x_5_4` precompute (already present in the frozen baseline).
+
+## 5e. Pending scenarios (not executed)
+
+- Independent reset of one domain while another is in use (requires coordinated reset).
+- 16 simultaneous boxes and overlapping boxes.
+- Mask re-publish while the current frame is displaying (bank swap mid-stream).
+- Config commit exactly on the VSYNC edge (the executed test used 5 pixel_clk margin).
+- Commit while the scaling FSM is busy (`cfg_ready=0` backpressure).
+- Reset asserted during config scaling.
+
 ## 6. Reproduce
 
 ```sh
@@ -95,7 +191,7 @@ $V/xvlog.bat --sv fpga/experimental/jpeg_integration/tb_video_binary_overlay_cmp
   fpga/experimental/standalone/video_binary_overlay.v \
   fpga/experimental/standalone/video_binary_overlay_frozen.v
 $V/xelab.bat -debug typical tb_video_binary_overlay_cmp -s cmp_snap && $V/xsim.bat cmp_snap -R
-# repeat with tb_video_binary_overlay_func / _small / _viewport
+# repeat with tb_video_binary_overlay_func / _small / _viewport / _frg1 / _cfgswitch
 ```
 
 Machine-readable results: `tb_video_binary_overlay_results.json`.
