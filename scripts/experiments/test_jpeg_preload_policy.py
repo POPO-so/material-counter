@@ -52,13 +52,16 @@ class FakeMmio:
 class FakeMmioFactory:
     def __init__(self, events, *, control_signature=0x31454C52,
                  mm2s_status=0x3, s2mm_status=0x3,
-                 vdma_mm2s=0x3, vdma_s2mm=0x3):
+                 vdma_mm2s_control=0x0, vdma_mm2s_status=0x1,
+                 vdma_s2mm_control=0x0, vdma_s2mm_status=0x1):
         self.events = events
         self.control_signature = control_signature
         self.mm2s_status = mm2s_status
         self.s2mm_status = s2mm_status
-        self.vdma_mm2s = vdma_mm2s
-        self.vdma_s2mm = vdma_s2mm
+        self.vdma_mm2s_control = vdma_mm2s_control
+        self.vdma_mm2s_status = vdma_mm2s_status
+        self.vdma_s2mm_control = vdma_s2mm_control
+        self.vdma_s2mm_status = vdma_s2mm_status
         self.calls = []
 
     def __call__(self, base, size):
@@ -69,7 +72,10 @@ class FakeMmioFactory:
         if base == runner.DMA_BASE:
             return FakeMmio({0x04: self.mm2s_status, 0x34: self.s2mm_status})
         if base == runner.BASE_VDMA_BASE:
-            return FakeMmio({0x04: self.vdma_mm2s, 0x34: self.vdma_s2mm})
+            return FakeMmio({0x00: self.vdma_mm2s_control,
+                             0x04: self.vdma_mm2s_status,
+                             0x30: self.vdma_s2mm_control,
+                             0x34: self.vdma_s2mm_status})
         return FakeMmio()
 
 
@@ -111,10 +117,15 @@ def base_classification(*, pynq_state=None, boot_state=None, owners=None,
 
 def run_sequence(cls, events, *, overlay_factory, identity_failure=False,
                  factory=None, mm2s_status=0x3, s2mm_status=0x3,
-                 vdma_mm2s=0x3, vdma_s2mm=0x3, base_evidence_reader=base_evidence):
+                 vdma_mm2s_control=0x0, vdma_mm2s_status=0x1,
+                 vdma_s2mm_control=0x0, vdma_s2mm_status=0x1,
+                 base_evidence_reader=base_evidence):
     factory = factory or FakeMmioFactory(
         events, mm2s_status=mm2s_status, s2mm_status=s2mm_status,
-        vdma_mm2s=vdma_mm2s, vdma_s2mm=vdma_s2mm)
+        vdma_mm2s_control=vdma_mm2s_control,
+        vdma_mm2s_status=vdma_mm2s_status,
+        vdma_s2mm_control=vdma_s2mm_control,
+        vdma_s2mm_status=vdma_s2mm_status)
 
     def post_load_identity(overlay):
         events.append(("identity",))
@@ -251,14 +262,20 @@ def test_known_base_probes_only_confirmed_vdma_before_overlay():
     for candidate_base in (runner.DMA_BASE, runner.RLE_BASE,
                            runner.OVERLAY_BASE, runner.JPEG_BASE):
         assert candidate_base not in pre_mmio
-    assert result["probe"]["bus_masters"]["video_axi_vdma"] == {
-        "mm2s": 0x3, "s2mm": 0x3}
+    assert result["probe"]["bus_masters"]["video_axi_vdma"]["mm2s"] == {
+        "control": 0x0, "status": 0x1, "rs": False, "halted": True,
+        "reserved_bit1": 0, "error_mask": 0x00F0,
+        "error_bits": [], "reserved_bits": 0}
+    assert result["probe"]["bus_masters"]["video_axi_vdma"]["s2mm"] == {
+        "control": 0x0, "status": 0x1, "rs": False, "halted": True,
+        "reserved_bit1": 0, "error_mask": 0x89F0,
+        "error_bits": [], "reserved_bits": 0}
 
 
 def test_known_base_active_vdma_is_refused_before_overlay():
     cls = base_classification()
     events = []
-    factory = FakeMmioFactory(events, vdma_mm2s=0x0)
+    factory = FakeMmioFactory(events, vdma_mm2s_status=0x0)
     with pytest.raises(runner.PreloadUnsafe):
         run_sequence(cls, events,
                      overlay_factory=lambda: events.append(("overlay",)) or "overlay",
@@ -289,6 +306,8 @@ BASE_HWH_TEMPLATE = """<?xml version="1.0"?>
     <PARAMETERS>
       <PARAMETER NAME="C_BASEADDR" VALUE="0x43000000"/>
       <PARAMETER NAME="C_HIGHADDR" VALUE="0x4300FFFF"/>
+      <PARAMETER NAME="C_INCLUDE_MM2S" VALUE="1"/>
+      <PARAMETER NAME="C_INCLUDE_S2MM" VALUE="1"/>
     </PARAMETERS>
   </MODULE>
   {extra}
@@ -309,7 +328,8 @@ def test_base_hwh_matches_the_pinned_bus_master_map(tmp_path, monkeypatch):
     evidence = runner.read_base_hwh_evidence(base)
     assert evidence["bus_masters"] == [{
         "instance": "video_axi_vdma",
-        "vlnv": "xilinx.com:ip:axi_vdma:6.3", "base": 0x43000000}]
+        "vlnv": "xilinx.com:ip:axi_vdma:6.3", "base": 0x43000000,
+        "channels": ("mm2s", "s2mm")}]
 
 
 def test_base_hwh_additional_dma_master_is_refused(tmp_path, monkeypatch):
@@ -328,6 +348,51 @@ def test_base_hwh_hash_mismatch_is_refused(tmp_path):
     base = {**runner.known_bases()[0], "hwh_path": str(hwh)}
     with pytest.raises(runner.PreloadUnsafe, match="SHA-256"):
         runner.read_base_hwh_evidence(base)
+
+
+def test_base_hwh_missing_channel_flags_is_refused(tmp_path, monkeypatch):
+    hwh = tmp_path / "base.hwh"
+    hwh.write_text(
+        BASE_HWH_TEMPLATE.format(extra="").replace(
+            '      <PARAMETER NAME="C_INCLUDE_MM2S" VALUE="1"/>\n'
+            '      <PARAMETER NAME="C_INCLUDE_S2MM" VALUE="1"/>\n', ""),
+        encoding="utf-8")
+    monkeypatch.setattr(runner, "_sha256",
+                        lambda _path: runner.KNOWN_BASE_HWH_SHA256)
+    base = {**runner.known_bases()[0], "hwh_path": str(hwh)}
+    with pytest.raises(runner.PreloadUnsafe, match="C_INCLUDE"):
+        runner.read_base_hwh_evidence(base)
+
+
+VDMA_FAILURES = [
+    ("mm2s", {"vdma_mm2s_status": 0x1 | (1 << 7)}, "sof_early_err"),
+    ("s2mm", {"vdma_s2mm_status": 0x1 | (1 << 15)}, "eol_late_err"),
+    ("mm2s", {"vdma_mm2s_control": 0x1}, "not safely halted"),
+    ("mm2s", {"vdma_mm2s_status": 0x1 | (1 << 9)}, "reserved"),
+]
+
+
+@pytest.mark.parametrize("channel,kwargs,reason", VDMA_FAILURES)
+def test_known_base_vdma_is_refused_before_overlay(channel, kwargs, reason):
+    events = []
+    factory = FakeMmioFactory(events, **kwargs)
+    with pytest.raises(runner.PreloadUnsafe, match=reason):
+        run_sequence(
+            base_classification(), events,
+            overlay_factory=lambda: events.append(("overlay",)) or "overlay",
+            factory=factory)
+    assert ("overlay",) not in events
+    assert all(event[1] == runner.BASE_VDMA_BASE
+               for event in events if event[0] == "mmio")
+
+
+def test_vdma_masks_are_channel_specific_not_the_axi_dma_mask():
+    assert runner.VDMA_CHANNELS["mm2s"]["error_mask"] == 0x00F0
+    assert runner.VDMA_CHANNELS["s2mm"]["error_mask"] == 0x89F0
+    assert runner.VDMA_CHANNELS["mm2s"]["error_mask"] != 0x770
+    assert runner.VDMA_CHANNELS["s2mm"]["error_mask"] != 0x770
+    assert runner.VDMA_CHANNELS["mm2s"]["reserved_mask"] & (1 << 1)
+    assert runner.VDMA_CHANNELS["s2mm"]["reserved_mask"] & (1 << 1)
 
 
 def test_known_base_old_paths_still_work():

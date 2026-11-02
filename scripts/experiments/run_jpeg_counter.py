@@ -46,6 +46,23 @@ KNOWN_BASE_HWH_SHA256 = "222898ef2c0ccc4a0c47608e99d8dc7c9c6cdfed5130964884ff350
 BASE_VDMA_BASE = 0x43000000
 BASE_VDMA_HIGH = 0x4300FFFF
 CMA_RESERVE_KIB = 4096
+# AXI VDMA v6.3 (PG020) MM2S/S2MM status-register fields. Bit 1 is Reserved
+# (always 0), not Idle; the AXI DMA mask 0x770 must not be reused. Error and
+# reserved masks are channel-specific; bit 15 is EOLLateErr only on S2MM.
+VDMA_CHANNELS = {
+    "mm2s": {"control_offset": 0x00, "status_offset": 0x04,
+             "error_mask": 0x00F0,
+             "error_fields": ((4, "vdma_int_err"), (5, "vdma_slv_err"),
+                              (6, "vdma_dec_err"), (7, "sof_early_err")),
+             "reserved_mask": 0x8F0E},
+    "s2mm": {"control_offset": 0x30, "status_offset": 0x34,
+             "error_mask": 0x89F0,
+             "error_fields": ((4, "vdma_int_err"), (5, "vdma_slv_err"),
+                              (6, "vdma_dec_err"), (7, "sof_early_err"),
+                              (8, "eol_early_err"), (11, "sof_late_err"),
+                              (15, "eol_late_err")),
+             "reserved_mask": 0x060E},
+}
 _CANDIDATE_CONTROL_SIGNATURE = RLE_SIGNATURE
 _BOOT_WRITE = re.compile(r"writing (.+?) to Xilinx Zynq FPGA Manager")
 
@@ -88,7 +105,8 @@ def known_bases() -> tuple[dict[str, Any], ...]:
          "bus_masters": (
              {"instance": "video_axi_vdma",
               "vlnv": "xilinx.com:ip:axi_vdma:6.3",
-              "base": BASE_VDMA_BASE, "high": BASE_VDMA_HIGH},)},
+              "base": BASE_VDMA_BASE, "high": BASE_VDMA_HIGH,
+              "channels": ("mm2s", "s2mm")},)},
     )
 
 
@@ -263,10 +281,28 @@ def _hwh_dma_masters(hwh: Path) -> list[dict[str, Any]]:
         if not base_value or not str(base_value).lower().startswith("0x"):
             raise PreloadUnsafe(
                 f"base HWH DMA module {vlnv!r} has no confirmed control base")
+        include_mm2s = parameters.get("C_INCLUDE_MM2S",
+                                      parameters.get("c_include_mm2s"))
+        include_s2mm = parameters.get("C_INCLUDE_S2MM",
+                                      parameters.get("c_include_s2mm"))
+        if include_mm2s is None or include_s2mm is None:
+            raise PreloadUnsafe(
+                f"base HWH DMA module {vlnv!r} lacks C_INCLUDE_MM2S/S2MM")
+        try:
+            channels = tuple(
+                name for name, flag in (("mm2s", include_mm2s),
+                                        ("s2mm", include_s2mm))
+                if int(str(flag), 0) == 1)
+        except ValueError as exc:
+            raise PreloadUnsafe(
+                f"base HWH DMA module {vlnv!r} has invalid channel flags") from exc
+        if not channels:
+            raise PreloadUnsafe(f"base HWH DMA module {vlnv!r} has no DMA channel")
         masters.append({
             "instance": (module.get("INSTANCENAME") or module.get("INSTANCE")
                          or module.get("NAME") or "unknown"),
-            "vlnv": vlnv, "base": int(str(base_value), 16)})
+            "vlnv": vlnv, "base": int(str(base_value), 16),
+            "channels": channels})
     return masters
 
 
@@ -281,9 +317,11 @@ def read_base_hwh_evidence(base: dict[str, Any]) -> dict[str, Any]:
         raise PreloadUnsafe(
             "base HWH SHA-256 differs from the captured base address-map evidence")
     masters = _hwh_dma_masters(hwh)
-    expected = {(str(item["vlnv"]).lower(), int(item["base"]))
+    expected = {(str(item["vlnv"]).lower(), int(item["base"]),
+                 tuple(item.get("channels", ())))
                 for item in base["bus_masters"]}
-    actual = {(str(item["vlnv"]).lower(), int(item["base"])) for item in masters}
+    actual = {(str(item["vlnv"]).lower(), int(item["base"]),
+               tuple(item.get("channels", ()))) for item in masters}
     if actual != expected:
         raise PreloadUnsafe(
             f"base HWH bus-master map differs from the captured evidence: "
@@ -309,13 +347,30 @@ def probe_preload_mmio(classification: dict[str, Any], *, mmio_factory,
         statuses = {}
         for master in base["bus_masters"]:
             dma = mmio_factory(int(master["base"]), 0x1000)
-            status = {"mm2s": int(dma.read(0x04)) & 0xFFFFFFFF,
-                      "s2mm": int(dma.read(0x34)) & 0xFFFFFFFF}
-            if any(value & 0x770 or (value & 0x3) != 0x3
-                   for value in status.values()):
-                raise PreloadUnsafe(
-                    f"known base {master['instance']} is active or faulty: {status}")
-            statuses[master["instance"]] = status
+            decoded = {}
+            for channel in master["channels"]:
+                spec = VDMA_CHANNELS[channel]
+                control = int(dma.read(spec["control_offset"])) & 0xFFFFFFFF
+                status = int(dma.read(spec["status_offset"])) & 0xFFFFFFFF
+                errors = [name for bit, name in spec["error_fields"]
+                          if status & (1 << bit)]
+                reserved = status & spec["reserved_mask"]
+                decoded[channel] = {
+                    "control": control, "status": status,
+                    "rs": bool(control & 0x1),
+                    "halted": bool(status & 0x1),
+                    # Bit 1 is Reserved in AXI VDMA v6.3; recorded, not gated.
+                    "reserved_bit1": (status >> 1) & 0x1,
+                    "error_mask": spec["error_mask"],
+                    "error_bits": errors,
+                    "reserved_bits": reserved,
+                }
+                if (control & 0x1 or not (status & 0x1) or errors or reserved):
+                    raise PreloadUnsafe(
+                        f"known base {master['instance']} {channel} is not safely "
+                        f"halted: control=0x{control:08x} status=0x{status:08x} "
+                        f"errors={errors or 'none'} reserved=0x{reserved:x}")
+            statuses[master["instance"]] = decoded
         return {"base": base["name"], "hwh_sha256": evidence["hwh_sha256"],
                 "bus_masters": statuses}
     if kind != "KNOWN_OLD":
