@@ -481,19 +481,50 @@ def test_raw_camera_configures_mjpg_size_and_never_decodes(monkeypatch):
 
 
 @pytest.mark.parametrize("jpeg", [b"decoded pixels", b"\xff\xd8missing-eoi", b"missing-soi\xff\xd9"])
-def test_raw_camera_rejects_non_jpeg_or_truncated_packet(monkeypatch, jpeg):
+def test_raw_camera_drops_one_bad_packet_then_continues_with_raw_mjpg(monkeypatch, jpeg):
     import cv2
     class Capture:
-        def __init__(self, *args): self.props = {}
+        def __init__(self, *args): self.props = {}; self.i = 0; self.released = False
         def set(self, key, val): self.props[key] = val; return True
         def get(self, key): return self.props.get(key, 0)
         def isOpened(self): return True
-        def read(self): return True, np.frombuffer(jpeg, np.uint8)
-        def release(self): pass
-    monkeypatch.setattr(cv2, "VideoCapture", lambda *args: Capture())
+        def read(self):
+            self.i += 1
+            if self.i == 1: return True, np.frombuffer(jpeg, np.uint8)
+            if self.i == 2: return True, np.frombuffer(b"\xff\xd8valid\xff\xd9", np.uint8)
+            return False, None
+        def release(self): self.released = True
+    capture = Capture()
+    monkeypatch.setattr(cv2, "VideoCapture", lambda *args: capture)
+    stats = {}
 
-    with pytest.raises(RuntimeError, match="complete JPEG"):
-        next(iter_raw_mjpeg(0, cv2_module=cv2))
+    frames = list(iter_raw_mjpeg(0, cv2_module=cv2, stats=stats))
+
+    assert frames == [b"\xff\xd8valid\xff\xd9"]
+    assert stats["invalid_packets"] == 1 and stats["valid_packets"] == 1
+    assert stats["consecutive_invalid_packets"] == 0
+    assert capture.released
+
+
+def test_raw_camera_fails_after_bounded_consecutive_invalid_packets(monkeypatch):
+    import cv2
+    class Capture:
+        def __init__(self, *args): self.props = {}; self.released = False
+        def set(self, key, val): self.props[key] = val; return True
+        def get(self, key): return self.props.get(key, 0)
+        def isOpened(self): return True
+        def read(self): return True, np.frombuffer(b"\xff\xd8truncated", np.uint8)
+        def release(self): self.released = True
+    capture = Capture()
+    monkeypatch.setattr(cv2, "VideoCapture", lambda *args: capture)
+    stats = {}
+
+    with pytest.raises(RuntimeError, match="consecutive invalid MJPG"):
+        next(iter_raw_mjpeg(0, cv2_module=cv2, max_consecutive_invalid=2, stats=stats))
+
+    assert stats["invalid_packets"] == 3
+    assert stats["consecutive_invalid_packets"] == 3
+    assert capture.released
 
 
 def test_raw_camera_rejects_negotiated_geometry_mismatch(monkeypatch):

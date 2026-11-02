@@ -259,6 +259,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     transport = None
     capture_source = None
+    capture_stats: dict[str, Any] = {}
     allocated = []
     held = False
     hdmi = None
@@ -332,7 +333,7 @@ def main(argv: list[str] | None = None) -> int:
             width=WIDTH, height=HEIGHT, count_axis="x", line_x=args.line_x,
             line_y=args.line_y, min_area=args.min_area, max_area=args.max_area,
             hysteresis=args.hysteresis)
-        capture_source = iter_raw_mjpeg(args.device)
+        capture_source = iter_raw_mjpeg(args.device, stats=capture_stats)
         report["session_id"] = str(session_id)
         start = time.perf_counter()
         previous = start
@@ -372,6 +373,8 @@ def main(argv: list[str] | None = None) -> int:
         report.update(status="FAIL_HOLD" if held else "FAILED",
                       error=str(exc), error_type=type(exc).__name__)
     finally:
+        if capture_stats:
+            report["camera_capture"] = dict(capture_stats)
         if capture_source is not None:
             close = getattr(capture_source, "close", None)
             if callable(close):
