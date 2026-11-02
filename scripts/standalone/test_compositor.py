@@ -1,6 +1,7 @@
 import binascii
 import importlib.util
 import math
+from multiprocessing import shared_memory
 import uuid
 from pathlib import Path
 
@@ -717,6 +718,79 @@ def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reus
         slot_composer._chrome_version,
     ]
     assert slot_copies == [0, 1, 2]
+
+
+def test_dashboard_draws_dynamic_regions_in_output_buffer_without_region_copies(monkeypatch):
+    api = _api()
+    composer = _dashboard_composer()
+    reference = _dashboard_composer()
+    gray = np.full((400, 640), 87, dtype=np.uint8)
+    binary = np.zeros_like(gray)
+    session = uuid.UUID("00112233-4455-6677-8899-aabbccddeeff")
+    memory = shared_memory.SharedMemory(create=True, size=720 * 1280)
+    actual = np.ndarray((720, 1280), dtype=np.uint8, buffer=memory.buf)
+    expected = np.empty_like(actual)
+    strided_materializations = []
+    real_fromarray = api.Image.fromarray
+
+    def track_fromarray(array, *args, **kwargs):
+        if isinstance(array, np.ndarray) and array.ndim == 2 and not array.flags.c_contiguous:
+            strided_materializations.append(array.shape)
+        return real_fromarray(array, *args, **kwargs)
+
+    try:
+        monkeypatch.setattr(api.Image, "fromarray", track_fromarray)
+        composer.render(
+            gray, binary, session, 1, boxes=((12, 18, 120, 150), (210, 30, 300, 200)),
+            tracks=(("7", 240, 90),), dashboard={
+                "count": 42, "camera_fps": 29.7, "e2e_ms": {"mean": 1234.5},
+                "drop_total": 5, "cpu_percent": 81.2, "cpu0_percent": 77.1,
+                "cpu1_percent": 84.4, "memory_percent": 49.3,
+                "regions_ms": {"mean": 2.8}, "track_ms": {"mean": 0.6},
+                "processing_fps": 27.4, "display_fps": 28.8,
+                "effective_input_fps": 30.0, "preview_submitted_fps": 29.1,
+                "processing_ms": 36.5,
+            }, pl_preview=True, output=actual, output_slot=0)
+        actual_image = actual.copy()
+        assert strided_materializations == []
+
+        def legacy_region(target, bounds, draw_content, draw=None):
+            x0, y0, x1, y1 = bounds
+            pixels = target[y0:y1, x0:x1]
+            np.copyto(pixels, reference._chrome[y0:y1, x0:x1])
+            image = real_fromarray(pixels)
+            draw_content(api.ImageDraw.Draw(image), x0, y0)
+            np.copyto(pixels, np.asarray(image))
+
+        def legacy_detection_count(target, target_count, draw=None):
+            x0, y0, x1, y1 = 974, 174, 1230, 201
+            pixels = target[y0:y1, x0:x1]
+            pixels.fill(43)
+            image = real_fromarray(pixels)
+            reference._text(api.ImageDraw.Draw(image), (0, 177 - y0),
+                            str(target_count), 20, 255)
+            np.copyto(pixels, np.asarray(image))
+
+        monkeypatch.setattr(reference, "_draw_dynamic_region", legacy_region)
+        monkeypatch.setattr(reference, "_draw_detection_count", legacy_detection_count)
+        monkeypatch.setattr(api.Image, "fromarray", real_fromarray)
+        reference.render(
+            gray, binary, session, 1, boxes=((12, 18, 120, 150), (210, 30, 300, 200)),
+            tracks=(("7", 240, 90),), dashboard={
+                "count": 42, "camera_fps": 29.7, "e2e_ms": {"mean": 1234.5},
+                "drop_total": 5, "cpu_percent": 81.2, "cpu0_percent": 77.1,
+                "cpu1_percent": 84.4, "memory_percent": 49.3,
+                "regions_ms": {"mean": 2.8}, "track_ms": {"mean": 0.6},
+                "processing_fps": 27.4, "display_fps": 28.8,
+                "effective_input_fps": 30.0, "preview_submitted_fps": 29.1,
+                "processing_ms": 36.5,
+            }, pl_preview=True, output=expected)
+
+        assert np.array_equal(actual_image, expected)
+    finally:
+        del actual
+        memory.close()
+        memory.unlink()
 
 
 def test_dashboard_output_slot_requires_a_valid_explicit_output():
