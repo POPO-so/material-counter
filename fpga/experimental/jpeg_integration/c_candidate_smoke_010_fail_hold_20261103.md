@@ -30,6 +30,14 @@ flags `0`; boot bitstream `base.bin`; PYNQ global state absent
 (`COLD_BOOT_NO_GLOBAL_STATE`); base.bit `3239e9cc...`, base.hwh `222898ef...`;
 CMA 79,776 KiB free; no video owner. The new package directory was absent.
 
+## 2. Field condition: monitor not powered
+
+The monitor was not powered during this run. The observed black screen is
+explained by that field condition and is **not** attributed to the RLE packet
+header failure. The run report's display evidence remains the PL display start
+call and register readback only; no valid physical picture is claimed in either
+direction.
+
 ## 2. Package verification
 
 `/home/xilinx/jpeg-candidate-20261103e` matched the revision package:
@@ -108,6 +116,28 @@ arming and remains set. PID 1358 (parent 1352) is alive, sleeping, with
 `closed=false`, `vdma_uncertain=true`, `buffers_held=true`. CMA before 36,824
 KiB, after 15,420 KiB (retained resources; not a leak inference).
 
+### 4.1 Offline byte/contract comparison
+
+`offline_packet_compare.py/.txt` compares the captured S2MM buffer words with
+the RLE_PACKET_V1 contract (expected header from
+`docs/superpowers/specs/2026-10-28-rle-design.md`, `axis_rle_encoder.v`, and the
+retained netlist vector
+`data/results/rle-20261028-final-sim/vectors/baseline-expected.hex`).
+
+- Expected word 0/1: `0x31454c52` / `0x00000001`.
+- Captured words (independent `/dev/mem` read): `0x00000001` / `0x00000000`;
+  no simple shift matches the expected header.
+- The candidate RLE module is `axis_dma_rle_pipeline_bd:1.0` (same RTL family as
+  the retained netlist vector).
+- **Caveat:** the independent `/dev/mem` read bypasses the PYNQ buffer cache
+  invalidation used by the runtime, so those words are corroborating only, not
+  authoritative packet bytes. The authoritative observation is the runtime's
+  post-`sync_from_device` `decode_packet` rejection at h[0]/h[1].
+- This does not yet distinguish (a) a PL RLE packet/header-content issue from
+  (b) a software buffer-sync/mapping issue. Resolving it requires a reliable
+  read of the synced RX buffer or a trace that does not touch the HOLD; the
+  decoder must not be patched to bypass the check.
+
 ## 5. Evidence
 
 Directory: `data/results/jj2026p-board-smoke-10frame-20261103/`
@@ -121,6 +151,8 @@ Directory: `data/results/jj2026p-board-smoke-10frame-20261103/`
 | `jpeg-smoke-010.python.pid` | `53ee0258ae5308cd63fe2ce806596f62e173803ca1af6bdd120e519f1e1b5f9c` |
 | `hold-state.txt` | `f7b31805ab2c2eea7bab7a36aa1bcffe6cdfffa6bed7a30b00a1933b201e7e22` |
 | `hold-registers.txt` | `65a9d52ef57af725ee5e2b5f3406b7007325af7f46df3a3f7a24cee339b43dae` |
+| `offline_packet_compare.txt` | `5898e72c9791ac8b6a3dd0c2d623c34e17df7a760723c836d122b0695542505a` |
+| `compare_packet_contract.py` | `6225eaa8c3f67f052b17753927b8636aad991f73a83b8f21457ec0a33da6c885` |
 
 ## 6. Status and next step
 
@@ -129,7 +161,9 @@ Directory: `data/results/jj2026p-board-smoke-10frame-20261103/`
 - DMA errors: none; both channels Idle. The failure is RLE packet header
   validation after a completed transfer.
 - The strict-zero first-transfer fix worked; this is a downstream data-format
-  issue.
+  issue. The actual reason is not yet resolved offline: the independent buffer
+  read is not cache-authoritative, and the runtime rejection is the only
+  authoritative observation.
 - HOLD must remain alive; do not Ctrl+C/kill/reset/reload/retry. Another reboot
   requires separate authorization.
 - Offline follow-up should inspect the PL RLE packet header/layout produced by
