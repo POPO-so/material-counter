@@ -935,6 +935,47 @@ def test_dashboard_cached_mixed_text_matches_independent_legacy_pillow_pixels(
     assert np.array_equal(np.asarray(actual), np.asarray(expected))
 
 
+def test_dashboard_ascii_text_reuses_glyph_rasterization_without_pixel_changes(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    font = c._latin[12]
+    text = "0" * 128
+    next_text = text + "0"
+
+    def legacy_image(value):
+        image = api.Image.new("L", (2400, 80), 12)
+        draw = api.ImageDraw.Draw(image)
+        x = 10.0
+        for character in value:
+            draw.text((x, 24), character, font=font, fill=238, anchor="ls")
+            x += font.getlength(character)
+        return image
+
+    expected = legacy_image(text)
+    expected_next = legacy_image(next_text)
+    actual = api.Image.new("L", (2400, 80), 12)
+    calls = []
+    real_text = api.ImageDraw.ImageDraw.text
+
+    def track_text(draw, xy, value, *args, **kwargs):
+        calls.append(value)
+        return real_text(draw, xy, value, *args, **kwargs)
+
+    monkeypatch.setattr(api.ImageDraw.ImageDraw, "text", track_text)
+    c._text(api.ImageDraw.Draw(actual), (10, 12), text, 12, 238)
+
+    assert np.array_equal(np.asarray(actual), np.asarray(expected))
+    assert len(calls) < len(text)
+
+    c._text_cache.clear()
+    calls.clear()
+    actual_next = api.Image.new("L", (2400, 80), 12)
+    c._text(api.ImageDraw.Draw(actual_next), (10, 12), next_text, 12, 238)
+
+    assert calls == []
+    assert np.array_equal(np.asarray(actual_next), np.asarray(expected_next))
+
+
 def test_dashboard_text_cache_has_a_fixed_memory_bound():
     c = _dashboard_composer()
     image = _api().Image.new("L", (400, 40), 0)

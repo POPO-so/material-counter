@@ -325,6 +325,11 @@ class DashboardComposer:
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
                        for size in (12, 14, 16, 18, 20, 24, 28, 34)}
         self._text_cache = OrderedDict()
+        self._latin_advance_cache = {
+            (size, chr(codepoint)): self._latin[size].getlength(chr(codepoint))
+            for size in (12, 20) for codepoint in range(32, 127)
+        }
+        self._latin_glyph_cache = OrderedDict()
         self._gutter_wrap_cache = OrderedDict()
         self._key = None
         self._chrome = np.zeros_like(self.canvas)
@@ -354,6 +359,75 @@ class DashboardComposer:
             return "--"
         return f"{value:,.{digits}f}{suffix}"
 
+    def _latin_advance(self, character, size):
+        key = (size, character)
+        advance = self._latin_advance_cache.get(key)
+        if advance is None:
+            advance = self._latin[size].getlength(character)
+            self._latin_advance_cache[key] = advance
+        return advance
+
+    def _latin_glyph(self, character, size, phase):
+        key = (size, character, phase)
+        cached = self._latin_glyph_cache.get(key)
+        if cached is not None:
+            self._latin_glyph_cache.move_to_end(key)
+            return cached
+
+        margin = 64
+        font = self._latin[size]
+        advance = self._latin_advance(character, size)
+        glyph = Image.new(
+            "L", (max(1, margin * 2 + math.ceil(advance) + 16), size * 4 + margin * 2), 0)
+        ImageDraw.Draw(glyph).text(
+            (margin + phase / 64, margin + size), character,
+            font=font, fill=255, anchor="ls")
+        bounds = glyph.getbbox()
+        if bounds is None:
+            cached = (0, 0, glyph.crop((0, 0, 1, 1)))
+        else:
+            left, top, right, bottom = bounds
+            cached = (left - margin, top - margin - size,
+                      glyph.crop((left, top, right, bottom)))
+
+        self._latin_glyph_cache[key] = cached
+        if len(self._latin_glyph_cache) > 512:
+            self._latin_glyph_cache.popitem(last=False)
+        return cached
+
+    def _latin_text_mask(self, text, size, margin):
+        advances = [self._latin_advance(character, size) for character in text]
+        width = margin * 2 + sum(advances)
+        pixels = np.zeros((size * 4 + margin * 2,
+                           max(1, math.ceil(width))), dtype=np.uint8)
+        x = float(margin)
+        for character, advance in zip(text, advances):
+            base_x = math.floor(x)
+            phase = int(round((x - base_x) * 64))
+            if phase == 64:
+                base_x += 1
+                phase = 0
+            offset_x, offset_y, glyph = self._latin_glyph(character, size, phase)
+            glyph_pixels = np.asarray(glyph)
+            glyph_x = base_x + offset_x
+            glyph_y = margin + size + offset_y
+            left, top = max(0, glyph_x), max(0, glyph_y)
+            right = min(pixels.shape[1], glyph_x + glyph_pixels.shape[1])
+            bottom = min(pixels.shape[0], glyph_y + glyph_pixels.shape[0])
+            if left < right and top < bottom:
+                source = glyph_pixels[top - glyph_y:bottom - glyph_y,
+                                      left - glyph_x:right - glyph_x]
+                destination = pixels[top:bottom, left:right]
+                np.copyto(destination, source, where=source != 0)
+            x += advance
+
+        mask = Image.fromarray(pixels)
+        bounds = mask.getbbox()
+        if bounds is None:
+            return 0, 0, mask.crop((0, 0, 1, 1))
+        left, top, right, bottom = bounds
+        return left - margin, top - margin, mask.crop(bounds)
+
     def _text(self, draw, xy, text, size, fill):
         key = ("mixed", text, size)
         cached = self._text_cache.get(key)
@@ -361,24 +435,27 @@ class DashboardComposer:
             # Render at an integer offset so glyph bearings and fractional
             # advances match the original per-character drawing path exactly.
             margin = 64
-            width = margin * 2 + sum(
-                (self._latin[size] if ord(character) < 256 else self._fonts[size])
-                .getlength(character) for character in text)
-            mask = Image.new("L", (max(1, math.ceil(width)), size * 4 + margin * 2), 0)
-            mask_draw = ImageDraw.Draw(mask)
-            x = float(margin)
-            for character in text:
-                font = self._latin[size] if ord(character) < 256 else self._fonts[size]
-                mask_draw.text((x, margin + size), character, font=font,
-                               fill=255, anchor="ls")
-                x += font.getlength(character)
-            bounds = mask.getbbox()
-            if bounds is None:
-                cached = (0, 0, mask.crop((0, 0, 1, 1)))
+            if all(ord(character) < 256 for character in text):
+                cached = self._latin_text_mask(text, size, margin)
             else:
-                left, top, right, bottom = bounds
-                cached = (left - margin, top - margin,
-                          mask.crop((left, top, right, bottom)))
+                width = margin * 2 + sum(
+                    (self._latin[size] if ord(character) < 256 else self._fonts[size])
+                    .getlength(character) for character in text)
+                mask = Image.new("L", (max(1, math.ceil(width)), size * 4 + margin * 2), 0)
+                mask_draw = ImageDraw.Draw(mask)
+                x = float(margin)
+                for character in text:
+                    font = self._latin[size] if ord(character) < 256 else self._fonts[size]
+                    mask_draw.text((x, margin + size), character, font=font,
+                                   fill=255, anchor="ls")
+                    x += font.getlength(character)
+                bounds = mask.getbbox()
+                if bounds is None:
+                    cached = (0, 0, mask.crop((0, 0, 1, 1)))
+                else:
+                    left, top, right, bottom = bounds
+                    cached = (left - margin, top - margin,
+                              mask.crop((left, top, right, bottom)))
         else:
             self._text_cache.move_to_end(key)
         self._cache_text(key, cached)
@@ -438,7 +515,8 @@ class DashboardComposer:
         current_prefix_widths = []
         for character in key[0]:
             font = self._latin[size] if ord(character) < 256 else self._fonts[size]
-            character_width = font.getlength(character)
+            character_width = (self._latin_advance(character, size)
+                               if ord(character) < 256 else font.getlength(character))
             if current and current_width + character_width > max_width:
                 rows.append(current)
                 row_prefix_widths.append(current_prefix_widths)
