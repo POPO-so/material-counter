@@ -1,5 +1,6 @@
 import binascii
 import importlib.util
+import math
 import uuid
 from pathlib import Path
 
@@ -557,6 +558,29 @@ def test_dashboard_key_stats_report_first_redraw_and_hits():
     }
 
 
+def test_v12_dashboard_help_keeps_btn3_page_behavior(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    texts = _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+
+    c.render(gray, gray, uuid.uuid4(), 1, dashboard={"page": 0})
+
+    rendered_text = "\n".join(texts)
+    assert "BTN3 循环切换信息页" in rendered_text
+    assert "BTN3 预留" not in rendered_text
+    assert "SW0" not in rendered_text
+
+
+def test_dashboard_gutter_wrap_honors_size_and_row_limit():
+    c = _dashboard_composer()
+
+    rows = c._wrap_gutter("CPU 来源 camera process", 72, 12, 1)
+
+    assert len(rows) == 1
+    assert rows[0].endswith("…")
+
+
 @pytest.mark.parametrize(("page", "page_lines", "expected"), [
     (1, ("第一页详情",), "第一页详情"),
     (2, ("第二页详情",), "第二页详情"),
@@ -814,17 +838,18 @@ def test_dashboard_unavailable_percentages_show_dashes_and_empty_rings():
     assert image[599, 140 - 18] == 76
 
 
-def test_dashboard_viewport_is_binary_512_by_320_four_fifths_scale():
+def test_dashboard_viewport_is_binary_460_by_288_dashboard_scale():
     c = _dashboard_composer()
     gray = np.full((400, 640), 103, dtype=np.uint8)
     binary = np.zeros_like(gray)
     image = c.render(gray, binary, uuid.uuid4(), 1)
 
-    assert c.VIEW == (384, 146, 512, 320)
+    assert c.VIEW == (398, 154, 460, 288)
     assert image.shape == (720, 1280)
     assert image[200, 420] == 0
     assert image[300, 800] == 0
-    assert image[450, 895] == 0
+    x, y, width, height = c.VIEW
+    assert image[y + height - 1, x + width - 1] == 0
 
 
 def test_dashboard_mode_exposure_and_pl_status_change_without_hiding_rate_panels():
@@ -855,10 +880,11 @@ def test_dashboard_binary_view_uses_four_fifths_nearest_golden():
                      dashboard={"count": 1})
     x, y, width, height = c.VIEW
     expected = binary[np.arange(height) * 400 // height][:, np.arange(width) * 640 // width]
-    assert c.VIEW == (384, 146, 512, 320)
+    assert c.VIEW == (398, 154, 460, 288)
     visible = np.ones((height, width), dtype=bool)
-    visible[:, 248:265] = False
-    visible[:40, 260:] = False
+    line_x = math.floor(320 * width / 640 + 0.5)
+    visible[:, max(0, line_x - 9):min(width, line_x + 10)] = False
+    visible[:40, min(width, line_x + 12):] = False
     assert np.array_equal(image[y:y + height, x:x + width][visible], expected[visible])
 
 

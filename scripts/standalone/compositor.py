@@ -309,7 +309,7 @@ class DashboardComposer:
     layouts retain the same top/bottom session markers for the PL observer.
     """
 
-    VIEW = (384, 146, 512, 320)
+    VIEW = (398, 154, 460, 288)
 
     def __init__(self, font_path, *, latin_font_path=None,
                  gray_interpolation=cv2.INTER_AREA):
@@ -317,11 +317,11 @@ class DashboardComposer:
             raise ValueError("gray_interpolation must be INTER_AREA or INTER_LINEAR")
         self.gray_interpolation = gray_interpolation
         self.canvas = np.zeros((HEIGHT, WIDTH), dtype=np.uint8)
-        self._work = np.empty((320, 512), dtype=np.uint8)
+        self._work = np.empty((288, 460), dtype=np.uint8)
         self._fonts = {size: ImageFont.truetype(str(font_path), size)
-                       for size in (12, 18, 20, 24, 34)}
+                       for size in (12, 14, 16, 18, 20, 24, 34)}
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
-                       for size in (12, 18, 20, 24, 28, 34)}
+                       for size in (12, 14, 16, 18, 20, 24, 28, 34)}
         self._text_cache = OrderedDict()
         self._gutter_wrap_cache = OrderedDict()
         self._key = None
@@ -421,28 +421,46 @@ class DashboardComposer:
         self._whole_latin_text(draw, (x + 55, center_y + 2), value_text, 18,
                                226 if valid else 142)
 
-    def _wrap_gutter(self, text, max_width=286):
-        key = (str(text), max_width)
+    def _wrap_gutter(self, text, max_width=286, size=18, max_rows=None):
+        key = (str(text), max_width, size, max_rows)
         rows = self._gutter_wrap_cache.get(key)
         if rows is not None:
             self._gutter_wrap_cache.move_to_end(key)
             return rows
         rows, current = [], ''
         for character in key[0]:
-            font = self._latin[18] if ord(character) < 256 else self._fonts[18]
             trial = current + character
-            if current and font.getlength(trial) > max_width:
+            trial_width = sum(
+                (self._latin[size] if ord(ch) < 256 else self._fonts[size]).getlength(ch)
+                for ch in trial)
+            if current and trial_width > max_width:
                 rows.append(current)
                 current = character
             else:
                 current = trial
         if current:
             rows.append(current)
+        if max_rows is not None and len(rows) > max_rows:
+            rows = rows[:max_rows]
+            last = rows[-1]
+            font_for = lambda value: sum(
+                (self._latin[size] if ord(ch) < 256 else self._fonts[size]).getlength(ch)
+                for ch in value)
+            while last and font_for(last + "…") > max_width:
+                last = last[:-1]
+            rows[-1] = last + "…"
         rows = tuple(rows)
         self._gutter_wrap_cache[key] = rows
         if len(self._gutter_wrap_cache) > 128:
             self._gutter_wrap_cache.popitem(last=False)
         return rows
+
+    def _draw_wrapped(self, draw, text, x, y, width, size, fill, max_rows, line_height):
+        rows = self._wrap_gutter(text, width, size, max_rows)
+        for row in rows:
+            self._text(draw, (x, y), row, size, fill)
+            y += line_height
+        return y
 
     def _redraw_chrome(self, dashboard, binary_background, target_count, lines):
         def strip_prefix(text, prefix):
@@ -472,13 +490,6 @@ class DashboardComposer:
         static_pies = tuple(display_percent(value) for value in raw_static_pies)
         pie_key = live_pies + static_pies
         state = str(dashboard.get("state", "RUNNING"))
-        raw_page_lines = dashboard.get("page_lines", ())
-        if isinstance(raw_page_lines, str):
-            page_lines = (raw_page_lines,)
-        elif isinstance(raw_page_lines, (tuple, list)):
-            page_lines = tuple(str(line) for line in raw_page_lines if isinstance(line, str))
-        else:
-            page_lines = ()
         chain = dashboard.get("resolution_chain")
         if isinstance(chain, (tuple, list)) and chain:
             input_resolution = str(chain[0])
@@ -603,10 +614,7 @@ class DashboardComposer:
             draw.rounded_rectangle((x, 58, x + 300, 126), radius=10, fill=42)
             self._text(draw, (x + 16, 62), label, 18, 170)
             self._whole_latin_text(draw, (x + 16, 84), value, 34, 248)
-        draw.rounded_rectangle((24, 136, 1256, 474), radius=10, fill=25, outline=58)
-        self._whole_latin_text(draw, (42, 157), "CAM 01", 24, 232)
-        for y, text in zip((194, 222, 250), summary[:3]):
-            self._text(draw, (42, y), text, 18, 158)
+        draw.rounded_rectangle((24, 136, 1256, 474), radius=10, fill=25, outline=66)
         axis_label = "X" if axis == "x" else "Y"
         direction_label = (("左→右" if direction == 1 else "右→左") if axis == "x"
                            else ("上→下" if direction == 1 else "下→上"))
@@ -691,13 +699,13 @@ class DashboardComposer:
             text for text in (button_status, exposure_latency_text) if text)
         if page == 2:
             runtime_rows = (
-                ("按键 / SW0", control_status),
+                ("按键状态", control_status),
                 ("CPU 来源", strip_prefix(cpu_source_text, "CPU 来源")),
                 ("队列", strip_prefix(queue_summary_text, "队列")),
                 ("线程", strip_prefix(thread_text, "threads")),
             )
         else:
-            runtime_rows = (("按键 / SW0", control_status), ("", ""), ("", ""), ("", ""))
+            runtime_rows = (("按键状态", control_status), ("", ""), ("", ""), ("", ""))
         for index, (label, value) in enumerate(runtime_rows):
             if not label and not value:
                 continue
@@ -711,9 +719,9 @@ class DashboardComposer:
                       size=12, fill=206)
         draw.line((left_x, 440, left_x + left_width, 440), fill=100, width=1)
         draw.line((right_x, 440, right_x + right_width, 440), fill=100, width=1)
-        centered("BTN0 清零累计计数 · BTN1 切换诊断模式 · BTN2 调整曝光 · BTN3 预留",
+        centered("BTN0 清零累计计数 · BTN1 切换诊断模式 · BTN2 调整曝光 · BTN3 循环切换信息页",
                  42, 442, 1190, 16, 250)
-        centered("SW0 ON + BTN2：增加曝光 · SW0 OFF + BTN2：减少曝光",
+        centered("BTN2 短按增加曝光 · 长按降低曝光",
                  42, 459, 1190, 16, 246)
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"), live_pies, False),
