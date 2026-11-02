@@ -118,3 +118,29 @@ def test_region_gate_rejects_negative_g2_timing():
             assert "timing" in str(exc).lower()
         else:
             raise AssertionError("a G2 build with negative WNS was accepted")
+
+
+def test_preflight_accepts_current_g2_interface_when_receipt_schema_matches():
+    with tempfile.TemporaryDirectory() as temporary:
+        source = Path(temporary) / "rle_region_features.v"
+        source.write_text(
+            "module rle_region_features; output candidate_flag; "
+            "output candidate_reason; input cfg_max_area; input cfg_max_w; "
+            "input cfg_max_h; input cfg_aspect_x16; endmodule\n",
+            encoding="utf-8")
+        joint_prepare.check_region_source(
+            source, "material-counter.rle-region-g2-green.v1")
+
+
+def test_preflight_rejects_current_g2_source_under_legacy_bram_gate():
+    with tempfile.TemporaryDirectory() as temporary:
+        source = Path(temporary) / "rle_region_features.v"
+        source.write_text(
+            "module rle_region_features; output candidate_flag; endmodule\n",
+            encoding="utf-8")
+        try:
+            joint_prepare.check_region_source(source)
+        except ValueError as exc:
+            assert "BRAM" in str(exc)
+        else:
+            raise AssertionError("current G2 source was accepted by the legacy gate")

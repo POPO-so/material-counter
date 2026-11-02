@@ -148,9 +148,11 @@ def preflight(args) -> dict:
     nets = design["interface_nets"]
     require(any(set(n["interface_ports"]) == {"axi_dma_0/M_AXIS_MM2S", "image_pipeline/s_axis"} for n in nets.values()), "baseline image stream changed")
     region = args.region.resolve()
-    region_text = region.read_text(encoding="utf-8")
-    require("module rle_region_features" in region_text and "stats_mem" in region_text and "ram_style" in region_text,
-            "region source does not match the expected BRAM module")
+    region_receipt = read_json(args.region_green) if args.region_green else None
+    region_schema = region_receipt.get("schema") if region_receipt else None
+    check_region_source(region, region_schema)
+    if region_receipt:
+        check_region_receipt(region_receipt, sha(region))
     jpeg_source = args.jpeg_source.resolve()
     pending = []
     component = args.hls_ip.resolve() / "component.xml"
@@ -260,6 +262,21 @@ def check_region_receipt(receipt: dict,
             isinstance(memory.get("row_bram36"), int) and memory["row_bram36"] > 0 and
             memory.get("stats_lutram") == 0,
             "region reference_diff/limits/memory_gate BRAM evidence is not PASS")
+
+
+def check_region_source(path: Path, receipt_schema: str | None = None) -> None:
+    """Check the selected RTL shape for its explicitly declared evidence schema."""
+    source = path.read_text(encoding="utf-8")
+    require("module rle_region_features" in source,
+            "region source does not define rle_region_features")
+    if receipt_schema == "material-counter.rle-region-g2-green.v1":
+        require(all(port in source for port in (
+            "candidate_flag", "candidate_reason", "cfg_max_area", "cfg_max_w",
+            "cfg_max_h", "cfg_aspect_x16")),
+            "current G2 region source is missing candidate configuration ports")
+    else:
+        require("stats_mem" in source and "ram_style" in source,
+                "region source does not match the expected BRAM module")
 
 
 def tcl_scalar(value) -> str:
