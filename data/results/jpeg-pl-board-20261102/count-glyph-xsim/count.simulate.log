@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Mon Nov  2 06:22:23 2026
+# Process ID         : 50140
+# Current directory  : T:/overlay-xsim-jj1102/overlay-xsim-20261102-062219-f9388e77
+# Command line       : xsim.exe -log count.simulate.log -mode tcl -source {xsim.dir/overlay_count/xsim_script.tcl}
+# Log file           : T:/overlay-xsim-jj1102/overlay-xsim-20261102-062219-f9388e77/count.simulate.log
+# Journal file       : T:/overlay-xsim-jj1102/overlay-xsim-20261102-062219-f9388e77\xsim.jou
+# Running On         : JiA
+# Platform           : Windows 11
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13650HX
+# CPU Frequency      : 2803 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16858 MB
+# Swap memory        : 37588 MB
+# Total Virtual      : 54447 MB
+# Available Virtual  : 8653 MB
+#-----------------------------------------------------------
+source xsim.dir/overlay_count/xsim_script.tcl
+# xsim {overlay_count} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+TEST_PASS count glyph: BCD 7, black panel, same pixel-domain frame latch
+$finish called at time : 55176 ns : File "C:/Users/14173/Documents/material-counter/.runtime/worktrees/jpeg-probe-20261101/fpga/experimental/jpeg_integration/tb_overlay_count_atomic.sv" Line 124
+exit
+INFO: [Common 17-206] Exiting xsim at Mon Nov  2 06:22:27 2026...

@@ -26,6 +26,12 @@ HDMI monitor 核验帧身份和扫描，不统计 mask/框的非零像素，也�
 
 这是已知合成轨迹上的硬件链路功能验证，不代表真实物料计数准确率。HDMI monitor 仍只核验帧标记与扫描；不抽样 mask、框或计数字形像素，也没有外接显示器观察。
 
+## 累计计数字形 RTL XSim
+
+独立 count-glyph 仿真在数字像素域验证了 BCD 数字 7、黑色计数面板和同一帧 latch；另一个 atomic-update 用例验证相邻帧的面板/掩膜银行切换。结果收据为 [overlay_xsim_receipt.json](count-glyph-xsim/overlay_xsim_receipt.json)，状态 PASS；count 与 atomic 日志分别为 [count.simulate.log](count-glyph-xsim/count.simulate.log) 和 [atomic.simulate.log](count-glyph-xsim/atomic.simulate.log)。源码 SHA 与收据一致（overlay `e44969b0…a5e8871`、count testbench `0fcde17c…12b838b`）。
+
+这补充的是 RTL 像素逻辑证据。板载 HDMI monitor 没有采样计数字形像素，XSim 也没有通过物理 TMDS/外接显示器，因此实体显示仍待人工观察。
+
 ## 无效 fixture 的安全恢复记录
 
 首次探针误用了单分量灰度 JPEG；联合 decoder 只接受上述三分量格式。输入副本：[unsupported-grayscale-640x400.jpg](unsupported-grayscale-640x400.jpg)。报告 [positive-output-probe.json](positive-output-probe.json)，SHA-256：533f8d7dede7ca7fb9a901a16f04223a743f941734c3b31075a2ed330834c60e，记录 DMA 完成超时和 FAIL_HOLD。寄存器读回的 JPEG status=0x10 对应结构错误；当时 S2MM 仍活动，runner 保留缓冲。清 Run/Stop 后 S2MM 未及时 halted，因此对 AXI DMA 发 soft reset，确认 MM2S/S2MM 与 HDMI VDMA 的 Halted 位后，才终止本次 runner；随后 CMA Free 从 18,860 KiB 回到 55,292 KiB。此后 runner 增加输入 header 预检，灰度或不兼容 JPEG 在任何硬件访问前拒绝。
@@ -34,6 +40,10 @@ HDMI monitor 核验帧身份和扫描，不统计 mask/框的非零像素，也�
 
 该测试贯通了真实 USB MJPEG 输入、PL JPEG 解码、RLE/FRG 处理路径和进入 HDMI 前端的 PL 像素流。它证明候选 BIT/HWH 在本次 boot ID 99f9fcff-0685-42ed-a8df-9822cfca6cd0 下完成了监视器核对。
 
-板载监视器读取的是 HDMI 输出像素流及写入画面的身份标记；没有人员观察外接显示器，因此不作为物理显示器肉眼验收。120 帧样本没有检测到前景物料，total_count=0 不能证明物料检测或计数准确率。实测吞吐量是本次采集、解码、处理和监视器核对的端到端结果，不是 HDMI 刷新率或持续满负载性能保证。
+板载监视器读取的是 HDMI 输出像素流及写入画面的身份标记；独立 RTL XSim 覆盖了数字 count glyph 像素，但没有人员观察外接显示器，因此仍不作为物理显示器肉眼验收。120 帧样本没有检测到前景物料，total_count=0 不能证明物料检测或计数准确率。实测吞吐量是本次采集、解码、处理和监视器核对的端到端结果，不是 HDMI 刷新率或持续满负载性能保证。
 
 构建状态字段 ROUTED_NOT_BOARD_VERIFIED 与原 route receipt 的 board_ready=0 是构建/route 阶段生成的不可变快照；本次板测由单独的 board-run.json 记录，不能回写成 route 当时已验证。
+
+## 最终 route CDC 复核
+
+T7 最终 routed CDC 报告、timing 报告、route 收据及两份 CDC 约束已归档于 [route-cdc-review](route-cdc-review/README.md)。复核确认 CDC-13 critical 为 0；998 条 CDC-15 和 1 条 CDC-6 均按最终 routed 报告完成路径归因，warning 仍保留并有对应约束/协议说明。`datapath_only` 例外路径不做 hold 检查；该限制及握手稳定数据的处置依据已写入复核记录。没有为隐藏 warning 添加 false path。

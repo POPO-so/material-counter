@@ -240,17 +240,25 @@ exceptions.
 T6 BD wiring/readback completed in isolated stage `T:/jj1102e`; receipt
 `T:/jj1102e/joint-connected.tcldict` is `CONNECTED_NOT_BUILT`, with manifest
 SHA-256 `1c5cb94478f7b3923b34ef24727e98aa68ae0440d8e18a5fe7294afa00fc5dd4`.
-The PS `run_counter.py --jpeg-pl` dispatch reaches the experimental raw-MJPEG
-runner and `JpegRleDmaTransport`; targeted transport/dispatch tests passed
-(51 tests). The default entry still uses OpenCV software decode.
+The PS `run_counter.py` camera/hardware entry now defaults to the raw-MJPEG
+runner and `JpegRleDmaTransport`. `--jpeg-pl` remains a compatibility alias;
+`--software-decode` explicitly selects the legacy OpenCV-decode + PL-RLE path.
+The JPEG runner still requires `--execute`, pinned routed BIT/HWH hashes, boot
+ID validation, and its existing camera/DMA preflight. Earlier board evidence
+used the explicit alias; the revised default dispatch has local focused tests
+but awaits the user's next board run.
 
 T7 joint synthesis and route completed in candidate `T:/jj1102l`. Final route
 resources were 36,483 LUT, 38,734 FF, 30 BRAM36 + 55 BRAM18, and 49 DSP.
 Timing closed at WNS +0.032 ns / WHS +0.020 ns with zero failing setup or hold
 endpoints. All 69,364 routable nets were fully routed, with zero routing errors.
-The CDC report has no CDC-13 critical findings; CDC-15 mailbox-path and CDC-6
-warnings remain documented for review. DRC/methodology findings are warnings
-only. The route receipt is `T:/jj1102l/joint-route.tcldict` (`ROUTE_PASS`). A
+The final route CDC report has no CDC-13 critical findings. Its 998 CDC-15
+warnings (965 frame-monitor mailbox paths and 33 overlay publish paths) and one
+CDC-6 VTC internal path have been reviewed against the routed report and exact
+constraints; all are classified and retained as warnings, not suppressed.
+The hash-bound review and source reports are in
+`data/results/jpeg-pl-board-20261102/route-cdc-review/`. DRC/methodology
+findings are warnings only. The route receipt is `T:/jj1102l/joint-route.tcldict` (`ROUTE_PASS`). A
 BIT was then generated directly from `joint-routed.dcp` (4,045,770 bytes; the
 bitgen precondition DRC reported 0 errors), and the HWH from the same candidate
 BD was packaged beside it. Their SHA-256 values and provenance are recorded in
