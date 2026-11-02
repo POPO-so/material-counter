@@ -16,14 +16,14 @@ puts [ipcfg::write_evidence [file join $joint::evidence baseline.tcldict] $befor
 # every original source remains an immutable manifest input.
 # Vivado 2026.1 requires the module-reference IP object, not its BD cell.
 set region_reference [joint::one [get_ips -all *image_pipeline*] image_pipeline_module_reference]
-set expected_region_result [file normalize [get_property NAME $region_reference]]
+set expected_region_result [joint::module_reference_xci $region_reference]
 joint::capture_refresh_region [list update_module_reference $region_reference] $expected_region_result
 
 # The binary_overlay module reference also contains the selected region RTL.
 # Keep it on the ordinary capture path: the image_pipeline-only counter-reset
 # review above does not authorize adapting another module reference operation.
 set overlay_reference [joint::one [get_ips -all *binary_overlay*] binary_overlay_module_reference]
-set expected_overlay_result [file normalize [get_property NAME $overlay_reference]]
+set expected_overlay_result [joint::module_reference_xci $overlay_reference]
 joint::capture overlay_region_refresh [list joint::refresh_module_reference_checked \
     $overlay_reference $expected_overlay_result] {SUCCESS:module_reference_updated}
 joint::capture ip_repository {

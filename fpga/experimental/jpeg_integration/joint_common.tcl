@@ -100,13 +100,39 @@ proc joint::capture {label script {expect {}}} {
 
 # Only refresh_region may enter this narrow review path. The original ipcfg
 # receipt remains FAIL and is never rewritten or treated as a general success.
+proc joint::read_capture_evidence {file summary} {
+    # ipcfg::capture writes the full record (raw/messages/...) to $file but
+    # returns a reduced summary stripping those fields. Read the full record
+    # back from the evidence file (never source/eval it) and verify the summary
+    # agrees, returning the complete data dict for strict downstream checks.
+    set full_content [joint::read_dict $file]
+    if {[string first "schema_version " $full_content] != 0} {
+        error "JOINT_CAPTURE_EVIDENCE_MISSING_SCHEMA:$file"
+    }
+    set full_dict [dict create {*}$full_content]
+    if {[dict get $full_dict schema_version] != 1} {
+        error "JOINT_CAPTURE_EVIDENCE_SCHEMA_VERSION:$file"
+    }
+    set data [dict get $full_dict data]
+    foreach key {status code warning_count critical_count error_count} {
+        if {[dict get $summary $key] ne [dict get $data $key]} {
+            error "JOINT_CAPTURE_SUMMARY_FULL_MISMATCH:$key:$file"
+        }
+    }
+    if {![joint::same_windows_path [dict get $data evidence_path] $file]} {
+        error "JOINT_CAPTURE_EVIDENCE_PATH_MISMATCH:$file"
+    }
+    return $data
+}
+
 proc joint::capture_refresh_region {script expected_result} {
     variable cfg
     variable evidence
     variable sequence
     incr sequence
     set file [file join $evidence [format {%03d-refresh_region.tcldict} $sequence]]
-    set receipt [uplevel 1 [list ipcfg::capture $file $script]]
+    set summary [uplevel 1 [list ipcfg::capture $file $script]]
+    set receipt [joint::read_capture_evidence $file $summary]
     puts $receipt
     if {[dict get $receipt status] eq "OK"} {
         if {![dict exists $receipt raw] || ![joint::same_windows_path [dict get $receipt raw] $expected_result]} {
@@ -165,6 +191,18 @@ proc joint::refresh_module_reference_checked {reference expected_result} {
         error "JOINT_MODULE_REFERENCE_RESULT_MISMATCH:$actual_result"
     }
     return SUCCESS:module_reference_updated
+}
+
+proc joint::module_reference_xci {reference} {
+    # update_module_reference returns the module-reference leaf's .xci path,
+    # whereas get_property NAME returns its instance name. Derive the expected
+    # .xci from the same leaf's NAME plus the block-design ip/ directory so the
+    # full-path check stays strict without re-running the mutating command.
+    set name [get_property NAME $reference]
+    set bd [joint::one [get_files */display.bd] display.bd]
+    set xci [file normalize [file join [file dirname $bd] ip $name $name.xci]]
+    if {![file isfile $xci]} {error "JOINT_MODULE_REFERENCE_XCI_MISSING:$xci"}
+    return $xci
 }
 
 proc joint::require_cfg {cell wanted reason} {
