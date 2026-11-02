@@ -26,11 +26,16 @@ set overlay_reference [joint::one [get_ips -all *binary_overlay*] binary_overlay
 set expected_overlay_result [joint::module_reference_xci $overlay_reference]
 joint::capture overlay_region_refresh [list joint::refresh_module_reference_checked \
     $overlay_reference $expected_overlay_result] {SUCCESS:module_reference_updated}
+# Vivado 2026.1 refuses update_ip_catalog while a BD is open (Ipptcl 7-1614).
+# Persist the refreshed BD, close it, update the IP catalog, then reload it
+# before instantiating the Jaguar cell (which needs the BD open).
+joint::capture persist_and_close {save_bd_design; close_bd_design} {SUCCESS:bd_closed}
 joint::capture ip_repository {
     set existing [get_property ip_repo_paths [current_project]]
     set_property ip_repo_paths [concat $existing [list [dict get $cfg hls_ip]]] [current_project]
     update_ip_catalog
 }
+joint::capture reload_bd {open_bd_design [joint::one [get_files */display.bd] display.bd]} {SUCCESS:bd_reopened}
 joint::capture create_jpeg [list ipcfg::create_cell [dict get $cfg vlnv] $cell] {SUCCESS:created}
 
 # These names come from component.xml. Fail if catalog elaboration differs.
