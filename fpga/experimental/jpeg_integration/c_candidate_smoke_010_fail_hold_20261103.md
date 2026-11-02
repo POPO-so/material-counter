@@ -110,8 +110,9 @@ Read-only register snapshot during HOLD (`hold-registers.txt`):
 | JPEG | CTRL `4` (idle), size `0x00003d38` (15672), frame_id `0`, status `0` |
 | FRG | signature `0x46524731`, status `1`, frame ID `0` |
 
-The MM2S JPEG length (15672), S2MM RLE length (5320), and RLE actual length
-(5320) agree; both DMA channels report Idle and no error. This is therefore a
+The S2MM RLE length (5320) and RLE actual length (5320) agree; the MM2S JPEG
+length (15672) is the compressed input length and is not required to equal the
+RLE output length. Both DMA channels report Idle and no error. This is therefore a
 packet-content/format rejection, not a partial submission, timeout, or DMA
 error. An independent `/dev/mem` read of the S2MM buffer did not show the
 expected magic/version at word 0, but that read bypasses the PYNQ buffer cache

@@ -529,7 +529,8 @@ def check_candidate_dma_idle(*, mmio_factory):
 def make_rx_capture(output: Path):
     """Write the exact bytes handed to decode_packet, bounded to one frame."""
     def capture(frame_id, packet, metadata):
-        base = str(output) + f".rx-frame-{frame_id}"
+        kind = "rx-error-frame" if metadata.get("diagnostic") else "rx-frame"
+        base = str(output) + f".{kind}-{frame_id}"
         bin_path = Path(base + ".bin")
         json_path = Path(base + ".json")
         with bin_path.open("wb") as stream:
@@ -1119,6 +1120,8 @@ def main(argv: list[str] | None = None) -> int:
         if transport is not None:
             report["rx_capture_error"] = getattr(
                 transport, "rx_capture_error", None)
+            report["rx_capture_decision"] = getattr(
+                transport, "rx_capture_decision", None)
         finalize_run(held=held, display=display, transport=transport,
                      allocated=allocated, capture_source=capture_source,
                      report=report, output=args.output, hold_mode=hold_mode,

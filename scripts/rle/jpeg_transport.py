@@ -22,6 +22,7 @@ from .transport import (
 )
 
 JPEG_MAX_BYTES = 512000
+MIN_RLE_PACKET_BYTES = (16 + (WIDTH + HEIGHT + 1) // 2 + 16) * 4
 DMA_CONTROL_RS = 0x1
 DMA_CONTROL_RESET = 0x4
 DMA_STATUS_RESERVED_MASK = 0x8884
@@ -218,7 +219,9 @@ class JpegRleDmaTransport:
         self.first_transfer_guard = first_transfer_guard
         self.rx_capture = rx_capture
         self.rx_capture_error = None
+        self.rx_capture_decision = None
         self._rx_capture_done = False
+        self._rx_diagnostic_done = False
         self.dma_may_be_active = False
         self._closed = False
         self._completed_frames = 0
@@ -338,54 +341,152 @@ class JpegRleDmaTransport:
                 f"RLE raw input mode readback mismatch: 0x{mode:08x}")
         self._raw_mode_configured = True
 
+    def _capture_metadata(self, frame_id: int, packet: bytes,
+                          dma_bytes: int, rle_bytes: int) -> dict:
+        header = (list(struct.unpack_from("<16I", packet))
+                  if len(packet) >= 64 else None)
+        status = int(self.dma_regs.read(DMA_S2MM_STATUS)) & 0xFFFFFFFF
+        da = int(self.dma_regs.read(DMA_S2MM_ADDRESS)) & 0xFFFFFFFF
+        physical = int(self.rx_buffer.physical_address)
+        return {
+            "frame_id": frame_id,
+            "length": len(packet),
+            "sha256": hashlib.sha256(packet).hexdigest(),
+            "head_hex": packet[:64].hex(),
+            "tail_hex": packet[-64:].hex() if len(packet) >= 64 else packet.hex(),
+            "header_words": header,
+            "dma_bytes": dma_bytes,
+            "rle_bytes": rle_bytes,
+            "rx_physical_address": physical,
+            "rx_device_address": int(self.rx_buffer.device_address),
+            "rx_nbytes": int(self.rx_buffer.nbytes),
+            "hardware_s2mm_da": da,
+            "hardware_s2mm_da_msb":
+                int(self.dma_regs.read(DMA_S2MM_ADDRESS + 4)) & 0xFFFFFFFF,
+            "hardware_s2mm_length":
+                int(self.dma_regs.read(DMA_S2MM_LENGTH)) & 0xFFFFFFFF,
+            "hardware_s2mm_status": status,
+            "physical_matches_da": physical == da,
+            "s2mm_idle": bool(status & DMA_IDLE),
+            "completion_state": {
+                "dma_length_matches_rle": dma_bytes == rle_bytes,
+                "rle_state": int(self.rle_control.read(0x08)) & 0xFFFFFFFF,
+                "rle_actual_length": int(self.rle_control.read(0x0C)) & 0xFFFFFFFF,
+            },
+            "raw_capability": int(self.rle_control.read(RLE_RAW_CAPABILITY)) & 0xFFFFFFFF,
+            "input_mode": int(self.rle_control.read(RLE_INPUT_MODE)) & 0xFFFFFFFF,
+        }
+
     def _capture_rx(self, frame_id: int, packet: bytes,
                     dma_bytes: int, rle_bytes: int) -> None:
         """Capture the exact bytes handed to decode_packet; never mask errors."""
-        if self.rx_capture is None or self._rx_capture_done:
+        if self.rx_capture is None:
+            self.rx_capture_decision = {
+                "attempted": False, "reason": "no capture callback"}
+            return
+        if self._rx_capture_done:
             return
         # One attempt per transport: mark it before any metadata read or write
         # so a failed first attempt is never retried on a later frame.
         self._rx_capture_done = True
         try:
-            header = (list(struct.unpack_from("<16I", packet))
-                      if len(packet) >= 64 else None)
-            status = int(self.dma_regs.read(DMA_S2MM_STATUS)) & 0xFFFFFFFF
-            da = int(self.dma_regs.read(DMA_S2MM_ADDRESS)) & 0xFFFFFFFF
-            physical = int(self.rx_buffer.physical_address)
-            metadata = {
-                "frame_id": frame_id,
-                "length": len(packet),
-                "sha256": hashlib.sha256(packet).hexdigest(),
-                "head_hex": packet[:64].hex(),
-                "tail_hex": packet[-64:].hex() if len(packet) >= 64 else packet.hex(),
-                "header_words": header,
-                "dma_bytes": dma_bytes,
-                "rle_bytes": rle_bytes,
-                "rx_physical_address": physical,
-                "rx_device_address": int(self.rx_buffer.device_address),
-                "rx_nbytes": int(self.rx_buffer.nbytes),
-                "hardware_s2mm_da": da,
-                "hardware_s2mm_da_msb":
-                    int(self.dma_regs.read(DMA_S2MM_ADDRESS + 4)) & 0xFFFFFFFF,
-                "hardware_s2mm_length":
-                    int(self.dma_regs.read(DMA_S2MM_LENGTH)) & 0xFFFFFFFF,
-                "hardware_s2mm_status": status,
-                "physical_matches_da": physical == da,
-                "s2mm_idle": bool(status & DMA_IDLE),
-                "completion_state": {
-                    "dma_length_matches_rle": dma_bytes == rle_bytes,
-                    "rle_state": int(self.rle_control.read(0x08)) & 0xFFFFFFFF,
-                    "rle_actual_length": int(self.rle_control.read(0x0C)) & 0xFFFFFFFF,
-                },
-                "raw_capability": int(self.rle_control.read(RLE_RAW_CAPABILITY)) & 0xFFFFFFFF,
-                "input_mode": int(self.rle_control.read(RLE_INPUT_MODE)) & 0xFFFFFFFF,
-            }
+            metadata = self._capture_metadata(frame_id, packet, dma_bytes, rle_bytes)
             self.rx_capture(frame_id, packet, metadata)
+            self.rx_capture_decision = {
+                "attempted": True, "captured": True, "diagnostic": False}
         except Exception as exc:
             # Capture must never replace the decode/transport exception or
             # alter the HOLD decision. KeyboardInterrupt/SystemExit are not
             # Exception subclasses and propagate to the existing main flow.
             self.rx_capture_error = repr(exc)
+            self.rx_capture_decision = {
+                "attempted": True, "captured": False, "diagnostic": False,
+                "reason": repr(exc)}
+
+    def _diagnostic_capture_facts(self) -> tuple[dict, str | None]:
+        """Read endpoint state and decide whether an RX read is safe.
+
+        Reading is allowed only after the write side has stopped: both DMA
+        channels Idle with no error bits, RLE not busy, packet_done observed,
+        and the S2MM/RLE lengths equal, aligned and inside the RX buffer.
+        """
+        mm2s = int(self.dma_regs.read(DMA_MM2S_STATUS)) & 0xFFFFFFFF
+        s2mm = int(self.dma_regs.read(DMA_S2MM_STATUS)) & 0xFFFFFFFF
+        rle_state = int(self.rle_control.read(0x08)) & 0xFFFFFFFF
+        dma_bytes = int(self.dma_regs.read(DMA_S2MM_LENGTH)) & 0xFFFFFFFF
+        rle_bytes = int(self.rle_control.read(0x0C)) & 0xFFFFFFFF
+        facts = {"mm2s_status": mm2s, "s2mm_status": s2mm,
+                 "rle_state": rle_state, "dma_bytes": dma_bytes,
+                 "rle_bytes": rle_bytes}
+        if mm2s & DMA_STATUS_ERROR_MASK:
+            return facts, "MM2S DMA error bits set"
+        if s2mm & DMA_STATUS_ERROR_MASK:
+            return facts, "S2MM DMA error bits set"
+        if not mm2s & DMA_IDLE:
+            return facts, "MM2S DMA is not idle"
+        if not s2mm & DMA_IDLE:
+            return facts, "S2MM DMA is not idle"
+        if rle_state & 0x1:
+            return facts, "RLE pipeline is busy"
+        if not rle_state & 0x2:
+            return facts, "RLE packet_done was not observed"
+        if dma_bytes != rle_bytes:
+            return facts, "DMA and RLE lengths disagree"
+        if (dma_bytes % 4 or
+                not MIN_RLE_PACKET_BYTES <= dma_bytes <= RX_CAPACITY):
+            return facts, "DMA length is outside the packet bounds"
+        if int(self.rx_buffer.nbytes) < dma_bytes:
+            return facts, "DMA length exceeds the RX buffer"
+        return facts, None
+
+    def _capture_rx_diagnostic(self, frame_id: int, exc: Exception) -> None:
+        """Capture an error frame only after the endpoint is proven quiescent.
+
+        The original completion exception is always re-raised by the caller;
+        this path never accepts a frame, publishes, retries, or releases.
+        """
+        if self.rx_capture is None:
+            self.rx_capture_decision = {
+                "attempted": False, "reason": "no capture callback"}
+            return
+        if self._rx_diagnostic_done:
+            return
+        self._rx_diagnostic_done = True
+        decision = {"attempted": True, "captured": False, "diagnostic": True,
+                    "original_error": repr(exc),
+                    "original_error_type": type(exc).__name__}
+        try:
+            facts, reason = self._diagnostic_capture_facts()
+            decision.update(facts)
+            if reason is not None:
+                decision["reason"] = reason
+                self.rx_capture_decision = decision
+                return
+            sync_rx = getattr(self.rx_buffer, "sync_from_device", None)
+            if not callable(sync_rx):
+                decision["reason"] = "RX buffer has no sync_from_device method"
+                self.rx_capture_decision = decision
+                return
+            sync_rx()
+            dma_bytes = facts["dma_bytes"]
+            packet = bytes(memoryview(self.rx_buffer).cast("B")[:dma_bytes])
+            metadata = self._capture_metadata(
+                frame_id, packet, dma_bytes, facts["rle_bytes"])
+            metadata.update({
+                "diagnostic": True,
+                "frame_accepted": False,
+                "original_error": repr(exc),
+                "original_error_type": type(exc).__name__,
+                "safe_capture": dict(facts),
+            })
+            self.rx_capture(frame_id, packet, metadata)
+            decision["captured"] = True
+            decision["length"] = dma_bytes
+            self.rx_capture_decision = decision
+        except Exception as caught:
+            self.rx_capture_error = repr(caught)
+            decision["reason"] = repr(caught)
+            self.rx_capture_decision = decision
 
     def _wait_for_completion(self) -> tuple[int, int]:
         deadline = time.monotonic() + self.timeout_s
@@ -502,7 +603,11 @@ class JpegRleDmaTransport:
         self.rle_control.write(0x00, 1)
         self.jpeg_control.write(JPEG_AP_CTRL, 1)
         self.send_channel.transfer(self.tx_buffer, nbytes=length)
-        dma_bytes, rle_bytes = self._wait_for_completion()
+        try:
+            dma_bytes, rle_bytes = self._wait_for_completion()
+        except Exception as exc:
+            self._capture_rx_diagnostic(frame_id, exc)
+            raise
         if dma_bytes != rle_bytes:
             raise RuntimeError("RLE and S2MM actual lengths disagree")
         if not 32 * 4 <= dma_bytes <= RX_CAPACITY or dma_bytes % 4:

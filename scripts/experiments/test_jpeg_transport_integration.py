@@ -355,6 +355,21 @@ def test_make_rx_capture_writes_exact_bytes_and_metadata(tmp_path):
     assert payload["input_mode"] == 1
 
 
+def test_make_rx_capture_writes_error_named_files_for_diagnostic_frame(tmp_path):
+    packet = b"error packet"
+    metadata = {"diagnostic": True, "frame_accepted": False,
+                "length": len(packet)}
+    capture = runner.make_rx_capture(tmp_path / "run.json")
+    capture(7, packet, metadata)
+    bin_path = tmp_path / "run.json.rx-error-frame-7.bin"
+    json_path = tmp_path / "run.json.rx-error-frame-7.json"
+    assert bin_path.read_bytes() == packet
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    assert payload["schema"] == "material-counter.jpeg-smoke-rx.v1"
+    assert payload["diagnostic"] is True
+    assert payload["frame_accepted"] is False
+
+
 def test_production_guard_transfer_accepts_first_and_second_frame():
     rig = Rig(driver_started=True)
     transport = production_transport(rig)

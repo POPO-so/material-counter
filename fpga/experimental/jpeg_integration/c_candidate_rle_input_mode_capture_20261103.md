@@ -10,6 +10,13 @@ no RTL/BIT/HWH/constraint or startup-bitstream change, no push/merge.
 Status: **offline revision awaiting audit**; `count_accuracy` remains
 `NOT_MEASURED`.
 
+> Correction (2026-11-03): later frozen-source analysis shows the JPEG output
+> is a GRAY1 packetized stream (4 header + 64,000 payload + 4 trailer words,
+> TLAST only on the final word), not a raw gray stream. Selecting `0x74=1`
+> is therefore a protocol error, not a fix. See
+> `c_candidate_raw_input_protocol_capture_20261103.md`. This document is
+> retained as the historical record of the earlier review.
+
 ## 1. Confirmed configuration omission: RLE raw input mode
 
 The candidate build manifest pins `axis_dma_rle_pipeline_bd.v`

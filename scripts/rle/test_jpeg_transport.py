@@ -125,7 +125,8 @@ class Rig:
     def __init__(self, jpeg=b"\xff\xd8raw\xff\xd9", *, jpeg_status=0,
                  rle_packet=None, frg=1, preview=1 << 3, drop=0,
                  dma_error=False, auto_complete=True, late_downstream=False,
-                 driver_started=False):
+                 driver_started=False, rle_error=False, dma_stalled=False,
+                 rle_length_skew=0, rle_state_override=None):
         self.events = []
         self.tx, self.rx = Buffer(JPEG_MAX_BYTES, 0x11000000), Buffer(RX_CAPACITY, 0x12000000)
         self.send, self.recv = Channel("mm2s", self.events), Channel("s2mm", self.events)
@@ -154,6 +155,10 @@ class Rig:
         self.auto_complete = auto_complete
         self.late_downstream = late_downstream
         self.dma_error = dma_error
+        self.rle_error = rle_error
+        self.dma_stalled = dma_stalled
+        self.rle_length_skew = rle_length_skew
+        self.rle_state_override = rle_state_override
         def jpeg_valid_read(offset):
             if offset == 0x24 and self.jpeg.values.get(0x00, 0) & 1:
                 self.jpeg.values[0x24] = 1
@@ -183,9 +188,16 @@ class Rig:
                 roi=(0, 0, WIDTH, HEIGHT), threshold=128)
         self.rx[:len(packet)] = packet
         self.dma.values[0x58] = len(packet)
-        self.rle.values[0x0c] = len(packet)
-        self.rle.values[0x08] = 1 if self.late_downstream else 2
-        self.dma.values[0x04] = self.dma.values[0x34] = 0 if self.late_downstream else 0x1002
+        self.rle.values[0x0c] = len(packet) + self.rle_length_skew
+        self.rle.values[0x08] = (self.rle_state_override
+                                 if self.rle_state_override is not None
+                                 else (0x6 if self.rle_error
+                                       else (1 if self.late_downstream else 2)))
+        if self.dma_stalled:
+            self.dma.values[0x04] = self.dma.values[0x34] = 0x1000
+        else:
+            self.dma.values[0x04] = self.dma.values[0x34] = (
+                0 if self.late_downstream else 0x1002)
         if self.late_downstream:
             self.rle_state_reads = 0
             def finish_downstream(offset):
@@ -373,6 +385,8 @@ def test_rx_capture_matches_decode_input(monkeypatch):
     assert metadata["raw_capability"] == 0x52415731
     assert metadata["s2mm_idle"] is True
     assert metadata["completion_state"]["dma_length_matches_rle"] is True
+    assert metadata.get("diagnostic") is not True
+    assert transport_with_capture.rx_capture_decision["diagnostic"] is False
 
     transport_with_capture.transfer(b"\xff\xd8b\xff\xd9", 10)
     assert len(captures) == 1
@@ -467,6 +481,112 @@ def test_rx_capture_control_exceptions_propagate_unchanged(monkeypatch, exc_type
     assert transport_with_capture.dma_may_be_active is False
     transfers = [event for event in rig.events if event[1] == "transfer"]
     assert [event[0] for event in transfers] == ["s2mm", "mm2s"]
+
+
+def test_diagnostic_capture_runs_only_after_error_frame_is_rejected(monkeypatch):
+    decoded = []
+    real_decode = jpeg_transport.decode_packet
+
+    def record(packet, *args, **kwargs):
+        decoded.append(bytes(packet))
+        return real_decode(packet, *args, **kwargs)
+
+    monkeypatch.setattr(jpeg_transport, "decode_packet", record)
+    calls = []
+    rig = Rig(driver_started=True, rle_error=True)
+    transport_with_capture = transport(
+        rig, rx_capture=lambda *args: calls.append(args))
+    with pytest.raises(TimeoutError, match="completion timed out"):
+        transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9)
+
+    assert decoded == []
+    assert transport_with_capture._completed_frames == 0
+    assert transport_with_capture.dma_may_be_active is True
+    assert len(calls) == 1
+    frame_id, packet, metadata = calls[0]
+    assert frame_id == 9
+    assert metadata["diagnostic"] is True
+    assert metadata["frame_accepted"] is False
+    assert metadata["original_error_type"] == "TimeoutError"
+    assert metadata["dma_bytes"] == metadata["rle_bytes"] == len(packet)
+    assert metadata["safe_capture"]["rle_state"] == 0x6
+    assert rig.rx.sync_from_count == 1
+    assert transport_with_capture.rx_capture_decision == {
+        "attempted": True, "captured": True, "diagnostic": True,
+        "original_error": "TimeoutError('JPEG/RLE/DMA completion timed out')",
+        "original_error_type": "TimeoutError",
+        "mm2s_status": 0x1002, "s2mm_status": 0x1002, "rle_state": 0x6,
+        "dma_bytes": len(packet), "rle_bytes": len(packet),
+        "length": len(packet)}
+    assert not any(event[:3] == ("preview", "write", 0x24)
+                   for event in rig.events)
+    assert sum(event[:2] == ("s2mm", "transfer")
+               for event in rig.events) == 1
+
+
+def test_diagnostic_capture_skips_rx_read_when_dma_not_idle():
+    calls = []
+    rig = Rig(driver_started=True, dma_stalled=True)
+    transport_with_capture = transport(
+        rig, rx_capture=lambda *args: calls.append(args))
+    with pytest.raises(TimeoutError, match="completion timed out"):
+        transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9)
+
+    assert calls == []
+    assert rig.rx.sync_from_count == 0
+    assert transport_with_capture.rx_capture_error is None
+    decision = transport_with_capture.rx_capture_decision
+    assert decision["attempted"] is True
+    assert decision["captured"] is False
+    assert decision["s2mm_status"] == 0x1000
+    assert "not idle" in decision["reason"]
+
+
+def test_diagnostic_capture_skips_rx_read_when_lengths_disagree():
+    calls = []
+    rig = Rig(driver_started=True, rle_error=True, rle_length_skew=4)
+    transport_with_capture = transport(
+        rig, rx_capture=lambda *args: calls.append(args))
+    with pytest.raises(TimeoutError, match="completion timed out"):
+        transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9)
+
+    assert calls == []
+    assert rig.rx.sync_from_count == 0
+    decision = transport_with_capture.rx_capture_decision
+    assert decision["captured"] is False
+    assert decision["dma_bytes"] + 4 == decision["rle_bytes"]
+    assert "lengths disagree" in decision["reason"]
+
+
+def test_diagnostic_capture_skips_rx_read_when_packet_done_missing():
+    calls = []
+    rig = Rig(driver_started=True, rle_state_override=0)
+    transport_with_capture = transport(
+        rig, rx_capture=lambda *args: calls.append(args))
+    with pytest.raises(TimeoutError, match="completion timed out"):
+        transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9)
+
+    assert calls == []
+    assert rig.rx.sync_from_count == 0
+    decision = transport_with_capture.rx_capture_decision
+    assert decision["captured"] is False
+    assert "packet_done was not observed" in decision["reason"]
+
+
+def test_diagnostic_capture_failure_preserves_original_timeout():
+    def bad_capture(*args):
+        raise OSError("capture failed")
+
+    rig = Rig(driver_started=True, rle_error=True)
+    transport_with_capture = transport(rig, rx_capture=bad_capture)
+    with pytest.raises(TimeoutError, match="completion timed out"):
+        transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9)
+
+    assert "capture failed" in (transport_with_capture.rx_capture_error or "")
+    decision = transport_with_capture.rx_capture_decision
+    assert decision["captured"] is False
+    assert "capture failed" in decision["reason"]
+    assert transport_with_capture.dma_may_be_active is True
 
 
 def test_repeated_call_accepts_prior_completed_rle_and_idle_jpeg_state():
