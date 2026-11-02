@@ -16,29 +16,29 @@ puts [ipcfg::write_evidence [file join $joint::evidence baseline.tcldict] $befor
 # every original source remains an immutable manifest input.
 # Vivado 2026.1 requires the module-reference IP object, not its BD cell.
 set region_reference [joint::one [get_ips -all *image_pipeline*] image_pipeline_module_reference]
-set expected_region_result [file normalize [get_property NAME $region_reference]]
+set expected_region_result [joint::module_reference_xci_path display_image_pipeline_0]
 joint::capture_refresh_region [list update_module_reference $region_reference] $expected_region_result
 
 # The binary_overlay module reference also contains the selected region RTL.
 # Keep it on the ordinary capture path: the image_pipeline-only counter-reset
 # review above does not authorize adapting another module reference operation.
 set overlay_reference [joint::one [get_ips -all *binary_overlay*] binary_overlay_module_reference]
-set expected_overlay_result [file normalize [get_property NAME $overlay_reference]]
+set expected_overlay_result [joint::module_reference_xci_path display_binary_overlay_0]
 joint::capture overlay_region_refresh [list joint::refresh_module_reference_checked \
     $overlay_reference $expected_overlay_result] {SUCCESS:module_reference_updated}
-joint::capture ip_repository {
-    set existing [get_property ip_repo_paths [current_project]]
-    set_property ip_repo_paths [concat $existing [list [dict get $cfg hls_ip]]] [current_project]
-    update_ip_catalog
-}
 joint::capture create_jpeg [list ipcfg::create_cell [dict get $cfg vlnv] $cell] {SUCCESS:created}
 
 # These names come from component.xml. Fail if catalog elaboration differs.
 foreach {key mode protocol} {input_intf Slave axis output_intf Master axis control_intf Slave aximm} {
     set pin [joint::one [get_bd_intf_pins $cell/[dict get $cfg $key]] $key]
-    if {![string equal -nocase [get_property MODE $pin] $mode] ||
-        ![string match "xilinx.com:interface:${protocol}:*" [get_property VLNV $pin]]} {
-        error "JOINT_HLS_INTERFACE_CHANGED:$key"
+    set actual_mode [get_property MODE $pin]
+    set actual_vlnv [get_property VLNV $pin]
+    # Vivado BD interface pins report the RTL abstraction VLNV (axis_rtl),
+    # while component.xml's bus type is axis.
+    set expected_vlnv "xilinx.com:interface:${protocol}_rtl:*"
+    if {![string equal -nocase $actual_mode $mode] ||
+        ![string match $expected_vlnv $actual_vlnv]} {
+        error "JOINT_HLS_INTERFACE_CHANGED:$key:mode=$actual_mode:vlnv=$actual_vlnv"
     }
 }
 foreach key {clock_pin reset_pin input_data_pin output_data_pin} {
@@ -69,14 +69,21 @@ joint::capture constraints {
         set matches [get_files -filter "NAME == \"$path\""]
         if {![llength $matches]} {add_files -fileset constrs_1 $path}
         set file [joint::one [get_files -filter "NAME == \"$path\""] $path]
-        set_property USED_IN_SYNTHESIS false $file
+        if {[file tail $path] eq "display_timing.xdc"} {
+            # The late timing file removes rgb2dvi's duplicate, invalid
+            # generated SerialClk in both synthesis and implementation.
+            set_property USED_IN_SYNTHESIS true $file
+        } else {
+            set_property USED_IN_SYNTHESIS false $file
+        }
         set_property PROCESSING_ORDER LATE $file
     }
 }
 joint::capture bd_validation {validate_bd_design}
 joint::capture architecture_readback {joint::check_jpeg} {SUCCESS:joint_jpeg_readback}
 set after [joint::check_preserved $before]
-joint::capture save_bd {save_bd_design; update_compile_order -fileset sources_1}
+puts [joint::record_save_counter_baseline]
+joint::capture_save_design
 joint::verify_sources
 joint::capture live_sources {joint::live_sources}
 puts [ipcfg::write_evidence [file join $out joint-connected.tcldict] [dict create \

@@ -1,158 +1,289 @@
-import importlib.util
+"""Offline tests for the scoped joint Vivado capture review."""
+
+from __future__ import annotations
+
+import contextlib
+import hashlib
+import io
+import json
+import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+from joint_capture_review import AuditError, audit_capture, main
 
 
-MODULE_PATH = Path(__file__).with_name("joint_capture_review.py")
-if not MODULE_PATH.is_file():
-    raise AssertionError("joint_capture_review.py is not implemented yet")
-SPEC = importlib.util.spec_from_file_location("joint_capture_review", MODULE_PATH)
-review = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(review)
+class SynthCaptureAuditTests(unittest.TestCase):
+    def make_receipt(self, root: Path, lines: list[str]) -> dict:
+        native_log = root / "vivado.log"
+        payload = ("\n".join(lines) + "\n").encode("utf-8")
+        native_log.write_bytes(payload)
+        warnings = [line for line in lines if line.startswith("WARNING:")]
+        return {
+            "scope": "synth",
+            "status": "FAIL",
+            "code": 0,
+            "capture_error": (
+                "CAPTURE_FAIL:native message export incomplete or counters changed: "
+                f"WARNING emitted=-8 exported={len(warnings)}"
+            ),
+            "warning_before": 12,
+            "warning_after": 4,
+            "critical_before": 0,
+            "critical_after": sum(line.startswith("CRITICAL WARNING:") for line in lines),
+            "error_before": 0,
+            "error_after": sum(line.startswith("ERROR:") for line in lines),
+            "warning_count": len(warnings),
+            "critical_count": sum(line.startswith("CRITICAL WARNING:") for line in lines),
+            "error_count": sum(line.startswith("ERROR:") for line in lines),
+            "start": 0,
+            "end": len(payload),
+            "native_log": native_log,
+            "raw": "synth_design Complete",
+            "messages": lines,
+            "warning_messages": warnings,
+        }
 
-
-WARNING = b"WARNING: [IP_Flow 19-11770] Clock interface 'aclk' has no FREQ_HZ parameter."
-
-
-def inputs(tmp_path, log_bytes=None, **overrides):
-    log = tmp_path / "native.log"
-    log.write_bytes(log_bytes if log_bytes is not None else b"INFO: start\n" + WARNING + b"\n" + WARNING + b"\nINFO: done\n")
-    receipt = {
-        "status": "FAIL",
-        "code": 0,
-        "capture_error": "CAPTURE_FAIL:native message export incomplete or counters changed: WARNING emitted=-5 exported=2",
-        "raw": "c:/stage/display_image_pipeline_0.xci",
-        "expected_result": "C:/stage/display_image_pipeline_0.xci",
-        "warning_before": 9,
-        "warning_after": 4,
-        "warning_messages": [WARNING.decode(), WARNING.decode()],
-        "native_log": str(log),
-        "start": 12,
-        "end": 12 + len(WARNING) * 2 + 2,
-    }
-    if log_bytes is None:
-        receipt["start"] = len(b"INFO: start\n")
-        receipt["end"] = receipt["start"] + len(WARNING) * 2 + 2
-    else:
-        receipt["start"] = 0
-        receipt["end"] = len(log_bytes)
-    receipt.update(overrides)
-    return receipt, log
-
-
-class JointCaptureReviewTests(unittest.TestCase):
-    def test_accepts_only_exact_warning_counter_reset_and_expected_result(self):
-        with self.subTest("strict native byte range review"):
-            import tempfile
-            with tempfile.TemporaryDirectory() as directory:
-                receipt, log = inputs(Path(directory))
-                result = review.audit_capture(receipt)
-                self.assertEqual(result["status"], "PASS_SUPPLEMENTAL_REVIEW")
-                self.assertEqual(result["severity_counts"], {"WARNING": 2, "CRITICAL WARNING": 0, "ERROR": 0})
-                self.assertEqual(result["native_log"], str(log))
-                self.assertIn("snapshot at this review time", result["native_log_sha256_scope_at_review"])
-
-    def test_range_hash_is_stable_when_native_log_later_grows(self):
-        import tempfile
+    def test_synth_scope_accepts_only_exact_safe_warning_slice(self):
         with tempfile.TemporaryDirectory() as directory:
-            receipt, log = inputs(Path(directory))
-            first = review.audit_capture(receipt)
-            log.write_bytes(log.read_bytes() + b"INFO: later Vivado output\n")
-            later = review.audit_capture(receipt)
-            self.assertEqual(first["native_log_range_sha256"], later["native_log_range_sha256"])
-            self.assertNotEqual(first["native_log_sha256"], later["native_log_sha256"])
+            receipt = self.make_receipt(
+                Path(directory), ["WARNING: [Synth 8-3333] unused signal removed."]
+            )
 
-    def test_rejects_nonzero_tcl_code(self):
-        with self._expect_audit_error(code=1):
-            pass
+            audited = audit_capture(receipt)
 
-    def test_rejects_nonmatching_capture_error(self):
-        with self._expect_audit_error(capture_error="CAPTURE_FAIL:ERROR emitted=0 exported=0"):
-            pass
+            self.assertEqual(audited["status"], "PASS_SUPPLEMENTAL_REVIEW")
+            self.assertEqual(
+                audited["scope"],
+                "synth only; original ipcfg capture receipt remains FAIL",
+            )
 
-    def test_rejects_unverifiable_byte_range(self):
-        with self._expect_audit_error(start=-1):
-            pass
+    def test_run_scope_accepts_positive_warning_counter_delta(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = self.make_receipt(
+                Path(directory), ["WARNING: [Synth 8-3333] unused signal removed."]
+            )
+            receipt.update({
+                "scope": "run",
+                "warning_before": 0,
+                "warning_after": 1,
+                "capture_error": (
+                    "CAPTURE_FAIL:native message export incomplete or counters changed: "
+                    "WARNING emitted=1 exported=1"
+                ),
+                "expected_result": "JOINT_SYNTH_RUN_COMPLETE",
+                "raw": "JOINT_SYNTH_RUN_COMPLETE",
+            })
 
-    def test_rejects_range_ending_past_log(self):
-        with self._expect_audit_error(end=10_000):
-            pass
+            audited = audit_capture(receipt)
 
-    def test_rejects_range_ending_mid_line(self):
-        with self._expect_audit_error(end=12 + len(WARNING) - 1):
-            pass
+            self.assertEqual(audited["status"], "PASS_SUPPLEMENTAL_REVIEW")
+            self.assertEqual(audited["warning_counter_delta"], 1)
 
-    def test_rejects_range_starting_mid_line(self):
-        with self._expect_audit_error(start=1):
-            pass
+    def test_synth_scope_rejects_any_critical_warning(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = self.make_receipt(
+                Path(directory),
+                [
+                    "WARNING: [Synth 8-3333] unused signal removed.",
+                    "CRITICAL WARNING: [Timing 38-249] no logical paths.",
+                ],
+            )
 
-    def test_rejects_missing_expected_warning_lines(self):
-        with self._expect_audit_error(log_bytes=b"INFO: no warning\n"):
-            pass
+            with self.assertRaisesRegex(AuditError, "ERROR or CRITICAL WARNING"):
+                audit_capture(receipt)
 
-    def test_rejects_warning_line_mismatch(self):
-        with self._expect_audit_error(warning_messages=["WARNING: unexpected warning"]):
-            pass
+    def test_run_scope_keeps_critical_warning_as_manager_review_required(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = self.make_receipt(
+                Path(directory),
+                [
+                    "WARNING: [Synth 8-3333] unused signal removed.",
+                    "CRITICAL WARNING: [Timing 38-249] no logical paths.",
+                ],
+            )
+            receipt["scope"] = "run"
+            receipt["expected_result"] = "JOINT_SYNTH_RUN_COMPLETE"
+            receipt["raw"] = receipt["expected_result"]
 
-    def test_rejects_native_error(self):
-        with self._expect_audit_error(log_bytes=b"ERROR: [BD 1-1] failed\n"):
-            pass
+            audited = audit_capture(receipt)
 
-    def test_rejects_native_critical_warning(self):
-        with self._expect_audit_error(log_bytes=b"CRITICAL WARNING: [BD 1-1] risky\n"):
-            pass
+            self.assertEqual(audited["status"], "REVIEW_REQUIRED")
+            self.assertTrue(audited["manager_review_required"])
+            self.assertEqual(audited["severity_counts"]["CRITICAL WARNING"], 1)
 
-    def test_rejects_unexpected_result(self):
-        with self._expect_audit_error(raw="C:/stage/other.xci"):
-            pass
+    def test_run_scope_rejects_error_severity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = self.make_receipt(
+                Path(directory),
+                [
+                    "WARNING: [Synth 8-3333] unused signal removed.",
+                    "ERROR: [Synth 8-9999] failed synthesis.",
+                ],
+            )
+            receipt["scope"] = "run"
+            receipt["expected_result"] = "JOINT_SYNTH_RUN_COMPLETE"
+            receipt["raw"] = receipt["expected_result"]
 
-    def test_rejects_counter_delta_export_count_mismatch(self):
-        with self._expect_audit_error(capture_error="CAPTURE_FAIL:native message export incomplete or counters changed: WARNING emitted=-5 exported=1"):
-            pass
+            with self.assertRaisesRegex(AuditError, "ERROR"):
+                audit_capture(receipt)
 
-    def test_cli_writes_a_pass_supplement_without_changing_capture(self):
-        import json
-        import tempfile
-        from unittest.mock import patch
+    def test_run_scope_accepts_nonseverity_save_output_when_counters_reset(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            receipt, _ = inputs(root)
-            original = root / "original.tcldict"
-            original.write_text("preserve original FAIL receipt", encoding="utf-8")
-            out = root / "supplement.json"
-            argv = ["joint_capture_review.py", "--capture-receipt", str(original),
-                    "--status", receipt["status"], "--code", "0",
-                    "--capture-error", receipt["capture_error"], "--raw-result", receipt["raw"],
-                    "--expected-result", receipt["expected_result"], "--warning-before", "9",
-                    "--warning-after", "4", "--native-log", receipt["native_log"],
-                    "--start", str(receipt["start"]), "--end", str(receipt["end"]),
-                    "--warning-message", WARNING.decode(), "--warning-message", WARNING.decode(),
-                    "--out", str(out)]
-            with patch("sys.argv", argv):
-                self.assertEqual(review.main(), 0)
-            self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["status"], "PASS_SUPPLEMENTAL_REVIEW")
-            self.assertEqual(original.read_text(encoding="utf-8"), "preserve original FAIL receipt")
+            native_log = root / "vivado.log"
+            prefix = b"earlier warning already captured\n"
+            saved_info = b"Wrote  : <display.bd>\n"
+            native_log.write_bytes(prefix + saved_info)
+            receipt = {
+                "scope": "run",
+                "status": "FAIL",
+                "code": 0,
+                "capture_error": (
+                    "CAPTURE_FAIL:native message export incomplete or counters changed: "
+                    "WARNING emitted=-59 exported=0"
+                ),
+                "warning_before": 59,
+                "warning_after": 0,
+                "critical_before": 0,
+                "critical_after": 0,
+                "error_before": 0,
+                "error_after": 0,
+                "warning_count": 0,
+                "critical_count": 0,
+                "error_count": 0,
+                "raw": "SUCCESS:joint_bd_saved",
+                "expected_result": "SUCCESS:joint_bd_saved",
+                "messages": [],
+                "native_log": native_log,
+                "start": len(prefix),
+                "end": len(prefix) + len(saved_info),
+            }
 
-    class _expect_audit_error:
-        def __init__(self, **overrides):
-            self.overrides = overrides
+            audited = audit_capture(receipt)
 
-        def __enter__(self):
-            import tempfile
-            self.temp = tempfile.TemporaryDirectory()
-            receipt, _ = inputs(Path(self.temp.name), **self.overrides)
-            with self.assertRaises(review.AuditError):
-                review.audit_capture(receipt)
-            return self
+            self.assertEqual(audited["status"], "PASS_SUPPLEMENTAL_REVIEW")
+            self.assertEqual(audited["severity_counts"], {
+                "WARNING": 0, "CRITICAL WARNING": 0, "ERROR": 0,
+            })
 
-        def __exit__(self, exc_type, exc, tb):
-            self.temp.cleanup()
-            return False
+    def test_synth_scope_rejects_ipcfg_unsafe_warning_categories(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = self.make_receipt(
+                Path(directory),
+                ["WARNING: [Vivado 12-4739] Ignoring constraint because pin does not exist."],
+            )
 
-        @staticmethod
-        def assertRaises(exception):
-            return unittest.TestCase().assertRaises(exception)
+            with self.assertRaisesRegex(AuditError, "unsafe warning"):
+                audit_capture(receipt)
+
+    def test_refresh_region_scope_keeps_its_expected_path_check(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = self.make_receipt(
+                Path(directory), ["WARNING: [IP_Flow 19-11770] expected refresh warning."]
+            )
+            receipt.pop("scope")
+            receipt["expected_result"] = "C:/stage/display_image_pipeline_0.xci"
+            receipt["raw"] = receipt["expected_result"]
+
+            audited = audit_capture(receipt)
+
+            self.assertEqual(audited["status"], "PASS_SUPPLEMENTAL_REVIEW")
+            self.assertEqual(
+                audited["scope"],
+                "refresh_region only; original ipcfg capture receipt remains FAIL",
+            )
+
+    def test_cli_reads_messages_from_file_and_records_its_hash(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            warning = "WARNING: [Synth 8-3333] unused signal removed."
+            receipt = self.make_receipt(root, [warning])
+            capture_path = root / "capture.tcldict"
+            capture_path.write_text("status FAIL\n", encoding="utf-8")
+            messages_file = root / "messages.txt"
+            messages_file.write_text(warning + "\n", encoding="utf-8")
+            output = root / "review.json"
+            payload = receipt["native_log"].read_bytes()
+            arguments = [
+                "joint_capture_review.py",
+                "--capture-receipt", str(capture_path),
+                "--scope", "synth",
+                "--status", "FAIL",
+                "--code", "0",
+                "--capture-error", receipt["capture_error"],
+                "--raw-result", receipt["raw"],
+                "--warning-before", str(receipt["warning_before"]),
+                "--warning-after", str(receipt["warning_after"]),
+                "--critical-before", "0",
+                "--critical-after", "0",
+                "--error-before", "0",
+                "--error-after", "0",
+                "--warning-count", "1",
+                "--critical-count", "0",
+                "--error-count", "0",
+                "--native-log", str(receipt["native_log"]),
+                "--start", "0",
+                "--end", str(len(payload)),
+                "--messages-file", str(messages_file),
+                "--out", str(output),
+            ]
+
+            with patch.object(sys, "argv", arguments), contextlib.redirect_stdout(io.StringIO()):
+                exit_code = main()
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(result["status"], "PASS_SUPPLEMENTAL_REVIEW")
+            self.assertEqual(
+                result["capture_messages_sha256"],
+                hashlib.sha256(messages_file.read_bytes()).hexdigest(),
+            )
+
+    def test_run_cli_reports_critical_warning_as_review_required(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            receipt = self.make_receipt(
+                root,
+                [
+                    "WARNING: [Synth 8-3333] unused signal removed.",
+                    "CRITICAL WARNING: [Timing 38-249] no logical paths.",
+                ],
+            )
+            receipt["scope"] = "run"
+            receipt["expected_result"] = "JOINT_SYNTH_RUN_COMPLETE"
+            receipt["raw"] = receipt["expected_result"]
+            capture_path = root / "capture.tcldict"
+            capture_path.write_text("status FAIL\n", encoding="utf-8")
+            messages_path = root / "messages.txt"
+            messages_path.write_text("\n".join(receipt["messages"]) + "\n", encoding="utf-8")
+            output = root / "review.json"
+            payload = receipt["native_log"].read_bytes()
+            arguments = [
+                "joint_capture_review.py", "--capture-receipt", str(capture_path),
+                "--scope", "run", "--status", "FAIL", "--code", "0",
+                "--capture-error", receipt["capture_error"], "--raw-result", receipt["raw"],
+                "--expected-result", receipt["expected_result"],
+                "--warning-before", "12", "--warning-after", "4",
+                "--critical-before", "0", "--critical-after", "1",
+                "--error-before", "0", "--error-after", "0",
+                "--warning-count", "1", "--critical-count", "1", "--error-count", "0",
+                "--native-log", str(receipt["native_log"]), "--start", "0",
+                "--end", str(len(payload)), "--messages-file", str(messages_path),
+                "--out", str(output),
+            ]
+
+            with patch.object(sys, "argv", arguments), contextlib.redirect_stdout(io.StringIO()) as stdout:
+                exit_code = main()
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("JOINT_CAPTURE_REVIEW_REQUIRED", stdout.getvalue())
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(result["status"], "REVIEW_REQUIRED")
+            self.assertTrue(result["manager_review_required"])
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)

@@ -123,6 +123,7 @@ Manager launches the entries separately, with the same native batch pattern:
    source-bound route review receipt.
 4. `joint_build.tcl -spec ... -native-log ... -stage route -cdc-review <receipt>`
 
+
 Connection changes only the clone: control NUM_MI 12→13, M12 appended at
 `0x43C80000/0x10000`, 50 MHz FCLK0/reset_rle; DMA length width 18→19 with DRE=0
 and original widths retained. MM2S is detached from `image_pipeline/s_axis`,
@@ -201,8 +202,8 @@ readiness still require their explicit Manager-authorized stages and evidence.
 `joint::capture_refresh_region` is used only for the `update_module_reference`
 operation in `joint_connect.tcl`. It may add a supplemental review only when
 the original `ipcfg::capture` receipt is `status=FAIL`, Tcl `code=0`, and its
-entire `capture_error` exactly matches a negative WARNING-counter reset with
-an exported count. The original FAIL `.tcldict` is kept unchanged. The review
+entire `capture_error` exactly matches the recorded signed WARNING-counter
+delta and exported count. The original FAIL `.tcldict` is kept unchanged. The review
 independently reads only the receipt's native-log byte interval, verifies the
 interval is in-file and aligned to complete lines, verifies the native WARNING
 lines equal the exported WARNING lines one by one, checks before/after counter
@@ -239,9 +240,23 @@ exceptions.
 T6 BD wiring/readback completed in isolated stage `T:/jj1102e`; receipt
 `T:/jj1102e/joint-connected.tcldict` is `CONNECTED_NOT_BUILT`, with manifest
 SHA-256 `1c5cb94478f7b3923b34ef24727e98aa68ae0440d8e18a5fe7294afa00fc5dd4`.
-The PS `run_counter.py --jpeg-pl` dispatch now reaches the experimental raw
-MJPEG runner; its targeted transport/dispatch tests passed (51 tests). A fresh
-joint synthesis was stopped after 7 of about 33 serial OOC jobs to avoid a long
-verification run. It produced no final synthesis, timing, CDC, DRC, route,
-BIT/HWH, or board evidence. The previous timing and CDC failures therefore
-remain unresolved for the current candidate.
+The PS `run_counter.py --jpeg-pl` dispatch reaches the experimental raw-MJPEG
+runner and `JpegRleDmaTransport`; targeted transport/dispatch tests passed
+(51 tests). The default entry still uses OpenCV software decode.
+
+T7 joint synthesis and route completed in candidate `T:/jj1102l`. Final route
+resources were 36,483 LUT, 38,734 FF, 30 BRAM36 + 55 BRAM18, and 49 DSP.
+Timing closed at WNS +0.032 ns / WHS +0.020 ns with zero failing setup or hold
+endpoints. All 69,364 routable nets were fully routed, with zero routing errors.
+The CDC report has no CDC-13 critical findings; CDC-15 mailbox-path and CDC-6
+warnings remain documented for review. DRC/methodology findings are warnings
+only. The route receipt is `T:/jj1102l/joint-route.tcldict` (`ROUTE_PASS`). A
+BIT was then generated directly from `joint-routed.dcp` (4,045,770 bytes; the
+bitgen precondition DRC reported 0 errors), and the HWH from the same candidate
+BD was packaged beside it. Their SHA-256 values and provenance are recorded in
+`T:/jj1102l/bitstream/joint-bitgen-manifest.json`. The immutable route receipt
+still says `board_ready=0`; neither file has been loaded onto the board, and no
+physical HDMI acceptance has been performed. The route was recovered from the
+saved synthesis checkpoint to avoid repeating the 33 OOC jobs; the standard
+route status parser was corrected to compare Vivado's routable and fully-routed
+net counts instead of expecting an `unrouted nets` row.
