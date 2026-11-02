@@ -391,6 +391,84 @@ def test_rx_capture_failure_does_not_mask_decode_error():
     assert "capture failed" in (transport_with_capture.rx_capture_error or "")
 
 
+def test_rx_capture_attempts_once_and_preserves_first_error():
+    calls = []
+
+    def bad_capture(*args):
+        calls.append(args)
+        raise OSError("capture failed")
+
+    rig = Rig(driver_started=True)
+    transport_with_capture = transport(rig, rx_capture=bad_capture)
+    assert transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9).frame_id == 9
+    first_error = transport_with_capture.rx_capture_error
+    assert "capture failed" in (first_error or "")
+    assert len(calls) == 1
+    assert transport_with_capture._rx_capture_done is True
+
+    assert transport_with_capture.transfer(b"\xff\xd8b\xff\xd9", 10).frame_id == 10
+    assert len(calls) == 1
+    assert transport_with_capture.rx_capture_error == first_error
+
+
+def test_rx_capture_metadata_read_failure_marks_attempt_and_preserves_error():
+    rig = Rig(driver_started=True)
+    calls = []
+    transport_with_capture = transport(
+        rig, rx_capture=lambda *args: calls.append(args))
+    real_read = rig.dma.read
+
+    def fail_status(offset):
+        if offset == jpeg_transport.DMA_S2MM_STATUS:
+            raise OSError("metadata read failed")
+        return real_read(offset)
+
+    rig.dma.read = fail_status
+    transport_with_capture._capture_rx(9, b"\x00" * 64, 64, 64)
+    assert calls == []
+    assert transport_with_capture._rx_capture_done is True
+    first_error = transport_with_capture.rx_capture_error
+    assert "metadata read failed" in (first_error or "")
+
+    rig.dma.read = real_read
+    transport_with_capture._capture_rx(9, b"\x00" * 64, 64, 64)
+    assert calls == []
+    assert transport_with_capture.rx_capture_error == first_error
+
+
+@pytest.mark.parametrize("exc_type", [KeyboardInterrupt, SystemExit])
+def test_rx_capture_control_exceptions_propagate_unchanged(monkeypatch, exc_type):
+    decoded = []
+    real_decode = jpeg_transport.decode_packet
+
+    def record(packet, *args, **kwargs):
+        decoded.append(bytes(packet))
+        return real_decode(packet, *args, **kwargs)
+
+    monkeypatch.setattr(jpeg_transport, "decode_packet", record)
+    calls = []
+
+    def control_capture(*args):
+        calls.append(args)
+        raise exc_type("stop")
+
+    rig = Rig(driver_started=True)
+    transport_with_capture = transport(rig, rx_capture=control_capture)
+    with pytest.raises(exc_type, match="stop"):
+        transport_with_capture.transfer(b"\xff\xd8a\xff\xd9", 9)
+
+    assert len(calls) == 1
+    assert decoded == []
+    assert transport_with_capture._rx_capture_done is True
+    assert transport_with_capture.rx_capture_error is None
+    # Capture runs after completion returned DMA ownership, so the existing
+    # main-flow held expression receives the same state as any decode-stage
+    # exception; this change does not alter its HOLD determination.
+    assert transport_with_capture.dma_may_be_active is False
+    transfers = [event for event in rig.events if event[1] == "transfer"]
+    assert [event[0] for event in transfers] == ["s2mm", "mm2s"]
+
+
 def test_repeated_call_accepts_prior_completed_rle_and_idle_jpeg_state():
     rig = Rig()
     t = transport(rig)

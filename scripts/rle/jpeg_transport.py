@@ -343,6 +343,9 @@ class JpegRleDmaTransport:
         """Capture the exact bytes handed to decode_packet; never mask errors."""
         if self.rx_capture is None or self._rx_capture_done:
             return
+        # One attempt per transport: mark it before any metadata read or write
+        # so a failed first attempt is never retried on a later frame.
+        self._rx_capture_done = True
         try:
             header = (list(struct.unpack_from("<16I", packet))
                       if len(packet) >= 64 else None)
@@ -377,12 +380,11 @@ class JpegRleDmaTransport:
                 "raw_capability": int(self.rle_control.read(RLE_RAW_CAPABILITY)) & 0xFFFFFFFF,
                 "input_mode": int(self.rle_control.read(RLE_INPUT_MODE)) & 0xFFFFFFFF,
             }
-            self.rx_capture_error = None
             self.rx_capture(frame_id, packet, metadata)
-            self._rx_capture_done = True
-        except BaseException as exc:
+        except Exception as exc:
             # Capture must never replace the decode/transport exception or
-            # alter the HOLD decision.
+            # alter the HOLD decision. KeyboardInterrupt/SystemExit are not
+            # Exception subclasses and propagate to the existing main flow.
             self.rx_capture_error = repr(exc)
 
     def _wait_for_completion(self) -> tuple[int, int]:
