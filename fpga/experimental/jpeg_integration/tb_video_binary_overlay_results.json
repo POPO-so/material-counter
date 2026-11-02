@@ -67,7 +67,7 @@
       "tb": "tb_video_binary_overlay_cfgswitch.sv",
       "purpose": "config switch, near-VSYNC commit, mid-frame commit, frame_id/validity",
       "result": "PASS",
-      "detail": "A drawn; B replaces A (near-VSYNC, 5 pixel_clk); C id=2 suppresses box, line drawn; D count=0; E illegal x0>x1 invalidated; F enable=0 -> base gray; G committed mid-frame applies only at the next boundary; cmp_mm=0"
+      "detail": "A drawn; B replaces A (near-VSYNC, 5 pixel_clk); C id=2 suppresses box, line drawn; D count=0; E illegal x0>x1 invalidated; F enable=0 -> base gray; G committed mid-frame applies only at the next boundary; cmp_mm=0; correspondence disp_ok=8 id_en_ok=7 bad=0"
     }
   ],
   "small_tb_prior_failure": {

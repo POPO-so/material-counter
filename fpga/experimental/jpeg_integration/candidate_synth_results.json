@@ -73,6 +73,21 @@
     "XDCC-1": 1,
     "XDCC-7": 1
   },
+  "exceptions": {
+    "overlay_sync_false_path": "report_exceptions position 17: false path to binary_overlay publish_sync1/ack_sync1/cfg_ack_s1/cfg_req_s1 first stages",
+    "overlay_cfg_max_dpo": "position 18: max_dpo=10 from cfg_mb_* to the enable/id/count/boxes/line latch",
+    "overlay_publish_max_dpo": "position 19: max_dpo=10 from publish_(id|bank) to displayed_frame_id/display_bank"
+  },
+  "drc": {
+    "DPIP-1_input_pipelining": 46,
+    "DPOP-1_output_preg": 13,
+    "DPOP-2_output_mreg": 19,
+    "REQP-1839_ramb36_async_control": 8,
+    "REQP-1840_ramb18_async_control": 8,
+    "REQP-181_writefirst": 2,
+    "REQP-165_writefirst": 1,
+    "note": "DPIP/DPOP target binary_overlay features feature_core DSPs (advisory only); REQP-1839/1840 are axi_dma XPM FIFO memories, not the overlay mask banks"
+  },
   "reports": {
     "utilization": {"path": "C:/w/jj2026k/reports/synth-candidate/utilization.rpt", "sha256": "8df7f668ef8104ee219c9b70af7942f954b443790f19a7fa69d965a713ff6686"},
     "timing": {"path": "C:/w/jj2026k/reports/synth-candidate/timing.rpt", "sha256": "8b020f3e93fbb71b90c981bdb535a0d3e4cf313136dfd7e704378a1ce9fbf20d"},

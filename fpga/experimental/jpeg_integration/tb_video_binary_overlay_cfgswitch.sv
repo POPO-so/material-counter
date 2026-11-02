@@ -77,6 +77,7 @@ module tb_video_binary_overlay_cfgswitch;
   integer e_box_black=0, e_line=0;
   integer f_gray=0;
   integer g_box=0, g_line=0;
+  integer corr_disp=0, corr_id=0, corr_bad=0;
 
   task apply_cfg(input en, input [31:0] id, input [4:0] cnt,
                  input [9:0] bx0, bx1, by0, by1, line);
@@ -146,6 +147,7 @@ module tb_video_binary_overlay_cfgswitch;
              a_box,a_line,b_left,b_right,b_line,b_oldbox_black,b_oldline_black);
     $display("CFGSW: c_box_black=%0d c_line=%0d d_box_black=%0d d_line=%0d e_box_black=%0d e_line=%0d f_gray=%0d g_box=%0d g_line=%0d cmp_mm=%0d",
              c_box_black,c_line,d_box_black,d_line,e_box_black,e_line,f_gray,g_box,g_line,cmp_mismatches);
+    $display("CFGSW correspondence: disp_ok=%0d id_en_ok=%0d bad=%0d", corr_disp, corr_id, corr_bad);
     if (a_box==0 || a_line==0) $fatal(1,"CFGSW_A_NOT_DRAWN");
     if (b_left==0 || b_right==0 || b_line==0 || b_oldbox_black==0 || b_oldline_black==0) $fatal(1,"CFGSW_B_NOT_REPLACED");
     if (c_box_black==0 || c_line==0) $fatal(1,"CFGSW_C_ID_MISMATCH_WRONG");
@@ -153,6 +155,7 @@ module tb_video_binary_overlay_cfgswitch;
     if (e_box_black==0 || e_line==0) $fatal(1,"CFGSW_E_ILLEGAL_BOX_WRONG");
     if (f_gray==0) $fatal(1,"CFGSW_F_DISABLE_WRONG");
     if (g_box==0 || g_line==0) $fatal(1,"CFGSW_G_MIDFRAME_NOT_APPLIED");
+    if (corr_bad!=0 || corr_disp==0 || corr_id==0) $fatal(1,"CFGSW_FRAME_CORRESPONDENCE_WRONG");
     if (cmp_mismatches!=0) $fatal(1,"CFGSW_OLD_NEW_MISMATCH");
     $display("C_CFGSWITCH_PASS");
     $finish;
@@ -179,6 +182,20 @@ module tb_video_binary_overlay_cfgswitch;
       if (old_active && old_dv && dy1==15) begin
         if (frame_idx>=7 && (dx1==10 || dx1==30))
           $display("DBG f=%0d x=%0d o=%h en=%b dv=%b", frame_idx, dx1, old_data, new_dut.enable_p, new_dut.display_valid);
+        // config / frame_id / displayed-frame correspondence
+        if (dx1==10) begin
+          if (new_dut.displayed_frame_id==32'd1) corr_disp<=corr_disp+1;
+          else corr_bad<=corr_bad+1;
+          case (frame_idx)
+            2,3,5,6,8: if (new_dut.id_p==32'd1 && new_dut.enable_p==1'b1) corr_id<=corr_id+1;
+                       else corr_bad<=corr_bad+1;
+            4:         if (new_dut.id_p==32'd2 && new_dut.enable_p==1'b1) corr_id<=corr_id+1;
+                       else corr_bad<=corr_bad+1;
+            7:         if (new_dut.id_p==32'd1 && new_dut.enable_p==1'b0) corr_id<=corr_id+1;
+                       else corr_bad<=corr_bad+1;
+            default: ;
+          endcase
+        end
         case (frame_idx)
           2: begin if (dx1==10 && old_data==24'hffffff) a_box<=a_box+1;
                    if (dx1==30 && old_data==24'hffffff) a_line<=a_line+1; end

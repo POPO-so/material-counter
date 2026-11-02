@@ -255,6 +255,13 @@ CDC / methodology on the new netlist:
 - Methodology: LUTAR-1 x4, TIMING-9 x1, ULMTCS-1 x1, XDCB-5 x1, XDCC-1 x1,
   XDCC-7 x1. TIMING-9 is one `max_delay -datapath_only` crossing without a
   double-register synchronizer on the capture side.
+- Exceptions report: position 17 is the false path to the overlay 2-FF
+  synchronizer first stages; positions 18 and 19 are the two `max_dpo=10`
+  overlay mailbox crossings.
+- DRC: DPIP-1 x46, DPOP-1 x13, DPOP-2 x19 (DSP pipelining advisories in the
+  overlay `features/feature_core`, not the pixel datapath); REQP-1839 x8 and
+  REQP-1840 x8 are in the `axi_dma` XPM FIFO memories, not the mask banks;
+  REQP-181 x2 and REQP-165 x1 are write-first advisories.
 
 Tooling note: the joint `synth` capture gate failed with
 `CAPTURE_FAIL: WARNING emitted=-8 exported=210` because `launch_runs` spawns a
