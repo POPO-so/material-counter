@@ -179,8 +179,81 @@ def pass_receipt(path: Path, identity_key: str, expected: str) -> dict:
     return entry(path)
 
 
-def check_region_receipt(receipt: dict) -> None:
-    """Accept the committed region receipt's explicit evidence schema."""
+def _check_g2_region_receipt(receipt: dict,
+                             expected_source_sha256: str | None = None) -> None:
+    """Accept current RLE RTL only with source-bound XSim and routed G2 evidence."""
+    require(receipt.get("status") == "PASS", "current G2 region receipt is not PASS")
+    source_sha256 = receipt.get("source_sha256")
+    require(isinstance(source_sha256, str) and re.fullmatch(r"[0-9a-fA-F]{64}", source_sha256),
+            "current G2 region receipt has no valid source SHA-256")
+    if expected_source_sha256 is not None:
+        require(source_sha256 == expected_source_sha256,
+                "current G2 region receipt source does not match preflight")
+
+    checks = receipt.get("checks", {})
+    require(all(checks.get(name) is True for name in (
+        "xsim_expected_outputs", "limits_and_candidate_thresholds",
+        "g2_integrated_build_reviewed")),
+        "current G2 region checks are not all reviewed PASS")
+
+    evidence = receipt.get("evidence", [])
+    require(isinstance(evidence, list) and evidence,
+            "current G2 region receipt has no evidence")
+
+    def one_evidence(name: str) -> Path:
+        matches = [Path(item["path"]).resolve() for item in evidence
+                   if isinstance(item, dict) and isinstance(item.get("path"), str)
+                   and Path(item["path"]).name == name]
+        require(len(matches) == 1,
+                f"current G2 region receipt must bind exactly one {name}")
+        return matches[0]
+
+    source = one_evidence("rle_region_features.v")
+    require(sha(source) == source_sha256,
+            "current G2 region source evidence hash mismatch")
+    one_evidence("tb_rle_region_features.sv")
+    xsim = one_evidence("tb_rle_region_features.xsim.log")
+    require("RLE_FEATURE_PASS cases=16" in xsim.read_text(encoding="utf-8"),
+            "current G2 region XSim evidence did not pass all 16 cases")
+
+    build_manifest_path = one_evidence("build-manifest.json")
+    build = read_json(build_manifest_path)
+    require(build.get("schema") == "material-counter.g2-sw1-candidate.v1" and
+            build.get("rtl_sha256", {}).get("rle_region_features.v") == source_sha256,
+            "current G2 build manifest does not bind this region source")
+
+    timing = build.get("timing", {})
+    require(timing.get("all_user_constraints_met") is True and
+            isinstance(timing.get("wns_ns"), (int, float)) and timing["wns_ns"] >= 0 and
+            isinstance(timing.get("whs_ns"), (int, float)) and timing["whs_ns"] >= 0 and
+            timing.get("unrouted_nets") == 0 and timing.get("partially_routed_nets") == 0,
+            "current G2 region source has failing routed timing or unrouted nets")
+    drc = build.get("drc", {})
+    require(drc.get("errors") == 0 and drc.get("critical_warnings") == 0,
+            "current G2 region source has DRC errors or Critical Warnings")
+    cdc = build.get("cdc", {})
+    require(isinstance(cdc.get("review"), str) and
+            cdc["review"].startswith("manual_review_complete_") and
+            isinstance(cdc.get("review_record"), str),
+            "current G2 region source has no completed CDC review")
+    review_path = (build_manifest_path.parent / cdc["review_record"]).resolve()
+    require(review_path == one_evidence("cdc-review.md"),
+            "current G2 CDC review record is missing from region evidence")
+    for name in ("cdc.rpt", "timing.rpt", "utilization.rpt", "drc.rpt"):
+        report = one_evidence(name)
+        require(report.stat().st_size > 0,
+                f"current G2 region report is empty: {name}")
+    utilization = one_evidence("utilization.rpt").read_text(encoding="utf-8")
+    require("RAMB36" in utilization and "LUT as Logic" in utilization,
+            "current G2 region utilization report is incomplete")
+
+
+def check_region_receipt(receipt: dict,
+                         expected_source_sha256: str | None = None) -> None:
+    """Validate either the legacy BRAM proof or current routed-G2 region proof."""
+    if receipt.get("schema") == "material-counter.rle-region-g2-green.v1":
+        _check_g2_region_receipt(receipt, expected_source_sha256)
+        return
     memory = receipt.get("memory_gate", {})
     require(receipt.get("reference_diff") == "PASS" and receipt.get("limits") == "PASS" and
             isinstance(memory.get("stats_bram36"), int) and memory["stats_bram36"] > 0 and
@@ -620,7 +693,7 @@ def verify_gates(path: Path, route_review: Path | None = None) -> None:
     hls, region = read_json(hls_path), read_json(region_path)
     require(hls.get("component_sha256") == manifest["preflight"]["hls"]["component"]["sha256"], "HLS component is not green snapshot")
     require(all(hls.get("checks", {}).get(k) is True for k in ("csim", "csynth", "cosim")), "HLS csim/csynth/cosim PASS is required")
-    check_region_receipt(region)
+    check_region_receipt(region, manifest["preflight"]["region"]["sha256"])
     print("JOINT_GREEN_GATES_OK")
     if route_review:
         review = read_json(route_review)
@@ -663,7 +736,7 @@ def stage(args, result: dict) -> None:
     hls_receipt = pass_receipt(args.hls_green.resolve(), "source_sha256", result["jpeg_source"]["sha256"]) if args.hls_green else None
     region_receipt = pass_receipt(args.region_green.resolve(), "source_sha256", result["region"]["sha256"]) if args.region_green else None
     if region_receipt:
-        check_region_receipt(read_json(args.region_green))
+        check_region_receipt(read_json(args.region_green), result["region"]["sha256"])
     if hls_receipt:
         require(read_json(args.hls_green).get("component_sha256") == result["hls"]["component"]["sha256"], "HLS receipt component hash mismatch")
     # Keep a caller-provided short Windows alias (for example a SUBST drive)
