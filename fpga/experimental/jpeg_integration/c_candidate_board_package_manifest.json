@@ -145,12 +145,21 @@
     "normal_stop": "hdmi.close + VDMA halted check, then transport.close/free",
     "fail_hold": "no close/free/reset/reload of DMA-owned resources; SIGINT/SIGTERM consumed; SIGKILL not interceptable"
   },
+  "preload_policy": {
+    "COLD_BASE": "PYNQ COLD_BOOT_NO_GLOBAL_STATE + FPGA manager operating/flags 0 + last boot bitstream base.bin + no FPGA owner; no candidate DMA/overlay MMIO before Overlay.download",
+    "KNOWN_OLD": "PYNQ loaded BIT SHA is in the known candidate/RLE table; only the confirmed control/DMA addresses are read; ownership/active check retained",
+    "UNKNOWN": "refuse before Overlay.download; never probe unknown MMIO to identify the design",
+    "post_load": "candidate BIT identity and HWH address contract, candidate DMA idle/error check, then display bring-up/VSYNC, then allocation/transport",
+    "stage_log": "output.stage.json written/fsynced and JPEG_STAGE printed before each hardware step",
+    "fail_hold": "unchanged; DmaOwnershipUncertain enters FAIL_HOLD without close/free/reset/reload"
+  },
   "software": {
     "python": "3.12.10",
     "vivado": "2026.1",
     "pynq": "capture at board run time",
     "files": {
-      "software/scripts/experiments/run_jpeg_counter.py": "506170180722ac2ddcbbe55839a53f992be9752029b28d82d9ad6b0ae031ca38",
+      "software/scripts/experiments/run_jpeg_counter.py": "e8f128182517b88850318af5a1bcab006b1569b9302cb177a36f368f8c86d3d3",
+      "software/scripts/experiments/test_jpeg_preload_policy.py": "f71148147bc73bac0e691b717ad5c81b7cb2f3e7f7477f8e75257a1b09b216ed",
       "software/scripts/standalone/display_bringup.py": "81c11447bf7cf730abeb4bf1aaed8585d9aebc179cc45464c0689d6cd8f57d3a",
       "software/scripts/rle/jpeg_runtime.py": "7e0e11b481c8867203cec96d2735e7a96214b3660193dd79fb13f1ec271883e7",
       "software/scripts/rle/jpeg_transport.py": "a4b77a1dd4b62963b2dc1c8c3b6b851b4705fc54768a8f4a86d113bb0c47b68e",
@@ -163,15 +172,18 @@
       "software/scripts/wo0016/stream_counter.py": "cf2729fbeaaf588c46c561b39d265349ef1562acaf083f8918dc766354015b23",
       "software/scripts/wo0016/split_touching.py": "731760687187391497894ebc1298f6fe07033bd7ce51335ddb444c918b26e630"
     },
-    "tests": "81 passed (5 admission + 13 display/HOLD + 63 runtime/transport)"
+    "tests": "92 passed (5 admission + 13 display/HOLD + 11 preload policy + 63 runtime/transport)"
   },
   "admission": {
     "verify_runtime_artifacts": "PASS",
     "test_run_jpeg_counter": "5 passed",
     "test_jpeg_display_and_hold": "13 passed",
+    "test_jpeg_preload_policy": "11 passed",
     "test_jpeg_runtime_transport": "63 passed",
     "joint_manifest_verify": "JOINT_SOURCE_HASHES_OK",
-    "hwh_contract": "PASS: part, bases, JPEG registers/interfaces, DMA length 19/DRE 0, NUM_MI 13, FCLK0 50 MHz, RLE 640x400/16384, FRG1"
+    "hwh_contract": "PASS: part, bases, JPEG registers/interfaces, DMA length 19/DRE 0, NUM_MI 13, FCLK0 50 MHz, RLE 640x400/16384, FRG1",
+    "preload_policy": "PASS (cold-base no candidate MMIO before load; unknown stops before download; known-old only confirmed addresses)",
+    "stage_logging": "PASS (output.stage.json + JPEG_STAGE flush before hardware steps)"
   },
   "restrictions": [
     "no board access in this preparation",

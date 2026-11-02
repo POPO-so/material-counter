@@ -106,14 +106,39 @@ the VSYNC readback fails, no JPEG/RLE buffer is allocated and no transfer or
 publish is attempted. On normal completion the runtime closes the display,
 proves the VDMA halted, and only then frees the JPEG/RLE buffers.
 
+Pre-load state policy (enforced before `Overlay.download`):
+
+1. **COLD_BASE** — PYNQ `COLD_BOOT_NO_GLOBAL_STATE`, FPGA manager `operating`
+   with `flags=0`, last boot bitstream `base.bin`, and no FPGA owner. No
+   candidate DMA/overlay MMIO is issued before `Overlay.download`.
+2. **KNOWN_OLD** — PYNQ loaded BIT SHA is in the known candidate/RLE table.
+   Only the confirmed control/DMA addresses for that overlay are read; the
+   ownership/active check is retained.
+3. **UNKNOWN** — stop before `Overlay.download`; never probe unknown MMIO to
+   identify a design.
+
+After a successful candidate load, the runtime verifies the loaded BIT
+identity/HWH address contract, checks the candidate DMA idle/error status, and
+then performs display bring-up/VSYNC before allocating TX/RX and creating the
+transport.
+
+Before every hardware step the runtime writes and fsyncs `output.stage.json`
+and prints `JPEG_STAGE <name>` with flush. If an uncatchable fault terminates
+the process, collect that stage file and the console log; do not retry or
+reload.
+
 ## 5. Acceptance items
 
 ### 5.1 Smoke acceptance (first run)
 
 - Package integrity and offline admission PASS with the exact SHAs above.
+- Pre-load classification is COLD_BASE (or a verified KNOWN_OLD); the log shows
+  no candidate MMIO before `overlay_download`.
 - Display bring-up succeeded: FCLK readback, HDMI/VTC/VDMA start, and a frame
   monitor scan advance proving VSYNC before the first frame. If bring-up fails,
   no frame transfer or overlay publish is attempted.
+- `output.stage.json` exists and its last stage is `frames_done` (or the first
+  failing stage on a controlled failure).
 - Report status: `JPEG_PL_RUN_COMPLETED_NOT_BOARD_VALIDATED`.
 - `frames` equals the requested 60; no `FAIL_HOLD`; no DMA active/faulty
   pre-load error; no camera-owner error.
@@ -158,7 +183,11 @@ as an accuracy PASS.
    auto-retry; review the first failing frame before another authorized run.
 4. **Artifact/admission failure**: stop before loading; correct the package; do
    not bypass the SHA or part checks.
-5. No bitstream deployment, board script push, or merge is part of this
+5. **Uncatchable MMIO fault** (external abort): collect `output.stage.json` and
+   the console log, preserve the board state, and recover by an operator-
+   authorized reboot if needed. Do not retry, reset, reload, or substitute a
+   BIT/HWH.
+6. No bitstream deployment, board script push, or merge is part of this
    package.
 
 ## 7. Files

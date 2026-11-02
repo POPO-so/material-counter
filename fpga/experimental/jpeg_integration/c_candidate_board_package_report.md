@@ -37,14 +37,14 @@ No board access, deployment, push, or merge was performed.
 | Display timing XDC | `display_timing.xdc` | `4ace486d...` |
 | Frozen offload XDC | `offload_cdc.xdc` | `3a8be351...` |
 | Monitor XDC | `joint_monitor_cdc.xdc` | `31ed0a71...` |
-| Package manifest | `board-package/artifact-manifest.json` | `b1d7ba32...` |
-| Package sums | `board-package/SHA256SUMS` | `6461fa9d...` |
+| Package manifest | `board-package/artifact-manifest.json` | `22071968...` |
+| Package sums | `board-package/SHA256SUMS` | `112c0edc...` |
 
 Software: Python 3.12.10; Vivado 2026.1. The package records the exact runtime
 script SHAs in `artifact-manifest.json`; the runtime entry
-`software/scripts/experiments/run_jpeg_counter.py` is `50617018...` and the
+`software/scripts/experiments/run_jpeg_counter.py` is `e8f12818...`, the
 display bring-up module `software/scripts/standalone/display_bringup.py` is
-`81c11447...`.
+`81c11447...`, and the pre-load policy test is `f7114814...`.
 
 ## 3. Offline IP/address/JPEG/FRG contract
 
@@ -80,12 +80,13 @@ The runtime constants (`scripts/rle/jpeg_transport.py`) match the HWH:
 | Same check from the packaged `software/` layout | **PASS** |
 | `scripts/experiments/test_run_jpeg_counter.py` | 5 passed |
 | `scripts/experiments/test_jpeg_display_and_hold.py` | 13 passed |
+| `scripts/experiments/test_jpeg_preload_policy.py` | 11 passed |
 | `scripts/rle/test_jpeg_runtime.py` + `test_jpeg_transport.py` | 63 passed |
 | `joint_prepare.py --verify-manifest C:/w/jj2026p/joint_manifest.json` | `JOINT_SOURCE_HASHES_OK` |
 | Package `sha256sum -c SHA256SUMS` | PASS |
 
-Total JPEG offline tests: **81 passed** (5 admission + 13 display/HOLD + 63
-runtime/transport).
+Total JPEG offline tests: **92 passed** (5 admission + 13 display/HOLD + 11
+pre-load policy + 63 runtime/transport).
 
 One software admission fix was required and tested: the HWH names the JPEG HLS
 control base `C_S_AXI_CONTROL_BASEADDR` (not `C_BASEADDR`), so
@@ -144,6 +145,33 @@ display start before allocation/transport; start/prepare failure blocks
 transfer; VSYNC timeout; VDMA uncertain/halt readback; signal handler
 consume/raise; HOLD never close/free/reset/reload; normal stop/free; stop/close
 failure escalation; no-transport buffer cleanup.
+
+### 4b.3 Pre-load MMIO policy (three states) and stage persistence
+
+The first board attempt exposed a cold-start probe defect: the runtime read
+`0x40400004` while the PL was running boot `base.bin`, causing an uncatchable
+external abort. The runtime now classifies:
+
+1. **COLD_BASE** — PYNQ `COLD_BOOT_NO_GLOBAL_STATE` + FPGA manager
+   `operating`/`flags=0` + last boot bitstream `base.bin` + no FPGA owner.
+   No candidate DMA/overlay MMIO before `Overlay.download`.
+2. **KNOWN_OLD** — PYNQ loaded BIT SHA matches the known candidate/RLE table;
+   only the confirmed control/DMA addresses are read; ownership/active check
+   retained.
+3. **UNKNOWN** — stop before `Overlay.download`; no unknown MMIO probe.
+
+After load: post-load BIT identity/contract, candidate DMA idle/error check,
+display bring-up/VSYNC, then allocation/transport. `output.stage.json` is
+written/fsynced and `JPEG_STAGE` printed before each hardware step;
+`DmaOwnershipUncertain` enters FAIL_HOLD without close/free/reset/reload.
+
+Tests: `scripts/experiments/test_jpeg_preload_policy.py` (11) cover cold-base
+no-MMIO-before-load, unknown-stop-before-download, known-old-only-confirmed-
+addresses, load failure skipping post-load steps, normal post-load DMA/display,
+active-old-DMA refusal, and stage persistence.
+
+The first-failure evidence and board-access correction are in
+`c_candidate_board_smoke_failure_20261103.md`.
 
 ## 5. Board validation package
 

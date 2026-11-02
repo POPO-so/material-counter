@@ -8,6 +8,12 @@ Package: `/home/xilinx/jpeg-candidate-20261103` (copied from
 Result: **BLOCKED — no 60-frame smoke result; candidate BIT was not loaded.**
 No retry, no reload, no reboot, no other task stopped.
 
+Board-access correction: the board **was** accessed read-only for identity,
+PYNQ/camera ownership and package checks, the package was copied, and the
+formal smoke entry was launched once. An earlier summary wording
+"未访问板卡" is withdrawn. The candidate BIT was not loaded and no candidate
+MMIO was issued before the fault.
+
 ## 1. Preconditions that passed
 
 - Board identity: PynqLinux 3.0 (Ubuntu 22.04), Python 3.10.4, PYNQ venv,
@@ -130,3 +136,11 @@ Before another authorized board attempt, fix the cold-start probe in
 This change is software-only. A new package SHA and a separately authorized
 60-frame attempt would be required; no automatic retry or bypass is proposed
 here.
+
+## 7. Follow-up (2026-11-03, offline only)
+
+The three-state pre-load policy and stage persistence have been implemented in
+the updated package; see
+[c_candidate_preload_policy_report_20261103.md](c_candidate_preload_policy_report_20261103.md).
+This failure report remains the first-failure evidence. No board retry was
+performed.

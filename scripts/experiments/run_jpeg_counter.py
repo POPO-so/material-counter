@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import sys
 import time
@@ -27,7 +28,7 @@ from scripts.rle.transport import RLE_SIGNATURE
 from scripts.standalone.count_controls import make_runtime_counter
 from scripts.standalone.display_bringup import prepare_display
 from scripts.wo0015.board_preflight import (audit_process_ownership,
-    inspect_pynq_global_state, read_boot_id)
+    inspect_pynq_global_state, read_boot_id, read_fpga_manager, read_kernel_log)
 
 
 EXPECTED_PART = "xc7z020clg400-1"
@@ -37,6 +38,202 @@ OVERLAY_BASE = 0x43C50000
 JPEG_BASE = 0x43C80000
 OVERLAY_MAP_BYTES = 0x5000
 ROUTED_STATUS = "ROUTED_NOT_BOARD_VERIFIED"
+OLD_RLE_BIT_SHA256 = "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
+_CANDIDATE_CONTROL_SIGNATURE = RLE_SIGNATURE
+_BOOT_WRITE = re.compile(r"writing (.+?) to Xilinx Zynq FPGA Manager")
+
+
+class DmaOwnershipUncertain(RuntimeError):
+    """DMA ownership is not proven idle/fault-free; retain resources."""
+
+
+def known_overlays(candidate_bit_sha256: str) -> tuple[dict[str, Any], ...]:
+    """Only overlays whose identity and address map are already confirmed."""
+    return (
+        {"name": "jpeg_candidate", "sha256": str(candidate_bit_sha256).lower(),
+         "dma_base": DMA_BASE, "control_base": RLE_BASE,
+         "control_signature": _CANDIDATE_CONTROL_SIGNATURE,
+         "overlay_base": OVERLAY_BASE, "jpeg_base": JPEG_BASE},
+        {"name": "rle_previous", "sha256": OLD_RLE_BIT_SHA256,
+         "dma_base": DMA_BASE, "control_base": RLE_BASE,
+         "control_signature": RLE_SIGNATURE,
+         "overlay_base": None, "jpeg_base": None},
+    )
+
+
+def inspect_boot_state(*, fpga_manager_reader=read_fpga_manager,
+                       kernel_log_reader=read_kernel_log,
+                       boot_id_reader=read_boot_id) -> dict[str, Any]:
+    """Read the boot-time PL evidence without touching any PL MMIO."""
+    try:
+        manager = fpga_manager_reader()
+        manager_error = None
+    except BaseException as exc:
+        manager = {}
+        manager_error = repr(exc)
+    try:
+        bitstream = None
+        for line in kernel_log_reader():
+            match = _BOOT_WRITE.search(line)
+            if match:
+                bitstream = match.group(1).strip()
+        kernel_error = None
+    except BaseException as exc:
+        bitstream = None
+        kernel_error = repr(exc)
+    return {"boot_id": str(boot_id_reader()),
+            "fpga_manager": manager, "fpga_manager_error": manager_error,
+            "boot_bitstream": bitstream, "boot_bitstream_error": kernel_error}
+
+
+def classify_preload_state(*, pynq_state: dict[str, Any], boot_state: dict[str, Any],
+                           owners: dict[str, Any],
+                           known: tuple[dict[str, Any], ...]) -> dict[str, Any]:
+    """Classify the pre-load PL state without touching candidate MMIO.
+
+    COLD_BASE is accepted only when the PYNQ state is cold, the FPGA manager is
+    operating/flags=0, the last boot bitstream is base.bin, and no FPGA owner is
+    present. COLD_BOOT_NO_GLOBAL_STATE alone is not enough to treat candidate
+    addresses as valid.
+    """
+    findings = owners.get("findings", []) if isinstance(owners, dict) else []
+    denied = owners.get("denied", []) if isinstance(owners, dict) else []
+    if findings or denied:
+        return {"kind": "UNKNOWN", "reason": "FPGA owner present",
+                "owners": {"findings": findings, "denied": denied}}
+    status = pynq_state.get("pl_state_status")
+    if status == "COLD_BOOT_NO_GLOBAL_STATE":
+        manager = boot_state.get("fpga_manager") or {}
+        if (manager.get("state") == "operating" and manager.get("flags") == "0"
+                and boot_state.get("boot_bitstream") == "base.bin"
+                and not pynq_state.get("shutdown_ips")):
+            return {"kind": "COLD_BASE",
+                    "reason": "cold PYNQ state, boot base.bin, no FPGA owner",
+                    "candidate_mmio_before_load": False}
+        return {"kind": "UNKNOWN",
+                "reason": "cold state is not verified as boot base.bin",
+                "boot_bitstream": boot_state.get("boot_bitstream"),
+                "fpga_manager": manager}
+    if status == "GLOBAL_STATE_PRESENT":
+        loaded = str(pynq_state.get("loaded_bit_sha256") or "").lower()
+        for overlay in known:
+            if loaded and loaded == overlay["sha256"].lower():
+                return {"kind": "KNOWN_OLD",
+                        "reason": f"loaded BIT matches {overlay['name']}",
+                        "candidate_mmio_before_load": True,
+                        "overlay": overlay}
+        return {"kind": "UNKNOWN",
+                "reason": "loaded overlay identity is not in the known table",
+                "loaded_bit_sha256": loaded or None}
+    return {"kind": "UNKNOWN", "reason": f"unrecognized PYNQ state {status!r}"}
+
+
+def probe_preload_mmio(classification: dict[str, Any], *, mmio_factory):
+    """Read only the confirmed old-overlay addresses; never probe unknowns.
+
+    COLD_BASE returns None without any MMIO. UNKNOWN raises before any MMIO.
+    KNOWN_OLD reads its confirmed control identity first, then its DMA status.
+    """
+    kind = classification.get("kind")
+    if kind == "COLD_BASE":
+        return None
+    if kind != "KNOWN_OLD":
+        raise RuntimeError("preload state is unknown; refusing candidate/overlay MMIO")
+    overlay = classification["overlay"]
+    control = mmio_factory(int(overlay["control_base"]), 0x10000)
+    signature = int(control.read(0x04)) & 0xFFFFFFFF
+    if signature != int(overlay["control_signature"]):
+        raise RuntimeError(
+            f"known old overlay control signature mismatch: 0x{signature:08x}")
+    dma = mmio_factory(int(overlay["dma_base"]), 0x10000)
+    status = {"mm2s": int(dma.read(0x04)) & 0xFFFFFFFF,
+              "s2mm": int(dma.read(0x34)) & 0xFFFFFFFF}
+    if any(value & 0x770 or not value & 0x3 for value in status.values()):
+        raise DmaOwnershipUncertain(
+            f"known old overlay DMA is active/faulty: {status}")
+    return {"overlay": overlay["name"], "control_signature": signature,
+            "dma": status}
+
+
+def check_candidate_dma_idle(*, mmio_factory):
+    """Post-load candidate DMA check at the HWH-confirmed DMA base."""
+    dma = mmio_factory(DMA_BASE, 0x10000)
+    status = {"mm2s": int(dma.read(0x04)) & 0xFFFFFFFF,
+              "s2mm": int(dma.read(0x34)) & 0xFFFFFFFF}
+    if any(value & 0x770 or not value & 0x3 for value in status.values()):
+        raise DmaOwnershipUncertain(
+            f"candidate DMA is active or faulty after load: {status}")
+    return status
+
+
+def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
+                           post_load_identity, candidate_dma_check,
+                           prepare_display_fn, allocate_tx, allocate_rx,
+                           make_transport, stage=lambda *args, **kwargs: None):
+    """Load the candidate only after the three-state pre-load decision.
+
+    COLD_BASE: no candidate MMIO before Overlay.download.
+    KNOWN_OLD: only the confirmed old control/DMA addresses are read.
+    UNKNOWN: stop before Overlay.download; never probe unknown MMIO.
+    After load: identity/contract, candidate DMA, display, then allocation.
+    """
+    if classification.get("kind") not in ("COLD_BASE", "KNOWN_OLD"):
+        raise RuntimeError(
+            "preload state is unknown; refusing Overlay.download and MMIO")
+    allocated: list[Any] = []
+    probe = None
+    if classification["kind"] == "KNOWN_OLD":
+        stage("known_old_probe", classification=classification)
+        probe = probe_preload_mmio(classification, mmio_factory=mmio_factory)
+        stage("known_old_probe_done", probe=probe)
+    stage("overlay_download", classification=classification)
+    overlay = overlay_factory()
+    stage("overlay_loaded")
+    identity = post_load_identity(overlay)
+    stage("post_load_identity", identity=identity)
+    candidate_dma = candidate_dma_check()
+    stage("candidate_dma", candidate_dma=candidate_dma)
+    stage("display_prepare")
+    display = prepare_display_fn(overlay)
+    stage("display_prepared")
+    try:
+        stage("display_start")
+        display.start()
+        stage("display_started")
+        tx = allocate_tx()
+        allocated.append(tx)
+        rx = allocate_rx()
+        allocated.append(rx)
+        transport = make_transport(tx, rx)
+        stage("transport_ready")
+        return {"display": display, "tx": tx, "rx": rx,
+                "transport": transport, "allocated": allocated,
+                "probe": probe, "identity": identity,
+                "candidate_dma": candidate_dma}
+    except BaseException as exc:
+        setattr(exc, "display", display)
+        setattr(exc, "allocated", allocated)
+        raise
+
+
+def write_stage(output: Path, report: dict[str, Any], stage: str, **fields) -> None:
+    """Persist the boot record/stage before the next hardware access and flush."""
+    payload = {
+        "schema": "material-counter.jpeg-smoke-stage.v1",
+        "stage": stage,
+        "monotonic": time.monotonic(),
+        "boot_id": report.get("boot_id_expected"),
+        "report": {key: value for key, value in report.items()
+                   if key not in ("frames_evidence", "timing_ms")},
+        **fields,
+    }
+    path = Path(str(output) + ".stage.json")
+    with path.open("w", encoding="utf-8") as stream:
+        json.dump(payload, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    print(f"JPEG_STAGE {stage}", flush=True)
 
 
 def _sha256(path: Path) -> str:
@@ -339,28 +536,46 @@ def main(argv: list[str] | None = None) -> int:
         import pynq
         from pynq import MMIO, Overlay, allocate
 
-        report["pynq_state_before"] = inspect_pynq_global_state(
+        pynq_state_before = inspect_pynq_global_state(
             pynq.__file__, require_empty_shutdown=True, require_loaded_bit=False)
-        dma_probe = MMIO(DMA_BASE, 0x10000)
-        prior_dma = {"mm2s": int(dma_probe.read(0x04)), "s2mm": int(dma_probe.read(0x34))}
-        report["dma_before_load"] = prior_dma
-        if any(value & 0x770 or not value & 0x3 for value in prior_dma.values()):
-            raise RuntimeError("DMA is active or faulty before the experimental PL load")
+        report["pynq_state_before"] = pynq_state_before
+        boot_state = inspect_boot_state()
+        report["boot_state"] = boot_state
+        known = known_overlays(artifacts["bit_sha256"])
+        classification = classify_preload_state(
+            pynq_state=pynq_state_before, boot_state=boot_state,
+            owners=report["process_ownership"], known=known)
+        report["preload_classification"] = classification
+        write_stage(args.output, report, "preflight")
 
-        overlay = Overlay(str(artifacts["bit_path"]), download=True)
-        report["pynq_overlay"] = inspect_pynq_global_state(
-            pynq.__file__, require_empty_shutdown=True, require_loaded_bit=True,
-            expected_bit_path=artifacts["bit_path"], expected_bit_sha256=artifacts["bit_sha256"],
-            allow_equivalent_bit_path=True)
-        preview = MMIO(OVERLAY_BASE, OVERLAY_MAP_BYTES)
-        display, tx, rx, transport, allocated = bring_up_display_and_dma(
-            prepare=lambda: prepare_display(overlay),
+        sequence = run_candidate_sequence(
+            classification=classification,
+            mmio_factory=MMIO,
+            overlay_factory=lambda: Overlay(str(artifacts["bit_path"]), download=True),
+            post_load_identity=lambda overlay: inspect_pynq_global_state(
+                pynq.__file__, require_empty_shutdown=True, require_loaded_bit=True,
+                expected_bit_path=artifacts["bit_path"],
+                expected_bit_sha256=artifacts["bit_sha256"],
+                allow_equivalent_bit_path=True),
+            candidate_dma_check=lambda: check_candidate_dma_idle(mmio_factory=MMIO),
+            prepare_display_fn=lambda overlay: prepare_display(overlay),
             allocate_tx=lambda: allocate(shape=(JPEG_MAX_BYTES,), dtype=np.uint8),
             allocate_rx=lambda: allocate(shape=(RX_CAPACITY,), dtype=np.uint8),
             make_transport=lambda tx, rx: JpegRleDmaTransport(
                 overlay.axi_dma_0.sendchannel, overlay.axi_dma_0.recvchannel,
                 MMIO(DMA_BASE, 0x10000), MMIO(RLE_BASE, 0x10000),
-                MMIO(JPEG_BASE, 0x10000), preview, tx, rx))
+                MMIO(JPEG_BASE, 0x10000), MMIO(OVERLAY_BASE, OVERLAY_MAP_BYTES),
+                tx, rx),
+            stage=lambda name, **fields: write_stage(args.output, report, name, **fields))
+        display = sequence["display"]
+        tx = sequence["tx"]
+        rx = sequence["rx"]
+        transport = sequence["transport"]
+        allocated = sequence["allocated"]
+        report["preload_probe"] = sequence["probe"]
+        report["pynq_overlay"] = sequence["identity"]
+        report["candidate_dma_after_load"] = sequence["candidate_dma"]
+        write_stage(args.output, report, "frames_start")
         # Field-v1 counter keeps the production count line, association and
         # 2-4 way touching split; the JPEG path counts through update_rle.
         tracker = make_runtime_counter(args.native_lib, profile="field-v1")
@@ -392,11 +607,15 @@ def main(argv: list[str] | None = None) -> int:
                       elapsed_s=elapsed, throughput_fps=report["frames"] / elapsed,
                       total_count=tracker.total_count,
                       hdmi_evidence="PL displayed_frame_id register only; no physical monitor observation")
+        write_stage(args.output, report, "frames_done")
     except BaseException as exc:
         display = getattr(exc, "display", display)
         allocated = getattr(exc, "allocated", allocated)
-        held = bool((transport and transport.dma_may_be_active) or
-                    (display is not None and display.dma_uncertain()))
+        held = (isinstance(exc, DmaOwnershipUncertain) or
+                bool((transport and transport.dma_may_be_active) or
+                     (display is not None and display.dma_uncertain())))
+        if isinstance(exc, DmaOwnershipUncertain):
+            report["dma_ownership_error"] = str(exc)
         report.update(status="FAIL_HOLD" if held else "FAILED",
                       error=str(exc), error_type=type(exc).__name__)
     finally:
