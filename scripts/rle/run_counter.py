@@ -98,7 +98,7 @@ def camera_frames(device,count):
 
 
 _JPEG_PL_OPTIONS = (
-    '--execute', '--bit', '--bit-sha256', '--hwh', '--hwh-sha256',
+    '--bit', '--bit-sha256', '--hwh', '--hwh-sha256',
     '--build-status', '--boot-id', '--input-jpeg',
 )
 

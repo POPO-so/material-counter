@@ -69,3 +69,24 @@ def test_software_decode_flag_keeps_camera_request_on_legacy_path(monkeypatch, t
     assert not called
     assert report["status"] == "FAILED"
     assert "hardware requires execute" in report["error"]
+
+
+def test_hardware_self_test_execute_does_not_dispatch_to_jpeg_camera_runner(monkeypatch, tmp_path):
+    called = False
+
+    def forbidden_jpeg_runner(_argv):
+        nonlocal called
+        called = True
+        raise AssertionError("RLE self-test must retain its runner")
+
+    monkeypatch.setattr(run_jpeg_counter, "main", forbidden_jpeg_runner)
+    output = tmp_path / "self-test.json"
+
+    result = run_counter.main([
+        "--mode", "self-test", "--execute", "--output", str(output),
+    ])
+
+    report = json.loads(output.read_text(encoding="utf-8"))
+    assert result == 1
+    assert not called
+    assert "hardware requires execute, boot-id, manifest" in report["error"]
