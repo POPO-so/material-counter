@@ -81,8 +81,9 @@ proc joint::resource_gate {reports stage} {
             max_bram36 $bram36 [dict get $cfg max_bram36] max_dsp $dsp [dict get $cfg max_dsp]] {
         if {$value > $limit} {error "JOINT_RESOURCE_LIMIT:$stage:$key:$value>$limit"}
     }
-    return [dict merge $totals [dict create region_core $region_core lut_gate_limit $lut_limit
-        lut_estimate_over_device [expr {$stage eq "synth" && $lut > [dict get $cfg max_lut]}]]]
+    set gate_result [dict create region_core $region_core lut_gate_limit $lut_limit]
+    dict set gate_result lut_estimate_over_device [expr {$stage eq "synth" && $lut > [dict get $cfg max_lut]}]
+    return [dict merge $totals $gate_result]
 }
 
 proc joint::disable_duplicate_rgb2dvi_clock_xdc {} {
