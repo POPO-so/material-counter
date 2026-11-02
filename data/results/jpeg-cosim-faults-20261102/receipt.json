@@ -1,0 +1,21 @@
+{
+  "schema": "material-counter.jpeg-hls-probe-receipt.v1",
+  "recorded_at_utc": "2026-11-02T05:42:00Z",
+  "status": "PASS",
+  "flow": "cosim", "mode": "faults", "reference_kind": "opencv",
+  "tool": {"entry": "vitis-run", "version": "v2026.1", "hls_build": "6493734", "simulator": "XSIM"},
+  "random_stall": true,
+  "c_rtl_consistency": "PASS",
+  "scenarios": [
+    {"error": "length-mismatch", "reject_status": 5, "recovery_frame": 2},
+    {"error": "early-tlast-header", "reject_status": 5, "recovery_frame": 4},
+    {"error": "bad-keep", "reject_status": 23, "recovery_frame": 6},
+    {"error": "over-512000", "reject_status": 1, "recovery_frame": 8},
+    {"error": "missing-eoi", "reject_status": 96, "recovery_frame": 10, "same_stream": true},
+    {"error": "wrong-dimensions", "reject_status": 16, "recovery_frame": 12},
+    {"error": "wrong-mode-progressive", "reject_status": 16, "recovery_frame": 14}
+  ],
+  "recovery_check": "each recovery frame re-validated (max_y_diff<=1, threshold128 mismatch=0, checksum 33151563, 64008 beats); input stream asserted empty after every reject",
+  "stability_note": "random_stall=true exercised and C/RTL matched bit-exactly across all error+recovery transactions; explicit per-cycle stall counts would require a -CosimTrace port VCD replay (not captured here)",
+  "evidence": {"workdir": "C:/fpga/wt/_hlsprobe/runs/probe-cosim-faults-20261102"}
+}
