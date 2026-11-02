@@ -86,7 +86,8 @@ joint::capture constraints {
 joint::capture bd_validation {validate_bd_design}
 joint::capture architecture_readback {joint::check_jpeg} {SUCCESS:joint_jpeg_readback}
 set after [joint::check_preserved $before]
-joint::capture save_bd {save_bd_design; update_compile_order -fileset sources_1}
+joint::capture save_design_only {save_bd_design} {}
+joint::capture compile_order_only {update_compile_order -fileset sources_1} {}
 joint::verify_sources
 joint::capture live_sources {joint::live_sources}
 puts [ipcfg::write_evidence [file join $out joint-connected.tcldict] [dict create \
