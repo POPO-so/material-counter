@@ -8,6 +8,11 @@ module tb_region_limits;
   wire [31:0] ra,rsx,rsy,rf,da,dsx,dsy,df;
   wire [9:0] rx0,ry0,rx1,ry1,dx0,dy0,dx1,dy1;
   wire [9:0] rc,dc;
+  wire candidate_flag;
+  wire [2:0] candidate_reason;
+  reg [23:0] cfg_max_area=0;
+  reg [15:0] cfg_max_w=0, cfg_max_h=0;
+  reg [7:0] cfg_aspect_x16=0;
   integer n, row_i, col_i, base_x, exp_x, exp_y;
 
   rle_region_features_reference #(.MAX_LABELS(512),.MAX_RUNS_PER_ROW(320)) ref_dut (
@@ -19,7 +24,9 @@ module tb_region_limits;
     .clk(clk),.resetn(resetn),.start(start),.frame_id(frame_id),.run_valid(run_valid),.run_ready(dr),
     .run_y(run_y),.run_x0(run_x0),.run_x1(run_x1),.finish(finish),.result_valid(dv),.result_ready(result_ready),
     .result_area(da),.result_sum_x(dsx),.result_sum_y(dsy),.result_x0(dx0),.result_y0(dy0),
-    .result_x1(dx1),.result_y1(dy1),.result_frame_id(df),.done(dd),.overflow(dover),.record_count(dc),.busy());
+    .result_x1(dx1),.result_y1(dy1),.result_frame_id(df),.done(dd),.overflow(dover),.record_count(dc),.busy(),
+    .candidate_flag(candidate_flag),.candidate_reason(candidate_reason),.cfg_max_area(cfg_max_area),
+    .cfg_max_w(cfg_max_w),.cfg_max_h(cfg_max_h),.cfg_aspect_x16(cfg_aspect_x16));
 
   task automatic begin_frame(input [31:0] fid);
     begin @(negedge clk); frame_id=fid; start=1; @(negedge clk); start=0; end
@@ -44,6 +51,8 @@ module tb_region_limits;
           {da,dsx,dsy,dx0,dy0,dx1,dy1,df} !== {ra,rsx,rsy,rx0,ry0,rx1,ry1,rf})
         $fatal(1,"limit result mismatch index=%0d expected x=%0d y=%0d got ref=(%0d,%0d,%0d) dut=(%0d,%0d,%0d)",
           index,x,y,ra,rsx,rsy,da,dsx,dsy);
+      if (candidate_flag !== 1'b0 || candidate_reason !== 3'b000)
+        $fatal(1,"disabled candidate filters must produce zero reason");
       // Exercise bounded, varying downstream stalls across the large result stream.
       repeat (index%4) begin
         @(posedge clk);

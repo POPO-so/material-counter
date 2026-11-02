@@ -100,6 +100,16 @@ hashes, `reference_diff:"PASS"`, `limits:"PASS"`, positive
 It must not be reused for the current SW1 region core: that RTL has a different
 interface and source SHA.
 
+The candidate-aware BRAM region variant uses receipt schema
+`material-counter.rle-region-bram-g2-green.v1`. Run
+`region_run.ps1 -Mode all`; it writes `region-green.json` only after the
+reference/differential, limits, seven candidate-threshold cases, tap-link
+elaboration, and OOC synthesis complete. The receipt binds the frozen RTL,
+testbench, tap, simulator logs, and OOC reports by SHA-256, and requires four
+stats BRAM36, one row BRAM36, and zero stats LUTRAM. This is module-level
+pre-route evidence; the joint system still needs its fresh synthesis, route
+review, and full route checks before bitstream generation.
+
 The current G2 region core uses receipt schema
 `material-counter.rle-region-g2-green.v1`. It binds the exact current
 `rle_region_features.v`, the committed 16-case XSim log and testbench, and the
