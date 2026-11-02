@@ -4,7 +4,7 @@ PS 读取 MJPEG 并直接解码为 640×400 Gray8，不缩放；PL 完成 ROI、
 
 这是独立候选运行入口，不自动替换桌面 GUI 的已验软件相机入口。正式 Route／接口冻结状态不因实现改变。完整 ABI 见 [设计](../../docs/superpowers/specs/2026-10-28-rle-design.md)。
 
-联合 JPEG 硬解候选可从同一入口显式使用 `--jpeg-pl`：它将 V4L2 协商为 640×400 MJPG，把压缩字节送入 PL；PL 回传 RLE/FRG 后由 PS 跟踪计数，再发布匹配帧的二值 mask、计数线和框。运行器启动 1280×720 Gray8 HDMI VideoOut/VDMA，并用 PL 输出监视器逐帧核对 session/frame 标记。相机最多容忍 3 个连续不完整 MJPEG 包，统计后跳过；超限即失败。
+联合 JPEG 硬解候选可从同一入口显式使用 `--jpeg-pl`：它将 V4L2 协商为 640×400 MJPG，把压缩字节送入 PL；PL 回传 RLE/FRG 后由 PS 跟踪计数，再发布匹配帧的二值 mask、计数线、框和累计计数字形。运行器启动 1280×720 Gray8 HDMI VideoOut/VDMA，并用 PL 输出监视器逐帧核对 session/frame 标记。相机最多容忍 3 个连续不完整 MJPEG 包，统计后跳过；超限即失败。
 
 2026-11-02 板端单次验收：匹配候选 BIT/HWH 完成 120/120 帧，11.31 fps；每帧 HDMI 像素流身份匹配，监视器 invalid/partial 为 0，最终 DMA/VDMA 均安全停止。报告见 [board-run.json](../../data/results/jpeg-pl-board-20261102/board-run.json)。该样本无检测前景，`total_count=0` 不代表计数准确率；尚无外接显示器肉眼观察。本模式仍要求匹配的 BIT/HWH 哈希、`ROUTED_NOT_BOARD_VERIFIED` 构建状态、boot ID 和 `--execute`，默认相机模式仍沿用软件解码路径。
 
