@@ -385,7 +385,7 @@ def main(argv: list[str] | None = None) -> int:
                     transport.close()
                 except BaseException as exc:
                     cleanup_errors.append(f"JPEG/RLE transport close: {type(exc).__name__}: {exc}")
-                    held = bool(transport.dma_may_be_active)
+                    held = True
             else:
                 for buffer in allocated:
                     try:

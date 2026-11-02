@@ -142,6 +142,19 @@ def test_accepts_raw_jpeg_with_exact_byte_length_order_and_single_mask_accept():
     assert rig.events.index(("jpeg", "write", 0, 1)) < rig.events.index(("mm2s", "transfer", 7))
 
 
+def test_allows_pynq_first_channel_start_before_idle_status_is_asserted():
+    rig = Rig()
+    rig.dma.values[0x04] = rig.dma.values[0x34] = 0
+    for channel in (rig.send, rig.recv):
+        channel._first_transfer = True
+        channel._active_buffer = None
+        channel.running = True
+
+    frame = transport(rig).transfer(b"\xff\xd8abc\xff\xd9", 9)
+
+    assert frame.frame_id == 9
+
+
 def test_deferred_mask_accept_waits_for_same_frame_count_and_boxes_commit():
     rig = Rig(preview=(1 << 3) | 1)
     t = transport(rig)

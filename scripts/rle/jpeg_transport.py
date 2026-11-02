@@ -156,12 +156,24 @@ class JpegRleDmaTransport:
             raise RuntimeError("JPEG core is not idle")
         if int(self.preview_control.read(0x0200)) != FRG_SIGNATURE:
             raise RuntimeError("FRG signature mismatch")
-        for offset, name in ((DMA_MM2S_STATUS, "MM2S"), (DMA_S2MM_STATUS, "S2MM")):
+        channels = ((DMA_MM2S_STATUS, "MM2S", self.send_channel),
+                    (DMA_S2MM_STATUS, "S2MM", self.recv_channel))
+        for offset, name, channel in channels:
             status = int(self.dma_regs.read(offset))
             if status & DMA_STATUS_ERROR_MASK:
                 raise RuntimeError(f"{name} DMA has error bits set")
             if not status & (DMA_IDLE | DMA_HALTED):
-                raise RuntimeError(f"{name} DMA is not idle")
+                # PYNQ 3.1.1 starts simple-mode channels when the Overlay driver
+                # constructs them. Its first transfer is explicitly permitted
+                # before DMASR.IDLE is asserted; later transfers still require
+                # the completion poll above to prove the channel idle.
+                initial_pynq_start = (
+                    self._completed_frames == 0 and self._last_frame_id is None and
+                    bool(getattr(channel, "_first_transfer", False)) and
+                    getattr(channel, "_active_buffer", None) is None and
+                    bool(getattr(channel, "running", False)))
+                if not initial_pynq_start:
+                    raise RuntimeError(f"{name} DMA is not idle")
 
     def _wait_for_completion(self) -> tuple[int, int]:
         deadline = time.monotonic() + self.timeout_s
@@ -386,6 +398,15 @@ class JpegRleDmaTransport:
         if self._closed: return
         if self.dma_may_be_active:
             raise RuntimeError("DMA-owned buffers cannot be freed while ownership is uncertain")
+        for channel, offset, name in (
+                (self.send_channel, DMA_MM2S_STATUS, "MM2S"),
+                (self.recv_channel, DMA_S2MM_STATUS, "S2MM")):
+            stop = getattr(channel, "stop", None)
+            if callable(stop):
+                stop()
+            status = int(self.dma_regs.read(offset))
+            if status & DMA_STATUS_ERROR_MASK or not status & (DMA_IDLE | DMA_HALTED):
+                raise RuntimeError(f"{name} DMA did not reach idle/halted state during close")
         for buffer in (self.tx_buffer, self.rx_buffer):
             free = getattr(buffer, "freebuffer", None)
             if not callable(free): raise RuntimeError("DMA buffer has no freebuffer method")
