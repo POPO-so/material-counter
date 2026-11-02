@@ -24,6 +24,7 @@ if __package__ in (None, ""):
 
 from scripts.rle.jpeg_runtime import process_jpeg_frame
 from scripts.rle.jpeg_transport import JPEG_MAX_BYTES, JpegRleDmaTransport, iter_raw_mjpeg
+from scripts.rle.components import build_native
 from scripts.rle.protocol import HEIGHT, RX_CAPACITY, WIDTH
 from scripts.rle.transport import RLE_SIGNATURE
 from scripts.wo0015.board_preflight import (audit_process_ownership,
@@ -51,6 +52,26 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def resolve_native_library(requested: Path | None, output_directory: Path) -> Path:
+    """Select a configured native library or build a source-bound local copy."""
+    configured = requested or os.environ.get("RLE_NATIVE_LIB")
+    if configured is not None:
+        library = Path(configured).expanduser().resolve()
+        if not library.is_file():
+            raise FileNotFoundError(f"native RLE library does not exist: {library}")
+        return library
+
+    source = Path(__file__).resolve().parents[1] / "rle" / "native" / "rle_components.cpp"
+    source_digest = _sha256(source)
+    suffix = ".dll" if os.name == "nt" else ".so"
+    library = Path(output_directory).resolve() / f"rle_components_v2_{source_digest[:12]}{suffix}"
+    if not library.is_file():
+        build_native(library)
+    if not library.is_file() or library.stat().st_size == 0:
+        raise RuntimeError(f"native RLE build produced no library: {library}")
+    return library
 
 
 def _validate_jpeg_fixture_header(payload: bytes) -> None:
@@ -407,7 +428,13 @@ def main(argv: list[str] | None = None) -> int:
     hdmi_started = False
     session_id = uuid.uuid4()
     cleanup_errors: list[str] = []
+    native_library: Path | None = None
     try:
+        native_library = resolve_native_library(args.native_lib, args.output.parent)
+        report["native_library"] = {
+            "path": str(native_library),
+            "sha256": _sha256(native_library),
+        }
         if not hasattr(os, "geteuid") or os.geteuid() != 0 or os.environ.get("XILINX_XRT") != "/usr":
             raise RuntimeError("hardware mode requires root and XILINX_XRT=/usr")
         if read_boot_id() != args.boot_id:
@@ -470,7 +497,7 @@ def main(argv: list[str] | None = None) -> int:
             overlay.axi_dma_0.sendchannel, overlay.axi_dma_0.recvchannel,
             MMIO(DMA_BASE, 0x10000), MMIO(RLE_BASE, 0x10000),
             MMIO(JPEG_BASE, 0x10000), preview, tx, rx)
-        tracker = RleCounter(library=args.native_lib,
+        tracker = RleCounter(library=native_library,
             width=WIDTH, height=HEIGHT, count_axis="x", line_x=args.line_x,
             line_y=args.line_y, min_area=args.min_area, max_area=args.max_area,
             hysteresis=args.hysteresis)
