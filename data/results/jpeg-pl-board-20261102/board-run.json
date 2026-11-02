@@ -1,0 +1,3146 @@
+{
+  "status": "JPEG_PL_RUN_COMPLETED_OUTPUT_MONITORED",
+  "mode": "raw_mjpeg_to_jpeg_pl",
+  "resolution": [
+    640,
+    400
+  ],
+  "expected_frames": 120,
+  "frames": 120,
+  "total_count": 0,
+  "count_accuracy": "NOT_MEASURED",
+  "artifacts": {
+    "status": "ROUTED_NOT_BOARD_VERIFIED",
+    "part": "xc7z020clg400-1",
+    "bit_path": "/home/xilinx/jpeg-joint-20261102-v7/artifacts/jpeg-joint.bit",
+    "bit_sha256": "9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed",
+    "hwh_path": "/home/xilinx/jpeg-joint-20261102-v7/artifacts/jpeg-joint.hwh",
+    "hwh_sha256": "79b8abcb954667e6791c8d7f0eba3e59ad2215ca3f175ebb8b5e98892dd9968f",
+    "dma_base": 1077936128,
+    "rle_base": 1136787456,
+    "overlay_base": 1136984064,
+    "jpeg_base": 1137180672
+  },
+  "boot_id_expected": "99f9fcff-0685-42ed-a8df-9822cfca6cd0",
+  "timing_ms": [
+    83.10092899773736,
+    81.45190199866192,
+    82.96505799808074,
+    84.10468300280627,
+    82.55090400052723,
+    83.03423399775056,
+    83.03482400151552,
+    82.21419099936611,
+    83.01625800231704,
+    82.94626400311245,
+    83.11071999924025,
+    83.20907699817326,
+    82.2106960004021,
+    83.09230799932266,
+    82.96194400099921,
+    83.13695300239488,
+    83.2788799998525,
+    82.88774700122303,
+    82.9872489994159,
+    83.28923099907115,
+    83.33164299983764,
+    82.0674210008292,
+    82.97460300309467,
+    83.09623999957694,
+    83.30293499966501,
+    83.36703999884776,
+    81.50228900194634,
+    82.94369899886078,
+    83.73617799952626,
+    83.4777660020336,
+    81.73420900129713,
+    83.02945900140912,
+    83.17483700011508,
+    82.84227099647978,
+    82.94736599782482,
+    82.7722520007228,
+    83.10820200131275,
+    83.4782769998128,
+    82.72401800059015,
+    82.85097200132441,
+    83.01121299882652,
+    83.16061500227079,
+    83.3248180024384,
+    82.80432600076892,
+    82.76021599886008,
+    82.92201799849863,
+    82.09716900091735,
+    83.02118099891231,
+    83.07629499904579,
+    83.10417299799155,
+    83.11174700065749,
+    82.68743400185485,
+    82.79426499939291,
+    82.92813499792828,
+    84.17644200017094,
+    81.66546499705873,
+    82.85565500045777,
+    83.77054799711914,
+    82.98895400002948,
+    82.854837000923,
+    82.53933499872801,
+    82.57433199833031,
+    83.50262200110592,
+    82.55868299966096,
+    84.19769300235203,
+    81.46570500321104,
+    83.68525499827228,
+    82.74342799995793,
+    82.66483099941979,
+    82.51069499965524,
+    83.11185299680801,
+    82.80210399971111,
+    83.6189910005487,
+    82.40448599826777,
+    83.76878800117993,
+    82.23838200137834,
+    83.40932300052373,
+    81.94868300051894,
+    84.2076429980807,
+    83.01791999838315,
+    81.76368000204093,
+    83.978806000232,
+    81.99363599851495,
+    84.396750000451,
+    82.15558200026862,
+    82.81232599983923,
+    82.25544599918067,
+    83.83151299858582,
+    82.93468900228618,
+    83.37735999884899,
+    83.05953799936105,
+    81.5994149998005,
+    82.86650499940151,
+    84.32420299868681,
+    81.39467700311798,
+    82.97586999833584,
+    84.44459600286791,
+    81.68709500023397,
+    82.89292300105444,
+    83.47896000123,
+    83.65253499869141,
+    82.48542100045597,
+    82.69174100132659,
+    82.27088599960553,
+    83.10131699909107,
+    84.13134700094815,
+    81.63652300208923,
+    84.4606950013258,
+    81.73069499753183,
+    82.94280599875492,
+    82.77974200245808,
+    82.72256599957473,
+    84.35950800048886,
+    82.03656600016984,
+    82.50388300075429,
+    84.22235699981684,
+    81.71681800013175,
+    84.29556299961405,
+    81.72788899901207,
+    82.85151999734808
+  ],
+  "frames_evidence": [
+    {
+      "frame_id": 1,
+      "jpeg_bytes": 9693,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 703.7928600002488,
+      "displayed_frame_id": 1,
+      "hdmi_output": {
+        "unique": 2,
+        "scans": 44,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 1,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 2,
+      "jpeg_bytes": 8725,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.07750200017472,
+      "displayed_frame_id": 2,
+      "hdmi_output": {
+        "unique": 3,
+        "scans": 49,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 2,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 3,
+      "jpeg_bytes": 8982,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.28899600019213,
+      "displayed_frame_id": 3,
+      "hdmi_output": {
+        "unique": 4,
+        "scans": 54,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 3,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 4,
+      "jpeg_bytes": 9809,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.44193300238112,
+      "displayed_frame_id": 4,
+      "hdmi_output": {
+        "unique": 5,
+        "scans": 59,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 4,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 5,
+      "jpeg_bytes": 8808,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.88831299796584,
+      "displayed_frame_id": 5,
+      "hdmi_output": {
+        "unique": 6,
+        "scans": 64,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 5,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 6,
+      "jpeg_bytes": 8699,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.37047399982112,
+      "displayed_frame_id": 6,
+      "hdmi_output": {
+        "unique": 7,
+        "scans": 69,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 6,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 7,
+      "jpeg_bytes": 9160,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.37397500145016,
+      "displayed_frame_id": 7,
+      "hdmi_output": {
+        "unique": 8,
+        "scans": 74,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 7,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 8,
+      "jpeg_bytes": 9627,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.55878199997824,
+      "displayed_frame_id": 8,
+      "hdmi_output": {
+        "unique": 9,
+        "scans": 79,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 8,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 9,
+      "jpeg_bytes": 9315,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.51442400089581,
+      "displayed_frame_id": 9,
+      "hdmi_output": {
+        "unique": 10,
+        "scans": 84,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 9,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 10,
+      "jpeg_bytes": 8749,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.28340899970499,
+      "displayed_frame_id": 10,
+      "hdmi_output": {
+        "unique": 11,
+        "scans": 89,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 10,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 11,
+      "jpeg_bytes": 8897,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.44665299955523,
+      "displayed_frame_id": 11,
+      "hdmi_output": {
+        "unique": 12,
+        "scans": 94,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 11,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 12,
+      "jpeg_bytes": 9755,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.54934099770617,
+      "displayed_frame_id": 12,
+      "hdmi_output": {
+        "unique": 13,
+        "scans": 99,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 12,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 13,
+      "jpeg_bytes": 9619,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.55187100076,
+      "displayed_frame_id": 13,
+      "hdmi_output": {
+        "unique": 14,
+        "scans": 104,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 13,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 14,
+      "jpeg_bytes": 8725,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.42849800101249,
+      "displayed_frame_id": 14,
+      "hdmi_output": {
+        "unique": 15,
+        "scans": 109,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 14,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 15,
+      "jpeg_bytes": 8708,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.2914519996848,
+      "displayed_frame_id": 15,
+      "hdmi_output": {
+        "unique": 16,
+        "scans": 114,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 15,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 16,
+      "jpeg_bytes": 9839,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.47937800135696,
+      "displayed_frame_id": 16,
+      "hdmi_output": {
+        "unique": 17,
+        "scans": 119,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 16,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 17,
+      "jpeg_bytes": 9689,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.61988999968162,
+      "displayed_frame_id": 17,
+      "hdmi_output": {
+        "unique": 18,
+        "scans": 124,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 17,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 18,
+      "jpeg_bytes": 8730,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.35123600045335,
+      "displayed_frame_id": 18,
+      "hdmi_output": {
+        "unique": 19,
+        "scans": 129,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 18,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 19,
+      "jpeg_bytes": 8685,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.32102199710789,
+      "displayed_frame_id": 19,
+      "hdmi_output": {
+        "unique": 20,
+        "scans": 134,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 19,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 20,
+      "jpeg_bytes": 9739,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.63112000006367,
+      "displayed_frame_id": 20,
+      "hdmi_output": {
+        "unique": 21,
+        "scans": 139,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 20,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 21,
+      "jpeg_bytes": 9797,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.6743319996458,
+      "displayed_frame_id": 21,
+      "hdmi_output": {
+        "unique": 22,
+        "scans": 144,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 21,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 22,
+      "jpeg_bytes": 8707,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.40346400270937,
+      "displayed_frame_id": 22,
+      "hdmi_output": {
+        "unique": 23,
+        "scans": 149,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 22,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 23,
+      "jpeg_bytes": 8725,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.30558200032101,
+      "displayed_frame_id": 23,
+      "hdmi_output": {
+        "unique": 24,
+        "scans": 154,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 23,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 24,
+      "jpeg_bytes": 9592,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.43377199707902,
+      "displayed_frame_id": 24,
+      "hdmi_output": {
+        "unique": 25,
+        "scans": 159,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 24,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 25,
+      "jpeg_bytes": 9772,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.65024600061588,
+      "displayed_frame_id": 25,
+      "hdmi_output": {
+        "unique": 26,
+        "scans": 164,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 25,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 26,
+      "jpeg_bytes": 8794,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.70969200041145,
+      "displayed_frame_id": 26,
+      "hdmi_output": {
+        "unique": 27,
+        "scans": 169,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 26,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 27,
+      "jpeg_bytes": 8741,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 81.83664600073826,
+      "displayed_frame_id": 27,
+      "hdmi_output": {
+        "unique": 28,
+        "scans": 174,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 27,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 28,
+      "jpeg_bytes": 9461,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.286141998542,
+      "displayed_frame_id": 28,
+      "hdmi_output": {
+        "unique": 29,
+        "scans": 179,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 28,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 29,
+      "jpeg_bytes": 9660,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.07378400079324,
+      "displayed_frame_id": 29,
+      "hdmi_output": {
+        "unique": 30,
+        "scans": 184,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 29,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 30,
+      "jpeg_bytes": 9785,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.81681800165097,
+      "displayed_frame_id": 30,
+      "hdmi_output": {
+        "unique": 31,
+        "scans": 189,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 30,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 31,
+      "jpeg_bytes": 8761,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.0709049985453,
+      "displayed_frame_id": 31,
+      "hdmi_output": {
+        "unique": 32,
+        "scans": 194,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 31,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 32,
+      "jpeg_bytes": 9164,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.3671200016397,
+      "displayed_frame_id": 32,
+      "hdmi_output": {
+        "unique": 33,
+        "scans": 199,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 32,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 33,
+      "jpeg_bytes": 9520,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.5181839975121,
+      "displayed_frame_id": 33,
+      "hdmi_output": {
+        "unique": 34,
+        "scans": 204,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 33,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 34,
+      "jpeg_bytes": 9697,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.1896189993131,
+      "displayed_frame_id": 34,
+      "hdmi_output": {
+        "unique": 35,
+        "scans": 209,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 34,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 35,
+      "jpeg_bytes": 8975,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.37324300009641,
+      "displayed_frame_id": 35,
+      "hdmi_output": {
+        "unique": 36,
+        "scans": 214,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 35,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 36,
+      "jpeg_bytes": 8713,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.10761200118577,
+      "displayed_frame_id": 36,
+      "hdmi_output": {
+        "unique": 37,
+        "scans": 219,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 36,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 37,
+      "jpeg_bytes": 9193,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.45623300192528,
+      "displayed_frame_id": 37,
+      "hdmi_output": {
+        "unique": 38,
+        "scans": 224,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 37,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 38,
+      "jpeg_bytes": 9582,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.82126200012863,
+      "displayed_frame_id": 38,
+      "hdmi_output": {
+        "unique": 39,
+        "scans": 229,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 38,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 39,
+      "jpeg_bytes": 9195,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.06109499972081,
+      "displayed_frame_id": 39,
+      "hdmi_output": {
+        "unique": 40,
+        "scans": 234,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 39,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 40,
+      "jpeg_bytes": 8882,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.18303399937577,
+      "displayed_frame_id": 40,
+      "hdmi_output": {
+        "unique": 41,
+        "scans": 239,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 40,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 41,
+      "jpeg_bytes": 8939,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.3454769999662,
+      "displayed_frame_id": 41,
+      "hdmi_output": {
+        "unique": 42,
+        "scans": 244,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 41,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 42,
+      "jpeg_bytes": 9298,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.50591300040833,
+      "displayed_frame_id": 42,
+      "hdmi_output": {
+        "unique": 43,
+        "scans": 249,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 42,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 43,
+      "jpeg_bytes": 9524,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.66400600061752,
+      "displayed_frame_id": 43,
+      "hdmi_output": {
+        "unique": 44,
+        "scans": 254,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 43,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 44,
+      "jpeg_bytes": 9128,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.14387099744636,
+      "displayed_frame_id": 44,
+      "hdmi_output": {
+        "unique": 45,
+        "scans": 259,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 44,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 45,
+      "jpeg_bytes": 8758,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.09691099930205,
+      "displayed_frame_id": 45,
+      "hdmi_output": {
+        "unique": 46,
+        "scans": 264,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 45,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 46,
+      "jpeg_bytes": 9074,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.26065800065408,
+      "displayed_frame_id": 46,
+      "hdmi_output": {
+        "unique": 47,
+        "scans": 269,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 46,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 47,
+      "jpeg_bytes": 9685,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.43750100155012,
+      "displayed_frame_id": 47,
+      "hdmi_output": {
+        "unique": 48,
+        "scans": 274,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 47,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 48,
+      "jpeg_bytes": 9421,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.3570709983178,
+      "displayed_frame_id": 48,
+      "hdmi_output": {
+        "unique": 49,
+        "scans": 279,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 48,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 49,
+      "jpeg_bytes": 8739,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.40791999944486,
+      "displayed_frame_id": 49,
+      "hdmi_output": {
+        "unique": 50,
+        "scans": 284,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 49,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 50,
+      "jpeg_bytes": 8819,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.44094800122548,
+      "displayed_frame_id": 50,
+      "hdmi_output": {
+        "unique": 51,
+        "scans": 289,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 50,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 51,
+      "jpeg_bytes": 9764,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.4544300014386,
+      "displayed_frame_id": 51,
+      "hdmi_output": {
+        "unique": 52,
+        "scans": 294,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 51,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 52,
+      "jpeg_bytes": 9607,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.1749659992056,
+      "displayed_frame_id": 52,
+      "hdmi_output": {
+        "unique": 53,
+        "scans": 299,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 52,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 53,
+      "jpeg_bytes": 8748,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.12862199818483,
+      "displayed_frame_id": 53,
+      "hdmi_output": {
+        "unique": 54,
+        "scans": 304,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 53,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 54,
+      "jpeg_bytes": 8716,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.26546399985091,
+      "displayed_frame_id": 54,
+      "hdmi_output": {
+        "unique": 55,
+        "scans": 309,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 54,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 55,
+      "jpeg_bytes": 9783,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.51553800114198,
+      "displayed_frame_id": 55,
+      "hdmi_output": {
+        "unique": 56,
+        "scans": 314,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 55,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 56,
+      "jpeg_bytes": 9778,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.00061599927722,
+      "displayed_frame_id": 56,
+      "hdmi_output": {
+        "unique": 57,
+        "scans": 319,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 56,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 57,
+      "jpeg_bytes": 8761,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.1919320007728,
+      "displayed_frame_id": 57,
+      "hdmi_output": {
+        "unique": 58,
+        "scans": 324,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 57,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 58,
+      "jpeg_bytes": 8736,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.10451099916827,
+      "displayed_frame_id": 58,
+      "hdmi_output": {
+        "unique": 59,
+        "scans": 329,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 58,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 59,
+      "jpeg_bytes": 9828,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.32929800235434,
+      "displayed_frame_id": 59,
+      "hdmi_output": {
+        "unique": 60,
+        "scans": 334,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 59,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 60,
+      "jpeg_bytes": 9812,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.25836899894057,
+      "displayed_frame_id": 60,
+      "hdmi_output": {
+        "unique": 61,
+        "scans": 339,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 60,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 61,
+      "jpeg_bytes": 9657,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.01296599893249,
+      "displayed_frame_id": 61,
+      "hdmi_output": {
+        "unique": 62,
+        "scans": 344,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 61,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 62,
+      "jpeg_bytes": 8750,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.90913200107752,
+      "displayed_frame_id": 62,
+      "hdmi_output": {
+        "unique": 63,
+        "scans": 349,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 62,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 63,
+      "jpeg_bytes": 8729,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.83598799991887,
+      "displayed_frame_id": 63,
+      "hdmi_output": {
+        "unique": 64,
+        "scans": 354,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 63,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 64,
+      "jpeg_bytes": 9780,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.89803699881304,
+      "displayed_frame_id": 64,
+      "hdmi_output": {
+        "unique": 65,
+        "scans": 359,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 64,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 65,
+      "jpeg_bytes": 9766,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.54460900247796,
+      "displayed_frame_id": 65,
+      "hdmi_output": {
+        "unique": 66,
+        "scans": 364,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 65,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 66,
+      "jpeg_bytes": 8763,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 81.80885500041768,
+      "displayed_frame_id": 66,
+      "hdmi_output": {
+        "unique": 67,
+        "scans": 369,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 66,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 67,
+      "jpeg_bytes": 8747,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.01721199697931,
+      "displayed_frame_id": 67,
+      "hdmi_output": {
+        "unique": 68,
+        "scans": 374,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 67,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 68,
+      "jpeg_bytes": 9650,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.08523100276943,
+      "displayed_frame_id": 68,
+      "hdmi_output": {
+        "unique": 69,
+        "scans": 379,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 68,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 69,
+      "jpeg_bytes": 9782,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.14020299803815,
+      "displayed_frame_id": 69,
+      "hdmi_output": {
+        "unique": 70,
+        "scans": 384,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 69,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 70,
+      "jpeg_bytes": 8703,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.84466400073143,
+      "displayed_frame_id": 70,
+      "hdmi_output": {
+        "unique": 71,
+        "scans": 389,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 70,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 71,
+      "jpeg_bytes": 8716,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.4464619983919,
+      "displayed_frame_id": 71,
+      "hdmi_output": {
+        "unique": 72,
+        "scans": 394,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 71,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 72,
+      "jpeg_bytes": 9584,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.1440610018035,
+      "displayed_frame_id": 72,
+      "hdmi_output": {
+        "unique": 73,
+        "scans": 399,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 72,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 73,
+      "jpeg_bytes": 9734,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.96078800069517,
+      "displayed_frame_id": 73,
+      "hdmi_output": {
+        "unique": 74,
+        "scans": 404,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 73,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 74,
+      "jpeg_bytes": 8847,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.73638099853997,
+      "displayed_frame_id": 74,
+      "hdmi_output": {
+        "unique": 75,
+        "scans": 409,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 74,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 75,
+      "jpeg_bytes": 8734,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.08898500056239,
+      "displayed_frame_id": 75,
+      "hdmi_output": {
+        "unique": 76,
+        "scans": 414,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 75,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 76,
+      "jpeg_bytes": 9370,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.56580899978871,
+      "displayed_frame_id": 76,
+      "hdmi_output": {
+        "unique": 77,
+        "scans": 419,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 76,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 77,
+      "jpeg_bytes": 9626,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.0369350007677,
+      "displayed_frame_id": 77,
+      "hdmi_output": {
+        "unique": 78,
+        "scans": 424,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 77,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 78,
+      "jpeg_bytes": 9075,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.59251699928427,
+      "displayed_frame_id": 78,
+      "hdmi_output": {
+        "unique": 79,
+        "scans": 429,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 78,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 79,
+      "jpeg_bytes": 8778,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.52929199847858,
+      "displayed_frame_id": 79,
+      "hdmi_output": {
+        "unique": 80,
+        "scans": 434,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 79,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 80,
+      "jpeg_bytes": 9071,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.34596300119301,
+      "displayed_frame_id": 80,
+      "hdmi_output": {
+        "unique": 81,
+        "scans": 439,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 80,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 81,
+      "jpeg_bytes": 9441,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.09009200072614,
+      "displayed_frame_id": 81,
+      "hdmi_output": {
+        "unique": 82,
+        "scans": 444,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 81,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 82,
+      "jpeg_bytes": 9694,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.3039259998477,
+      "displayed_frame_id": 82,
+      "hdmi_output": {
+        "unique": 83,
+        "scans": 449,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 82,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 83,
+      "jpeg_bytes": 8993,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.31454099950497,
+      "displayed_frame_id": 83,
+      "hdmi_output": {
+        "unique": 84,
+        "scans": 454,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 83,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 84,
+      "jpeg_bytes": 8898,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.71979699970689,
+      "displayed_frame_id": 84,
+      "hdmi_output": {
+        "unique": 85,
+        "scans": 459,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 84,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 85,
+      "jpeg_bytes": 9220,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.48461599941947,
+      "displayed_frame_id": 85,
+      "hdmi_output": {
+        "unique": 86,
+        "scans": 464,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 85,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 86,
+      "jpeg_bytes": 9587,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.14207900184556,
+      "displayed_frame_id": 86,
+      "hdmi_output": {
+        "unique": 87,
+        "scans": 469,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 86,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 87,
+      "jpeg_bytes": 9197,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.63406799960649,
+      "displayed_frame_id": 87,
+      "hdmi_output": {
+        "unique": 88,
+        "scans": 474,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 87,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 88,
+      "jpeg_bytes": 8865,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.18846099812072,
+      "displayed_frame_id": 88,
+      "hdmi_output": {
+        "unique": 89,
+        "scans": 479,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 88,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 89,
+      "jpeg_bytes": 9021,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.27336600268609,
+      "displayed_frame_id": 89,
+      "hdmi_output": {
+        "unique": 90,
+        "scans": 484,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 89,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 90,
+      "jpeg_bytes": 9351,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.71613599956618,
+      "displayed_frame_id": 90,
+      "hdmi_output": {
+        "unique": 91,
+        "scans": 489,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 90,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 91,
+      "jpeg_bytes": 9446,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.40470699840807,
+      "displayed_frame_id": 91,
+      "hdmi_output": {
+        "unique": 92,
+        "scans": 494,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 91,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 92,
+      "jpeg_bytes": 9043,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 81.93782799935434,
+      "displayed_frame_id": 92,
+      "hdmi_output": {
+        "unique": 93,
+        "scans": 499,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 92,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 93,
+      "jpeg_bytes": 8813,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.20436900248751,
+      "displayed_frame_id": 93,
+      "hdmi_output": {
+        "unique": 94,
+        "scans": 504,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 93,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 94,
+      "jpeg_bytes": 9152,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.77357499941718,
+      "displayed_frame_id": 94,
+      "hdmi_output": {
+        "unique": 95,
+        "scans": 509,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 94,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 95,
+      "jpeg_bytes": 9565,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 81.73379100117018,
+      "displayed_frame_id": 95,
+      "hdmi_output": {
+        "unique": 96,
+        "scans": 514,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 95,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 96,
+      "jpeg_bytes": 9300,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.3135439970647,
+      "displayed_frame_id": 96,
+      "hdmi_output": {
+        "unique": 97,
+        "scans": 519,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 96,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 97,
+      "jpeg_bytes": 8720,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.78241200282355,
+      "displayed_frame_id": 97,
+      "hdmi_output": {
+        "unique": 98,
+        "scans": 524,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 97,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 98,
+      "jpeg_bytes": 8944,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.0240430002741,
+      "displayed_frame_id": 98,
+      "hdmi_output": {
+        "unique": 99,
+        "scans": 529,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 98,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 99,
+      "jpeg_bytes": 9719,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.23585299876868,
+      "displayed_frame_id": 99,
+      "hdmi_output": {
+        "unique": 100,
+        "scans": 534,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 99,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 100,
+      "jpeg_bytes": 9545,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.82078100112267,
+      "displayed_frame_id": 100,
+      "hdmi_output": {
+        "unique": 101,
+        "scans": 539,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 100,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 101,
+      "jpeg_bytes": 8736,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.98508899699664,
+      "displayed_frame_id": 101,
+      "hdmi_output": {
+        "unique": 102,
+        "scans": 544,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 101,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 102,
+      "jpeg_bytes": 8718,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.80792600271525,
+      "displayed_frame_id": 102,
+      "hdmi_output": {
+        "unique": 103,
+        "scans": 549,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 102,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 103,
+      "jpeg_bytes": 9826,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.02372899925103,
+      "displayed_frame_id": 103,
+      "hdmi_output": {
+        "unique": 104,
+        "scans": 554,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 103,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 104,
+      "jpeg_bytes": 9684,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.61975400091615,
+      "displayed_frame_id": 104,
+      "hdmi_output": {
+        "unique": 105,
+        "scans": 559,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 104,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 105,
+      "jpeg_bytes": 8746,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.44581499841297,
+      "displayed_frame_id": 105,
+      "hdmi_output": {
+        "unique": 106,
+        "scans": 564,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 105,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 106,
+      "jpeg_bytes": 8754,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.4603260011354,
+      "displayed_frame_id": 106,
+      "hdmi_output": {
+        "unique": 107,
+        "scans": 569,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 106,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 107,
+      "jpeg_bytes": 9809,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 81.97937899967656,
+      "displayed_frame_id": 107,
+      "hdmi_output": {
+        "unique": 108,
+        "scans": 574,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 107,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 108,
+      "jpeg_bytes": 9749,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.79958699899726,
+      "displayed_frame_id": 108,
+      "hdmi_output": {
+        "unique": 109,
+        "scans": 579,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 108,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 109,
+      "jpeg_bytes": 8724,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.0665969986294,
+      "displayed_frame_id": 109,
+      "hdmi_output": {
+        "unique": 110,
+        "scans": 584,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 109,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 110,
+      "jpeg_bytes": 8763,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.28882400019211,
+      "displayed_frame_id": 110,
+      "hdmi_output": {
+        "unique": 111,
+        "scans": 589,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 110,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 111,
+      "jpeg_bytes": 9752,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.25629000319168,
+      "displayed_frame_id": 111,
+      "hdmi_output": {
+        "unique": 112,
+        "scans": 594,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 111,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 112,
+      "jpeg_bytes": 9787,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.06566699684481,
+      "displayed_frame_id": 112,
+      "hdmi_output": {
+        "unique": 113,
+        "scans": 599,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 112,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 113,
+      "jpeg_bytes": 9684,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.69687400065595,
+      "displayed_frame_id": 113,
+      "hdmi_output": {
+        "unique": 114,
+        "scans": 604,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 113,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 114,
+      "jpeg_bytes": 8721,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.37242399991374,
+      "displayed_frame_id": 114,
+      "hdmi_output": {
+        "unique": 115,
+        "scans": 609,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 114,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 115,
+      "jpeg_bytes": 8727,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.8437420022965,
+      "displayed_frame_id": 115,
+      "hdmi_output": {
+        "unique": 116,
+        "scans": 614,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 115,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 116,
+      "jpeg_bytes": 9783,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.5643629982078,
+      "displayed_frame_id": 116,
+      "hdmi_output": {
+        "unique": 117,
+        "scans": 619,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 116,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 117,
+      "jpeg_bytes": 8784,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.05574699968565,
+      "displayed_frame_id": 117,
+      "hdmi_output": {
+        "unique": 118,
+        "scans": 624,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 117,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 118,
+      "jpeg_bytes": 8754,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 84.68069599985029,
+      "displayed_frame_id": 118,
+      "hdmi_output": {
+        "unique": 119,
+        "scans": 629,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 118,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 119,
+      "jpeg_bytes": 8750,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 82.06390700070187,
+      "displayed_frame_id": 119,
+      "hdmi_output": {
+        "unique": 120,
+        "scans": 634,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 119,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    },
+    {
+      "frame_id": 120,
+      "jpeg_bytes": 9690,
+      "detection_count": 0,
+      "total_count": 0,
+      "detections": [],
+      "frame_interval_ms": 83.19603099880624,
+      "displayed_frame_id": 120,
+      "hdmi_output": {
+        "unique": 121,
+        "scans": 639,
+        "invalid": 0,
+        "partial": 0,
+        "frame": 120,
+        "session": 257028617431866637490947776075325172313,
+        "diagnostics": {
+          "gray_error": false,
+          "marker_pixel_error": false,
+          "pair_mismatch": false,
+          "top_invalid": false,
+          "bottom_invalid": false
+        }
+      }
+    }
+  ],
+  "process_ownership": {
+    "findings": [],
+    "denied": [],
+    "scanned_proc": "/proc"
+  },
+  "camera_owners_before": [],
+  "pynq_state_before": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/jpeg-joint-20261102-v5/artifacts/jpeg-joint.bit",
+    "loaded_bit_sha1": "6228001b4732b9927decccbd6d2cb90d5b87872c",
+    "loaded_bit_sha256": "9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed",
+    "loaded_bit_path_matches_expected": null
+  },
+  "dma_before_load": {
+    "mm2s": 4097,
+    "s2mm": 4097
+  },
+  "vdma_before_load": {
+    "control": 69632,
+    "status": 69633
+  },
+  "pynq_overlay": {
+    "pl_state_status": "GLOBAL_STATE_PRESENT",
+    "global_state_path": "/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/pl_server/global_pl_state_.json",
+    "shutdown_ips": {},
+    "shutdown_ips_empty": true,
+    "loaded_bit_path": "/home/xilinx/jpeg-joint-20261102-v5/artifacts/jpeg-joint.bit",
+    "loaded_bit_sha1": "6228001b4732b9927decccbd6d2cb90d5b87872c",
+    "loaded_bit_sha256": "9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed",
+    "loaded_bit_path_matches_expected": false
+  },
+  "hp1_readwrite32": {
+    "status": "HP1_READWRITE_32BIT_SYNC_PASS",
+    "hwh_path": "/home/xilinx/jpeg-joint-20261102-v7/artifacts/jpeg-joint.hwh",
+    "hwh_hp1_data_width_bits": 32,
+    "slcr_fpga_rst_ctrl": 0,
+    "rle_dma": {
+      "base": "0x40400000",
+      "status": {
+        "read": {
+          "offset": 4,
+          "status": 1
+        },
+        "write": {
+          "offset": 52,
+          "status": 1
+        }
+      }
+    },
+    "rle_pipeline": {
+      "base": "0x43c20000",
+      "signature": 826625106,
+      "geometry": 26215040,
+      "max_runs": 16384,
+      "state": 0
+    },
+    "registers": {
+      "AFI1_RDCHAN_CTRL": {
+        "address": "0xF8009000",
+        "before": 1,
+        "write_value": null,
+        "after": 1
+      },
+      "AFI1_WRCHAN_CTRL": {
+        "address": "0xF8009014",
+        "before": 3841,
+        "write_value": null,
+        "after": 3841
+      }
+    }
+  },
+  "hdmi_monitor_base": "0x43c40000",
+  "hdmi_monitor_signature": "0x4d435631",
+  "hdmi_clocks_mhz": [
+    50.0,
+    100.0,
+    142.857143
+  ],
+  "hdmi_mode": {
+    "width": 1280,
+    "height": 720,
+    "bits_per_pixel": 8,
+    "fps": 60,
+    "format": "Gray8"
+  },
+  "hdmi_monitor_baseline": {
+    "unique": 1,
+    "scans": 1,
+    "invalid": 0,
+    "partial": 0,
+    "frame": 0,
+    "session": 257028617431866637490947776075325172313,
+    "diagnostics": {
+      "gray_error": false,
+      "marker_pixel_error": false,
+      "pair_mismatch": false,
+      "top_invalid": false,
+      "bottom_invalid": false
+    }
+  },
+  "session_id": "c15de93d-0a45-408e-9995-76ac7be6ea59",
+  "elapsed_s": 10.614669559003232,
+  "throughput_fps": 11.305109342590649,
+  "hdmi_evidence": "on-board HDMI pixel monitor matched each submitted session/frame marker with valid 1280x720 Gray8 scan; external display was not visually observed",
+  "external_display_visual_observation": "NOT_OBSERVED",
+  "camera_capture": {
+    "valid_packets": 120,
+    "invalid_packets": 0,
+    "consecutive_invalid_packets": 0,
+    "max_consecutive_invalid": 3,
+    "last_invalid_reason": null
+  },
+  "hdmi_stopped": true,
+  "buffers_held": false
+}
