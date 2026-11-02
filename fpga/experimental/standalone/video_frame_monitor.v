@@ -56,6 +56,8 @@ module video_frame_monitor #(
   reg gray_error;
   reg marker_pixel_error;
   reg [223:0] top_marker, bottom_marker;
+  reg top_marker_valid_latched, bottom_marker_valid_latched;
+  reg marker_pair_equal_latched;
   reg [31:0] last_diag_flags;
   reg [223:0] last_top_marker, last_bottom_marker;
   reg [63:0] unique_count, scan_count, repeat_count, invalid_count, partial_count;
@@ -86,10 +88,10 @@ module video_frame_monitor #(
   endfunction
 
   wire vsync_rise = vid_vsync && !vsync_d;
-  wire marker_pair_valid = (top_marker == bottom_marker) &&
-                           marker_is_valid(top_marker) && marker_is_valid(bottom_marker);
-  wire [31:0] scan_diag_flags = {27'b0, !marker_is_valid(bottom_marker),
-                                 !marker_is_valid(top_marker), (top_marker != bottom_marker),
+  wire marker_pair_valid = marker_pair_equal_latched &&
+                           top_marker_valid_latched && bottom_marker_valid_latched;
+  wire [31:0] scan_diag_flags = {27'b0, !bottom_marker_valid_latched,
+                                 !top_marker_valid_latched, !marker_pair_equal_latched,
                                  marker_pixel_error, gray_error};
 
   always @(posedge pixel_clk) begin
@@ -106,6 +108,9 @@ module video_frame_monitor #(
       marker_pixel_error <= 1'b0;
       top_marker <= 0;
       bottom_marker <= 0;
+      top_marker_valid_latched <= 1'b0;
+      bottom_marker_valid_latched <= 1'b0;
+      marker_pair_equal_latched <= 1'b0;
       last_diag_flags <= 0;
       last_top_marker <= 0;
       last_bottom_marker <= 0;
@@ -137,6 +142,15 @@ module video_frame_monitor #(
               bottom_marker[223-(line_pixels-MARKER_X)] <= (vid_data == 24'hffffff);
           end
         end
+        // The marker payloads are complete on the pixel immediately after
+        // each 224-bit region. Register their validation before VSYNC so the
+        // frame-boundary decision does not traverse the CRC and identity logic.
+        if (line_count == 0 && line_pixels == MARKER_X+224)
+          top_marker_valid_latched <= marker_is_valid(top_marker);
+        if (line_count == HEIGHT-1 && line_pixels == MARKER_X+224) begin
+          bottom_marker_valid_latched <= marker_is_valid(bottom_marker);
+          marker_pair_equal_latched <= (top_marker == bottom_marker);
+        end
         active_pixels <= active_pixels + 1'b1;
         line_pixels <= line_pixels + 1'b1;
       end
@@ -159,6 +173,9 @@ module video_frame_monitor #(
           marker_pixel_error <= 1'b0;
           top_marker <= 0;
           bottom_marker <= 0;
+          top_marker_valid_latched <= 1'b0;
+          bottom_marker_valid_latched <= 1'b0;
+          marker_pair_equal_latched <= 1'b0;
           previous_identity_valid <= 1'b0;
         end else begin
           scan_count <= scan_count + 1'b1;
@@ -202,6 +219,9 @@ module video_frame_monitor #(
           marker_pixel_error <= 1'b0;
           top_marker <= 0;
           bottom_marker <= 0;
+          top_marker_valid_latched <= 1'b0;
+          bottom_marker_valid_latched <= 1'b0;
+          marker_pair_equal_latched <= 1'b0;
         end
       end
     end

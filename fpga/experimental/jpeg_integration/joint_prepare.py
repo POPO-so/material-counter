@@ -20,6 +20,8 @@ OVERLAY_SOURCE_REL = Path(XPR_REL).parent.parent / "rtl/video_binary_overlay.v"
 OVERLAY_PINNED_REFERENCE_REL = Path("fpga/experimental/standalone/video_binary_overlay.v")
 OVERLAY_WRAPPER_SOURCE_REL = Path(XPR_REL).parent.parent / "rtl/video_binary_overlay_bd.v"
 OVERLAY_WRAPPER_PINNED_REFERENCE_REL = Path("fpga/experimental/standalone/video_binary_overlay_bd.v")
+FRAME_MONITOR_SOURCE_REL = Path("fpga/experimental/standalone/video_frame_monitor.v")
+FRAME_MONITOR_PINNED_REFERENCE_REL = Path("fpga/experimental/standalone/video_frame_monitor.v")
 TIMING_XDC_REL = Path("scripts/standalone/display_timing.xdc")
 OFFLOAD_CDC_XDC_REL = Path("scripts/standalone/offload_cdc.xdc")
 
@@ -405,6 +407,7 @@ def verify_manifest(path: Path) -> None:
         require(sha(Path(item["path"])) == item["sha256"], f"joint input changed: {item['path']}")
     verify_overlay_binding(path, manifest)
     verify_overlay_wrapper_binding(path, manifest)
+    verify_frame_monitor_binding(path, manifest)
     verify_timing_xdc_binding(path, manifest)
     verify_offload_cdc_binding(path, manifest)
     print("JOINT_SOURCE_HASHES_OK")
@@ -615,6 +618,105 @@ def verify_overlay_wrapper_binding(path: Path, manifest: dict) -> None:
     required_live = {Path(item).resolve() for item in manifest.get("required_live_sources", [])}
     require(staged_path in required_live,
             "overlay wrapper replacement is missing from required live project sources")
+
+
+def resolve_frame_monitor_override(candidate_path: Path | None, baseline: Path,
+                                   pinned_sources: list[dict], project_sources: list[dict]) -> dict | None:
+    """Bind one optional frame-monitor candidate to its pinned project source."""
+    if candidate_path is None:
+        return None
+    candidate_arg = Path(candidate_path)
+    require(not candidate_arg.is_symlink(), "frame monitor RTL override must be an ordinary file")
+    candidate = candidate_arg.resolve(strict=True)
+    require(candidate.is_file(), "frame monitor RTL override must be an ordinary file")
+    baseline = baseline.resolve()
+    require(not candidate.is_relative_to(baseline), "frame monitor RTL override must be outside the fixed snapshot")
+    require(re.search(r"\bmodule\s+video_frame_monitor\b",
+                      candidate.read_text(encoding="utf-8")) is not None,
+            "frame monitor RTL override must declare module video_frame_monitor")
+
+    def matches_target(items: list[dict]) -> list[dict]:
+        matches = []
+        for item in items:
+            source = Path(item["path"]).resolve()
+            try:
+                relative = source.relative_to(baseline)
+            except ValueError:
+                continue
+            if relative.as_posix() == FRAME_MONITOR_SOURCE_REL.as_posix():
+                matches.append(item)
+        return matches
+
+    pinned = matches_target(pinned_sources)
+    project = matches_target(project_sources)
+    require(len(pinned) == 1, "standalone frame monitor reference is not uniquely pinned")
+    require(len(project) == 1, "fixed XPR frame monitor is not a unique project source")
+    source_path = Path(project[0]["path"]).resolve()
+    pinned_path = Path(pinned[0]["path"]).resolve()
+    require(source_path.is_file() and pinned_path.is_file() and
+            sha(source_path) == project[0]["sha256"] == pinned[0]["sha256"] == sha(pinned_path),
+            "fixed XPR frame monitor does not match its pinned standalone reference")
+    return {"source": project[0], "pinned_reference": pinned[0], "candidate": entry(candidate),
+            "target_relative_path": FRAME_MONITOR_SOURCE_REL.as_posix()}
+
+
+def verify_frame_monitor_binding(path: Path, manifest: dict) -> None:
+    """Check that the staged frame monitor matches its immutable candidate and pinned source."""
+    if "frame_monitor_replacements" not in manifest:
+        return
+    replacements = manifest["frame_monitor_replacements"]
+    require(isinstance(replacements, list) and len(replacements) == 1,
+            "frame monitor replacement manifest must contain exactly one source")
+    replacement = replacements[0]
+    require(replacement.get("target_relative_path") == FRAME_MONITOR_SOURCE_REL.as_posix(),
+            "frame monitor replacement target changed")
+    source = replacement.get("source", {})
+    pinned_reference = replacement.get("pinned_reference", {})
+    candidate = replacement.get("candidate", {})
+    staged = replacement.get("replacement", {})
+    preflight = manifest.get("preflight", {})
+    baseline = Path(preflight.get("snapshot", "")).resolve()
+    source_path = Path(source.get("path", "")).resolve()
+    pinned_path = Path(pinned_reference.get("path", "")).resolve()
+    for bound_path, expected, message in (
+        (source_path, FRAME_MONITOR_SOURCE_REL, "frame monitor source is outside the fixed snapshot"),
+        (pinned_path, FRAME_MONITOR_PINNED_REFERENCE_REL, "frame monitor reference is outside the fixed snapshot"),
+    ):
+        try:
+            relative = bound_path.relative_to(baseline)
+        except ValueError as error:
+            raise ValueError(message) from error
+        require(relative.as_posix() == expected.as_posix(), "frame monitor source/reference path changed")
+    pinned = [item for item in preflight.get("baseline_pinned_sources", [])
+              if Path(item.get("path", "")).resolve() == pinned_path]
+    project = [item for item in preflight.get("project_sources", [])
+               if Path(item.get("path", "")).resolve() == source_path]
+    require(len(pinned) == 1 and len(project) == 1 and
+            pinned[0].get("sha256") == pinned_reference.get("sha256") and
+            source.get("sha256") == project[0].get("sha256") == pinned_reference.get("sha256"),
+            "frame monitor source does not match its unique pinned project reference")
+    candidate_path = Path(candidate.get("path", "")).resolve()
+    staged_path = Path(staged.get("path", "")).resolve()
+    expected_staged = (path.parent / "snapshot" / FRAME_MONITOR_SOURCE_REL).resolve()
+    require(staged_path == expected_staged,
+            "frame monitor replacement is not bound to the fixed staged project path")
+    immutable = [item for item in manifest.get("immutable_inputs", [])
+                 if Path(item.get("path", "")).resolve() == candidate_path]
+    staged_sources = [item for item in manifest.get("snapshot_sources", [])
+                      if Path(item.get("path", "")).resolve() == staged_path]
+    require(len(immutable) == 1 and len(staged_sources) == 1 and
+            immutable[0].get("sha256") == candidate.get("sha256") and
+            staged_sources[0].get("sha256") == staged.get("sha256"),
+            "frame monitor candidate or staged source is absent from hash manifest")
+    require(candidate.get("sha256") == staged.get("sha256"),
+            "frame monitor replacement hash differs from the immutable candidate")
+    for source_file in (candidate_path, staged_path):
+        require(re.search(r"\bmodule\s+video_frame_monitor\b",
+                          source_file.read_text(encoding="utf-8")) is not None,
+                "frame monitor replacement must declare module video_frame_monitor")
+    required_live = {Path(item).resolve() for item in manifest.get("required_live_sources", [])}
+    require(staged_path in required_live,
+            "frame monitor replacement is missing from required live project sources")
 
 
 def _validate_timing_xdc(path: Path) -> None:
@@ -882,6 +984,9 @@ def stage(args, result: dict) -> None:
     overlay_wrapper_binding = resolve_overlay_wrapper_override(
         getattr(args, "overlay_wrapper_rtl", None), baseline,
         result["baseline_pinned_sources"], result["project_sources"])
+    frame_monitor_binding = resolve_frame_monitor_override(
+        getattr(args, "frame_monitor_rtl", None), baseline,
+        result["baseline_pinned_sources"], result["project_sources"])
     timing_xdc_binding = resolve_timing_xdc_override(
         getattr(args, "timing_xdc", None), baseline, result["baseline_pinned_sources"])
     offload_cdc_binding = resolve_offload_cdc_override(
@@ -932,6 +1037,7 @@ def stage(args, result: dict) -> None:
     replacements = []
     overlay_replacements = []
     overlay_wrapper_replacements = []
+    frame_monitor_replacements = []
     timing_xdc_replacements = []
     offload_cdc_replacements = []
     timing_xdc_target = None
@@ -967,6 +1073,19 @@ def stage(args, result: dict) -> None:
                 "replacement": replacement, "candidate": overlay_wrapper_binding["candidate"],
                 "target_relative_path": overlay_wrapper_binding["target_relative_path"],
                 "reason": "Manager-selected count-glyph AXI-Lite ABI"})
+        elif frame_monitor_binding and source.resolve() == Path(frame_monitor_binding["source"]["path"]).resolve():
+            candidate = Path(frame_monitor_binding["candidate"]["path"])
+            require(sha(candidate) == frame_monitor_binding["candidate"]["sha256"],
+                    "frame monitor RTL override changed after validation")
+            shutil.copy2(candidate, target)
+            replacement = entry(target)
+            require(replacement["sha256"] == frame_monitor_binding["candidate"]["sha256"],
+                    "staged frame monitor hash differs from the immutable candidate")
+            frame_monitor_replacements.append({"source": frame_monitor_binding["source"],
+                "pinned_reference": frame_monitor_binding["pinned_reference"],
+                "replacement": replacement, "candidate": frame_monitor_binding["candidate"],
+                "target_relative_path": frame_monitor_binding["target_relative_path"],
+                "reason": "Manager-selected frame-boundary timing pipeline"})
         elif timing_xdc_binding and source.resolve() == Path(timing_xdc_binding["source"]["path"]).resolve():
             candidate = Path(timing_xdc_binding["candidate"]["path"])
             require(sha(candidate) == timing_xdc_binding["candidate"]["sha256"],
@@ -1005,6 +1124,8 @@ def stage(args, result: dict) -> None:
             "overlay RTL override did not replace exactly one pinned project source")
     require(not overlay_wrapper_binding or len(overlay_wrapper_replacements) == 1,
             "overlay wrapper override did not replace exactly one pinned project source")
+    require(not frame_monitor_binding or len(frame_monitor_replacements) == 1,
+            "frame monitor RTL override did not replace exactly one pinned project source")
     require(not timing_xdc_binding or len(timing_xdc_replacements) == 1,
             "timing XDC override did not replace exactly one pinned source")
     require(not offload_cdc_binding or len(offload_cdc_replacements) == 1,
@@ -1062,6 +1183,8 @@ def stage(args, result: dict) -> None:
         immutable.append(overlay_binding["candidate"])
     if overlay_wrapper_binding:
         immutable.append(overlay_wrapper_binding["candidate"])
+    if frame_monitor_binding:
+        immutable.append(frame_monitor_binding["candidate"])
     if timing_xdc_binding:
         immutable.append(timing_xdc_binding["candidate"])
     if offload_cdc_binding:
@@ -1082,6 +1205,8 @@ def stage(args, result: dict) -> None:
         manifest["overlay_replacements"] = overlay_replacements
     if overlay_wrapper_replacements:
         manifest["overlay_wrapper_replacements"] = overlay_wrapper_replacements
+    if frame_monitor_replacements:
+        manifest["frame_monitor_replacements"] = frame_monitor_replacements
     if timing_xdc_replacements:
         manifest["timing_xdc_replacements"] = timing_xdc_replacements
     if offload_cdc_replacements:
@@ -1116,6 +1241,7 @@ def main() -> int:
     p.add_argument("--region", type=Path, default=Path(__file__).with_name("rle_region_features.v"))
     p.add_argument("--overlay-rtl", type=Path, help="Optional pixel overlay RTL override; only replaces the pinned staged source")
     p.add_argument("--overlay-wrapper-rtl", type=Path, help="Optional AXI-Lite overlay wrapper override; only replaces the pinned staged source")
+    p.add_argument("--frame-monitor-rtl", type=Path, help="Optional frame-monitor RTL override; only replaces the pinned staged source")
     p.add_argument("--timing-xdc", type=Path,
                    default=Path(__file__).resolve().parents[3] / "scripts/standalone/display_timing.xdc",
                    help="Reviewed display timing XDC; staging replaces the fixed snapshot copy")
