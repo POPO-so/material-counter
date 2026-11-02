@@ -1,0 +1,16 @@
+{
+  "schema": "material-counter.jpeg-ooc-receipt.v1",
+  "recorded_at_utc": "2026-11-02T05:32:00Z",
+  "status": "PASS_OOC_AREA_ONLY",
+  "top": "jpeg_axis_gray",
+  "part": "xc7z020clg400-1",
+  "clock_period_ns": 20,
+  "resources": {"lut": 17358, "ff": 13758, "bram36_equivalent": 28, "dsp": 34,
+                 "lut_as_logic": 14535, "lut_as_memory": 2823},
+  "timing": {"wns_ns": 4.964, "whs_ns": 0.174, "wpws_ns": 8.75, "failing_endpoints": 0,
+             "constraints_met": true,
+             "note": "Nominal 20ns met with 0 failing endpoints. No clock-uncertainty margin applied here; the mapped critical path (~15.0 ns) is close to the HLS estimate (15.96 ns), so the 5.4 ns uncertainty budget stays a joint-synthesis clock/CDC review item (unclosed)."},
+  "provenance": "independent Vivado OOC run 2026-11-02 (13:27-13:31) on the fresh exported D695 IP; matches the teammate figures but is not a reuse of their PASS",
+  "workdir": "C:/fpga/wt/jpgooc-20261102",
+  "reports": ["utilization.rpt", "timing.rpt", "drc.rpt", "hierarchy.rpt", "jpeg_axis_gray_ooc.dcp"]
+}
