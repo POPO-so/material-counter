@@ -3,7 +3,10 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 from pathlib import Path
+import sys
 import tempfile
+import types
+import uuid
 
 
 SCRIPT = Path(__file__).with_name("run_jpeg_counter.py")
@@ -55,3 +58,49 @@ def test_artifact_admission_rejects_stale_hash_or_non_routed_evidence():
             assert "routed" in str(exc)
         else:
             raise AssertionError("synthesis-only artifacts were accepted for the runtime entry")
+
+
+def test_hdmi_start_configures_gray8_video_out_after_setting_clocks(monkeypatch):
+    calls = []
+    clocks = types.SimpleNamespace(fclk0_mhz=0, fclk1_mhz=0, fclk2_mhz=0)
+    pynq = types.ModuleType("pynq")
+    pynq.Clocks = clocks
+    lib = types.ModuleType("pynq.lib")
+    video = types.ModuleType("pynq.lib.video")
+    pixel_gray = object()
+
+    class VideoMode:
+        def __init__(self, width, height, bits_per_pixel, fps):
+            self.value = (width, height, bits_per_pixel, fps)
+
+    video.PIXEL_GRAY = pixel_gray
+    video.VideoMode = VideoMode
+    monkeypatch.setitem(sys.modules, "pynq", pynq)
+    monkeypatch.setitem(sys.modules, "pynq.lib", lib)
+    monkeypatch.setitem(sys.modules, "pynq.lib.video", video)
+
+    class HDMI:
+        def configure(self, mode, pixel_format):
+            calls.append(("configure", mode.value, pixel_format))
+
+        def start(self):
+            calls.append(("start",))
+
+    hdmi = HDMI()
+    vdma = object()
+    actual_clocks = runner.start_hdmi(hdmi, vdma)
+
+    assert actual_clocks == [50.0, 100.0, 142.857]
+    assert hdmi._vdma is vdma
+    assert calls == [("configure", (1280, 720, 8, 60), pixel_gray), ("start",)]
+
+
+def test_hdmi_frame_marker_has_expected_identity_and_crc():
+    session = uuid.UUID("01234567-89ab-cdef-0123-456789abcdef")
+    marker = runner._encode_output_marker(session, 23)
+
+    assert len(marker) == 28
+    assert marker[:2] == b"MC"
+    assert marker[2:18] == session.bytes
+    assert int.from_bytes(marker[18:26], "big") == 23
+    assert int.from_bytes(marker[26:], "big") == runner.binascii.crc_hqx(marker[:26], 0xFFFF)
