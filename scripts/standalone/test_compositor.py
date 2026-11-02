@@ -419,6 +419,27 @@ def _collect_dashboard_text(monkeypatch, api):
     return texts
 
 
+def test_dashboard_gutter_wrap_measures_character_widths_linearly(monkeypatch):
+    c = _dashboard_composer()
+    c._gutter_wrap_cache.clear()
+    text = "处理性能 CPU0 91.5% / CPU1 92.3% RLE 等待 123.4 ms"
+    measurements = []
+    fonts = list(c._fonts.values()) + list(c._latin.values())
+    for font in fonts:
+        original = font.getlength
+
+        def track_length(value, *args, _original=original, **kwargs):
+            measurements.append(value)
+            return _original(value, *args, **kwargs)
+
+        monkeypatch.setattr(font, "getlength", track_length)
+
+    rows = c._wrap_gutter(text, max_width=150, size=12, max_rows=2)
+
+    assert rows and rows[-1].endswith("…")
+    assert len(measurements) <= 2 * len(text) + 5
+
+
 def test_dashboard_top_cards_use_link_metrics(monkeypatch):
     api = _api()
     c = _dashboard_composer()
@@ -471,19 +492,19 @@ def test_dashboard_subprecision_telemetry_hits_key_without_panel_pixel_changes()
     assert np.array_equal(first[1:719, :], second[1:719, :])
 
 
-def test_dashboard_display_precision_boundary_misses_key():
+def test_dashboard_display_precision_boundary_updates_dynamic_value_without_chrome_miss():
     c = _dashboard_composer()
     gray = np.zeros((400, 640), dtype=np.uint8)
     session = uuid.uuid4()
-    c.render(gray, gray, session, 1, dashboard={"camera_fps": 29.54})
-    before = c._chrome.copy()
+    before = c.render(gray, gray, session, 1,
+                      dashboard={"camera_fps": 29.54}).copy()
     after = c.render(gray, gray, session, 2,
                      dashboard={"camera_fps": 29.56}).copy()
 
     assert c.key_stats == {
-        "frames": 2, "key_hits": 0, "key_misses": 2, "hit_rate": 0.0,
+        "frames": 2, "key_hits": 1, "key_misses": 1, "hit_rate": 0.5,
     }
-    assert not np.array_equal(before[1:719], after[1:719])
+    assert not np.array_equal(before[84:126, 340:640], after[84:126, 340:640])
 
 
 def test_dashboard_page_lines_and_low_level_diagnostics_are_scoped_to_ps_page(monkeypatch):
@@ -557,6 +578,59 @@ def test_dashboard_key_stats_report_first_redraw_and_hits():
     }
 
 
+def test_dashboard_detection_count_changes_update_display_without_chrome_miss(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    texts = _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    dashboard = {"count": 12, "camera_fps": 29.5, "page": 0}
+
+    c.render(gray, gray, session, 1, boxes=(), dashboard=dashboard)
+    c.render(gray, gray, session, 2, boxes=((10, 10, 30, 30),),
+             dashboard=dashboard)
+
+    assert c.key_stats == {
+        "frames": 2, "key_hits": 1, "key_misses": 1, "hit_rate": 0.5,
+    }
+    assert "0" in texts and "1" in texts
+
+
+def test_dashboard_telemetry_updates_change_pixels_without_chrome_miss(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    texts = _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    session = uuid.uuid4()
+    first_dashboard = {
+        "count": 12, "camera_fps": 29.5, "e2e_ms": {"mean": 1200.04},
+        "drop_total": 1, "cpu_percent": 90.02, "processing_fps": 21.5,
+        "display_fps": 0.5, "effective_input_fps": 24.3,
+        "preview_submitted_fps": 25.1, "processing_ms": 4.3,
+        "regions_ms": {"mean": 4.0}, "track_ms": {"mean": 0.3},
+        "rle_fresh": True, "rle_activity_pct": 3.0, "input_mb_s": 1.1,
+        "output_mb_s": 0.4, "input_stall_pct": 2.3, "output_stall_pct": 0.0,
+    }
+    second_dashboard = {
+        **first_dashboard, "camera_fps": 30.5, "e2e_ms": {"mean": 1300.04},
+        "drop_total": 2, "cpu_percent": 91.2, "processing_fps": 22.0,
+        "display_fps": 0.6, "effective_input_fps": 25.0,
+        "preview_submitted_fps": 24.4, "processing_ms": 4.6,
+        "regions_ms": {"mean": 4.2}, "track_ms": {"mean": 0.4},
+        "rle_activity_pct": 3.5, "input_mb_s": 1.2,
+    }
+
+    first = c.render(gray, gray, session, 1, dashboard=first_dashboard).copy()
+    second = c.render(gray, gray, session, 2, dashboard=second_dashboard).copy()
+
+    assert c.key_stats == {
+        "frames": 2, "key_hits": 1, "key_misses": 1, "hit_rate": 0.5,
+    }
+    assert not np.array_equal(first[58:126, 340:640], second[58:126, 340:640])
+    assert "29.5 FPS" in texts and "30.5 FPS" in texts
+    assert "1,200.0 ms" in texts and "1,300.0 ms" in texts
+
+
 def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reused(monkeypatch):
     api = _api()
     slot_composer = _dashboard_composer()
@@ -576,21 +650,22 @@ def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reus
     session = uuid.uuid4()
     y, x = np.indices((400, 640))
     cases = (
-        (0, 20.0, False),
-        (1, 20.0, False),
-        (2, 20.0, True),
-        (0, 21.1, False),
-        (1, 21.1, True),
-        (2, 21.1, False),
-        (0, 21.1, True),
-        (1, 22.2, False),
-        (2, 22.2, True),
-        (0, 22.2, False),
+        (0, 20.0, False, 0),
+        (1, 20.0, False, 1),
+        (2, 20.0, True, 2),
+        (0, 21.1, False, 3),
+        (1, 21.1, True, 0),
+        (2, 21.1, False, 4),
+        (0, 21.1, True, 2),
+        (1, 22.2, False, 1),
+        (2, 22.2, True, 0),
+        (0, 22.2, False, 1),
     )
 
-    for frame_id, (slot, cpu_percent, pl_preview) in enumerate(cases, 1):
+    for frame_id, (slot, cpu_percent, pl_preview, target_count) in enumerate(cases, 1):
         gray = np.full((400, 640), frame_id * 9, dtype=np.uint8)
         binary = (((x + y + frame_id) % 11) < 4).astype(np.uint8) * 255
+        boxes = tuple((20 + i, 30, 100 + i, 120) for i in range(target_count))
         dashboard = {
             "count": 7,
             "camera_fps": 29.5,
@@ -598,7 +673,7 @@ def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reus
             "page": 0,
         }
         annotations = {
-            "boxes": ((20 + frame_id, 30, 100, 120),),
+            "boxes": boxes,
             "tracks": ((str(frame_id), 180 + frame_id, 210),),
             "line_x": 160 + frame_id,
             "line_y": 90 + frame_id if frame_id % 2 else None,
@@ -619,7 +694,7 @@ def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reus
         slot_composer._chrome_version,
         slot_composer._chrome_version,
     ]
-    assert slot_copies == [0, 1, 2, 0, 1, 2, 1, 2, 0]
+    assert slot_copies == [0, 1, 2]
 
 
 def test_dashboard_output_slot_requires_a_valid_explicit_output():
