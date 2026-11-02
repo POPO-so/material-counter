@@ -75,6 +75,20 @@ the **currently selected adapter's 4-bit code**, not a unified latch of all
 error sources. `frame_mismatch` contributes to `error_event` but does not
 change `selected_packet_code`.
 
+### 1.5 frame_id and packet_done correspondence
+
+- Raw adapter: `frame_id` is loaded from `cfg_frame_id` when the first beat is
+  accepted (`axis_raw_gray_adapter.v:78`); the stream's own frame ID is never
+  parsed. `packet_done` pulses only on the final output pixel of a successful
+  frame; a rejected frame never asserts it. `frame_mismatch` therefore cannot
+  detect a raw-stream frame-ID mismatch.
+- Packetized adapter: `frame_id` is taken from header word H3
+  (`axis_dma_gray_adapter.v:114-122`) and must match trailer word T1
+  (`:127-135`); a mismatch is reject code 5. `packet_done` pulses at T3.
+  The wrapper compares the selected packet's frame ID with the configured
+  `frame_id` and encodes a mismatch as error code 7 at the RLE encoder input
+  (`axis_dma_rle_pipeline_bd.v:112-113`, `:164-165`).
+
 ## 2. Raw input protocol finding
 
 Selecting `0x74=1` for this frozen JPEG output is a protocol error:
