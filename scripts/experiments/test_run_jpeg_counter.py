@@ -174,3 +174,58 @@ def test_jpeg_fixture_rejects_grayscale_sof_before_hardware_access():
             assert "3-component" in str(exc)
         else:
             raise AssertionError("grayscale JPEG unsupported by the PL decoder was accepted")
+def test_jpeg_fixture_sequence_rejects_count_mismatch_and_bad_frames():
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        frame1 = root / "frame_000001.jpg"
+        frame2 = root / "frame_000002.jpg"
+        frame1.write_bytes(_supported_jpeg_header())
+        frame2.write_bytes(_supported_jpeg_header())
+
+        assert runner.load_jpeg_fixture_sequence([frame1, frame2], frames=2) == [
+            _supported_jpeg_header(), _supported_jpeg_header()
+        ]
+        try:
+            runner.load_jpeg_fixture_sequence([frame1], frames=2)
+        except ValueError as exc:
+            assert "one JPEG per frame" in str(exc)
+        else:
+            raise AssertionError("fixture sequence accepted a frame-count mismatch")
+
+        frame2.write_bytes(b"\xff\xd8\xff\xc0\x00\x0b" +
+                           bytes((8, 1, 144, 2, 128, 1, 1, 0x11, 0)) + b"\xff\xd9")
+        try:
+            runner.load_jpeg_fixture_sequence([frame1, frame2], frames=2)
+        except ValueError as exc:
+            assert "3-component" in str(exc)
+        else:
+            raise AssertionError("fixture sequence accepted an unsupported frame")
+
+
+def test_main_rejects_unsupported_fixture_before_artifact_or_hardware_access():
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        fixture = root / "grayscale.jpg"
+        fixture.write_bytes(b"\xff\xd8\xff\xc0\x00\x0b" +
+                            bytes((8, 1, 144, 2, 128, 1, 1, 0x11, 0)) + b"\xff\xd9")
+        original = runner.verify_runtime_artifacts
+
+        def forbidden(*args, **kwargs):
+            raise AssertionError("runtime artifact admission happened before JPEG preflight")
+
+        runner.verify_runtime_artifacts = forbidden
+        try:
+            try:
+                runner.main([
+                    "--execute", "--bit", str(root / "missing.bit"), "--bit-sha256", "0",
+                    "--hwh", str(root / "missing.hwh"), "--hwh-sha256", "0",
+                    "--build-status", runner.ROUTED_STATUS, "--boot-id", "test",
+                    "--frames", "1", "--input-jpeg", str(fixture),
+                    "--output", str(root / "report.json"),
+                ])
+            except SystemExit as exc:
+                assert exc.code == 2
+            else:
+                raise AssertionError("main accepted an unsupported grayscale JPEG")
+        finally:
+            runner.verify_runtime_artifacts = original

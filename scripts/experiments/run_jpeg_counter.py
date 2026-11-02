@@ -151,6 +151,21 @@ def load_jpeg_fixture(path: str | Path, *, frames: int) -> bytes:
     return payload
 
 
+def load_jpeg_fixture_sequence(paths: list[str | Path], *, frames: int) -> list[bytes]:
+    """Preflight a bounded, ordered JPEG sequence before touching the board."""
+    if frames != len(paths) or frames < 1:
+        raise ValueError("a JPEG sequence must contain one JPEG per frame")
+    total_bytes = 0
+    payloads = []
+    for path in paths:
+        payload = load_jpeg_fixture(path, frames=1)
+        total_bytes += len(payload)
+        if total_bytes > 32 * 1024 * 1024:
+            raise ValueError("JPEG fixture sequence exceeds 32 MiB")
+        payloads.append(payload)
+    return payloads
+
+
 def verify_runtime_artifacts(bit_path: str | Path, bit_sha256: str,
                              hwh_path: str | Path, hwh_sha256: str,
                              *, status: str) -> dict[str, Any]:
@@ -323,8 +338,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--boot-id", required=True)
     parser.add_argument("--frames", type=int, default=120)
     parser.add_argument("--device", type=int, default=0)
-    parser.add_argument("--input-jpeg", type=Path,
-                        help="send one complete JPEG file instead of capturing the camera")
+    parser.add_argument("--input-jpeg", type=Path, action="append",
+                        help="send one JPEG file instead of the camera; repeat once per sequence frame")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--native-lib", type=Path)
     parser.add_argument("--line-x", type=int, default=320)
@@ -342,10 +357,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("hardware access requires --execute")
     if not 1 <= args.frames <= 100000:
         parser.error("--frames must be in 1..100000")
-    fixture_jpeg = None
+    fixture_jpegs = None
     if args.input_jpeg is not None:
         try:
-            fixture_jpeg = load_jpeg_fixture(args.input_jpeg, frames=args.frames)
+            fixture_jpegs = load_jpeg_fixture_sequence(args.input_jpeg, frames=args.frames)
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
     if not 0 <= args.line_x < WIDTH or not 0 <= args.line_y < HEIGHT:
@@ -359,19 +374,29 @@ def main(argv: list[str] | None = None) -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     report: dict[str, Any] = {
         "status": "STARTING",
-        "mode": "jpeg_file_to_jpeg_pl" if fixture_jpeg is not None else "raw_mjpeg_to_jpeg_pl",
+        "mode": ("raw_mjpeg_to_jpeg_pl" if fixture_jpegs is None else
+                 "jpeg_file_to_jpeg_pl" if len(fixture_jpegs) == 1 else
+                 "jpeg_sequence_to_jpeg_pl"),
         "resolution": [WIDTH, HEIGHT], "expected_frames": args.frames,
         "frames": 0, "total_count": 0, "count_accuracy": "NOT_MEASURED",
         "artifacts": artifacts, "boot_id_expected": args.boot_id,
         "timing_ms": [], "frames_evidence": [],
     }
-    if fixture_jpeg is not None:
-        report["input_source"] = {
-            "kind": "single_jpeg_fixture",
-            "path": str(args.input_jpeg.expanduser().resolve()),
-            "jpeg_bytes": len(fixture_jpeg),
-            "sha256": hashlib.sha256(fixture_jpeg).hexdigest(),
-        }
+    if fixture_jpegs is not None:
+        fixture_records = [
+            {"frame_index": index + 1,
+             "path": str(path.expanduser().resolve()),
+             "jpeg_bytes": len(payload),
+             "sha256": hashlib.sha256(payload).hexdigest()}
+            for index, (path, payload) in enumerate(zip(args.input_jpeg, fixture_jpegs))
+        ]
+        report["input_source"] = (
+            {"kind": "single_jpeg_fixture", **fixture_records[0]}
+            if len(fixture_records) == 1 else
+            {"kind": "jpeg_fixture_sequence", "frame_count": len(fixture_records),
+             "total_jpeg_bytes": sum(item["jpeg_bytes"] for item in fixture_records),
+             "frames": fixture_records}
+        )
     transport = None
     capture_source = None
     capture_stats: dict[str, Any] = {}
@@ -448,18 +473,18 @@ def main(argv: list[str] | None = None) -> int:
             width=WIDTH, height=HEIGHT, count_axis="x", line_x=args.line_x,
             line_y=args.line_y, min_area=args.min_area, max_area=args.max_area,
             hysteresis=args.hysteresis)
-        if fixture_jpeg is None:
+        if fixture_jpegs is None:
             capture_source = iter_raw_mjpeg(args.device, stats=capture_stats)
         report["session_id"] = str(session_id)
         start = time.perf_counter()
         previous = start
         for frame_id in range(1, args.frames + 1):
-            if fixture_jpeg is None:
+            if fixture_jpegs is None:
                 if capture_source is None:
                     raise RuntimeError("camera source was not initialized")
                 jpeg = next(capture_source)
             else:
-                jpeg = fixture_jpeg
+                jpeg = fixture_jpegs[frame_id - 1]
             stamp = time.monotonic_ns()
             frame_start = time.perf_counter()
             result = process_jpeg_frame(transport, tracker, jpeg, frame_id,
