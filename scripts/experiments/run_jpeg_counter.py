@@ -28,7 +28,8 @@ from scripts.rle.transport import RLE_SIGNATURE
 from scripts.standalone.count_controls import make_runtime_counter
 from scripts.standalone.display_bringup import prepare_display
 from scripts.wo0015.board_preflight import (audit_process_ownership,
-    inspect_pynq_global_state, read_boot_id, read_fpga_manager, read_kernel_log)
+    inspect_pynq_global_state, read_boot_id, read_cma_meminfo,
+    read_fpga_manager, read_kernel_log)
 
 
 EXPECTED_PART = "xc7z020clg400-1"
@@ -39,12 +40,22 @@ JPEG_BASE = 0x43C80000
 OVERLAY_MAP_BYTES = 0x5000
 ROUTED_STATUS = "ROUTED_NOT_BOARD_VERIFIED"
 OLD_RLE_BIT_SHA256 = "ca55911e6f286a986fcdeb35f99a2245e74383f739e93dd38a6fa3c52f1868a6"
+KNOWN_BASE_BIT_SHA256 = "3239e9cc37ee4993c25f02ae6c97da0b3372f0e722e267d10073e20adc5d6717"
+KNOWN_BASE_BIT_SHA1 = "39b937b490015ec0e1d29f18a9143292821f74ad"
+KNOWN_BASE_HWH_SHA256 = "222898ef2c0ccc4a0c47608e99d8dc7c9c6cdfed5130964884ff35005827ef3a"
+BASE_VDMA_BASE = 0x43000000
+BASE_VDMA_HIGH = 0x4300FFFF
+CMA_RESERVE_KIB = 4096
 _CANDIDATE_CONTROL_SIGNATURE = RLE_SIGNATURE
 _BOOT_WRITE = re.compile(r"writing (.+?) to Xilinx Zynq FPGA Manager")
 
 
 class DmaOwnershipUncertain(RuntimeError):
     """DMA ownership is not proven idle/fault-free; retain resources."""
+
+
+class PreloadUnsafe(RuntimeError):
+    """A verified base's HWH map or bus-master state is not safe to overwrite."""
 
 
 def known_overlays(candidate_bit_sha256: str) -> tuple[dict[str, Any], ...]:
@@ -59,6 +70,40 @@ def known_overlays(candidate_bit_sha256: str) -> tuple[dict[str, Any], ...]:
          "control_signature": RLE_SIGNATURE,
          "overlay_base": None, "jpeg_base": None},
     )
+
+
+def known_bases() -> tuple[dict[str, Any], ...]:
+    """The reviewed PYNQ base overlay, pinned by actual bitstream content.
+
+    The SHA-1/SHA-256 pair was captured from the installed base.bit; the HWH
+    hash and the VDMA address were captured by the 2026-10-29 read-only board
+    probe (base_artifacts/base_ips in standalone-20261029-g0/board-probe).
+    The path or the file name is never used as identity by itself.
+    """
+    return (
+        {"name": "pynq_base",
+         "bit_sha256": KNOWN_BASE_BIT_SHA256,
+         "bit_sha1": KNOWN_BASE_BIT_SHA1,
+         "hwh_sha256": KNOWN_BASE_HWH_SHA256,
+         "bus_masters": (
+             {"instance": "video_axi_vdma",
+              "vlnv": "xilinx.com:ip:axi_vdma:6.3",
+              "base": BASE_VDMA_BASE, "high": BASE_VDMA_HIGH},)},
+    )
+
+
+def cma_budget() -> dict[str, int]:
+    """Record the explicit TX/RX CMA budget plus a display/allocator reserve.
+
+    This is an allocation headroom check, not a leak detector: one snapshot is
+    recorded before and one after the run, and no reboot/retry is derived from
+    either value.
+    """
+    explicit = JPEG_MAX_BYTES + RX_CAPACITY
+    required_kib = (explicit + 1023) // 1024 + CMA_RESERVE_KIB
+    return {"tx_bytes": JPEG_MAX_BYTES, "rx_bytes": RX_CAPACITY,
+            "explicit_bytes": explicit, "reserve_kib": CMA_RESERVE_KIB,
+            "required_kib": required_kib}
 
 
 def inspect_boot_state(*, fpga_manager_reader=read_fpga_manager,
@@ -86,27 +131,85 @@ def inspect_boot_state(*, fpga_manager_reader=read_fpga_manager,
             "boot_bitstream": bitstream, "boot_bitstream_error": kernel_error}
 
 
+def _file_hash_pair(path: str | Path) -> dict[str, str]:
+    """Hash the actual file content; the state-recorded digests are not trusted."""
+    file_path = Path(path)
+    if not file_path.is_file():
+        raise FileNotFoundError(str(file_path))
+    sha1 = hashlib.sha1()
+    sha256 = hashlib.sha256()
+    with file_path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            sha1.update(block)
+            sha256.update(block)
+    return {"sha1": sha1.hexdigest(), "sha256": sha256.hexdigest()}
+
+
+def _classify_known_base(base: dict[str, Any], *, pynq_state: dict[str, Any],
+                         boot_ok: bool,
+                         hash_reader=_file_hash_pair) -> dict[str, Any]:
+    if pynq_state.get("shutdown_ips"):
+        return {"kind": "UNKNOWN", "reason": "known base has a non-empty shutdown_ips"}
+    if not boot_ok:
+        return {"kind": "UNKNOWN",
+                "reason": "known base state is not a verified boot base.bin"}
+    bit_path = pynq_state.get("loaded_bit_path")
+    state_sha1 = str(pynq_state.get("loaded_bit_sha1") or "").lower()
+    state_sha256 = str(pynq_state.get("loaded_bit_sha256") or "").lower()
+    if not bit_path:
+        return {"kind": "UNKNOWN", "reason": "known base state has no loaded bit path"}
+    try:
+        actual = hash_reader(bit_path)
+    except OSError as exc:
+        return {"kind": "UNKNOWN",
+                "reason": f"known base bit file cannot be hashed: {exc}"}
+    actual_sha1 = str(actual.get("sha1") or "").lower()
+    actual_sha256 = str(actual.get("sha256") or "").lower()
+    pinned_sha1 = str(base["bit_sha1"]).lower()
+    pinned_sha256 = str(base["bit_sha256"]).lower()
+    if not (actual_sha256 == state_sha256 == pinned_sha256):
+        return {"kind": "UNKNOWN",
+                "reason": "base.bit content SHA-256 does not match the pinned base",
+                "loaded_bit_sha256": actual_sha256 or None,
+                "state_bit_sha256": state_sha256 or None}
+    if not (actual_sha1 == state_sha1 == pinned_sha1):
+        return {"kind": "UNKNOWN",
+                "reason": "base.bit content SHA-1 does not match the pinned base",
+                "loaded_bit_sha1": actual_sha1 or None,
+                "state_bit_sha1": state_sha1 or None}
+    resolved = Path(bit_path)
+    return {"kind": "KNOWN_BASE",
+            "reason": "loaded BIT content matches the pinned PYNQ base overlay",
+            "candidate_mmio_before_load": False,
+            "base": {**base, "bit_path": str(resolved),
+                     "hwh_path": str(resolved.with_suffix(".hwh"))}}
+
+
 def classify_preload_state(*, pynq_state: dict[str, Any], boot_state: dict[str, Any],
                            owners: dict[str, Any],
-                           known: tuple[dict[str, Any], ...]) -> dict[str, Any]:
+                           known: tuple[dict[str, Any], ...],
+                           base_table: tuple[dict[str, Any], ...] | None = None,
+                           hash_reader=_file_hash_pair) -> dict[str, Any]:
     """Classify the pre-load PL state without touching candidate MMIO.
 
     COLD_BASE is accepted only when the PYNQ state is cold, the FPGA manager is
     operating/flags=0, the last boot bitstream is base.bin, and no FPGA owner is
     present. COLD_BOOT_NO_GLOBAL_STATE alone is not enough to treat candidate
-    addresses as valid.
+    addresses as valid. KNOWN_BASE additionally requires the actual loaded
+    base.bit content to match the pinned SHA-1/SHA-256 pair; a matching path,
+    file name, or active name is not identity.
     """
     findings = owners.get("findings", []) if isinstance(owners, dict) else []
     denied = owners.get("denied", []) if isinstance(owners, dict) else []
     if findings or denied:
         return {"kind": "UNKNOWN", "reason": "FPGA owner present",
                 "owners": {"findings": findings, "denied": denied}}
+    manager = boot_state.get("fpga_manager") or {}
+    boot_ok = (manager.get("state") == "operating" and manager.get("flags") == "0"
+               and boot_state.get("boot_bitstream") == "base.bin")
     status = pynq_state.get("pl_state_status")
     if status == "COLD_BOOT_NO_GLOBAL_STATE":
-        manager = boot_state.get("fpga_manager") or {}
-        if (manager.get("state") == "operating" and manager.get("flags") == "0"
-                and boot_state.get("boot_bitstream") == "base.bin"
-                and not pynq_state.get("shutdown_ips")):
+        if boot_ok and not pynq_state.get("shutdown_ips"):
             return {"kind": "COLD_BASE",
                     "reason": "cold PYNQ state, boot base.bin, no FPGA owner",
                     "candidate_mmio_before_load": False}
@@ -122,21 +225,99 @@ def classify_preload_state(*, pynq_state: dict[str, Any], boot_state: dict[str, 
                         "reason": f"loaded BIT matches {overlay['name']}",
                         "candidate_mmio_before_load": True,
                         "overlay": overlay}
+        for base in (base_table if base_table is not None else known_bases()):
+            if loaded and loaded == str(base["bit_sha256"]).lower():
+                return _classify_known_base(base, pynq_state=pynq_state,
+                                            boot_ok=boot_ok,
+                                            hash_reader=hash_reader)
         return {"kind": "UNKNOWN",
                 "reason": "loaded overlay identity is not in the known table",
                 "loaded_bit_sha256": loaded or None}
     return {"kind": "UNKNOWN", "reason": f"unrecognized PYNQ state {status!r}"}
 
 
-def probe_preload_mmio(classification: dict[str, Any], *, mmio_factory):
+def _hwh_dma_masters(hwh: Path) -> list[dict[str, Any]]:
+    """Return every DMA-capable module's confirmed control base from a HWH."""
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.parse(hwh).getroot()
+    except (OSError, ET.ParseError) as exc:
+        raise PreloadUnsafe(f"base HWH is not readable or valid: {exc}") from exc
+    masters = []
+    for module in root.iter():
+        if module.tag.split("}")[-1] not in ("MODULE", "IP"):
+            continue
+        vlnv = module.get("VLNV") or module.get("VLNV_NAME") or ""
+        if not any(token in vlnv.lower()
+                   for token in ("axi_vdma", "axi_dma", "axi_cdma")):
+            continue
+        parameters = {}
+        for item in module.iter():
+            if item.tag.split("}")[-1] in ("PARAMETER", "PARAM"):
+                name = item.get("NAME") or item.get("name")
+                value = item.get("VALUE") or item.get("value")
+                if name:
+                    parameters[name] = value
+        base_value = (parameters.get("C_BASEADDR")
+                      or parameters.get("C_S_AXI_LITE_BASEADDR"))
+        if not base_value or not str(base_value).lower().startswith("0x"):
+            raise PreloadUnsafe(
+                f"base HWH DMA module {vlnv!r} has no confirmed control base")
+        masters.append({
+            "instance": (module.get("INSTANCENAME") or module.get("INSTANCE")
+                         or module.get("NAME") or "unknown"),
+            "vlnv": vlnv, "base": int(str(base_value), 16)})
+    return masters
+
+
+def read_base_hwh_evidence(base: dict[str, Any]) -> dict[str, Any]:
+    """Verify the pinned base HWH and its complete DMA bus-master map."""
+    hwh = Path(base["hwh_path"])
+    try:
+        digest = _sha256(hwh)
+    except OSError as exc:
+        raise PreloadUnsafe(f"base HWH cannot be read: {exc}") from exc
+    if digest != str(base["hwh_sha256"]).lower():
+        raise PreloadUnsafe(
+            "base HWH SHA-256 differs from the captured base address-map evidence")
+    masters = _hwh_dma_masters(hwh)
+    expected = {(str(item["vlnv"]).lower(), int(item["base"]))
+                for item in base["bus_masters"]}
+    actual = {(str(item["vlnv"]).lower(), int(item["base"])) for item in masters}
+    if actual != expected:
+        raise PreloadUnsafe(
+            f"base HWH bus-master map differs from the captured evidence: "
+            f"{sorted(actual)} != {sorted(expected)}")
+    return {"hwh_path": str(hwh), "hwh_sha256": digest, "bus_masters": masters}
+
+
+def probe_preload_mmio(classification: dict[str, Any], *, mmio_factory,
+                       base_evidence_reader=None):
     """Read only the confirmed old-overlay addresses; never probe unknowns.
 
     COLD_BASE returns None without any MMIO. UNKNOWN raises before any MMIO.
     KNOWN_OLD reads its confirmed control identity first, then its DMA status.
+    KNOWN_BASE verifies the pinned base HWH/address map first, then reads only
+    the confirmed base VDMA status; it never touches candidate addresses.
     """
     kind = classification.get("kind")
     if kind == "COLD_BASE":
         return None
+    if kind == "KNOWN_BASE":
+        base = classification["base"]
+        evidence = (base_evidence_reader or read_base_hwh_evidence)(base)
+        statuses = {}
+        for master in base["bus_masters"]:
+            dma = mmio_factory(int(master["base"]), 0x1000)
+            status = {"mm2s": int(dma.read(0x04)) & 0xFFFFFFFF,
+                      "s2mm": int(dma.read(0x34)) & 0xFFFFFFFF}
+            if any(value & 0x770 or (value & 0x3) != 0x3
+                   for value in status.values()):
+                raise PreloadUnsafe(
+                    f"known base {master['instance']} is active or faulty: {status}")
+            statuses[master["instance"]] = status
+        return {"base": base["name"], "hwh_sha256": evidence["hwh_sha256"],
+                "bus_masters": statuses}
     if kind != "KNOWN_OLD":
         raise RuntimeError("preload state is unknown; refusing candidate/overlay MMIO")
     overlay = classification["overlay"]
@@ -221,23 +402,32 @@ def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
                            post_load_identity, candidate_dma_check,
                            preview_factory, prepare_display_fn,
                            allocate_tx, allocate_rx, make_transport,
+                           base_evidence_reader=None,
                            stage=lambda *args, **kwargs: None):
-    """Load the candidate only after the three-state pre-load decision.
+    """Load the candidate only after the pre-load decision.
 
     COLD_BASE: no candidate MMIO before Overlay.download.
     KNOWN_OLD: only the confirmed old control/DMA addresses are read.
+    KNOWN_BASE: only the pinned base HWH map and its confirmed VDMA status are
+    read; no candidate address is touched before Overlay.download.
     UNKNOWN: stop before Overlay.download; never probe unknown MMIO.
     After load: identity/contract, candidate DMA, display, then allocation.
     """
-    if classification.get("kind") not in ("COLD_BASE", "KNOWN_OLD"):
+    kind = classification.get("kind")
+    if kind not in ("COLD_BASE", "KNOWN_OLD", "KNOWN_BASE"):
         raise RuntimeError(
             "preload state is unknown; refusing Overlay.download and MMIO")
     allocated: list[Any] = []
     probe = None
-    if classification["kind"] == "KNOWN_OLD":
+    if kind == "KNOWN_OLD":
         stage("known_old_probe", classification=classification)
         probe = probe_preload_mmio(classification, mmio_factory=mmio_factory)
         stage("known_old_probe_done", probe=probe)
+    elif kind == "KNOWN_BASE":
+        stage("known_base_probe", classification=classification)
+        probe = probe_preload_mmio(classification, mmio_factory=mmio_factory,
+                                   base_evidence_reader=base_evidence_reader)
+        stage("known_base_probe_done", probe=probe)
     stage("overlay_download", classification=classification)
     overlay = overlay_factory()
     stage("overlay_loaded")
@@ -581,6 +771,14 @@ def main(argv: list[str] | None = None) -> int:
             raise RuntimeError("hardware mode requires root and XILINX_XRT=/usr")
         if read_boot_id() != args.boot_id:
             raise RuntimeError("board boot ID differs from the explicitly supplied value")
+        cma_before = read_cma_meminfo()
+        budget = cma_budget()
+        report["cma_before"] = cma_before
+        report["cma_budget"] = budget
+        if cma_before["CmaFree"] < budget["required_kib"]:
+            raise RuntimeError(
+                f"insufficient free CMA for this run: {cma_before['CmaFree']} KiB "
+                f"< required {budget['required_kib']} KiB")
         report["process_ownership"] = audit_process_ownership()
         owners = camera_owners()
         report["camera_owners_before"] = owners
@@ -664,6 +862,10 @@ def main(argv: list[str] | None = None) -> int:
         report.update(status="FAIL_HOLD" if held else "FAILED",
                       error=str(exc), error_type=type(exc).__name__)
     finally:
+        try:
+            report["cma_after"] = read_cma_meminfo()
+        except BaseException as exc:
+            report["cma_after_error"] = repr(exc)
         finalize_run(held=held, display=display, transport=transport,
                      allocated=allocated, capture_source=capture_source,
                      report=report, output=args.output, hold_mode=hold_mode,
