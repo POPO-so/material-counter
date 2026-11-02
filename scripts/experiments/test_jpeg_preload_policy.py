@@ -101,10 +101,12 @@ def run_sequence(cls, events, *, overlay_factory, identity_failure=False,
         post_load_identity=post_load_identity,
         candidate_dma_check=lambda: runner.check_candidate_dma_idle(
             mmio_factory=factory),
+        preview_factory=lambda: events.append(("preview",)) or "preview",
         prepare_display_fn=prepare,
         allocate_tx=lambda: events.append(("tx",)) or "tx",
         allocate_rx=lambda: events.append(("rx",)) or "rx",
-        make_transport=lambda tx, rx: events.append(("transport",)) or "transport",
+        make_transport=lambda tx, rx, overlay, preview: (
+            events.append(("transport",)) or "transport"),
         stage=lambda name, **fields: events.append(("stage", name)),
     )
 

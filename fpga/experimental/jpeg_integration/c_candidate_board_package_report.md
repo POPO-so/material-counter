@@ -37,14 +37,15 @@ No board access, deployment, push, or merge was performed.
 | Display timing XDC | `display_timing.xdc` | `4ace486d...` |
 | Frozen offload XDC | `offload_cdc.xdc` | `3a8be351...` |
 | Monitor XDC | `joint_monitor_cdc.xdc` | `31ed0a71...` |
-| Package manifest | `board-package/artifact-manifest.json` | `22071968...` |
-| Package sums | `board-package/SHA256SUMS` | `112c0edc...` |
+| Package manifest | `board-package/artifact-manifest.json` | `9a50d991...` |
+| Package sums | `board-package/SHA256SUMS` | `1a6bf853...` |
 
 Software: Python 3.12.10; Vivado 2026.1. The package records the exact runtime
 script SHAs in `artifact-manifest.json`; the runtime entry
-`software/scripts/experiments/run_jpeg_counter.py` is `e8f12818...`, the
+`software/scripts/experiments/run_jpeg_counter.py` is `9859fcbf...`, the
 display bring-up module `software/scripts/standalone/display_bringup.py` is
-`81c11447...`, and the pre-load policy test is `f7114814...`.
+`81c11447...`, the pre-load policy test is `fc1520c2...`, and the transport
+integration test is `5042cbed...`.
 
 ## 3. Offline IP/address/JPEG/FRG contract
 
@@ -81,12 +82,13 @@ The runtime constants (`scripts/rle/jpeg_transport.py`) match the HWH:
 | `scripts/experiments/test_run_jpeg_counter.py` | 5 passed |
 | `scripts/experiments/test_jpeg_display_and_hold.py` | 13 passed |
 | `scripts/experiments/test_jpeg_preload_policy.py` | 11 passed |
+| `scripts/experiments/test_jpeg_transport_integration.py` | 3 passed |
 | `scripts/rle/test_jpeg_runtime.py` + `test_jpeg_transport.py` | 63 passed |
 | `joint_prepare.py --verify-manifest C:/w/jj2026p/joint_manifest.json` | `JOINT_SOURCE_HASHES_OK` |
 | Package `sha256sum -c SHA256SUMS` | PASS |
 
-Total JPEG offline tests: **92 passed** (5 admission + 13 display/HOLD + 11
-pre-load policy + 63 runtime/transport).
+Total JPEG offline tests: **95 passed** (5 admission + 13 display/HOLD + 11
+pre-load policy + 3 transport integration + 63 runtime/transport).
 
 One software admission fix was required and tested: the HWH names the JPEG HLS
 control base `C_S_AXI_CONTROL_BASEADDR` (not `C_BASEADDR`), so
@@ -172,6 +174,38 @@ active-old-DMA refusal, and stage persistence.
 
 The first-failure evidence and board-access correction are in
 `c_candidate_board_smoke_failure_20261103.md`.
+
+### 4b.4 Transport factory scope fix (smoke-002)
+
+The prior package failed smoke-002 after the candidate load and display start:
+
+```text
+NameError: name 'overlay' is not defined
+```
+
+The pre-load refactor moved `Overlay` inside `run_candidate_sequence`, while
+main's `make_transport` lambda still closed over a removed main-scope
+`overlay`. The review also found the frame-loop `preview` reference; both are
+now explicit:
+
+```text
+make_transport(tx, rx, overlay, preview)
+```
+
+`run_candidate_sequence` creates the preview MMIO after display start, passes
+the same `overlay`/`preview` objects to the factory, and returns the preview to
+the frame loop. `assemble_candidate_callbacks` is the exact production callback
+set used by main; `scripts/experiments/test_jpeg_transport_integration.py` (3)
+drives it with fake hardware and covers:
+
+- normal path: display start -> preview -> TX/RX -> production factory receives
+  the same Overlay/preview -> transport constructed;
+- factory failure: no camera open, no transfer, display/buffers retained in
+  HOLD; no close/free/reset/reload.
+
+Smoke-002 remains `FAIL_HOLD`: candidate temporarily loaded, display started,
+JPEG/RLE frames 0. The board HOLD process is untouched. smoke-003 requires a
+separately authorized reboot and a fresh board directory.
 
 ## 5. Board validation package
 

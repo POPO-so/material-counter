@@ -166,10 +166,62 @@ def check_candidate_dma_idle(*, mmio_factory):
     return status
 
 
+def build_transport_callback(*, transport_factory, mmio_factory):
+    """Production transport factory: explicit overlay + preview ownership."""
+    def make_transport(tx, rx, overlay, preview):
+        return transport_factory(
+            overlay.axi_dma_0.sendchannel,
+            overlay.axi_dma_0.recvchannel,
+            mmio_factory(DMA_BASE, 0x10000),
+            mmio_factory(RLE_BASE, 0x10000),
+            mmio_factory(JPEG_BASE, 0x10000),
+            preview,
+            tx, rx)
+    return make_transport
+
+
+def assemble_candidate_callbacks(*, artifacts, output, report, pynq_module,
+                                 mmio_factory, overlay_factory, allocate, dtype,
+                                 display_prepare, transport_factory,
+                                 post_load_identity=None, stage=None):
+    """Build the exact callback set used by main; tests can inject fakes.
+
+    Every hardware-dependent callback receives its owned object explicitly:
+    post_load_identity(overlay), prepare_display_fn(overlay),
+    make_transport(tx, rx, overlay, preview). No main-scope overlay/preview
+    variable is closed over.
+    """
+    def identity(overlay):
+        if post_load_identity is not None:
+            return post_load_identity(overlay)
+        return inspect_pynq_global_state(
+            pynq_module.__file__, require_empty_shutdown=True,
+            require_loaded_bit=True,
+            expected_bit_path=artifacts["bit_path"],
+            expected_bit_sha256=artifacts["bit_sha256"],
+            allow_equivalent_bit_path=True)
+
+    return {
+        "overlay_factory": overlay_factory,
+        "post_load_identity": identity,
+        "candidate_dma_check": lambda: check_candidate_dma_idle(
+            mmio_factory=mmio_factory),
+        "preview_factory": lambda: mmio_factory(OVERLAY_BASE, OVERLAY_MAP_BYTES),
+        "prepare_display_fn": display_prepare,
+        "allocate_tx": lambda: allocate(shape=(JPEG_MAX_BYTES,), dtype=dtype),
+        "allocate_rx": lambda: allocate(shape=(RX_CAPACITY,), dtype=dtype),
+        "make_transport": build_transport_callback(
+            transport_factory=transport_factory, mmio_factory=mmio_factory),
+        "stage": stage or (lambda name, **fields: write_stage(
+            output, report, name, **fields)),
+    }
+
+
 def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
                            post_load_identity, candidate_dma_check,
-                           prepare_display_fn, allocate_tx, allocate_rx,
-                           make_transport, stage=lambda *args, **kwargs: None):
+                           preview_factory, prepare_display_fn,
+                           allocate_tx, allocate_rx, make_transport,
+                           stage=lambda *args, **kwargs: None):
     """Load the candidate only after the three-state pre-load decision.
 
     COLD_BASE: no candidate MMIO before Overlay.download.
@@ -200,15 +252,18 @@ def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
         stage("display_start")
         display.start()
         stage("display_started")
+        stage("overlay_mmio")
+        preview = preview_factory()
+        stage("overlay_mmio_ready")
         tx = allocate_tx()
         allocated.append(tx)
         rx = allocate_rx()
         allocated.append(rx)
-        transport = make_transport(tx, rx)
+        transport = make_transport(tx, rx, overlay, preview)
         stage("transport_ready")
         return {"display": display, "tx": tx, "rx": rx,
                 "transport": transport, "allocated": allocated,
-                "probe": probe, "identity": identity,
+                "preview": preview, "probe": probe, "identity": identity,
                 "candidate_dma": candidate_dma}
     except BaseException as exc:
         setattr(exc, "display", display)
@@ -548,30 +603,20 @@ def main(argv: list[str] | None = None) -> int:
         report["preload_classification"] = classification
         write_stage(args.output, report, "preflight")
 
-        sequence = run_candidate_sequence(
-            classification=classification,
-            mmio_factory=MMIO,
+        callbacks = assemble_candidate_callbacks(
+            artifacts=artifacts, output=args.output, report=report,
+            pynq_module=pynq, mmio_factory=MMIO,
             overlay_factory=lambda: Overlay(str(artifacts["bit_path"]), download=True),
-            post_load_identity=lambda overlay: inspect_pynq_global_state(
-                pynq.__file__, require_empty_shutdown=True, require_loaded_bit=True,
-                expected_bit_path=artifacts["bit_path"],
-                expected_bit_sha256=artifacts["bit_sha256"],
-                allow_equivalent_bit_path=True),
-            candidate_dma_check=lambda: check_candidate_dma_idle(mmio_factory=MMIO),
-            prepare_display_fn=lambda overlay: prepare_display(overlay),
-            allocate_tx=lambda: allocate(shape=(JPEG_MAX_BYTES,), dtype=np.uint8),
-            allocate_rx=lambda: allocate(shape=(RX_CAPACITY,), dtype=np.uint8),
-            make_transport=lambda tx, rx: JpegRleDmaTransport(
-                overlay.axi_dma_0.sendchannel, overlay.axi_dma_0.recvchannel,
-                MMIO(DMA_BASE, 0x10000), MMIO(RLE_BASE, 0x10000),
-                MMIO(JPEG_BASE, 0x10000), MMIO(OVERLAY_BASE, OVERLAY_MAP_BYTES),
-                tx, rx),
-            stage=lambda name, **fields: write_stage(args.output, report, name, **fields))
+            allocate=allocate, dtype=np.uint8, display_prepare=prepare_display,
+            transport_factory=JpegRleDmaTransport)
+        sequence = run_candidate_sequence(
+            classification=classification, mmio_factory=MMIO, **callbacks)
         display = sequence["display"]
         tx = sequence["tx"]
         rx = sequence["rx"]
         transport = sequence["transport"]
         allocated = sequence["allocated"]
+        preview = sequence["preview"]
         report["preload_probe"] = sequence["probe"]
         report["pynq_overlay"] = sequence["identity"]
         report["candidate_dma_after_load"] = sequence["candidate_dma"]

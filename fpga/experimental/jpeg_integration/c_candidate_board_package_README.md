@@ -122,10 +122,29 @@ identity/HWH address contract, checks the candidate DMA idle/error status, and
 then performs display bring-up/VSYNC before allocating TX/RX and creating the
 transport.
 
+The production transport factory now receives the sequence-owned objects
+explicitly:
+
+```text
+make_transport(tx, rx, overlay, preview)
+```
+
+The same `overlay` and `preview` objects are passed to the factory and returned
+to the frame loop; no main-scope `overlay`/`preview` closure is used. A factory
+failure after display start enters `FAIL_HOLD` without opening the camera,
+starting a transfer, or closing/freeing/resetting/reloading the display or
+buffers.
+
 Before every hardware step the runtime writes and fsyncs `output.stage.json`
 and prints `JPEG_STAGE <name>` with flush. If an uncatchable fault terminates
 the process, collect that stage file and the console log; do not retry or
 reload.
+
+Smoke-002 status (2026-11-03): the candidate was temporarily loaded and the
+display started, but transport creation raised `NameError: name 'overlay' is
+not defined`; JPEG/RLE frames = 0. The board is still in the HOLD state and
+must not be reused for another run. This package fixes that factory scope bug;
+smoke-003 requires an operator-authorized reboot and a fresh board directory.
 
 ## 5. Acceptance items
 
@@ -139,6 +158,8 @@ reload.
   no frame transfer or overlay publish is attempted.
 - `output.stage.json` exists and its last stage is `frames_done` (or the first
   failing stage on a controlled failure).
+- The production transport factory received the sequence-owned Overlay and
+  preview; a factory failure would enter HOLD without camera/transfer.
 - Report status: `JPEG_PL_RUN_COMPLETED_NOT_BOARD_VALIDATED`.
 - `frames` equals the requested 60; no `FAIL_HOLD`; no DMA active/faulty
   pre-load error; no camera-owner error.

@@ -45,13 +45,14 @@ scripts/experiments/test_jpeg_display_and_hold.py
 scripts/experiments/test_run_jpeg_counter.py
 scripts/rle/test_jpeg_runtime.py scripts/rle/test_jpeg_transport.py`
 
-**92 passed**:
+**95 passed**:
 
 | Suite | Result |
 |---|---|
 | admission (`test_run_jpeg_counter.py`) | 5 passed |
 | display/HOLD (`test_jpeg_display_and_hold.py`) | 13 passed |
 | pre-load policy (`test_jpeg_preload_policy.py`) | 11 passed |
+| transport integration (`test_jpeg_transport_integration.py`) | 3 passed |
 | runtime/transport | 63 passed |
 
 The 11 pre-load tests prove:
@@ -74,12 +75,13 @@ The 11 pre-load tests prove:
 |---|---|
 | BIT (unchanged) | `75577d743060a0908f5248e5a12062428bc1d6ad603c81fc5fdaedc9b15b230b` |
 | HWH (unchanged) | `06cf10cafc545d930fa210cd8fdd88d09981d808cb1c4197146183f822901380` |
-| Package manifest | `22071968be2bba9da8ebebfe2c2c7dfea4f1cfb27a95b9e430e72b2719472461` |
-| Package SHA256SUMS | `112c0edc202e20948aaa77e5f3122e03787f031cc321c2dcfec2776e2a8cb3fd` |
+| Package manifest | `9a50d9914cdc5b07257376a0cbbb2fa59120598756810abbf3a9a8c47dc712f9` |
+| Package SHA256SUMS | `1a6bf853a9e969813f69e3cb2a3edf6360cf089d5278565f02558586df4896dd` |
 | Package README | `1b9dc13dfa4e99c41000a09c2a07d615a8a4f51756532f3bfdfade7d238e1f32` |
-| `run_jpeg_counter.py` | `e8f128182517b88850318af5a1bcab006b1569b9302cb177a36f368f8c86d3d3` |
+| `run_jpeg_counter.py` | `9859fcbf41c242403d043a50741daaa0f6098daacb0096383f0bc9f5d7a588d1` |
 | `display_bringup.py` | `81c11447bf7cf730abeb4bf1aaed8585d9aebc179cc45464c0689d6cd8f57d3a` |
-| pre-load test | `f71148147bc73bac0e691b717ad5c81b7cb2f3e7f7477f8e75257a1b09b216ed` |
+| pre-load test | `fc1520c2a32a4e8e0715f108f06f17096c628e0890fd81ee32919f0746579107` |
+| transport integration test | `5042cbed2ef130b948ea6ef698619b5c5c1bad9139da38d2fb243b5b304f6bab` |
 
 The package admission check still passes on the unchanged BIT/HWH
 (`verify_runtime_artifacts`), and `sha256sum -c SHA256SUMS` passes.
@@ -88,7 +90,7 @@ The package admission check still passes on the unchanged BIT/HWH
 
 The board still contains the **old** package directory
 `/home/xilinx/jpeg-candidate-20261103`; do not reuse it for the next attempt.
-The new package is `C:/w/jj2026p/board-package` (SHA256SUMS `112c0edc...`).
+The new package is `C:/w/jj2026p/board-package` (SHA256SUMS `1a6bf853...`).
 After a separately authorized board attempt, copy it to a new directory:
 
 ```bash
@@ -137,3 +139,12 @@ before that fault.
 5. `count_accuracy` remains `NOT_MEASURED`; no physical HDMI or accuracy claim
    is made.
 6. No RTL/BIT/HWH/constraint change; no deployment, push, or merge.
+
+## 7. Follow-up (2026-11-03)
+
+The smoke-002 attempt used the previous package and hit the transport factory
+`NameError: name 'overlay' is not defined` after the candidate load/display
+start (frames 0); see `c_candidate_board_smoke_002_failure_20261103.md`. This
+package adds the explicit `make_transport(tx, rx, overlay, preview)` production
+callback and three transport integration tests. smoke-003 is pending after a
+separately authorized reboot; no board retry was performed in this round.

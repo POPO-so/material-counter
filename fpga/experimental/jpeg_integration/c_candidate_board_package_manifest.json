@@ -153,13 +153,26 @@
     "stage_log": "output.stage.json written/fsynced and JPEG_STAGE printed before each hardware step",
     "fail_hold": "unchanged; DmaOwnershipUncertain enters FAIL_HOLD without close/free/reset/reload"
   },
+  "transport_factory": {
+    "signature": "make_transport(tx, rx, overlay, preview)",
+    "overlay": "explicit sequence-owned Overlay; no main-scope overlay closure",
+    "preview": "sequence-owned overlay MMIO; the same object is returned to the frame loop",
+    "order": "display start -> preview MMIO -> TX/RX allocation -> transport factory",
+    "failure_path": "factory failure after display start enters FAIL_HOLD; no camera open, no transfer, no close/free/reset/reload",
+    "coverage": "test_jpeg_transport_integration.py calls the production assemble_candidate_callbacks/build_transport_callback with fake hardware"
+  },
+  "smoke_status": {
+    "smoke_002": "FAIL_HOLD: candidate temporarily loaded, display started, JPEG/RLE frames 0; board HOLD process retained; no retry/reset/reload/reboot",
+    "fix": "transport factory overlay/preview scope fixed in this package; smoke-003 pending after separately authorized reboot"
+  },
   "software": {
     "python": "3.12.10",
     "vivado": "2026.1",
     "pynq": "capture at board run time",
     "files": {
-      "software/scripts/experiments/run_jpeg_counter.py": "e8f128182517b88850318af5a1bcab006b1569b9302cb177a36f368f8c86d3d3",
-      "software/scripts/experiments/test_jpeg_preload_policy.py": "f71148147bc73bac0e691b717ad5c81b7cb2f3e7f7477f8e75257a1b09b216ed",
+      "software/scripts/experiments/run_jpeg_counter.py": "9859fcbf41c242403d043a50741daaa0f6098daacb0096383f0bc9f5d7a588d1",
+      "software/scripts/experiments/test_jpeg_preload_policy.py": "fc1520c2a32a4e8e0715f108f06f17096c628e0890fd81ee32919f0746579107",
+      "software/scripts/experiments/test_jpeg_transport_integration.py": "5042cbed2ef130b948ea6ef698619b5c5c1bad9139da38d2fb243b5b304f6bab",
       "software/scripts/standalone/display_bringup.py": "81c11447bf7cf730abeb4bf1aaed8585d9aebc179cc45464c0689d6cd8f57d3a",
       "software/scripts/rle/jpeg_runtime.py": "7e0e11b481c8867203cec96d2735e7a96214b3660193dd79fb13f1ec271883e7",
       "software/scripts/rle/jpeg_transport.py": "a4b77a1dd4b62963b2dc1c8c3b6b851b4705fc54768a8f4a86d113bb0c47b68e",
@@ -172,18 +185,20 @@
       "software/scripts/wo0016/stream_counter.py": "cf2729fbeaaf588c46c561b39d265349ef1562acaf083f8918dc766354015b23",
       "software/scripts/wo0016/split_touching.py": "731760687187391497894ebc1298f6fe07033bd7ce51335ddb444c918b26e630"
     },
-    "tests": "92 passed (5 admission + 13 display/HOLD + 11 preload policy + 63 runtime/transport)"
+    "tests": "95 passed (5 admission + 13 display/HOLD + 11 preload policy + 3 transport integration + 63 runtime/transport)"
   },
   "admission": {
     "verify_runtime_artifacts": "PASS",
     "test_run_jpeg_counter": "5 passed",
     "test_jpeg_display_and_hold": "13 passed",
     "test_jpeg_preload_policy": "11 passed",
+    "test_jpeg_transport_integration": "3 passed",
     "test_jpeg_runtime_transport": "63 passed",
     "joint_manifest_verify": "JOINT_SOURCE_HASHES_OK",
     "hwh_contract": "PASS: part, bases, JPEG registers/interfaces, DMA length 19/DRE 0, NUM_MI 13, FCLK0 50 MHz, RLE 640x400/16384, FRG1",
     "preload_policy": "PASS (cold-base no candidate MMIO before load; unknown stops before download; known-old only confirmed addresses)",
-    "stage_logging": "PASS (output.stage.json + JPEG_STAGE flush before hardware steps)"
+    "stage_logging": "PASS (output.stage.json + JPEG_STAGE flush before hardware steps)",
+    "transport_factory": "PASS (production callback receives the sequence Overlay and preview; factory failure enters HOLD without camera/transfer/close/free)"
   },
   "restrictions": [
     "no board access in this preparation",

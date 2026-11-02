@@ -5,9 +5,9 @@ Board: PYNQ-Z2 at `192.168.2.99` (`xilinx`), boot ID
 `b8034c58-663f-4f86-b68c-37e4bf7cdca2`.
 Package: `/home/xilinx/jpeg-candidate-20261103b`, SHA256SUMS
 `112c0edc...`, manifest `22071968...`, BIT `75577d74...`, HWH `06cf10ca...`.
-Result: **FAIL_HOLD — candidate loaded, display started, frames 0, no camera
-open, no candidate transfer.** The HOLD process is still alive; no retry,
-reset, reload, reboot, or kill was performed.
+Result: **FAIL_HOLD — candidate temporarily loaded, display started, JPEG/RLE
+frames 0, no camera open, no candidate transfer.** The HOLD process is still
+alive; no retry, reset, reload, reboot, or kill was performed.
 
 ## 1. Preconditions and launch
 
@@ -126,3 +126,26 @@ The evidence records the exact package SHAs; BIT/HWH remain
 - No RTL/BIT/HWH/constraint change; no deployment, push, or merge.
 - The board remains in HOLD with the candidate BIT loaded; the boot base.bin
   is no longer the active bitstream. Operator-authorized reboot is required.
+
+## 8. Follow-up (2026-11-03, offline only)
+
+The transport factory scope bug is fixed in the updated package:
+
+- package manifest `9a50d9914cdc5b07257376a0cbbb2fa59120598756810abbf3a9a8c47dc712f9`
+- package SHA256SUMS `1a6bf853a9e969813f69e3cb2a3edf6360cf089d5278565f02558586df4896dd`
+- `run_jpeg_counter.py` `9859fcbf...`
+- `test_jpeg_transport_integration.py` `5042cbed...`
+
+The production callback is now `make_transport(tx, rx, overlay, preview)`;
+`run_candidate_sequence` creates the preview after display start, passes the
+same Overlay/preview objects to the factory, and returns the preview to the
+frame loop. `assemble_candidate_callbacks` is the exact main callback assembly.
+95 JPEG tests pass, including 3 integration tests for the normal factory path
+and the factory-failure HOLD path (no camera, no transfer, no close/free/reset/
+reload).
+
+Smoke-002 status remains unchanged: candidate temporarily loaded, display
+started, JPEG/RLE frames 0; the board HOLD process was not touched. No board
+retry/reset/reload/reboot was performed. smoke-003 requires a separately
+authorized reboot and a fresh board directory; see
+`c_candidate_transport_factory_fix_20261103.md`.
