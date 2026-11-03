@@ -408,6 +408,54 @@ def _dashboard_composer():
     return api.DashboardComposer(FONT, latin_font_path=latin)
 
 
+def test_dashboard_direction_arrows_use_latin_metrics_and_cached_mixed_raster(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    arrows = "←↑→↓"
+    mixed = "←左↑ / 右→下↓"
+    routed_fonts = []
+    real_text = api.ImageDraw.ImageDraw.text
+
+    def track_text(draw, xy, text, *args, **kwargs):
+        if text in arrows:
+            routed_fonts.append((text, kwargs["font"]))
+        return real_text(draw, xy, text, *args, **kwargs)
+
+    monkeypatch.setattr(api.ImageDraw.ImageDraw, "text", track_text)
+    for arrow in arrows:
+        assert c._character_advance(arrow, 34) == c._latin[34].getlength(arrow)
+        assert c._character_baseline_bbox(arrow, 34) == c._latin[34].getbbox(
+            arrow, anchor="ls")
+
+    actual = api.Image.new("L", (360, 80), 12)
+    expected = api.Image.new("L", (360, 80), 12)
+    c._text(api.ImageDraw.Draw(actual), (10, 12), mixed, 34, 238)
+    x = 10.0
+    expected_draw = api.ImageDraw.Draw(expected)
+    for character in mixed:
+        font = c._latin[34] if character in arrows or ord(character) < 256 else c._fonts[34]
+        real_text(expected_draw, (x, 12 + 34), character, font=font,
+                  fill=238, anchor="ls")
+        x += font.getlength(character)
+
+    assert all(font is c._latin[34] for _, font in routed_fonts)
+    assert np.array_equal(np.asarray(actual), np.asarray(expected))
+    calls_after_first_draw = len(routed_fonts)
+
+    c._text(api.ImageDraw.Draw(actual), (10, 12), mixed, 34, 210)
+    expected_draw = api.ImageDraw.Draw(expected)
+    x = 10.0
+    for character in mixed:
+        font = c._latin[34] if character in arrows or ord(character) < 256 else c._fonts[34]
+        real_text(expected_draw, (x, 12 + 34), character, font=font,
+                  fill=210, anchor="ls")
+        x += font.getlength(character)
+
+    assert len(routed_fonts) == calls_after_first_draw
+    assert ("mixed", mixed, 34) in c._text_cache
+    assert np.array_equal(np.asarray(actual), np.asarray(expected))
+
+
 def _collect_dashboard_text(monkeypatch, api):
     texts = []
     for name in ("_text", "_whole_latin_text"):
@@ -803,6 +851,97 @@ def test_dashboard_left_summary_shows_pl_ps_throughput(monkeypatch):
     assert "处理" in joined
 
 
+def test_dashboard_performance_rows_center_actual_ink_group():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    rows = []
+    original_text = c._text
+
+    def capture_performance_text(draw, xy, text, size, fill):
+        if fill == 238 and 345 <= xy[1] <= 466:
+            rows.append((xy, text, size))
+        return original_text(draw, xy, text, size, fill)
+
+    c._text = capture_performance_text
+    image = c.render(gray, gray, uuid.uuid4(), 1, dashboard={
+        "pl_text": "RLE active (incl wait) 32% / IN 123.4 / OUT 56.7 MB/s",
+        "rle_activity_pct": 32,
+    })
+
+    assert len(rows) == 5
+    ink_bounds = []
+    for (x, y), text, size in rows:
+        offset_x, offset_y, mask = c._text_mask(text, size)
+        x0, y0 = round(x + offset_x), round(y + offset_y)
+        # Antialiased edges are part of the ink; solid-fill pixels alone can
+        # make thin characters appear several pixels narrower on one side.
+        mask_ink = (image[y0:y0 + mask.height, x0:x0 + mask.width] !=
+                    c._chrome[y0:y0 + mask.height, x0:x0 + mask.width])
+        ink_y, ink_x = np.where(mask_ink)
+        assert len(ink_x) > 0
+        ink_bounds.append((ink_x.min() + x0, ink_y.min() + y0,
+                           ink_x.max() + x0 + 1, ink_y.max() + y0 + 1))
+    left = min(bound[0] for bound in ink_bounds)
+    top = min(bound[1] for bound in ink_bounds)
+    right = max(bound[2] for bound in ink_bounds)
+    bottom = max(bound[3] for bound in ink_bounds)
+    assert 38 <= left and right <= 380 and 345 <= top and bottom <= 466
+    assert abs((left + right) / 2 - (38 + 380) / 2) <= 1
+    assert abs((top + bottom) / 2 - (345 + 466) / 2) <= 1
+
+
+def test_dashboard_pl_rle_uses_full_valid_activity_value_without_ellipsis(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+
+    c.render(gray, gray, uuid.uuid4(), 1, dashboard={
+        "pl_text": "RLE active (incl wait) 32% / IN 123.4 / OUT 56.7 MB/s",
+        "rle_activity_pct": 32,
+        "input_mb_s": 123.4, "output_mb_s": 56.7,
+    })
+
+    assert c._dynamic_state["performance_values"][0] == "活动(含等待) 32.0%"
+    assert "…" not in c._dynamic_state["performance_values"][0]
+
+
+@pytest.mark.parametrize("value", [7, 128, 999, 1234567890])
+def test_dashboard_count_is_large_centered_number_only(value):
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    image = c.render(gray, gray, uuid.uuid4(), 1, dashboard={"count": value})
+
+    ink_y, ink_x = np.where(image[180:350, 908:1234] == 255)
+    assert len(ink_x) > 0
+    left, right = ink_x.min() + 908, ink_x.max() + 909
+    top, bottom = ink_y.min() + 180, ink_y.max() + 181
+    assert right <= 1234 and bottom <= 350
+    assert abs((left + right) / 2 - 1071) <= 1.5
+    assert abs((top + bottom) / 2 - 265) <= 1
+
+    size, mask = c._count_mask_cache[c._dynamic_state["count_value"]]
+    assert mask.width <= 326 and mask.height <= 170
+    assert size <= 144
+    if value <= 999:
+        assert size == 144
+        assert top - 172 >= 20 and 358 - bottom >= 20
+    else:
+        next_font = c._latin[34].font_variant(size=size + 1)
+        next_bounds = next_font.getbbox(c._dynamic_state["count_value"])
+        assert (next_bounds[2] - next_bounds[0] > 326
+                or next_bounds[3] - next_bounds[1] > 170)
+
+
+def test_dashboard_count_mask_cache_reuses_and_is_bounded():
+    c = _dashboard_composer()
+    first = c._count_mask("123")
+    assert c._count_mask("123") is first
+    for value in range(100):
+        c._count_mask(str(value))
+    assert len(c._count_mask_cache) <= 64
+
+
 def test_dashboard_text_cache_avoids_static_label_rasterization_on_value_updates(monkeypatch):
     api = _api()
     c = _dashboard_composer()
@@ -1064,6 +1203,35 @@ def test_dashboard_unavailable_percentages_show_dashes_and_empty_rings():
     # the first metric's fixed center rather than drawing a zero-value wedge.
     assert image[599, 140] == 40
     assert image[599, 140 - 18] == 76
+
+
+def test_live_resource_values_do_not_leave_chrome_placeholders_or_slot_ghosts():
+    api = _api()
+    composer = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    outputs = [np.empty((720, 1280), dtype=np.uint8) for _ in range(2)]
+    cases = (None, 54.8, 0, None, 54.8)
+
+    # LIVE chrome is static and must contain only the row background under
+    # each dynamic percentage value, leaving '--' for the dynamic pass.
+    composer.render(gray, gray, uuid.uuid4(), 1, dashboard={"cpu_percent": None})
+    for index in range(4):
+        x = 116 + index * 280 + 55
+        assert np.all(composer._chrome[518:538, x:x + 72] == 40)
+
+    session = uuid.uuid4()
+    reference = _dashboard_composer()
+    for frame_id, value in enumerate(cases, 1):
+        dashboard = {"cpu_percent": value}
+        actual = composer.render(
+            gray, gray, session, frame_id, dashboard=dashboard,
+            output=outputs[(frame_id - 1) % len(outputs)],
+            output_slot=(frame_id - 1) % len(outputs))
+        if value is None:
+            assert np.any(actual[518:538, 171:243] != 40)
+        expected = reference.render(gray, gray, session, frame_id, dashboard=dashboard)
+        assert np.array_equal(actual[480:552, 24:1256],
+                              expected[480:552, 24:1256]), f"frame {frame_id}, value {value}"
 
 
 def test_dashboard_viewport_is_binary_512_by_320_dashboard_scale():
