@@ -374,8 +374,13 @@ class DashboardComposer:
             self._latin_advance_cache[key] = advance
         return advance
 
+    def _character_font(self, character, size):
+        if ord(character) < 256 or character in "←↑→↓":
+            return self._latin[size]
+        return self._fonts[size]
+
     def _character_advance(self, character, size):
-        if ord(character) < 256:
+        if self._character_font(character, size) is self._latin[size]:
             return self._latin_advance(character, size)
         key = (size, character)
         advance = self._unicode_advance_cache.get(key)
@@ -394,7 +399,7 @@ class DashboardComposer:
         if bounds is not None:
             self._baseline_bbox_cache.move_to_end(key)
             return bounds
-        font = self._latin[size] if ord(character) < 256 else self._fonts[size]
+        font = self._character_font(character, size)
         bounds = font.getbbox(character, anchor="ls")
         self._baseline_bbox_cache[key] = bounds
         if len(self._baseline_bbox_cache) > 512:
@@ -469,7 +474,8 @@ class DashboardComposer:
             # Render at an integer offset so glyph bearings and fractional
             # advances match the original per-character drawing path exactly.
             margin = 64
-            if all(ord(character) < 256 for character in text):
+            if all(self._character_font(character, size) is self._latin[size]
+                   for character in text):
                 cached = self._latin_text_mask(text, size, margin)
             else:
                 width = margin * 2 + sum(
@@ -478,7 +484,7 @@ class DashboardComposer:
                 mask_draw = ImageDraw.Draw(mask)
                 x = float(margin)
                 for character in text:
-                    font = self._latin[size] if ord(character) < 256 else self._fonts[size]
+                    font = self._character_font(character, size)
                     mask_draw.text((x, margin + size), character, font=font,
                                    fill=255, anchor="ls")
                     x += self._character_advance(character, size)
@@ -717,7 +723,7 @@ class DashboardComposer:
                                    radius=7, fill=76)
             draw.rectangle((x + 1, y + 20, x + width - 1, y + 27), fill=76)
             draw.rectangle((x + 8, y + 7, x + 11, y + 20), fill=218)
-            title_width = sum((self._latin[16] if ord(ch) < 256 else self._fonts[16])
+            title_width = sum(self._character_font(ch, 16)
                               .getlength(ch) for ch in title)
             self._text(draw, (x + (width - title_width) / 2, y + 5), title, 16, 248)
 
@@ -726,7 +732,7 @@ class DashboardComposer:
             line_height = line_height or size + 1
             for index, line in enumerate(rows):
                 line_width = sum(
-                    (self._latin[size] if ord(ch) < 256 else self._fonts[size])
+                    self._character_font(ch, size)
                     .getlength(ch) for ch in line)
                 self._text(draw, (x + (width - line_width) / 2,
                                   y + index * line_height), line, size, fill)

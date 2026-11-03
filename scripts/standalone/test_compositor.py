@@ -408,6 +408,54 @@ def _dashboard_composer():
     return api.DashboardComposer(FONT, latin_font_path=latin)
 
 
+def test_dashboard_direction_arrows_use_latin_metrics_and_cached_mixed_raster(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    arrows = "←↑→↓"
+    mixed = "←左↑ / 右→下↓"
+    routed_fonts = []
+    real_text = api.ImageDraw.ImageDraw.text
+
+    def track_text(draw, xy, text, *args, **kwargs):
+        if text in arrows:
+            routed_fonts.append((text, kwargs["font"]))
+        return real_text(draw, xy, text, *args, **kwargs)
+
+    monkeypatch.setattr(api.ImageDraw.ImageDraw, "text", track_text)
+    for arrow in arrows:
+        assert c._character_advance(arrow, 34) == c._latin[34].getlength(arrow)
+        assert c._character_baseline_bbox(arrow, 34) == c._latin[34].getbbox(
+            arrow, anchor="ls")
+
+    actual = api.Image.new("L", (360, 80), 12)
+    expected = api.Image.new("L", (360, 80), 12)
+    c._text(api.ImageDraw.Draw(actual), (10, 12), mixed, 34, 238)
+    x = 10.0
+    expected_draw = api.ImageDraw.Draw(expected)
+    for character in mixed:
+        font = c._latin[34] if character in arrows or ord(character) < 256 else c._fonts[34]
+        real_text(expected_draw, (x, 12 + 34), character, font=font,
+                  fill=238, anchor="ls")
+        x += font.getlength(character)
+
+    assert all(font is c._latin[34] for _, font in routed_fonts)
+    assert np.array_equal(np.asarray(actual), np.asarray(expected))
+    calls_after_first_draw = len(routed_fonts)
+
+    c._text(api.ImageDraw.Draw(actual), (10, 12), mixed, 34, 210)
+    expected_draw = api.ImageDraw.Draw(expected)
+    x = 10.0
+    for character in mixed:
+        font = c._latin[34] if character in arrows or ord(character) < 256 else c._fonts[34]
+        real_text(expected_draw, (x, 12 + 34), character, font=font,
+                  fill=210, anchor="ls")
+        x += font.getlength(character)
+
+    assert len(routed_fonts) == calls_after_first_draw
+    assert ("mixed", mixed, 34) in c._text_cache
+    assert np.array_equal(np.asarray(actual), np.asarray(expected))
+
+
 def _collect_dashboard_text(monkeypatch, api):
     texts = []
     for name in ("_text", "_whole_latin_text"):
