@@ -2,9 +2,17 @@
 
 本文记录当前可核对的独立显示/G2 制品、离线依赖和安全边界。它不是安装器或回退脚本；下文标为“未实现”的步骤不能当作现成命令执行。
 
-## 2026-10-31 G4 第二版部署状态（当前）
+## 2026-11-01 LJ-01 V12 综合版本板端现场测试（进行中）
 
-板端 `current` 已指向 `/opt/material-counter/releases/standalone-20261031-g4-offline-package-candidate-v2`；环境文件 SHA-256 为 `ee1c2afa04d5447bebf5e742aa834499b2d95bf7de2bdeb46c298e32e3db2c96`，unit SHA-256 为 `30c22b6c869e95f13ed9692e15e854e3a4f67b0189217aa90d5f3604b2cb587a`。v2 索引 SHA-256 `c4c73cbb7c8df5ff2adb0f9df8be52ff1919faf38516747b039ee6b7910f2e31`，运行模块来源提交 `6cab07f244b8a0d0fb35d6eb4a2f9a293b4ee5ed`，`board-runtime.json` schema v2 锁定预装 PYNQ `_video` 扩展摘要。安装位置 [56 文件完整性核对](../../data/results/standalone-20261031-g4-offline-package-candidate-v2/installed-integrity-20261031.json) PASS；[配置切换后快照](../../data/results/standalone-20261031-g4-offline-package-candidate-v2/deployment-after-20261031.json)记录 service loaded/enabled/inactive/dead。该快照的 `purpose` 字段沿用采集器的部署前模板文字；实际采集内容是 v2 切换后的只读观察。板卡时钟未校准，快照中的 2025-05-07 不能当作真实日期。硬件安全终态仍为 unproven，G4 未启动，软件测试、仿真与现场验收未执行，G3/G4 未放行。完整离线依赖重建闭包未证明；最终测试由用户执行，五次冷启动、连续 ≥60 分钟运行及故障恢复测试已豁免。
+- 来源为 `LJ-01` 提交 `ddd5174d1304ac901e5fe2ca05247f8c770d89de`；47 个应用模块由组包器逐字节核对。deployment index SHA-256 为 `e63c6bca5972e1bb49ecc09bba3d4a9528db178538bf0a4ddeb3e286c448aabc`，板端 `delivery.py` 检查 64 个文件为 PASS；传输 ZIP SHA-256 `e9b3a122610c7644a9607ca5c8dffd901d4675d53af5ac5f52c08dc03f26bca9`，本机与板端一致。
+- release `/opt/material-counter/releases/standalone-20261101-v12-integrated-ddd5174` 已安装，`/opt/material-counter/current` 和 `/etc/material-counter/package.env` 已切至 V12；V11 release 保留。配套 BIT/HWH/manifest SHA-256 为 `4fcca329d763b42d8dc667ff3a9d86c9c82a414395c505247d369296184ab847`、`610a79f773c1bf605705424a5f864dfccc26e29bfce27078a6d5082eab8ff253`、`9ad5116194655f01ac3500f7b91173aeef2f801fc504abe6ad2294778fd6774`。
+- boot ID `6ca5a640-c3f0-4fd8-b3cf-883066534609` 上，板端 runtime compatibility、包完整性、PYNQ 已加载 BIT 哈希与 DMA/VDMA 安全读回均通过；使用 `--reuse-loaded`，没有重新配置 PL 或重启板卡。当前板卡相机 by-id 为 `/dev/v4l/by-id/usb-DECXIN_CAMERA_DECXIN_CAMERA_01.00.00-video-index0`。
+- 临时 unit `material-counter-v12-real-test.service` 为 `active/running`（PID `7592`），入口配置为相机连续采集、display on、PL preview，运行上限 7200 秒。启动准入和运行时检查均 PASS，相机设备已打开；用户尚未完成真实物料计数及物理显示器画面确认，不能据此宣称准确率或显示验收通过。常驻 `material-counter-integrated.service` 仍 disabled，未配置自启动。
+- 用户要求如需重启由用户执行；本次没有重启，也未重载相同哈希的 BIT。当前现场测试可直接进行，停止后报告写入 `/var/lib/material-counter/6ca5a640-c3f0-4fd8-b3cf-883066534609/`。
+
+## 2026-10-31 G4 第二版部署状态（历史；当前 release 已更新为 V12）
+
+当时板端 `current` 指向 `/opt/material-counter/releases/standalone-20261031-g4-offline-package-candidate-v2`；环境文件 SHA-256 为 `ee1c2afa04d5447bebf5e742aa834499b2d95bf7de2bdeb46c298e32e3db2c96`，unit SHA-256 为 `30c22b6c869e95f13ed9692e15e854e3a4f67b0189217aa90d5f3604b2cb587a`。v2 索引 SHA-256 `c4c73cbb7c8df5ff2adb0f9df8be52ff1919faf38516747b039ee6b7910f2e31`，运行模块来源提交 `6cab07f244b8a0d0fb35d6eb4a2f9a293b4ee5ed`，`board-runtime.json` schema v2 锁定预装 PYNQ `_video` 扩展摘要。安装位置 [56 文件完整性核对](../../data/results/standalone-20261031-g4-offline-package-candidate-v2/installed-integrity-20261031.json) PASS；[配置切换后快照](../../data/results/standalone-20261031-g4-offline-package-candidate-v2/deployment-after-20261031.json)记录 service loaded/enabled/inactive/dead。该快照的 `purpose` 字段沿用采集器的部署前模板文字；实际采集内容是 v2 切换后的只读观察。板卡时钟未校准，快照中的 2025-05-07 不能当作真实日期。硬件安全终态仍为 unproven，G4 未启动，软件测试、仿真与现场验收未执行，G3/G4 未放行。完整离线依赖重建闭包未证明；最终测试由用户执行，五次冷启动、连续 ≥60 分钟运行及故障恢复测试已豁免。
 
 ## 2026-10-31 G4 首版部署后状态补记（历史）
 

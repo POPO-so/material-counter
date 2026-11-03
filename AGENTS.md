@@ -1,4 +1,3 @@
-
 # material-counter Agent 约定
 
 ## 一、项目上下文与协作
@@ -93,3 +92,5 @@
 - Manager 负责检查实际变更、部署结果、测试证据及遗留风险。
 - 最终简要报告：changed files、deployment mode、tests、risks、unresolved；必要时附各阶段耗时。
 - 若本次任务没有要求板端验证，不得仅因修改了代码就擅自执行部署。
+
+# PYNQ-Z2 网线与串口协同开发
