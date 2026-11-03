@@ -108,6 +108,26 @@ def test_cluster_parent_diagnostics_are_saved_in_versioned_snapshot(tmp_path):
     assert render_event(event, tmp_path/'rendered')['frames'] == 1
 
 
+def test_split_overload_diagnostics_are_saved_without_count_events(tmp_path):
+    capture = recorder(tmp_path, storage_mode='compact', context_frames=0)
+    tracker = counter()
+    tracker.last_split_stats = dict(attempted=1, deferred=2, unresolved=2)
+    tracker.last_split_diagnostics = [dict(component=3, state='deferred', reason='time_budget')]
+    observe(capture, tracker, 0, 315)
+    assert capture.close(timeout=10)
+    saved = records(tmp_path)[0]['frames'][0]
+    assert saved['split_stats']['deferred'] == 2
+    assert saved['split_diagnostics'][0]['reason'] == 'time_budget'
+
+
+def test_actual_writer_queue_backlog_still_triggers_capture(tmp_path, monkeypatch):
+    capture = recorder(tmp_path, context_frames=0)
+    monkeypatch.setattr(capture._queue, 'qsize', lambda: capture._queue.maxsize)
+    observe(capture, counter(), 0, 100)
+    assert capture.close(timeout=10)
+    assert 'queue_backlog' in {item['kind'] for item in records(tmp_path)[0]['triggers']}
+
+
 def test_pause_and_epoch_do_not_hide_triggers_or_join_context(tmp_path):
     capture = recorder(tmp_path)
     tracker = counter()

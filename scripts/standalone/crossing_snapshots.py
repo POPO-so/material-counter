@@ -182,7 +182,9 @@ class CrossingSnapshots:
         region_ms = float(timings_ms.get('rle_regions_ms', 0.0) or 0.0)
         track_ms = float(timings_ms.get('track_ms', 0.0) or 0.0)
         queue_depth = self._queue.qsize()
-        backlog = bool(self._pending) or queue_depth >= self._queue.maxsize - 1
+        # Pending jobs normally wait for future context frames; that is not
+        # writer congestion and must not trigger another snapshot by itself.
+        backlog = queue_depth >= max(1, self._queue.maxsize - 1)
         if (len(result.detections) >= self.density_threshold
                 or region_ms + track_ms > self.slow_frame_ms
                 or backlog):
@@ -213,6 +215,8 @@ class CrossingSnapshots:
             cluster_parent_diagnostics=deepcopy(
                 getattr(counter, 'last_cluster_parent_diagnostics', ())
             ),
+            split_stats=dict(getattr(counter, 'last_split_stats', {})),
+            split_diagnostics=deepcopy(getattr(counter, 'last_split_diagnostics', ())),
             events=[asdict(e) for e in result.events],
             suppressed_events=[asdict(e) for e in result.suppressed_events],
             timings_ms=timings_ms)
