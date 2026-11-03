@@ -1,5 +1,32 @@
 # 过线诊断快照
 
+## 2026-11-04 密集拆分预算与回放
+
+任务分支为 `field-v1` 增加每帧最多 2 次完整拆分、累计父框 65536 像素与 8 ms 准入预算。时间预算在两次调用之间检查，不能中断正在执行的 OpenCV 运算，因此不是硬实时保证；参数仍需板端密集录像标定。`legacy` 不启用这些准入限制。
+
+靠近计数线和等待较久的候选优先。未解析且超预算的父团保留为拒绝候选，不假设为单件。唯一匹配父团的当前平移归一化 RLE 序列必须逐字节相同，才能在 0.15 秒重试窗口内复用已验证的单体/孔洞/分区统计；没有缓存子掩膜，形状变化、归属歧义或清零均使复用失效。等待重试超预算时，相同当前形状仍可使用既有已验统计，诊断明确记录 `deferred`，不把旧结果伪装为重新拆分。
+
+父团在有采集时间时使用像素/秒预测，连续观测最大间隔沿用 `max_association_interval_s=0.5` 秒；寿命为 `12 * motion_timebase_s`，当前 field-v1 为 1.2 秒。没有时间戳的历史调用保留帧号行为。补计仍要求父团越线、子轨迹数量相符、已确认且唯一归属，并通过 counted_event 统一去重。
+
+每帧快照新增 `split_stats`、`split_diagnostics`，保存完整拆分次数、成功、缓存、延后、未解析与原因。`split_ms` 现在包括局部掩膜、子块验证及失败父团孔洞分析；旧版本只包裹拆分函数，比较前后整体开销应同时使用 `rle_regions_ms`。等待未来上下文的正常快照不再单独触发 `queue_backlog`，只有真实写入队列拥塞才触发。
+
+CPU 回放命令（不访问 PL，不启动相机）：
+
+```powershell
+python -m scripts.standalone.performance_replay --event <事件目录/event.json> --native-lib <原生库> --output <报告.json> --repeats 3 --truth <逐件标注.json>
+python -m scripts.standalone.dense_benchmark --native-lib <原生库> --output <合成与静态掩膜基准.json> --repeats 20
+```
+
+`--truth` 为可选；未提供时标 `NOT_MEASURED`。标注必须针对本次单个事件窗口，格式示例：
+
+```json
+{"schema":"material-counter.truth.v1","matching_axis":"x","objects":[{"object_id":"物料001","frame_id_min":100,"frame_id_max":105,"centroid_y":120,"lateral_tolerance_px":8}]}
+```
+
+帧区间应覆盖正常计数或补计允许出现的帧，横向位置对应 y；同一件只标一次。回放列出唯一匹配、重复、漏件、无归属事件和歧义，并绑定标注 SHA-256。真值核对使用第一个 repeat（`evaluated_repeat=1`）；应同时检查各 repeat 的语义摘要是否一致。多个 `--event` 分别冷启动、分别套用同一份标注，不做跨窗口去重，因此不同窗口应分别运行并使用对应标注。输出的采集间隔来自录像原时间戳，CPU 回放耗时来自本次执行，不能将两者混作回放掉帧证据。
+
+结果记录：[密集计数软件优化验证](../../data/results/dense-count-20261104/README.md)。100 件合成测试不代表 100 件实物准确率，Windows 耗时不代表 PYNQ-Z2 吞吐。本任务未切换现场部署。
+
 ## 2026-11-03 field-v1 粘连诊断
 
 `field-v1` 将在父区域上限内尝试最多16个环孔种子的拆分；拆分失败但存在2–16个相互分离的有效孔心时，父区域保留为拒绝候选并独立跟踪。父团须连续确认、在线前 armed 并实际越线；之后只有数量相符、连续稳定且可唯一落在父团预测区域的子轨迹才补计。已产生过计数事件的子轨迹不会再次补计。无父团越线证据、父子关联冲突或状态超时均不猜数。
