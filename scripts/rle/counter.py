@@ -70,12 +70,15 @@ class RleCounter(MaskCounter):
         timestamp = self._motion_timestamp(capture_monotonic_ns)
         self._split_origins = {}
         detections, rejected = [], []
+        analyze_ms = split_ms = 0.0
         if frame.total_fg >= self.min_area:
             if use_features:
                 components = region_features
                 analysis = None
             else:
+                analyze_started = time.perf_counter()
                 analysis = analyze_runs(frame.runs, library=self.library, min_area=self.min_area)
+                analyze_ms = (time.perf_counter()-analyze_started)*1000
                 components = analysis.components
             for index, component in enumerate(components):
                 if component.area < self.min_area:
@@ -89,11 +92,13 @@ class RleCounter(MaskCounter):
                 if self.guarded_merge and self.single_intact_area < component.area <= self.max_split_area:
                     if analysis is None:
                         raise AssertionError("guarded merge candidates must use native CCL")
+                    split_started = time.perf_counter()
                     mask = local_mask(frame.runs, analysis.labels, index) != 0
                     pieces = split_touching_component(mask,
                         min_child_area=self.min_split_child_area, min_hole_area=self.split_min_hole_area,
                         recursive_item_area=self.split_recursive_item_area,
                         min_hole_distance=self.split_min_hole_distance, hole_area_cap=self.split_hole_area_cap)
+                    split_ms += (time.perf_counter()-split_started)*1000
                     partitions = [np.asarray(piece) != 0 for piece in pieces]
                     valid = (2 <= len(partitions) <= 3 and all(piece.shape == mask.shape
                         and is_single_connected_component(piece) for piece in partitions))
@@ -113,19 +118,26 @@ class RleCounter(MaskCounter):
         self._set_rejected_components(rejected)
         detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
         raw = tuple(detections)
+        cluster_started = time.perf_counter()
         detections = self._cluster_components(detections)
+        cluster_ms = (time.perf_counter()-cluster_started)*1000
         region_ms = (time.perf_counter()-started)*1000
         started = time.perf_counter()
         self.last_frame_id = frame.frame_id
         events = self._associate_and_update(frame.frame_id, detections, timestamp)
         track_ms = (time.perf_counter()-started)*1000
-        return FrameResult(frame_id=frame.frame_id, total_count=self.total_count,
+        render_started = time.perf_counter()
+        result = FrameResult(frame_id=frame.frame_id, total_count=self.total_count,
             detections=tuple(detections), events=tuple(events), roi_top=top, roi_bottom=bottom,
             row_projection=tuple(frame.row_projection[top:bottom].tolist()),
             column_projection=tuple(frame.column_projection.tolist()),
             roi_foreground_pixels=frame.total_fg, ccl_executed=frame.total_fg>=self.min_area,
             roi_subtimings_ms={"rle_regions_ms": region_ms, "track_ms": track_ms,
-                               "pl_features_ms": region_ms if use_features else 0.0},
+                               "pl_features_ms": region_ms if use_features else 0.0,
+                               "analyze_ms": analyze_ms, "split_ms": split_ms,
+                               "cluster_ms": cluster_ms, "associate_ms": track_ms},
             raw_detections=raw, suppressed_events=tuple(self.last_suppressed_events),
             tracks=self.tracking_snapshot(), glare_rejected_count=self.glare_rejected_count,
             glare_area_px=self.glare_area_px)
+        result.roi_subtimings_ms["render_ms"] = (time.perf_counter()-render_started)*1000
+        return result

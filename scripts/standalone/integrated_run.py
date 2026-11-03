@@ -909,6 +909,10 @@ def build_argument_parser():
     parser.add_argument('--snapshot-max-mib',type=int,default=512)
     parser.add_argument('--snapshot-storage',choices=('compact','full'),default='compact',
         help='compact writes shared gray/RLE only; render diagnostic overlays offline')
+    parser.add_argument('--snapshot-density-threshold',type=int,default=10,
+        help='non-crossing snapshot trigger: detection count at or above this value')
+    parser.add_argument('--snapshot-slow-frame-ms',type=float,default=20.0,
+        help='non-crossing snapshot trigger: region+track budget in milliseconds')
     parser.add_argument('--counting-profile',choices=('legacy','field-v1'),default='field-v1',
         help='field-v1 enables time-based ordered association and calibrated local splitting')
     parser.add_argument('--source',choices=('replay','camera'),default='replay')
@@ -1173,7 +1177,9 @@ def main(argv=None):
                 identity={name:report[name] for name in ('boot_id','session_id','bit_sha256',
                     'hwh_sha256','manifest_sha256','native_sha256','source_identity','camera_configuration')},
                 max_events=args.snapshot_max_events,max_bytes=args.snapshot_max_mib*1024**2,
-                storage_mode=args.snapshot_storage)
+                storage_mode=args.snapshot_storage,
+                density_threshold=args.snapshot_density_threshold,
+                slow_frame_ms=args.snapshot_slow_frame_ms)
         trace=TraceBuffer();report['frame_trace']=trace.frames
         if args.startup_record:
             try:

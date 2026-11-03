@@ -54,7 +54,8 @@ def _detection_metadata(detection, converted):
 class CrossingSnapshots:
     def __init__(self, root, *, identity, context_frames=2, queue_size=8,
                  max_events=1000, max_bytes=512*1024**2, min_free_bytes=256*1024**2,
-                 storage_mode='full'):
+                 storage_mode='full', density_threshold=10, slow_frame_ms=20.0,
+                 trigger_min_interval_ns=1_000_000_000):
         if any(type(v) is not int or v < 1 for v in (queue_size, max_events, max_bytes)):
             raise ValueError('positive queue and storage limits required')
         if type(context_frames) is not int or not 0 <= context_frames <= 5:
@@ -63,7 +64,16 @@ class CrossingSnapshots:
             raise ValueError('min_free_bytes must be nonnegative')
         if storage_mode not in ('full', 'compact'):
             raise ValueError("storage_mode must be 'full' or 'compact'")
+        if type(density_threshold) is not int or density_threshold < 1:
+            raise ValueError('density_threshold must be a positive integer')
+        if type(slow_frame_ms) is not float or not np.isfinite(slow_frame_ms) or slow_frame_ms <= 0:
+            raise ValueError('slow_frame_ms must be a positive finite float')
+        if type(trigger_min_interval_ns) is not int or trigger_min_interval_ns < 0:
+            raise ValueError('trigger_min_interval_ns must be a nonnegative integer')
         self.storage_mode = storage_mode
+        self.density_threshold = density_threshold
+        self.slow_frame_ms = slow_frame_ms
+        self.trigger_min_interval_ns = trigger_min_interval_ns
         self._shared_frames = {}  # (epoch, frame_id) -> paths and digests only
         self.root = Path(root)
         self.identity = dict(identity)
@@ -75,6 +85,7 @@ class CrossingSnapshots:
         self._touched = set()
         self._epoch = None
         self._last_rejected_ns = None
+        self._last_noncrossing_ns = None
         self._sequence = 0
         self._queue = queue.Queue(maxsize=queue_size)
         self._stop = threading.Event()
@@ -100,7 +111,9 @@ class CrossingSnapshots:
                         root=str(self.root), pending=len(self._pending),
                         queue_depth=self._queue.qsize(), writer_alive=self._thread.is_alive(),
                         max_events=self.max_events, max_bytes=self.max_bytes, storage_mode=self.storage_mode,
-                        min_free_bytes=self.min_free_bytes, context_frames=self.context_frames)
+                        min_free_bytes=self.min_free_bytes, context_frames=self.context_frames,
+                        density_threshold=self.density_threshold,
+                        slow_frame_ms=self.slow_frame_ms)
 
     def observe(self, gray, packet, result, counter, *, trajectory_epoch=0,
                 capture_monotonic_ns, camera_sequence, paused, commands, timings=None):
@@ -161,6 +174,30 @@ class CrossingSnapshots:
         if near_rejected and (self._last_rejected_ns is None or capture_ns-self._last_rejected_ns >= 1_000_000_000):
             triggers.append(dict(kind='rejected_at_line', detections=near_rejected))
             self._last_rejected_ns = capture_ns
+        timings_ms = dict(timings or {}, **result.roi_subtimings_ms)
+        # Non-crossing diagnostics: sustained high density, slow frames and
+        # write backlog. These cover lag that has no line-crossing trigger.
+        # Rate limited so sustained conditions produce one bounded group per
+        # interval instead of flooding the bounded queue.
+        region_ms = float(timings_ms.get('rle_regions_ms', 0.0) or 0.0)
+        track_ms = float(timings_ms.get('track_ms', 0.0) or 0.0)
+        queue_depth = self._queue.qsize()
+        backlog = bool(self._pending) or queue_depth >= self._queue.maxsize - 1
+        if (len(result.detections) >= self.density_threshold
+                or region_ms + track_ms > self.slow_frame_ms
+                or backlog):
+            if (self._last_noncrossing_ns is None
+                    or capture_ns - self._last_noncrossing_ns >= self.trigger_min_interval_ns):
+                self._last_noncrossing_ns = capture_ns
+                if len(result.detections) >= self.density_threshold:
+                    kind = 'high_density'
+                elif region_ms + track_ms > self.slow_frame_ms:
+                    kind = 'slow_frame'
+                else:
+                    kind = 'queue_backlog'
+                triggers.append(dict(kind=kind, detections=len(result.detections),
+                                     region_ms=region_ms, track_ms=track_ms,
+                                     queue_depth=queue_depth, pending=len(self._pending)))
         metadata = dict(frame_id=result.frame_id, trajectory_epoch=epoch,
             capture_monotonic_ns=capture_ns, camera_sequence=sequence,
             observed_wall_time_ns=time.time_ns(), wall_clock_trusted=False,
@@ -175,7 +212,7 @@ class CrossingSnapshots:
             tracks=result.tracks, associations=list(getattr(counter, 'last_associations', ())),
             events=[asdict(e) for e in result.events],
             suppressed_events=[asdict(e) for e in result.suppressed_events],
-            timings_ms=dict(timings or {}, **result.roi_subtimings_ms))
+            timings_ms=timings_ms)
         frame = dict(metadata=metadata, gray=np.array(gray, copy=True),
                      runs=packet.runs.copy(), rows=packet.row_projection.copy(),
                      columns=packet.column_projection.copy())
