@@ -148,3 +148,67 @@ def test_invalid_runs_are_rejected(native_library, runs):
 def test_run_and_label_count_must_match(native_library):
     with pytest.raises(ValueError):
         local_mask(np.asarray([1 << 10], np.uint32), np.asarray([], np.uint32), 0)
+
+
+def _reference_local_mask(runs, labels, component_index):
+    """Independent copy of the pre-vectorized per-run rasterization."""
+    selected = np.flatnonzero(labels == component_index)
+    if not len(selected):
+        raise ValueError("component_index has no runs")
+    x_min = min(int((int(runs[i]) >> 10) & 0x3FF) for i in selected)
+    x_max = max(int(runs[i]) & 0x3FF for i in selected)
+    y_min = min(int(runs[i]) >> 20 for i in selected)
+    y_max = max(int(runs[i]) >> 20 for i in selected)
+    mask = np.zeros((y_max - y_min + 1, x_max - x_min + 1), dtype=np.uint8)
+    for index in selected:
+        word = int(runs[index])
+        row = (word >> 20) - y_min
+        begin = ((word >> 10) & 0x3FF) - x_min
+        end = (word & 0x3FF) - x_min
+        mask[row, begin:end + 1] = 255
+    return mask
+
+
+def test_local_mask_matches_run_reference_at_coordinate_boundaries():
+    runs = np.asarray([
+        (0 << 20) | (0 << 10) | 0,
+        (0 << 20) | (1022 << 10) | 1023,
+        (2 << 20) | (3 << 10) | 7,
+        (2 << 20) | (20 << 10) | 20,
+        (511 << 20) | (1023 << 10) | 1023,
+    ], dtype=np.uint32)
+    labels = np.asarray([4, 4, 4, 9, 4], dtype=np.uint32)
+    actual = local_mask(runs, labels, 4)
+    expected = _reference_local_mask(runs, labels, 4)
+    assert actual.dtype == np.uint8
+    assert np.array_equal(actual, expected)
+    assert set(np.unique(actual)) <= {0, 255}
+    assert actual.shape == (512, 1024)
+
+
+def test_local_mask_matches_run_reference_for_random_runs():
+    rng = np.random.default_rng(143)
+    for _ in range(100):
+        height = int(rng.integers(1, 20))
+        width = int(rng.integers(1, 40))
+        runs = []
+        for y in range(height):
+            occupied = rng.random(width) < rng.uniform(0.05, 0.8)
+            edges = np.diff(np.pad(occupied.astype(np.int8), (1, 1)))
+            starts = np.flatnonzero(edges == 1)
+            ends = np.flatnonzero(edges == -1) - 1
+            runs.extend((y << 20) | (int(a) << 10) | int(b)
+                        for a, b in zip(starts, ends))
+        runs = np.asarray(runs, dtype=np.uint32)
+        labels = rng.integers(0, 4, size=len(runs), dtype=np.uint32)
+        for component_index in range(4):
+            selected = np.flatnonzero(labels == component_index)
+            if not len(selected):
+                with pytest.raises(ValueError):
+                    local_mask(runs, labels, component_index)
+                continue
+            actual = local_mask(runs, labels, component_index)
+            expected = _reference_local_mask(runs, labels, component_index)
+            assert actual.dtype == np.uint8
+            assert np.array_equal(actual, expected)
+            assert set(np.unique(actual)) <= {0, 255}

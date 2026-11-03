@@ -1,0 +1,156 @@
+{
+  "baseline_commit": "5438e0e1f737fc426224f285a4c8b2454d225efc",
+  "inputs_match": true,
+  "native_match": true,
+  "benchmark_match": true,
+  "cases": [
+    {
+      "case": "captured-5298",
+      "old_p50": 3.352799998538103,
+      "new_p50": 2.4085000004561152,
+      "reduction_percent": 28.16451916290038,
+      "partition_identical": true,
+      "old_child_areas": [
+        203,
+        160,
+        386,
+        190,
+        252,
+        130,
+        228,
+        445,
+        266,
+        337,
+        451,
+        228,
+        273,
+        337
+      ],
+      "new_child_areas": [
+        203,
+        160,
+        386,
+        190,
+        252,
+        130,
+        228,
+        445,
+        266,
+        337,
+        451,
+        228,
+        273,
+        337
+      ]
+    },
+    {
+      "case": "captured-5307",
+      "old_p50": 3.451749998930609,
+      "new_p50": 2.531449998059543,
+      "reduction_percent": 26.661838231511126,
+      "partition_identical": true,
+      "old_child_areas": [
+        416,
+        223,
+        247,
+        140,
+        299,
+        343,
+        165,
+        252,
+        303,
+        368,
+        254,
+        278,
+        357,
+        383
+      ],
+      "new_child_areas": [
+        416,
+        223,
+        247,
+        140,
+        299,
+        343,
+        165,
+        252,
+        303,
+        368,
+        254,
+        278,
+        357,
+        383
+      ]
+    },
+    {
+      "case": "stress-16",
+      "old_p50": 9.984349999285769,
+      "new_p50": 5.204950004554121,
+      "reduction_percent": 47.868914802401186,
+      "partition_identical": true,
+      "old_child_areas": [
+        6570
+      ],
+      "new_child_areas": [
+        6570
+      ]
+    }
+  ],
+  "synthetic_old": {
+    "wall_ms": {
+      "count": 125,
+      "p50": 5.365700002585072,
+      "p95": 6.669740000506863,
+      "max": 10.507899998629
+    },
+    "split_ms": {
+      "count": 125,
+      "p50": 3.784599990467541,
+      "p95": 4.827539995312691,
+      "max": 5.374899999878835
+    },
+    "region_ms": {
+      "count": 125,
+      "p50": 4.856799998378847,
+      "p95": 6.110600000829436,
+      "max": 10.35540000157198
+    },
+    "track_ms": {
+      "count": 125,
+      "p50": 0.4087000052095391,
+      "p95": 0.5174599951715209,
+      "max": 0.6610999989788979
+    }
+  },
+  "synthetic_new": {
+    "wall_ms": {
+      "count": 125,
+      "p50": 1.720000000204891,
+      "p95": 2.0783800006029196,
+      "max": 7.138900000427384
+    },
+    "split_ms": {
+      "count": 125,
+      "p50": 0.8333000077982433,
+      "p95": 1.1262200001510791,
+      "max": 1.7663000035099685
+    },
+    "region_ms": {
+      "count": 125,
+      "p50": 1.2903000024380162,
+      "p95": 1.6238200012594461,
+      "max": 6.943200001842342
+    },
+    "track_ms": {
+      "count": 125,
+      "p50": 0.38469999708468094,
+      "p95": 0.5122999995364806,
+      "max": 1.116100000217557
+    }
+  },
+  "synthetic_old_pass": true,
+  "synthetic_new_pass": true,
+  "max_attempts": 2,
+  "deferred": 640,
+  "scope": "CPU-only synthetic truth and two captured static masks; not board throughput or real-material accuracy."
+}

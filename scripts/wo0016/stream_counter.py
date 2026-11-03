@@ -181,6 +181,8 @@ class _ClusterParentState:
     ambiguous: bool = False
     child_states: dict[int, _ClusterChildState] = field(default_factory=dict)
     child_alias_track_ids: set[int] = field(default_factory=set)
+    capture_monotonic_ns: int | None = None
+    cross_monotonic_ns: int | None = None
 
 
 class MaskCounter:
@@ -316,6 +318,7 @@ class MaskCounter:
         self._next_cluster_parent_id = 1
         self.last_cluster_parent_diagnostics: list[dict[str, Any]] = []
         self._cluster_parent_clear_pending = False
+        self._cluster_capture_ns = None
         self._binary_validator = Binary8RoiValidator()
 
     def update_detections(self, frame_id: int, detections: Any, *,
@@ -769,12 +772,28 @@ class MaskCounter:
 
     def _parent_predicted_box(self, parent: _ClusterParentState,
                               frame_id: int) -> tuple[float, float, float, float]:
-        steps = max(0, min(_MAX_CLUSTER_PARENT_FRAMES, frame_id-parent.last_frame))
+        if parent.capture_monotonic_ns is not None and self._cluster_capture_ns is not None:
+            steps = max(0.0, min(self._cluster_lifetime_s(),
+                        (self._cluster_capture_ns-parent.capture_monotonic_ns)/1e9))
+        else:
+            steps = max(0, min(_MAX_CLUSTER_PARENT_FRAMES, frame_id-parent.last_frame))
         dx, dy = parent.velocity_x * steps, parent.velocity_y * steps
         return (parent.detection.x_min + dx - _CLUSTER_PARENT_PAD,
                 parent.detection.x_max + dx + _CLUSTER_PARENT_PAD,
                 parent.detection.y_min + dy - _CLUSTER_PARENT_PAD,
                 parent.detection.y_max + dy + _CLUSTER_PARENT_PAD)
+
+    def _cluster_lifetime_s(self) -> float:
+        return _MAX_CLUSTER_PARENT_FRAMES * (self.motion_timebase_s or .1)
+
+    def _cluster_parent_expired(self, parent: _ClusterParentState, frame_id: int) -> bool:
+        if self._cluster_capture_ns is not None and parent.capture_monotonic_ns is not None:
+            oldest = (parent.cross_monotonic_ns if parent.cross_monotonic_ns is not None
+                      else parent.capture_monotonic_ns)
+            return (self._cluster_capture_ns-oldest)/1e9 > self._cluster_lifetime_s()
+        return (frame_id-parent.last_frame > _MAX_CLUSTER_PARENT_FRAMES
+                or (parent.cross_frame is not None
+                    and frame_id-parent.cross_frame > _MAX_CLUSTER_PARENT_FRAMES))
 
     def _inside_parent_prediction(self, detection: Detection,
                                   parent: _ClusterParentState,
@@ -873,9 +892,7 @@ class MaskCounter:
             return
 
         for parent_id, parent in tuple(self._cluster_parents.items()):
-            expired = (frame_id-parent.last_frame > _MAX_CLUSTER_PARENT_FRAMES
-                       or (parent.cross_frame is not None
-                           and frame_id-parent.cross_frame > _MAX_CLUSTER_PARENT_FRAMES))
+            expired = self._cluster_parent_expired(parent, frame_id)
             if expired:
                 self.last_cluster_parent_diagnostics.append({
                     "parent_id": parent_id, "seed_count": parent.seed_count,
@@ -900,22 +917,28 @@ class MaskCounter:
             if parent.ambiguous:
                 continue
             dt = frame_id-parent.last_frame
-            if not 1 <= dt <= _MAX_CLUSTER_PARENT_FRAMES:
+            timed = self._cluster_capture_ns is not None and parent.capture_monotonic_ns is not None
+            elapsed = ((self._cluster_capture_ns-parent.capture_monotonic_ns)/1e9
+                       if timed else dt)
+            bounded_gap = (0 < elapsed <= self.max_association_interval_s if timed
+                           else 1 <= dt <= _MAX_CLUSTER_PARENT_FRAMES)
+            if not bounded_gap:
                 continue
+            motion_dt = elapsed / (self.motion_timebase_s or .1) if timed else dt
             for index, (detection, seed_count) in enumerate(valid_observations):
                 dx = detection.centroid_x-parent.detection.centroid_x
                 dy = detection.centroid_y-parent.detection.centroid_y
                 forward = self.direction * (dx if self.count_axis == "x" else dy)
                 lateral = abs(dy if self.count_axis == "x" else dx)
                 area_ratio = detection.area / parent.detection.area
-                if (-self.backward_tolerance <= forward <= self.max_step*dt
-                        and lateral <= self.max_lateral_step*dt
+                if (-self.backward_tolerance <= forward <= self.max_step*motion_dt
+                        and lateral <= self.max_lateral_step*(min(motion_dt, 2.0) if timed else dt)
                         and 0.1 <= area_ratio <= 10.0):
                     predicted_x = parent.detection.centroid_x + (
-                        self.direction * parent.velocity_x * dt if self.count_axis == "x" else 0.0
+                        parent.velocity_x * elapsed
                     )
                     predicted_y = parent.detection.centroid_y + (
-                        self.direction * parent.velocity_y * dt if self.count_axis == "y" else 0.0
+                        parent.velocity_y * elapsed
                     )
                     distance = (detection.centroid_x-predicted_x) ** 2 + (detection.centroid_y-predicted_y) ** 2
                     edges.append((distance, parent_id, index))
@@ -945,6 +968,7 @@ class MaskCounter:
                 parent.ambiguous = True
                 parent.detection = detection
                 parent.last_frame = frame_id
+                parent.capture_monotonic_ns = self._cluster_capture_ns
                 matched_parents.add(parent_id)
                 matched_observations.add(index)
                 self.last_cluster_parent_diagnostics.append({
@@ -955,10 +979,14 @@ class MaskCounter:
                 continue
             previous_side = self._side(previous)
             dt = frame_id-parent.last_frame
-            if dt == 1:
+            timed = self._cluster_capture_ns is not None and parent.capture_monotonic_ns is not None
+            elapsed = ((self._cluster_capture_ns-parent.capture_monotonic_ns)/1e9
+                       if timed else dt)
+            continuous = (0 < elapsed <= self.max_association_interval_s if timed else dt == 1)
+            if continuous:
                 parent.streak += 1
-                parent.velocity_x = (detection.centroid_x-previous.centroid_x) / dt
-                parent.velocity_y = (detection.centroid_y-previous.centroid_y) / dt
+                parent.velocity_x = (detection.centroid_x-previous.centroid_x) / elapsed
+                parent.velocity_y = (detection.centroid_y-previous.centroid_y) / elapsed
             else:
                 parent.streak = 1
                 parent.velocity_x = parent.velocity_y = 0.0
@@ -966,17 +994,19 @@ class MaskCounter:
             current_side = self._side(detection)
             parent.armed = parent.armed or current_side < -self.hysteresis
             if (not parent.crossed and parent.streak >= self.confirm_hits
-                    and dt == 1 and parent.armed
+                    and continuous and parent.armed
                     and previous_side < self.hysteresis
                     and current_side >= self.hysteresis):
                 parent.crossed = True
                 parent.cross_frame = frame_id
+                parent.cross_monotonic_ns = self._cluster_capture_ns
                 self.last_cluster_parent_diagnostics.append({
                     "parent_id": parent_id, "seed_count": parent.seed_count,
                     "state": "crossed", "frame_id": frame_id,
                 })
             parent.detection = detection
             parent.last_frame = frame_id
+            parent.capture_monotonic_ns = self._cluster_capture_ns
             matched_parents.add(parent_id)
             matched_observations.add(index)
             self.last_cluster_parent_diagnostics.append({
@@ -999,6 +1029,7 @@ class MaskCounter:
             parent = _ClusterParentState(
                 parent_id=parent_id, detection=detection, seed_count=seed_count,
                 last_frame=frame_id, armed=self._side(detection) < -self.hysteresis,
+                capture_monotonic_ns=self._cluster_capture_ns,
             )
             self._cluster_parents[parent_id] = parent
             observed_parent_ids.add(parent_id)
@@ -1028,7 +1059,7 @@ class MaskCounter:
         eligible_parents = {
             parent_id: parent for parent_id, parent in self._cluster_parents.items()
             if (parent.crossed and not parent.ambiguous and parent.cross_frame is not None
-                and frame_id-parent.cross_frame <= _MAX_CLUSTER_PARENT_FRAMES)
+                and not self._cluster_parent_expired(parent, frame_id))
         }
         owner_by_track: dict[int, list[int]] = {}
         for parent_id, parent in eligible_parents.items():
@@ -1133,6 +1164,7 @@ class MaskCounter:
         active = []
         self.last_associations = []
         self.last_suppressed_events = []
+        self._cluster_capture_ns = capture_monotonic_ns
         self._advance_cluster_parent_observations(frame_id, cluster_parent_observations)
         self._recent_events = [event for event in self._recent_events
                                if frame_id-event.frame_id <= self.cooldown_frames]

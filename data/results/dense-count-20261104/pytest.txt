@@ -1,0 +1,36 @@
+........................................................................ [  8%]
+........................................................................ [ 16%]
+........................................................................ [ 24%]
+.....................s.................................................. [ 32%]
+........................................................................ [ 41%]
+........................................................................ [ 49%]
+..........................................F...........F................. [ 57%]
+........F............................................................... [ 65%]
+........................................................................ [ 74%]
+........................................................................ [ 82%]
+........................................................................ [ 90%]
+........................................................................ [ 98%]
+..........                                                               [100%]
+================================== FAILURES ===================================
+____ test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown _____
+scripts\standalone\test_integrated_run.py:109: in test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown
+    assert values[key]==item
+E   assert None == 23.7
+______ test_preview_and_input_backend_cli_defaults_and_candidate_values _______
+scripts\standalone\test_integrated_run.py:288: in test_preview_and_input_backend_cli_defaults_and_candidate_values
+    assert (defaults.preview_backend, defaults.input_mode) == ("software", "packet")
+E   AssertionError: assert ('pl', 'packet') == ('software', 'packet')
+E
+E     At index 0 diff: 'pl' != 'software'
+E     Use -v to get more diff
+_____ test_camera_read_after_is_a_repeatable_peek_without_consumer_state ______
+scripts\standalone\test_integrated_run.py:652: in test_camera_read_after_is_a_repeatable_peek_without_consumer_state
+    first = camera.read(after=6, timeout=0)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts\standalone\camera.py:90: in read
+    if self._decoded is not None and self._decoded[0] > after:
+       ^^^^^^^^^^^^^
+E   AttributeError: 'LatestCamera' object has no attribute '_decoded'
+=========================== short test summary info ===========================
+SKIPPED [1] scripts\standalone\test_build_offload_package.py:187: filesystem does not permit creating symlinks
+3 failed, 870 passed, 1 skipped in 37.94s
