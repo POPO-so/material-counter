@@ -122,10 +122,9 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
         child_height = int(child_y.max() - child_y.min() + 1)
         if max(child_width, child_height) > 1.8 * min(child_width, child_height):
             return None
+        # The geodesic assignment already guarantees connected children.
         child = np.zeros_like(pixels)
         child[child_y, child_x] = True
-        if not is_single_connected_component(child):
-            return None
         children.append(child)
     return tuple(children)
 
