@@ -10,6 +10,122 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import split_touching
 
 
+def _touching_hollow_grid(rows: int, columns: int) -> np.ndarray:
+    """Build a connected cluster with one visible enclosed hole per piece."""
+    outer_size = 23
+    pitch = 24
+    pixels = np.zeros((rows * pitch + 2, columns * pitch + 2), dtype=bool)
+    for row in range(rows):
+        for column in range(columns):
+            top = 1 + row * pitch
+            left = 1 + column * pitch
+            pixels[top:top + outer_size, left:left + outer_size] = True
+            pixels[top + 5:top + 18, left + 5:left + 18] = False
+            if column + 1 < columns:
+                pixels[top + 10:top + 13,
+                       left + outer_size:left + pitch] = True
+            if row + 1 < rows:
+                pixels[top + outer_size:top + pitch,
+                       left + 10:left + 13] = True
+    return pixels
+
+
+def _spread_out_sixteen_hole_cluster() -> np.ndarray:
+    """Build a cap-sized, irregular sixteen-hole cluster with a single bridge path."""
+    starts = (1, 78, 155, 232)
+    size = 23
+    pixels = np.zeros((256, 256), dtype=bool)
+    for top in starts:
+        for left in starts:
+            pixels[top:top + size, left:left + size] = True
+            pixels[top + 5:top + 18, left + 5:left + 18] = False
+
+    path = []
+    for row in range(4):
+        columns = range(4) if row % 2 == 0 else range(3, -1, -1)
+        path.extend((row, column) for column in columns)
+    for (row_a, column_a), (row_b, column_b) in zip(path, path[1:]):
+        top_a, left_a = starts[row_a], starts[column_a]
+        top_b, left_b = starts[row_b], starts[column_b]
+        if row_a == row_b:
+            pixels[top_a + 11, min(left_a, left_b) + size:max(left_a, left_b) + 1] = True
+        else:
+            pixels[min(top_a, top_b) + size:max(top_a, top_b) + 1, left_a + 11] = True
+    return pixels
+
+
+def test_visible_enclosed_holes_split_four_and_eight_pieces():
+    for rows, columns, expected_count in ((1, 4, 4), (1, 8, 8)):
+        pixels = _touching_hollow_grid(rows, columns)
+        assert split_touching.is_single_connected_component(pixels)
+        pieces = split_touching.split_touching_component(pixels)
+        assert len(pieces) == expected_count
+        assert split_touching._valid_partition(pixels, pieces)
+        assert all(np.count_nonzero(piece) >= 12 for piece in pieces)
+
+
+def test_failed_many_hole_split_keeps_parent_instead_of_projection_guess():
+    pixels = _spread_out_sixteen_hole_cluster()
+    assert split_touching.is_single_connected_component(pixels)
+    assert len(split_touching.enclosed_hole_centers(pixels)) == 16
+    assert np.count_nonzero(pixels) <= 8192
+    assert pixels.shape[0] * pixels.shape[1] == 65536
+
+    pieces = split_touching.split_touching_component(pixels)
+
+    assert len(pieces) == 1
+    np.testing.assert_array_equal(pieces[0], pixels)
+
+
+def test_enclosed_hole_seed_limit_accepts_sixteen_and_rejects_seventeen():
+    at_limit = _touching_hollow_grid(1, 16)
+    pieces = split_touching.split_touching_component(at_limit)
+    assert len(pieces) == 16
+    assert split_touching._valid_partition(at_limit, pieces, min_child_area=12)
+
+    over_limit = _touching_hollow_grid(1, 17)
+    unchanged, = split_touching.split_touching_component(over_limit)
+    np.testing.assert_array_equal(unchanged, over_limit)
+
+
+def test_split_resource_limits_are_inclusive_and_reject_values_above_caps():
+    at_foreground_limit = np.zeros((256, 256), dtype=bool)
+    at_foreground_limit[:32, :] = True
+    assert np.count_nonzero(at_foreground_limit) == 8192
+    assert split_touching._within_split_limits(at_foreground_limit)
+    over_foreground_limit = at_foreground_limit.copy()
+    over_foreground_limit[32, 0] = True
+    assert not split_touching._within_split_limits(over_foreground_limit)
+
+    at_bbox_limit = np.zeros((256, 256), dtype=bool)
+    at_bbox_limit[0, :] = True
+    at_bbox_limit[:, 0] = True
+    at_bbox_limit[-1, :] = True
+    at_bbox_limit[:, -1] = True
+    assert np.count_nonzero(at_bbox_limit) <= 8192
+    assert split_touching._within_split_limits(at_bbox_limit)
+    over_bbox_limit = np.zeros((257, 256), dtype=bool)
+    over_bbox_limit[0, :] = True
+    over_bbox_limit[:, 0] = True
+    over_bbox_limit[-1, :] = True
+    over_bbox_limit[:, -1] = True
+    assert not split_touching._within_split_limits(over_bbox_limit)
+
+
+def test_split_returns_over_limit_connected_masks_unchanged():
+    over_foreground_limit = np.ones((100, 100), dtype=bool)
+    unchanged, = split_touching.split_touching_component(over_foreground_limit)
+    np.testing.assert_array_equal(unchanged, over_foreground_limit)
+
+    over_bbox_limit = np.zeros((257, 256), dtype=bool)
+    over_bbox_limit[0, :] = True
+    over_bbox_limit[:, 0] = True
+    over_bbox_limit[-1, :] = True
+    over_bbox_limit[:, -1] = True
+    unchanged, = split_touching.split_touching_component(over_bbox_limit)
+    np.testing.assert_array_equal(unchanged, over_bbox_limit)
+
+
 def _legacy_hole_area_threshold(area: int, min_hole_area: int) -> int:
     relative = int(np.ceil(0.06 * area))
     return max(min_hole_area, min(relative, 16))

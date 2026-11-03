@@ -20,6 +20,15 @@ def packet(index, y):
     return decode_packet(encode_mask(mask,frame_id=index))
 
 
+def test_field_v1_enables_bounded_large_cluster_candidates():
+    counter=make_runtime_counter(None,profile='field-v1')
+    assert counter.guarded_merge
+    assert counter.single_intact_area==380
+    assert counter.max_split_area==8192
+    assert counter.min_split_child_area==80
+    assert counter.cluster_parent_recovery is True
+
+
 def test_pause_tracks_crossing_but_resume_does_not_replay_event(library):
     counter=RleCounter(library=library,max_step=50)
     controls=ControlState()

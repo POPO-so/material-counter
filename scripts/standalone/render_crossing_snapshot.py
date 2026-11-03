@@ -34,7 +34,9 @@ def _read_artifact(event_path: Path, record: dict, name: str) -> bytes:
 def render_event(event_json, output_dir):
     event_path=Path(event_json).resolve()
     record=json.loads(event_path.read_text(encoding='utf-8'))
-    if record.get('schema')!='material-counter.crossing-snapshot.v1' or record.get('storage_mode')!='compact':
+    if record.get('schema') not in (
+            'material-counter.crossing-snapshot.v1',
+            'material-counter.crossing-snapshot.v2') or record.get('storage_mode')!='compact':
         raise ValueError('renderer requires a complete compact event.json')
     if record.get('context_complete') is None or not isinstance(record.get('frames'),list):
         raise ValueError('incomplete event metadata')

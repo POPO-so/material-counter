@@ -6,7 +6,8 @@ FIELD_V1_SETTINGS = dict(
     predictive_association=True, motion_timebase_s=.1,
     max_step=200, max_lateral_step=12, strict_lateral_gate=True,
     max_association_interval_s=.5, guarded_merge=True,
-    single_intact_area=380, max_split_area=1200, min_split_child_area=80,
+    single_intact_area=380, max_split_area=8192, min_split_child_area=80,
+    cluster_parent_recovery=True,
 )
 
 
@@ -26,6 +27,9 @@ def advance_count(counter, controls, packet, commands=(), *, capture_monotonic_n
     controls.apply(commands)
     if controls.clear_requests != previous_clear:
         counter.total_count = 0
+        clear_parents = getattr(counter, 'clear_pending_cluster_parents', None)
+        if callable(clear_parents):
+            clear_parents()
     before = counter.total_count
     result = counter.update_rle(packet, capture_monotonic_ns=capture_monotonic_ns,
                                 region_features=region_features)

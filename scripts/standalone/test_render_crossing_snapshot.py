@@ -6,6 +6,11 @@ from scripts.standalone.crossing_snapshots import CrossingSnapshots
 from scripts.standalone.render_crossing_snapshot import render_event
 from scripts.standalone.test_crossing_snapshots import counter, observe
 
+
+def read_image(path, flags):
+    return cv2.imdecode(np.fromfile(path, dtype=np.uint8), flags)
+
+
 def test_render_compact_validates_sources_and_reconstructs_pixels(tmp_path):
     root=tmp_path/'captures'
     cap=CrossingSnapshots(root,identity={},storage_mode='compact',context_frames=0,min_free_bytes=0)
@@ -14,9 +19,9 @@ def test_render_compact_validates_sources_and_reconstructs_pixels(tmp_path):
     event=next(root.glob('event-*/event.json'))
     out=tmp_path/'rendered'
     result=render_event(event,out)
-    binary=cv2.imread(str(out/'frame-0000000000.binary.png'),0)
+    binary=read_image(out/'frame-0000000000.binary.png',0)
     assert np.count_nonzero(binary)==144
-    assert np.array_equal(cv2.imread(str(out/'frame-0000000000.gray.png'),0),gray)
+    assert np.array_equal(read_image(out/'frame-0000000000.gray.png',0),gray)
     assert (out/'frame-0000000000.annotated.png').is_file()
     assert result['frames']==1
     with pytest.raises(FileExistsError): render_event(event,out)

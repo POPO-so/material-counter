@@ -17,13 +17,16 @@ def counter(**kwargs):
                        max_step=80, discard_finished_tracks=True, **kwargs)
 
 
-def observe(recorder, tracker, number, x, *, epoch=0, paused=False):
+def observe(recorder, tracker, number, x, *, epoch=0, paused=False,
+            cluster_parent_diagnostics=None):
     mask = np.zeros((400, 640), np.uint8)
     mask[100:112, x:x+12] = 255
     packet = decode_packet(encode_mask(mask, frame_id=number))
     result = tracker.update(number, mask)
     if paused:
         result = replace(result, events=(), suppressed_events=result.events)
+    if cluster_parent_diagnostics is not None:
+        tracker.last_cluster_parent_diagnostics = cluster_parent_diagnostics
     gray = np.full_like(mask, number + 30)
     recorder.observe(gray, packet, result, tracker, trajectory_epoch=epoch,
                      capture_monotonic_ns=(number+1)*100_000_000,
@@ -39,6 +42,10 @@ def recorder(tmp_path, **kwargs):
 
 def records(tmp_path):
     return [json.loads(p.read_text()) for p in sorted((tmp_path/'captures').glob('event-*/event.json'))]
+
+
+def read_image(path, flags):
+    return cv2.imdecode(np.fromfile(path, dtype=np.uint8), flags)
 
 
 def test_unarmed_visible_box_is_saved_with_exact_images_and_context(tmp_path):
@@ -59,8 +66,8 @@ def test_unarmed_visible_box_is_saved_with_exact_images_and_context(tmp_path):
     assert saved[0]['context_complete'] is True
     assert [f['frame_id'] for f in saved[0]['frames']] == [0, 1, 2]
     directory = next((tmp_path/'captures').glob('event-*'))
-    assert np.all(cv2.imread(str(directory/'frame-0000000000.gray.png'), 0) == 30)
-    binary = cv2.imread(str(directory/'frame-0000000000.binary.png'), 0)
+    assert np.all(read_image(directory/'frame-0000000000.gray.png', 0) == 30)
+    binary = read_image(directory/'frame-0000000000.binary.png', 0)
     assert np.count_nonzero(binary) == 144
     assert (directory/'frame-0000000000.annotated.png').is_file()
     assert (directory/'frame-0000000000.rle.npz').is_file()
@@ -80,6 +87,25 @@ def test_centroid_jump_over_line_without_box_touch_and_count_is_captured(tmp_pat
     assert {'centroid_crossing', 'counted'} <= {t['kind'] for t in saved[0]['triggers']}
     assert [f['frame_id'] for f in saved[0]['frames']] == [0, 1, 2, 3, 4]
     assert saved[0]['frames'][2]['events'][0]['track_id'] == 1
+
+
+def test_cluster_parent_diagnostics_are_saved_in_versioned_snapshot(tmp_path):
+    capture = recorder(tmp_path, storage_mode='compact', context_frames=0)
+    tracker = counter(cluster_parent_recovery=True)
+    observe(capture, tracker, 0, 315, cluster_parent_diagnostics=[{
+        'parent_id': 3, 'seed_count': 2, 'state': 'crossed', 'frame_id': 0,
+    }])
+    assert capture.close(timeout=10)
+
+    event = next((tmp_path/'captures').glob('event-*/event.json'))
+    saved = json.loads(event.read_text())
+    assert saved['schema'] == 'material-counter.crossing-snapshot.v2'
+    assert saved['frames'][0]['cluster_parent_diagnostics'] == [{
+        'parent_id': 3, 'seed_count': 2, 'state': 'crossed', 'frame_id': 0,
+    }]
+
+    from scripts.standalone.render_crossing_snapshot import render_event
+    assert render_event(event, tmp_path/'rendered')['frames'] == 1
 
 
 def test_pause_and_epoch_do_not_hide_triggers_or_join_context(tmp_path):
