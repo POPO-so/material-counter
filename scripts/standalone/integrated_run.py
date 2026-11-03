@@ -1496,6 +1496,9 @@ def main(argv=None):
                     pl_rates=pl_rates,runtime=runtime_sample,
                     runtime_diagnostics=runtime_diagnostics,
                     button_status=button_status+' / '+switch0_status)
+                    metadata['dashboard']['snapshot_status']=(
+                        '采集中' if snapshot_capture_enabled and snapshot_writer_accepting
+                        else '已停止')
                     metadata['dashboard']['binary_fps']=binary_fps
                     metadata['dashboard']['preview_submitted_fps']=binary_fps
                     metadata['dashboard']['preview_status']='PL READY' if pl_preview is not None else '软件二值预览'
