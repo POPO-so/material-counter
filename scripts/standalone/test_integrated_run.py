@@ -10,7 +10,6 @@ import scripts.standalone.integrated_run as integrated_run
 from scripts.rle.protocol import encode_mask, decode_packet, reconstruct
 from scripts.standalone.integrated_run import (
     _live_drop_total,
-    telemetry_page_lines,
     _refresh_dashboard_telemetry,
     _sample_camera_telemetry,
     _with_publish_boundary,
@@ -39,7 +38,7 @@ def test_dashboard_values_include_live_core_and_static_manifest_percentages():
             'memory':{'MemTotal':'1000 kB','MemAvailable':'538 kB'}}}}
     manifest={'resources':{'lut':12221,'ff':16174,'bram_tiles':4.5,'dsp':9}}
 
-    values=dashboard_values(12,False,False,telemetry,manifest)
+    values=dashboard_values(12,False,telemetry,manifest)
 
     assert (values['cpu_percent'],values['cpu0_percent'],values['cpu1_percent'])==(31.0,28.0,34.0)
     assert values['memory_percent']==46.2
@@ -48,7 +47,7 @@ def test_dashboard_values_include_live_core_and_static_manifest_percentages():
 
 
 def test_dashboard_values_include_mode_exposure_pl_rates_and_thread_summary():
-    values = dashboard_values(2, False, False, {}, {}, mode="diagnostic",
+    values = dashboard_values(2, False, {}, {}, mode="diagnostic",
         exposure={"minimum_ms": 5, "maximum_ms": 1000, "current_ms": 5,
                   "step_ms": .1},
         pl_rates={"fresh": True, "rle_activity_pct": 32.0,
@@ -66,7 +65,7 @@ def test_dashboard_values_include_mode_exposure_pl_rates_and_thread_summary():
 
 
 def test_dashboard_exposure_error_keeps_last_known_range_and_bounds_error_text():
-    values = dashboard_values(0, False, False, {}, {},
+    values = dashboard_values(0, False, {}, {},
         exposure={"minimum_ms": 5, "maximum_ms": 1000, "current_ms": 6,
                   "step_ms": 1},
         exposure_error="manual control unavailable; driver returned a long error")
@@ -77,7 +76,7 @@ def test_dashboard_exposure_error_keeps_last_known_range_and_bounds_error_text()
 
 
 def test_dashboard_values_keep_stale_and_missing_readings_unavailable():
-    values=dashboard_values(0,False,False,{'resources':{'stale':True}},
+    values=dashboard_values(0,False,{'resources':{'stale':True}},
                             {'resources':{'lut':12221}})
 
     assert values['cpu_percent'] is None
@@ -88,7 +87,7 @@ def test_dashboard_values_keep_stale_and_missing_readings_unavailable():
     assert values['static_bram_percent'] is None
     assert values['static_dsp_percent'] is None
 def test_dashboard_unknown_metrics_stay_unknown():
-    values=dashboard_values(9,False,0,{})
+    values=dashboard_values(9,False,{})
 
     assert values['count']==9
     assert values['camera_fps'] is None
@@ -102,23 +101,18 @@ def test_dashboard_prefers_fresh_video_telemetry_and_marks_stale_unknown():
         e2e_ms={'mean':12.3},drop_total=7,
         resolution_chain="640x400 -> 640x400 -> 1280x720",
         processing_fps=23.7,regions_ms={'mean':2.1},track_ms={'mean':1.2},
-        pl={'clock_hz':50_000_000},link_summary='link ok',page_lines=('PL 50 MHz',))
+        pl={'clock_hz':50_000_000},link_summary='link ok')
     telemetry={'video_telemetry':{'value':value,'stale':False}}
 
-    values=dashboard_values(9,True,2,telemetry)
-    assert values['detail_page']==2 and values['state']=='PAUSED'
+    values=dashboard_values(9,True,telemetry)
     for key,item in value.items():
-        if key=='page_lines':
-            continue
         assert values[key]==item
-    assert values['page_lines'] and values['page_lines'][0]=='PS 与丢帧'
-    stale_values=dashboard_values(9,False,0,{
+    stale_values=dashboard_values(9,False,{
         'video_telemetry':{'value':value,'stale':True}
     })
     for key in ('camera_fps','effective_input_fps','e2e_ms','drop_total',
                 'processing_fps','regions_ms','track_ms','pl'):
         assert stale_values[key] is None
-    assert stale_values['page_lines'] in (None,())
     assert stale_values['resolution_chain']=="640x400 -> 640x400 -> 1280x720"
 
 
@@ -141,27 +135,11 @@ def test_camera_absent_keeps_fps_unknown_not_zero():
         video_sample=window.sample(sample_time_ns)
         video_sample.update(camera=camera_sample)
         video_sample['camera_fps']=camera_sample['camera_fps']
-        values=dashboard_values(0,False,0,{
+        values=dashboard_values(0,False,{
             'video_telemetry':{'value':video_sample,'stale':False}
         })
         assert values['camera_fps'] is None
 
-
-def test_telemetry_page_lines_cover_pl_and_ps_pages():
-    video={'pl':{'aggregate':{'total_cycles':16000,'active_cycles':12300,'input_beats':800,'output_beats':400}},
-        'regions_ms':{'mean':2.1},'track_ms':{'mean':1.2},
-        'camera':{'camera_overwrite_drops':3},
-        'pump':{'pump_submit_failures':1,'pump_skips':2}}
-    pl=telemetry_page_lines(1,video)
-    assert pl[0]=='PL 阶段与周期'
-    assert any('12300' in line for line in pl)
-    assert any('800' in line and '400' in line for line in pl)
-    ps=telemetry_page_lines(2,video)
-    assert ps[0]=='PS 与丢帧'
-    assert any('2.1' in line and '1.2' in line for line in ps)
-    assert telemetry_page_lines(0,video)==()
-    unknown=telemetry_page_lines(1,{})
-    assert any('--' in line for line in unknown)
 
 def test_live_drop_total_is_unknown_until_all_sources_measured():
     assert _live_drop_total(None, {'pump_skips': 2, 'pump_submit_failures': 1}) is None
@@ -185,7 +163,7 @@ def test_two_second_snapshot_is_reused_without_per_frame_cache_snapshot():
     cache=FakeCache()
     latest=_refresh_dashboard_telemetry(cache,2.0)
     for frame in range(5):
-        dashboard_values(frame,False,0,latest)
+        dashboard_values(frame,False,latest)
 
     assert cache.calls==[2.0]
 
@@ -193,7 +171,7 @@ def test_two_second_snapshot_is_reused_without_per_frame_cache_snapshot():
 def test_telemetry_does_not_change_result_metadata_or_count():
     mask=np.zeros((400,640),np.uint8);mask[100:110,200:220]=255
     result=MaskCounter(width=640,height=400,roi_mode='full',min_area=10).update(0,mask)
-    common=dict(paused=False,binary_background=False,page=0)
+    common=dict(paused=False,binary_background=False)
     empty=result_metadata(result,**common,telemetry={})
     filled=result_metadata(result,**common,telemetry={
         'camera_fps':29.5,'e2e_ms':{'mean':12.3},'drop_total':7,
@@ -549,12 +527,12 @@ def test_invalid_frame_never_publishes_partial_mask():
 def test_preview_metadata_contains_only_small_annotations_and_controls():
     mask=np.zeros((400,640),np.uint8);mask[100:110,200:220]=255
     result=MaskCounter(width=640,height=400,roi_mode='full',min_area=10).update(0,mask)
-    metadata=result_metadata(result,paused=True,binary_background=False,page=1)
+    metadata=result_metadata(result,paused=True,binary_background=False)
     assert metadata['boxes']==[[200,100,219,109]]
-    assert metadata['paused'] and not metadata['binary_background'] and metadata['page']==1
+    assert metadata['paused'] and not metadata['binary_background']
     assert 'row_projection' not in metadata and 'gray' not in metadata
     assert metadata['tracks'][0][0]=='0:1'
-    resumed=result_metadata(result,paused=False,binary_background=True,page=0,trajectory_epoch=2)
+    resumed=result_metadata(result,paused=False,binary_background=True,trajectory_epoch=2)
     assert resumed['tracks'][0][0]=='2:1'
 
 
@@ -619,7 +597,7 @@ def test_runtime_diagnostic_snapshot_limits_threads_and_records_pool_occupancy()
     assert snapshot["output_pool"] == {"ready": 1, "capacity": 3}
 
 def test_dashboard_values_show_thread_run_wait_and_preview_pool_occupancy():
-    values = dashboard_values(2, False, False, {}, {}, runtime_diagnostics={
+    values = dashboard_values(2, False, {}, {}, runtime_diagnostics={
         "threads": [{"name": "capture", "cpu_time_ms": 12.5,
                      "run_time_ms": 20.0, "wait_time_ms": 4.0}],
         "input_pool": {"ready": 2, "capacity": 3},
@@ -678,7 +656,7 @@ def test_camera_read_after_is_a_repeatable_peek_without_consumer_state():
     assert camera._latest is original_latest
 
 def test_dashboard_values_expose_cpu_and_queue_summaries_in_json_ready_fields():
-    values = dashboard_values(0, False, False, {}, {}, runtime_diagnostics={
+    values = dashboard_values(0, False, {}, {}, runtime_diagnostics={
         "cpu_sources": {"camera": 2.0, "drawing": 1.0,
                         "external_ssh": 4.0, "external_other": 3.0},
         "queues": {"camera_to_processing": {"dropped_old_frames": 3,

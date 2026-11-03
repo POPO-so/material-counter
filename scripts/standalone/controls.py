@@ -74,7 +74,6 @@ class ButtonDecoder:
 class ControlState:
     paused: bool = False
     binary_background: bool = True
-    page: int = 0  # Compatibility field; BTN3 no longer changes pages.
     clear_requests: int = 0
     diagnostic: bool = False
 
@@ -84,9 +83,6 @@ class ControlState:
                 self.paused = not self.paused
             elif command == "background":
                 self.binary_background = not self.binary_background
-            elif command == "page":
-                # Ignore legacy replay commands; the display is a single page.
-                continue
             elif command == "clear":
                 self.clear_requests += 1
             elif command == "mode":

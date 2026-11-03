@@ -451,7 +451,7 @@ def test_dashboard_top_cards_use_link_metrics(monkeypatch):
 
     canvas = c.render(gray, gray, session, 1, dashboard={
         "count": 12, "camera_fps": 29.5, "e2e_ms": {"mean": 41.2},
-        "drop_total": 7, "detail_page": 0,
+        "drop_total": 7,
     })
 
     assert canvas.shape == (720, 1280)
@@ -789,23 +789,6 @@ def test_dashboard_output_slot_requires_a_valid_explicit_output():
         c.render(gray, gray, uuid.uuid4(), 1, output=output, output_slot=3)
     with pytest.raises(ValueError, match="output_slot"):
         c.render(gray, gray, uuid.uuid4(), 1, output_slot=0)
-
-
-@pytest.mark.parametrize(("page", "page_lines", "expected"), [
-    (1, ("第一页详情",), "第一页详情"),
-    (2, ("第二页详情",), "第二页详情"),
-    (3, ("第三页详情",), "第三页详情"),
-])
-def test_dashboard_three_pages_show_distinct_lines(monkeypatch, page, page_lines, expected):
-    api = _api()
-    c = _dashboard_composer()
-    texts = _collect_dashboard_text(monkeypatch, api)
-    gray = np.zeros((400, 640), dtype=np.uint8)
-
-    c.render(gray, gray, uuid.uuid4(), page,
-             dashboard={"detail_page": page, "page_lines": page_lines})
-
-    assert any(expected in text for text in texts)
 
 
 def test_dashboard_left_summary_shows_pl_ps_throughput(monkeypatch):

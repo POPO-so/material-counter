@@ -80,10 +80,10 @@ def rasterize_into(packet, output):
     return output
 
 
-def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=0,telemetry=None,
+def result_metadata(result, *, paused, binary_background, trajectory_epoch=0,telemetry=None,
                     count_axis='x',line_position=320,direction=1):
     return dict(count=result.total_count, paused=paused,
-        binary_background=binary_background,page=page,
+        binary_background=binary_background,
         count_line=dict(axis=count_axis,position=line_position,direction=direction),
         annotations_truncated=len(result.detections)>128 or len(result.tracks)>128,
         boxes=[[d.x_min,d.y_min,d.x_max,d.y_max] for d in result.detections[:128]],
@@ -91,47 +91,7 @@ def result_metadata(result, *, paused, binary_background, page,trajectory_epoch=
                  int(t['detection']['centroid_y'])] for t in result.tracks[:128]])
 
 
-def _finite(value):
-    try:
-        number=float(value)
-    except (TypeError, ValueError):
-        return None
-    return number if number==number and number not in (float('inf'),float('-inf')) else None
-
-
-def telemetry_page_lines(page, video):
-    """Build BTN3 detail lines from the latest telemetry sample (page 1/2)."""
-    video=video or {}
-    def mean(summary):
-        return summary.get('mean') if isinstance(summary,dict) else summary
-    def ms(value):
-        number=_finite(value)
-        return '--' if number is None else '{:.1f}'.format(number)
-    def whole(value):
-        return '--' if isinstance(value,bool) or not isinstance(value,int) else str(value)
-    if page==1:
-        aggregate=(video.get('pl') or {}).get('aggregate') or {}
-        total=aggregate.get('total_cycles');active=aggregate.get('active_cycles')
-        beat_in=aggregate.get('input_beats');beat_out=aggregate.get('output_beats')
-        if isinstance(total,int) and isinstance(active,int) and total>0:
-            activity='活动 {}/{} cyc {:.0f}%'.format(active,total,100.0*active/total)
-        else:
-            activity='活动 --/-- cyc'
-        if isinstance(beat_in,int) and isinstance(beat_out,int):
-            beats='beat 入{} 出{}'.format(beat_in,beat_out)
-        else:
-            beats='beat --/--'
-        return ('PL 阶段与周期',activity,beats+' / 模块unknown')
-    if page==2:
-        pump=video.get('pump') or {};camera=video.get('camera') or {}
-        return ('PS 与丢帧',
-            'RLE {} / TRK {} ms'.format(ms(mean(video.get('regions_ms'))),ms(mean(video.get('track_ms')))),
-            '相机丢{} 提交失败{} 跳过{}'.format(whole(camera.get('camera_overwrite_drops')),
-                whole(pump.get('pump_submit_failures')),whole(pump.get('pump_skips'))))
-    return ()
-
-
-def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='normal',
+def dashboard_values(count, paused, telemetry, manifest=None, *, mode='normal',
                      exposure=None, exposure_error=None, pl_rates=None, runtime=None,
                      runtime_diagnostics=None, button_status='IRQ READY'):
     """Use measured telemetry only; unavailable or stale readings stay blank."""
@@ -239,8 +199,7 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
             hdmi_queue.get('ready') if hdmi_queue.get('ready') is not None else '?',
             hdmi_queue.get('submit_failures') if hdmi_queue.get('submit_failures') is not None else '?')
     rates=rates or {}
-    return dict(count=count,state='PAUSED' if paused else 'RUNNING',detail_page=bool(page),
-        page=page,
+    return dict(count=count,state='PAUSED' if paused else 'RUNNING',
         mode='DIAGNOSTIC' if mode=='diagnostic' else 'NORMAL',exposure_text=exposure_text,
         exposure_range_text=exposure_range_text,
         pl_text=pl_text,thread_text=thread_text,queue_text=queue_text,
@@ -264,7 +223,7 @@ def dashboard_values(count, paused, page, telemetry, manifest=None, *, mode='nor
         compose_work_ms=video.get('compose_work_ms'),
         e2e_ms=video.get('e2e_ms'),drop_total=video.get('drop_total'),
         resolution_chain=video.get('resolution_chain','640x400 -> 640x400 -> 1280x720'),
-        link_summary=video.get('link_summary'),page_lines=telemetry_page_lines(page,video) if page else (),
+        link_summary=video.get('link_summary'),
         regions_ms=video.get('regions_ms'),
         track_ms=video.get('track_ms'),pl=video.get('pl'))
 
@@ -1497,7 +1456,7 @@ def main(argv=None):
                 if args.display=='on':
                     if pl_preview is None:prepare_preview_binary(packet,binary,True)
                     metadata=result_metadata(result,paused=controls.paused,binary_background=True,
-                        page=controls.page,trajectory_epoch=trajectory_epoch,count_axis=counter.count_axis,
+                        trajectory_epoch=trajectory_epoch,count_axis=counter.count_axis,
                         line_position=counter.line_x if counter.count_axis=='x' else counter.line_y,
                         direction=counter.direction)
                     metadata['pl_preview']=pl_preview is not None
@@ -1516,7 +1475,7 @@ def main(argv=None):
                         'SW0读取未知' if switch0_state is None else
                         'SW0 ON' if switch0_state else 'SW0 OFF')
                     metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,
-                    controls.page,telemetry,manifest,mode=diagnostic_policy.mode,
+                    telemetry,manifest,mode=diagnostic_policy.mode,
                     exposure=exposure_status,exposure_error=exposure_error,
                     pl_rates=pl_rates,runtime=runtime_sample,
                     runtime_diagnostics=runtime_diagnostics,
@@ -1535,31 +1494,11 @@ def main(argv=None):
                         metadata['status_lines'].append('处理 {:.1f} FPS{}'.format(performance['value']['processing_fps'],' / 过期' if performance['stale'] else ''))
                     stale=[name for name,sample in telemetry.items() if sample['stale']]
                     if stale:metadata['status_lines'].append('过期: '+','.join(stale))
-                    if controls.page:
-                        metadata['status_lines']+=['640x400 / RLE 50MHz','显示 1280x720 60Hz',
-                            'LUT {} / FF {}'.format(manifest.get('resources',{}).get('lut','未知'),manifest.get('resources',{}).get('ff','未知')),
-                            'BRAM {} / DSP {}'.format(manifest.get('resources',{}).get('bram_tiles','未知'),manifest.get('resources',{}).get('dsp','未知'))]
-                        resource=telemetry.get('resources',{}).get('value',{})
-                        metadata['status_lines'].append('CMA '+str(resource.get('memory',{}).get('CmaFree','未知')))
-                        cpu=resource.get('cpu',{})
-                        metadata['status_lines'].append('CPU0 {:.0f}% / CPU1 {:.0f}% / 系统 {:.0f}%'.format(cpu.get('cpu0',0),cpu.get('cpu1',0),cpu.get('system',0)))
-                        process_info=resource.get('processes',{})
-                        text=lambda key:('{:.0f}%'.format(process_info[key]['cpu_percent']) if process_info.get(key,{}).get('cpu_percent') is not None else '未知')
-                        metadata['status_lines'].append('进程 计数 {} / 绘图 {}'.format(text('count_capture_video'),text('drawing')))
-                        available=int(resource.get('memory',{}).get('MemAvailable','0 kB').split()[0])/1024
-                        metadata['status_lines'].append('内存 {:.0f} MB / SD {:.1f} GB'.format(available,resource.get('sd_free_bytes',0)/(1024**3)))
-                        channels=telemetry.get('xadc',{}).get('value',{}).get('channels',[])
-                        temperatures=[c['value_si'] for c in channels if c['channel'].startswith('in_temp') and isinstance(c['value_si'],(int,float))]
-                        if temperatures:metadata['status_lines'].append('温度 {:.1f} °C'.format(temperatures[0]))
-                        rails={c['label']:c['value_si'] for c in channels if c['label'] in ('vccint','vccaux','vccbram') and isinstance(c['value_si'],(int,float))}
-                        rail_text=lambda key:('{:.3f}'.format(rails[key]) if key in rails else '未知')
-                        if rails:metadata['status_lines'].append('INT {} / AUX {} / BRAM {} V'.format(rail_text('vccint'),rail_text('vccaux'),rail_text('vccbram')))
-                        if performance:metadata['status_lines'].append('RLE {} runs / DMA {} B'.format(performance['value']['runs'],performance['value']['rx_bytes']))
                     last_gray=gray;last_metadata=metadata;last_valid_id=index
                     if process is not None and process.is_alive():
                         selected_gray,selected_binary=prepare_preview_frame(gray,binary,
                             backend=args.preview_backend,black_frame=black_frame)
-                        panel_key=(counter.total_count,controls.page,controls.diagnostic,
+                        panel_key=(counter.total_count,controls.diagnostic,
                             exposure_status,exposure_error,pl_rates,runtime_sample,button_status)
                         if pl_preview is None or panel_gate.should_publish(time.monotonic(),panel_key):
                             did_publish=inputs.publish(selected_gray,selected_binary,session,index,
@@ -1727,7 +1666,6 @@ def main(argv=None):
                 video_sample['drop_total']=_live_drop_total(camera_sample,pump_sample,extra_sample)
                 video_sample.setdefault('resolution_chain','640x400 -> 640x400 -> 1280x720')
                 video_sample.setdefault('link_summary',None)
-                video_sample.setdefault('page_lines',())
                 video_sample['pl']=pl_counters_snapshot(counters_sample)
                 cache.record('video_telemetry',video_sample,2.0,time.monotonic())
                 cache_values=_refresh_dashboard_telemetry(cache,time.monotonic())
