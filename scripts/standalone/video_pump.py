@@ -37,6 +37,8 @@ class VideoPump:
         self.telemetry = telemetry
         self.state = RUNNING
         self.error = None
+        self.first_failure = None
+        self._last_submitted_frame_id = None
         self.submitted = 0
         self.skipped = 0
         self.submit_failures = 0
@@ -89,15 +91,21 @@ class VideoPump:
                 frame = None
                 failed = False
                 session_mismatch = False
+                stage = "session"
+                write_started_ns = None
                 try:
                     if lease.session_uuid != self.session_uuid:
                         session_mismatch = True
                         raise RuntimeError(
                             "shared frame session UUID does not match video pump"
                         )
+                    stage = "newframe"
                     frame = self.owner.call(self.hw.hdmi.newframe)
+                    stage = "copy"
                     copy_started_ns = time.monotonic_ns()
                     np.copyto(frame, lease.array)
+                    stage = "writeframe"
+                    write_started_ns = time.monotonic_ns()
                     self.owner.call(
                         self.hw.hdmi.writeframe,
                         frame,
@@ -128,6 +136,7 @@ class VideoPump:
                             )
                         except BaseException:
                             pass
+                    self._last_submitted_frame_id = lease.frame_id
                     self.submitted += 1
                 except BaseException as exc:
                     if session_mismatch:
@@ -141,7 +150,8 @@ class VideoPump:
                             exc = RuntimeError(
                                 f"{exc}; retaining uncertain CMA frame failed: {retain_exc}"
                             )
-                    self._fail(exc)
+                    self._fail(exc, stage=stage, frame_id=lease.frame_id,
+                               started_ns=write_started_ns)
                     failed = True
                 finally:
                     try:
@@ -157,6 +167,17 @@ class VideoPump:
             if self.state != DISPLAY_FAIL_HOLD:
                 self.state = STOPPED
 
-    def _fail(self, exc):
-        self.error = str(exc)
+    def _fail(self, exc, *, stage=None, frame_id=None, started_ns=None):
+        if self.first_failure is None:
+            now = time.monotonic_ns()
+            self.error = str(exc)
+            self.first_failure = {
+                "error": self.error,
+                "stage": stage,
+                "frame_id": frame_id,
+                "monotonic_ns": now,
+                "elapsed_ms": (None if started_ns is None else
+                               (now - started_ns) / 1_000_000),
+                "last_submitted_frame_id": self._last_submitted_frame_id,
+            }
         self.state = DISPLAY_FAIL_HOLD

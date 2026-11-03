@@ -33,7 +33,7 @@ from .async_evidence import EvidenceExporter
 from .driver_owner import DriverOwner
 from .evidence import write_evidence,fail_hold,TraceBuffer
 from .g1_run import setup_hardware, start_display_output, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
-from .hp2 import sync_hp1_readwrite32
+from .hp2 import MM2S_ERROR_MASK, sync_hp1_readwrite32
 from .g2_readback import read_pipeline, snapshot_counters
 from .pressure import make_input, counter_delta, validate_transfer_totals
 from .preview_inputs import PreviewInputs
@@ -981,7 +981,7 @@ def main(argv=None):
         recoveries=deque(maxlen=2048),runtime_samples=deque(maxlen=1800),button_raw_sample_count=0,
         button_raw_transitions=deque(maxlen=2048),button_raw_transition_total=0,button_raw_transition_truncated=0,
         before_memory=_memory(),scope='G3 candidate; G4 physical disconnection/cold-start not asserted')
-    captures=exporter=None
+    captures=exporter=video_pump=None
     button_raw_lock=threading.Lock()
     def report_snapshot():
         with button_raw_lock:
@@ -997,6 +997,8 @@ def main(argv=None):
             result.get('sw1_status','unknown'),captures,
             result.get('snapshot_capture_enabled',False))
         result['report_exports']=exporter.status() if exporter is not None else {'enabled':False}
+        if video_pump is not None and video_pump.first_failure is not None:
+            result['video_pump_first_failure'] = dict(video_pump.first_failure)
         return result
     report['cpu_scope']=CPU_SCOPE_DESCRIPTION
     report['button_pl_status']=dict(available=None,stable='unknown',events='unknown',
@@ -1013,7 +1015,7 @@ def main(argv=None):
     button_status={'irq':'IRQ READY','polling':'LEGACY POLLING','off':'BUTTONS OFF'}[args.button_input]
     switch0_connected=False;switch0_state=None;read_switch0=None
     previous_raw_button_bits=None
-    hw=transport=camera=process=inputs=outputs=display_frame=video_pump=None
+    hw=transport=camera=process=inputs=outputs=display_frame=None
     display_held=False
     stop_drawing=None;running=True;export_requested=False;exports=0
     def stop(*_):
@@ -1689,7 +1691,7 @@ def main(argv=None):
                 latest_dashboard_telemetry=cache_values
                 monitor=owner.call(snapshot,hw.monitor)
                 vdma_status=owner.call(hw.vdma.read,4)
-                if vdma_status&0x770:
+                if vdma_status&MM2S_ERROR_MASK:
                     display_held=True
                     if video_pump is not None:video_pump.request_stop()
                 report['samples'].append(dict(monotonic=sample_time,processed=index,submitted=submitted,

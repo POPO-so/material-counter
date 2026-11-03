@@ -156,6 +156,14 @@ def test_submit_timeout_counts_failure_not_skip(frames):
         assert pump.join(1)
         assert pump.state == DISPLAY_FAIL_HOLD
         assert "exceeded" in pump.error.lower() or "timeout" in pump.error.lower()
+        failure = pump.first_failure
+        assert failure["stage"] == "writeframe"
+        assert failure["frame_id"] == 1
+        assert failure["elapsed_ms"] >= 0
+        assert failure["last_submitted_frame_id"] is None
+        pump._fail(RuntimeError("cleanup failure"))
+        assert pump.first_failure == failure
+        assert pump.error == failure["error"]
         assert len(owner.retained) == 1
         assert owner.retained[0] is hdmi.created[0]
         assert pump.submitted == 0

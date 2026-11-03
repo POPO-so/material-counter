@@ -83,6 +83,24 @@ def test_unsafe_reset_or_vdma_state_causes_no_afi_write(tmp_path, unsafe):
     assert not any(base == 0xF800A000 for base, _, _ in writes)
 
 
+@pytest.mark.parametrize("fault_bit,refused", [(4, True), (5, True), (6, True),
+                                               (7, True), (8, False), (10, False)])
+def test_vdma_fault_mask_covers_sof_early_err_but_not_axi_dma_sg_bits(
+        tmp_path, fault_bit, refused):
+    path = write_hwh(tmp_path / "design.hwh")
+    regs = {(0xF8000000, 0x240): 0, (0x43000000, 0): 0,
+            (0x43000000, 4): 1 | (1 << fault_bit), (0xF800A000, 0): 0}
+    writes = []
+
+    if refused:
+        with pytest.raises(RuntimeError, match="fault"):
+            sync_hp2_read32(path, make_factory(regs, writes))
+        assert not any(base == 0xF800A000 for base, _, _ in writes)
+    else:
+        sync_hp2_read32(path, make_factory(regs, writes))
+        assert writes == [(0xF800A000, 0, 1)]
+
+
 def test_enables_only_hp2_read_bit_and_preserves_other_bits(tmp_path):
     path = write_hwh(tmp_path / "design.hwh")
     before = 0xA5A50020

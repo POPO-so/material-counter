@@ -20,6 +20,7 @@ from .driver_owner import DriverOwner
 from .evidence import write_evidence,fail_hold
 from .g1_run import setup_hardware, snapshot, _memory, _parse_proc_stat, _cpu_usage_percent
 from .g2_readback import read_pipeline, snapshot_counters
+from .hp2 import MM2S_ERROR_MASK
 from .pressure import make_input, counter_delta, validate_transfers
 from scripts.rle.protocol import TX_BYTES, RX_CAPACITY, reconstruct
 from scripts.rle.run_counter import golden_mask
@@ -188,7 +189,7 @@ def main(argv=None):
         if args.display != 'off':
             owner.call(hw.hdmi.close, timeout=3)
         report['vdma_after'] = {hex(i): owner.call(hw.vdma.read,i) for i in (0,4)}
-        if not report['vdma_after']['0x4'] & 1 or report['vdma_after']['0x4'] & 0x770:
+        if not report['vdma_after']['0x4'] & 1 or report['vdma_after']['0x4'] & MM2S_ERROR_MASK:
             raise RuntimeError('VDMA did not safely halt')
         report['pipeline_after'] = owner.call(read_pipeline, control)
         owner.close()

@@ -24,7 +24,7 @@ from scripts.wo0015.board_preflight import audit_process_ownership
 from .bundle import sha256, verify_bundle, verify_runtime
 from .compositor import GrayComposer
 from .camera import LateDecodeTimeout, LatestCamera
-from .hp2 import sync_hp2_read32
+from .hp2 import MM2S_ERROR_MASK, sync_hp2_read32
 from .controls import ButtonDecoder, ControlState
 from .driver_owner import DriverOwner, FailHold
 from .shared_frames import READING, WRITING, SharedFrames
@@ -558,7 +558,7 @@ def main(argv=None):
                 current["sw1_status"] = sw1_status
                 report["sw1_status"] = sw1_status
                 current["vdma_status"] = owner.call(hw.vdma.read, 4)
-                if current["vdma_status"] & 0x770:
+                if current["vdma_status"] & MM2S_ERROR_MASK:
                     raise RuntimeError("VDMA reports a transport error")
                 report["samples"].append(current)
                 source_label = ("真实摄像头 / 模拟框线（无 RLE 计数）" if args.source == "camera"
