@@ -477,7 +477,9 @@ def test_dashboard_unknown_metrics_render_placeholder(monkeypatch):
     assert texts.count("--") >= 4
 
 
-def test_dashboard_subprecision_telemetry_hits_key_without_panel_pixel_changes():
+def test_dashboard_subprecision_telemetry_hits_key_without_panel_pixel_changes(monkeypatch):
+    api = _api()
+    monkeypatch.setattr(api, "perf_counter_ns", lambda: 0, raising=False)
     c = _dashboard_composer()
     gray = np.zeros((400, 640), dtype=np.uint8)
     session = uuid.uuid4()
@@ -509,8 +511,9 @@ def test_dashboard_display_precision_boundary_updates_dynamic_value_without_chro
     assert not np.array_equal(before[84:126, 340:640], after[84:126, 340:640])
 
 
-def test_dashboard_page_lines_and_low_level_diagnostics_are_scoped_to_ps_page(monkeypatch):
+def test_dashboard_legacy_pages_and_low_level_diagnostics_are_ignored(monkeypatch):
     api = _api()
+    monkeypatch.setattr(api, "perf_counter_ns", lambda: 0, raising=False)
     c = _dashboard_composer()
     texts = _collect_dashboard_text(monkeypatch, api)
     gray = np.zeros((400, 640), dtype=np.uint8)
@@ -527,22 +530,21 @@ def test_dashboard_page_lines_and_low_level_diagnostics_are_scoped_to_ps_page(mo
         "button_status": "BTN3 PS/丢帧",
     }
 
-    c.render(gray, gray, uuid.uuid4(), 1, dashboard=dashboard)
+    first = c.render(gray, gray, uuid.uuid4(), 1, dashboard=dashboard).copy()
     overview = " ".join(texts)
-    assert "本次累计计数" in overview and "相机帧率" in overview
+    assert "目标数量" in overview and "本次累计计数" in overview
     assert "camera 2%" not in overview
     assert "相机丢1 覆盖True" not in overview
     assert "threads capture" not in overview
 
     texts.clear()
-    c.render(gray, gray, uuid.uuid4(), 2,
-             dashboard={**dashboard, "page": 2,
-                        "page_lines": ("PS 与丢帧", "RLE 5.5 / TRK 0.3 ms")})
+    second = c.render(gray, gray, uuid.uuid4(), 2,
+                      dashboard={**dashboard, "page": 2,
+                                 "page_lines": ("PS 与丢帧", "RLE 5.5 / TRK 0.3 ms")}).copy()
+    assert np.array_equal(first[1:719, :], second[1:719, :])
     detail = " ".join(texts)
-    assert "PS 与丢帧" in detail
-    assert "CPU 来源" in detail and "队列" in detail
-    assert "camera 2%" in detail and "相机丢1 覆盖True" in detail
-    assert "capture=1" in detail
+    assert "PS 与丢帧" not in detail
+    assert "RLE 5.5 / TRK 0.3 ms" not in detail
 
 
 def test_dashboard_key_ignores_page_lines_and_diagnostics_hidden_on_overview():
@@ -643,6 +645,7 @@ def test_dashboard_telemetry_updates_change_pixels_without_chrome_miss(monkeypat
 
 def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reused(monkeypatch):
     api = _api()
+    monkeypatch.setattr(api, "perf_counter_ns", lambda: 0, raising=False)
     slot_composer = _dashboard_composer()
     reference_composer = _dashboard_composer()
     outputs = [np.empty((720, 1280), dtype=np.uint8) for _ in range(3)]
@@ -709,6 +712,7 @@ def test_dashboard_output_slots_match_full_render_when_slots_and_chrome_are_reus
 
 def test_dashboard_draws_dynamic_regions_in_output_buffer_without_region_copies(monkeypatch):
     api = _api()
+    monkeypatch.setattr(api, "perf_counter_ns", lambda: 0, raising=False)
     composer = _dashboard_composer()
     reference = _dashboard_composer()
     gray = np.full((400, 640), 87, dtype=np.uint8)
@@ -749,17 +753,7 @@ def test_dashboard_draws_dynamic_regions_in_output_buffer_without_region_copies(
             draw_content(api.ImageDraw.Draw(image), x0, y0)
             np.copyto(pixels, np.asarray(image))
 
-        def legacy_detection_count(target, target_count, draw=None):
-            x0, y0, x1, y1 = 974, 174, 1230, 201
-            pixels = target[y0:y1, x0:x1]
-            pixels.fill(43)
-            image = real_fromarray(pixels)
-            reference._text(api.ImageDraw.Draw(image), (0, 177 - y0),
-                            str(target_count), 20, 255)
-            np.copyto(pixels, np.asarray(image))
-
         monkeypatch.setattr(reference, "_draw_dynamic_region", legacy_region)
-        monkeypatch.setattr(reference, "_draw_detection_count", legacy_detection_count)
         monkeypatch.setattr(api.Image, "fromarray", real_fromarray)
         reference.render(
             gray, binary, session, 1, boxes=((12, 18, 120, 150), (210, 30, 300, 200)),
@@ -867,7 +861,7 @@ def test_dashboard_labels_preview_rate_as_submission_rate(monkeypatch):
     assert any("二值提交 FPS" in label for label in labels)
 
 
-def test_dashboard_cpu_source_and_queue_summaries_refresh_on_change(monkeypatch):
+def test_dashboard_removed_cpu_source_and_queue_fields_do_not_change_dynamic_state(monkeypatch):
     c = _dashboard_composer()
     gray = np.zeros((400, 640), dtype=np.uint8)
     drawn = []
@@ -885,14 +879,14 @@ def test_dashboard_cpu_source_and_queue_summaries_refresh_on_change(monkeypatch)
         "queue_summary_text": "队列 相机丢1 覆盖True",
     }
     c.render(gray, gray, uuid.uuid4(), 1, dashboard=base)
-    assert any(text == "camera 2%" for _, text, _ in drawn)
-    assert any(text == "相机丢1 覆盖True" for _, text, _ in drawn)
-    first_count = len(drawn)
+    initial_key = c._dynamic_key
 
     c.render(gray, gray, uuid.uuid4(), 2,
-             dashboard={**base, "cpu_source_text": "CPU 来源 camera 3%"})
-    assert any(text == "camera 3%" for _, text, _ in drawn)
-    assert len(drawn) > first_count
+             dashboard={**base, "cpu_source_text": "CPU 来源 camera 3%",
+                        "queue_summary_text": "队列 相机丢9 覆盖False"})
+    assert c._dynamic_key == initial_key
+    assert all(not text.startswith(("CPU 来源", "队列", "camera", "相机丢"))
+               for _, text, _ in drawn)
 
 
 def test_dashboard_chrome_warmed_latin_strings_skip_all_text_rasterization(monkeypatch):
@@ -1072,18 +1066,18 @@ def test_dashboard_unavailable_percentages_show_dashes_and_empty_rings():
     assert image[599, 140 - 18] == 76
 
 
-def test_dashboard_viewport_is_binary_460_by_288_dashboard_scale():
+def test_dashboard_viewport_is_binary_512_by_320_dashboard_scale():
     c = _dashboard_composer()
     gray = np.full((400, 640), 103, dtype=np.uint8)
     binary = np.zeros_like(gray)
     image = c.render(gray, binary, uuid.uuid4(), 1)
 
-    assert c.VIEW == (398, 154, 460, 288)
+    assert c.VIEW == (384, 146, 512, 320)
     assert image.shape == (720, 1280)
     assert image[200, 420] == 0
     assert image[300, 800] == 0
     x, y, width, height = c.VIEW
-    assert image[y + height - 1, x + width - 1] == 0
+    assert image[y + height - 1, x + width - 1] == 128
 
 
 def test_dashboard_mode_exposure_and_pl_status_change_without_hiding_rate_panels():
@@ -1114,8 +1108,12 @@ def test_dashboard_binary_view_uses_four_fifths_nearest_golden():
                      dashboard={"count": 1})
     x, y, width, height = c.VIEW
     expected = binary[np.arange(height) * 400 // height][:, np.arange(width) * 640 // width]
-    assert c.VIEW == (398, 154, 460, 288)
+    assert c.VIEW == (384, 146, 512, 320)
     visible = np.ones((height, width), dtype=bool)
+    visible[:2, :] = False
+    visible[-2:, :] = False
+    visible[:, :2] = False
+    visible[:, -2:] = False
     line_x = math.floor(320 * width / 640 + 0.5)
     visible[:, max(0, line_x - 9):min(width, line_x + 10)] = False
     visible[:40, min(width, line_x + 12):] = False
@@ -1128,7 +1126,10 @@ def test_dashboard_pl_preview_skips_pixels_and_duplicate_count_line():
     image = c.render(black, black, uuid.uuid4(), 1, boxes=((20, 20, 100, 100),),
                      binary_background=True, pl_preview=True, dashboard={"count": 2})
     x, y, width, height = c.VIEW
-    assert np.all(image[y:y + height, x:x + width] == 0)
+    viewport = image[y:y + height, x:x + width]
+    assert np.all(viewport[2:-2, 2:-2] == 0)
+    assert np.all(viewport[0, :] == 128)
+    assert np.all(viewport[-1, :] == 128)
 
 
 def test_dashboard_rle_row_shows_activity_throughput_and_stalls():

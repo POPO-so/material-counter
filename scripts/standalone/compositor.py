@@ -327,8 +327,14 @@ class DashboardComposer:
         self._text_cache = OrderedDict()
         self._latin_advance_cache = {
             (size, chr(codepoint)): self._latin[size].getlength(chr(codepoint))
-            for size in (12, 20) for codepoint in range(32, 127)
+            for size in self._latin for codepoint in range(32, 127)
         }
+        self._unicode_advance_cache = OrderedDict()
+        self._baseline_bbox_cache = OrderedDict(
+            ((34, chr(codepoint)), self._latin[34].getbbox(chr(codepoint), anchor="ls"))
+            for codepoint in range(32, 127)
+        )
+        self._baseline_bbox_cache[(34, "件")] = self._fonts[34].getbbox("件", anchor="ls")
         self._latin_glyph_cache = OrderedDict()
         self._gutter_wrap_cache = OrderedDict()
         self._key = None
@@ -367,6 +373,33 @@ class DashboardComposer:
             advance = self._latin[size].getlength(character)
             self._latin_advance_cache[key] = advance
         return advance
+
+    def _character_advance(self, character, size):
+        if ord(character) < 256:
+            return self._latin_advance(character, size)
+        key = (size, character)
+        advance = self._unicode_advance_cache.get(key)
+        if advance is not None:
+            self._unicode_advance_cache.move_to_end(key)
+            return advance
+        advance = self._fonts[size].getlength(character)
+        self._unicode_advance_cache[key] = advance
+        if len(self._unicode_advance_cache) > 512:
+            self._unicode_advance_cache.popitem(last=False)
+        return advance
+
+    def _character_baseline_bbox(self, character, size):
+        key = (size, character)
+        bounds = self._baseline_bbox_cache.get(key)
+        if bounds is not None:
+            self._baseline_bbox_cache.move_to_end(key)
+            return bounds
+        font = self._latin[size] if ord(character) < 256 else self._fonts[size]
+        bounds = font.getbbox(character, anchor="ls")
+        self._baseline_bbox_cache[key] = bounds
+        if len(self._baseline_bbox_cache) > 512:
+            self._baseline_bbox_cache.popitem(last=False)
+        return bounds
 
     def _latin_glyph(self, character, size, phase):
         key = (size, character, phase)
@@ -440,8 +473,7 @@ class DashboardComposer:
                 cached = self._latin_text_mask(text, size, margin)
             else:
                 width = margin * 2 + sum(
-                    (self._latin[size] if ord(character) < 256 else self._fonts[size])
-                    .getlength(character) for character in text)
+                    self._character_advance(character, size) for character in text)
                 mask = Image.new("L", (max(1, math.ceil(width)), size * 4 + margin * 2), 0)
                 mask_draw = ImageDraw.Draw(mask)
                 x = float(margin)
@@ -449,7 +481,7 @@ class DashboardComposer:
                     font = self._latin[size] if ord(character) < 256 else self._fonts[size]
                     mask_draw.text((x, margin + size), character, font=font,
                                    fill=255, anchor="ls")
-                    x += font.getlength(character)
+                    x += self._character_advance(character, size)
                 bounds = mask.getbbox()
                 if bounds is None:
                     cached = (0, 0, mask.crop((0, 0, 1, 1)))
@@ -515,9 +547,7 @@ class DashboardComposer:
         current, current_width = '', 0.0
         current_prefix_widths = []
         for character in key[0]:
-            font = self._latin[size] if ord(character) < 256 else self._fonts[size]
-            character_width = (self._latin_advance(character, size)
-                               if ord(character) < 256 else font.getlength(character))
+            character_width = self._character_advance(character, size)
             if current and current_width + character_width > max_width:
                 rows.append(current)
                 row_prefix_widths.append(current_prefix_widths)
@@ -534,7 +564,7 @@ class DashboardComposer:
             rows = rows[:max_rows]
             last = rows[-1]
             prefix_widths = row_prefix_widths[max_rows - 1]
-            ellipsis_width = self._fonts[size].getlength("…")
+            ellipsis_width = self._character_advance("…", size)
             while last and prefix_widths[-1] + ellipsis_width > max_width:
                 last = last[:-1]
                 prefix_widths.pop()
@@ -766,8 +796,7 @@ class DashboardComposer:
 
         def top_values(draw, x0, y0):
             for x, value in zip((24, 336, 648, 960), state["top_values"]):
-                width = sum((self._latin[34] if ord(ch) < 256 else self._fonts[34])
-                            .getlength(ch) for ch in value)
+                width = sum(self._character_advance(ch, 34) for ch in value)
                 self._text(draw, (x + (296 - width) / 2 - x0, 84 - y0), value, 34, 248)
 
         self._draw_dynamic_region(target, (24, 58, 1256, 126), top_values, draw)
@@ -777,8 +806,7 @@ class DashboardComposer:
                       "有效 / 二值提交 FPS", "处理延迟")
             for index, (label, value) in enumerate(zip(labels, state["performance_values"])):
                 row = self._wrap_gutter(f"{label}  {value}", 322, 12, 1)[0]
-                width = sum((self._latin[12] if ord(ch) < 256 else self._fonts[12])
-                            .getlength(ch) for ch in row)
+                width = sum(self._character_advance(ch, 12) for ch in row)
                 self._text(draw, (38 + (342 - width) / 2 - x0,
                                   350 + index * 20 - y0), row, 12, 238)
 
@@ -790,13 +818,12 @@ class DashboardComposer:
             left = top = float("inf")
             right = bottom = float("-inf")
             for character in text:
-                font = self._latin[34] if ord(character) < 256 else self._fonts[34]
-                bounds = font.getbbox(character, anchor="ls")
+                bounds = self._character_baseline_bbox(character, 34)
                 left = min(left, pen_x + bounds[0])
                 right = max(right, pen_x + bounds[2])
                 top = min(top, bounds[1])
                 bottom = max(bottom, bounds[3])
-                pen_x += font.getlength(character)
+                pen_x += self._character_advance(character, 34)
             base_x = 1071 - (left + right) / 2
             base_y = 251.5 - (top + bottom) / 2
             self._text(draw, (base_x - x0, base_y - 34 - y0), text, 34, 255)
@@ -873,7 +900,7 @@ class DashboardComposer:
         else:
             old_phase = self._output_status_phases[output_slot]
             self._output_status_phases[output_slot] = phase
-        if old_phase != phase:
+        if old_phase != phase or chrome_sync:
             sx0, sy0, sx1, sy1 = self._status_bounds
             np.copyto(target[sy0:sy1 + 1, sx0:sx1 + 1],
                       self._chrome[sy0:sy1 + 1, sx0:sx1 + 1])
