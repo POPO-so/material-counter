@@ -5,6 +5,9 @@ import cv2
 import numpy as np
 
 _MAX_RELATIVE_HOLE_AREA_THRESHOLD = 16
+_MAX_CHILD_SEEDS = 16
+_MAX_PARENT_FOREGROUND_PIXELS = 8192
+_MAX_PARENT_BBOX_PIXELS = 65536
 
 
 def _hole_area_threshold(area: int, min_hole_area: int, *,
@@ -28,6 +31,18 @@ def is_single_connected_component(mask: np.ndarray) -> bool:
     return count == 2
 
 
+def _within_split_limits(pixels: np.ndarray) -> bool:
+    """Bound work by parent foreground area and its tight bounding box."""
+    ys, xs = np.nonzero(pixels)
+    if len(xs) > _MAX_PARENT_FOREGROUND_PIXELS:
+        return False
+    if not len(xs):
+        return True
+    bbox_area = (int(ys.max() - ys.min() + 1)
+                 * int(xs.max() - xs.min() + 1))
+    return bbox_area <= _MAX_PARENT_BBOX_PIXELS
+
+
 def _geodesic_hole_assignments(pixels: np.ndarray,
                                hole_centers: np.ndarray) -> np.ndarray | None:
     """Assign foreground to hole seeds, validating connectivity before use.
@@ -40,51 +55,68 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
     ys, xs = np.nonzero(pixels)
     if not len(xs):
         return None
+    top, bottom = int(ys.min()), int(ys.max()) + 1
+    left, right = int(xs.min()), int(xs.max()) + 1
+    work_pixels = pixels[top:bottom, left:right]
+    work_centers = hole_centers - np.array([left, top])
     seeds: list[tuple[int, int]] = []
-    for index, (center_x, center_y) in enumerate(hole_centers):
-        distances = ((xs - center_x) ** 2 + (ys - center_y) ** 2)
+    work_ys, work_xs = np.nonzero(work_pixels)
+    for center_x, center_y in work_centers:
+        distances = ((work_xs - center_x) ** 2 + (work_ys - center_y) ** 2)
         for candidate in np.argsort(distances):
-            seed = (int(ys[candidate]), int(xs[candidate]))
+            seed = (int(work_ys[candidate]), int(work_xs[candidate]))
             if seed not in seeds:
                 break
         else:
             return None
         seeds.append(seed)
 
-    distance_maps = []
-    for seed_y, seed_x in seeds:
-        distance_input = np.ones(pixels.shape, dtype=np.uint8)
+    # Keep only one current distance map plus the best-so-far map. This keeps
+    # temporary storage independent of the number of seeds.
+    labels = np.full(work_pixels.shape, -1, dtype=np.int8)
+    best_distances = np.full(work_pixels.shape, np.inf, dtype=np.float32)
+    for index, (seed_y, seed_x) in enumerate(seeds):
+        distance_input = np.ones(work_pixels.shape, dtype=np.uint8)
         distance_input[seed_y, seed_x] = 0
-        distance_maps.append(cv2.distanceTransform(distance_input, cv2.DIST_L2, 5))
-    labels = np.argmin(np.stack(distance_maps, axis=0), axis=0).astype(np.int8)
-    labels[~pixels] = -1
+        distances = cv2.distanceTransform(distance_input, cv2.DIST_L2, 5)
+        closer = work_pixels & (distances < best_distances)
+        labels[closer] = index
+        best_distances[closer] = distances[closer]
     if all(is_single_connected_component(labels == index)
            for index in range(len(seeds))):
-        return labels
+        if work_pixels.shape == pixels.shape:
+            return labels
+        expanded = np.full(pixels.shape, -1, dtype=np.int8)
+        expanded[top:bottom, left:right] = labels
+        return expanded
 
     # Reverse seed priorities so one grayscale dilation propagates the lowest
     # index on a tied wave, exactly like argmax of the old per-seed claims.
-    wave_labels = np.zeros(pixels.shape, dtype=np.uint8)
+    wave_labels = np.zeros(work_pixels.shape, dtype=np.uint8)
     for index, seed in enumerate(seeds):
         wave_labels[seed] = len(seeds) - index
     kernel = np.ones((3, 3), dtype=np.uint8)
-    remaining = int(len(xs)) - len(seeds)
+    remaining = int(len(work_xs)) - len(seeds)
     while remaining:
         adjacent = cv2.dilate(wave_labels, kernel)
-        claimed = pixels & (wave_labels == 0) & (adjacent != 0)
+        claimed = work_pixels & (wave_labels == 0) & (adjacent != 0)
         if not np.any(claimed):
             return None
         wave_labels[claimed] = adjacent[claimed]
         remaining -= int(np.count_nonzero(claimed))
     labels = (len(seeds) - wave_labels.astype(np.int8))
-    labels[~pixels] = -1
-    return labels
+    labels[~work_pixels] = -1
+    if work_pixels.shape == pixels.shape:
+        return labels
+    expanded = np.full(pixels.shape, -1, dtype=np.int8)
+    expanded[top:bottom, left:right] = labels
+    return expanded
 
 
 def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_area: int = 30,
                              min_hole_distance: float = 10, hole_area_cap: int = 16
                              ) -> tuple[np.ndarray, ...] | None:
-    """Assign a joined cluster to two or three independently visible nut holes."""
+    """Assign a joined cluster to independently visible enclosed holes."""
     height, width = pixels.shape
     area = int(np.count_nonzero(pixels))
     count, _, stats, centers = cv2.connectedComponentsWithStats(
@@ -97,7 +129,11 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
              and stats[index, cv2.CC_STAT_TOP] > 0
              and stats[index, cv2.CC_STAT_LEFT] + stats[index, cv2.CC_STAT_WIDTH] < width
              and stats[index, cv2.CC_STAT_TOP] + stats[index, cv2.CC_STAT_HEIGHT] < height]
-    if len(holes) not in (2, 3):
+    if len(holes) > _MAX_CHILD_SEEDS:
+        # Signal the recursive caller to preserve the parent instead of
+        # falling through to a projection cut with an excessive seed count.
+        return (pixels,)
+    if len(holes) < 2:
         return None
     hole_centers = centers[holes]
     separation = np.linalg.norm(hole_centers[:, None] - hole_centers[None, :],
@@ -110,7 +146,9 @@ def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_a
     children = []
     for index in range(len(holes)):
         child_y, child_x = np.nonzero(assignments == index)
-        if len(child_x) < max(min_child_area, int(0.16 * area)):
+        # Require each child to reach at least half the mean parent share,
+        # while retaining the caller's absolute minimum area.
+        if len(child_x) < max(min_child_area, area // (2 * len(holes))):
             return None
         child_width = int(child_x.max() - child_x.min() + 1)
         child_height = int(child_y.max() - child_y.min() + 1)
@@ -187,12 +225,17 @@ def _split_by_projection_neck(pixels: np.ndarray,
     return first, second
 
 
-def _valid_partition(parent: np.ndarray, pieces: tuple[np.ndarray, ...]) -> bool:
-    if not 2 <= len(pieces) <= 3 or any(piece.shape != parent.shape for piece in pieces):
+def _valid_partition(parent: np.ndarray, pieces: tuple[np.ndarray, ...],
+                     min_child_area: int = 1) -> bool:
+    if (not 2 <= len(pieces) <= _MAX_CHILD_SEEDS
+            or any(piece.shape != parent.shape for piece in pieces)):
         return False
-    if not all(is_single_connected_component(piece) for piece in pieces):
+    if (not all(is_single_connected_component(piece) for piece in pieces)
+            or any(int(np.count_nonzero(piece)) < min_child_area for piece in pieces)):
         return False
-    coverage = np.sum(np.stack(pieces), axis=0)
+    coverage = np.zeros(parent.shape, dtype=np.uint8)
+    for piece in pieces:
+        coverage += piece
     return (np.array_equal(coverage > 0, parent)
             and not np.any(coverage > 1))
 
@@ -213,7 +256,9 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
                                            min_hole_distance=min_hole_distance,
                                            hole_area_cap=hole_area_cap))
     if hole_pieces is not None:
-        if (len(hole_pieces) == 3 or recursive_item_area is None
+        if len(hole_pieces) == 1:
+            return hole_pieces
+        if (len(hole_pieces) >= 3 or recursive_item_area is None
                 or area < (3 if depth == 0 else 2) * recursive_item_area):
             return hole_pieces
         if len(hole_pieces) == 2:
@@ -231,7 +276,7 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
                                           hole_area_cap=hole_area_cap, depth=depth + 1)
                 if len(nested) > 1 and len(nested) + 1 <= 3:
                     candidate = tuple(hole_pieces[i] for i in range(2) if i != index) + nested
-                    if _valid_partition(pixels, candidate):
+                    if _valid_partition(pixels, candidate, min_child_area):
                         return candidate
             return hole_pieces
 
@@ -254,7 +299,7 @@ def _split_recursive(pixels: np.ndarray, min_child_area: int, min_hole_area: int
                                   hole_area_cap=hole_area_cap, depth=depth + 1)
         if len(nested) > 1 and len(nested) + 1 <= 3:
             candidate = tuple(neck_pieces[i] for i in range(2) if i != index) + nested
-            if _valid_partition(pixels, candidate):
+            if _valid_partition(pixels, candidate, min_child_area):
                 return candidate
     return neck_pieces
 
@@ -290,6 +335,8 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
     pixels = np.asarray(component) != 0
     if pixels.ndim != 2:
         raise ValueError("component must be a 2D mask")
+    if not _within_split_limits(pixels):
+        return (pixels,)
     if int(np.count_nonzero(pixels)) < 2 * min_child_area:
         return (pixels,)
     if not is_single_connected_component(pixels):
@@ -301,4 +348,4 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
         min_hole_distance=float(min_hole_distance),
         hole_area_cap=int(hole_area_cap),
     )
-    return pieces if _valid_partition(pixels, pieces) else (pixels,)
+    return pieces if _valid_partition(pixels, pieces, int(min_child_area)) else (pixels,)
