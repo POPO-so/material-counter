@@ -13,6 +13,23 @@
 - 已授权 Agent 通过 SSH 自主登录 PYNQ-Z2，执行项目部署、调试、测试及必要的项目资源清理，无需每次重复询问。
 - SSH 登录密码为 `xilinx`；优先复用项目中已有的 SSH 连接配置。
 
+### SSH 连接方式
+
+- **首选**：`ssh xilinx@192.168.2.99`（板卡静态 IP，需 PC 以太网口配置同网段静态 IP）。
+- **PC 静态 IP 配置**（管理员 PowerShell，仅需执行一次）：
+  ```powershell
+  netsh interface ip set address name="以太网" static 192.168.2.100 255.255.255.0
+  ```
+- **备用（link-local）**：当 PC 以太网口为 APIPA 地址（169.254.x.x）时，先通过串口给板卡添加同网段 IP：
+  ```
+  sudo ip addr add 169.254.60.200/16 dev eth0
+  ```
+  然后 `ssh xilinx@169.254.60.200`。此方式在板卡重启后失效，仅作临时恢复通道。
+- **密钥认证**：项目维护 SSH 密钥（`~/.ssh/id_ed25519`），公钥已部署到板卡 `~/.ssh/authorized_keys`，免密登录。密钥应无密码保护（Windows OpenSSH 不支持加密私钥）。
+- **串口备用**：SSH 不可用时通过 COM4（115200 8N1）串口诊断和恢复网络。
+- **诊断命令**：`arp -a | Select-String 192.168`（检查 ARP 表）、`Test-Connection 192.168.2.99`（ping 测试）。
+- **常见故障**：PC 以太网口获取到 169.254.x.x 说明未与板卡同网段，需配置静态 IP；SSH 连接建立但认证失败检查密钥是否加密（`Get-Content ~/.ssh/id_ed25519 -First 2`，应含 `none` 而非加密算法名）。
+
 ## 三、快速部署原则
 
 - 开发阶段默认采用快速增量部署，以缩短代码修改到板端验证的时间。
@@ -92,5 +109,3 @@
 - Manager 负责检查实际变更、部署结果、测试证据及遗留风险。
 - 最终简要报告：changed files、deployment mode、tests、risks、unresolved；必要时附各阶段耗时。
 - 若本次任务没有要求板端验证，不得仅因修改了代码就擅自执行部署。
-
-# PYNQ-Z2 网线与串口协同开发
