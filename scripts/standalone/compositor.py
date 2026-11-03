@@ -699,6 +699,9 @@ class DashboardComposer:
         if isinstance(position, bool) or not isinstance(position, int):
             position = 320
         count_line_key = (axis, position, direction)
+        snapshot_status = dashboard.get("snapshot_status", "已停止")
+        if snapshot_status not in ("采集中", "已停止"):
+            snapshot_status = "已停止"
         submitted_fps = self._number(
             dashboard.get("preview_submitted_fps", dashboard.get("binary_fps")), 1, " FPS")
         processing_ms = self._number(dashboard.get("processing_ms"), 1, " ms")
@@ -733,7 +736,7 @@ class DashboardComposer:
             fresh, rle_values if fresh else ("--",) * len(rle_values),
         )
         key = (state, binary_background, input_resolution, mode,
-               exposure_text, static_pies, count_line_key)
+               exposure_text, static_pies, count_line_key, snapshot_status)
         self._frames += 1
         if key == self._key:
             self._key_hits += 1
@@ -799,9 +802,10 @@ class DashboardComposer:
         card(right_x, 145, right_width, 213, "本次累计计数")
         card(right_x, 364, right_width, 102, "按钮功能")
         for i, text in enumerate(("BTN0 清零累计计数 · BTN1 切换诊断模式",
+                f"快照状态：{snapshot_status}",
                 "BTN2 调整曝光 · BTN3 预留",
                 "SW0 ON + BTN2：增加曝光；OFF + BTN2：减少曝光")):
-            centered(text, right_x + 8, 402 + i * 20, right_width - 16, 12, 242)
+            centered(text, right_x + 8, 402 + i * 16, right_width - 16, 12, 242)
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"),
                  (None,) * len(live_pies), False),
