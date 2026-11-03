@@ -10,7 +10,14 @@ _LEGACY = Path(__file__).resolve().parents[1] / "wo0016"
 if str(_LEGACY) not in sys.path:
     sys.path.insert(0, str(_LEGACY))
 from scripts.wo0016.stream_counter import MaskCounter, Detection, FrameResult
-from scripts.wo0016.split_touching import split_touching_component, is_single_connected_component
+from scripts.wo0016.split_touching import (
+    _MAX_CHILD_SEEDS,
+    _MAX_PARENT_BBOX_PIXELS,
+    _MAX_PARENT_FOREGROUND_PIXELS,
+    enclosed_hole_centers,
+    split_touching_component,
+    is_single_connected_component,
+)
 from .components import analyze_runs, local_mask
 from .protocol import RleFrame
 from .components import Component
@@ -58,10 +65,18 @@ class RleCounter(MaskCounter):
                     and c.x_min <= c.centroid_x <= c.x_max
                     and c.y_min <= c.centroid_y <= c.y_max for c in region_features)
             and sum(c.area for c in region_features) == frame.total_fg)
-        guarded_candidate = (features_valid and self.guarded_merge and any(
-            self.single_intact_area < c.area <= self.max_split_area
-            and not self._component_exceeds_limits(c.area, c.x_max-c.x_min+1, c.y_max-c.y_min+1)
-            for c in region_features))
+        def split_candidate(component):
+            box_width = component.x_max - component.x_min + 1
+            box_height = component.y_max - component.y_min + 1
+            return (
+                self.guarded_merge
+                and self.single_intact_area < component.area <= self.max_split_area
+                and component.area <= _MAX_PARENT_FOREGROUND_PIXELS
+                and box_width * box_height <= _MAX_PARENT_BBOX_PIXELS
+            )
+
+        guarded_candidate = (features_valid and any(
+            split_candidate(component) for component in region_features))
         use_features = features_valid and not guarded_candidate
         self.last_backend = ("pl_features" if use_features else
                              "native" if region_features is None or guarded_candidate else "fallback")
@@ -69,7 +84,7 @@ class RleCounter(MaskCounter):
         started = time.perf_counter()
         timestamp = self._motion_timestamp(capture_monotonic_ns)
         self._split_origins = {}
-        detections, rejected = [], []
+        detections, rejected, cluster_parent_observations = [], [], []
         if frame.total_fg >= self.min_area:
             if use_features:
                 components = region_features
@@ -82,11 +97,7 @@ class RleCounter(MaskCounter):
                     continue
                 detection = Detection(component.x_min, component.x_max, component.y_min,
                     component.y_max, component.area, component.centroid_x, component.centroid_y)
-                if self._component_exceeds_limits(component.area,
-                        component.x_max-component.x_min+1, component.y_max-component.y_min+1):
-                    rejected.append(detection)
-                    continue
-                if self.guarded_merge and self.single_intact_area < component.area <= self.max_split_area:
+                if split_candidate(component):
                     if analysis is None:
                         raise AssertionError("guarded merge candidates must use native CCL")
                     mask = local_mask(frame.runs, analysis.labels, index) != 0
@@ -95,20 +106,54 @@ class RleCounter(MaskCounter):
                         recursive_item_area=self.split_recursive_item_area,
                         min_hole_distance=self.split_min_hole_distance, hole_area_cap=self.split_hole_area_cap)
                     partitions = [np.asarray(piece) != 0 for piece in pieces]
-                    valid = (2 <= len(partitions) <= 3 and all(piece.shape == mask.shape
-                        and is_single_connected_component(piece) for piece in partitions))
+                    valid = (2 <= len(partitions) <= _MAX_CHILD_SEEDS
+                        and all(piece.shape == mask.shape
+                                and is_single_connected_component(piece)
+                                for piece in partitions))
                     if valid:
-                        coverage = np.sum(np.stack(partitions), axis=0)
-                        valid = np.array_equal(coverage > 0, mask) and not np.any(coverage > 1)
-                    if valid:
+                        coverage = np.zeros(mask.shape, dtype=np.uint8)
+                        valid_children = []
                         for piece in partitions:
                             ys, xs = np.nonzero(piece)
+                            child_area = len(xs)
+                            child_width = int(xs.max() - xs.min() + 1)
+                            child_height = int(ys.max() - ys.min() + 1)
+                            if (child_area < self.min_split_child_area
+                                    or self._component_exceeds_limits(
+                                        child_area, child_width, child_height)):
+                                valid = False
+                                break
+                            coverage += piece
+                            valid_children.append((ys, xs))
+                    if valid:
+                        valid = np.array_equal(coverage > 0, mask) and not np.any(coverage > 1)
+                    if valid:
+                        for ys, xs in valid_children:
                             child = Detection(component.x_min+int(xs.min()), component.x_min+int(xs.max()),
                                 component.y_min+int(ys.min()), component.y_min+int(ys.max()), len(xs),
                                 component.x_min+float(xs.mean()), component.y_min+float(ys.mean()))
                             detections.append(child)
                             self._split_origins[child] = index
                         continue
+                    if self.cluster_parent_recovery:
+                        holes = enclosed_hole_centers(
+                            mask, min_hole_area=self.split_min_hole_area,
+                            hole_area_cap=self.split_hole_area_cap,
+                        )
+                        if 2 <= len(holes) <= _MAX_CHILD_SEEDS:
+                            separation = np.linalg.norm(
+                                holes[:, None] - holes[None, :], axis=2
+                            )
+                            if not np.any(separation[np.triu_indices(len(holes), 1)]
+                                          < self.split_min_hole_distance):
+                                cluster_parent_observations.append((detection, int(len(holes))))
+                                rejected.append(detection)
+                                continue
+                if self._component_exceeds_limits(
+                        component.area, component.x_max-component.x_min+1,
+                        component.y_max-component.y_min+1):
+                    rejected.append(detection)
+                    continue
                 detections.append(detection)
         self._set_rejected_components(rejected)
         detections.sort(key=lambda d: (d.centroid_x, d.centroid_y, d.y_min, d.x_min))
@@ -117,7 +162,10 @@ class RleCounter(MaskCounter):
         region_ms = (time.perf_counter()-started)*1000
         started = time.perf_counter()
         self.last_frame_id = frame.frame_id
-        events = self._associate_and_update(frame.frame_id, detections, timestamp)
+        events = self._associate_and_update(
+            frame.frame_id, detections, timestamp,
+            cluster_parent_observations=tuple(cluster_parent_observations),
+        )
         track_ms = (time.perf_counter()-started)*1000
         return FrameResult(frame_id=frame.frame_id, total_count=self.total_count,
             detections=tuple(detections), events=tuple(events), roi_top=top, roi_bottom=bottom,

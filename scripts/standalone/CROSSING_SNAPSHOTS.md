@@ -1,5 +1,11 @@
 # 过线诊断快照
 
+## 2026-11-03 field-v1 粘连诊断
+
+`field-v1` 将在父区域上限内尝试最多16个环孔种子的拆分；拆分失败但存在2–16个相互分离的有效孔心时，父区域保留为拒绝候选并独立跟踪。父团须连续确认、在线前 armed 并实际越线；之后只有数量相符、连续稳定且可唯一落在父团预测区域的子轨迹才补计。已产生过计数事件的子轨迹不会再次补计。无父团越线证据、父子关联冲突或状态超时均不猜数。
+
+此路径使用有界状态：最多4个并发父团、每个父团最多16个子轨迹、越线后最多保留12帧。补计事件标记 `inferred_gap=true`。新快照使用 `material-counter.crossing-snapshot.v2`，每帧增加 `cluster_parent_diagnostics`，记录 `observed`、`crossed`、`recovered`、关联冲突、容量和超时状态，以及子轨迹 ID。电脑端渲染器仍兼容读取 v1 与 v2 快照。
+
 ## 2026-10-31 优化候选行为
 
 新集成入口默认 `--counting-profile field-v1 --snapshot-storage compact`。显式选择 `--counting-profile legacy --snapshot-storage full` 可保留 v6 的算法/完整留图方式；切换运行参数仍须正常结束旧会话后启动新会话。
@@ -44,7 +50,7 @@ SIGUSR1大报告现在先在主线程持采样锁复制有界状态，再由后�
 | `frame-帧号.binary.png` | 由该帧 PL RLE 重建的完整二值图 |
 | `frame-帧号.annotated.png` | 原图叠加计数线、绿色检测框、红色被拒绝框、ID 与跟踪状态 |
 | `frame-帧号.rle.npz` | 原始游程、行投影、列投影，可用 NumPy 重放分析 |
-| `event.json` | 触发目标、上下文、每帧参数/状态及各图像、NPZ 的字节数和 SHA-256 |
+| `event.json` | 触发目标、上下文、每帧参数/状态、父团诊断及各图像、NPZ 的字节数和 SHA-256 |
 
 `event.json` 在所有图像写入后由临时文件重命名生成，是完整组的完成标记。没有该文件的目录属于未完成组，不用于验收。
 

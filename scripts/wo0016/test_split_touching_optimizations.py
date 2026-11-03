@@ -30,6 +30,30 @@ def _touching_hollow_grid(rows: int, columns: int) -> np.ndarray:
     return pixels
 
 
+def _spread_out_sixteen_hole_cluster() -> np.ndarray:
+    """Build a cap-sized, irregular sixteen-hole cluster with a single bridge path."""
+    starts = (1, 78, 155, 232)
+    size = 23
+    pixels = np.zeros((256, 256), dtype=bool)
+    for top in starts:
+        for left in starts:
+            pixels[top:top + size, left:left + size] = True
+            pixels[top + 5:top + 18, left + 5:left + 18] = False
+
+    path = []
+    for row in range(4):
+        columns = range(4) if row % 2 == 0 else range(3, -1, -1)
+        path.extend((row, column) for column in columns)
+    for (row_a, column_a), (row_b, column_b) in zip(path, path[1:]):
+        top_a, left_a = starts[row_a], starts[column_a]
+        top_b, left_b = starts[row_b], starts[column_b]
+        if row_a == row_b:
+            pixels[top_a + 11, min(left_a, left_b) + size:max(left_a, left_b) + 1] = True
+        else:
+            pixels[min(top_a, top_b) + size:max(top_a, top_b) + 1, left_a + 11] = True
+    return pixels
+
+
 def test_visible_enclosed_holes_split_four_and_eight_pieces():
     for rows, columns, expected_count in ((1, 4, 4), (1, 8, 8)):
         pixels = _touching_hollow_grid(rows, columns)
@@ -38,6 +62,19 @@ def test_visible_enclosed_holes_split_four_and_eight_pieces():
         assert len(pieces) == expected_count
         assert split_touching._valid_partition(pixels, pieces)
         assert all(np.count_nonzero(piece) >= 12 for piece in pieces)
+
+
+def test_failed_many_hole_split_keeps_parent_instead_of_projection_guess():
+    pixels = _spread_out_sixteen_hole_cluster()
+    assert split_touching.is_single_connected_component(pixels)
+    assert len(split_touching.enclosed_hole_centers(pixels)) == 16
+    assert np.count_nonzero(pixels) <= 8192
+    assert pixels.shape[0] * pixels.shape[1] == 65536
+
+    pieces = split_touching.split_touching_component(pixels)
+
+    assert len(pieces) == 1
+    np.testing.assert_array_equal(pieces[0], pixels)
 
 
 def test_enclosed_hole_seed_limit_accepts_sixteen_and_rejects_seventeen():

@@ -239,3 +239,160 @@ def test_large_raw_component_stays_one_detection_and_counts_once():
               for frame_id, x in enumerate((140, 150, 170, 180))]
 
     assert totals == [0, 0, 1, 1]
+
+
+def test_confirmed_crossed_cluster_parent_recovers_stable_children_once():
+    counter = _counter(cluster_parent_recovery=True)
+
+    def parent(x):
+        return _box(x, 40, 30, 12, 240)
+
+    def child(x):
+        return _box(x, 42, 8, 8, 64)
+
+    for frame_id, x in enumerate((100, 120, 140, 150)):
+        events = counter._associate_and_update(
+            frame_id, [], cluster_parent_observations=((parent(x), 2),)
+        )
+        assert not events
+    assert counter.total_count == 0
+    assert any(row["state"] == "crossed"
+               for row in counter.last_cluster_parent_diagnostics)
+
+    first = counter._associate_and_update(4, [child(162), child(178)])
+    recovered = counter._associate_and_update(5, [child(172), child(188)])
+    repeated = counter._associate_and_update(6, [child(182), child(198)])
+
+    assert not first
+    assert len(recovered) == 2
+    assert all(event.inferred_gap for event in recovered)
+    assert counter.total_count == 2
+    assert not repeated
+    assert counter.total_count == 2
+
+
+def test_recovered_cluster_excludes_previously_counted_child_track():
+    counter = _counter(cluster_parent_recovery=True)
+
+    def child(x):
+        return _box(x, 42, 8, 8, 64)
+
+    for frame_id, x in enumerate((140, 150, 160)):
+        counter._associate_and_update(frame_id, [child(x)])
+    assert counter.total_count == 1
+
+    def parent(x):
+        return _box(x, 36, 40, 20, 400)
+
+    for frame_id, x in ((3, 130), (4, 140), (5, 150)):
+        counter._associate_and_update(
+            frame_id, [], cluster_parent_observations=((parent(x), 2),)
+        )
+    assert counter.total_count == 1
+
+    counter._associate_and_update(6, [child(170), child(188)])
+    recovered = counter._associate_and_update(7, [child(180), child(198)])
+    assert len(recovered) == 1
+    assert counter.total_count == 2
+    assert recovered[0].track_id != 1
+
+
+def test_new_downstream_tracks_without_a_cluster_parent_are_not_counted():
+    counter = _counter(cluster_parent_recovery=True)
+    results = [counter._associate_and_update(
+        frame_id, [_box(x, 40, 8, 8, 64)]
+    ) for frame_id, x in enumerate((170, 180, 190))]
+
+    assert all(not events for events in results)
+    assert counter.total_count == 0
+
+
+def test_un_crossed_cluster_parent_does_not_recover_children():
+    counter = _counter(cluster_parent_recovery=True)
+    parent = lambda x: _box(x, 40, 30, 12, 240)
+    counter._associate_and_update(
+        0, [], cluster_parent_observations=((parent(100), 2),)
+    )
+    counter._associate_and_update(
+        1, [], cluster_parent_observations=((parent(110), 2),)
+    )
+    first = counter._associate_and_update(
+        2, [_box(120, 42, 8, 8, 64), _box(136, 42, 8, 8, 64)]
+    )
+    second = counter._associate_and_update(
+        3, [_box(130, 42, 8, 8, 64), _box(146, 42, 8, 8, 64)]
+    )
+
+    assert not first and not second
+    assert counter.total_count == 0
+
+
+def test_overlapping_crossed_parents_do_not_claim_the_same_child_tracks():
+    counter = _counter(cluster_parent_recovery=True)
+
+    def parent(x, y):
+        return _box(x, y, 30, 20, 400)
+
+    for frame_id, x in enumerate((100, 120, 140, 150)):
+        observations = ((parent(x, 40), 2), (parent(x, 60), 2))
+        counter._associate_and_update(
+            frame_id, [], cluster_parent_observations=observations
+        )
+
+    def child(x, y):
+        return _box(x, y, 8, 8, 64)
+
+    counter._associate_and_update(4, [child(164, 53), child(180, 60)])
+    conflict_recorded = any(
+        row["state"] == "child_association_conflict"
+        for row in counter.last_cluster_parent_diagnostics
+    )
+    counter._associate_and_update(5, [child(174, 53), child(190, 60)])
+
+    assert counter.total_count == 0
+    assert conflict_recorded
+
+
+def test_crossed_parent_timeout_discards_pending_children_without_counting():
+    counter = _counter(cluster_parent_recovery=True)
+    parent = lambda x: _box(x, 40, 30, 12, 240)
+    for frame_id, x in enumerate((100, 120, 140, 150)):
+        counter._associate_and_update(
+            frame_id, [], cluster_parent_observations=((parent(x), 2),)
+        )
+    assert counter._cluster_parents
+
+    counter._associate_and_update(16, [])
+    assert not counter._cluster_parents
+    assert any(row["state"] == "expired"
+               for row in counter.last_cluster_parent_diagnostics)
+
+    first = counter._associate_and_update(17, [_box(170, 42, 8, 8, 64),
+                                                _box(188, 42, 8, 8, 64)])
+    second = counter._associate_and_update(18, [_box(180, 42, 8, 8, 64),
+                                                 _box(198, 42, 8, 8, 64)])
+    assert not first and not second
+    assert counter.total_count == 0
+
+
+def test_clear_discards_unresolved_cluster_parent_recovery():
+    counter = _counter(cluster_parent_recovery=True)
+    parent = lambda x: _box(x, 40, 30, 12, 240)
+    for frame_id, x in enumerate((100, 120, 140, 150)):
+        counter._associate_and_update(
+            frame_id, [], cluster_parent_observations=((parent(x), 2),)
+        )
+    assert counter._cluster_parents
+
+    counter.clear_pending_cluster_parents()
+    first = counter._associate_and_update(4, [_box(170, 42, 8, 8, 64),
+                                               _box(188, 42, 8, 8, 64)])
+    clear_recorded = any(
+        row["state"] == "cleared" for row in counter.last_cluster_parent_diagnostics
+    )
+    second = counter._associate_and_update(5, [_box(180, 42, 8, 8, 64),
+                                                _box(198, 42, 8, 8, 64)])
+
+    assert not first and not second
+    assert counter.total_count == 0
+    assert clear_recorded

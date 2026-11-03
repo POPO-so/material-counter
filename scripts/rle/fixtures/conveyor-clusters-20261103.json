@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "source": "PYNQ-Z2 event-triggered crossing snapshots; conveyor-belt nut images; sparse windows, not 100-item ground truth",
+  "boot_id": "aec7ffb1-341f-4c45-ac68-e4221ef43285",
+  "session_id": "session-4707d39f-9253-41dd-9722-65986b1d51c7",
+  "captures": [
+    {
+      "frame_id": 5298,
+      "event": "event-000006-e0-f5299",
+      "source_rle_sha256": "380143a2cc32b99cf3aa7ec20f5fdc01e247769002b7e107e0e508093b9a535c",
+      "component_bbox": [
+        133,
+        148,
+        85,
+        113
+      ],
+      "foreground_pixels": 3886,
+      "qualified_hole_seeds": 14,
+      "component_array": "frame_5298"
+    },
+    {
+      "frame_id": 5307,
+      "event": "event-000012-e0-f5308",
+      "source_rle_sha256": "1698a62c40ea5a90559dbefcf3836aedc911de37f499444cbeea0a313a65e92f",
+      "component_bbox": [
+        376,
+        118,
+        83,
+        111
+      ],
+      "foreground_pixels": 4028,
+      "qualified_hole_seeds": 14,
+      "component_array": "frame_5307"
+    }
+  ],
+  "arrays": {
+    "frame_5298": {
+      "shape": [
+        113,
+        85
+      ],
+      "foreground_pixels": 3886,
+      "description": "largest connected foreground component cropped from genuine conveyor snapshot"
+    },
+    "frame_5307": {
+      "shape": [
+        111,
+        83
+      ],
+      "foreground_pixels": 4028,
+      "description": "largest connected foreground component cropped from genuine conveyor snapshot"
+    }
+  }
+}

@@ -17,6 +17,150 @@ def frame(mask, number=0, **kwargs):
     return decode_packet(encode_mask(mask, frame_id=number, **kwargs))
 
 
+def _large_touching_ring_cluster() -> np.ndarray:
+    """Four visible rings joined into one RLE component above the object cap."""
+    outer_size = 50
+    pitch = 51
+    rows, columns = 1, 4
+    mask = np.zeros((rows * pitch + 2, columns * pitch + 2), dtype=bool)
+    for row in range(rows):
+        for column in range(columns):
+            top = 1 + row * pitch
+            left = 1 + column * pitch
+            mask[top:top + outer_size, left:left + outer_size] = True
+            mask[top + 13:top + 37, left + 13:left + 37] = False
+            if column + 1 < columns:
+                mask[top + 24:top + 27,
+                     left + outer_size:left + pitch] = True
+    return mask
+
+
+@pytest.mark.parametrize("provide_features", [False, True])
+def test_large_rle_cluster_is_split_before_component_limit_rejection(library, provide_features):
+    from scripts.rle.components import Component
+
+    mask = np.zeros((400, 640), dtype=np.uint8)
+    cluster = _large_touching_ring_cluster()
+    mask[150:150 + cluster.shape[0], 180:180 + cluster.shape[1]] = cluster * 255
+    assert int(mask.sum() // 255) > 3600
+
+    counter = RleCounter(
+        library=library, guarded_merge=True, single_intact_area=380,
+        max_split_area=8192, min_split_child_area=80,
+        max_area=3600, max_bbox_width=170, max_bbox_height=170,
+    )
+    features = None
+    if provide_features:
+        ys, xs = np.nonzero(mask)
+        features = (Component(int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max()),
+                              len(xs), float(xs.mean()), float(ys.mean())),)
+    result = counter.update_rle(frame(mask), region_features=features)
+
+    assert len(result.raw_detections) == 4
+    assert len(result.detections) == 4
+    assert not counter.rejected_detections
+    assert sum(d.area for d in result.raw_detections) == int(mask.sum() // 255)
+    assert counter.last_backend == "native"
+
+
+def test_rle_split_handles_eight_child_region_and_overwide_parent(library):
+    outer_size = 23
+    pitch = 24
+    columns = 8
+    cluster = np.zeros((pitch + 2, columns * pitch + 2), dtype=bool)
+    for column in range(columns):
+        top, left = 1, 1 + column * pitch
+        cluster[top:top + outer_size, left:left + outer_size] = True
+        cluster[top + 5:top + 18, left + 5:left + 18] = False
+        if column + 1 < columns:
+            cluster[top + 10:top + 13,
+                    left + outer_size:left + pitch] = True
+    assert 1200 < np.count_nonzero(cluster) <= 3600
+    assert cluster.shape[1] - 2 > 170
+
+    mask = np.zeros((400, 640), dtype=np.uint8)
+    mask[150:150 + cluster.shape[0], 180:180 + cluster.shape[1]] = cluster * 255
+    counter = RleCounter(
+        library=library, guarded_merge=True, single_intact_area=380,
+        max_split_area=8192, min_split_child_area=80,
+        max_area=3600, max_bbox_width=170, max_bbox_height=170,
+    )
+    result = counter.update_rle(frame(mask))
+
+    assert len(result.raw_detections) == columns
+    assert len(result.detections) == columns
+    assert not counter.rejected_detections
+
+
+def test_rle_splits_fourteen_seed_clusters_from_conveyor_snapshots(library):
+    fixture = Path(__file__).parent / "fixtures" / "conveyor-clusters-20261103.npz"
+    with np.load(fixture, allow_pickle=False) as masks:
+        for frame_id in (5298, 5307):
+            crop = masks[f"frame_{frame_id}"]
+            mask = np.zeros((400, 640), dtype=np.uint8)
+            mask[100:100 + crop.shape[0], 180:180 + crop.shape[1]] = crop * 255
+            counter = RleCounter(
+                library=library, guarded_merge=True, single_intact_area=380,
+                max_split_area=8192, min_split_child_area=80,
+                max_area=3600, max_bbox_width=170, max_bbox_height=170,
+            )
+            result = counter.update_rle(frame(mask, frame_id))
+
+            assert len(result.raw_detections) == 14
+            assert len(result.detections) == 14
+            assert not counter.rejected_detections
+            assert sum(d.area for d in result.raw_detections) == int(crop.sum())
+
+
+def test_rle_recovers_children_after_a_multihole_parent_crosses_the_line(library, monkeypatch):
+    import cv2
+    import scripts.rle.counter as module
+    from scripts.standalone.count_controls import make_runtime_counter
+
+    original_split = module.split_touching_component
+
+    def preserve_large_parent(mask, **kwargs):
+        if int(np.count_nonzero(mask)) > 700:
+            return (np.asarray(mask) != 0,)
+        return original_split(mask, **kwargs)
+
+    monkeypatch.setattr(module, "split_touching_component", preserve_large_parent)
+    counter = make_runtime_counter(library, profile="field-v1")
+
+    def ring_cluster(offset, centers):
+        mask = np.zeros((400, 640), dtype=np.uint8)
+        for center_x in centers:
+            cv2.circle(mask, (center_x + offset, 120), 13, 255, -1)
+            cv2.circle(mask, (center_x + offset, 120), 6, 0, -1)
+        return mask
+
+    results = []
+    for frame_id, offset in enumerate((250, 260, 270, 280, 290, 300)):
+        result = counter.update_rle(
+            frame(ring_cluster(offset, (14, 37)), frame_id),
+            capture_monotonic_ns=(frame_id+1)*100_000_000,
+        )
+        results.append(result)
+        assert not result.detections
+        assert not result.raw_detections
+        assert len(counter.rejected_detections) == 1
+        assert not result.events
+
+    first_split = counter.update_rle(
+        frame(ring_cluster(0, (330, 360)), 6), capture_monotonic_ns=700_000_000
+    )
+    stable_split = counter.update_rle(
+        frame(ring_cluster(0, (340, 370)), 7), capture_monotonic_ns=800_000_000
+    )
+
+    assert len(first_split.raw_detections) == 2
+    assert not first_split.events
+    assert len(stable_split.events) == 2
+    assert all(event.inferred_gap for event in stable_split.events)
+    assert stable_split.total_count == counter.total_count == 2
+    assert not counter.rejected_detections
+
+
 def test_regions_match_pixel_counter_without_full_mask(library, monkeypatch):
     from scripts.wo0016.stream_counter import MaskCounter
     mask=np.zeros((400,640),np.uint8)

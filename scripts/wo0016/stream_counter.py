@@ -26,6 +26,10 @@ except ImportError:
 WIDTH = 320
 HEIGHT = 240
 PIXELS = WIDTH * HEIGHT
+_MAX_CLUSTER_PARENTS = 4
+_MAX_CLUSTER_PARENT_FRAMES = 12
+_MAX_CLUSTER_CHILDREN = 16
+_CLUSTER_PARENT_PAD = 4
 RX_BYTES = PIXELS
 try:
     from packet_encoder import TX_BYTES
@@ -131,6 +135,34 @@ class _Track:
     forward_velocity: float | None = None
     capture_monotonic_ns: int | None = None
     velocity_px_per_s: float | None = None
+    counted_event: bool = False
+
+
+@dataclass
+class _ClusterChildState:
+    detection: Detection
+    last_frame: int
+    confirmed: bool
+    counted_event: bool
+    relative_x: float
+    relative_y: float
+
+
+@dataclass
+class _ClusterParentState:
+    parent_id: int
+    detection: Detection
+    seed_count: int
+    last_frame: int
+    streak: int = 1
+    armed: bool = False
+    crossed: bool = False
+    cross_frame: int | None = None
+    velocity_x: float = 0.0
+    velocity_y: float = 0.0
+    ambiguous: bool = False
+    child_states: dict[int, _ClusterChildState] = field(default_factory=dict)
+    child_alias_track_ids: set[int] = field(default_factory=set)
 
 
 class MaskCounter:
@@ -166,7 +198,8 @@ class MaskCounter:
                  discard_finished_tracks: bool = False,
                  motion_timebase_s: float | None = None,
                  predictive_association: bool = False,
-                 max_association_interval_s: float = 0.5):
+                 max_association_interval_s: float = 0.5,
+                 cluster_parent_recovery: bool = False):
         self.width = _integer(width, "width", minimum=1)
         self.height = _integer(height, "height", minimum=1)
         self.line_y = _integer(line_y, "line_y", minimum=0)
@@ -245,6 +278,9 @@ class MaskCounter:
             raise ValueError('predictive association requires motion_timebase_s')
         self.predictive_association = predictive_association
         self.max_association_interval_s = _positive_float(max_association_interval_s, 'max_association_interval_s')
+        if not isinstance(cluster_parent_recovery, bool):
+            raise ValueError("cluster_parent_recovery must be a bool")
+        self.cluster_parent_recovery = cluster_parent_recovery
         self._last_capture_monotonic_ns = None
         self._recent_events: list[CountEvent] = []
         self.last_suppressed_events: list[CountEvent] = []
@@ -258,6 +294,10 @@ class MaskCounter:
         self.rejected_detections: tuple[Detection, ...] = ()
         self.rejected_contours: tuple[np.ndarray, ...] = ()
         self._split_origins: dict[Detection, int] = {}
+        self._cluster_parents: dict[int, _ClusterParentState] = {}
+        self._next_cluster_parent_id = 1
+        self.last_cluster_parent_diagnostics: list[dict[str, Any]] = []
+        self._cluster_parent_clear_pending = False
         self._binary_validator = Binary8RoiValidator()
 
     def update_detections(self, frame_id: int, detections: Any, *,
@@ -704,12 +744,378 @@ class MaskCounter:
                     else detection.centroid_y - self.line_y)
         return self.direction * position
 
+    @staticmethod
+    def _boxes_overlap(first: Detection, second: Detection, pad: int = 0) -> bool:
+        return not (first.x_max + pad < second.x_min or second.x_max + pad < first.x_min
+                    or first.y_max + pad < second.y_min or second.y_max + pad < first.y_min)
+
+    def _parent_predicted_box(self, parent: _ClusterParentState,
+                              frame_id: int) -> tuple[float, float, float, float]:
+        steps = max(0, min(_MAX_CLUSTER_PARENT_FRAMES, frame_id-parent.last_frame))
+        dx, dy = parent.velocity_x * steps, parent.velocity_y * steps
+        return (parent.detection.x_min + dx - _CLUSTER_PARENT_PAD,
+                parent.detection.x_max + dx + _CLUSTER_PARENT_PAD,
+                parent.detection.y_min + dy - _CLUSTER_PARENT_PAD,
+                parent.detection.y_max + dy + _CLUSTER_PARENT_PAD)
+
+    def _inside_parent_prediction(self, detection: Detection,
+                                  parent: _ClusterParentState,
+                                  frame_id: int) -> bool:
+        left, right, top, bottom = self._parent_predicted_box(parent, frame_id)
+        return (left <= detection.centroid_x <= right
+                and top <= detection.centroid_y <= bottom)
+
+    def clear_pending_cluster_parents(self) -> None:
+        if self._cluster_parents:
+            self._cluster_parents.clear()
+            self._cluster_parent_clear_pending = True
+
+    def _remember_cluster_child(self, parent: _ClusterParentState,
+                                track: _Track) -> None:
+        previous = parent.child_states.get(track.track_id)
+        if previous is None and len(parent.child_states) >= _MAX_CLUSTER_CHILDREN:
+            parent.ambiguous = True
+            return
+        parent.child_states[track.track_id] = _ClusterChildState(
+            detection=track.detection,
+            last_frame=track.last_frame,
+            confirmed=track.confirmed,
+            counted_event=(track.counted_event or
+                           (previous.counted_event if previous is not None else False)),
+            relative_x=(previous.relative_x if previous is not None else
+                        track.detection.centroid_x-parent.detection.centroid_x),
+            relative_y=(previous.relative_y if previous is not None else
+                        track.detection.centroid_y-parent.detection.centroid_y),
+        )
+
+    def _map_reappearing_cluster_children(self, parent: _ClusterParentState,
+                                          frame_id: int,
+                                          current_tracks: list[_Track]) -> None:
+        if parent.cross_frame is None:
+            return
+        current_tracks = [track for track in current_tracks
+                          if track.track_id not in parent.child_states
+                          and track.track_id not in parent.child_alias_track_ids]
+        if not current_tracks:
+            return
+        left, right, top, bottom = self._parent_predicted_box(parent, frame_id)
+        predicted_parent_x = (left+right)/2
+        predicted_parent_y = (top+bottom)/2
+        stale_states = [
+            (track_id, child) for track_id, child in parent.child_states.items()
+            if child.confirmed and child.last_frame < frame_id
+            and (track_id not in self._tracks or self._tracks[track_id].finished
+                 or self._tracks[track_id].last_frame < frame_id)
+        ]
+        if not stale_states:
+            return
+        edges = []
+        for track in current_tracks:
+            for old_track_id, child in stale_states:
+                predicted_x = predicted_parent_x+child.relative_x
+                predicted_y = predicted_parent_y+child.relative_y
+                distance = math.hypot(track.detection.centroid_x-predicted_x,
+                                      track.detection.centroid_y-predicted_y)
+                limit = max(8.0, 1.5*math.sqrt(min(track.detection.area,
+                                                  child.detection.area)))
+                if distance <= limit:
+                    edges.append((distance, old_track_id, track.track_id))
+        old_frequency = Counter(edge[1] for edge in edges)
+        new_frequency = Counter(edge[2] for edge in edges)
+        for distance, old_track_id, new_track_id in sorted(edges):
+            if old_frequency[old_track_id] != 1 or new_frequency[new_track_id] != 1:
+                continue
+            child = parent.child_states[old_track_id]
+            track = self._tracks[new_track_id]
+            child.detection = track.detection
+            child.last_frame = track.last_frame
+            child.confirmed = child.confirmed or track.confirmed
+            child.counted_event = child.counted_event or track.counted_event
+            track.counted = True
+            track.counted_event = child.counted_event
+            parent.child_alias_track_ids.add(track.track_id)
+            self.last_cluster_parent_diagnostics.append({
+                "parent_id": parent.parent_id, "seed_count": parent.seed_count,
+                "state": "child_lineage_reassociated", "frame_id": frame_id,
+                "child_track_id": old_track_id, "observed_track_id": new_track_id,
+            })
+
+    def _advance_cluster_parent_observations(
+        self, frame_id: int,
+        observations: tuple[tuple[Detection, int], ...],
+    ) -> None:
+        self.last_cluster_parent_diagnostics = []
+        if self._cluster_parent_clear_pending:
+            self.last_cluster_parent_diagnostics.append({
+                "parent_id": None, "state": "cleared", "frame_id": frame_id,
+            })
+            self._cluster_parent_clear_pending = False
+        if not self.cluster_parent_recovery:
+            self._cluster_parents.clear()
+            return
+
+        for parent_id, parent in tuple(self._cluster_parents.items()):
+            expired = (frame_id-parent.last_frame > _MAX_CLUSTER_PARENT_FRAMES
+                       or (parent.cross_frame is not None
+                           and frame_id-parent.cross_frame > _MAX_CLUSTER_PARENT_FRAMES))
+            if expired:
+                self.last_cluster_parent_diagnostics.append({
+                    "parent_id": parent_id, "seed_count": parent.seed_count,
+                    "state": "expired", "frame_id": frame_id,
+                })
+                del self._cluster_parents[parent_id]
+
+        valid_observations = []
+        if len(observations) > _MAX_CLUSTER_PARENTS:
+            self.last_cluster_parent_diagnostics.append({
+                "parent_id": None, "candidate_count": len(observations),
+                "state": "parent_capacity", "frame_id": frame_id,
+            })
+        for detection, seed_count in observations[:_MAX_CLUSTER_PARENTS]:
+            if (isinstance(detection, Detection)
+                    and isinstance(seed_count, int) and not isinstance(seed_count, bool)
+                    and 2 <= seed_count <= _MAX_CLUSTER_CHILDREN):
+                valid_observations.append((detection, seed_count))
+
+        edges: list[tuple[float, int, int]] = []
+        for parent_id, parent in self._cluster_parents.items():
+            if parent.ambiguous:
+                continue
+            dt = frame_id-parent.last_frame
+            if not 1 <= dt <= _MAX_CLUSTER_PARENT_FRAMES:
+                continue
+            for index, (detection, seed_count) in enumerate(valid_observations):
+                dx = detection.centroid_x-parent.detection.centroid_x
+                dy = detection.centroid_y-parent.detection.centroid_y
+                forward = self.direction * (dx if self.count_axis == "x" else dy)
+                lateral = abs(dy if self.count_axis == "x" else dx)
+                area_ratio = detection.area / parent.detection.area
+                if (-self.backward_tolerance <= forward <= self.max_step*dt
+                        and lateral <= self.max_lateral_step*dt
+                        and 0.1 <= area_ratio <= 10.0):
+                    predicted_x = parent.detection.centroid_x + (
+                        self.direction * parent.velocity_x * dt if self.count_axis == "x" else 0.0
+                    )
+                    predicted_y = parent.detection.centroid_y + (
+                        self.direction * parent.velocity_y * dt if self.count_axis == "y" else 0.0
+                    )
+                    distance = (detection.centroid_x-predicted_x) ** 2 + (detection.centroid_y-predicted_y) ** 2
+                    edges.append((distance, parent_id, index))
+
+        parent_frequency = Counter(edge[1] for edge in edges)
+        observation_frequency = Counter(edge[2] for edge in edges)
+        ambiguous_parents = {parent_id for parent_id, count in parent_frequency.items() if count > 1}
+        ambiguous_observations = {index for index, count in observation_frequency.items() if count > 1}
+        for parent_id in ambiguous_parents:
+            self._cluster_parents[parent_id].ambiguous = True
+            self.last_cluster_parent_diagnostics.append({
+                "parent_id": parent_id,
+                "seed_count": self._cluster_parents[parent_id].seed_count,
+                "state": "association_conflict", "frame_id": frame_id,
+            })
+
+        matched_parents: set[int] = set()
+        matched_observations: set[int] = set()
+        for _, parent_id, index in sorted(edges):
+            if (parent_id in ambiguous_parents or index in ambiguous_observations
+                    or parent_id in matched_parents or index in matched_observations):
+                continue
+            parent = self._cluster_parents[parent_id]
+            detection, seed_count = valid_observations[index]
+            previous = parent.detection
+            if seed_count != parent.seed_count:
+                parent.ambiguous = True
+                parent.detection = detection
+                parent.last_frame = frame_id
+                matched_parents.add(parent_id)
+                matched_observations.add(index)
+                self.last_cluster_parent_diagnostics.append({
+                    "parent_id": parent_id, "previous_seed_count": parent.seed_count,
+                    "seed_count": seed_count,
+                    "state": "seed_count_changed", "frame_id": frame_id,
+                })
+                continue
+            previous_side = self._side(previous)
+            dt = frame_id-parent.last_frame
+            if dt == 1:
+                parent.streak += 1
+                parent.velocity_x = (detection.centroid_x-previous.centroid_x) / dt
+                parent.velocity_y = (detection.centroid_y-previous.centroid_y) / dt
+            else:
+                parent.streak = 1
+                parent.velocity_x = parent.velocity_y = 0.0
+            parent.armed = parent.armed or previous_side < -self.hysteresis
+            current_side = self._side(detection)
+            parent.armed = parent.armed or current_side < -self.hysteresis
+            if (not parent.crossed and parent.streak >= self.confirm_hits
+                    and dt == 1 and parent.armed
+                    and previous_side < self.hysteresis
+                    and current_side >= self.hysteresis):
+                parent.crossed = True
+                parent.cross_frame = frame_id
+                self.last_cluster_parent_diagnostics.append({
+                    "parent_id": parent_id, "seed_count": parent.seed_count,
+                    "state": "crossed", "frame_id": frame_id,
+                })
+            parent.detection = detection
+            parent.last_frame = frame_id
+            matched_parents.add(parent_id)
+            matched_observations.add(index)
+            self.last_cluster_parent_diagnostics.append({
+                "parent_id": parent_id, "seed_count": parent.seed_count,
+                "state": "observed", "frame_id": frame_id,
+            })
+
+        observed_parent_ids = set(matched_parents)
+        for index, (detection, seed_count) in enumerate(valid_observations):
+            if index in matched_observations or index in ambiguous_observations:
+                continue
+            if len(self._cluster_parents) >= _MAX_CLUSTER_PARENTS:
+                self.last_cluster_parent_diagnostics.append({
+                    "parent_id": None, "seed_count": seed_count,
+                    "state": "parent_capacity", "frame_id": frame_id,
+                })
+                continue
+            parent_id = self._next_cluster_parent_id
+            self._next_cluster_parent_id += 1
+            parent = _ClusterParentState(
+                parent_id=parent_id, detection=detection, seed_count=seed_count,
+                last_frame=frame_id, armed=self._side(detection) < -self.hysteresis,
+            )
+            self._cluster_parents[parent_id] = parent
+            observed_parent_ids.add(parent_id)
+            self.last_cluster_parent_diagnostics.append({
+                "parent_id": parent_id, "seed_count": seed_count,
+                "state": "observed", "frame_id": frame_id,
+            })
+
+        # Preserve nearby pre-merge tracks so a previously handled child can
+        # be excluded if it later reappears as part of the same parent.
+        for track in self._tracks.values():
+            if track.finished or frame_id-track.last_frame > 1 or not track.confirmed:
+                continue
+            owners = [parent_id for parent_id in observed_parent_ids
+                      if self._boxes_overlap(track.detection,
+                          self._cluster_parents[parent_id].detection, _CLUSTER_PARENT_PAD)]
+            if len(owners) == 1:
+                self._remember_cluster_child(self._cluster_parents[owners[0]], track)
+            elif len(owners) > 1:
+                for parent_id in owners:
+                    self._cluster_parents[parent_id].ambiguous = True
+
+    def _recover_cluster_children(self, frame_id: int,
+                                  events: list[CountEvent]) -> None:
+        if not self.cluster_parent_recovery:
+            return
+        eligible_parents = {
+            parent_id: parent for parent_id, parent in self._cluster_parents.items()
+            if (parent.crossed and not parent.ambiguous and parent.cross_frame is not None
+                and frame_id-parent.cross_frame <= _MAX_CLUSTER_PARENT_FRAMES)
+        }
+        owner_by_track: dict[int, list[int]] = {}
+        for parent_id, parent in eligible_parents.items():
+            for track in self._tracks.values():
+                if (track.finished or track.last_frame != frame_id
+                        or track.track_id in parent.child_alias_track_ids
+                        or not self._inside_parent_prediction(track.detection, parent, frame_id)):
+                    continue
+                owner_by_track.setdefault(track.track_id, []).append(parent_id)
+
+        for track_id, owners in owner_by_track.items():
+            if len(owners) > 1:
+                for parent_id in owners:
+                    parent = self._cluster_parents[parent_id]
+                    parent.ambiguous = True
+                    self.last_cluster_parent_diagnostics.append({
+                        "parent_id": parent_id, "seed_count": parent.seed_count,
+                        "state": "child_association_conflict", "frame_id": frame_id,
+                    })
+
+        for parent_id, parent in eligible_parents.items():
+            if parent.ambiguous:
+                continue
+            current_tracks = [
+                self._tracks[track_id] for track_id, owners in owner_by_track.items()
+                if owners == [parent_id]
+            ]
+            self._map_reappearing_cluster_children(parent, frame_id, current_tracks)
+            for track in current_tracks:
+                if track.track_id in parent.child_alias_track_ids:
+                    continue
+                self._remember_cluster_child(parent, track)
+
+        for parent_id, parent in tuple(self._cluster_parents.items()):
+            if not parent.crossed or parent.ambiguous:
+                continue
+            if len(parent.child_states) > parent.seed_count:
+                parent.ambiguous = True
+                self.last_cluster_parent_diagnostics.append({
+                    "parent_id": parent_id, "seed_count": parent.seed_count,
+                    "child_track_count": len(parent.child_states),
+                    "state": "child_count_conflict", "frame_id": frame_id,
+                })
+                continue
+            if (len(parent.child_states) != parent.seed_count
+                    or not all(child.confirmed for child in parent.child_states.values())):
+                continue
+            children = list(parent.child_states.values())
+            distinct = True
+            for index, first in enumerate(children):
+                for second in children[index+1:]:
+                    minimum_distance = max(
+                        4.0,
+                        0.5*math.sqrt(min(first.detection.area, second.detection.area)),
+                    )
+                    distance = math.hypot(
+                        first.detection.centroid_x-second.detection.centroid_x,
+                        first.detection.centroid_y-second.detection.centroid_y,
+                    )
+                    if distance < minimum_distance:
+                        distinct = False
+                        break
+                if not distinct:
+                    break
+            if not distinct:
+                parent.ambiguous = True
+                self.last_cluster_parent_diagnostics.append({
+                    "parent_id": parent_id, "seed_count": parent.seed_count,
+                    "state": "non_distinct_children", "frame_id": frame_id,
+                })
+                continue
+            supplemented_track_ids = sorted(
+                track_id for track_id, child in parent.child_states.items()
+                if not child.counted_event
+            )
+            for track_id, child in parent.child_states.items():
+                if child.counted_event:
+                    continue
+                event = CountEvent(track_id, frame_id,
+                                   child.detection.centroid_x, child.detection.centroid_y,
+                                   inferred_gap=True)
+                child.counted_event = True
+                track = self._tracks.get(track_id)
+                if track is not None:
+                    track.counted = True
+                    track.counted_event = True
+                self.total_count += 1
+                events.append(event)
+            self.last_cluster_parent_diagnostics.append({
+                "parent_id": parent_id, "seed_count": parent.seed_count,
+                "child_track_ids": sorted(parent.child_states),
+                "supplemented_track_ids": supplemented_track_ids,
+                "state": "recovered", "frame_id": frame_id,
+            })
+            del self._cluster_parents[parent_id]
+
     def _associate_and_update(self, frame_id: int,
                               detections: list[Detection],
-                              capture_monotonic_ns: int | None = None) -> list[CountEvent]:
+                              capture_monotonic_ns: int | None = None, *,
+                              cluster_parent_observations: tuple[tuple[Detection, int], ...] = ()
+                              ) -> list[CountEvent]:
         active = []
         self.last_associations = []
         self.last_suppressed_events = []
+        self._advance_cluster_parent_observations(frame_id, cluster_parent_observations)
         self._recent_events = [event for event in self._recent_events
                                if frame_id-event.frame_id <= self.cooldown_frames]
         for track in self._tracks.values():
@@ -858,6 +1264,7 @@ class MaskCounter:
                     self.total_count += 1
                     events.append(event)
                     self._recent_events.append(event)
+                track.counted_event = True
 
         for track in active:
             if track.track_id not in used_tracks:
@@ -884,6 +1291,7 @@ class MaskCounter:
             self.last_associations.append({"track_id": track.track_id, "detection_index": index,
                                            "previous_frame": None, "kind": "new", "dx": None, "dy": None})
             self._next_track_id += 1
+        self._recover_cluster_children(frame_id, events)
         if self.discard_finished_tracks:
             for track_id in [track_id for track_id, track in self._tracks.items()
                              if track.finished]:

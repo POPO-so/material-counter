@@ -173,6 +173,9 @@ class CrossingSnapshots:
             raw_detections=[_detection_metadata(d, detection_metadata) for d in result.raw_detections],
             rejected_detections=[_detection_metadata(d, detection_metadata) for d in rejected],
             tracks=result.tracks, associations=list(getattr(counter, 'last_associations', ())),
+            cluster_parent_diagnostics=deepcopy(
+                getattr(counter, 'last_cluster_parent_diagnostics', ())
+            ),
             events=[asdict(e) for e in result.events],
             suppressed_events=[asdict(e) for e in result.suppressed_events],
             timings_ms=dict(timings or {}, **result.roi_subtimings_ms))
@@ -305,7 +308,7 @@ class CrossingSnapshots:
             buffer = io.BytesIO()
             np.savez(buffer, runs=frame['runs'], row_projection=frame['rows'], column_projection=frame['columns'])
             payload[prefix+'.rle.npz'] = buffer.getvalue()
-        record = dict(schema='material-counter.crossing-snapshot.v1', identity=self.identity,
+        record = dict(schema='material-counter.crossing-snapshot.v2', identity=self.identity,
             trigger_frame_id=job['trigger_frame_id'], trajectory_epoch=job['trajectory_epoch'],
             triggers=job['triggers'], context_complete=job['context_complete'],
             context_end_reason=job['context_end_reason'], requested_context_frames=self.context_frames,
@@ -375,7 +378,7 @@ class CrossingSnapshots:
                 else:
                     blob=fresh[name]; digest=hashlib.sha256(blob).hexdigest(); size=len(blob)
                 artifact_info[name] = dict(bytes=size, sha256=digest)
-        record = dict(schema='material-counter.crossing-snapshot.v1', identity=self.identity,
+        record = dict(schema='material-counter.crossing-snapshot.v2', identity=self.identity,
             storage_mode='compact', trigger_frame_id=job['trigger_frame_id'],
             trajectory_epoch=job['trajectory_epoch'], triggers=job['triggers'],
             context_complete=job['context_complete'], context_end_reason=job['context_end_reason'],

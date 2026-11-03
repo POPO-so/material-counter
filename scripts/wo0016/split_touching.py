@@ -8,6 +8,8 @@ _MAX_RELATIVE_HOLE_AREA_THRESHOLD = 16
 _MAX_CHILD_SEEDS = 16
 _MAX_PARENT_FOREGROUND_PIXELS = 8192
 _MAX_PARENT_BBOX_PIXELS = 65536
+# Provisional floor just below the smallest share in the two captured clusters.
+_MINIMUM_CHILD_MEAN_SHARE = 0.46
 
 
 def _hole_area_threshold(area: int, min_hole_area: int, *,
@@ -113,51 +115,67 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
     return expanded
 
 
+def enclosed_hole_centers(pixels: np.ndarray, *, min_hole_area: int = 30,
+                          hole_area_cap: int = 16) -> np.ndarray:
+    """Return bounded, fully enclosed foreground-hole centers in local coordinates."""
+    mask = np.asarray(pixels) != 0
+    if mask.ndim != 2 or not _within_split_limits(mask):
+        return np.empty((0, 2), dtype=np.float64)
+    count, _, stats, centers = cv2.connectedComponentsWithStats(
+        (~mask).astype(np.uint8), connectivity=8
+    )
+    threshold = _hole_area_threshold(
+        int(np.count_nonzero(mask)), min_hole_area, relative_cap=hole_area_cap
+    )
+    holes = [index for index in range(1, count)
+             if stats[index, cv2.CC_STAT_AREA] >= threshold
+             and stats[index, cv2.CC_STAT_LEFT] > 0
+             and stats[index, cv2.CC_STAT_TOP] > 0
+             and stats[index, cv2.CC_STAT_LEFT] + stats[index, cv2.CC_STAT_WIDTH] < mask.shape[1]
+             and stats[index, cv2.CC_STAT_TOP] + stats[index, cv2.CC_STAT_HEIGHT] < mask.shape[0]]
+    return centers[holes]
+
+
 def _split_by_enclosed_holes(pixels: np.ndarray, min_child_area: int, min_hole_area: int = 30,
                              min_hole_distance: float = 10, hole_area_cap: int = 16
                              ) -> tuple[np.ndarray, ...] | None:
     """Assign a joined cluster to independently visible enclosed holes."""
-    height, width = pixels.shape
     area = int(np.count_nonzero(pixels))
-    count, _, stats, centers = cv2.connectedComponentsWithStats(
-        (~pixels).astype(np.uint8), connectivity=8
+    hole_centers = enclosed_hole_centers(
+        pixels, min_hole_area=min_hole_area, hole_area_cap=hole_area_cap
     )
-    hole_area_threshold = _hole_area_threshold(area, min_hole_area, relative_cap=hole_area_cap)
-    holes = [index for index in range(1, count)
-             if stats[index, cv2.CC_STAT_AREA] >= hole_area_threshold
-             and stats[index, cv2.CC_STAT_LEFT] > 0
-             and stats[index, cv2.CC_STAT_TOP] > 0
-             and stats[index, cv2.CC_STAT_LEFT] + stats[index, cv2.CC_STAT_WIDTH] < width
-             and stats[index, cv2.CC_STAT_TOP] + stats[index, cv2.CC_STAT_HEIGHT] < height]
-    if len(holes) > _MAX_CHILD_SEEDS:
+    if len(hole_centers) > _MAX_CHILD_SEEDS:
         # Signal the recursive caller to preserve the parent instead of
         # falling through to a projection cut with an excessive seed count.
         return (pixels,)
-    if len(holes) < 2:
+    if len(hole_centers) < 2:
         return None
-    hole_centers = centers[holes]
+    ambiguous_many_holes = (pixels,) if len(hole_centers) >= 4 else None
     separation = np.linalg.norm(hole_centers[:, None] - hole_centers[None, :],
                                 axis=2)
-    if np.any(separation[np.triu_indices(len(holes), 1)] < min_hole_distance):
-        return None
+    if np.any(separation[np.triu_indices(len(hole_centers), 1)] < min_hole_distance):
+        return ambiguous_many_holes
     assignments = _geodesic_hole_assignments(pixels, hole_centers)
     if assignments is None:
-        return None
+        return ambiguous_many_holes
     children = []
-    for index in range(len(holes)):
+    for index in range(len(hole_centers)):
         child_y, child_x = np.nonzero(assignments == index)
-        # Require each child to reach at least half the mean parent share,
-        # while retaining the caller's absolute minimum area.
-        if len(child_x) < max(min_child_area, area // (2 * len(holes))):
-            return None
+        # Permit partial occlusion and unequal visible area while preventing
+        # tiny false-hole seeds from creating sliver detections.
+        minimum_share = int(np.ceil(
+            _MINIMUM_CHILD_MEAN_SHARE * area / len(hole_centers)
+        ))
+        if len(child_x) < max(min_child_area, minimum_share):
+            return ambiguous_many_holes
         child_width = int(child_x.max() - child_x.min() + 1)
         child_height = int(child_y.max() - child_y.min() + 1)
         if max(child_width, child_height) > 1.8 * min(child_width, child_height):
-            return None
+            return ambiguous_many_holes
         child = np.zeros_like(pixels)
         child[child_y, child_x] = True
         if not is_single_connected_component(child):
-            return None
+            return ambiguous_many_holes
         children.append(child)
     return tuple(children)
 
@@ -309,12 +327,13 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
                              recursive_item_area: int | None = None,
                              min_hole_distance: float = 10, hole_area_cap: int = 16
                              ) -> tuple[np.ndarray, ...]:
-    """Split two or three touching nuts when holes or a narrow neck are visible.
+    """Split touching hollow nuts conservatively when visible holes support it.
 
-    Two-hole partitions may contain an oversized joined child; that child is
-    retried so a three-item silhouette with one obscured hole can still split.
-    Ambiguous silhouettes stay intact, and accepted masks preserve the input
-    union without overlap.
+    Enclosed-hole evidence may yield two through sixteen children. A two-hole
+    partition may retry an oversized joined child so a three-item silhouette
+    with one obscured hole can still split. If four or more holes are visible
+    but a complete per-hole partition fails validation, keep the parent intact
+    instead of guessing a smaller count from a projection cut.
     """
     if isinstance(min_child_area, bool) or not isinstance(min_child_area, (int, np.integer)) or min_child_area < 1:
         raise ValueError("min_child_area must be a positive integer")
