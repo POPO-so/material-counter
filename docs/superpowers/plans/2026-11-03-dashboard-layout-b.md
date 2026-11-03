@@ -27,21 +27,21 @@
 - Modify: `scripts/standalone/compositor.py`
 - Test: 不新增或运行测试；执行下列语法和渲染检查。
 
-- [ ] **Step 1: 更新预览目标缓冲和边框**
+- [x] **Step 1: 更新预览目标缓冲和边框**
 
 将 `DashboardComposer.VIEW` 改为 `(384, 146, 512, 320)`，并把可复用 `_work` 缓冲改为 `np.empty((320, 512), dtype=np.uint8)`。二值图仍用最近邻缩放；在图像与叠加内容写入后、帧身份标记写入前，在 viewport 内绘制 2 px 灰色边框。
 
-- [ ] **Step 2: 更新卡片几何并居中绘制**
+- [x] **Step 2: 更新卡片几何并居中绘制**
 
 顶部指标使用 x 坐标 `(24, 336, 648, 960)` 和宽 296。左栏卡片位置/高度为 `(38,145,342,104)`、`(38,256,342,55)`、`(38,318,342,148)`；右栏为 `(900,145,342,213)`、`(900,364,342,102)`。居中绘制各卡片标题和信息行；标签和值合成一行，多行基线间距 20 px，并在内容区垂直居中。
 
 顶部目标数量使用现有 `len(boxes)`；顶部其余三项使用 dashboard 的相机 FPS、端到端延迟和丢帧值。右侧累计卡显示 `dashboard['count']` 和单位“件”，数值中心落在卡片几何中心；按钮卡集中显示 BTN0–BTN3 与 SW0 的说明。移除曝光范围/步进行、预览链路卡和左侧重复按钮说明。
 
-- [ ] **Step 3: 对齐运行状态并加入独立闪烁**
+- [x] **Step 3: 对齐运行状态并加入独立闪烁**
 
 RUNNING 使用 28 px 拉丁字体，文字右边缘在 x=1256；白点与文字垂直居中，圆点右缘到文字左缘约 15 px。按 `perf_counter_ns()` 的 500,000,000 ns 半周期切换点的亮灭状态。通过单独的小区域和每个输出槽的状态缓存更新圆点，避免状态闪烁触发整张 chrome 重建。
 
-- [ ] **Step 4: 做局部静态检查**
+- [x] **Step 4: 做局部静态检查**
 
 运行 `python -m py_compile scripts/standalone/compositor.py`，预期退出码 0；运行 `git diff --check`，预期无空白错误。不要运行 pytest 或其他测试。
 
@@ -51,7 +51,7 @@ RUNNING 使用 28 px 拉丁字体，文字右边缘在 x=1256；白点与文字�
 
 - Render to: `%TEMP%\material-counter-dashboard-b-preview\hdmi-resource-dashboard.png`（临时制品，不加入 Git）。
 
-- [ ] **Step 1: 生成硬件无关预览**
+- [x] **Step 1: 生成硬件无关预览**
 
 从仓库根目录运行：
 
@@ -67,7 +67,7 @@ python -m scripts.standalone.render_dashboard_preview --out-dir "$env:TEMP\mater
 
 - Board: 当前运行 release 中的 `scripts/standalone/compositor.py`，由只读的 current symlink 与进程命令行确认实际路径。
 
-- [ ] **Step 1: 用 SSH 确认活动部署目标**
+- [x] **Step 1: 用 SSH 确认活动部署目标**
 
 运行只读检查：
 
@@ -84,3 +84,5 @@ ssh -o BatchMode=yes -o ConnectTimeout=5 xilinx@192.168.2.99 "hostname; readlink
 - [ ] **Step 3: 做最小健康检查**
 
 确认板端文件已更新、目标应用重新运行且日志没有本次改动相关的启动错误。记录传输和应用重启耗时；不把进程运行单独表述成画面验收通过。
+
+部署检查记录（2026-11-03）：SSH 经链路本地地址可连接；当前 `material-counter-integrated.service` 为 active/running，运行报告为 `FAIL_HOLD`，原因是相机读取线程未能停止，且 VDMA 仍报告运行中。按项目硬件资源保护约定，本次未覆盖活动发布目录、未停止/重启进程，也未触碰 PL。待板端恢复到可安全停止状态后再执行 FAST 文件同步与健康检查。
