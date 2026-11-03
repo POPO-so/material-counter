@@ -656,16 +656,16 @@ class DashboardComposer:
                        and line not in ("运行中", "暂停计数")
                        and not (line.startswith("处理 ") and " FPS" in line))[:3]
         visible_details = page_lines if page and page_lines else detail
-        visible_details = tuple(self._wrap_gutter(line, 334, 12, 1)[0]
+        visible_details = tuple(self._wrap_gutter(line, 300, 12, 1)[0]
                                 for line in visible_details)
         visible_cpu_source = (self._wrap_gutter(
-            strip_prefix(cpu_source_text, "CPU 来源"), 262, 12, 1)[0]
+            strip_prefix(cpu_source_text, "CPU 来源"), 240, 12, 1)[0]
             if page == 2 else "")
         visible_queue = (self._wrap_gutter(
-            strip_prefix(queue_summary_text, "队列"), 262, 12, 1)[0]
+            strip_prefix(queue_summary_text, "队列"), 240, 12, 1)[0]
             if page == 2 else "")
         visible_thread = (self._wrap_gutter(
-            strip_prefix(thread_text, "threads"), 262, 12, 1)[0]
+            strip_prefix(thread_text, "threads"), 240, 12, 1)[0]
             if page == 2 else "")
         pl_summary_display = self._wrap_gutter(pl_summary, 206, 12, 1)[0]
         performance_values = (
@@ -752,7 +752,7 @@ class DashboardComposer:
 
         # Left gutter: camera/count rules, exposure controls, then performance.
         left_x, left_width = 38, 342
-        right_x, right_width = 874, 368
+        right_x, right_width = 896, 346
         card(left_x, 145, left_width, 92, "CAM 01 · 画面与计数规则")
         aligned_row("输入 / 预览", f"{input_resolution} / 640x400",
                     left_x + 12, 176, left_width - 24, label_width=92, size=14)
@@ -809,10 +809,14 @@ class DashboardComposer:
             draw.ellipse((right_x + 12, y + 5, right_x + 16, y + 9), fill=182)
         draw.line((left_x, 440, left_x + left_width, 440), fill=100, width=1)
         draw.line((right_x, 440, right_x + right_width, 440), fill=100, width=1)
-        centered("BTN0 清零累计计数 · BTN1 切换诊断模式 · BTN2 调整曝光 · BTN3 预留",
-                 42, 442, 1190, 16, 250)
-        centered("SW0 ON + BTN2：增加曝光 · SW0 OFF + BTN2：减少曝光",
-                 42, 459, 1190, 16, 246)
+        centered("BTN0 清零累计计数 · BTN1 切换诊断模式",
+                 42, 442, 338, 16, 250)
+        centered("BTN2 调整曝光 · BTN3 预留",
+                 900, 442, 342, 16, 250)
+        centered("SW0 ON + BTN2：增加曝光",
+                 42, 459, 338, 16, 246)
+        centered("SW0 OFF + BTN2：减少曝光",
+                 900, 459, 342, 16, 246)
         for top, bottom, center_y, title, labels, percentages, is_static in (
                 (480, 552, 516, "LIVE", ("PS CPU", "CPU0", "CPU1", "内存"),
                  (None,) * len(live_pies), False),
@@ -884,12 +888,12 @@ class DashboardComposer:
                     (state["visible_thread"], 369, 226),
                 ))
             for value, y, fill in values:
-                row = self._wrap_gutter(value, 262, 12, 1)[0]
-                self._text(draw, (968 - x0, y - y0), row, 12, fill)
+                row = self._wrap_gutter(value, 240, 12, 1)[0]
+                self._text(draw, (990 - x0, y - y0), row, 12, fill)
             for index, line in enumerate(state["visible_details"][:3]):
-                self._text(draw, (908 - x0, 386 + index * 15 - y0), line, 12, 206)
+                self._text(draw, (930 - x0, 386 + index * 15 - y0), line, 12, 206)
 
-        self._draw_dynamic_region(target, (874, 291, 1242, 432), runtime_values, draw)
+        self._draw_dynamic_region(target, (896, 291, 1242, 432), runtime_values, draw)
 
         def rle_values(draw, x0, y0):
             labels = ("活动(含等待)", "IN MB/s", "OUT MB/s", "IN 阻塞", "OUT 阻塞")
