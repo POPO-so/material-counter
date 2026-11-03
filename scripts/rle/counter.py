@@ -100,7 +100,7 @@ class RleCounter(MaskCounter):
                         min_hole_distance=self.split_min_hole_distance, hole_area_cap=self.split_hole_area_cap)
                     split_ms += (time.perf_counter()-split_started)*1000
                     partitions = [np.asarray(piece) != 0 for piece in pieces]
-                    valid = (2 <= len(partitions) <= 3 and all(piece.shape == mask.shape
+                    valid = (2 <= len(partitions) <= 4 and all(piece.shape == mask.shape
                         and is_single_connected_component(piece) for piece in partitions))
                     if valid:
                         coverage = np.sum(np.stack(partitions), axis=0)

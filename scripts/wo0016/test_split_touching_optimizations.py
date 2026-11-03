@@ -247,3 +247,14 @@ def test_geodesic_flood_matches_legacy_on_seeded_masks_and_three_seeds(monkeypat
             assert (actual is None) == (expected is None)
             if expected is not None:
                 np.testing.assert_array_equal(actual, expected)
+
+
+def test_four_touching_rings_keep_four_disjoint_connected_partitions():
+    mask = np.zeros((120, 120), dtype=np.uint8)
+    for x, y in ((40, 40), (80, 40), (40, 80), (80, 80)):
+        cv2.circle(mask, (x, y), 25, 255, -1)
+        cv2.circle(mask, (x, y), 10, 0, -1)
+    pieces = split_touching.split_touching_component(mask)
+    assert len(pieces) == 4
+    assert np.array_equal(np.sum(pieces, axis=0), mask != 0)
+    assert all(split_touching.is_single_connected_component(piece) for piece in pieces)

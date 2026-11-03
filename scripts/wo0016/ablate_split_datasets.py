@@ -413,7 +413,7 @@ class CandidateAdapter:
 
 def _valid_candidate_partition(parent: np.ndarray, pieces: Iterable[np.ndarray]) -> bool:
     pieces = tuple(np.asarray(piece) != 0 for piece in pieces)
-    if not 2 <= len(pieces) <= 3 or any(piece.shape != parent.shape for piece in pieces):
+    if not 2 <= len(pieces) <= 4 or any(piece.shape != parent.shape for piece in pieces):
         return False
     if not all(is_single_connected_component(piece) for piece in pieces):
         return False
