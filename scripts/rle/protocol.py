@@ -321,10 +321,12 @@ def decode_packet(packet: Any, expected_frame_id: int | None = None,
         run_foreground = int(lengths.sum(dtype=np.int32))
         run_row_counts = np.bincount(run_rows.astype(np.intp), weights=lengths,
                                       minlength=height).astype(np.uint32)
-        run_column_deltas = np.zeros(width + 1, dtype=np.int32)
-        np.add.at(run_column_deltas, run_starts, 1)
-        np.add.at(run_column_deltas, run_ends + 1, -1)
-        run_column_counts = np.cumsum(run_column_deltas[:-1], dtype=np.uint32)
+        # Keep the end sentinel at width for runs ending in the last column.
+        starts_per_column = np.bincount(run_starts.astype(np.intp), minlength=width + 1)
+        ends_per_column = np.bincount((run_ends + 1).astype(np.intp), minlength=width + 1)
+        run_column_counts = np.cumsum(
+            (starts_per_column - ends_per_column)[:width], dtype=np.uint32
+        )
     else:
         # All run-coordinate/order checks are vacuously true for an empty run
         # vector. Keep full header, status, checksum and projection checks.

@@ -286,3 +286,12 @@ def test_rle_checksum_preserves_modulo_wrap_and_rejects_corruption():
     broken[checksum_index*4] ^= 1
     with pytest.raises(ValueError, match='checksum'):
         decode_packet(broken)
+
+
+def test_rle_projection_accumulates_repeated_runs_and_preserves_column_edges():
+    mask = np.zeros((HEIGHT, WIDTH), np.uint8)
+    mask[:3, :] = 255
+    mask[3:8, 5:6] = 255
+    frame = decode_packet(encode_mask(mask))
+    np.testing.assert_array_equal(frame.column_projection, np.count_nonzero(mask, axis=0))
+    np.testing.assert_array_equal(frame.row_projection, np.count_nonzero(mask, axis=1))
