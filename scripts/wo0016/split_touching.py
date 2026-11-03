@@ -75,15 +75,30 @@ def _geodesic_hole_assignments(pixels: np.ndarray,
 
     # Keep only one current distance map plus the best-so-far map. This keeps
     # temporary storage independent of the number of seeds.
-    labels = np.full(work_pixels.shape, -1, dtype=np.int8)
-    best_distances = np.full(work_pixels.shape, np.inf, dtype=np.float32)
-    for index, (seed_y, seed_x) in enumerate(seeds):
+    if len(seeds) > 4:
+        # Label individual zero pixels so even adjacent seeds remain distinct.
+        # Labels are mapped back to the original hole order, never scan order.
         distance_input = np.ones(work_pixels.shape, dtype=np.uint8)
-        distance_input[seed_y, seed_x] = 0
-        distances = cv2.distanceTransform(distance_input, cv2.DIST_L2, 5)
-        closer = work_pixels & (distances < best_distances)
-        labels[closer] = index
-        best_distances[closer] = distances[closer]
+        for seed in seeds:
+            distance_input[seed] = 0
+        _, nearest = cv2.distanceTransformWithLabels(
+            distance_input, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+        owners = np.full(len(seeds) + 1, -1, dtype=np.int8)
+        for index, seed in enumerate(seeds):
+            owners[nearest[seed]] = index
+        labels = owners[nearest]
+        labels[~work_pixels] = -1
+    else:
+        # Preserve the calibrated two-to-four-piece tie handling.
+        labels = np.full(work_pixels.shape, -1, dtype=np.int8)
+        best_distances = np.full(work_pixels.shape, np.inf, dtype=np.float32)
+        for index, (seed_y, seed_x) in enumerate(seeds):
+            distance_input = np.ones(work_pixels.shape, dtype=np.uint8)
+            distance_input[seed_y, seed_x] = 0
+            distances = cv2.distanceTransform(distance_input, cv2.DIST_L2, 5)
+            closer = work_pixels & (distances < best_distances)
+            labels[closer] = index
+            best_distances[closer] = distances[closer]
     if all(is_single_connected_component(labels == index)
            for index in range(len(seeds))):
         if work_pixels.shape == pixels.shape:
@@ -248,11 +263,11 @@ def _split_by_projection_neck(pixels: np.ndarray,
 
 
 def _valid_partition(parent: np.ndarray, pieces: tuple[np.ndarray, ...],
-                     min_child_area: int = 1) -> bool:
+                     min_child_area: int = 1, *, check_connectivity: bool = True) -> bool:
     if (not 2 <= len(pieces) <= _MAX_CHILD_SEEDS
             or any(piece.shape != parent.shape for piece in pieces)):
         return False
-    if (not all(is_single_connected_component(piece) for piece in pieces)
+    if ((check_connectivity and not all(is_single_connected_component(piece) for piece in pieces))
             or any(int(np.count_nonzero(piece)) < min_child_area for piece in pieces)):
         return False
     coverage = np.zeros(parent.shape, dtype=np.uint8)
@@ -371,4 +386,7 @@ def split_touching_component(component: np.ndarray, *, min_child_area: int = 12,
         min_hole_distance=float(min_hole_distance),
         hole_area_cap=int(hole_area_cap),
     )
-    return pieces if _valid_partition(pixels, pieces, int(min_child_area)) else (pixels,)
+    # Every recursive branch checks connectivity before returning its pieces.
+    # Keep coverage/overlap/area validation here without repeating K CCL passes.
+    return pieces if _valid_partition(pixels, pieces, int(min_child_area),
+                                      check_connectivity=False) else (pixels,)

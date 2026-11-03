@@ -64,6 +64,37 @@ def test_visible_enclosed_holes_split_four_and_eight_pieces():
         assert all(np.count_nonzero(piece) >= 12 for piece in pieces)
 
 
+def test_many_seeds_use_one_distance_transform_and_keep_valid_partition(monkeypatch):
+    pixels = _touching_hollow_grid(1, 16)
+    original = cv2.distanceTransform
+    calls = []
+
+    def measured(*args, **kwargs):
+        calls.append(1)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(cv2, 'distanceTransform', measured)
+    pieces = split_touching.split_touching_component(pixels)
+    assert len(pieces) == 16
+    assert split_touching._valid_partition(pixels, pieces)
+    assert len(calls) <= 1
+
+
+def test_public_split_checks_each_child_connectivity_only_once(monkeypatch):
+    pixels = _touching_hollow_grid(1, 8)
+    original = split_touching.is_single_connected_component
+    calls = []
+
+    def measured(mask):
+        calls.append(1)
+        return original(mask)
+
+    monkeypatch.setattr(split_touching, 'is_single_connected_component', measured)
+    pieces = split_touching.split_touching_component(pixels)
+    assert len(pieces) == 8
+    assert len(calls) == 9  # one parent and eight assigned children
+
+
 def test_failed_many_hole_split_keeps_parent_instead_of_projection_guess():
     pixels = _spread_out_sixteen_hole_cluster()
     assert split_touching.is_single_connected_component(pixels)
