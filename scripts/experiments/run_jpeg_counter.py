@@ -28,6 +28,7 @@ from scripts.rle.transport import (DMA_MM2S_ADDRESS, DMA_S2MM_ADDRESS,
                                    RLE_SIGNATURE)
 from scripts.standalone.count_controls import make_runtime_counter
 from scripts.standalone.display_bringup import prepare_display
+from scripts.standalone.hp2 import sync_hp1_readwrite32
 from scripts.wo0015.board_preflight import (audit_process_ownership,
     inspect_pynq_global_state, read_boot_id, read_cma_meminfo,
     read_fpga_manager, read_kernel_log)
@@ -602,6 +603,9 @@ def assemble_candidate_callbacks(*, artifacts, output, report, pynq_module,
     post_load_identity(overlay), prepare_display_fn(overlay),
     make_transport(tx, rx, overlay, preview). No main-scope overlay/preview
     variable is closed over.
+
+    ``hp1_sync`` binds the hash-verified candidate HWH and the production MMIO
+    factory; it runs after the post-load DMA check and before display bring-up.
     """
     def identity(overlay):
         if post_load_identity is not None:
@@ -618,6 +622,8 @@ def assemble_candidate_callbacks(*, artifacts, output, report, pynq_module,
         "post_load_identity": identity,
         "candidate_dma_check": lambda: check_candidate_dma_idle(
             mmio_factory=mmio_factory),
+        "hp1_sync": lambda: sync_hp1_readwrite32(
+            artifacts["hwh_path"], mmio_factory=mmio_factory),
         "preview_factory": lambda: mmio_factory(OVERLAY_BASE, OVERLAY_MAP_BYTES),
         "prepare_display_fn": display_prepare,
         "allocate_tx": lambda: allocate(shape=(JPEG_MAX_BYTES,), dtype=dtype),
@@ -631,7 +637,7 @@ def assemble_candidate_callbacks(*, artifacts, output, report, pynq_module,
 
 
 def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
-                           post_load_identity, candidate_dma_check,
+                           post_load_identity, candidate_dma_check, hp1_sync,
                            preview_factory, prepare_display_fn,
                            allocate_tx, allocate_rx, make_transport,
                            base_evidence_reader=None, stop_base_dmas=False,
@@ -646,7 +652,8 @@ def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
     ``stop_base_dmas`` is true, the two confirmed trace S2MM channels are
     normally stopped (RS bit cleared only) before the four-channel recheck.
     UNKNOWN: stop before Overlay.download; never probe unknown MMIO.
-    After load: identity/contract, candidate DMA, display, then allocation.
+    After load: identity/contract, candidate DMA, HP1 width sync, display, then
+    allocation. The HP1 sync failure aborts before display/transport/frames.
     """
     kind = classification.get("kind")
     if kind not in ("COLD_BASE", "KNOWN_OLD", "KNOWN_BASE"):
@@ -680,6 +687,13 @@ def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
     stage("post_load_identity", identity=identity)
     candidate_dma = candidate_dma_check()
     stage("candidate_dma", candidate_dma=candidate_dma)
+    stage("afi1_hp1_sync")
+    try:
+        hp1_sync_result = hp1_sync()
+    except BaseException as exc:
+        stage("afi1_hp1_sync_failed", error=repr(exc))
+        raise
+    stage("afi1_hp1_sync_done", afi1_hp1_sync=hp1_sync_result)
     stage("display_prepare")
     display = prepare_display_fn(overlay)
     stage("display_prepared")
@@ -700,6 +714,7 @@ def run_candidate_sequence(*, classification, mmio_factory, overlay_factory,
                 "transport": transport, "allocated": allocated,
                 "preview": preview, "probe": probe, "identity": identity,
                 "candidate_dma": candidate_dma,
+                "hp1_sync": hp1_sync_result,
                 "base_dma_stop": stop_result}
     except BaseException as exc:
         setattr(exc, "display", display)
@@ -1069,6 +1084,7 @@ def main(argv: list[str] | None = None) -> int:
         report["base_dma_stop_result"] = sequence["base_dma_stop"]
         report["pynq_overlay"] = sequence["identity"]
         report["candidate_dma_after_load"] = sequence["candidate_dma"]
+        report["afi1_hp1_sync"] = sequence["hp1_sync"]
         write_stage(args.output, report, "frames_start")
         # Field-v1 counter keeps the production count line, association and
         # 2-4 way touching split; the JPEG path counts through update_rle.

@@ -12,6 +12,7 @@ import importlib.util
 import json
 from pathlib import Path
 from types import SimpleNamespace
+import xml.etree.ElementTree as ET
 
 import pytest
 
@@ -26,6 +27,19 @@ SPEC.loader.exec_module(runner)
 
 CANDIDATE_SHA = "1" * 64
 COLD_BASE = {"kind": "COLD_BASE", "reason": "test", "candidate_mmio_before_load": False}
+
+
+def write_hwh(path):
+    """Minimal candidate handoff with the frozen HP1=32 declaration."""
+    root = ET.Element("SYSTEM")
+    module = ET.SubElement(root, "MODULE", INSTANCE="ps7")
+    params = ET.SubElement(module, "PARAMETERS")
+    ET.SubElement(params, "PARAMETER", NAME="PCW_S_AXI_HP1_DATA_WIDTH",
+                  VALUE="32")
+    buses = ET.SubElement(module, "BUSINTERFACES")
+    ET.SubElement(buses, "BUSINTERFACE", NAME="S_AXI_HP1", DATAWIDTH="32")
+    ET.ElementTree(root).write(path)
+    return path
 
 
 class FakeMmio:
@@ -51,7 +65,10 @@ class FakeMmioFactory:
         if base == runner.DMA_BASE:
             return FakeMmio(base, {0x04: 0x3, 0x34: 0x3})
         if base == runner.RLE_BASE:
-            return FakeMmio(base, {0x04: 0x31454C52})
+            return FakeMmio(base, {0x04: 0x31454C52,
+                                   0x2C: 0x01900280,
+                                   0x30: 16384,
+                                   0x08: 0})
         return FakeMmio(base)
 
 
@@ -120,6 +137,7 @@ def _sequence_kwargs(events, mmio, overlay, display, transport_factory,
         post_load_identity=post_identity or (lambda obj: {"loaded": True}),
         candidate_dma_check=lambda: runner.check_candidate_dma_idle(
             mmio_factory=mmio),
+        hp1_sync=lambda: {"status": "test-only HP1 sync"},
         preview_factory=lambda: mmio(runner.OVERLAY_BASE, runner.OVERLAY_MAP_BYTES),
         prepare_display_fn=lambda obj: display,
         allocate_tx=lambda: FakeBuffer(events, "tx"),
@@ -168,7 +186,9 @@ def test_main_assembled_callbacks_normal_path_uses_production_signatures(tmp_pat
     stage_names = []
 
     callbacks = runner.assemble_candidate_callbacks(
-        artifacts={"bit_path": "/fake/candidate.bit", "bit_sha256": CANDIDATE_SHA},
+        artifacts={"bit_path": "/fake/candidate.bit",
+                   "bit_sha256": CANDIDATE_SHA,
+                   "hwh_path": str(write_hwh(tmp_path / "candidate.hwh"))},
         output=tmp_path / "run.json",
         report={"status": "STARTING"},
         pynq_module=SimpleNamespace(__file__="/fake/pynq/__init__.py"),
@@ -205,7 +225,9 @@ def test_transport_factory_failure_holds_without_camera_or_release(tmp_path):
     display = FakeDisplay(events)
     factory = FakeTransportFactory(events, error=RuntimeError("factory failed"))
     callbacks = runner.assemble_candidate_callbacks(
-        artifacts={"bit_path": "/fake/candidate.bit", "bit_sha256": CANDIDATE_SHA},
+        artifacts={"bit_path": "/fake/candidate.bit",
+                   "bit_sha256": CANDIDATE_SHA,
+                   "hwh_path": str(write_hwh(tmp_path / "candidate.hwh"))},
         output=tmp_path / "run.json",
         report={"status": "FAIL_HOLD"},
         pynq_module=SimpleNamespace(__file__="/fake/pynq/__init__.py"),

@@ -162,6 +162,8 @@ def run_sequence(cls, events, *, overlay_factory, identity_failure=False,
         post_load_identity=post_load_identity,
         candidate_dma_check=lambda: runner.check_candidate_dma_idle(
             mmio_factory=factory),
+        hp1_sync=lambda: events.append(("hp1_sync",)) or {
+            "status": "test-only HP1 sync"},
         preview_factory=lambda: events.append(("preview",)) or "preview",
         prepare_display_fn=prepare,
         allocate_tx=lambda: events.append(("tx",)) or "tx",
