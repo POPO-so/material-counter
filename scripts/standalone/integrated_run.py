@@ -334,6 +334,13 @@ def prepare_preview_frame(gray, binary, *, backend, black_frame=None):
     return black_frame, black_frame
 
 
+def publish_preview_frame(inputs, gray, binary, session, frame_id, metadata, *,
+                          backend, black_frame=None):
+    selected_gray, selected_binary = prepare_preview_frame(
+        gray, binary, backend=backend, black_frame=black_frame)
+    return inputs.publish(selected_gray, selected_binary, session, frame_id, metadata)
+
+
 class PreviewPublishGate:
     """Limit PL panel frames to 15 Hz unless a visible state changes."""
     def __init__(self, interval_s=1/15):
@@ -1320,7 +1327,9 @@ def main(argv=None):
                     if inputs is not None and last_gray is not None:
                         fault=dict(last_metadata);fault['status_lines']=['相机断连 / 停止新增计数','每5秒重试 / 恢复新轨迹','累计 {}'.format(display_count)]
                         fault['dashboard']=dict(fault.get('dashboard',{}),state='CAMERA LOST')
-                        if inputs.publish(last_gray,binary,session,last_valid_id,fault):
+                        if publish_preview_frame(inputs,last_gray,binary,session,
+                                last_valid_id,fault,backend=args.preview_backend,
+                                black_frame=black_frame):
                             compositor_input_published+=1
                     camera_in_error=True
                     continue

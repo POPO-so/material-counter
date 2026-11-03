@@ -302,6 +302,48 @@ def test_preview_frame_selection_keeps_binary_for_software_and_black_placeholder
     assert not np.any(selected_binary)
 
 
+def test_publish_preview_frame_prepares_camera_lost_frame_for_backend():
+    inputs = PreviewInputs.create(mp.get_context("spawn"))
+    session = uuid.uuid4()
+    gray = np.full((400, 640), 73, np.uint8)
+    uninitialized_binary = np.full((400, 640), 73, np.uint8)
+    black_frame = np.zeros((400, 640), np.uint8)
+    metadata = {
+        "dashboard": {"state": "CAMERA LOST"},
+        "count": 12,
+        "status_lines": ["相机断连", "累计 12"],
+    }
+    try:
+        assert integrated_run.publish_preview_frame(
+            inputs, gray, uninitialized_binary, session, 21, metadata,
+            backend="pl", black_frame=black_frame)
+        lease = inputs.acquire_latest()
+        assert lease is not None
+        try:
+            assert not np.any(lease.gray)
+            assert set(np.unique(lease.binary)).issubset({0, 255})
+            assert not np.any(lease.binary)
+            assert lease.metadata["dashboard"]["state"] == "CAMERA LOST"
+            assert lease.metadata["count"] == 12
+            assert lease.metadata["status_lines"][-1] == "累计 12"
+        finally:
+            inputs.release(lease)
+
+        valid_binary = np.full((400, 640), 255, np.uint8)
+        assert integrated_run.publish_preview_frame(
+            inputs, gray, valid_binary, session, 22, metadata,
+            backend="software", black_frame=black_frame)
+        lease = inputs.acquire_latest()
+        assert lease is not None
+        try:
+            assert np.array_equal(lease.gray, gray)
+            assert np.array_equal(lease.binary, valid_binary)
+        finally:
+            inputs.release(lease)
+    finally:
+        inputs.close()
+
+
 def test_preview_panel_gate_limits_publications_to_fifteen_hz():
     gate = integrated_run.PreviewPublishGate()
     assert gate.should_publish(0, (3, "RUNNING"))
