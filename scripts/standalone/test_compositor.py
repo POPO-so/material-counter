@@ -851,6 +851,97 @@ def test_dashboard_left_summary_shows_pl_ps_throughput(monkeypatch):
     assert "处理" in joined
 
 
+def test_dashboard_performance_rows_center_actual_ink_group():
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    rows = []
+    original_text = c._text
+
+    def capture_performance_text(draw, xy, text, size, fill):
+        if fill == 238 and 345 <= xy[1] <= 466:
+            rows.append((xy, text, size))
+        return original_text(draw, xy, text, size, fill)
+
+    c._text = capture_performance_text
+    image = c.render(gray, gray, uuid.uuid4(), 1, dashboard={
+        "pl_text": "RLE active (incl wait) 32% / IN 123.4 / OUT 56.7 MB/s",
+        "rle_activity_pct": 32,
+    })
+
+    assert len(rows) == 5
+    ink_bounds = []
+    for (x, y), text, size in rows:
+        offset_x, offset_y, mask = c._text_mask(text, size)
+        x0, y0 = round(x + offset_x), round(y + offset_y)
+        # Antialiased edges are part of the ink; solid-fill pixels alone can
+        # make thin characters appear several pixels narrower on one side.
+        mask_ink = (image[y0:y0 + mask.height, x0:x0 + mask.width] !=
+                    c._chrome[y0:y0 + mask.height, x0:x0 + mask.width])
+        ink_y, ink_x = np.where(mask_ink)
+        assert len(ink_x) > 0
+        ink_bounds.append((ink_x.min() + x0, ink_y.min() + y0,
+                           ink_x.max() + x0 + 1, ink_y.max() + y0 + 1))
+    left = min(bound[0] for bound in ink_bounds)
+    top = min(bound[1] for bound in ink_bounds)
+    right = max(bound[2] for bound in ink_bounds)
+    bottom = max(bound[3] for bound in ink_bounds)
+    assert 38 <= left and right <= 380 and 345 <= top and bottom <= 466
+    assert abs((left + right) / 2 - (38 + 380) / 2) <= 1
+    assert abs((top + bottom) / 2 - (345 + 466) / 2) <= 1
+
+
+def test_dashboard_pl_rle_uses_full_valid_activity_value_without_ellipsis(monkeypatch):
+    api = _api()
+    c = _dashboard_composer()
+    _collect_dashboard_text(monkeypatch, api)
+    gray = np.zeros((400, 640), dtype=np.uint8)
+
+    c.render(gray, gray, uuid.uuid4(), 1, dashboard={
+        "pl_text": "RLE active (incl wait) 32% / IN 123.4 / OUT 56.7 MB/s",
+        "rle_activity_pct": 32,
+        "input_mb_s": 123.4, "output_mb_s": 56.7,
+    })
+
+    assert c._dynamic_state["performance_values"][0] == "活动(含等待) 32.0%"
+    assert "…" not in c._dynamic_state["performance_values"][0]
+
+
+@pytest.mark.parametrize("value", [7, 128, 999, 1234567890])
+def test_dashboard_count_is_large_centered_number_only(value):
+    c = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    image = c.render(gray, gray, uuid.uuid4(), 1, dashboard={"count": value})
+
+    ink_y, ink_x = np.where(image[180:350, 908:1234] == 255)
+    assert len(ink_x) > 0
+    left, right = ink_x.min() + 908, ink_x.max() + 909
+    top, bottom = ink_y.min() + 180, ink_y.max() + 181
+    assert right <= 1234 and bottom <= 350
+    assert abs((left + right) / 2 - 1071) <= 1.5
+    assert abs((top + bottom) / 2 - 265) <= 1
+
+    size, mask = c._count_mask_cache[c._dynamic_state["count_value"]]
+    assert mask.width <= 326 and mask.height <= 170
+    assert size <= 144
+    if value <= 999:
+        assert size == 144
+        assert top - 172 >= 20 and 358 - bottom >= 20
+    else:
+        next_font = c._latin[34].font_variant(size=size + 1)
+        next_bounds = next_font.getbbox(c._dynamic_state["count_value"])
+        assert (next_bounds[2] - next_bounds[0] > 326
+                or next_bounds[3] - next_bounds[1] > 170)
+
+
+def test_dashboard_count_mask_cache_reuses_and_is_bounded():
+    c = _dashboard_composer()
+    first = c._count_mask("123")
+    assert c._count_mask("123") is first
+    for value in range(100):
+        c._count_mask(str(value))
+    assert len(c._count_mask_cache) <= 64
+
+
 def test_dashboard_text_cache_avoids_static_label_rasterization_on_value_updates(monkeypatch):
     api = _api()
     c = _dashboard_composer()

@@ -325,6 +325,7 @@ class DashboardComposer:
         self._latin = {size: ImageFont.truetype(str(latin_font_path or font_path), size)
                        for size in (12, 14, 16, 18, 20, 24, 28, 34)}
         self._text_cache = OrderedDict()
+        self._count_mask_cache = OrderedDict()
         self._latin_advance_cache = {
             (size, chr(codepoint)): self._latin[size].getlength(chr(codepoint))
             for size in self._latin for codepoint in range(32, 127)
@@ -468,6 +469,11 @@ class DashboardComposer:
         return left - margin, top - margin, mask.crop(bounds)
 
     def _text(self, draw, xy, text, size, fill):
+        offset_x, offset_y, mask = self._text_mask(text, size)
+        draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
+
+    def _text_mask(self, text, size):
+        """Return the cached mixed-font ink mask and its baseline-relative offset."""
         key = ("mixed", text, size)
         cached = self._text_cache.get(key)
         if cached is None:
@@ -498,8 +504,7 @@ class DashboardComposer:
         else:
             self._text_cache.move_to_end(key)
         self._cache_text(key, cached)
-        offset_x, offset_y, mask = cached
-        draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
+        return cached
 
     def _cache_text(self, key, cached):
         self._text_cache[key] = cached
@@ -521,6 +526,41 @@ class DashboardComposer:
         self._cache_text(key, cached)
         offset_x, offset_y, mask = cached
         draw.bitmap((xy[0] + offset_x, xy[1] + offset_y), mask, fill=fill)
+
+    def _count_mask(self, text):
+        cached = self._count_mask_cache.get(text)
+        if cached is not None:
+            self._count_mask_cache.move_to_end(text)
+            return cached
+        left, top, right, bottom = 908, 180, 1234, 350
+        # Keep one to three digits at a consistent size with room above/below.
+        low, high = 1, 144
+        selected = None
+        while low <= high:
+            size = (low + high) // 2
+            font = self._latin[34].font_variant(size=size)
+            bounds = font.getbbox(text)
+            width, height = bounds[2] - bounds[0], bounds[3] - bounds[1]
+            if width <= right - left and height <= bottom - top:
+                selected = size, font, bounds
+                low = size + 1
+            else:
+                high = size - 1
+        if selected is None:
+            selected = 1, self._latin[34].font_variant(size=1), (0, 0, 1, 1)
+        size, font, bounds = selected
+        mask = Image.new("L", (max(1, bounds[2] - bounds[0]),
+                                max(1, bounds[3] - bounds[1])), 0)
+        ImageDraw.Draw(mask).text((-bounds[0], -bounds[1]), text,
+                                  font=font, fill=255)
+        ink_bounds = mask.getbbox()
+        if ink_bounds is not None:
+            mask = mask.crop(ink_bounds)
+        cached = (size, mask)
+        self._count_mask_cache[text] = cached
+        if len(self._count_mask_cache) > 64:
+            self._count_mask_cache.popitem(last=False)
+        return cached
 
     def _resource_pie(self, draw, x, center_y, label, value, *, static=False):
         """Draw a compact gray8 donut; invalid readings remain an empty ring."""
@@ -666,6 +706,8 @@ class DashboardComposer:
                           dashboard.get("input_mb_s"), dashboard.get("output_mb_s"),
                           dashboard.get("input_stall_pct"), dashboard.get("output_stall_pct"))
         rle_values = tuple(self._number(value, 1) for value in raw_rle_values)
+        if rle_values[0] != "--":
+            pl_summary = f"活动(含等待) {rle_values[0]}%"
         pl_summary_display = self._wrap_gutter(
             strip_prefix(pl_summary, "PL"), 206, 12, 1)[0]
         performance_values = (
@@ -753,7 +795,6 @@ class DashboardComposer:
 
         card(left_x, 318, left_width, 148, "处理性能")
         card(right_x, 145, right_width, 213, "本次累计计数")
-        centered("本次会话累计", right_x + 8, 302, right_width - 16, 14, 174)
         card(right_x, 364, right_width, 102, "按钮功能")
         for i, text in enumerate(("BTN0 清零累计计数 · BTN1 切换诊断模式",
                 "BTN2 调整曝光 · BTN3 预留",
@@ -810,29 +851,25 @@ class DashboardComposer:
         def performance_values(draw, x0, y0):
             labels = ("PL / RLE", "PS RLE / TRK", "处理 / 显示",
                       "有效 / 二值提交 FPS", "处理延迟")
-            for index, (label, value) in enumerate(zip(labels, state["performance_values"])):
-                row = self._wrap_gutter(f"{label}  {value}", 322, 12, 1)[0]
-                width = sum(self._character_advance(ch, 12) for ch in row)
-                self._text(draw, (38 + (342 - width) / 2 - x0,
-                                  350 + index * 20 - y0), row, 12, 238)
+            rows = [self._wrap_gutter(f"{label}  {value}", 322, 12, 1)[0]
+                    for label, value in zip(labels, state["performance_values"])]
+            masks = [self._text_mask(row, 12) for row in rows]
+            top = min(offset_y + index * 20
+                      for index, (_, offset_y, _) in enumerate(masks))
+            bottom = max(offset_y + index * 20 + mask.height
+                         for index, (_, offset_y, mask) in enumerate(masks))
+            center_x, center_y = (38 + 380) / 2, (345 + 466) / 2
+            origin_y = center_y - (top + bottom) / 2
+            for index, (row, (offset_x, offset_y, mask)) in enumerate(zip(rows, masks)):
+                self._text(draw, (center_x - (offset_x + mask.width / 2) - x0,
+                                  origin_y + index * 20 - y0), row, 12, 238)
 
         self._draw_dynamic_region(target, (38, 318, 380, 466), performance_values, draw)
 
         def cumulative_count(draw, x0, y0):
-            text = state["count_value"] + " 件"
-            pen_x = 0.0
-            left = top = float("inf")
-            right = bottom = float("-inf")
-            for character in text:
-                bounds = self._character_baseline_bbox(character, 34)
-                left = min(left, pen_x + bounds[0])
-                right = max(right, pen_x + bounds[2])
-                top = min(top, bounds[1])
-                bottom = max(bottom, bounds[3])
-                pen_x += self._character_advance(character, 34)
-            base_x = 1071 - (left + right) / 2
-            base_y = 251.5 - (top + bottom) / 2
-            self._text(draw, (base_x - x0, base_y - 34 - y0), text, 34, 255)
+            _, mask = self._count_mask(state["count_value"])
+            draw.bitmap((1071 - mask.width / 2 - x0,
+                         265 - mask.height / 2 - y0), mask, fill=255)
 
         self._draw_dynamic_region(target, (900, 145, 1242, 358), cumulative_count, draw)
 
