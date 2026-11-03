@@ -247,3 +247,40 @@ def test_geodesic_flood_matches_legacy_on_seeded_masks_and_three_seeds(monkeypat
             assert (actual is None) == (expected is None)
             if expected is not None:
                 np.testing.assert_array_equal(actual, expected)
+
+
+def test_four_touching_rings_keep_four_disjoint_connected_partitions():
+    mask = np.zeros((120, 120), dtype=np.uint8)
+    for x, y in ((40, 40), (80, 40), (40, 80), (80, 80)):
+        cv2.circle(mask, (x, y), 25, 255, -1)
+        cv2.circle(mask, (x, y), 10, 0, -1)
+    pieces = split_touching.split_touching_component(mask)
+    assert len(pieces) == 4
+    assert np.array_equal(np.sum(pieces, axis=0), mask != 0)
+    assert all(split_touching.is_single_connected_component(piece) for piece in pieces)
+
+
+def test_hole_split_does_not_recheck_connectivity_after_assignment(monkeypatch):
+    mask = np.zeros((120, 120), dtype=np.uint8)
+    for x, y in ((40, 40), (80, 40), (40, 80), (80, 80)):
+        cv2.circle(mask, (x, y), 25, 255, -1)
+        cv2.circle(mask, (x, y), 10, 0, -1)
+    assign = split_touching._geodesic_hole_assignments
+    check = split_touching.is_single_connected_component
+    after_assignment = False
+
+    def assign_and_mark(*args):
+        nonlocal after_assignment
+        result = assign(*args)
+        after_assignment = True
+        return result
+
+    def check_before_assignment(piece):
+        assert not after_assignment
+        return check(piece)
+
+    monkeypatch.setattr(split_touching, "_geodesic_hole_assignments", assign_and_mark)
+    monkeypatch.setattr(split_touching, "is_single_connected_component", check_before_assignment)
+    pieces = split_touching._split_by_enclosed_holes(mask != 0, 12)
+    assert len(pieces) == 4
+    assert all(check(piece) for piece in pieces)
