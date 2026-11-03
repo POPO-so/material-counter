@@ -21,12 +21,14 @@ from scripts.wo0016.split_touching import (
 from .components import analyze_runs, local_mask
 from .protocol import RleFrame
 from .components import Component
+from .split_work import SplitBudget, SplitRetries, positive_limit, run_signature
 
 
 class RleCounter(MaskCounter):
     """Perform no frame rasterization in the normal region/tracking path."""
 
-    def __init__(self, *, library, **settings):
+    def __init__(self, *, library, split_budget_ms=None, split_max_candidates=None,
+                 split_max_pixels=None, split_retry_interval_s=0.0, **settings):
         defaults = dict(width=640, height=400, line_y=200, line_x=320,
             roi_mode="full", min_area=48, max_area=3600,
             max_bbox_width=170, max_bbox_height=170, max_step=48,
@@ -37,6 +39,55 @@ class RleCounter(MaskCounter):
         self.last_seen_frame_id = None
         self.invalid_frames = 0
         self.last_backend = "native"
+        self.split_budget_ms = positive_limit(split_budget_ms, 'split_budget_ms')
+        self.split_max_candidates = positive_limit(split_max_candidates, 'split_max_candidates', integer=True)
+        self.split_max_pixels = positive_limit(split_max_pixels, 'split_max_pixels', integer=True)
+        self.split_retry_interval_s = positive_limit(split_retry_interval_s, 'split_retry_interval_s', allow_zero=True)
+        if self.split_retry_interval_s is None:
+            raise ValueError('split_retry_interval_s must be a nonnegative number')
+        self._split_retries = SplitRetries(self.split_retry_interval_s)
+        self.last_split_stats = {}
+        self.last_split_diagnostics = []
+
+    def clear_pending_cluster_parents(self):
+        super().clear_pending_cluster_parents()
+        self._split_retries.entries.clear()
+
+    def _split_local(self, frame, analysis, index, component):
+        """Return checked children and reliable visible-hole parent evidence."""
+        mask = local_mask(frame.runs, analysis.labels, index) != 0
+        pieces = split_touching_component(mask,
+            min_child_area=self.min_split_child_area, min_hole_area=self.split_min_hole_area,
+            recursive_item_area=self.split_recursive_item_area,
+            min_hole_distance=self.split_min_hole_distance, hole_area_cap=self.split_hole_area_cap)
+        partitions = [np.asarray(piece) != 0 for piece in pieces]
+        valid = (2 <= len(partitions) <= _MAX_CHILD_SEEDS
+            and all(piece.shape == mask.shape and is_single_connected_component(piece)
+                    for piece in partitions))
+        children = []
+        if valid:
+            coverage = np.zeros(mask.shape, dtype=np.uint8)
+            for piece in partitions:
+                ys, xs = np.nonzero(piece)
+                if (len(xs) < self.min_split_child_area or self._component_exceeds_limits(
+                        len(xs), int(xs.max()-xs.min()+1), int(ys.max()-ys.min()+1))):
+                    valid = False
+                    break
+                coverage += piece
+                children.append(Detection(component.x_min+int(xs.min()), component.x_min+int(xs.max()),
+                    component.y_min+int(ys.min()), component.y_min+int(ys.max()), len(xs),
+                    component.x_min+float(xs.mean()), component.y_min+float(ys.mean())))
+            valid = valid and np.array_equal(coverage > 0, mask) and not np.any(coverage > 1)
+        if valid:
+            return tuple(children), 0
+        if self.cluster_parent_recovery:
+            holes = enclosed_hole_centers(mask, min_hole_area=self.split_min_hole_area,
+                                         hole_area_cap=self.split_hole_area_cap)
+            if 2 <= len(holes) <= _MAX_CHILD_SEEDS:
+                separation = np.linalg.norm(holes[:, None]-holes[None, :], axis=2)
+                if not np.any(separation[np.triu_indices(len(holes), 1)] < self.split_min_hole_distance):
+                    return (), int(len(holes))
+        return (), 0
 
     def update_rle(self, frame: RleFrame, *, capture_monotonic_ns=None,
                    region_features=None) -> FrameResult | None:
@@ -86,6 +137,9 @@ class RleCounter(MaskCounter):
         self._split_origins = {}
         detections, rejected, cluster_parent_observations = [], [], []
         analyze_ms = split_ms = 0.0
+        budget = SplitBudget(self.split_max_candidates, self.split_max_pixels, self.split_budget_ms)
+        self.last_split_stats = dict(candidates=0, attempted=0, succeeded=0, deferred=0, cached=0, unresolved=0)
+        self.last_split_diagnostics = []
         if frame.total_fg >= self.min_area:
             if use_features:
                 components = region_features
@@ -95,7 +149,19 @@ class RleCounter(MaskCounter):
                 analysis = analyze_runs(frame.runs, library=self.library, min_area=self.min_area)
                 analyze_ms = (time.perf_counter()-analyze_started)*1000
                 components = analysis.components
-            for index, component in enumerate(components):
+            candidates = [(index, component) for index, component in enumerate(components)
+                          if component.area >= self.min_area and split_candidate(component)]
+            now = (timestamp / 1e9 if timestamp is not None else
+                   frame.frame_id * (self.motion_timebase_s or .1))
+            states, priority = self._split_retries.prepare(candidates, now, axis=self.count_axis,
+                line=self.line_x if self.count_axis == 'x' else self.line_y,
+                max_step=self.max_step, lateral_step=self.max_lateral_step,
+                timebase=self.motion_timebase_s or .1)
+            self.last_split_stats['candidates'] = len(candidates)
+            candidate_ids = set(priority)
+            order = priority + [index for index in range(len(components)) if index not in candidate_ids]
+            for index in order:
+                component = components[index]
                 if component.area < self.min_area:
                     continue
                 detection = Detection(component.x_min, component.x_max, component.y_min,
@@ -103,57 +169,62 @@ class RleCounter(MaskCounter):
                 if split_candidate(component):
                     if analysis is None:
                         raise AssertionError("guarded merge candidates must use native CCL")
-                    split_started = time.perf_counter()
-                    mask = local_mask(frame.runs, analysis.labels, index) != 0
-                    pieces = split_touching_component(mask,
-                        min_child_area=self.min_split_child_area, min_hole_area=self.split_min_hole_area,
-                        recursive_item_area=self.split_recursive_item_area,
-                        min_hole_distance=self.split_min_hole_distance, hole_area_cap=self.split_hole_area_cap)
-                    split_ms += (time.perf_counter()-split_started)*1000
-                    partitions = [np.asarray(piece) != 0 for piece in pieces]
-                    valid = (2 <= len(partitions) <= _MAX_CHILD_SEEDS
-                        and all(piece.shape == mask.shape
-                                and is_single_connected_component(piece)
-                                for piece in partitions))
-                    if valid:
-                        coverage = np.zeros(mask.shape, dtype=np.uint8)
-                        valid_children = []
-                        for piece in partitions:
-                            ys, xs = np.nonzero(piece)
-                            child_area = len(xs)
-                            child_width = int(xs.max() - xs.min() + 1)
-                            child_height = int(ys.max() - ys.min() + 1)
-                            if (child_area < self.min_split_child_area
-                                    or self._component_exceeds_limits(
-                                        child_area, child_width, child_height)):
-                                valid = False
-                                break
-                            coverage += piece
-                            valid_children.append((ys, xs))
-                    if valid:
-                        valid = np.array_equal(coverage > 0, mask) and not np.any(coverage > 1)
-                    if valid:
-                        for ys, xs in valid_children:
-                            child = Detection(component.x_min+int(xs.min()), component.x_min+int(xs.max()),
-                                component.y_min+int(ys.min()), component.y_min+int(ys.max()), len(xs),
-                                component.x_min+float(xs.mean()), component.y_min+float(ys.mean()))
-                            detections.append(child)
-                            self._split_origins[child] = index
-                        continue
-                    if self.cluster_parent_recovery:
-                        holes = enclosed_hole_centers(
-                            mask, min_hole_area=self.split_min_hole_area,
-                            hole_area_cap=self.split_hole_area_cap,
-                        )
-                        if 2 <= len(holes) <= _MAX_CHILD_SEEDS:
-                            separation = np.linalg.norm(
-                                holes[:, None] - holes[None, :], axis=2
-                            )
-                            if not np.any(separation[np.triu_indices(len(holes), 1)]
-                                          < self.split_min_hole_distance):
-                                cluster_parent_observations.append((detection, int(len(holes))))
-                                rejected.append(detection)
-                                continue
+                    entry = states[index]
+                    signature = (run_signature(frame.runs, analysis.labels, index, component)
+                                 if self.split_retry_interval_s else b'')
+                    cached = self._split_retries.cached(entry, signature, now)
+                    reason = None if cached else budget.admit(
+                        (component.x_max-component.x_min+1)*(component.y_max-component.y_min+1))
+                    if cached or reason:
+                        self.last_split_stats['cached' if cached else 'deferred'] += 1
+                        known = (self.split_retry_interval_s > 0 and entry.signature == signature
+                                 and entry.outcome in ('parent', 'single', 'split'))
+                        seeds = entry.seeds if known else 0
+                        self.last_split_diagnostics.append(dict(component=index, x_min=component.x_min,
+                            state='cached' if cached else 'deferred', reason=reason, seed_count=seeds))
+                        if known and entry.outcome == 'single':
+                            pass  # reuse only a currently identical, uniquely matched observation
+                        elif known and entry.outcome == 'split':
+                            # The full current run sequence, not merely area or bbox,
+                            # has proved the same partition geometry. Cache only
+                            # statistics; no old child mask is presented as an image.
+                            dx, dy = component.x_min-entry.origin[0], component.y_min-entry.origin[1]
+                            for old in entry.children:
+                                child = Detection(old.x_min+dx, old.x_max+dx, old.y_min+dy, old.y_max+dy,
+                                    old.area, old.centroid_x+dx, old.centroid_y+dy)
+                                detections.append(child)
+                                self._split_origins[child] = index
+                            continue
+                        else:
+                            if seeds:
+                                cluster_parent_observations.append((detection, seeds))
+                            rejected.append(detection)
+                            self.last_split_stats['unresolved'] += 1
+                            continue
+                    else:
+                        split_started = time.perf_counter()
+                        children, seeds = self._split_local(frame, analysis, index, component)
+                        # Include mask creation, child validation and failed-parent evidence.
+                        duration = (time.perf_counter()-split_started)*1000
+                        split_ms += duration
+                        budget.elapsed_ms += duration
+                        self.last_split_stats['attempted'] += 1
+                        self.last_split_diagnostics.append(dict(component=index, x_min=component.x_min,
+                            state='attempted', elapsed_ms=duration, seed_count=seeds, children=len(children)))
+                        entry.last_attempt_s, entry.signature = now, signature
+                        entry.outcome = 'parent' if seeds else 'single' if not children else 'split'
+                        entry.seeds = seeds
+                        entry.children, entry.origin = children, (component.x_min, component.y_min)
+                        if children:
+                            self.last_split_stats['succeeded'] += 1
+                            detections.extend(children)
+                            self._split_origins.update((child, index) for child in children)
+                            continue
+                        if seeds:
+                            cluster_parent_observations.append((detection, seeds))
+                            rejected.append(detection)
+                            self.last_split_stats['unresolved'] += 1
+                            continue
                 if self._component_exceeds_limits(
                         component.area, component.x_max-component.x_min+1,
                         component.y_max-component.y_min+1):

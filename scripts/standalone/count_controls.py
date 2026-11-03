@@ -8,6 +8,9 @@ FIELD_V1_SETTINGS = dict(
     max_association_interval_s=.5, guarded_merge=True,
     single_intact_area=380, max_split_area=8192, min_split_child_area=80,
     cluster_parent_recovery=True,
+    # Admission limits, not a preemptive deadline for a single OpenCV call.
+    split_budget_ms=8.0, split_max_candidates=2, split_max_pixels=65536,
+    split_retry_interval_s=.15,
 )
 
 
