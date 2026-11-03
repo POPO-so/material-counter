@@ -1205,6 +1205,35 @@ def test_dashboard_unavailable_percentages_show_dashes_and_empty_rings():
     assert image[599, 140 - 18] == 76
 
 
+def test_live_resource_values_do_not_leave_chrome_placeholders_or_slot_ghosts():
+    api = _api()
+    composer = _dashboard_composer()
+    gray = np.zeros((400, 640), dtype=np.uint8)
+    outputs = [np.empty((720, 1280), dtype=np.uint8) for _ in range(2)]
+    cases = (None, 54.8, 0, None, 54.8)
+
+    # LIVE chrome is static and must contain only the row background under
+    # each dynamic percentage value, leaving '--' for the dynamic pass.
+    composer.render(gray, gray, uuid.uuid4(), 1, dashboard={"cpu_percent": None})
+    for index in range(4):
+        x = 116 + index * 280 + 55
+        assert np.all(composer._chrome[518:538, x:x + 72] == 40)
+
+    session = uuid.uuid4()
+    reference = _dashboard_composer()
+    for frame_id, value in enumerate(cases, 1):
+        dashboard = {"cpu_percent": value}
+        actual = composer.render(
+            gray, gray, session, frame_id, dashboard=dashboard,
+            output=outputs[(frame_id - 1) % len(outputs)],
+            output_slot=(frame_id - 1) % len(outputs))
+        if value is None:
+            assert np.any(actual[518:538, 171:243] != 40)
+        expected = reference.render(gray, gray, session, frame_id, dashboard=dashboard)
+        assert np.array_equal(actual[480:552, 24:1256],
+                              expected[480:552, 24:1256]), f"frame {frame_id}, value {value}"
+
+
 def test_dashboard_viewport_is_binary_512_by_320_dashboard_scale():
     c = _dashboard_composer()
     gray = np.full((400, 640), 103, dtype=np.uint8)

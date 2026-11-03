@@ -562,7 +562,8 @@ class DashboardComposer:
             self._count_mask_cache.popitem(last=False)
         return cached
 
-    def _resource_pie(self, draw, x, center_y, label, value, *, static=False):
+    def _resource_pie(self, draw, x, center_y, label, value, *, static=False,
+                      show_value=True):
         """Draw a compact gray8 donut; invalid readings remain an empty ring."""
         center_x = x + 24
         radius = 22
@@ -579,9 +580,10 @@ class DashboardComposer:
                       center_x + inner, center_y + inner), fill=40)
         suffix = " · ST" if static else ""
         self._text(draw, (x + 55, center_y - 18), label + suffix, 18, 202)
-        value_text = self._number(value, 1, "%")
-        self._whole_latin_text(draw, (x + 55, center_y + 2), value_text, 18,
-                               226 if valid else 142)
+        if show_value:
+            value_text = self._number(value, 1, "%")
+            self._whole_latin_text(draw, (x + 55, center_y + 2), value_text, 18,
+                                   226 if valid else 142)
 
     def _wrap_gutter(self, text, max_width=286, size=18, max_rows=None):
         key = (str(text), max_width, size, max_rows)
@@ -809,7 +811,7 @@ class DashboardComposer:
             self._whole_latin_text(draw, (36, center_y - 12), title, 18, 232)
             for index, (label, percent) in enumerate(zip(labels, percentages)):
                 self._resource_pie(draw, 116 + index * 280, center_y, label,
-                                   percent, static=is_static)
+                                   percent, static=is_static, show_value=is_static)
         top,bottom,center_y=636,708,672
         draw.rounded_rectangle((24,top,1256,bottom),radius=9,fill=40)
         self._whole_latin_text(draw,(36,center_y-12),"RLE",18,232)
