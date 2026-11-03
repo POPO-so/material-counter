@@ -302,6 +302,23 @@ def test_parent_wall_time_timeout_expires_even_with_adjacent_frame_ids():
     assert not counter._cluster_parents
 
 
+def test_irregular_capture_intervals_recover_each_child_once():
+    counter = _counter(cluster_parent_recovery=True, motion_timebase_s=.1)
+    parent = lambda x: _box(x, 40, 30, 12, 240)
+    for frame_id, x, stamp in ((0, 100, 100_000_000), (1, 120, 300_000_000),
+                               (2, 140, 500_000_000), (3, 150, 600_000_000)):
+        counter._associate_and_update(frame_id, [], stamp,
+                                     cluster_parent_observations=((parent(x), 2),))
+    events = []
+    for frame_id, x, stamp in ((4, 162, 750_000_000), (5, 172, 850_000_000),
+                               (6, 182, 950_000_000)):
+        events.extend(counter._associate_and_update(frame_id,
+            [_box(x, 42, 8, 8, 64), _box(x+16, 42, 8, 8, 64)], stamp))
+    assert len(events) == counter.total_count == 2
+    assert len({event.track_id for event in events}) == 2
+    assert all(event.inferred_gap for event in events)
+
+
 def test_recovered_cluster_excludes_previously_counted_child_track():
     counter = _counter(cluster_parent_recovery=True)
 
