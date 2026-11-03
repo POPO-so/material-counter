@@ -185,9 +185,10 @@ class CrossingSnapshots:
         # Pending jobs normally wait for future context frames; that is not
         # writer congestion and must not trigger another snapshot by itself.
         backlog = queue_depth >= max(1, self._queue.maxsize - 1)
+        split_deferred = getattr(counter, 'last_split_stats', {}).get('deferred', 0) > 0
         if (len(result.detections) >= self.density_threshold
                 or region_ms + track_ms > self.slow_frame_ms
-                or backlog):
+                or backlog or split_deferred):
             if (self._last_noncrossing_ns is None
                     or capture_ns - self._last_noncrossing_ns >= self.trigger_min_interval_ns):
                 self._last_noncrossing_ns = capture_ns
@@ -195,6 +196,8 @@ class CrossingSnapshots:
                     kind = 'high_density'
                 elif region_ms + track_ms > self.slow_frame_ms:
                     kind = 'slow_frame'
+                elif split_deferred:
+                    kind = 'split_budget'
                 else:
                     kind = 'queue_backlog'
                 triggers.append(dict(kind=kind, detections=len(result.detections),

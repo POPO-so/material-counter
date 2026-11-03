@@ -128,6 +128,17 @@ def test_actual_writer_queue_backlog_still_triggers_capture(tmp_path, monkeypatc
     assert 'queue_backlog' in {item['kind'] for item in records(tmp_path)[0]['triggers']}
 
 
+def test_split_budget_deferral_triggers_evidence_away_from_count_line(tmp_path):
+    capture = recorder(tmp_path, context_frames=0)
+    tracker = counter()
+    tracker.last_split_stats = dict(attempted=1, deferred=2, unresolved=2)
+    observe(capture, tracker, 0, 100)
+    assert capture.close(timeout=10)
+    saved = records(tmp_path)
+    assert len(saved) == 1
+    assert 'split_budget' in {item['kind'] for item in saved[0]['triggers']}
+
+
 def test_pause_and_epoch_do_not_hide_triggers_or_join_context(tmp_path):
     capture = recorder(tmp_path)
     tracker = counter()
