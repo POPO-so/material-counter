@@ -30,26 +30,60 @@ proc joint::thread_hooks {stage} {
     return SUCCESS:joint_thread_hooks
 }
 
-proc joint::resource_gate {reports} {
-    variable cfg
-    set text [report_utilization -hierarchical -return_string]
-    set ch [open [file join $reports utilization.rpt] {WRONLY CREAT EXCL}]
+proc joint::parse_device_resources {text} {
+    set totals [dict create]
+    foreach line [split $text \n] {
+        if {[regexp {^\s*\|\s*Slice LUTs\*?\s*\|\s*([0-9,]+)\s*\|} $line -> value]} {
+            dict set totals lut [string map {, {}} $value]
+        } elseif {[regexp {^\s*\|\s*Slice Registers\s*\|\s*([0-9,]+)\s*\|} $line -> value]} {
+            dict set totals ff [string map {, {}} $value]
+        } elseif {[regexp {^\s*\|\s*Block RAM Tile\s*\|\s*([0-9,.]+)\s*\|} $line -> value]} {
+            dict set totals bram36 [string map {, {}} $value]
+        } elseif {[regexp {^\s*\|\s*DSPs\s*\|\s*([0-9,]+)\s*\|} $line -> value]} {
+            dict set totals dsp [string map {, {}} $value]
+        }
+    }
+    foreach key {lut ff bram36 dsp} {
+        if {![dict exists $totals $key]} {error "JOINT_DEVICE_RESOURCE_ROW_MISSING:$key"}
+    }
+    return $totals
+}
+
+proc joint::write_report_text {path text} {
+    set ch [open $path {WRONLY CREAT EXCL}]
     puts $ch $text
     close $ch
-    set top [get_property TOP [get_filesets sources_1]]
-    set totals [joint::parse_hierarchical_resources $text $top]
+}
+
+proc joint::resource_gate {reports stage} {
+    variable cfg
+    # Use the device-level report for capacity checks. The hierarchy report's
+    # logical LUT estimate can exceed the mapped Slice LUT count before opt/place.
+    set text [report_utilization -return_string]
+    joint::write_report_text [file join $reports utilization.rpt] $text
+    set hierarchy [report_utilization -hierarchical -return_string]
+    joint::write_report_text [file join $reports utilization-hierarchical.rpt] $hierarchy
+    set totals [joint::parse_device_resources $text]
     set lut [dict get $totals lut]
     set ff [dict get $totals ff]
     set bram36 [dict get $totals bram36]
-    set bram18 [dict get $totals bram18]
     set dsp [dict get $totals dsp]
-    set stats [get_cells -hier -filter {NAME =~ *stats_mem* && REF_NAME =~ RAMB*}]
-    set rows [get_cells -hier -filter {NAME =~ *row_mem* && REF_NAME =~ RAMB*}]
-    if {![llength $stats] || ![llength $rows]} {error "JOINT_REGION_BRAM_MAPPING_MISSING:stats=$stats rows=$rows"}
-    foreach {key value} [list max_lut $lut max_ff $ff max_bram36 [expr {$bram36 + $bram18/2.0}] max_dsp $dsp] {
-        if {$value > [dict get $cfg $key]} {error "JOINT_RESOURCE_LIMIT:$key:$value>[dict get $cfg $key]"}
+    set region_core [get_cells -hier -filter {REF_NAME =~ *rle_region_features}]
+    if {[llength $region_core] != 1} {error "JOINT_REGION_CORE_MISSING_OR_DUPLICATED:$region_core"}
+    set lut_limit [dict get $cfg max_lut]
+    if {$stage eq "synth"} {
+        # Vivado warns that final LUT usage is commonly lower after physical
+        # optimization. Allow only a small recorded synthesis-estimate margin;
+        # the routed device-level count remains strictly capped.
+        set lut_limit [expr {$lut_limit + $lut_limit / 20}]
     }
-    return [dict merge $totals [dict create region_stats_bram $stats region_rows_bram $rows]]
+    foreach {key value limit} [list max_lut $lut $lut_limit max_ff $ff [dict get $cfg max_ff] \
+            max_bram36 $bram36 [dict get $cfg max_bram36] max_dsp $dsp [dict get $cfg max_dsp]] {
+        if {$value > $limit} {error "JOINT_RESOURCE_LIMIT:$stage:$key:$value>$limit"}
+    }
+    set gate_result [dict create region_core $region_core lut_gate_limit $lut_limit]
+    dict set gate_result lut_estimate_over_device [expr {$stage eq "synth" && $lut > [dict get $cfg max_lut]}]
+    return [dict merge $totals $gate_result]
 }
 
 proc joint::disable_duplicate_rgb2dvi_clock_xdc {} {
@@ -81,7 +115,7 @@ if {$stage eq "synth"} {
         open_run synth_1
         set run_capture_marker JOINT_SYNTH_RUN_COMPLETE
     } JOINT_SYNTH_RUN_COMPLETE]
-    set resources [joint::resource_gate $reports]
+    set resources [joint::resource_gate $reports synth]
     joint::capture reports {
         report_cdc -details -file [file join $reports cdc.rpt]
         report_drc -file [file join $reports drc.rpt]
@@ -119,7 +153,7 @@ if {$stage eq "synth"} {
         open_run impl_1
         set run_capture_marker JOINT_ROUTE_RUN_COMPLETE
     } JOINT_ROUTE_RUN_COMPLETE]
-    set resources [joint::resource_gate $reports]
+    set resources [joint::resource_gate $reports route]
     joint::capture route_reports {
         set route_status [report_route_status -return_string]
         set route_ch [open [file join $reports route-status.rpt] {WRONLY CREAT EXCL}]

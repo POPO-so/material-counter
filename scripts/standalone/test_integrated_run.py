@@ -302,12 +302,12 @@ def test_preview_frame_selection_keeps_binary_for_software_and_black_placeholder
     assert not np.any(selected_binary)
 
 
-def test_preview_panel_gate_publishes_on_change_or_at_two_hz_limit():
+def test_preview_panel_gate_limits_publications_to_fifteen_hz():
     gate = integrated_run.PreviewPublishGate()
     assert gate.should_publish(0, (3, "RUNNING"))
-    assert not gate.should_publish(.1, (3, "RUNNING"))
-    assert not gate.should_publish(.1, (4, "RUNNING"))
-    assert gate.should_publish(.5, (4, "RUNNING"))
+    assert not gate.should_publish(.05, (3, "RUNNING"))
+    assert not gate.should_publish(.05, (4, "RUNNING"))
+    assert gate.should_publish(1/15, (4, "RUNNING"))
 
 
 def test_irq_capability_requires_hwh_parameter_and_channel_wait_method():

@@ -93,10 +93,32 @@ starts a later stage on failure.
 
 ## Green gates and actual integration
 
-The committed region receipt is accepted only with `status:"PASS"`, matching
-`source_sha256` and all evidence hashes, `reference_diff:"PASS"`,
-`limits:"PASS"`, positive `memory_gate.stats_bram36`/`row_bram36`, and zero
-`memory_gate.stats_lutram`. It is not rewritten or given invented `checks`.
+The legacy `region_results.json` is accepted only for its exact BRAM-optimized
+RTL source SHA (`19439a2c…a3551911`), with `status:"PASS"`, all evidence
+hashes, `reference_diff:"PASS"`, `limits:"PASS"`, positive
+`memory_gate.stats_bram36`/`row_bram36`, and zero `memory_gate.stats_lutram`.
+It must not be reused for the current SW1 region core: that RTL has a different
+interface and source SHA.
+
+The candidate-aware BRAM region variant uses receipt schema
+`material-counter.rle-region-bram-g2-green.v1`. Run
+`region_run.ps1 -Mode all`; it writes `region-green.json` only after the
+reference/differential, limits, seven candidate-threshold cases, tap-link
+elaboration, and OOC synthesis complete. The receipt binds the frozen RTL,
+testbench, tap, simulator logs, and OOC reports by SHA-256, and requires four
+stats BRAM36, one row BRAM36, and zero stats LUTRAM. This is module-level
+pre-route evidence; the joint system still needs its fresh synthesis, route
+review, and full route checks before bitstream generation.
+
+The current G2 region core uses receipt schema
+`material-counter.rle-region-g2-green.v1`. It binds the exact current
+`rle_region_features.v`, the committed 16-case XSim log and testbench, and the
+source-matched G2 build manifest. The verifier checks the G2 timing summary
+(non-negative setup/hold slack, all user constraints met, no unrouted nets),
+zero DRC errors/Critical Warnings, the completed CDC review record, and the
+hashes of the timing, utilization, DRC and CDC reports. This supplies the
+current source's functional and routed-build evidence without relabeling the
+legacy receipt.
 
 Kant/TB's HLS green receipt must bind the final exported component and source:
 

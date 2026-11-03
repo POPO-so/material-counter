@@ -335,8 +335,8 @@ def prepare_preview_frame(gray, binary, *, backend, black_frame=None):
 
 
 class PreviewPublishGate:
-    """Limit PL panel frames to 2 Hz unless a visible state changes."""
-    def __init__(self, interval_s=.5):
+    """Limit PL panel frames to 15 Hz unless a visible state changes."""
+    def __init__(self, interval_s=1/15):
         self.interval_s=interval_s
         self.last_at=None
         self.last_key=None
@@ -550,8 +550,8 @@ def prepare_preview_frame(gray, binary, *, backend, black_frame=None):
 
 
 class PreviewPublishGate:
-    """Limit PL panel frames to 2 Hz unless a visible state changes."""
-    def __init__(self, interval_s=.5):
+    """Limit PL panel frames to 15 Hz unless a visible state changes."""
+    def __init__(self, interval_s=1/15):
         self.interval_s=interval_s
         self.last_at=None
         self.last_key=None
@@ -1117,6 +1117,7 @@ def main(argv=None):
             button_worker.start()
         video_owner.call(start_display_output,hw.hdmi,timeout=60)
         counter=make_runtime_counter(args.native_lib,profile=args.counting_profile)
+        display_count=counter.total_count
         if region_reader is not None:
             report['pl_thresholds']=region_reader.configure_thresholds(counter)
             candidate_available=bool(region_reader.reader.supports_candidates)
@@ -1195,7 +1196,7 @@ def main(argv=None):
         latest_dashboard_telemetry={}
         last_performance_index=last_performance_submitted=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
         black_frame=np.zeros((400,640),dtype=np.uint8)
-        panel_gate=PreviewPublishGate(.5);last_pl_accepts=0;pl_accept_total=0;binary_fps=None
+        panel_gate=PreviewPublishGate(1/15);last_pl_accepts=0;pl_accept_total=0;binary_fps=None
         last_binary_published=0
         binary_fps_window_at=started
         trajectory_epoch=0;camera_in_error=False
@@ -1317,7 +1318,7 @@ def main(argv=None):
                     camera.close();camera=None;next_camera_retry=time.monotonic()+5
                     report['recoveries'].append(dict(kind='camera',frame=index,error=repr(error),monotonic=now))
                     if inputs is not None and last_gray is not None:
-                        fault=dict(last_metadata);fault['status_lines']=['相机断连 / 停止新增计数','每5秒重试 / 恢复新轨迹','累计 {}'.format(counter.total_count)]
+                        fault=dict(last_metadata);fault['status_lines']=['相机断连 / 停止新增计数','每5秒重试 / 恢复新轨迹','累计 {}'.format(display_count)]
                         fault['dashboard']=dict(fault.get('dashboard',{}),state='CAMERA LOST')
                         if inputs.publish(last_gray,binary,session,last_valid_id,fault):
                             compositor_input_published+=1
@@ -1454,6 +1455,12 @@ def main(argv=None):
             if boundary:report['events'].append(dict(frame=index,commands=boundary,count=counter.total_count))
             if result is not None:
                 if args.display=='on':
+                    if counter.total_count<display_count:
+                        display_count=counter.total_count
+                    count_backlog=counter.total_count-display_count
+                    display_step=(min(count_backlog,max(1,min(5,(count_backlog+14)//15)))
+                        if count_backlog else 0)
+                    next_display_count=display_count+display_step
                     if pl_preview is None:prepare_preview_binary(packet,binary,True)
                     metadata=result_metadata(result,paused=controls.paused,binary_background=True,
                         trajectory_epoch=trajectory_epoch,count_axis=counter.count_axis,
@@ -1461,7 +1468,7 @@ def main(argv=None):
                         direction=counter.direction)
                     metadata['pl_preview']=pl_preview is not None
                     metadata['preview_backend']=args.preview_backend
-                    metadata['status_lines']=['本次会话累计 {}'.format(counter.total_count),
+                    metadata['status_lines']=['本次会话累计 {}'.format(next_display_count),
                         '暂停计数' if controls.paused else '运行中',
                         '诊断快照 CLI:{} BTN1:{} SW1:{} {}'.format(
                             args.crossing_snapshots,
@@ -1474,7 +1481,7 @@ def main(argv=None):
                     switch0_status=('SW0未接入' if not switch0_connected else
                         'SW0读取未知' if switch0_state is None else
                         'SW0 ON' if switch0_state else 'SW0 OFF')
-                    metadata['dashboard']=dashboard_values(counter.total_count,controls.paused,
+                    metadata['dashboard']=dashboard_values(next_display_count,controls.paused,
                     telemetry,manifest,mode=diagnostic_policy.mode,
                     exposure=exposure_status,exposure_error=exposure_error,
                     pl_rates=pl_rates,runtime=runtime_sample,
@@ -1498,25 +1505,35 @@ def main(argv=None):
                     if process is not None and process.is_alive():
                         selected_gray,selected_binary=prepare_preview_frame(gray,binary,
                             backend=args.preview_backend,black_frame=black_frame)
-                        panel_key=(counter.total_count,controls.diagnostic,
+                        panel_key=(next_display_count,controls.diagnostic,
                             exposure_status,exposure_error,pl_rates,runtime_sample,button_status)
+                        gate_before=(panel_gate.last_at,panel_gate.last_key)
                         if pl_preview is None or panel_gate.should_publish(time.monotonic(),panel_key):
-                            did_publish=inputs.publish(selected_gray,selected_binary,session,index,
-                                metadata,capture_time_ns=(frame_telemetry.capture_ns
-                                    if frame_telemetry is not None else 0))
-                            if did_publish:
-                                published+=1
-                                compositor_input_published+=1
-                                if pl_preview is None:last_binary_published+=1
-                                if frame_telemetry is not None:
-                                    frame_telemetry=_with_publish_boundary(
-                                        frame_telemetry,True,time.monotonic_ns())
-                            else:
+                            try:
+                                did_publish=inputs.publish(selected_gray,selected_binary,session,index,
+                                    metadata,capture_time_ns=(frame_telemetry.capture_ns
+                                        if frame_telemetry is not None else 0))
+                            except Exception as error:
+                                panel_gate.last_at,panel_gate.last_key=gate_before
+                                report['recoveries'].append(dict(kind='preview_publish',
+                                    frame=index,error=repr(error),monotonic=time.monotonic()))
                                 dropped+=1
+                            else:
+                                if did_publish:
+                                    display_count=next_display_count
+                                    published+=1
+                                    compositor_input_published+=1
+                                    if pl_preview is None:last_binary_published+=1
+                                    if frame_telemetry is not None:
+                                        frame_telemetry=_with_publish_boundary(
+                                            frame_telemetry,True,time.monotonic_ns())
+                                else:
+                                    panel_gate.last_at,panel_gate.last_key=gate_before
+                                    dropped+=1
                     else:dropped+=1
                     stages['publish_ms'].append((time.monotonic()-snapshot_end)*1000)
             elif inputs is not None and last_gray is not None:
-                fault=dict(last_metadata);fault['status_lines']=['RLE帧无效 / 本帧拒计','累计 {}'.format(counter.total_count)]
+                fault=dict(last_metadata);fault['status_lines']=['RLE帧无效 / 本帧拒计','累计 {}'.format(display_count)]
                 fault['dashboard']=dict(fault.get('dashboard',{}),state='INVALID FRAME',preview_status='INVALID FRAME')
                 if process is not None and process.is_alive():
                     selected_gray,selected_binary=prepare_preview_frame(last_gray,binary,

@@ -9,6 +9,11 @@ module tb_rle_region_features;
   wire [9:0] result_x0, result_y0, result_x1, result_y1;
   wire [31:0] result_frame_id;
   wire [3:0] record_count;
+  wire candidate_flag;
+  wire [2:0] candidate_reason;
+  reg [23:0] cfg_max_area=0;
+  reg [15:0] cfg_max_w=0, cfg_max_h=0;
+  reg [7:0] cfg_aspect_x16=0;
 
   rle_region_features #(.MAX_LABELS(8),.MAX_RUNS_PER_ROW(4)) dut (
     .clk(clk),.resetn(resetn),.start(start),.frame_id(frame_id),
@@ -16,7 +21,9 @@ module tb_rle_region_features;
     .finish(finish),.result_valid(result_valid),.result_ready(result_ready),
     .result_area(result_area),.result_sum_x(result_sum_x),.result_sum_y(result_sum_y),
     .result_x0(result_x0),.result_y0(result_y0),.result_x1(result_x1),.result_y1(result_y1),
-    .result_frame_id(result_frame_id),.done(done),.overflow(overflow),.record_count(record_count),.busy(busy)
+    .result_frame_id(result_frame_id),.done(done),.overflow(overflow),.record_count(record_count),.busy(busy),
+    .candidate_flag(candidate_flag),.candidate_reason(candidate_reason),.cfg_max_area(cfg_max_area),
+    .cfg_max_w(cfg_max_w),.cfg_max_h(cfg_max_h),.cfg_aspect_x16(cfg_aspect_x16)
   );
 
   task automatic begin_frame(input [31:0] fid);
@@ -54,6 +61,8 @@ module tb_rle_region_features;
           {a,sx,sy,x0,y0,x1,y1,fid})
         $fatal(1,"region mismatch got area=%0d sx=%0d sy=%0d bbox=(%0d,%0d)-(%0d,%0d) fid=%0d",
           result_area,result_sum_x,result_sum_y,result_x0,result_y0,result_x1,result_y1,result_frame_id);
+      if (candidate_flag !== 1'b0 || candidate_reason !== 3'b000)
+        $fatal(1,"disabled candidate filters must produce zero reason");
       hold_a=result_area; hold_sx=result_sum_x; hold_sy=result_sum_y; hold_fid=result_frame_id;
       hold_x0=result_x0; hold_y0=result_y0; hold_x1=result_x1; hold_y1=result_y1;
       repeat (3) begin

@@ -20,6 +20,8 @@ OVERLAY_SOURCE_REL = Path(XPR_REL).parent.parent / "rtl/video_binary_overlay.v"
 OVERLAY_PINNED_REFERENCE_REL = Path("fpga/experimental/standalone/video_binary_overlay.v")
 OVERLAY_WRAPPER_SOURCE_REL = Path(XPR_REL).parent.parent / "rtl/video_binary_overlay_bd.v"
 OVERLAY_WRAPPER_PINNED_REFERENCE_REL = Path("fpga/experimental/standalone/video_binary_overlay_bd.v")
+FRAME_MONITOR_SOURCE_REL = Path("fpga/experimental/standalone/video_frame_monitor.v")
+FRAME_MONITOR_PINNED_REFERENCE_REL = Path("fpga/experimental/standalone/video_frame_monitor.v")
 TIMING_XDC_REL = Path("scripts/standalone/display_timing.xdc")
 OFFLOAD_CDC_XDC_REL = Path("scripts/standalone/offload_cdc.xdc")
 
@@ -148,9 +150,11 @@ def preflight(args) -> dict:
     nets = design["interface_nets"]
     require(any(set(n["interface_ports"]) == {"axi_dma_0/M_AXIS_MM2S", "image_pipeline/s_axis"} for n in nets.values()), "baseline image stream changed")
     region = args.region.resolve()
-    region_text = region.read_text(encoding="utf-8")
-    require("module rle_region_features" in region_text and "stats_mem" in region_text and "ram_style" in region_text,
-            "region source does not match the expected BRAM module")
+    region_receipt = read_json(args.region_green) if args.region_green else None
+    region_schema = region_receipt.get("schema") if region_receipt else None
+    check_region_source(region, region_schema)
+    if region_receipt:
+        check_region_receipt(region_receipt, sha(region))
     jpeg_source = args.jpeg_source.resolve()
     pending = []
     component = args.hls_ip.resolve() / "component.xml"
@@ -179,14 +183,216 @@ def pass_receipt(path: Path, identity_key: str, expected: str) -> dict:
     return entry(path)
 
 
-def check_region_receipt(receipt: dict) -> None:
-    """Accept the committed region receipt's explicit evidence schema."""
+def _check_bram_g2_region_receipt(receipt: dict,
+                                  expected_source_sha256: str | None = None) -> None:
+    """Validate the independent source-bound BRAM region evidence bundle."""
+    require(receipt.get("schema") == "material-counter.rle-region-bram-g2-green.v1",
+            "unsupported region receipt schema")
+    require(receipt.get("status") == "PASS", "BRAM G2 region receipt is not PASS")
+    source_sha256 = receipt.get("source_sha256")
+    require(isinstance(source_sha256, str) and re.fullmatch(r"[0-9a-fA-F]{64}", source_sha256),
+            "BRAM G2 region receipt has no valid source SHA-256")
+    if expected_source_sha256 is not None:
+        require(source_sha256 == expected_source_sha256,
+                "BRAM G2 region receipt source does not match preflight")
+
+    evidence = receipt.get("evidence", [])
+    require(isinstance(evidence, list) and evidence,
+            "BRAM G2 region receipt has no evidence")
+
+    required = (
+        "rle_region_features.v", "tb_region_candidate_filters.sv",
+        "rle_feature_tap.v", "region_candidates.log", "region_cases.log",
+        "region_diff.log", "region_limits.log", "region_driver.log",
+        "region_inputs.sha256", "region_memory.rpt", "region_util.rpt",
+        "region_elab_tap.log",
+    )
+    by_name: dict[str, list[tuple[Path, str]]] = {name: [] for name in required}
+    for item in evidence:
+        require(isinstance(item, dict) and isinstance(item.get("path"), str) and
+                isinstance(item.get("sha256"), str) and
+                re.fullmatch(r"[0-9a-fA-F]{64}", item["sha256"]),
+                "BRAM G2 evidence entry has an invalid path or SHA-256")
+        path = Path(item["path"]).resolve()
+        if path.name in by_name:
+            by_name[path.name].append((path, item["sha256"]))
+
+    def one_evidence(name: str) -> tuple[Path, str]:
+        matches = by_name[name]
+        require(len(matches) == 1,
+                f"BRAM G2 receipt must bind exactly one {name}")
+        path, expected_sha = matches[0]
+        require(sha(path) == expected_sha,
+                f"BRAM G2 evidence hash mismatch: {name}")
+        return path, expected_sha
+
+    bound = {name: one_evidence(name) for name in required}
+    source, source_evidence_sha = bound["rle_region_features.v"]
+    require(source_evidence_sha == source_sha256,
+            "BRAM G2 region source evidence hash mismatch")
+
+    manifest_path, _ = bound["region_inputs.sha256"]
+    manifest_hashes = {}
+    for line in manifest_path.read_text(encoding="ascii").splitlines():
+        match = re.fullmatch(r"\s*([0-9a-fA-F]{64})\s+\*?(.+?)\s*", line)
+        require(match is not None, "region input manifest has a malformed hash line")
+        digest, name = match.groups()
+        require(name not in manifest_hashes, f"duplicate input in region manifest: {name}")
+        manifest_hashes[name] = digest.lower()
+    for name in required[:3]:
+        require(manifest_hashes.get(name) == bound[name][1].lower(),
+                f"region input manifest hash mismatch: {name}")
+
+    markers = {
+        "region_candidates.log": r"REGION_CANDIDATE_PASS cases=7",
+        "region_cases.log": r"RLE_FEATURE_PASS cases=12",
+        "region_diff.log": r"REGION_DIFF_PASS compared=\d+",
+        "region_limits.log": r"REGION_LIMITS_PASS row_runs=320 labels=512 overflow=513",
+    }
+    for name, marker in markers.items():
+        text = bound[name][0].read_text(encoding="utf-8")
+        require(re.search(rf"(?m)^{marker}$", text) is not None,
+                f"region PASS marker missing or invalid: {name}")
+    driver = bound["region_driver.log"][0].read_text(encoding="utf-8")
+    driver_markers = {
+        "region_candidates.log": "REGION_CANDIDATE_PASS cases=7",
+        "region_cases.log": "RLE_FEATURE_PASS cases=12",
+        "region_diff.log": "REGION_DIFF_PASS",
+        "region_limits.log": "REGION_LIMITS_PASS",
+    }
+    require(re.search(r"(?m)^REGION_TAP_LINK_PASS$", driver) is not None and
+            all(re.search(rf"(?m)^REGION_XSIM_PASS: {re.escape(name)} {re.escape(marker)}$", driver)
+                is not None for name, marker in driver_markers.items()),
+            "region driver log is missing an exact PASS marker")
+
+    for name in ("region_candidates.log", "region_cases.log", "region_diff.log",
+                 "region_limits.log", "region_driver.log", "region_elab_tap.log"):
+        text = bound[name][0].read_text(encoding="utf-8")
+        failure = re.search(
+            r"^[ \t]*(?:Fatal:|ERROR:|REGION_XSIM_FAIL\b|REGION_BRAM_FAIL\b)|"
+            r"^(?![ \t]*#).*watchdog timeout",
+            text, re.IGNORECASE | re.MULTILINE)
+        require(failure is None,
+                f"region log contains a failure marker: {name}")
+    require(bound["region_elab_tap.log"][0].stat().st_size > 0,
+            "region tap elaboration log is empty")
+
+    memory = bound["region_memory.rpt"][0].read_text(encoding="utf-8")
+    for name, count in (("stats_bram", 4), ("row_bram", 1), ("stats_lutram", 0)):
+        require(re.search(rf"(?m)^{name}={count}(?:\s|:|$)", memory) is not None,
+                f"region memory report must contain {name}={count}")
+    require(bound["region_util.rpt"][0].stat().st_size > 0,
+            "region utilization report is empty")
+
+
+def _check_g2_region_receipt(receipt: dict,
+                             expected_source_sha256: str | None = None) -> None:
+    """Accept current RLE RTL only with source-bound XSim and routed G2 evidence."""
+    require(receipt.get("status") == "PASS", "current G2 region receipt is not PASS")
+    source_sha256 = receipt.get("source_sha256")
+    require(isinstance(source_sha256, str) and re.fullmatch(r"[0-9a-fA-F]{64}", source_sha256),
+            "current G2 region receipt has no valid source SHA-256")
+    if expected_source_sha256 is not None:
+        require(source_sha256 == expected_source_sha256,
+                "current G2 region receipt source does not match preflight")
+
+    checks = receipt.get("checks", {})
+    require(all(checks.get(name) is True for name in (
+        "xsim_expected_outputs", "limits_and_candidate_thresholds",
+        "g2_integrated_build_reviewed")),
+        "current G2 region checks are not all reviewed PASS")
+
+    evidence = receipt.get("evidence", [])
+    require(isinstance(evidence, list) and evidence,
+            "current G2 region receipt has no evidence")
+
+    def one_evidence(name: str) -> Path:
+        matches = [Path(item["path"]).resolve() for item in evidence
+                   if isinstance(item, dict) and isinstance(item.get("path"), str)
+                   and Path(item["path"]).name == name]
+        require(len(matches) == 1,
+                f"current G2 region receipt must bind exactly one {name}")
+        return matches[0]
+
+    source = one_evidence("rle_region_features.v")
+    require(sha(source) == source_sha256,
+            "current G2 region source evidence hash mismatch")
+    one_evidence("tb_rle_region_features.sv")
+    xsim = one_evidence("tb_rle_region_features.xsim.log")
+    require("RLE_FEATURE_PASS cases=16" in xsim.read_text(encoding="utf-8"),
+            "current G2 region XSim evidence did not pass all 16 cases")
+
+    build_manifest_path = one_evidence("build-manifest.json")
+    build = read_json(build_manifest_path)
+    require(build.get("schema") == "material-counter.g2-sw1-candidate.v1" and
+            build.get("rtl_sha256", {}).get("rle_region_features.v") == source_sha256,
+            "current G2 build manifest does not bind this region source")
+
+    timing = build.get("timing", {})
+    require(timing.get("all_user_constraints_met") is True and
+            isinstance(timing.get("wns_ns"), (int, float)) and timing["wns_ns"] >= 0 and
+            isinstance(timing.get("whs_ns"), (int, float)) and timing["whs_ns"] >= 0 and
+            timing.get("unrouted_nets") == 0 and timing.get("partially_routed_nets") == 0,
+            "current G2 region source has failing routed timing or unrouted nets")
+    drc = build.get("drc", {})
+    require(drc.get("errors") == 0 and drc.get("critical_warnings") == 0,
+            "current G2 region source has DRC errors or Critical Warnings")
+    cdc = build.get("cdc", {})
+    require(isinstance(cdc.get("review"), str) and
+            cdc["review"].startswith("manual_review_complete_") and
+            isinstance(cdc.get("review_record"), str),
+            "current G2 region source has no completed CDC review")
+    review_path = (build_manifest_path.parent / cdc["review_record"]).resolve()
+    require(review_path == one_evidence("cdc-review.md"),
+            "current G2 CDC review record is missing from region evidence")
+    for name in ("cdc.rpt", "timing.rpt", "utilization.rpt", "drc.rpt"):
+        report = one_evidence(name)
+        require(report.stat().st_size > 0,
+                f"current G2 region report is empty: {name}")
+    utilization = one_evidence("utilization.rpt").read_text(encoding="utf-8")
+    require("RAMB36" in utilization and "LUT as Logic" in utilization,
+            "current G2 region utilization report is incomplete")
+
+
+def check_region_receipt(receipt: dict,
+                         expected_source_sha256: str | None = None) -> None:
+    """Validate either the legacy BRAM proof or current routed-G2 region proof."""
+    if receipt.get("schema") == "material-counter.rle-region-bram-g2-green.v1":
+        _check_bram_g2_region_receipt(receipt, expected_source_sha256)
+        return
+    if receipt.get("schema") == "material-counter.rle-region-g2-green.v1":
+        _check_g2_region_receipt(receipt, expected_source_sha256)
+        return
     memory = receipt.get("memory_gate", {})
     require(receipt.get("reference_diff") == "PASS" and receipt.get("limits") == "PASS" and
             isinstance(memory.get("stats_bram36"), int) and memory["stats_bram36"] > 0 and
             isinstance(memory.get("row_bram36"), int) and memory["row_bram36"] > 0 and
             memory.get("stats_lutram") == 0,
             "region reference_diff/limits/memory_gate BRAM evidence is not PASS")
+
+
+def check_region_source(path: Path, receipt_schema: str | None = None) -> None:
+    """Check the selected RTL shape for its explicitly declared evidence schema."""
+    source = path.read_text(encoding="utf-8")
+    require("module rle_region_features" in source,
+            "region source does not define rle_region_features")
+    if receipt_schema == "material-counter.rle-region-bram-g2-green.v1":
+        header = re.search(r"module\s+rle_region_features\b([\s\S]*?);", source)
+        require(header is not None and all(re.search(rf"\b{port}\b", header.group(1))
+                                           for port in (
+            "candidate_flag", "candidate_reason", "cfg_max_area", "cfg_max_w",
+            "cfg_max_h", "cfg_aspect_x16")),
+            "BRAM G2 region source is missing candidate configuration ports")
+        require(all(name in source for name in ("stats_mem", "row_mem", "ram_style")),
+                "BRAM G2 region source is missing BRAM memory structures")
+    elif receipt_schema == "material-counter.rle-region-g2-green.v1":
+        require(all(port in source for port in (
+            "candidate_flag", "candidate_reason", "cfg_max_area", "cfg_max_w",
+            "cfg_max_h", "cfg_aspect_x16")),
+            "current G2 region source is missing candidate configuration ports")
+    else:
+        require("stats_mem" in source and "ram_style" in source,
+                "region source does not match the expected BRAM module")
 
 
 def tcl_scalar(value) -> str:
@@ -201,6 +407,7 @@ def verify_manifest(path: Path) -> None:
         require(sha(Path(item["path"])) == item["sha256"], f"joint input changed: {item['path']}")
     verify_overlay_binding(path, manifest)
     verify_overlay_wrapper_binding(path, manifest)
+    verify_frame_monitor_binding(path, manifest)
     verify_timing_xdc_binding(path, manifest)
     verify_offload_cdc_binding(path, manifest)
     print("JOINT_SOURCE_HASHES_OK")
@@ -413,6 +620,105 @@ def verify_overlay_wrapper_binding(path: Path, manifest: dict) -> None:
             "overlay wrapper replacement is missing from required live project sources")
 
 
+def resolve_frame_monitor_override(candidate_path: Path | None, baseline: Path,
+                                   pinned_sources: list[dict], project_sources: list[dict]) -> dict | None:
+    """Bind one optional frame-monitor candidate to its pinned project source."""
+    if candidate_path is None:
+        return None
+    candidate_arg = Path(candidate_path)
+    require(not candidate_arg.is_symlink(), "frame monitor RTL override must be an ordinary file")
+    candidate = candidate_arg.resolve(strict=True)
+    require(candidate.is_file(), "frame monitor RTL override must be an ordinary file")
+    baseline = baseline.resolve()
+    require(not candidate.is_relative_to(baseline), "frame monitor RTL override must be outside the fixed snapshot")
+    require(re.search(r"\bmodule\s+video_frame_monitor\b",
+                      candidate.read_text(encoding="utf-8")) is not None,
+            "frame monitor RTL override must declare module video_frame_monitor")
+
+    def matches_target(items: list[dict]) -> list[dict]:
+        matches = []
+        for item in items:
+            source = Path(item["path"]).resolve()
+            try:
+                relative = source.relative_to(baseline)
+            except ValueError:
+                continue
+            if relative.as_posix() == FRAME_MONITOR_SOURCE_REL.as_posix():
+                matches.append(item)
+        return matches
+
+    pinned = matches_target(pinned_sources)
+    project = matches_target(project_sources)
+    require(len(pinned) == 1, "standalone frame monitor reference is not uniquely pinned")
+    require(len(project) == 1, "fixed XPR frame monitor is not a unique project source")
+    source_path = Path(project[0]["path"]).resolve()
+    pinned_path = Path(pinned[0]["path"]).resolve()
+    require(source_path.is_file() and pinned_path.is_file() and
+            sha(source_path) == project[0]["sha256"] == pinned[0]["sha256"] == sha(pinned_path),
+            "fixed XPR frame monitor does not match its pinned standalone reference")
+    return {"source": project[0], "pinned_reference": pinned[0], "candidate": entry(candidate),
+            "target_relative_path": FRAME_MONITOR_SOURCE_REL.as_posix()}
+
+
+def verify_frame_monitor_binding(path: Path, manifest: dict) -> None:
+    """Check that the staged frame monitor matches its immutable candidate and pinned source."""
+    if "frame_monitor_replacements" not in manifest:
+        return
+    replacements = manifest["frame_monitor_replacements"]
+    require(isinstance(replacements, list) and len(replacements) == 1,
+            "frame monitor replacement manifest must contain exactly one source")
+    replacement = replacements[0]
+    require(replacement.get("target_relative_path") == FRAME_MONITOR_SOURCE_REL.as_posix(),
+            "frame monitor replacement target changed")
+    source = replacement.get("source", {})
+    pinned_reference = replacement.get("pinned_reference", {})
+    candidate = replacement.get("candidate", {})
+    staged = replacement.get("replacement", {})
+    preflight = manifest.get("preflight", {})
+    baseline = Path(preflight.get("snapshot", "")).resolve()
+    source_path = Path(source.get("path", "")).resolve()
+    pinned_path = Path(pinned_reference.get("path", "")).resolve()
+    for bound_path, expected, message in (
+        (source_path, FRAME_MONITOR_SOURCE_REL, "frame monitor source is outside the fixed snapshot"),
+        (pinned_path, FRAME_MONITOR_PINNED_REFERENCE_REL, "frame monitor reference is outside the fixed snapshot"),
+    ):
+        try:
+            relative = bound_path.relative_to(baseline)
+        except ValueError as error:
+            raise ValueError(message) from error
+        require(relative.as_posix() == expected.as_posix(), "frame monitor source/reference path changed")
+    pinned = [item for item in preflight.get("baseline_pinned_sources", [])
+              if Path(item.get("path", "")).resolve() == pinned_path]
+    project = [item for item in preflight.get("project_sources", [])
+               if Path(item.get("path", "")).resolve() == source_path]
+    require(len(pinned) == 1 and len(project) == 1 and
+            pinned[0].get("sha256") == pinned_reference.get("sha256") and
+            source.get("sha256") == project[0].get("sha256") == pinned_reference.get("sha256"),
+            "frame monitor source does not match its unique pinned project reference")
+    candidate_path = Path(candidate.get("path", "")).resolve()
+    staged_path = Path(staged.get("path", "")).resolve()
+    expected_staged = (path.parent / "snapshot" / FRAME_MONITOR_SOURCE_REL).resolve()
+    require(staged_path == expected_staged,
+            "frame monitor replacement is not bound to the fixed staged project path")
+    immutable = [item for item in manifest.get("immutable_inputs", [])
+                 if Path(item.get("path", "")).resolve() == candidate_path]
+    staged_sources = [item for item in manifest.get("snapshot_sources", [])
+                      if Path(item.get("path", "")).resolve() == staged_path]
+    require(len(immutable) == 1 and len(staged_sources) == 1 and
+            immutable[0].get("sha256") == candidate.get("sha256") and
+            staged_sources[0].get("sha256") == staged.get("sha256"),
+            "frame monitor candidate or staged source is absent from hash manifest")
+    require(candidate.get("sha256") == staged.get("sha256"),
+            "frame monitor replacement hash differs from the immutable candidate")
+    for source_file in (candidate_path, staged_path):
+        require(re.search(r"\bmodule\s+video_frame_monitor\b",
+                          source_file.read_text(encoding="utf-8")) is not None,
+                "frame monitor replacement must declare module video_frame_monitor")
+    required_live = {Path(item).resolve() for item in manifest.get("required_live_sources", [])}
+    require(staged_path in required_live,
+            "frame monitor replacement is missing from required live project sources")
+
+
 def _validate_timing_xdc(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
     active = "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
@@ -620,7 +926,7 @@ def verify_gates(path: Path, route_review: Path | None = None) -> None:
     hls, region = read_json(hls_path), read_json(region_path)
     require(hls.get("component_sha256") == manifest["preflight"]["hls"]["component"]["sha256"], "HLS component is not green snapshot")
     require(all(hls.get("checks", {}).get(k) is True for k in ("csim", "csynth", "cosim")), "HLS csim/csynth/cosim PASS is required")
-    check_region_receipt(region)
+    check_region_receipt(region, manifest["preflight"]["region"]["sha256"])
     print("JOINT_GREEN_GATES_OK")
     if route_review:
         review = read_json(route_review)
@@ -663,7 +969,7 @@ def stage(args, result: dict) -> None:
     hls_receipt = pass_receipt(args.hls_green.resolve(), "source_sha256", result["jpeg_source"]["sha256"]) if args.hls_green else None
     region_receipt = pass_receipt(args.region_green.resolve(), "source_sha256", result["region"]["sha256"]) if args.region_green else None
     if region_receipt:
-        check_region_receipt(read_json(args.region_green))
+        check_region_receipt(read_json(args.region_green), result["region"]["sha256"])
     if hls_receipt:
         require(read_json(args.hls_green).get("component_sha256") == result["hls"]["component"]["sha256"], "HLS receipt component hash mismatch")
     # Keep a caller-provided short Windows alias (for example a SUBST drive)
@@ -677,6 +983,9 @@ def stage(args, result: dict) -> None:
         result["baseline_pinned_sources"], result["project_sources"])
     overlay_wrapper_binding = resolve_overlay_wrapper_override(
         getattr(args, "overlay_wrapper_rtl", None), baseline,
+        result["baseline_pinned_sources"], result["project_sources"])
+    frame_monitor_binding = resolve_frame_monitor_override(
+        getattr(args, "frame_monitor_rtl", None), baseline,
         result["baseline_pinned_sources"], result["project_sources"])
     timing_xdc_binding = resolve_timing_xdc_override(
         getattr(args, "timing_xdc", None), baseline, result["baseline_pinned_sources"])
@@ -728,6 +1037,7 @@ def stage(args, result: dict) -> None:
     replacements = []
     overlay_replacements = []
     overlay_wrapper_replacements = []
+    frame_monitor_replacements = []
     timing_xdc_replacements = []
     offload_cdc_replacements = []
     timing_xdc_target = None
@@ -763,6 +1073,19 @@ def stage(args, result: dict) -> None:
                 "replacement": replacement, "candidate": overlay_wrapper_binding["candidate"],
                 "target_relative_path": overlay_wrapper_binding["target_relative_path"],
                 "reason": "Manager-selected count-glyph AXI-Lite ABI"})
+        elif frame_monitor_binding and source.resolve() == Path(frame_monitor_binding["source"]["path"]).resolve():
+            candidate = Path(frame_monitor_binding["candidate"]["path"])
+            require(sha(candidate) == frame_monitor_binding["candidate"]["sha256"],
+                    "frame monitor RTL override changed after validation")
+            shutil.copy2(candidate, target)
+            replacement = entry(target)
+            require(replacement["sha256"] == frame_monitor_binding["candidate"]["sha256"],
+                    "staged frame monitor hash differs from the immutable candidate")
+            frame_monitor_replacements.append({"source": frame_monitor_binding["source"],
+                "pinned_reference": frame_monitor_binding["pinned_reference"],
+                "replacement": replacement, "candidate": frame_monitor_binding["candidate"],
+                "target_relative_path": frame_monitor_binding["target_relative_path"],
+                "reason": "Manager-selected frame-boundary timing pipeline"})
         elif timing_xdc_binding and source.resolve() == Path(timing_xdc_binding["source"]["path"]).resolve():
             candidate = Path(timing_xdc_binding["candidate"]["path"])
             require(sha(candidate) == timing_xdc_binding["candidate"]["sha256"],
@@ -788,10 +1111,10 @@ def stage(args, result: dict) -> None:
             offload_cdc_replacements.append({"source": offload_cdc_binding["source"],
                 "replacement": replacement, "candidate": offload_cdc_binding["candidate"],
                 "target_relative_path": offload_cdc_binding["target_relative_path"],
-                "reason": "Anchor bundled-data max-delay endpoints to sequential register cells"})
+                "reason": "Use static joint CDC constraints; the pinned switch XDC already covers GPIO/SW inputs"})
         elif source.name == "rle_region_features.v":
             target.write_bytes(Path(result["region"]["path"]).read_bytes())
-            replacements.append({"source": entry(source), "replacement": entry(target), "reason": "Manager-selected BRAM region core"})
+            replacements.append({"source": entry(source), "replacement": entry(target), "reason": "Manager-selected G2 region feature core"})
         else:
             shutil.copy2(source, target)
         if target.suffix not in (".xpr", ".bd") and not any(p.endswith(".gen") for p in target.parts):
@@ -801,6 +1124,8 @@ def stage(args, result: dict) -> None:
             "overlay RTL override did not replace exactly one pinned project source")
     require(not overlay_wrapper_binding or len(overlay_wrapper_replacements) == 1,
             "overlay wrapper override did not replace exactly one pinned project source")
+    require(not frame_monitor_binding or len(frame_monitor_replacements) == 1,
+            "frame monitor RTL override did not replace exactly one pinned project source")
     require(not timing_xdc_binding or len(timing_xdc_replacements) == 1,
             "timing XDC override did not replace exactly one pinned source")
     require(not offload_cdc_binding or len(offload_cdc_replacements) == 1,
@@ -821,8 +1146,11 @@ def stage(args, result: dict) -> None:
     if offload_cdc_target is not None and offload_cdc_target.as_posix() not in required_live:
         required_live.append(offload_cdc_target.as_posix())
         register_timing_xdc_in_project(project, offload_cdc_target)
-    top = [n.attrib["Val"] for n in project.findall(".//Option") if n.attrib.get("Name") == "TopModule"]
-    require(top == ["display_wrapper"], f"unexpected XPR top: {top}")
+    synth_fileset = project.find(".//FileSet[@Name='sources_1']")
+    require(synth_fileset is not None, "XPR is missing the sources_1 synthesis fileset")
+    top = [n.attrib["Val"] for n in synth_fileset.findall(".//Option")
+           if n.attrib.get("Name") == "TopModule"]
+    require(top == ["display_wrapper"], f"unexpected sources_1 XPR top: {top}")
     wrapper = next(p for p in required_live if Path(p).name == "display_wrapper.v")
     require(re.search(r"\bmodule\s+display_wrapper\b", Path(wrapper).read_text(encoding="utf-8")), "staged wrapper does not declare display_wrapper")
     external_repos = [n.attrib["Val"] for n in project.findall(".//Option") if n.attrib.get("Name") == "IPRepoPath"]
@@ -855,6 +1183,8 @@ def stage(args, result: dict) -> None:
         immutable.append(overlay_binding["candidate"])
     if overlay_wrapper_binding:
         immutable.append(overlay_wrapper_binding["candidate"])
+    if frame_monitor_binding:
+        immutable.append(frame_monitor_binding["candidate"])
     if timing_xdc_binding:
         immutable.append(timing_xdc_binding["candidate"])
     if offload_cdc_binding:
@@ -875,6 +1205,8 @@ def stage(args, result: dict) -> None:
         manifest["overlay_replacements"] = overlay_replacements
     if overlay_wrapper_replacements:
         manifest["overlay_wrapper_replacements"] = overlay_wrapper_replacements
+    if frame_monitor_replacements:
+        manifest["frame_monitor_replacements"] = frame_monitor_replacements
     if timing_xdc_replacements:
         manifest["timing_xdc_replacements"] = timing_xdc_replacements
     if offload_cdc_replacements:
@@ -909,12 +1241,13 @@ def main() -> int:
     p.add_argument("--region", type=Path, default=Path(__file__).with_name("rle_region_features.v"))
     p.add_argument("--overlay-rtl", type=Path, help="Optional pixel overlay RTL override; only replaces the pinned staged source")
     p.add_argument("--overlay-wrapper-rtl", type=Path, help="Optional AXI-Lite overlay wrapper override; only replaces the pinned staged source")
+    p.add_argument("--frame-monitor-rtl", type=Path, help="Optional frame-monitor RTL override; only replaces the pinned staged source")
     p.add_argument("--timing-xdc", type=Path,
                    default=Path(__file__).resolve().parents[3] / "scripts/standalone/display_timing.xdc",
                    help="Reviewed display timing XDC; staging replaces the fixed snapshot copy")
     p.add_argument("--offload-cdc-xdc", type=Path,
-                   default=Path(__file__).resolve().parents[3] / "scripts/standalone/offload_cdc.xdc",
-                   help="Reviewed sequential-endpoint CDC XDC; staging replaces the fixed snapshot copy")
+                   default=Path(__file__).resolve().parents[3] / "scripts/standalone/jpeg_joint_cdc.xdc",
+                   help="Reviewed static JPEG joint CDC XDC; staging replaces the fixed snapshot copy")
     p.add_argument("--jpeg-source", type=Path, default=repo / "fpga/experimental/jpeg_axis/jpeg_axis_gray.cpp")
     p.add_argument("--result", type=Path, help="Fresh JSON path; omitted means stdout only")
     p.add_argument("--stage", type=Path, help="Explicitly stage a new build directory; never starts Vivado")
