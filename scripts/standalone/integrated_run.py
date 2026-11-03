@@ -376,8 +376,8 @@ def prepare_preview_frame(gray, binary, *, backend, black_frame=None):
 
 
 class PreviewPublishGate:
-    """Limit PL panel frames to 10 Hz unless a visible state changes."""
-    def __init__(self, interval_s=.1):
+    """Limit PL panel frames to 15 Hz unless a visible state changes."""
+    def __init__(self, interval_s=1/15):
         self.interval_s=interval_s
         self.last_at=None
         self.last_key=None
@@ -591,8 +591,8 @@ def prepare_preview_frame(gray, binary, *, backend, black_frame=None):
 
 
 class PreviewPublishGate:
-    """Limit PL panel frames to 10 Hz unless a visible state changes."""
-    def __init__(self, interval_s=.1):
+    """Limit PL panel frames to 15 Hz unless a visible state changes."""
+    def __init__(self, interval_s=1/15):
         self.interval_s=interval_s
         self.last_at=None
         self.last_key=None
@@ -1231,7 +1231,7 @@ def main(argv=None):
         latest_dashboard_telemetry={}
         last_performance_index=last_performance_submitted=0;last_gray=last_metadata=None;last_valid_id=0;rx_total_bytes=0
         black_frame=np.zeros((400,640),dtype=np.uint8)
-        panel_gate=PreviewPublishGate(.1);last_pl_accepts=0;pl_accept_total=0;binary_fps=None
+        panel_gate=PreviewPublishGate(1/15);last_pl_accepts=0;pl_accept_total=0;binary_fps=None
         last_binary_published=0
         binary_fps_window_at=started
         trajectory_epoch=0;camera_in_error=False
@@ -1492,7 +1492,10 @@ def main(argv=None):
                 if args.display=='on':
                     if counter.total_count<display_count:
                         display_count=counter.total_count
-                    next_display_count=min(counter.total_count,display_count+1)
+                    count_backlog=counter.total_count-display_count
+                    display_step=(min(count_backlog,max(1,min(5,(count_backlog+14)//15)))
+                        if count_backlog else 0)
+                    next_display_count=display_count+display_step
                     if pl_preview is None:prepare_preview_binary(packet,binary,True)
                     metadata=result_metadata(result,paused=controls.paused,binary_background=True,
                         page=controls.page,trajectory_epoch=trajectory_epoch,count_axis=counter.count_axis,
