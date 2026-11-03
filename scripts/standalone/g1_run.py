@@ -544,7 +544,7 @@ def main(argv=None):
                 status = (source_label, "本次运行累计：0；重启清零",
                           f"有效显示 {rate:.2f} FPS / 720p60",
                           f"输出新帧 {current['unique']}；重复 {current['repeat']}",
-                          f"无效扫描 {current['invalid']}；页 {controls.page}")
+                          f"无效扫描 {current['invalid']}")
                 next_metrics = begin + 2
                 print(json.dumps({"elapsed": begin-start, **current}), flush=True)
             if begin >= next_memory:
@@ -559,21 +559,12 @@ def main(argv=None):
                                                   "per_core_percent": per_core})
                 cpu_previous = cpu_current
                 next_cpu = begin + 3
-            detail_source = "真实摄像头与模拟框线" if args.source == "camera" else "合成图"
-            detail = (f"G1.5 参数页（{detail_source}，无 RLE 计数）",
-                      "输入 640×400 Gray8；显示 576×360",
-                      "HDMI：1280×720@60Hz / Gray8",
-                      f"FCLK MHz：{hw.clocks}", "显示独占 HP2；4 个 VDMA 槽",
-                      "合成子进程；普通 RAM 三槽共享帧",
-                      f"CMA 可用：{latest_memory.get('CmaFree', '未知')}",
-                      f"帧身份：{current['frame']} / UUID128",
-                      "0/128/255 灰阶应无色偏、无拉伸")
-            live_status = (detail if controls.page else status) + (
+            live_status = status + (
                 "计数已暂停（图像/显示继续）" if controls.paused else "计数状态：运行",
                 f"BTN0 清零次数 {controls.clear_requests}",
-                "BTN0 清零　BTN1 诊断模式",
-                "SW0开+BTN2曝光增加 / SW0关+BTN2曝光减少（当前SW0未接入）",
-                "BTN3 参数页")
+                "BTN0 清零累计计数　BTN1 切换诊断模式",
+                "BTN2 调整曝光：SW0 ON 增加 / SW0 OFF 减少",
+                "SW0 当前未接入；BTN3 预留")
             _send_latest_state(updates, {"status_lines": live_status,
                                          "binary_background": controls.binary_background})
             lease = frames.acquire_latest()

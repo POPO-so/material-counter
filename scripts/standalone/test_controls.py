@@ -34,14 +34,6 @@ def test_btn2_exposure_direction_follows_sw0():
     assert d.advance(.431, sw0_state=None) == ()
 
 
-def test_btn3_cycles_pages():
-    d = ButtonDecoder()
-    assert d.update(8, 0) == ()
-    assert d.advance(.03) == ("page",)
-    assert d.update(0, .1) == ()
-    assert d.advance(.13) == ()
-
-
 def test_deadline_drives_debounce_and_simultaneous_new_buttons():
     d = ButtonDecoder()
     assert d.update(3, 1) == ()
@@ -52,8 +44,8 @@ def test_deadline_drives_debounce_and_simultaneous_new_buttons():
 
 def test_legacy_commands_remain_available_for_offline_replay():
     s = ControlState()
-    s.apply(("pause", "background", "page", "clear"))
-    assert s.paused and not s.binary_background and s.page == 1
+    s.apply(("pause", "background", "clear"))
+    assert s.paused and not s.binary_background
     assert s.clear_requests == 1 and not s.diagnostic
 
 

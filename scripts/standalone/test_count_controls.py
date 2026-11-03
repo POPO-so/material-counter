@@ -47,12 +47,12 @@ def test_clear_keeps_track_dedup_and_display_commands_do_not_change_count(librar
     counter=RleCounter(library=library,max_step=50)
     controls=ControlState()
     for i,y in enumerate((160,175,190,205,220,235,245)):
-        commands=('clear','page','background') if i==5 else ()
+        commands=('clear','background') if i==5 else ()
         result=advance_count(counter,controls,packet(i,y),commands,
                              capture_monotonic_ns=(i+1)*100_000_000)
     assert result.total_count==0
     assert any(t['counted'] for t in result.tracks)
-    assert controls.page==1 and not controls.binary_background
+    assert not controls.binary_background
 
 
 def test_streaming_runtime_discards_finished_history_without_changing_events():
