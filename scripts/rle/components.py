@@ -154,15 +154,37 @@ def local_mask(runs: Any, labels: Any, component_index: int) -> np.ndarray:
     selected = np.flatnonzero(label_array == int(component_index))
     if not len(selected):
         raise ValueError("component_index has no runs")
-    x_min = min(int((int(run_array[i]) >> 10) & 0x3FF) for i in selected)
-    x_max = max(int(run_array[i]) & 0x3FF for i in selected)
-    y_min = min(int(run_array[i]) >> 20 for i in selected)
-    y_max = max(int(run_array[i]) >> 20 for i in selected)
+    if len(selected) <= 8:
+        x_min = min(int((int(run_array[i]) >> 10) & 0x3FF) for i in selected)
+        x_max = max(int(run_array[i]) & 0x3FF for i in selected)
+        y_min = min(int(run_array[i]) >> 20 for i in selected)
+        y_max = max(int(run_array[i]) >> 20 for i in selected)
+        mask = np.zeros((y_max - y_min + 1, x_max - x_min + 1), dtype=np.uint8)
+        for index in selected:
+            word = int(run_array[index])
+            row = (word >> 20) - y_min
+            begin = ((word >> 10) & 0x3FF) - x_min
+            end = (word & 0x3FF) - x_min
+            mask[row, begin:end + 1] = 255
+        return mask
+
+    words = run_array[selected]
+    rows = words >> 20
+    begins = (words >> 10) & 0x3FF
+    ends = words & 0x3FF
+    x_min = int(begins.min())
+    x_max = int(ends.max())
+    y_min = int(rows.min())
+    y_max = int(rows.max())
     mask = np.zeros((y_max - y_min + 1, x_max - x_min + 1), dtype=np.uint8)
-    for index in selected:
-        word = int(run_array[index])
-        row = (word >> 20) - y_min
-        begin = ((word >> 10) & 0x3FF) - x_min
-        end = (word & 0x3FF) - x_min
-        mask[row, begin:end + 1] = 255
+    width = x_max - x_min + 1
+    valid = begins <= ends
+    lengths = (ends[valid] - begins[valid] + 1).astype(np.int64)
+    pixel_count = int(lengths.sum())
+    if pixel_count:
+        offsets = (np.arange(pixel_count, dtype=np.int64)
+                   - np.repeat(np.cumsum(lengths) - lengths, lengths))
+        starts = ((rows[valid] - y_min) * width + begins[valid] - x_min)
+        positions = np.repeat(starts, lengths) + offsets
+        mask.reshape(-1)[positions] = 255
     return mask
