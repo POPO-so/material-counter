@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "imported_on": "2026-11-04",
+  "source_collection": "用户提供的 FPGA赛 文件夹",
+  "transform": "none; byte-for-byte copies",
+  "version_binding": "未与最终提交 commit、BIT/HWH 或运行证据绑定",
+  "photos": [
+    {
+      "file": "system-front.jpg",
+      "source_relative_path": "作品/正面全景照片.jpg",
+      "bytes": 6691442,
+      "sha256": "ef8d6bf402ca7b4681a5ff90f4c0d3734b12ff590bbf4490d385dd2f4abe5dc3",
+      "encoded_dimensions": [
+        5712,
+        4284
+      ],
+      "exif_orientation": 1
+    },
+    {
+      "file": "system-angle.jpg",
+      "source_relative_path": "作品/45°.jpg",
+      "bytes": 6676669,
+      "sha256": "70d62ae2d3fc6fda9ed6678ce9109be5da392beb9cbe116f8c73aa0fce279469",
+      "encoded_dimensions": [
+        5712,
+        4284
+      ],
+      "exif_orientation": 1
+    },
+    {
+      "file": "pynq-board.jpg",
+      "source_relative_path": "作品/处理板、相机、HDMI、供电接线实拍.jpg",
+      "bytes": 6165753,
+      "sha256": "839a25b1fc3dbcd6d81f65a95b65c9b9e6688d652197da037dd11cd136054b40",
+      "encoded_dimensions": [
+        5712,
+        4284
+      ],
+      "exif_orientation": 6
+    },
+    {
+      "file": "hdmi-usb-ports.jpg",
+      "source_relative_path": "作品/摄像头和HDMI显示屏接口.jpg",
+      "bytes": 4958830,
+      "sha256": "6582153bf779ece84aaef4e55d67aeafb6684abcf977656ae26f760b2f70a684",
+      "encoded_dimensions": [
+        5712,
+        4284
+      ],
+      "exif_orientation": 6
+    },
+    {
+      "file": "power-connection.jpg",
+      "source_relative_path": "作品/供电口.jpg",
+      "bytes": 4427416,
+      "sha256": "357f439de7853d502df1b194570ae56d87cab6a98890e1c4332061d5a6c7895f",
+      "encoded_dimensions": [
+        5712,
+        4284
+      ],
+      "exif_orientation": 6
+    },
+    {
+      "file": "hdmi-dashboard.jpg",
+      "source_relative_path": "作品/HDMI仪表盘特写.jpg",
+      "bytes": 7481904,
+      "sha256": "b62f7cdde659ab9d063f96c087b6d93e6a65a81f3f70f2f5dd37b718d4faf581",
+      "encoded_dimensions": [
+        5712,
+        4284
+      ],
+      "exif_orientation": 1
+    }
+  ]
+}
