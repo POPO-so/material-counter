@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "date": "2026-11-04",
+  "artifact": {
+    "file": "material-counter-5438e0e1-complete-r2.rar",
+    "local_source": "C:/Users/POP/Desktop/FPGA赛/material-counter-5438e0e1-complete-r2.rar",
+    "bytes": 70648413,
+    "sha256": "ae5204d6e32cf89b826585e73ee91c45bb840ec393b51e34b31b3471fe489938",
+    "published_in_github_repository": false,
+    "rar_integrity_test": "PASS",
+    "archive_entries": 2044,
+    "unsafe_paths": 0
+  },
+  "top_level_manifest": {
+    "schema": "material-counter.competition.v2",
+    "application_commit": "5438e0e1f737fc426224f285a4c8b2454d225efc",
+    "hardware_commit": "037d38d14a1240d65650a73c6c2ca9fd684ceb6a",
+    "entries": 1622,
+    "verified": "1622/1622"
+  },
+  "git_source_provenance": {
+    "application_git_files": 615,
+    "hardware_git_files": 215,
+    "verified": "830/830",
+    "all_original_git_paths_found": true
+  },
+  "board_runtime": {
+    "package_source_commit": "d25f7cf598ca2a472a8a6e871ebfd2e5b6084c83",
+    "package_source_status": "CANDIDATE_NOT_BOARD_ACCEPTED",
+    "module_files_declared": 50,
+    "module_original_sha_matches_v13_snapshot": "45/50",
+    "module_files_matching_base_d25f": "5/50",
+    "module_mismatches_to_v13": [
+      {
+        "path": "scripts/rle/counter.py",
+        "r2_sha256": "51a1aceb9fbbb2a31b04f7b0d5b3d4f9be137b7defda5f6f552f05c39bfe4283",
+        "v13_sha256": "141ab29e6a0e533931bb57b6194e642821c0767c1ca67b55498e24a6ba8178fa"
+      },
+      {
+        "path": "scripts/standalone/count_controls.py",
+        "r2_sha256": "3e1c79857e4133d4aefae125db7150a2c571b962429de0f88683655bba956a7d",
+        "v13_sha256": "e3a7350a7fbd158ca5344514ac316fe02969dea74516d5d604874df566c8a1e9"
+      },
+      {
+        "path": "scripts/standalone/crossing_snapshots.py",
+        "r2_sha256": "78f45b88c7c2bb3a43bf900b4d2c918e98b7368f4c2740bce87baa7cc3801401",
+        "v13_sha256": "8d7bc025fafcf64b09d7a0344f5da998faad977b246da54f34e6100ec17a3c28"
+      },
+      {
+        "path": "scripts/wo0016/split_touching.py",
+        "r2_sha256": "5a6e697de1fc3145b3a421faa2e9aeb0fb04f4a8b6dfee2a4d446fefa52eceaa",
+        "v13_sha256": "e24f92290f404fb23329d28afc700c47885563a169c044a863f96f4ade71d558"
+      },
+      {
+        "path": "scripts/wo0016/stream_counter.py",
+        "r2_sha256": "6fa83ac8904eb0f1a3e3c0c00c30b29a15f0ae7883dc0c126f1d5a94d5093ad1",
+        "v13_sha256": "4c24e373c45ace6e84dc377ab1afabfe7f975b4dd579aef22cd8420903dbf8dc"
+      }
+    ],
+    "deployment_index_sha256": "89758fdce9c0702d0b396cae031b5a42e210ee4aed398b9333c25894ea3655c4",
+    "deployment_index_payload_files": 66,
+    "deployment_index_payload_verified": "66/66",
+    "historical_recorded_index_sha256": "07271d213279ae263e29ee052a735ac640c1c9d1dee2d846bf2564ef467f3ca0",
+    "bit_sha256": "f4b9ddb8ea84632c242620448bdd4da142296dc61ced6a5814f727808e9c62d0",
+    "hwh_sha256": "19ae036316cf04a98362977c0adce824d554f61574ac4b76d57f76b8debbee65",
+    "board_acceptance": "historical user-confirmed deployment only; not retested in this audit",
+    "result": "CANDIDATE_NOT_VERIFIED_AS_V13_RUNTIME"
+  },
+  "skills_synced_to_repository": [
+    {
+      "name": "overlay-artifact-admission",
+      "path": "skill/overlay-artifact-admission/skill.md",
+      "sha256": "ece6dc2f4e9075646c80c8ee5fd686e4a69072d7e7b4a19fbaf5d36a4d836c57"
+    },
+    {
+      "name": "dma-vdma-safe-status",
+      "path": "skill/dma-vdma-safe-status/skill.md",
+      "sha256": "bbceab3fcd98b95a3a186aaeabef3c91d8cf14b5ec62b2a90574be26e4a7a2a0"
+    }
+  ],
+  "llm_collaboration_record": "The r2 package docs state missing prompts/model replies were not reconstructed. Complete teammate development transcript remains unavailable and is not fabricated.",
+  "board_accessed_in_this_audit": false,
+  "next_required_action": "Obtain a refreshed package with all 50 runtime modules and package-source/index metadata aligned to the approved V13 identity, or obtain the maintainer version explanation; then repeat offline verification."
+}
