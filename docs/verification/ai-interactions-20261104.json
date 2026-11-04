@@ -1,0 +1,232 @@
+{
+  "schema": 1,
+  "source_session_id": "01a1a48a-700c-7011-8e08-f23a9016c4dc",
+  "selection": "Representative original messages; not a complete conversation export",
+  "source_record_kind": "response_item.message",
+  "excludes": [
+    "system/developer instructions",
+    "tool raw output",
+    "attachments",
+    "unselected conversation"
+  ],
+  "cases": [
+    {
+      "id": "photo-correction",
+      "title": "外观照片纠正",
+      "verification": "docs/assets/photos/photo-manifest.json",
+      "messages": [
+        {
+          "role": "user",
+          "timestamp": "2026-11-04T03:47:09.783Z",
+          "source_line": 522,
+          "original_message_sha256": "6c3c8583fe682dceb9a995b71a926f0e0935a8265adfb693ae695583f1202226",
+          "selected_utf8_sha256": "ae8210db99a2caa7afc668e142440315075929cb04ea5681488d19ffdf2dff1c",
+          "selected_character_range": [
+            0,
+            28
+          ],
+          "selected_text": "之前那个作品外观介绍的照片需要更换一下，那个不是最新的。",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T03:47:30.539Z",
+          "source_line": 529,
+          "original_message_sha256": "ed9f385bda56dc9d79c05f55d237a6c5dd48c3176c97ee482e18860ff5deb742",
+          "selected_utf8_sha256": "ed9f385bda56dc9d79c05f55d237a6c5dd48c3176c97ee482e18860ff5deb742",
+          "selected_character_range": [
+            0,
+            55
+          ],
+          "selected_text": "明白，首页会改用“FPGA赛／作品”里的《正面全景照片.jpg》，替换之前的旧外观图。我会把这个修改一并发布。",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T03:49:15.435Z",
+          "source_line": 579,
+          "original_message_sha256": "d1d9605416f566ae60314abb19487da41ab5baf5cceb3ef92dd70a8670961865",
+          "selected_utf8_sha256": "d1d9605416f566ae60314abb19487da41ab5baf5cceb3ef92dd70a8670961865",
+          "selected_character_range": [
+            0,
+            122
+          ],
+          "selected_text": "首页图已替换为《正面全景照片.jpg》，发布前审阅也已通过。文档检查现为 161 个链接、图片和锚点通过。\n\n六张原图合计约 36 MB，GitHub 上传速度较慢，但传输仍在推进。上传完成后，我会合入默认分支并确认线上首页显示的是这张新照片。",
+          "text_redactions": []
+        }
+      ]
+    },
+    {
+      "id": "default-branch",
+      "title": "默认分支与提交入口",
+      "verification": "docs/competition/SUBMISSION.md",
+      "messages": [
+        {
+          "role": "user",
+          "timestamp": "2026-11-04T04:14:47.368Z",
+          "source_line": 1023,
+          "original_message_sha256": "f3f9e3d624d09ff3da120781feac18574627e41f6c032b6da0785a22699e45a3",
+          "selected_utf8_sha256": "fbda38ad795b72aa9c503b97978fe5c82186fca5dca59503787dc1ef4aa5d1b7",
+          "selected_character_range": [
+            0,
+            40
+          ],
+          "selected_text": "LJ-01现在是我们的默认分支，应该可以当作比赛提交的仓库吧？一定要是main吗",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T04:15:12.307Z",
+          "source_line": 1035,
+          "original_message_sha256": "24e1d99a3753f7a50c13b1fa37aae1cb4aac0faa7b7e11c27565bedfeec49a8d",
+          "selected_utf8_sha256": "24e1d99a3753f7a50c13b1fa37aae1cb4aac0faa7b7e11c27565bedfeec49a8d",
+          "selected_character_range": [
+            0,
+            363
+          ],
+          "selected_text": "**可以用 `LJ-01`，不必叫 `main`。** GitHub 允许自定义默认分支，评委打开仓库主页时会看到默认分支的内容。[GitHub 官方说明](https://docs.github.com/en/pull-requests/reference/branches#about-the-default-branch)\n\n目前核对的 AMD 指南没有要求分支必须命名为 `main`。提交栏仍填写：[https://github.com/POPO-so/material-counter](https://github.com/POPO-so/material-counter)。\n\n正式提交时固定好具体 commit/tag，以及对应源码、工件和报告即可。我会继续把本轮整理合入 `LJ-01`，保持默认分支名称。",
+          "text_redactions": []
+        }
+      ]
+    },
+    {
+      "id": "skill-extraction",
+      "title": "从版本混用问题提炼 Skill",
+      "verification": "docs/verification/pynq-artifact-audit-20261104.json",
+      "messages": [
+        {
+          "role": "user",
+          "timestamp": "2026-11-04T04:02:15.406Z",
+          "source_line": 829,
+          "original_message_sha256": "98e343242836923ef8276134ceba240e1edaa067a029965e08e6edaf02d30950",
+          "selected_utf8_sha256": "7c88a459acbd08637e758789edd1388a3030b87fc3c815561e5068ea292b7a0d",
+          "selected_character_range": [
+            295,
+            336
+          ],
+          "selected_text": "而且为什么仓库目录这么乱，有没有可以删掉的，话说今年AMD是不是要求要用技能包啥的",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T04:04:29.840Z",
+          "source_line": 886,
+          "original_message_sha256": "37e85f43d3bf9b215090d60ee70a64abe9e8cde0952237875d6c92742118e3ff",
+          "selected_utf8_sha256": "37e85f43d3bf9b215090d60ee70a64abe9e8cde0952237875d6c92742118e3ff",
+          "selected_character_range": [
+            0,
+            235
+          ],
+          "selected_text": "你提醒得对。我核对了你保存的 AMD 自主选题指南：第 3.3.3.1、3.3.5.2 节要求随作品提交团队提炼的 `skill/` 技能包；“大模型协作与技能包”占 15 分，通用 PYNQ Skill 另有加分说明。这要求我们提交可复用经验，单纯放一份下载的 AMD 工具目录还不够。\n\n目前仓库的 `skill/` 只有占位文件，前面的提交清单漏掉了这一项，我会补上。指南还要求英文文件名，所以中文目录也需要纳入整理；有历史引用的文件要先处理依赖，不能整目录删除。",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T04:07:12.643Z",
+          "source_line": 918,
+          "original_message_sha256": "02d2ab2953186e3e769a08a36cc3a563f90d572ff0edcc6d57ab204f5a2e5e73",
+          "selected_utf8_sha256": "02d2ab2953186e3e769a08a36cc3a563f90d572ff0edcc6d57ab204f5a2e5e73",
+          "selected_character_range": [
+            0,
+            162
+          ],
+          "selected_text": "候选包核对已完成：JPEG v8 的 18 个源码文件都匹配包内清单和固定提交，但其中 6 个与当前默认分支不同。这进一步确认了它不能和新版源码直接混用。\n\n我会按 `skill-creator` 技能把这类工件核验经验整理成可复用的 PYNQ 离线技能包，附使用方法、失败条件和检查证据；仓库清理则先处理已确认的临时残留。",
+          "text_redactions": []
+        }
+      ]
+    },
+    {
+      "id": "official-rule-check",
+      "title": "官方来源访问失败与后续核实",
+      "verification": "docs/competition/CONTEST_REQUIREMENTS.md",
+      "messages": [
+        {
+          "role": "user",
+          "timestamp": "2026-11-04T05:34:37.593Z",
+          "source_line": 1200,
+          "original_message_sha256": "bd90b4dbd2325e8e1d20dfbb5aef2a867292da16ba0b1285bf2be019f69bf661",
+          "selected_utf8_sha256": "f39fe504c0a85eb06de11a6d83e6e9040b3c04d7a6889d91c068773d7b289c3f",
+          "selected_character_range": [
+            709,
+            762
+          ],
+          "selected_text": "再找下AMD官方赛事要求和评分标准，然后根据找到的信息，决定是否要继续优化，优化什么，都要说出来，由我定夺",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T05:36:46.712Z",
+          "source_line": 1280,
+          "original_message_sha256": "647dd7c3e5cb5a8aa70b749e1dd2e47ad85d40b6e60e5b629584045e18a569d9",
+          "selected_utf8_sha256": "32eea2d34995014020a9bfd9d414c582ccdc46769d729e38f4e2ca667ce8fe0f",
+          "selected_character_range": [
+            0,
+            136
+          ],
+          "selected_text": "指南中的自主选题评分表已核实：创新与应用价值 30 分、性能与资源优化 20 分、功能与完整性 20 分、协作与技能包 15 分、文档与复现 15 分。但官方下载页目前访问失败，我还没取得独立发布的最新《评分细则》，因此会把“本地指南已确认”和“官方更新未核实”分开说明。",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T05:39:26.624Z",
+          "source_line": 1388,
+          "original_message_sha256": "9c640c92dacdc5ce31daf587af1c2a34baacd80b761905a0a0a9ea7dfede6810",
+          "selected_utf8_sha256": "916e793f0635fd9bce4b99c949c1713cfa8da1fe2b63330558736aa39daab269",
+          "selected_character_range": [
+            0,
+            166
+          ],
+          "selected_text": "已通过官网的公开页面取到 AMD 指南，下载后的 SHA-256 与你本地 PDF 完全一致，官方来源已确认。另外找到 **11 月 2 日发布的作品上传要求**：视频、报告、RAR 代码包、授权书、照片和海报都有单独要求；公告写明 **11 月 4 日 18:00 截止**。这会影响优化优先级，我会把提交必需项排在仓库美化之前。",
+          "text_redactions": []
+        }
+      ]
+    },
+    {
+      "id": "v13-mainline-correction",
+      "title": "队友 V13 主线纠正",
+      "verification": "docs/competition/V13.md",
+      "messages": [
+        {
+          "role": "user",
+          "timestamp": "2026-11-04T05:53:04.384Z",
+          "source_line": 1603,
+          "original_message_sha256": "f986e0ea56fde49302b90e0d1dfa6ebdd75f4cc4521c5ac22cc562382c156a90",
+          "selected_utf8_sha256": "f986e0ea56fde49302b90e0d1dfa6ebdd75f4cc4521c5ac22cc562382c156a90",
+          "selected_character_range": [
+            0,
+            16
+          ],
+          "selected_text": "是以队友为主线 他都 v13了\n",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T05:53:16.281Z",
+          "source_line": 1608,
+          "original_message_sha256": "a6b7047002e842f93e072a77c028979395e12647b9d57e1b19c362d191d1dc64",
+          "selected_utf8_sha256": "a6b7047002e842f93e072a77c028979395e12647b9d57e1b19c362d191d1dc64",
+          "selected_character_range": [
+            0,
+            126
+          ],
+          "selected_text": "明白，提交材料应以队友的 V13 主线为准。我刚才按 JPEG v8 判断定版缺口，选错了主线；现在改为核对 V13 的源码、部署包、BIT/HWH 和验证记录，JPEG v8 只保留为独立候选。已整理的文件先保留，最终源码包会按 V13 重新核对。\n",
+          "text_redactions": []
+        },
+        {
+          "role": "assistant",
+          "timestamp": "2026-11-04T05:58:21.780Z",
+          "source_line": 1719,
+          "original_message_sha256": "8e640066a8a17284700616bf8d7ba6795d33f094f09cbf0b1433a2030c23f339",
+          "selected_utf8_sha256": "8e640066a8a17284700616bf8d7ba6795d33f094f09cbf0b1433a2030c23f339",
+          "selected_character_range": [
+            0,
+            145
+          ],
+          "selected_text": "找到 V13 的正式交付记录了：队友已生成固定到 `5438e0e1` 的提交包，包含 50 个应用模块、BIT/HWH、ARM 原生库和字体。现有 RAR 约 7.42 MB，低于 200 MB 限制。我正在重核实际文件；后续直接沿用这套 V13 交付，JPEG v8 单独保留为候选。\n",
+          "text_redactions": []
+        }
+      ]
+    }
+  ],
+  "text_reconstruction": "Join input_text/output_text/text segments with LF; exclude nontext attachments"
+}

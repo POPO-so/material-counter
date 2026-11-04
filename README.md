@@ -21,11 +21,13 @@ AT-OV9281 USB 摄像头采集输送带上的螺母、垫圈等小型物料。PYN
 
 [完整文档目录](docs/README.md) · [开发者导航](PROJECT_INDEX.md) · [版本记录](CHANGELOG.md) · [贡献指南](CONTRIBUTING.md)
 
-提交准备：[候选工件绑定](docs/competition/SUBMISSION.md) · [可复用技能包](skill/README.md) · [协作与纠错](docs/competition/AI_COLLABORATION.md) · [AMD 指南对照](docs/competition/CONTEST_REQUIREMENTS.md) · [目录与清理说明](docs/competition/REPOSITORY_LAYOUT.md)。
+提交准备：[队友 V13 主线](docs/competition/V13.md) · [版本与候选绑定](docs/competition/SUBMISSION.md) · [上传文件清单](docs/competition/UPLOAD.md) · [可复用技能包](skill/README.md) · [原始协作交互](docs/competition/AI_INTERACTIONS.md) · [AMD 指南对照](docs/competition/CONTEST_REQUIREMENTS.md)。
 
 ## 当前状态
 
-文档对应 GitHub 默认分支 `LJ-01`。此前记录的[冻结源码 `5438e0e1`](https://github.com/POPO-so/material-counter/tree/5438e0e1f737fc426224f285a4c8b2454d225efc)是特定源码快照；RLE 基线、V12 显示集成与 JPEG v8 独立候选分别绑定自己的制品和测试，不能合并为同一比赛定版结果。真实物料准确率尚需独立真值验收，本次文档与照片更新不改变该状态。
+**比赛提交以队友 LJ-01 V13 为主线**，应用源码固定为 [`5438e0e1`](https://github.com/POPO-so/material-counter/tree/5438e0e1f737fc426224f285a4c8b2454d225efc)，硬件构建源码单列 `037d38d1`。完整 BIT/HWH、index 身份及历史测试见 [V13 绑定说明](docs/competition/V13.md)。默认分支 LJ-01 可以继续开发，当前分支 HEAD 不自动等于 V13 运行包。
+
+V13 交付记录记载 67 文件完整性 PASS、50 模块逐字节对应，以及专项 71 passed、2 failed。本轮能读取固定源码，但尚未取得队友实际运行包重新核验，不把历史记录写成本轮实测。RLE 独立基线、V12 及 JPEG v8 候选继续分别保留，真实物料准确率仍需独立真值证据。
 
 ## 软硬件分工
 
@@ -45,6 +47,7 @@ flowchart LR
 
 | 配置 | 输入与范围 | 结果 | 证据 |
 | --- | --- | --- | --- |
+| 队友 V13 主线 | 历史交付记录，非本轮重测 | 67 文件完整性 PASS、50 模块对应；专项 71 passed、2 failed | [V13 来源、工件身份及缺口](docs/competition/V13.md) |
 | 640×400 RLE 独立入口 | 相机 300 帧，关闭完整像素调试比对 | 300/300 帧，20.57 FPS，回传 4,088–4,176 B/帧，无溢出 | [原始相机记录](data/results/rle-20261028-board/camera-300-native-v2.json) |
 | RLE 50 MHz 位流 | XC7Z020 布局布线 | LUT 5,809/53,200（10.92%），WNS +3.366 ns，WHS +0.036 ns | [构建及验收记录](data/results/rle-20261028-board/README.md) |
 | JPEG 硬解候选 | 相机空场景 120 帧 | 120/120 帧，11.31 FPS，输出监视器逐帧核对身份 | [板测记录](data/results/jpeg-pl-board-20261102/board-run.json) |
@@ -56,7 +59,7 @@ flowchart LR
 
 准备 PYNQ-Z2（XC7Z020）、AT-OV9281 USB 相机、HDMI 显示器和配套的 Linux/PYNQ 环境。
 
-- **板端独立演示**按[部署记录](scripts/standalone/DEPLOYMENT.md)选择已有的部署版本，核对其 BIT/HWH、配置与运行环境，使用该版本记录的板端入口。V12 记录对应较早的 LJ-01 源码和配套制品。
+- **V13 主线演示**按 [V13 绑定说明](docs/competition/V13.md)取得队友原始交付包并核对，使用其 standalone 整合入口及匹配 BIT/HWH；不直接用当前开发 HEAD 替换包内代码。现有 [V12 部署记录](scripts/standalone/DEPLOYMENT.md)保留为历史依据。
 - **JPEG 硬解候选**下载 [v8 ZIP](data/results/jpeg-pl-board-20261102/jpeg-pl-runtime-v8.zip)，按[启动命令](data/results/jpeg-pl-board-20261102/README.md#v8-默认入口运行包)核对 SHA-256、解压并运行包内入口。板端需已有匹配的原生库，或具备 `g++` 用于构建该库。
 - **离线复现**在具备 NumPy、OpenCV、pytest 和 `g++` 的环境中，按 [RLE 运行说明](scripts/rle/README.md)执行离线样例和软件回归。
 

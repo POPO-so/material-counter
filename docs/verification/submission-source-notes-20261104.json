@@ -8,9 +8,12 @@
       "sha256": "c6ad82acd4f7bdcd13bd412e232ed85d05f2a87dd5e2cdd04f9d219f88b569fc",
       "pdf_pages": 28,
       "checked_pdf_pages": [
+        22,
         23,
         24,
-        25
+        25,
+        27,
+        28
       ],
       "checked_sections": [
         "3.3.3.1",
@@ -21,7 +24,12 @@
         "3.3.5.5"
       ],
       "newer_official_revision_verified": false,
-      "scope": "Autonomous-topic track only; not the RTL/HLS local-agent track"
+      "scope": "Autonomous-topic track only; not the RTL/HLS local-agent track",
+      "official_download_verified": true,
+      "official_listing_id": 25,
+      "official_download_page": "http://www.fpgachina.cn/?page=download",
+      "official_bytes_match_local": true,
+      "official_download_checked_on": "2026-11-04"
     },
     {
       "kind": "team-provided hardware technical document",
@@ -36,5 +44,11 @@
     }
   ],
   "original_sources_republished": false,
-  "board_accessed": false
+  "board_accessed": false,
+  "official_upload_notice": {
+    "url": "http://www.fpgachina.cn/notice-details.html?id=58",
+    "updated_on": "2026-11-02",
+    "checked_on": "2026-11-04",
+    "deadline": "2026-11-04 18:00 Asia/Shanghai"
+  }
 }

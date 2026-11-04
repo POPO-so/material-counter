@@ -23,10 +23,14 @@
 | [DEMO](competition/DEMO.md) | 离线体验、实物演示和 HDMI 照片 |
 | [RESULTS](competition/RESULTS.md) | 分版本指标、原始证据和提交待办 |
 | [SUBMISSION](competition/SUBMISSION.md) | 候选源码、ZIP、BIT/HWH 和 manifest 的离线绑定核对 |
+| [V13](competition/V13.md) | 队友 V13 提交主线、固定源码与历史交付边界 |
+| [UPLOAD](competition/UPLOAD.md) | 官网最新上传格式、大小和材料清单 |
+| [DELIVERY_STATUS](competition/DELIVERY_STATUS.md) | 逐项已完成内容、跳过原因和仍需团队补齐的材料 |
 | [THIRD_PARTY](competition/THIRD_PARTY.md) | 第三方来源、已有许可证及缺口 |
 | [CONTEST_REQUIREMENTS](competition/CONTEST_REQUIREMENTS.md) | AMD 自主选题指南、技能包和目录要求对照 |
 | [REPOSITORY_LAYOUT](competition/REPOSITORY_LAYOUT.md) | 临时文件清理、保留目录原因及中文路径迁移缺口 |
 | [AI_COLLABORATION](competition/AI_COLLABORATION.md) | 本轮协作、自我纠错与可复用经验摘要 |
+| [AI_INTERACTIONS](competition/AI_INTERACTIONS.md) | 五组代表性原始请求与回答，含来源摘要和选取区间 |
 | [技能包](../skill/README.md) | 可复用 PYNQ 工件核验方法、脚本与验证边界 |
 | [DEVELOPMENT](DEVELOPMENT.md) | Python、原生库、软件检查与 FPGA 构建入口 |
 | [DEPLOYMENT](DEPLOYMENT.md) | V12 与 JPEG v8 的版本选择和部署边界 |

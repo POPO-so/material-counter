@@ -6,6 +6,7 @@
 
 | 使用目的 | 入口 | 版本边界 |
 | --- | --- | --- |
+| 队友 V13 比赛主线 | [V13 身份与实际包核对](competition/V13.md) | 应用源码 5438e0e1、硬件构建源码 037d38d1；需取得队友真实运行包，不能用 JPEG v8 替换 |
 | 已有板端 HDMI 集成演示 | [standalone 部署记录](../scripts/standalone/DEPLOYMENT.md) | V12 等历史版本有各自源码、包索引及工件；记录中的 service、PID 和 Boot 是当轮观察，不是实时状态 |
 | JPEG 硬解独立候选 | [v8 包、SHA-256 与命令](../data/results/jpeg-pl-board-20261102/README.md#v8-默认入口运行包) | 使用独立候选 BIT/HWH 和包内源码，不能混用 LJ-01 合并后的设计 |
 | 从当前合并源码生成新硬件 | [JPEG 联合构建](../fpga/experimental/jpeg_integration/joint_build.tcl)及[证据边界](../data/results/jpeg-pl-board-20261102/README.md#合入-lj-01-后的证据边界) | 需重新综合、实现、生成成对 BIT/HWH 并上板复验 |
