@@ -31,7 +31,7 @@
 
 | 主题 | 原有入口 |
 | --- | --- |
-| 协作规范 | [AGENTS](../AGENTS.md) |
+| 公开贡献规范 | [CONTRIBUTING](../CONTRIBUTING.md) |
 | 范围、接口和候选路线 | [范围](00_scope.md) · [接口](02_interfaces.md) · [路线](07_routes.md) |
 | 技术决策与工作要求 | [ADR](adr/) · [Work Orders](work-orders/) |
 | RLE 数据通路与原尺寸接口 | [RLE 说明](../scripts/rle/README.md) · [RLE 设计](superpowers/specs/2026-10-28-rle-design.md) |

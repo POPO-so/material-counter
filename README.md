@@ -4,9 +4,9 @@ AT-OV9281 USB 摄像头采集输送带上的螺母、垫圈等小型物料。PYN
 
 [作品介绍](docs/competition/OVERVIEW.md) · [系统架构](docs/competition/ARCHITECTURE.md) · [硬件实拍](docs/competition/HARDWARE.md) · [演示指南](docs/competition/DEMO.md) · [测试结果](docs/competition/RESULTS.md)
 
-![整机实拍，包含输送带、相机支架、照明与计数显示器](docs/assets/competition-system.jpg)
+![作品最新正面全景实拍，包含输送机构、相机支架、照明与显示屏](docs/assets/photos/system-front.jpg)
 
-从输送带入口投料，物料经过相机视野并跨越画面内的计数线后，查看显示器右侧的累计数量。首页沿用轻量展示图，[原始实拍与接口细节](docs/competition/HARDWARE.md#实物照片)可单独查看。照片中的数字为当时的界面读数。
+从输送带入口投料，物料经过相机视野并跨越画面内的计数线后，查看显示器右侧的累计数量。首页使用团队提供的《正面全景照片》，更多[原始实拍与接口细节](docs/competition/HARDWARE.md#实物照片)可单独查看。照片中的数字为当时的界面读数。
 
 ## 阅读入口
 
@@ -19,7 +19,7 @@ AT-OV9281 USB 摄像头采集输送带上的螺母、垫圈等小型物料。PYN
 | 实测条件、原始证据和待验收项目 | [结果与提交清单](docs/competition/RESULTS.md) |
 | 搭建环境、运行离线样例或部署 | [开发与复现](docs/DEVELOPMENT.md) · [部署说明](docs/DEPLOYMENT.md) |
 
-[完整文档目录](docs/README.md) · [开发者导航](PROJECT_INDEX.md) · [版本记录](CHANGELOG.md) · [协作规范](AGENTS.md)
+[完整文档目录](docs/README.md) · [开发者导航](PROJECT_INDEX.md) · [版本记录](CHANGELOG.md) · [贡献指南](CONTRIBUTING.md)
 
 ## 当前状态
 
@@ -70,7 +70,7 @@ flowchart LR
 
 ```text
 README.md                    作品首页
-AGENTS.md                    开发协作规范
+CONTRIBUTING.md              公开贡献与问题反馈指南
 PROJECT_INDEX.md             工程导航、阶段状态和证据入口
 CHANGELOG.md                 重要版本与文档变更
 docs/

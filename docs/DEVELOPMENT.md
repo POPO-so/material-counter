@@ -48,6 +48,6 @@ python -B -m pytest -p no:cacheprovider --basetemp data/results/rle-check/tmp sc
 
 ## 开发协作
 
-按 [AGENTS](../AGENTS.md) 和 [PROJECT_INDEX](../PROJECT_INDEX.md)定位最小必要上下文。范围、接口与路线分别遵循原文档及 ADR；新增实验不能仅凭文件存在就写成已集成或已验收。
+按[公开贡献指南](../CONTRIBUTING.md)和 [PROJECT_INDEX](../PROJECT_INDEX.md)定位最小必要上下文；项目内开发还需遵循检出版本的 `AGENTS.md`。范围、接口与路线分别遵循原文档及 ADR；新增实验不能仅凭文件存在就写成已集成或已验收。
 
 发布时记录源码提交、工件与配置哈希、依赖、输入条件、命令和结果。板端版本选择见 [DEPLOYMENT](DEPLOYMENT.md)。

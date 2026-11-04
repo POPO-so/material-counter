@@ -20,8 +20,8 @@
   "runtime_code_changed": false,
   "board_accessed": false,
   "documentation_checks": {
-    "markdown_files": 11,
-    "local_links_images_and_anchors": 157,
+    "markdown_files": 12,
+    "local_links_images_and_anchors": 161,
     "image_embeds": 7,
     "photo_sha256_verified": 6,
     "unpublished_dependencies": 0,
