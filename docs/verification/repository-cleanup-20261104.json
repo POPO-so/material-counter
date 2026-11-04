@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "checked_on": "2026-11-04",
+  "source_commit": "7e3f01da6232d6293f6b8d7267e9a3ca3de8cb28",
+  "removed_scope": [
+    "Users14173AppDataLocalTempmaterial-counter-g0-red",
+    "Python脚本/material-counter-startup-status.json"
+  ],
+  "reason": [
+    "Malformed Windows temp path containing pytest-generated mock proc/sys/PYNQ fixtures; tests generate their own tmp_path data",
+    "Unreferenced stale startup-status copy; active launcher and test use .runtime path"
+  ],
+  "tracked_files": [
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_camera_by_id_keeps_stable0/dev/v4l/by-id/usb-Camera_ABC-video-index0",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_camera_by_id_keeps_stable0/dev/video2",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_cli_writes_json_only_to_a0/probe.json",
+      "git_blob": "c693f138c8109c954f7924104ea8e7fccde96d47",
+      "bytes": 4
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collect_reads_iio_raw_sca0/sys/bus/iio/devices/iio-device0/in_voltage0_label",
+      "git_blob": "30a9e27993097d7fa47b7a8aec4f661a27e3113e",
+      "bytes": 5
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collect_reads_iio_raw_sca0/sys/bus/iio/devices/iio-device0/in_voltage0_offset",
+      "git_blob": "291670352e5a6c9aa5fff035ad4554e55c0daf7f",
+      "bytes": 4
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collect_reads_iio_raw_sca0/sys/bus/iio/devices/iio-device0/in_voltage0_raw",
+      "git_blob": "59a3ec59b53573619be25381cf973b173e2a60ba",
+      "bytes": 5
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collect_reads_iio_raw_sca0/sys/bus/iio/devices/iio-device0/in_voltage0_scale",
+      "git_blob": "2eb3c4fe4eebcdea3da0790cc0ba74cb286ec4f4",
+      "bytes": 4
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collect_reads_iio_raw_sca0/sys/bus/iio/devices/iio-device0/name",
+      "git_blob": "1f26d734ea91c39afbb5a554549082a23cfbc9ac",
+      "bytes": 4
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collects_nested_droid_fon0/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/lib/video/libvideo.so",
+      "git_blob": "74b871ff432f10d77fa789549560582daf8a1b85",
+      "bytes": 20
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collects_nested_droid_fon0/usr/local/share/pynq-venv/lib/python3.10/site-packages/pynq/ps.py",
+      "git_blob": "809e440c35a08e29d981c55f6f06dfc86a345f12",
+      "bytes": 15
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collects_nested_droid_fon0/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
+      "git_blob": "2a843c7971ab8baec687d8cfc252878579eb44aa",
+      "bytes": 10
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_collects_nested_droid_fon0/var/tmp/global_pl_state_current.json",
+      "git_blob": "10cecd9772ed61e1b69c044f5038d18b55fc3f56",
+      "bytes": 39
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_hashes_sources_installed_0/usr/local/lib/python3.11/site-packages/pynq/buffer.py",
+      "git_blob": "a1e5d0d790dada49433558cadae1108e76f3a08a",
+      "bytes": 16
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_hashes_sources_installed_0/usr/local/lib/python3.11/site-packages/pynq/lib/video/common.py",
+      "git_blob": "14d462f9ea8c94271adc4ce2dcbebe44da3e64d2",
+      "bytes": 26
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_hashes_sources_installed_0/usr/local/lib/python3.11/site-packages/pynq/lib/video/dma.py",
+      "git_blob": "7cfdbf197300a59dcba0605cb1002ff8217aeb0c",
+      "bytes": 23
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_hashes_sources_installed_0/usr/local/lib/python3.11/site-packages/pynq/lib/video/frontend.py",
+      "git_blob": "53df80c4c1b4fb97a602b8d53873b465a7682794",
+      "bytes": 28
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_hashes_sources_installed_0/usr/local/lib/python3.11/site-packages/pynq/lib/video/hierarchies.py",
+      "git_blob": "30ed5e5403f045c0658c6c3ebab532caa3021ee7",
+      "bytes": 31
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_hashes_sources_installed_0/usr/local/lib/python3.11/site-packages/pynq/overlays/base/base.hwh",
+      "git_blob": "dcaaa1f1bc5160f9dd37f1997f3f71c53c02e870",
+      "bytes": 561
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_hashes_sources_installed_0/usr/local/lib/python3.11/site-packages/pynq/overlays/base/base.tcl",
+      "git_blob": "1590fb20ae4dd7fe9503ae32c3b64716fefb28db",
+      "bytes": 16
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_missing_and_unreadable_ev0/proc/interrupts",
+      "git_blob": "3a3523c6aa95274ab064993a4cdf381e88654f15",
+      "bytes": 16
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_missing_and_unreadable_ev0/proc/meminfo",
+      "git_blob": "3c3ac97d570a7bcbb3ca9ebe94e4754799c7454d",
+      "bytes": 17
+    },
+    {
+      "path": "Users14173AppDataLocalTempmaterial-counter-g0-red/test_missing_and_unreadable_ev0/sys/bus/iio/devices/iio-device0/in_temp0_raw",
+      "git_blob": "265bfbe1a497fadede2ae95e209f790209d4451b",
+      "bytes": 12
+    },
+    {
+      "path": "Python脚本/material-counter-startup-status.json",
+      "git_blob": "54dc326fc7e67095fb161235c190b2bc9cbdc0e5",
+      "bytes": 54
+    }
+  ],
+  "total_removed_bytes": 910,
+  "historical_board_evidence_removed": false,
+  "runtime_source_changed": false,
+  "recovery": "Original bytes remain in source_commit; restore only an individually needed path from that revision.",
+  "targeted_test_command": "python -B -m pytest -p no:cacheprovider --basetemp <new-temp>/tmp scripts/standalone/test_probe.py scripts/wo0016/test_camera_only_preview.py -q",
+  "targeted_test_exit_code": 0,
+  "targeted_test_summary": "48 passed in 15.16s"
+}

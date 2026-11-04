@@ -21,6 +21,8 @@ AT-OV9281 USB 摄像头采集输送带上的螺母、垫圈等小型物料。PYN
 
 [完整文档目录](docs/README.md) · [开发者导航](PROJECT_INDEX.md) · [版本记录](CHANGELOG.md) · [贡献指南](CONTRIBUTING.md)
 
+提交准备：[候选工件绑定](docs/competition/SUBMISSION.md) · [可复用技能包](skill/README.md) · [协作与纠错](docs/competition/AI_COLLABORATION.md) · [AMD 指南对照](docs/competition/CONTEST_REQUIREMENTS.md) · [目录与清理说明](docs/competition/REPOSITORY_LAYOUT.md)。
+
 ## 当前状态
 
 文档对应 GitHub 默认分支 `LJ-01`。此前记录的[冻结源码 `5438e0e1`](https://github.com/POPO-so/material-counter/tree/5438e0e1f737fc426224f285a4c8b2454d225efc)是特定源码快照；RLE 基线、V12 显示集成与 JPEG v8 独立候选分别绑定自己的制品和测试，不能合并为同一比赛定版结果。真实物料准确率尚需独立真值验收，本次文档与照片更新不改变该状态。
@@ -85,6 +87,21 @@ scripts/rle/                 游程协议、原生区域分析与运行器
 scripts/standalone/          板端显示、运行控制和部署
 fpga/                        RTL、约束、仿真与候选联合设计
 data/results/                按版本保存的构建、板测和交付证据
+skill/                       团队提炼的可复用方法与校验工具
 ```
+
+与 AMD 自主选题指南推荐目录的对应关系如下。当前沿用已有工程目录，不因文档整理移动已绑定的源码或构建证据。
+
+| 指南目录 | 本仓库对应入口 |
+| --- | --- |
+| `src/` | [fpga](fpga/) · [scripts/rle](scripts/rle/) · [scripts/standalone](scripts/standalone/) |
+| `sim/` | [FPGA 仿真](fpga/sim/)及对应脚本目录的测试、仿真入口 |
+| `build/` | [RLE 构建](scripts/rle/build.tcl) · [HDMI 集成构建](scripts/standalone/build_g2_integration.tcl) · [构建记录](data/results/) |
+| `board/` | [板端运行与部署](docs/DEPLOYMENT.md) · [原始输出](data/results/) |
+| `data/` | [data](data/) |
+| `skill/` | [skill](skill/README.md) |
+| `report/` | [作品文档](docs/README.md) · [协作记录](docs/competition/AI_COLLABORATION.md) · [历史验证](docs/verification/) |
+
+技能包、目录英文命名和协作记录的具体要求见[指南对照](docs/competition/CONTEST_REQUIREMENTS.md)。现存中文历史路径仍需按依赖迁移，尚未据此认定目录命名要求已全部满足。
 
 正式演示视频、器件接线清单、最终提交工件绑定和完整真值验收仍待补齐，见[提交前待补资料](docs/competition/RESULTS.md#提交前待补资料)。
