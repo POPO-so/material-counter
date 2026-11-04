@@ -10,6 +10,15 @@ A pass means only that the selected files match the reviewed manifest. It does n
 
 ## Manifest and use
 
+For an offline first run, use the included [synthetic bundle](examples/synthetic_bundle/manifest.json). Its `.bit` and `.hwh` files are deliberately plain test text, not loadable hardware artifacts. From this skill directory:
+
+```powershell
+python scripts/audit.py --manifest examples/synthetic_bundle/manifest.json --manifest-sha256 8fe63583c6589d41b2093091f483632c44fcec923ae9d345adc36fdfbd929b50
+python -B -m unittest discover -s tests -v
+```
+
+The first command should report `ARTIFACT_HASH_PASS` for two fixture files. The digest above identifies the reviewed example bytes; replace the entire manifest and expected digest with your own independently reviewed bundle for a real delivery. Never load these fixtures onto a board.
+
 The manifest is UTF-8 JSON with this shape. Paths use `/` separators and are relative to `--root`:
 
 ```json
@@ -39,6 +48,8 @@ python scripts/audit.py `
 ## Failure meanings
 
 The audit fails closed for a manifest digest mismatch, unsupported schema, malformed digest, duplicate path, missing or unreadable file, unsupported role, missing or repeated BIT/HWH entries, absolute path, parent traversal, or a resolved symlink/junction target outside the selected root. A file-byte mismatch is reported against its manifest entry. Review the JSON `errors` and per-file status fields; do not turn a failure into a pass by regenerating the manifest without reviewing the new artifact set.
+
+For Git LFS data, distinguish the small Git pointer file from its materialized payload. They intentionally have different bytes and hashes. State which representation the reviewed manifest covers; preserve the pointer when exporting exact Git source bytes, or verify the expanded data against the pointer's declared payload SHA-256. Do not silently replace one representation with the other to satisfy an unrelated digest.
 
 ## Why pin the exact version
 

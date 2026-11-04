@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "date": "2026-11-04",
+  "file": "v13_source_only.rar",
+  "bytes": 41285043,
+  "sha256": "18c1d1af3e4cfd03f7a7d41fcb2655517057bf8783622d877282e513f55d2844",
+  "commits": {
+    "application": "5438e0e1f737fc426224f285a4c8b2454d225efc",
+    "hardware_build": "037d38d14a1240d65650a73c6c2ca9fd684ceb6a"
+  },
+  "source_files_checked_after_rar_extraction": 8325,
+  "rar_integrity_exit_code": 0,
+  "rar_extraction_exit_code": 0,
+  "source_only": true,
+  "board_runtime_obtained": false,
+  "lfs_pointer_files": [
+    "application/data/recorded/wo0017-touching-20261024/wo_touching_pair_motion_20261024_03/camera_gray_only.npz",
+    "application/data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_02/camera_gray_only.npz",
+    "application/data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_04/camera_gray_only.npz",
+    "hardware_build/data/recorded/wo0017-touching-20261024/wo_touching_pair_motion_20261024_03/camera_gray_only.npz",
+    "hardware_build/data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_02/camera_gray_only.npz",
+    "hardware_build/data/recorded/wo0017-touching-20261024/wo_touching_three_motion_20261024_04/camera_gray_only.npz"
+  ],
+  "excluded_internal_documents": 10,
+  "board_accessed": false
+}

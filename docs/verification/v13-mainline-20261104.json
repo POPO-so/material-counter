@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "date": "2026-11-04",
+  "mainline": "teammate LJ-01 V13",
+  "mainline_selection": "explicit user instruction",
+  "application_commit": "5438e0e1f737fc426224f285a4c8b2454d225efc",
+  "hardware_build_commit": "037d38d14a1240d65650a73c6c2ca9fd684ceb6a",
+  "source_commit_objects_readable": true,
+  "historical_record": {
+    "file": "文档/竞赛代码包交付-5438e0e1.md",
+    "sha256": "6321acdf8105372fb7162574dc99dfbfa555b1122abb6308a7ff63c6d70a31da",
+    "bit_sha256": "f4b9ddb8ea84632c242620448bdd4da142296dc61ced6a5814f727808e9c62d0",
+    "hwh_sha256": "19ae036316cf04a98362977c0adce824d554f61574ac4b76d57f76b8debbee65",
+    "index_sha256": "07271d213279ae263e29ee052a735ac640c1c9d1dee2d846bf2564ef467f3ca0",
+    "rar_sha256": "259bde88f469fd3d503ae8f9448b69da02a0cb083921d32bccf2a9a8b1d06bc5",
+    "rar_bytes": 7417593,
+    "files_integrity_pass": 67,
+    "application_modules_matched": 50,
+    "targeted_tests_passed": 71,
+    "targeted_tests_failed": 2
+  },
+  "this_run": {
+    "actual_teammate_runtime_archive_obtained": false,
+    "runtime_files_reverified": false,
+    "board_accessed": false,
+    "github_releases_found": 0,
+    "formal_video_found": false,
+    "actual_hardware_acceptance_repeated": false,
+    "source_archive_receipt": "docs/verification/v13-source-archive-20261104.json",
+    "source_archive_files_verified": 8325,
+    "source_only_archive_bytes": 41285043
+  },
+  "checked_local_roots": [
+    "primary checkout delivery",
+    "documentation worktree delivery",
+    "integration-teammate-base delivery/.runtime",
+    "wt/lj01m8 delivery/.runtime",
+    "team competition folder submission_20261104"
+  ],
+  "pending": "Obtain teammate runtime archive matching the recorded SHA-256; do not substitute JPEG v8 or newer development code"
+}

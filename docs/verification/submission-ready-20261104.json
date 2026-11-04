@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "date": "2026-11-04",
+  "markdown_files_checked": 17,
+  "local_links_checked": 241,
+  "errors": [],
+  "text_audit": [
+    {
+      "file": "CHANGELOG.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "README.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/DEPLOYMENT.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/README.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/AI_COLLABORATION.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/AI_INTERACTIONS.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/ARCHITECTURE.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/CONTEST_REQUIREMENTS.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/DELIVERY_STATUS.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/DEMO.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/OVERVIEW.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/REPOSITORY_LAYOUT.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/RESULTS.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/SUBMISSION.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/UPLOAD.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "docs/competition/V13.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    },
+    {
+      "file": "skill/pynq_artifact_audit/README.md",
+      "density_tier": "low",
+      "flagged_count": 0
+    }
+  ],
+  "original_interaction_cases": 5,
+  "original_messages_verified": 14,
+  "synthetic_manifest_staged_sha256": "8fe63583c6589d41b2093091f483632c44fcec923ae9d345adc36fdfbd929b50",
+  "local_delivery_files_hash_checked": 8,
+  "skill_unit_tests": "12 passed, 0 skipped",
+  "skill_structure_validation": "passed",
+  "source_archive_files_verified_after_extraction": 8325,
+  "board_accessed": false,
+  "actual_teammate_runtime_verified": false
+}

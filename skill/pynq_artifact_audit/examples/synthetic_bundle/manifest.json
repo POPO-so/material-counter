@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "role": "bit",
+      "path": "design.bit",
+      "sha256": "5d0faa3ed189205bfc114159182742cfd693f1c7c5a2bc465c4f92a22c28a5f7"
+    },
+    {
+      "role": "hwh",
+      "path": "design.hwh",
+      "sha256": "e93f10de267c1293a9da632933f1dabfa8e1fbada0eeab14c6f31e9addd8a539"
+    }
+  ]
+}

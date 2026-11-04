@@ -1,0 +1,288 @@
+{
+  "schema": 1,
+  "source_commit": "6dd06de6f14ade344ab237c108d693da4ce9cb15",
+  "paths": [
+    {
+      "path": "Python脚本/GUI使用说明.md",
+      "proposed_target": "launchers/gui-readme.md",
+      "sha256": "3689dd31d56ff966795dacab5143101af7998d2012d56db469687fa3aacddad1",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "active launcher/config and tests; V13 entry and release binding must be reconciled first"
+    },
+    {
+      "path": "Python脚本/RLE桌面部署.json",
+      "proposed_target": "launchers/rle-desktop-deployment.json",
+      "sha256": "9f55f1db8e61c610f0dc788a4f74d9f66b9840956b629a57428344b35a105114",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "active launcher/config and tests; V13 entry and release binding must be reconciled first"
+    },
+    {
+      "path": "Python脚本/启动GUI.pyw",
+      "proposed_target": "launchers/launch-gui.pyw",
+      "sha256": "8718722955faf493fb8fe3905fa0cdb0e6ecf3b97114392baa02e429901a487a",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "active launcher/config and tests; V13 entry and release binding must be reconciled first"
+    },
+    {
+      "path": "Python脚本/启动网页.pyw",
+      "proposed_target": "launchers/launch-web.pyw",
+      "sha256": "9c92df48b07edc09c9f6d0743dd858b156bac070af9e76e34529c6384c083a94",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "active launcher/config and tests; V13 entry and release binding must be reconciled first"
+    },
+    {
+      "path": "Python脚本/网页启动说明.md",
+      "proposed_target": "launchers/web-readme.md",
+      "sha256": "1a79423598c6ca4900f9606546e6389438cf819003de887d312016730331b27a",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "active launcher/config and tests; V13 entry and release binding must be reconciled first"
+    },
+    {
+      "path": "Python脚本/网页部署.json",
+      "proposed_target": "launchers/web-deployment.json",
+      "sha256": "402255f19e9c85bc64c303ec49b03905b864610ad70096e57d2a4b8581485539",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "active launcher/config and tests; V13 entry and release binding must be reconciled first"
+    },
+    {
+      "path": "data/results/wo0017-conversation-summary-20261022/WO0017_相机预处理与现场校准_对话总结报告_20261022.md",
+      "proposed_target": "data/results/wo0017-conversation-summary-20261022/conversation-summary-20261022.md",
+      "sha256": "b7af4fdfdace5dd2e2cb6a6f6b93a122a5ddcdb4940334aa9b96e44bd62fa854",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "immutable historical evidence; preserve bytes and old provenance references"
+    },
+    {
+      "path": "data/results/wo0017-field-calibration06-20261022/现场调试练习.md",
+      "proposed_target": "data/results/wo0017-field-calibration06-20261022/field-debug-exercise.md",
+      "sha256": "6bcaa882b5f51a37157a95aebbcdb797d9ebe9a4abbd13954b044fd9341d2609",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "immutable historical evidence; preserve bytes and old provenance references"
+    },
+    {
+      "path": "文档/AT-OV9281_摄像头参数_20261027_152201.md",
+      "proposed_target": "docs/legacy/at-ov9281-camera-settings-20261027-152201.md",
+      "sha256": "a466e1465f8f017fd0d10f560f6dbac06cd20834057b888bf42a56c42be735ed",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/LJ-01卡顿漏记与粘连合并问题分析-20261102.md",
+      "proposed_target": "docs/legacy/lj01-counting-root-cause-20261102.md",
+      "sha256": "0d75256cd114848ea982d1cb79221dd0853cedd3fa4d7e5155dd575543bee4fe",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/PLPS分工.md",
+      "proposed_target": "docs/legacy/ps-pl-responsibilities.md",
+      "sha256": "984bcdf458edcce8b739271c827480cd94915d8c14c3050aa2f74380c093094b",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/PL电路设计介绍-5438e0e1.md",
+      "proposed_target": "docs/legacy/pl-design-5438e0e1.md",
+      "sha256": "274f6e81995dbc597014486a162af9f004603db83ad2afbc88fe64e33ec36390",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/PYNQ-Z2螺母视觉计数系统_技术文档.docx",
+      "proposed_target": "docs/legacy/pynq-z2-counter-technical-report.docx",
+      "sha256": "fe9b0022c3b0d78ddcbff865b58f2a39dc7dee2dffbd5d616bf666a5a23a217c",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/PYNQ-Z2螺母视觉计数系统_技术文档_整合修订稿.docx",
+      "proposed_target": "docs/legacy/pynq-z2-counter-technical-report-revised.docx",
+      "sha256": "ac9fd66ed077885f186bd10d20245f6ee0954796c87f919e76a09bac24098d85",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/PYNQ-Z2螺母视觉计数系统_问题与架构评审_20261031.md",
+      "proposed_target": "docs/legacy/pynq-z2-architecture-review-20261031.md",
+      "sha256": "706099c9dcf264977d63b27ff7bb38572c78cd75ddb31e6327058787b51f9d4a",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/任务一-准确计数算法方案-20261102.md",
+      "proposed_target": "docs/legacy/counting-algorithm-options-20261102.md",
+      "sha256": "070d2a8dd50a8c6842ed08717fbc7be861d49161e51336cb113c1279057c6121",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/01-推荐架构.html",
+      "proposed_target": "docs/assets/architecture-20261031/01-recommended-architecture.html",
+      "sha256": "ea9971f1e2ec440380f1950c2c35bafb811a5a768cd66197391339d52c3a300a",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/01-推荐架构.svg",
+      "proposed_target": "docs/assets/architecture-20261031/01-recommended-architecture.svg",
+      "sha256": "c94cf37bd343a8f4f4180f8e92fc3307a1b94651390fe3cc647acac6eae0d86f",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/02-帧处理流程.html",
+      "proposed_target": "docs/assets/architecture-20261031/02-frame-processing.html",
+      "sha256": "1585635db89858075f4ab315e4518b8a0c0c0df769dc0b8339bb73acd9bb1196",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/02-帧处理流程.svg",
+      "proposed_target": "docs/assets/architecture-20261031/02-frame-processing.svg",
+      "sha256": "eb7997169c881f32f6f66e8e87efda44b333e154cc273ecd1d3cf5286d6f3792",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/03-三类数据流.html",
+      "proposed_target": "docs/assets/architecture-20261031/03-data-flows.html",
+      "sha256": "ca3b4843e156804807040d5c01acdadadc2d05a0fbe46c9cd4a2ce0a047e7ae3",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/03-三类数据流.svg",
+      "proposed_target": "docs/assets/architecture-20261031/03-data-flows.svg",
+      "sha256": "898990ccc3417b008199a4429dc0f76d9b5c18ac5633fad136e16bac4f8e2bd0",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/04-计数状态机.html",
+      "proposed_target": "docs/assets/architecture-20261031/04-counting-state-machine.html",
+      "sha256": "5c1d809a33db3f0adff750ee08073a3d4d8521794513aa08aacce4dc7a6847ae",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/04-计数状态机.svg",
+      "proposed_target": "docs/assets/architecture-20261031/04-counting-state-machine.svg",
+      "sha256": "91961c7434fcefa58582776e49c47e0721089ae76acf6785ca678f99be4a036f",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/05-完整帧时序.html",
+      "proposed_target": "docs/assets/architecture-20261031/05-complete-frame-timing.html",
+      "sha256": "807baec8fdf410bd4c1128205e78d43cf616afe0d417b50671b7a914584e37ca",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/05-完整帧时序.svg",
+      "proposed_target": "docs/assets/architecture-20261031/05-complete-frame-timing.svg",
+      "sha256": "9c06bccfb96a2ae2c697c362364d5deb1b2e641937a2790c9ae736003b22cad5",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/图片/螺母视觉计数架构_20261031/生成架构图.py",
+      "proposed_target": "docs/assets/architecture-20261031/generate-diagrams.py",
+      "sha256": "724e95b039abc821d34dbae41eeecd1ceacb21b547ecd1ce83447c5da3a28a69",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "diagram family and generator contain coupled relative references"
+    },
+    {
+      "path": "文档/技术文档模版.docx",
+      "proposed_target": "docs/legacy/technical-report-template.docx",
+      "sha256": "d15a2aa186f600cb9c234bffd9deff0c4e9b05c569643d8a81d536f66f424f0c",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/摄像头到HDMI计数链路.md",
+      "proposed_target": "docs/legacy/camera-hdmi-counting-pipeline.md",
+      "sha256": "c07759d767f488fb00fb6fcc5e8d805dafb6827d3b8237dcdeb5b3b374421622",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/板端haveged崩溃修复-20261104.md",
+      "proposed_target": "docs/legacy/board-haveged-fix-20261104.md",
+      "sha256": "f0a9af2c80a45a582aff467f1470960374bb511a4db1b811865820a6280cbaa3",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/架构评审实施计划_20261031.md",
+      "proposed_target": "docs/legacy/architecture-review-plan-20261031.md",
+      "sha256": "1500cf9f64129955c4da066f7b9821408e2a8b5d5f0ffcdf3cadd188169edc79",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/现有仓库演进与新仓重建对比_20261031.md",
+      "proposed_target": "docs/legacy/repository-evolution-comparison-20261031.md",
+      "sha256": "b81ed58542faec9159c8f3d920d01ba7bac78a12381c0012621c7ac47e7a0be7",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/竞赛代码包交付-5438e0e1.md",
+      "proposed_target": "docs/legacy/competition-source-delivery-5438e0e1.md",
+      "sha256": "6321acdf8105372fb7162574dc99dfbfa555b1122abb6308a7ff63c6d70a31da",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/网站传送带流程一致性核对-5438e0e1.md",
+      "proposed_target": "docs/legacy/web-conveyor-consistency-5438e0e1.md",
+      "sha256": "ddfc06ec20ed2f55106f752d4a38cf6b91ef7b4498ff7ed6e95ceb56bb17d2d5",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/网站计数线路展示改进清单-20261104.md",
+      "proposed_target": "docs/legacy/web-counting-display-notes-20261104.md",
+      "sha256": "c09def8e352cc76179f3add9576e07fe4273eea1d6bf86c009db5e1bf27ffe0a",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/计划-PS与PL分工优化-20261101.md",
+      "proposed_target": "docs/legacy/ps-pl-optimization-plan-20261101.md",
+      "sha256": "1d59f63a68720e87fee9fec50cdd6405b969539bab3b63cad6601f5732b434d8",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/计划-剩余进度重排-20261030.md",
+      "proposed_target": "docs/legacy/remaining-work-plan-20261030.md",
+      "sha256": "ee9f7db562612f381b123ff1fda8dffb353dea25127509b29db8e78b54bd7bd3",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/计划.md",
+      "proposed_target": "docs/legacy/legacy-plan.md",
+      "sha256": "2c075e4df5f8389983a8b1cf9a86f3cf21adf66c1a65dd61b9f18c7a6d1cf7ad",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/项目技术特色与PS-PL协同.md",
+      "proposed_target": "docs/legacy/project-features-and-ps-pl.md",
+      "sha256": "d4021bbf0c11e2c4727cb143cddb42286ff1c3ba9b237022cb923dbb93dd2e37",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    },
+    {
+      "path": "文档/项目树.md",
+      "proposed_target": "docs/legacy/project-tree.md",
+      "sha256": "6dd19e2d2558d5cf11c9051746f64297015f00dde7184535e0c711855eab5234",
+      "status": "DEFERRED_NOT_RENAMED",
+      "reason": "historical design/delivery notes; review relative links and source/hash references together"
+    }
+  ],
+  "renamed": 0,
+  "reason": "Preserve teammate V13 runtime and immutable evidence bindings pending version reconciliation"
+}
