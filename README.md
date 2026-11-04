@@ -2,11 +2,28 @@
 
 AT-OV9281 USB 摄像头采集输送带上的螺母、垫圈等小型物料。PYNQ-Z2 对前景进行分割、跟踪和越线计数，并通过 HDMI 显示画面和累计数量。
 
-[冻结源码 5438e0e1](https://github.com/POPO-so/material-counter/tree/5438e0e1f737fc426224f285a4c8b2454d225efc) · [板端部署](scripts/standalone/DEPLOYMENT.md) · [JPEG v8 候选包](data/results/jpeg-pl-board-20261102/jpeg-pl-runtime-v8.zip)
+[作品介绍](docs/competition/OVERVIEW.md) · [系统架构](docs/competition/ARCHITECTURE.md) · [硬件实拍](docs/competition/HARDWARE.md) · [演示指南](docs/competition/DEMO.md) · [测试结果](docs/competition/RESULTS.md)
 
-![整机实拍，包含输送带、相机支架、照明与计数显示器](docs/assets/competition-system.jpg)
+![作品最新正面全景实拍，包含输送机构、相机支架、照明与显示屏](docs/assets/photos/system-front.jpg)
 
-从输送带入口投料，物料经过相机视野并跨越画面内的计数线后，查看显示器右侧的累计数量。照片中的数字为当时的界面读数。
+从输送带入口投料，物料经过相机视野并跨越画面内的计数线后，查看显示器右侧的累计数量。首页使用团队提供的《正面全景照片》，更多[原始实拍与接口细节](docs/competition/HARDWARE.md#实物照片)可单独查看。照片中的数字为当时的界面读数。
+
+## 阅读入口
+
+| 想了解什么 | 从这里开始 |
+| --- | --- |
+| 作品解决什么问题、有哪些技术特色 | [作品介绍](docs/competition/OVERVIEW.md) |
+| FPGA 与 ARM 的职责、源码在哪里 | [架构与代码对应](docs/competition/ARCHITECTURE.md) |
+| 输送机构、相机、板卡、接口及显示屏 | [硬件说明与六张原始实拍](docs/competition/HARDWARE.md) |
+| 本地体验、现场演示与正式视频状态 | [演示指南](docs/competition/DEMO.md) |
+| 实测条件、原始证据和待验收项目 | [结果与提交清单](docs/competition/RESULTS.md) |
+| 搭建环境、运行离线样例或部署 | [开发与复现](docs/DEVELOPMENT.md) · [部署说明](docs/DEPLOYMENT.md) |
+
+[完整文档目录](docs/README.md) · [开发者导航](PROJECT_INDEX.md) · [版本记录](CHANGELOG.md) · [贡献指南](CONTRIBUTING.md)
+
+## 当前状态
+
+文档对应 GitHub 默认分支 `LJ-01`。此前记录的[冻结源码 `5438e0e1`](https://github.com/POPO-so/material-counter/tree/5438e0e1f737fc426224f285a4c8b2454d225efc)是特定源码快照；RLE 基线、V12 显示集成与 JPEG v8 独立候选分别绑定自己的制品和测试，不能合并为同一比赛定版结果。真实物料准确率尚需独立真值验收，本次文档与照片更新不改变该状态。
 
 ## 软硬件分工
 
@@ -48,3 +65,26 @@ flowchart LR
 | RLE 基线 | [RTL](fpga/rtl/) · [约束](fpga/constraints/) · [Vivado 构建 Tcl](scripts/rle/build.tcl) | 脚本要求先通过 XSim 与综合后仿真门禁，按 Tcl 配置板卡仓库和辅助脚本路径。已有 [BIT/HWH 和 manifest](data/results/gray8-rle-20261028-verified-build/export/) 可用于核对。 |
 | 板端 HDMI 集成 | [集成构建 Tcl](scripts/standalone/build_g2_integration.tcl) · [部署记录](scripts/standalone/DEPLOYMENT.md) | 按实际部署版本核对集成 BIT/HWH 和显示 manifest。 |
 | JPEG 硬解联合设计 | [联合构建 Tcl](fpga/experimental/jpeg_integration/joint_build.tcl) · [候选构建和板测记录](data/results/jpeg-pl-board-20261102/README.md) | 冻结源码 `5438e0e1` 中的合并设计仍需重新综合、布局布线并生成配套 BIT/HWH，随后上板复验。v8 ZIP 的制品对应独立候选快照。 |
+
+## 项目与文档结构
+
+```text
+README.md                    作品首页
+CONTRIBUTING.md              公开贡献与问题反馈指南
+PROJECT_INDEX.md             工程导航、阶段状态和证据入口
+CHANGELOG.md                 重要版本与文档变更
+docs/
+  README.md                  文档总目录
+  competition/               作品介绍、架构、硬件、演示、结果
+  DEVELOPMENT.md             环境与离线复现
+  DEPLOYMENT.md              版本选择与板端部署入口
+  assets/photos/             原始实拍、来源和文件哈希
+  adr/                       技术决策
+  verification/              验证记录
+scripts/rle/                 游程协议、原生区域分析与运行器
+scripts/standalone/          板端显示、运行控制和部署
+fpga/                        RTL、约束、仿真与候选联合设计
+data/results/                按版本保存的构建、板测和交付证据
+```
+
+正式演示视频、器件接线清单、最终提交工件绑定和完整真值验收仍待补齐，见[提交前待补资料](docs/competition/RESULTS.md#提交前待补资料)。

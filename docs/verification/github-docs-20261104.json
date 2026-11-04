@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "date": "2026-11-04",
+  "source_commit": "7c8684a97989e96d8aa620e63f88de00719b8dfe",
+  "scope": "Documentation publication validation; no board access",
+  "offline_command": "python -B -m scripts.rle.run_counter --mode offline --frames 12 --output <new-directory>/offline.json",
+  "offline_result": {
+    "status": "OFFLINE_VERIFIED",
+    "mode": "offline",
+    "resolution": [
+      640,
+      400
+    ],
+    "frames": 12,
+    "pixel_verified_frames": 12,
+    "total_count": 1,
+    "count_accuracy": "NOT_MEASURED",
+    "invalid_frames": 0
+  },
+  "runtime_code_changed": false,
+  "board_accessed": false,
+  "documentation_checks": {
+    "markdown_files": 12,
+    "local_links_images_and_anchors": 161,
+    "image_embeds": 7,
+    "photo_sha256_verified": 6,
+    "unpublished_dependencies": 0,
+    "errors": []
+  }
+}
