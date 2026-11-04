@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "checked_on": "2026-11-04",
+  "final_submission_selected": false,
+  "board_accessed": false,
+  "default_branch": "LJ-01",
+  "default_branch_snapshot": "7e3f01da6232d6293f6b8d7267e9a3ca3de8cb28",
+  "candidate": {
+    "name": "JPEG PL v8 independent candidate",
+    "source_commit": "b269ee01c765a43f0cfa6aeca657b63b34f02b2b",
+    "package": "data/results/jpeg-pl-board-20261102/jpeg-pl-runtime-v8.zip",
+    "package_bytes": 1323908,
+    "package_sha256": "6939451aa26c943c7a66c1f60ba1b7d5d650e2dd2a758515eb6f16b2dedf817f",
+    "manifest_member": "jpeg-runtime-manifest.json",
+    "manifest_sha256": "ddf649cfd77e3a3178c90a9272fc9d111dbf14091d2572f1d8189c63e71ae859",
+    "build_status": "ROUTED_NOT_BOARD_VERIFIED",
+    "bit": {
+      "sha256": "9535be948365ff2278232e13a9dbe2f99cb521ca193aa82b28fc06a401e264ed",
+      "path": "artifacts/jpeg-joint.bit"
+    },
+    "hwh": {
+      "sha256": "79b8abcb954667e6791c8d7f0eba3e59ad2215ca3f175ebb8b5e98892dd9968f",
+      "path": "artifacts/jpeg-joint.hwh"
+    },
+    "members": 21,
+    "source_files": [
+      {
+        "path": "scripts/rle/run_counter.py",
+        "package_sha256": "d8740999bc78d85bb0bec24892513e1afddc473b5bb24bcf65c433c3e68cb9a3",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "ab233aff5744292062bc58b3c73521a5fdb526a12e2d874bfb20af4a18783bcd",
+        "matches_default_branch": false
+      },
+      {
+        "path": "scripts/rle/artifacts.py",
+        "package_sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "7ed9c7f1764cd29718eb4904f6b81afccafe10d7f595552fe7b97ac79591cbf7",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/rle/jpeg_runtime.py",
+        "package_sha256": "1dbbf387c2702a60fa0b28cfb02d5e94c67264732c199abe34715033a8e4cf2e",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "1dbbf387c2702a60fa0b28cfb02d5e94c67264732c199abe34715033a8e4cf2e",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/wo0016/split_touching.py",
+        "package_sha256": "5a6e697de1fc3145b3a421faa2e9aeb0fb04f4a8b6dfee2a4d446fefa52eceaa",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "94eea1fd915f6e6297a1fd828cce7f77d878cb829f00ad6e08840d52eea36ffa",
+        "matches_default_branch": false
+      },
+      {
+        "path": "scripts/rle/protocol.py",
+        "package_sha256": "5e8f8a9ccd7aa82d598d55471254d384555b67fd3d46652deaf6be47649db5b8",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "5e8f8a9ccd7aa82d598d55471254d384555b67fd3d46652deaf6be47649db5b8",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/wo0016/stream_counter.py",
+        "package_sha256": "6fa83ac8904eb0f1a3e3c0c00c30b29a15f0ae7883dc0c126f1d5a94d5093ad1",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "c82d1ce3b9bc4c8f73b18d292cb44da064e5b13783e0515189a4cdcd60232746",
+        "matches_default_branch": false
+      },
+      {
+        "path": "scripts/rle/components.py",
+        "package_sha256": "a53f11a3d2bf8619beb92986c1bcc63d5454b9c572cbc3f41d6270d0a321b856",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "f4200181c55f14a8327f10e05a4bc9848f0767c59b1b58292c6bb4c9349c3d4a",
+        "matches_default_branch": false
+      },
+      {
+        "path": "scripts/wo0015/board_preflight.py",
+        "package_sha256": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "cb859c852eb98be4ed3225ff14f5a90b7e4bfcda7dbf30a0c7e19ab1a60a7a22",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/rle/counter.py",
+        "package_sha256": "1b45f52499f22383d1c0536644dba86adfe501d84de442300124f35f28ecc488",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "f1d3a5a593739a4101f3a514f8940677fbaedc8b1971fca0e75f35181c762bce",
+        "matches_default_branch": false
+      },
+      {
+        "path": "scripts/experiments/run_jpeg_counter.py",
+        "package_sha256": "0df91b2f3bf9173226328a2627205d6e68ee01c487ad8b4ad40dd9c3fada37a8",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "0df91b2f3bf9173226328a2627205d6e68ee01c487ad8b4ad40dd9c3fada37a8",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/rle/jpeg_transport.py",
+        "package_sha256": "59dd135d9f1096ecbdb5259bed279819297f14009425d392b2f27050b6fe953c",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "59dd135d9f1096ecbdb5259bed279819297f14009425d392b2f27050b6fe953c",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/rle/native/rle_components.cpp",
+        "package_sha256": "f63bb6de8beb3450d74b30ab93f851e2275ef6344396e162e5494fce9f8c7fbf",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "f63bb6de8beb3450d74b30ab93f851e2275ef6344396e162e5494fce9f8c7fbf",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/rle/transport.py",
+        "package_sha256": "2f36cb145d6881fbda2a3d0627954d9d72b20832f3cff216ede1808526495e86",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "192660158f9d54cd143c7c82736442002ae1e7f38daf605e1babd4e8e51e1e1d",
+        "matches_default_branch": false
+      },
+      {
+        "path": "scripts/wo0016/binary_stats.py",
+        "package_sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "63a4769799b50144ccce3e6624c115643f9e841bb2dbf5691d4dffb52bf32e44",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/wo0016/motion_association.py",
+        "package_sha256": "cdf79701c377b936696264a5f2bf5955cb01fcc4f47063a8058cce11a05240d6",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "cdf79701c377b936696264a5f2bf5955cb01fcc4f47063a8058cce11a05240d6",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/wo0016/packet_encoder.py",
+        "package_sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "bc134beda39446e5abb3818a0c5d319e463db6f219f523dd104263a0945948d8",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/gray8/packet_codec.py",
+        "package_sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "bb5f88c5a48c8d90498f077d29edffe3b6dfb3ac7dd738935020973e65283aa8",
+        "matches_default_branch": true
+      },
+      {
+        "path": "scripts/standalone/hp2.py",
+        "package_sha256": "e676a0566ab2bdfc3c2846b1ba9af5afa06ed7fc4e515423e0d12a9f44246366",
+        "pinned_source_matches": true,
+        "default_branch_sha256": "e676a0566ab2bdfc3c2846b1ba9af5afa06ed7fc4e515423e0d12a9f44246366",
+        "matches_default_branch": true
+      }
+    ],
+    "source_hash_check": "PASS",
+    "bit_hwh_hash_check": "PASS",
+    "manifest_hash_check": "PASS",
+    "package_hash_check": "PASS",
+    "source_files_matching_default_branch": 12,
+    "source_closure_reviewed": false,
+    "configuration_and_board_run_bound_as_final": false,
+    "release_receipt": "data/results/jpeg-pl-board-20261102/jpeg-pl-runtime-v8-release.json",
+    "board_report": "data/results/jpeg-pl-board-20261102/board-run.json",
+    "board_report_scope": "Independent candidate hardware: 120 empty-scene frames; not the final package deployment or real-object accuracy acceptance"
+  }
+}

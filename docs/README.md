@@ -22,6 +22,12 @@
 | [HARDWARE](competition/HARDWARE.md) | 器件、安装、接口与原始实拍 |
 | [DEMO](competition/DEMO.md) | 离线体验、实物演示和 HDMI 照片 |
 | [RESULTS](competition/RESULTS.md) | 分版本指标、原始证据和提交待办 |
+| [SUBMISSION](competition/SUBMISSION.md) | 候选源码、ZIP、BIT/HWH 和 manifest 的离线绑定核对 |
+| [THIRD_PARTY](competition/THIRD_PARTY.md) | 第三方来源、已有许可证及缺口 |
+| [CONTEST_REQUIREMENTS](competition/CONTEST_REQUIREMENTS.md) | AMD 自主选题指南、技能包和目录要求对照 |
+| [REPOSITORY_LAYOUT](competition/REPOSITORY_LAYOUT.md) | 临时文件清理、保留目录原因及中文路径迁移缺口 |
+| [AI_COLLABORATION](competition/AI_COLLABORATION.md) | 本轮协作、自我纠错与可复用经验摘要 |
+| [技能包](../skill/README.md) | 可复用 PYNQ 工件核验方法、脚本与验证边界 |
 | [DEVELOPMENT](DEVELOPMENT.md) | Python、原生库、软件检查与 FPGA 构建入口 |
 | [DEPLOYMENT](DEPLOYMENT.md) | V12 与 JPEG v8 的版本选择和部署边界 |
 | [照片说明](assets/photos/README.md) | 六张原图的来源、用途和 SHA-256 |

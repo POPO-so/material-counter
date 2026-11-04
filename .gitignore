@@ -70,6 +70,9 @@ data/results/**/*.vpd
 .vivado-ai/
 
 # ===== 编辑器 / 系统 =====
+# Malformed pytest temp output and a stale copy of runtime-only startup state.
+/Users14173AppDataLocalTempmaterial-counter-g0-red/
+/Python脚本/material-counter-startup-status.json
 .vscode/
 .idea/
 *.swp

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "date": "2026-11-04",
+  "scope": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/README.md",
+    "docs/competition/AI_COLLABORATION.md",
+    "docs/competition/CONTEST_REQUIREMENTS.md",
+    "docs/competition/HARDWARE.md",
+    "docs/competition/REPOSITORY_LAYOUT.md",
+    "docs/competition/RESULTS.md",
+    "docs/competition/SUBMISSION.md",
+    "docs/competition/THIRD_PARTY.md",
+    "skill/README.md",
+    "skill/pynq_artifact_audit/README.md",
+    "skill/pynq_artifact_audit/SKILL.md"
+  ],
+  "local_links_checked": 180,
+  "missing_targets_or_anchors": [],
+  "unpublished_dependencies": [],
+  "suspicious_invisible_unicode": [],
+  "board_accessed": false
+}

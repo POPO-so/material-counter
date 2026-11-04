@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "date": "2026-11-04",
+  "script": "skill/pynq_artifact_audit/scripts/audit.py",
+  "script_sha256": "4ee0d71a5bc022d934578f4ff9b18a799ea74672437c583ac9f048906c0c9663",
+  "unit_test_command": "python -B -m unittest discover -s skill/pynq_artifact_audit/tests -v",
+  "unit_test_summary": "12 tests passed, 0 skipped",
+  "candidate_zip": "data/results/jpeg-pl-board-20261102/jpeg-pl-runtime-v8.zip",
+  "candidate_zip_sha256": "6939451aa26c943c7a66c1f60ba1b7d5d650e2dd2a758515eb6f16b2dedf817f",
+  "reviewed_original_manifest_sha256": "ddf649cfd77e3a3178c90a9272fc9d111dbf14091d2572f1d8189c63e71ae859",
+  "real_bundle_test": {
+    "status": "ARTIFACT_HASH_PASS",
+    "exit_code": 0,
+    "files_checked": 20
+  },
+  "corrupted_temporary_bit_test": {
+    "status": "ARTIFACT_HASH_FAIL",
+    "exit_code": 2,
+    "corrupted_role": "bit",
+    "errors": [
+      "SHA-256 mismatch: artifacts/jpeg-joint.bit"
+    ]
+  },
+  "original_zip_unchanged": true,
+  "board_accessed": false,
+  "hardware_format_or_pair_provenance_verified": false,
+  "dependency_closure_verified": false
+}
