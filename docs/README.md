@@ -21,12 +21,17 @@
 | [ARCHITECTURE](competition/ARCHITECTURE.md) | RLE 基线、JPEG 硬解候选、HDMI 和代码对应 |
 | [HARDWARE](competition/HARDWARE.md) | 器件、安装、接口与原始实拍 |
 | [DEMO](competition/DEMO.md) | 离线体验、实物演示和 HDMI 照片 |
-| [RESULTS](competition/RESULTS.md) | 分版本指标、原始证据和提交待办 |
+| [RESULTS](competition/RESULTS.md) | 分版本指标、原始证据和历史提交待办 |
+| [REPOSITORY_COMPLETENESS](competition/REPOSITORY_COMPLETENESS.md) | 比赛要求、当前可核验证据、状态和缺口 |
+| [许可证范围](../LICENSE_SCOPE.md) | 根目录 MIT 授权范围和第三方排除项 |
+| [第三方通知](../THIRD_PARTY_NOTICES.md) | 第三方许可证与仓库内来源清单入口 |
 | [SUBMISSION](competition/SUBMISSION.md) | 候选源码、ZIP、BIT/HWH 和 manifest 的离线绑定核对 |
 | [V13](competition/V13.md) | 队友 V13 提交主线、固定源码与历史交付边界 |
 | [UPLOAD](competition/UPLOAD.md) | 官网最新上传格式、大小和材料清单 |
 | [DELIVERY_STATUS](competition/DELIVERY_STATUS.md) | 逐项已完成内容、跳过原因和仍需团队补齐的材料 |
 | [THIRD_PARTY](competition/THIRD_PARTY.md) | 第三方来源、已有许可证及缺口 |
+| [许可证核对](verification/competition-license-audit-20261106.md) | MIT 文件与交付包原文的哈希核对 |
+| [报告审阅](verification/submission-report-review-20261106.md) | 本地参赛 PDF 的版本、证据和公开发布审阅 |
 | [CONTEST_REQUIREMENTS](competition/CONTEST_REQUIREMENTS.md) | AMD 自主选题指南、技能包和目录要求对照 |
 | [REPOSITORY_LAYOUT](competition/REPOSITORY_LAYOUT.md) | 临时文件清理、保留目录原因及中文路径迁移缺口 |
 | [AI_COLLABORATION](competition/AI_COLLABORATION.md) | 本轮协作、自我纠错与可复用经验摘要 |

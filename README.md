@@ -111,4 +111,4 @@ skill/                       团队提炼的可复用方法与校验工具
 
 技能包、目录英文命名和协作记录的具体要求见[指南对照](docs/competition/CONTEST_REQUIREMENTS.md)。现存中文历史路径仍需按依赖迁移，尚未据此认定目录命名要求已全部满足。
 
-正式演示视频、器件接线清单、最终提交工件绑定和完整真值验收仍待补齐，见[提交前待补资料](docs/competition/RESULTS.md#提交前待补资料)。
+正式 V13 演示视频、器件接线清单、提交系统回执和完整真值验收仍待补齐。当前逐项状态见[仓库比赛材料完整性清单](docs/competition/REPOSITORY_COMPLETENESS.md)。
