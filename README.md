@@ -23,6 +23,10 @@ AT-OV9281 USB 摄像头采集输送带上的螺母、垫圈等小型物料。PYN
 
 提交准备：[队友 V13 主线](docs/competition/V13.md) · [版本与候选绑定](docs/competition/SUBMISSION.md) · [上传文件清单](docs/competition/UPLOAD.md) · [可复用技能包](skill/README.md) · [原始协作交互](docs/competition/AI_INTERACTIONS.md) · [AMD 指南对照](docs/competition/CONTEST_REQUIREMENTS.md)。
 
+## 开源许可
+
+本项目团队拥有授权权利的原创源代码和交付脚本采用 MIT 许可，见 [LICENSE](LICENSE) 与[许可适用范围](LICENSE_SCOPE.md)。文档、照片和第三方代码、AMD/Xilinx IP 与工具输出、依赖、字体等按各自许可或授权处理，详见[第三方通知索引](THIRD_PARTY_NOTICES.md)和[逐项来源记录](docs/competition/THIRD_PARTY.md)。
+
 ## 当前状态
 
 **比赛提交以队友 LJ-01 V13 为主线**，应用源码固定为 [`5438e0e1`](https://github.com/POPO-so/material-counter/tree/5438e0e1f737fc426224f285a4c8b2454d225efc)，硬件构建源码单列 `037d38d1`。完整 BIT/HWH、index 身份及历史测试见 [V13 绑定说明](docs/competition/V13.md)。默认分支 LJ-01 可以继续开发，当前分支 HEAD 不自动等于 V13 运行包。
@@ -107,4 +111,4 @@ skill/                       团队提炼的可复用方法与校验工具
 
 技能包、目录英文命名和协作记录的具体要求见[指南对照](docs/competition/CONTEST_REQUIREMENTS.md)。现存中文历史路径仍需按依赖迁移，尚未据此认定目录命名要求已全部满足。
 
-正式演示视频、器件接线清单、最终提交工件绑定和完整真值验收仍待补齐，见[提交前待补资料](docs/competition/RESULTS.md#提交前待补资料)。
+正式 V13 演示视频、器件接线清单、提交系统回执和完整真值验收仍待补齐。当前逐项状态见[仓库比赛材料完整性清单](docs/competition/REPOSITORY_COMPLETENESS.md)。
