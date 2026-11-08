@@ -25,6 +25,8 @@ AT-OV9281 USB 摄像头采集输送带上的螺母、垫圈等小型物料。PYN
 
 ## 开源许可
 
+**赛后仓库补充**：根目录 `LICENSE` 在 2026-11-04 18:00 比赛提交截止后补入 GitHub；其字节与已提交的 2026-11-04 R2 包内 `license` 一致。此补充不追溯改变截止时的 GitHub 仓库状态，也不表示 R2 运行包已通过 V13 版本绑定核验。
+
 本项目团队拥有授权权利的原创源代码和交付脚本采用 MIT 许可，见 [LICENSE](LICENSE) 与[许可适用范围](LICENSE_SCOPE.md)。文档、照片和第三方代码、AMD/Xilinx IP 与工具输出、依赖、字体等按各自许可或授权处理，详见[第三方通知索引](THIRD_PARTY_NOTICES.md)和[逐项来源记录](docs/competition/THIRD_PARTY.md)。
 
 ## 当前状态
